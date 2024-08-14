@@ -11,30 +11,37 @@ Other times, you might have to do something manually.
 These are all useful points to note down and can provide a lot of insight into potential
 features for usethis (besides just being useful documentation).
 
-For example, when developing usethis, here are a list of actions that I undertook:
+For example, when developing usethis, here are a list of actions that I undertook (not
+necessarily listed chronologically):
 
 ## Toolset decisions
 
-- Use GitHub Actions for CI
-- Use uv for package management
+- Use GitHub Actions for CI.
+- Use uv for package management.
 
 ## Repo configuration
 
 - Created a repo on GitHub wih template .gitignore, MIT license and README.
-- Created a develop branch
+- Created a develop branch.
 - Set up sensible rulesets for branches.
-- Created a template for GitHub issues that are development tasks
+- Created a template for GitHub issues that are development tasks.
+- Ran `uv init --name usethis`.
+- Ran `uv python pin 3.12.4`.
+
+## Local development configuration
+
+- Cloned the repo from GitHub.
+- Ran `uv sync`.
+- Set up git username, email, and signing key.
 
 ## Set up tests
 
-- Ran `uv init --name usethis`
-- Ran `uv python pin 3.12.5`
-- Ran `uv add pytest`
-- Created a tests folder
-- Added a trivial test module `test_nothing.py`
-- Add a trivial test `test_pass` to the test module
+- Ran `uv add pytest`.
+- Created a tests folder.
+- Added a trivial test module `test_nothing.py`.
+- Add a trivial test `test_pass` to the test module.
 - Confirm pytest is working with `pytest tests` in the CLI.
-- Create a GitHub workflow file for CI manually in `.github/workflows/ci.yml`
+- Create a GitHub workflow file for CI manually in `.github/workflows/ci.yml`.
 - Use the following configuration to support GitFlow-style branch management:
 
 ```yml
@@ -46,8 +53,8 @@ on:
     pull_request:
 ```
 
-- Add <https://github.com/hynek/setup-cached-uv> to set up uv in CI
-- Add <https://github.com/actions/checkout>
+- Add <https://github.com/hynek/setup-cached-uv> to set up uv in CI.
+- Add <https://github.com/actions/checkout>.
 - Set up the GitHub actions matrix to use Ubuntu, Windows and MacOS.
 - Set up logic to use uv to install Python, create a venv, activate it, and sync.
 - Add <https://github.com/pavelzw/pytest-action> to set up pytest in CI, using the

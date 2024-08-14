@@ -49,5 +49,6 @@ on:
 - Add <https://github.com/hynek/setup-cached-uv> to set up uv in CI
 - Add <https://github.com/actions/checkout>
 - Set up the GitHub actions matrix to use Ubuntu, Windows and MacOS.
-- Set up logic to create a venv, activate it, and sync with lockfile.
-- Add <https://github.com/pavelzw/pytest-action> to set up pytest in CI.
+- Set up logic to use uv to install Python, create a venv, activate it, and sync.
+- Add <https://github.com/pavelzw/pytest-action> to set up pytest in CI, using the
+  correct CLI args to pytest.

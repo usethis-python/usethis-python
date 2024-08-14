@@ -17,6 +17,7 @@ necessarily listed chronologically):
 ## Toolset decisions
 
 - Use GitHub Actions for CI.
+- Always use the hash to pin the version of a GitHub action `uses:`
 - Use uv for package management.
 
 ## Repo configuration
@@ -25,10 +26,13 @@ necessarily listed chronologically):
 - Created a develop branch.
 - Set up sensible rulesets for branches.
 - Created a template for GitHub issues that are development tasks.
+- Created a Makefile.
+- Created a `make requirements` command to make platform-specific requirements files.
 - Ran `uv init --name usethis`.
 - Ran `uv python pin 3.12.4`.
+- Created a `.requirements` directory with Python version and OS specific files.
 
-## Add GitHub actions CI
+## Add GitHub Actions CI
 
 - Create a GitHub workflow file for CI manually in `.github/workflows/ci.yml`.
 - Use the following configuration to support GitFlow-style branch management:
@@ -42,9 +46,9 @@ on:
     pull_request:
 ```
 
-- Add <https://github.com/hynek/setup-cached-uv> to set up uv in CI.
+- Add <https://github.com/hynek/setup-cached-uv>.
 - Add <https://github.com/actions/checkout>.
-- Set up the GitHub actions matrix to use Ubuntu, Windows and MacOS
+- Set up the GitHub actions matrix to use Ubuntu, Windows and MacOS.
 - Set up the GitHub actions to use different Python versions.
 - Set up logic to use uv in GitHub actions.
 
@@ -56,10 +60,12 @@ on:
 
 ## Set up tests
 
-- Ran `uv add pytest`.
+- Ran `uv add --dev pytest`.
 - Created a tests folder.
 - Added a trivial test module `test_nothing.py`.
 - Add a trivial test `test_pass` to the test module.
+- Add step to CI to install pytest
+- Add step to CI to install pytest-md and pytest-emoji (used by Action).
 - Confirm pytest is working with `pytest tests` in the CLI.
 - Add <https://github.com/pavelzw/pytest-action> to set up pytest in CI, using the
   correct CLI args to pytest.

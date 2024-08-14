@@ -11,19 +11,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup uv and Handle Its Cache
-        uses: hynek/setup-cached-uv@v2.0.0
+      - name: Setup uv and handle its cache
+        uses: hynek/setup-cached-uv@49a39f911c85c6ec0c9aadd5a426ae2761afaba2 # v2.0.0
         
-      - name: Install Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
+      - name: Setup dependencies
+        run: |
+          uv pip install --system -r ./requirements/{{ matrix.python-version }}-{{ runner.os }}.txt
+          uv pip install --system pytest pytest-md pytest-emoji
 
-      - name: Install Dependencies
-        run: uv sync --python-preference system
-    
       - name: Run pytest
-        uses: pavelzw/pytest-action@v2.2.0
+        uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
         with:
           custom-arguments: tests
     strategy:

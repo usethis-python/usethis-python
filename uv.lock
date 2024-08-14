@@ -59,3 +59,8 @@ source = { editable = "." }
 dependencies = [
     { name = "pytest" },
 ]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]

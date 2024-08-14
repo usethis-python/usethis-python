@@ -20,9 +20,9 @@ jobs:
       - name: Activate Python virtualenv
         uses: knicknic/os-specific-run@v1
         with:
-          linux: source venv/bin/activate
-          macos: source venv/bin/activate
-          windows: .\venv\Scripts\active
+          linux: source .venv/bin/activate
+          macos: source .venv/bin/activate
+          windows: .\.venv\Scripts\active
 
       - name: Install dependencies
         run: uv sync

@@ -14,20 +14,13 @@ jobs:
       - name: Setup uv and Handle Its Cache
         uses: hynek/setup-cached-uv@v2.0.0
         
-      - name: Intall Python and create virtualenv
-        run: |
-          uv python install
-          uv venv
-
-      - name: Activate Python virtualenv
-        uses: knicknic/os-specific-run@v1
+      - name: Install Python
+        uses: actions/setup-python@v2
         with:
-          linux: source .venv/bin/activate
-          macos: source .venv/bin/activate
-          windows: .\.venv\Scripts\active
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Dependencies
-        run: uv sync
+        run: uv sync --python-preference system
     
       - name: Run pytest
         uses: pavelzw/pytest-action@v2.2.0
@@ -36,3 +29,4 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.12]

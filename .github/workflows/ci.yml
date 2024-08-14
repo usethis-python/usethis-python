@@ -16,7 +16,6 @@ jobs:
         
       - name: Setup dependencies
         run: |
-          ls ./.requirements
           uv pip install --system -r ./.requirements/${{ matrix.python-version }}-${{ runner.os }}.txt
           uv pip install --system pytest pytest-md pytest-emoji
 

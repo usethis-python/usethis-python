@@ -1,0 +1,34 @@
+name: CI
+on:
+    workflow_dispatch:
+    push:
+      branches: ['main', 'develop']
+    pull_request:
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Setup uv and Handle Its Cache
+        uses: hynek/setup-cached-uv@v2.0.0
+        
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create Python virtualenv
+        run: uv venv
+
+      - name: Activate Python virtualenv
+        uses: knicknic/os-specific-run@v1
+        with:
+          linux: source venv/bin/activate
+          macos: source venv/bin/activate
+          windows: .\venv\Scripts\active
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run pytest
+        uses: pavelzw/pytest-action@v2.2.0
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]

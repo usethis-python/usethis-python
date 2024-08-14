@@ -1,0 +1,34 @@
+name: CI
+on:
+    workflow_dispatch:
+    push:
+      branches: ['main', 'develop']
+    pull_request:
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Setup uv and handle its cache
+        uses: hynek/setup-cached-uv@49a39f911c85c6ec0c9aadd5a426ae2761afaba2 # v2.0.0
+
+      - name: "Set up Python"
+        uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1
+        with:
+          python-version: ${{ matrix.python-version }}
+        
+      - name: Setup dependencies
+        run: |
+          uv pip install --system --break-system-packages -r ./.requirements/${{ matrix.python-version }}-${{ runner.os }}.txt
+          uv pip install --system --break-system-packages pytest pytest-md pytest-emoji
+
+      - name: Run pytest
+        uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
+        with:
+          custom-arguments: tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.12]

@@ -21,7 +21,7 @@ jobs:
         
       - name: Setup dependencies
         run: |
-          uv export --resolution ${{ matrix.python-version }} > requirements.txt 
+          uv export --resolution ${{ matrix.resolution }} > requirements.txt 
           uv pip install --system --break-system-packages -r requirements.txt
 
       - name: Run pytest

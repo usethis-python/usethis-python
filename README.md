@@ -6,7 +6,7 @@ Automate Python package and project setup tasks that are otherwise performed man
 
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
-### Plan for interface
+### Hypothetical Interface
 
 The current interfaces are being considered:
 
@@ -15,6 +15,7 @@ The current interfaces are being considered:
 - `usethis browse` to browse something, e.g. `usethis browse pypi ruff` would open the URL to the PyPI page for `ruff` in the browser.
 - `usethis license` to choose a license, e.g. `usethis license mit` to use the MIT license.
 - `usethis file` to create a python file at the specifified location. Add the `--test` flag to create a corresponding test file in the `tests` directory.
+- `usethis package` to configure the packages distributed by your project.
 
 ### Keeping Config Sections Synchronized
 
@@ -23,3 +24,7 @@ Tools are not configured independently from one another. For example, if we are 
 Each usethis function is potentially the dependent for another, and itself might have dependents. Both directions need to be considered when the function is designed and tested. In general, functions need to be able to read configuration to determine which actions to take, and then they need robust write functionality to extend existing config and append to existing files.
 
 Generally, information for tool configuration should be in `pyproject.toml` in the appropriate section. In rare cases, it might be necessary to store information in a `[tool.usethis]` section, although this is not yet clear.
+
+#### Worked Example
+
+We might run `usethis package` to make a distribution package associated with the project. This will be stored in the `packages` list in `[tool.setuptools]` in `pyproject.toml`. Then `usethis tool deptry` to set up deptry. This will add config to `pyproject.toml` for deptry, including ignoring the rule code DEP001 specifically for the packages listed by `usethis package`. If we added a new package with `usethis package --name other_package` then the deptry configuration would be extended to include this new package.

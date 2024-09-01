@@ -26,11 +26,8 @@ necessarily listed chronologically):
 - Created a develop branch.
 - Set up sensible rulesets for branches.
 - Created a template for GitHub issues that are development tasks.
-- Created a Makefile.
-- Created a `make requirements` command to make platform-specific requirements files.
 - Ran `uv init --name usethis`.
 - Ran `uv python pin 3.12.4`.
-- Created a `.requirements` directory with Python version and OS specific files.
 
 ## Add GitHub Actions CI
 
@@ -64,8 +61,7 @@ on:
 - Created a tests folder.
 - Added a trivial test module `test_nothing.py`.
 - Add a trivial test `test_pass` to the test module.
-- Add step to CI to install pytest
-- Add step to CI to install pytest-md and pytest-emoji (used by Action).
+- Add pytest, pytest-md and pytest-emoji as dev deependencies.
 - Confirm pytest is working with `pytest tests` in the CLI.
 - Add <https://github.com/pavelzw/pytest-action> to set up pytest in CI, using the
   correct CLI args to pytest.

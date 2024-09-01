@@ -21,8 +21,8 @@ jobs:
         
       - name: Setup dependencies
         run: |
-          uv pip install --system --break-system-packages -r ./.requirements/${{ matrix.python-version }}-${{ runner.os }}.txt
-          uv pip install --system --break-system-packages pytest pytest-md pytest-emoji
+          uv export --resolution ${{ matrix.python-version }} > requirements.txt 
+          uv pip install --system --break-system-packages -r requirements.txt
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
@@ -32,3 +32,4 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: [3.12]
+        resolution: [highest, lowest-direct]

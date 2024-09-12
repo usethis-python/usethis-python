@@ -8,7 +8,7 @@ import pytest
 import tomlkit
 from pydantic import TypeAdapter
 
-from usethis.tool.deptry import deptry
+from usethis.tool import deptry
 
 
 @contextmanager
@@ -71,6 +71,9 @@ class TestDeptry:
 
         # Assert
         subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
+
+    def test_cli(self, uv_init_dir: Path):
+        subprocess.run(["usethis", "tool", "deptry"], cwd=uv_init_dir, check=True)
 
 
 def _get_dev_deps(proj_dir: Path) -> list[str]:

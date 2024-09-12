@@ -4,7 +4,12 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "typer>=0.12.5",
+]
+
+[project.scripts]
+usethis = "usethis.__main__:app"
 
 [build-system]
 requires = ["hatchling"]
@@ -16,4 +21,6 @@ dev-dependencies = [
     "pytest-md>=0.2.0",
     "pytest-emoji>=0.2.0",
     "pydantic>=2.9.1",
+    "tomlkit>=0.13.2",
+    "deptry>=0.20.0",
 ]

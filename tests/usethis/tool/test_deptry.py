@@ -47,6 +47,31 @@ class TestDeptry:
         out, _ = capfd.readouterr()
         assert out == "✔ Adding deptry as a development dependency\n"
 
+    def test_run_deptry_fail(self, uv_init_dir: Path):
+        # Arrange
+        f = uv_init_dir / "bad.py"
+        f.write_text("import broken_dependency")
+
+        # Act
+        with change_cwd(uv_init_dir):
+            deptry()
+
+        # Assert
+        with pytest.raises(subprocess.CalledProcessError):
+            subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
+
+    def test_run_deptry_pass(self, uv_init_dir: Path):
+        # Arrange
+        f = uv_init_dir / "good.py"
+        f.write_text("import sys")
+
+        # Act
+        with change_cwd(uv_init_dir):
+            deptry()
+
+        # Assert
+        subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
+
 
 def _get_dev_deps(proj_dir: Path) -> list[str]:
     pyproject = tomlkit.parse((proj_dir / "pyproject.toml").read_text())

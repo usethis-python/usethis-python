@@ -277,6 +277,7 @@ requires-dist = [
     { name = "rich", specifier = ">=13.8.1" },
     { name = "typer", specifier = ">=0.12.5" },
 ]
+requires-dist = [{ name = "typer", specifier = ">=0.12.5" }]
 
 [package.metadata.requires-dev]
 dev = [

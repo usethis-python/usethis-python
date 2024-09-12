@@ -9,5 +9,5 @@ app = typer.Typer(help="Add and configure development tools, e.g. linters")
     help="Use the deptry linter: avoid missing or superfluous dependency declarations."
 )
 def deptry() -> None:
-    print("✔ Adding deptry as a development dependency")
+    print("✔ Ensuring deptry is a development dependency")
     subprocess.run(["uv", "add", "--dev", "--quiet", "deptry"], check=True)

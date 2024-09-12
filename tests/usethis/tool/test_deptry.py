@@ -4,7 +4,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator
 
+import pytest
 import tomlkit
+from pydantic import TypeAdapter
 
 from usethis.tool.deptry import deptry
 
@@ -20,18 +22,33 @@ def change_cwd(new_dir: Path) -> Generator[None, None, None]:
         os.chdir(old_dir)
 
 
-class TestDeptry:
-    def test_dependency_added(self, tmp_path: Path):
-        # Arrange
-        subprocess.run(["uv", "init"], cwd=tmp_path, check=True)
+@pytest.fixture
+def uv_init_dir(tmp_path: Path) -> None:
+    subprocess.run(["uv", "init"], cwd=tmp_path, check=True)
+    return tmp_path
 
+
+class TestDeptry:
+    def test_dependency_added(self, uv_init_dir: Path):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             deptry()
 
         # Assert
-        pyproject = tomlkit.parse((tmp_path / "pyproject.toml").read_text())
-        dev_deps = pyproject["tool"]["uv"]["dev-dependencies"]
+        (dev_dep,) = _get_dev_deps(uv_init_dir)
+        assert dev_dep.startswith("deptry>=")
 
-        assert len(dev_deps) == 1
-        assert dev_deps[0].startswith("deptry>=")
+    def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        # Act
+        with change_cwd(uv_init_dir):
+            deptry()
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == "✔ Adding deptry as a development dependency\n"
+
+
+def _get_dev_deps(proj_dir: Path) -> list[str]:
+    pyproject = tomlkit.parse((proj_dir / "pyproject.toml").read_text())
+    dev_deps = pyproject["tool"]["uv"]["dev-dependencies"]
+    return TypeAdapter(list[str]).validate_python(dev_deps)

@@ -45,7 +45,7 @@ class TestDeptry:
 
         # Assert
         out, _ = capfd.readouterr()
-        assert out == "✔ Adding deptry as a development dependency\n"
+        assert out == "✔ Ensuring deptry is a development dependency\n"
 
     def test_run_deptry_fail(self, uv_init_dir: Path):
         # Arrange

@@ -1,2 +1,3 @@
-def hello() -> str:
-    return "Hello from usethis!"
+from rich.console import Console
+
+console = Console()

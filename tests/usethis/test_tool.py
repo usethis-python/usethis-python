@@ -95,6 +95,14 @@ class TestToolPreCommit:
         out, _ = capfd.readouterr()
         assert out == "✔ Ensuring pre-commit is a development dependency\n"
 
+    def test_config_file_exists(self, uv_init_dir: Path):
+        # Act
+        with change_cwd(uv_init_dir):
+            pre_commmit()
+
+        # Assert
+        assert (uv_init_dir / ".pre-commit-config.yaml").exists()
+
 
 def _get_dev_deps(proj_dir: Path) -> list[str]:
     pyproject = tomlkit.parse((proj_dir / "pyproject.toml").read_text())

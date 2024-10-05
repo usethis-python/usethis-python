@@ -8,7 +8,7 @@ import pytest
 import tomlkit
 from pydantic import TypeAdapter
 
-from usethis.tool import deptry
+from usethis.tool import deptry, pre_commmit
 
 
 @contextmanager
@@ -74,6 +74,26 @@ class TestDeptry:
 
     def test_cli(self, uv_init_dir: Path):
         subprocess.run(["usethis", "tool", "deptry"], cwd=uv_init_dir, check=True)
+
+
+class TestToolPreCommit:
+    def test_dependency_added(self, uv_init_dir: Path):
+        # Act
+        with change_cwd(uv_init_dir):
+            pre_commmit()
+
+        # Assert
+        (dev_dep,) = _get_dev_deps(uv_init_dir)
+        assert dev_dep.startswith("pre-commit>=")
+
+    def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        # Act
+        with change_cwd(uv_init_dir):
+            pre_commmit()
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == "✔ Ensuring pre-commit is a development dependency\n"
 
 
 def _get_dev_deps(proj_dir: Path) -> list[str]:

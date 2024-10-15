@@ -13,8 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-      - name: Setup git user
-        uses: fregante/setup-git-user@024bc0b8e177d7e77203b48dab6fb45666854b35 # v2.0.2
+      - name: Setup git user config
+        run: |
+          git config --global user.name github-actions[bot]
+          git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
 
       - name: Setup uv and handle its cache
         uses: hynek/setup-cached-uv@49a39f911c85c6ec0c9aadd5a426ae2761afaba2 # v2.0.0

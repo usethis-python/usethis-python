@@ -6,8 +6,7 @@ import ruamel.yaml
 from ruamel.yaml.util import load_yaml_guess_indent
 
 from usethis import console
-from usethis._deptry.core import PRE_COMMIT_NAME as DEPTRY_PRE_COMMIT_NAME
-from usethis._git import _get_github_latest_tag, _GitHubTagError
+from usethis._github import GitHubTagError, get_github_latest_tag
 from usethis._pre_commit.config import PreCommitRepoConfig
 
 _YAML_CONTENTS_TEMPLATE = """
@@ -23,20 +22,27 @@ _VALIDATEPYPROJECT_VERSION = "v0.21"
 
 _HOOK_ORDER = [
     "validate-pyproject",
-    DEPTRY_PRE_COMMIT_NAME,
+    "ruff-format",
+    "ruff-check",
+    "deptry",
 ]
 
 
 def make_pre_commit_config() -> None:
     console.print("✔ Creating .pre-commit-config.yaml file", style="green")
     try:
-        pkg_version = _get_github_latest_tag("abravalheri", "validate-pyproject")
-    except _GitHubTagError:
+        pkg_version = get_github_latest_tag("abravalheri", "validate-pyproject")
+    except GitHubTagError:
         # Fallback to last known working version
         pkg_version = _VALIDATEPYPROJECT_VERSION
     yaml_contents = _YAML_CONTENTS_TEMPLATE.format(pkg_version=pkg_version)
 
     (Path.cwd() / ".pre-commit-config.yaml").write_text(yaml_contents)
+
+
+def ensure_pre_commit_config() -> None:
+    if not (Path.cwd() / ".pre-commit-config.yaml").exists():
+        make_pre_commit_config()
 
 
 def delete_hook(name: str) -> None:
@@ -62,8 +68,6 @@ def delete_hook(name: str) -> None:
 
 
 def add_single_hook(config: PreCommitRepoConfig) -> None:
-    # We should have a canonical sort order for all usethis-supported hooks to decide where to place the section. The main objective with the sort order is to ensure dependency relationships are satisfied. For example, valdiate-pyproject will check if the pyproject.toml is valid - if it isn't then some later tools might fail. It would be better to catch this earlier. A general principle is to move from the simpler hooks to the more complicated. Of course, this order might already be violated, or the config might include unrecognized repos - in any case, we aim to ensure the new tool is configured correctly, so it should be placed after the last of its precedents. This logic can be encoded in the adding function.
-
     path = Path.cwd() / ".pre-commit-config.yaml"
 
     with path.open(mode="r") as f:

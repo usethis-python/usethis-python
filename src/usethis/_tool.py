@@ -3,18 +3,18 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
+import mergedeep
 import tomlkit
-from packaging.requirements import Requirement
-from pydantic import TypeAdapter
 
 from usethis import console
-from usethis._deptry.core import PRE_COMMIT_NAME as DEPTRY_PRE_COMMIT_NAME
 from usethis._pre_commit.config import HookConfig, PreCommitRepoConfig
 from usethis._pre_commit.core import (
     add_single_hook,
+    ensure_pre_commit_config,
     get_hook_names,
-    make_pre_commit_config,
 )
+from usethis._pyproject.config import PyProjectConfig
+from usethis._uv.deps import get_dev_deps
 
 
 class Tool(Protocol):
@@ -24,51 +24,91 @@ class Tool(Protocol):
         """The name of the tool on PyPI."""
 
     @property
-    @abstractmethod
-    def pre_commit_name(self) -> str:
-        """The name of the hook to be used in the pre-commit configuration.
-
-        Raises:
-            NotImplementedError: If the tool does not have a pre-commit configuration.
-        """
-
-        raise NotImplementedError
+    def name(self) -> str:
+        """The name of the tool, for display purposes."""
+        return self.pypi_name
 
     @abstractmethod
     def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
         """Get the pre-commit repository configuration for the tool.
 
-        Returns:
-            The pre-commit repository configuration.
-
         Raises:
             NotImplementedError: If the tool does not have a pre-commit configuration.
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def get_pyproject_config(self) -> PyProjectConfig:
+        """Get the pyproject configuration for the tool.
+
+        Raises:
+            NotImplementedError: If the tool does not have a pyproject configuration.
+        """
+        raise NotImplementedError
+
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project."""
-        return self.pypi_name in _get_dev_deps(Path.cwd())
+        return self.pypi_name in get_dev_deps(Path.cwd())
 
     def add_pre_commit_repo_config(self) -> None:
         """Add the tool's pre-commit configuration."""
-        # Create a new pre-commit config file if there isn't already one.
-        if not (Path.cwd() / ".pre-commit-config.yaml").exists():
-            make_pre_commit_config()
-
         try:
-            pre_commit_name = self.pre_commit_name
             repo_config = self.get_pre_commit_repo_config()
         except NotImplementedError:
             return
 
+        ensure_pre_commit_config()
+
         # Add the config for this specific tool.
-        if pre_commit_name not in get_hook_names(Path.cwd()):
-            console.print(
-                f"✔ Adding {pre_commit_name} config to .pre-commit-config.yaml",
-                style="green",
-            )
-            add_single_hook(repo_config)
+        first_time_adding = True
+        for hook in repo_config.hooks:
+            if hook.id not in get_hook_names(Path.cwd()):
+                # Need to add this hook, it is missing.
+                if first_time_adding:
+                    console.print(
+                        f"✔ Adding {self.name} config to .pre-commit-config.yaml",
+                        style="green",
+                    )
+                    first_time_adding = False
+
+                add_single_hook(
+                    PreCommitRepoConfig(
+                        repo=repo_config.repo, rev=repo_config.rev, hooks=[hook]
+                    )
+                )
+
+    def add_pyproject_config(self) -> None:
+        """Add the tool's pyproject.toml configuration."""
+
+        try:
+            config = self.get_pyproject_config()
+        except NotImplementedError:
+            return
+
+        pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+
+        # Exit early if the configuration is already present.
+        try:
+            p = pyproject
+            for key in config.id_keys:
+                p = p[key]
+        except KeyError:
+            pass
+        else:
+            # The configuration is already present.
+            return
+
+        console.print(
+            f"✔ Adding {self.pypi_name} configuration to pyproject.toml", style="green"
+        )
+
+        # The old configuration should be kept for all ID keys except the final/deepest
+        # one which shouldn't exist anyway since we checked as much, above. For example,
+        # If there is [tool.ruff] then we shouldn't overwrite it with [tool.deptry];
+        # they should coexist. So under the "tool" key, we need to merge the two dicts.
+        pyproject = mergedeep.merge(pyproject, config.contents)
+
+        (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(pyproject))
 
     def ensure_dev_dep(self) -> None:
         """Add the tool as a development dependency, if it is not already."""
@@ -78,25 +118,15 @@ class Tool(Protocol):
         subprocess.run(["uv", "add", "--dev", "--quiet", self.pypi_name], check=True)
 
 
-def _get_dev_deps(proj_dir: Path) -> list[str]:
-    pyproject = tomlkit.parse((proj_dir / "pyproject.toml").read_text())
-    req_strs = TypeAdapter(list[str]).validate_python(
-        pyproject["tool"]["uv"]["dev-dependencies"]
-    )
-    reqs = [Requirement(req_str) for req_str in req_strs]
-    return [req.name for req in reqs]
-
-
 class PreCommitTool(Tool):
     @property
     def pypi_name(self) -> str:
         return "pre-commit"
 
-    @property
-    def pre_commit_name(self) -> str:
+    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
         raise NotImplementedError
 
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
+    def get_pyproject_config(self) -> PyProjectConfig:
         raise NotImplementedError
 
 
@@ -105,17 +135,13 @@ class DeptryTool(Tool):
     def pypi_name(self) -> str:
         return "deptry"
 
-    @property
-    def pre_commit_name(self) -> str:
-        return DEPTRY_PRE_COMMIT_NAME
-
     def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
         return PreCommitRepoConfig(
             repo="local",
             hooks=[
                 HookConfig(
-                    id=self.pre_commit_name,
-                    name=self.pre_commit_name,
+                    id="deptry",
+                    name="deptry",
                     entry="uv run --frozen deptry src",
                     language="system",
                     always_run=True,
@@ -124,5 +150,62 @@ class DeptryTool(Tool):
             ],
         )
 
+    def get_pyproject_config(self) -> PyProjectConfig:
+        raise NotImplementedError
 
-ALL_TOOLS: list[Tool] = [PreCommitTool(), DeptryTool()]
+
+class RuffTool(Tool):
+    @property
+    def pypi_name(self) -> str:
+        return "ruff"
+
+    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
+        return PreCommitRepoConfig(
+            repo="local",
+            hooks=[
+                HookConfig(
+                    id="ruff-format",
+                    name="ruff-format",
+                    entry="uv run --frozen ruff format",
+                    language="system",
+                    always_run=True,
+                    pass_filenames=False,
+                ),
+                HookConfig(
+                    id="ruff-check",
+                    name="ruff-check",
+                    entry="uv run --frozen ruff check --fix",
+                    language="system",
+                    always_run=True,
+                    pass_filenames=False,
+                ),
+            ],
+        )
+
+    def get_pyproject_config(self) -> PyProjectConfig:
+        return PyProjectConfig(
+            id_keys=["tool", "ruff"],
+            main_contents={
+                "src": ["src"],
+                "line-length": 88,
+                "lint": {
+                    "select": [
+                        "C4",
+                        "E4",
+                        "E7",
+                        "E9",
+                        "F",
+                        "FURB",
+                        "I",
+                        "PLE",
+                        "PLR",
+                        "RUF",
+                        "SIM",
+                        "UP",
+                    ]
+                },
+            },
+        )
+
+
+ALL_TOOLS: list[Tool] = [PreCommitTool(), DeptryTool(), RuffTool()]

@@ -1,15 +1,15 @@
 import requests
 
 
-class _GitHubTagError(Exception):
+class GitHubTagError(Exception):
     """Custom exception for GitHub tag-related errors."""
 
 
-class _NoTagsFoundError(_GitHubTagError):
+class NoGitHubTagsFoundError(GitHubTagError):
     """Custom exception raised when no tags are found."""
 
 
-def _get_github_latest_tag(owner: str, repo: str) -> str:
+def get_github_latest_tag(owner: str, repo: str) -> str:
     """Get the name of the most recent tag on the default branch of a GitHub repository.
 
     Args:
@@ -32,12 +32,12 @@ def _get_github_latest_tag(owner: str, repo: str) -> str:
         response = requests.get(api_url, timeout=1)
         response.raise_for_status()  # Raise an error for HTTP issues
     except requests.exceptions.HTTPError as err:
-        raise _GitHubTagError(f"Failed to fetch tags from GitHub API: {err}")
+        raise GitHubTagError(f"Failed to fetch tags from GitHub API: {err}")
 
     tags = response.json()
 
     if not tags:
-        raise _NoTagsFoundError(f"No tags found for repository '{owner}/{repo}'")
+        raise NoGitHubTagsFoundError(f"No tags found for repository '{owner}/{repo}'")
 
     # Most recent tag's name
     return tags[0]["name"]

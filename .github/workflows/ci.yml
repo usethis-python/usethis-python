@@ -18,8 +18,10 @@ jobs:
           git config --global user.name github-actions[bot]
           git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-      - name: Setup uv and handle its cache
-        uses: hynek/setup-cached-uv@49a39f911c85c6ec0c9aadd5a426ae2761afaba2 # v2.0.0
+      - name: "Set up uv"
+        uses: astral-sh/setup-uv@f3bcaebff5eace81a1c062af9f9011aae482ca9d # v3.1.7
+        with:
+          version: "latest"
 
       - name: "Set up Python"
         uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f # v5.1.1

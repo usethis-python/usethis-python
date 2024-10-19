@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.21
+    hooks:
+      - id: validate-pyproject
+        additional_dependencies: ["validate-pyproject-schema-store[all]"]
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        entry: uv run --frozen ruff format
+        language: system
+        always_run: true
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff-check
+        entry: uv run --frozen ruff check --fix
+        language: system
+        always_run: true
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: deptry
+        name: deptry
+        entry: uv run --frozen deptry src
+        language: system
+        always_run: true
+        pass_filenames: false

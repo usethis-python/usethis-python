@@ -15,8 +15,8 @@ jobs:
 
       - name: Setup git user config
         run: |
-          git config --global user.name github-actions[bot]
-          git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git config --global user.name placeholder
+          git config --global user.email placeholder@example.com
 
       - name: "Set up uv"
         uses: astral-sh/setup-uv@f3bcaebff5eace81a1c062af9f9011aae482ca9d # v3.1.7

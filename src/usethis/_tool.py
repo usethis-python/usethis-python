@@ -9,9 +9,10 @@ import tomlkit
 from usethis import console
 from usethis._pre_commit.config import HookConfig, PreCommitRepoConfig
 from usethis._pre_commit.core import (
-    add_single_hook,
+    add_hook,
     ensure_pre_commit_config,
     get_hook_names,
+    remove_hook,
 )
 from usethis._pyproject.config import PyProjectConfig
 from usethis._uv.deps import get_dev_deps
@@ -71,11 +72,30 @@ class Tool(Protocol):
                     )
                     first_time_adding = False
 
-                add_single_hook(
+                add_hook(
                     PreCommitRepoConfig(
                         repo=repo_config.repo, rev=repo_config.rev, hooks=[hook]
                     )
                 )
+
+    def remove_pre_commit_repo_config(self) -> None:
+        """Remove the tool's pre-commit configuration."""
+        try:
+            repo_config = self.get_pre_commit_repo_config()
+        except NotImplementedError:
+            return
+
+        # Remove the config for this specific tool.
+        first_removal = True
+        for hook in repo_config.hooks:
+            if hook.id in get_hook_names(Path.cwd()):
+                if first_removal:
+                    console.print(
+                        f"✔ Removing {self.name} config from .pre-commit-config.yaml",
+                        style="green",
+                    )
+                    first_removal = False
+                remove_hook(hook.id)
 
     def add_pyproject_config(self) -> None:
         """Add the tool's pyproject.toml configuration."""
@@ -98,9 +118,7 @@ class Tool(Protocol):
             # The configuration is already present.
             return
 
-        console.print(
-            f"✔ Adding {self.pypi_name} configuration to pyproject.toml", style="green"
-        )
+        console.print(f"✔ Adding {self.name} config to pyproject.toml", style="green")
 
         # The old configuration should be kept for all ID keys except the final/deepest
         # one which shouldn't exist anyway since we checked as much, above. For example,
@@ -110,12 +128,63 @@ class Tool(Protocol):
 
         (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(pyproject))
 
+    def remove_pyproject_config(self) -> None:
+        """Remove the tool's pyproject.toml configuration."""
+        try:
+            config = self.get_pyproject_config()
+        except NotImplementedError:
+            return
+
+        pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+
+        # Exit early if the configuration is not present.
+        try:
+            p = pyproject
+            for key in config.id_keys:
+                p = p[key]
+        except KeyError:
+            # The configuration is not present.
+            return
+
+        console.print(
+            f"✔ Removing {self.name} config from pyproject.toml",
+            style="green",
+        )
+
+        # Remove the configuration.
+        p = pyproject
+        for key in config.id_keys[:-1]:
+            p = p[key]
+        del p[config.id_keys[-1]]
+
+        # Cleanup: any empty sections should be removed.
+        for idx in range(len(config.id_keys) - 1):
+            p = pyproject
+            for key in config.id_keys[: idx + 1]:
+                p = p[key]
+            if not p:
+                del p
+
+        (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(pyproject))
+
     def ensure_dev_dep(self) -> None:
         """Add the tool as a development dependency, if it is not already."""
         console.print(
             f"✔ Ensuring {self.pypi_name} is a development dependency", style="green"
         )
         subprocess.run(["uv", "add", "--dev", "--quiet", self.pypi_name], check=True)
+
+    def remove_dev_dep(self) -> None:
+        """Remove the tool as a development dependency, if it is present."""
+        if self.pypi_name not in get_dev_deps(Path.cwd()):
+            # Early exit; the tool is already not a dev dependency.
+            return
+
+        console.print(
+            f"✔ Removing {self.pypi_name} as a development dependency",
+            style="green",
+        )
+        subprocess.run(["uv", "remove", "--dev", "--quiet", self.pypi_name], check=True)
 
 
 class PreCommitTool(Tool):

@@ -2,7 +2,6 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from git import Repo
 
 from usethis._pre_commit.core import (
     _HOOK_ORDER,
@@ -11,27 +10,14 @@ from usethis._pre_commit.core import (
 )
 from usethis._test import change_cwd
 from usethis._tool import ALL_TOOLS, get_dev_deps
-from usethis.tool import deptry, pre_commit, ruff
-
-
-@pytest.fixture(scope="function")
-def uv_init_dir(tmp_path: Path) -> Path:
-    subprocess.run(["uv", "init"], cwd=tmp_path, check=True)
-    return tmp_path
-
-
-@pytest.fixture(scope="function")
-def uv_init_repo_dir(tmp_path: Path) -> Path:
-    subprocess.run(["uv", "init"], cwd=tmp_path, check=True)
-    Repo.init(tmp_path)
-    return tmp_path
+from usethis.tool import _deptry, _pre_commit, _ruff
 
 
 class TestToolPreCommit:
     def test_dependency_added(self, uv_init_dir: Path):
         # Act
         with change_cwd(uv_init_dir):
-            pre_commit()
+            _pre_commit()
 
         # Assert
         (dev_dep,) = get_dev_deps(uv_init_dir)
@@ -40,7 +26,7 @@ class TestToolPreCommit:
     def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
         with change_cwd(uv_init_dir):
-            pre_commit()
+            _pre_commit()
 
         # Assert
         out, _ = capfd.readouterr()
@@ -53,7 +39,7 @@ class TestToolPreCommit:
     def test_config_file_exists(self, uv_init_dir: Path):
         # Act
         with change_cwd(uv_init_dir):
-            pre_commit()
+            _pre_commit()
 
         # Assert
         assert (uv_init_dir / ".pre-commit-config.yaml").exists()
@@ -61,7 +47,7 @@ class TestToolPreCommit:
     def test_config_file_contents(self, uv_init_dir: Path):
         # Act
         with change_cwd(uv_init_dir):
-            pre_commit()
+            _pre_commit()
 
         # Assert
         contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
@@ -89,7 +75,7 @@ repos:
 
         # Act
         with change_cwd(uv_init_repo_dir):
-            pre_commit()
+            _pre_commit()
 
         # Assert
         contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
@@ -105,7 +91,7 @@ repos:
     def test_bad_commit(self, uv_init_repo_dir: Path):
         # Act
         with change_cwd(uv_init_repo_dir):
-            pre_commit()
+            _pre_commit()
         subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
         subprocess.run(
             ["git", "commit", "-m", "Good commit"], cwd=uv_init_repo_dir, check=True
@@ -153,7 +139,7 @@ class TestDeptry:
     def test_dependency_added(self, uv_init_dir: Path):
         # Act
         with change_cwd(uv_init_dir):
-            deptry()
+            _deptry()
 
         # Assert
         (dev_dep,) = get_dev_deps(uv_init_dir)
@@ -162,7 +148,7 @@ class TestDeptry:
     def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
         with change_cwd(uv_init_dir):
-            deptry()
+            _deptry()
 
         # Assert
         out, _ = capfd.readouterr()
@@ -175,7 +161,7 @@ class TestDeptry:
 
         # Act
         with change_cwd(uv_init_dir):
-            deptry()
+            _deptry()
 
         # Assert
         with pytest.raises(subprocess.CalledProcessError):
@@ -188,7 +174,7 @@ class TestDeptry:
 
         # Act
         with change_cwd(uv_init_dir):
-            deptry()
+            _deptry()
 
         # Assert
         subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
@@ -201,8 +187,8 @@ class TestDeptry:
     ):
         # Act
         with change_cwd(uv_init_dir):
-            deptry()
-            pre_commit()
+            _deptry()
+            _pre_commit()
 
         # Assert
         # 1. File exists
@@ -245,8 +231,8 @@ class TestDeptry:
     ):
         # Act
         with change_cwd(uv_init_dir):
-            pre_commit()
-            deptry()
+            _pre_commit()
+            _deptry()
 
         # Assert
         # 1. File exists
@@ -289,7 +275,7 @@ class TestRuff:
     def test_dependency_added(self, uv_init_dir: Path):
         # Act
         with change_cwd(uv_init_dir):
-            ruff()
+            _ruff()
 
         # Assert
         (dev_dep,) = get_dev_deps(uv_init_dir)
@@ -298,13 +284,13 @@ class TestRuff:
     def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
         with change_cwd(uv_init_dir):
-            ruff()
+            _ruff()
 
         # Assert
         out, _ = capfd.readouterr()
         assert out == (
             "✔ Ensuring ruff is a development dependency\n"
-            "✔ Adding ruff configuration to pyproject.toml\n"
+            "✔ Adding ruff config to pyproject.toml\n"
         )
 
     def test_cli(self, uv_init_dir: Path):
@@ -315,8 +301,8 @@ class TestRuff:
     ):
         # Act
         with change_cwd(uv_init_dir):
-            ruff()
-            pre_commit()
+            _ruff()
+            _pre_commit()
 
         # Assert
         assert "ruff-format" in get_hook_names(uv_init_dir)

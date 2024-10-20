@@ -28,7 +28,11 @@ _HOOK_ORDER = [
 ]
 
 
-def make_pre_commit_config() -> None:
+def ensure_pre_commit_config() -> None:
+    if (Path.cwd() / ".pre-commit-config.yaml").exists():
+        # Early exit; the file already exists
+        return
+
     console.print("✔ Creating .pre-commit-config.yaml file", style="green")
     try:
         pkg_version = get_github_latest_tag("abravalheri", "validate-pyproject")
@@ -40,34 +44,16 @@ def make_pre_commit_config() -> None:
     (Path.cwd() / ".pre-commit-config.yaml").write_text(yaml_contents)
 
 
-def ensure_pre_commit_config() -> None:
+def remove_pre_commit_config() -> None:
     if not (Path.cwd() / ".pre-commit-config.yaml").exists():
-        make_pre_commit_config()
+        # Early exit; the file already doesn't exist
+        return
+
+    console.print("✔ Removing .pre-commit-config.yaml file", style="green")
+    (Path.cwd() / ".pre-commit-config.yaml").unlink()
 
 
-def delete_hook(name: str) -> None:
-    path = Path.cwd() / ".pre-commit-config.yaml"
-
-    with path.open(mode="r") as f:
-        content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
-
-    yaml = ruamel.yaml.YAML(typ="rt")
-    yaml.indent(mapping=sequence_ind, sequence=sequence_ind, offset=offset_ind)
-
-    # search across the repos for any hooks with ID equal to name
-    for repo in content["repos"]:
-        for hook in repo["hooks"]:
-            if hook["id"] == name:
-                repo["hooks"].remove(hook)
-
-        # if repo has no hooks, remove it
-        if not repo["hooks"]:
-            content["repos"].remove(repo)
-
-    yaml.dump(content, path)
-
-
-def add_single_hook(config: PreCommitRepoConfig) -> None:
+def add_hook(config: PreCommitRepoConfig) -> None:
     path = Path.cwd() / ".pre-commit-config.yaml"
 
     with path.open(mode="r") as f:
@@ -82,10 +68,14 @@ def add_single_hook(config: PreCommitRepoConfig) -> None:
     # Get an ordered list of the hooks already in the file
     existing_hooks = get_hook_names(path.parent)
 
+    if not existing_hooks:
+        raise NotImplementedError
+
     # Get the precendents, i.e. hooks occuring before the new hook
-    hook_idx = _HOOK_ORDER.index(hook_name)
-    if hook_idx == -1:
-        raise ValueError(f"Hook {hook_name} not recognized")
+    try:
+        hook_idx = _HOOK_ORDER.index(hook_name)
+    except ValueError:
+        raise NotImplementedError(f"Hook '{hook_name}' not recognized")
     precedents = _HOOK_ORDER[:hook_idx]
 
     # Find the last of the precedents in the existing hooks
@@ -108,6 +98,28 @@ def add_single_hook(config: PreCommitRepoConfig) -> None:
     content["repos"] = new_repos
 
     # Dump the new content
+    yaml.dump(content, path)
+
+
+def remove_hook(name: str) -> None:
+    path = Path.cwd() / ".pre-commit-config.yaml"
+
+    with path.open(mode="r") as f:
+        content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
+
+    yaml = ruamel.yaml.YAML(typ="rt")
+    yaml.indent(mapping=sequence_ind, sequence=sequence_ind, offset=offset_ind)
+
+    # search across the repos for any hooks with ID equal to name
+    for repo in content["repos"]:
+        for hook in repo["hooks"]:
+            if hook["id"] == name:
+                repo["hooks"].remove(hook)
+
+        # if repo has no hooks, remove it
+        if not repo["hooks"]:
+            content["repos"].remove(repo)
+
     yaml.dump(content, path)
 
 
@@ -137,6 +149,15 @@ def install_pre_commit() -> None:
     console.print("✔ Installing pre-commit hooks", style="green")
     subprocess.run(
         ["uv", "run", "pre-commit", "install"],
+        check=True,
+        stdout=subprocess.DEVNULL,
+    )
+
+
+def uninstall_pre_commit() -> None:
+    console.print("✔ Uninstalling pre-commit hooks", style="green")
+    subprocess.run(
+        ["uv", "run", "pre-commit", "uninstall"],
         check=True,
         stdout=subprocess.DEVNULL,
     )

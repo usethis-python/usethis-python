@@ -12,7 +12,7 @@ from usethis._pre_commit.config import PreCommitRepoConfig
 _YAML_CONTENTS_TEMPLATE = """
 repos:
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "{pkg_version}"
+    rev: {pkg_version}
     hooks:
       - id: validate-pyproject
         additional_dependencies: ["validate-pyproject-schema-store[all]"]

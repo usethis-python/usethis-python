@@ -133,7 +133,12 @@ class TestRemovePreCommitConfig:
 
 class TestAddHook:
     def test_unregistered_id(self, tmp_path: Path):
-        (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n")
+        (tmp_path / ".pre-commit-config.yaml").write_text("""
+repos:
+  - repo: foo
+    hooks:
+    - id: bar
+""")
         with (
             change_cwd(tmp_path),
             pytest.raises(NotImplementedError, match="Hook 'foo' not recognized"),

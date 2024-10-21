@@ -34,14 +34,20 @@ dev-dependencies = [
     "pre-commit>=4.0.1",
 ]
 
-[tool.coverage.run]
-source = ["src"]
-omit = ["*/pytest-of-*/*"]
-
-
 [tool.ruff]
 src = ["src"]
 line-length = 88
 
 [tool.ruff.lint]
 select = ["C4", "E4", "E7", "E9", "F", "FURB", "I", "PLE", "PLR", "RUF", "SIM", "UP"]
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "--import-mode=importlib",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/pytest-of-*/*"]

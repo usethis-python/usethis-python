@@ -593,6 +593,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "coverage" },
     { name = "deptry" },
     { name = "gitpython" },
     { name = "pre-commit" },
@@ -617,6 +618,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "coverage", extras = ["toml"], specifier = ">=7.6.3" },
     { name = "deptry", specifier = ">=0.20.0" },
     { name = "gitpython", specifier = ">=3.1.43" },
     { name = "pre-commit", specifier = ">=4.0.1" },

@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from usethis._pre_commit.core import (
+from usethis._pre_commit.core import _VALIDATEPYPROJECT_VERSION
+from usethis._pre_commit.hooks import (
     _HOOK_ORDER,
-    _VALIDATEPYPROJECT_VERSION,
     get_hook_names,
 )
 from usethis._test import change_cwd
@@ -31,9 +31,10 @@ class TestToolPreCommit:
         # Assert
         out, _ = capfd.readouterr()
         assert out == (
-            "✔ Ensuring pre-commit is a development dependency\n"
-            "✔ Creating .pre-commit-config.yaml file\n"
-            "✔ Installing pre-commit hooks\n"
+            "✔ Adding 'pre-commit' as a development dependency.\n"
+            "✔ Writing '.pre-commit-config.yaml'.\n"
+            "✔ Ensuring pre-commit hooks are installed.\n"
+            "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
         )
 
     def test_config_file_exists(self, uv_init_dir: Path):
@@ -152,7 +153,10 @@ class TestDeptry:
 
         # Assert
         out, _ = capfd.readouterr()
-        assert out == "✔ Ensuring deptry is a development dependency\n"
+        assert out == (
+            "✔ Adding 'deptry' as a development dependency.\n"
+            "☐ Call the 'deptry src' command to run deptry.\n"
+        )
 
     def test_run_deptry_fail(self, uv_init_dir: Path):
         # Arrange
@@ -219,11 +223,13 @@ class TestDeptry:
         # 4. Check messages
         out, _ = capfd.readouterr()
         assert out == (
-            "✔ Ensuring deptry is a development dependency\n"
-            "✔ Ensuring pre-commit is a development dependency\n"
-            "✔ Creating .pre-commit-config.yaml file\n"
-            "✔ Adding deptry config to .pre-commit-config.yaml\n"
-            "✔ Installing pre-commit hooks\n"
+            "✔ Adding 'deptry' as a development dependency.\n"
+            "☐ Call the 'deptry src' command to run deptry.\n"
+            "✔ Adding 'pre-commit' as a development dependency.\n"
+            "✔ Writing '.pre-commit-config.yaml'.\n"
+            "✔ Adding deptry config to '.pre-commit-config.yaml'.\n"
+            "✔ Ensuring pre-commit hooks are installed.\n"
+            "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
         )
 
     def test_pre_commit_first(
@@ -263,11 +269,13 @@ class TestDeptry:
         # 4. Check messages
         out, _ = capfd.readouterr()
         assert out == (
-            "✔ Ensuring pre-commit is a development dependency\n"
-            "✔ Creating .pre-commit-config.yaml file\n"
-            "✔ Installing pre-commit hooks\n"
-            "✔ Ensuring deptry is a development dependency\n"
-            "✔ Adding deptry config to .pre-commit-config.yaml\n"
+            "✔ Adding 'pre-commit' as a development dependency.\n"
+            "✔ Writing '.pre-commit-config.yaml'.\n"
+            "✔ Ensuring pre-commit hooks are installed.\n"
+            "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
+            "✔ Adding 'deptry' as a development dependency.\n"
+            "✔ Adding deptry config to '.pre-commit-config.yaml'.\n"
+            "☐ Call the 'deptry src' command to run deptry.\n"
         )
 
 
@@ -289,8 +297,11 @@ class TestRuff:
         # Assert
         out, _ = capfd.readouterr()
         assert out == (
-            "✔ Ensuring ruff is a development dependency\n"
-            "✔ Adding ruff config to pyproject.toml\n"
+            "✔ Adding 'ruff' as a development dependency.\n"
+            "✔ Adding ruff config to 'pyproject.toml'.\n"
+            "✔ Enabling ruff rules 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', 'PLR', \n'PT', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+            "☐ Call the 'ruff check' command to run the ruff linter.\n"
+            "☐ Call the 'ruff format' command to run the ruff formatter.\n"
         )
 
     def test_cli(self, uv_init_dir: Path):

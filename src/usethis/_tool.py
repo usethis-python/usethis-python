@@ -1,33 +1,39 @@
+import re
 import subprocess
 from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-import mergedeep
 import tomlkit
 
 from usethis import console
 from usethis._pre_commit.config import HookConfig, PreCommitRepoConfig
-from usethis._pre_commit.core import (
+from usethis._pre_commit.core import add_pre_commit_config
+from usethis._pre_commit.hooks import (
     add_hook,
-    ensure_pre_commit_config,
     get_hook_names,
     remove_hook,
 )
 from usethis._pyproject.config import PyProjectConfig
+from usethis._pyproject.core import (
+    ConfigValueAlreadySetError,
+    ConfigValueMissingError,
+    remove_config_value,
+    set_config_value,
+)
 from usethis._uv.deps import get_dev_deps
 
 
 class Tool(Protocol):
     @property
     @abstractmethod
-    def pypi_name(self) -> str:
-        """The name of the tool on PyPI."""
-
-    @property
     def name(self) -> str:
         """The name of the tool, for display purposes."""
-        return self.pypi_name
+
+    @property
+    @abstractmethod
+    def dev_deps(self) -> list[str]:
+        """The name of the tool's development dependencies."""
 
     @abstractmethod
     def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
@@ -39,17 +45,28 @@ class Tool(Protocol):
         raise NotImplementedError
 
     @abstractmethod
-    def get_pyproject_config(self) -> PyProjectConfig:
-        """Get the pyproject configuration for the tool.
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+        """Get the pyproject configurations for the tool.
 
         Raises:
             NotImplementedError: If the tool does not have a pyproject configuration.
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def get_associated_ruff_rules(self) -> list[str]:
+        """Get the ruff rule codes associated with the tool.
+
+        Raises:
+            NotImplementedError: If the tool does not have associated ruff rules.
+        """
+        raise NotImplementedError
+
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project."""
-        return self.pypi_name in get_dev_deps(Path.cwd())
+        return any(
+            _strip_extras(dep) in get_dev_deps(Path.cwd()) for dep in self.dev_deps
+        )
 
     def add_pre_commit_repo_config(self) -> None:
         """Add the tool's pre-commit configuration."""
@@ -58,7 +75,7 @@ class Tool(Protocol):
         except NotImplementedError:
             return
 
-        ensure_pre_commit_config()
+        add_pre_commit_config()
 
         # Add the config for this specific tool.
         first_time_adding = True
@@ -67,7 +84,7 @@ class Tool(Protocol):
                 # Need to add this hook, it is missing.
                 if first_time_adding:
                     console.print(
-                        f"✔ Adding {self.name} config to .pre-commit-config.yaml",
+                        f"✔ Adding {self.name} config to '.pre-commit-config.yaml'.",
                         style="green",
                     )
                     first_time_adding = False
@@ -91,118 +108,122 @@ class Tool(Protocol):
             if hook.id in get_hook_names(Path.cwd()):
                 if first_removal:
                     console.print(
-                        f"✔ Removing {self.name} config from .pre-commit-config.yaml",
+                        f"✔ Removing {self.name} config from '.pre-commit-config.yaml'.",
                         style="green",
                     )
                     first_removal = False
                 remove_hook(hook.id)
 
-    def add_pyproject_config(self) -> None:
-        """Add the tool's pyproject.toml configuration."""
+    def add_pyproject_configs(self) -> None:
+        """Add the tool's pyproject.toml configurations."""
 
         try:
-            config = self.get_pyproject_config()
+            configs = self.get_pyproject_configs()
         except NotImplementedError:
             return
 
-        pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+        first_addition = True
+        for config in configs:
+            try:
+                set_config_value(config.id_keys, config.main_contents)
+            except ConfigValueAlreadySetError:
+                pass
+            else:
+                if first_addition:
+                    console.print(
+                        f"✔ Adding {self.name} config to 'pyproject.toml'.",
+                        style="green",
+                    )
+                    first_addition = False
 
-        # Exit early if the configuration is already present.
-        try:
-            p = pyproject
-            for key in config.id_keys:
-                p = p[key]
-        except KeyError:
-            pass
-        else:
-            # The configuration is already present.
-            return
-
-        console.print(f"✔ Adding {self.name} config to pyproject.toml", style="green")
-
-        # The old configuration should be kept for all ID keys except the final/deepest
-        # one which shouldn't exist anyway since we checked as much, above. For example,
-        # If there is [tool.ruff] then we shouldn't overwrite it with [tool.deptry];
-        # they should coexist. So under the "tool" key, we need to merge the two dicts.
-        pyproject = mergedeep.merge(pyproject, config.contents)
-
-        (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(pyproject))
-
-    def remove_pyproject_config(self) -> None:
+    def remove_pyproject_configs(self) -> None:
         """Remove the tool's pyproject.toml configuration."""
         try:
-            config = self.get_pyproject_config()
+            configs = self.get_pyproject_configs()
         except NotImplementedError:
             return
 
-        pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+        first_removal = True
+        for config in configs:
+            try:
+                remove_config_value(config.id_keys)
+            except ConfigValueMissingError:
+                pass
+            else:
+                if first_removal:
+                    console.print(
+                        f"✔ Removing {self.name} config from 'pyproject.toml'.",
+                        style="green",
+                    )
+                    first_removal = False
 
-        # Exit early if the configuration is not present.
-        try:
-            p = pyproject
-            for key in config.id_keys:
-                p = p[key]
-        except KeyError:
-            # The configuration is not present.
-            return
+    def add_dev_deps(self) -> None:
+        """Add the tool's development dependencies, if not already added."""
+        existing_dev_deps = get_dev_deps(Path.cwd())
 
-        console.print(
-            f"✔ Removing {self.name} config from pyproject.toml",
-            style="green",
-        )
+        for dep in self.dev_deps:
+            if _strip_extras(dep) in existing_dev_deps:
+                # Early exit; the tool is already a dev dependency.
+                continue
 
-        # Remove the configuration.
-        p = pyproject
-        for key in config.id_keys[:-1]:
-            p = p[key]
-        del p[config.id_keys[-1]]
+            console.print(
+                f"✔ Adding '{dep}' as a development dependency.", style="green"
+            )
+            subprocess.run(["uv", "add", "--dev", "--quiet", dep], check=True)
 
-        # Cleanup: any empty sections should be removed.
-        for idx in range(len(config.id_keys) - 1):
-            p = pyproject
-            for key in config.id_keys[: idx + 1]:
-                p = p[key]
-            if not p:
-                del p
+    def remove_dev_deps(self) -> None:
+        """Remove the tool's development dependencies, if present."""
+        existing_dev_deps = get_dev_deps(Path.cwd())
 
-        (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(pyproject))
+        for dep in self.dev_deps:
+            if _strip_extras(dep) not in existing_dev_deps:
+                # Early exit; the tool is already not a dev dependency.
+                continue
 
-    def ensure_dev_dep(self) -> None:
-        """Add the tool as a development dependency, if it is not already."""
-        console.print(
-            f"✔ Ensuring {self.pypi_name} is a development dependency", style="green"
-        )
-        subprocess.run(["uv", "add", "--dev", "--quiet", self.pypi_name], check=True)
+            console.print(
+                f"✔ Removing '{dep}' as a development dependency.",
+                style="green",
+            )
+            subprocess.run(
+                ["uv", "remove", "--dev", "--quiet", _strip_extras(dep)], check=True
+            )
 
-    def remove_dev_dep(self) -> None:
-        """Remove the tool as a development dependency, if it is present."""
-        if self.pypi_name not in get_dev_deps(Path.cwd()):
-            # Early exit; the tool is already not a dev dependency.
-            return
 
-        console.print(
-            f"✔ Removing {self.pypi_name} as a development dependency",
-            style="green",
-        )
-        subprocess.run(["uv", "remove", "--dev", "--quiet", self.pypi_name], check=True)
+def _strip_extras(dep: str) -> str:
+    """Remove extras from a dependency string."""
+    return re.sub(r"\[.*\]", "", dep)
 
 
 class PreCommitTool(Tool):
     @property
-    def pypi_name(self) -> str:
+    def name(self) -> str:
         return "pre-commit"
+
+    @property
+    def dev_deps(self) -> list[str]:
+        return ["pre-commit"]
 
     def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
         raise NotImplementedError
 
-    def get_pyproject_config(self) -> PyProjectConfig:
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
         raise NotImplementedError
+
+    def get_associated_ruff_rules(self) -> list[str]:
+        raise NotImplementedError
+
+    def is_used(self) -> bool:
+        return (Path.cwd() / ".pre-commit-config.yaml").exists()
 
 
 class DeptryTool(Tool):
     @property
-    def pypi_name(self) -> str:
+    def name(self) -> str:
         return "deptry"
+
+    @property
+    def dev_deps(self) -> list[str]:
+        return ["deptry"]
 
     def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
         return PreCommitRepoConfig(
@@ -219,14 +240,37 @@ class DeptryTool(Tool):
             ],
         )
 
-    def get_pyproject_config(self) -> PyProjectConfig:
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+        raise NotImplementedError
+
+    def get_associated_ruff_rules(self) -> list[str]:
         raise NotImplementedError
 
 
 class RuffTool(Tool):
     @property
-    def pypi_name(self) -> str:
+    def name(self) -> str:
         return "ruff"
+
+    @property
+    def dev_deps(self) -> list[str]:
+        return ["ruff"]
+
+    def is_used(self) -> bool:
+        pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+
+        try:
+            pyproject["tool"]["ruff"]
+        except KeyError:
+            is_pyproject_config = False
+        else:
+            is_pyproject_config = True
+
+        is_ruff_toml_config = (Path.cwd() / "ruff.toml").exists() or (
+            Path.cwd() / ".ruff.toml"
+        ).exists()
+
+        return super().is_used() or is_pyproject_config or is_ruff_toml_config
 
     def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
         return PreCommitRepoConfig(
@@ -251,30 +295,71 @@ class RuffTool(Tool):
             ],
         )
 
-    def get_pyproject_config(self) -> PyProjectConfig:
-        return PyProjectConfig(
-            id_keys=["tool", "ruff"],
-            main_contents={
-                "src": ["src"],
-                "line-length": 88,
-                "lint": {
-                    "select": [
-                        "C4",
-                        "E4",
-                        "E7",
-                        "E9",
-                        "F",
-                        "FURB",
-                        "I",
-                        "PLE",
-                        "PLR",
-                        "RUF",
-                        "SIM",
-                        "UP",
-                    ]
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+        return [
+            PyProjectConfig(
+                id_keys=["tool", "ruff"],
+                main_contents={
+                    "src": ["src"],
+                    "line-length": 88,
+                    "lint": {"select": []},
                 },
-            },
-        )
+            )
+        ]
+
+    def get_associated_ruff_rules(self) -> list[str]:
+        return [
+            "C4",
+            "E4",
+            "E7",
+            "E9",
+            "F",
+            "FURB",
+            "I",
+            "PLE",
+            "PLR",
+            "RUF",
+            "SIM",
+            "UP",
+        ]
 
 
-ALL_TOOLS: list[Tool] = [PreCommitTool(), DeptryTool(), RuffTool()]
+class PytestTool(Tool):
+    @property
+    def name(self) -> str:
+        return "pytest"
+
+    @property
+    def dev_deps(self) -> list[str]:
+        return ["pytest", "pytest-md", "pytest-cov", "coverage[toml]"]
+
+    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
+        raise NotImplementedError
+
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+        return [
+            PyProjectConfig(
+                id_keys=["tool", "pytest"],
+                main_contents={
+                    "ini_options": {
+                        "testpaths": ["tests"],
+                        "addopts": [
+                            "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
+                        ],
+                    }
+                },
+            ),
+            PyProjectConfig(
+                id_keys=["tool", "coverage", "run"],
+                main_contents={
+                    "source": ["src"],
+                    "omit": ["*/pytest-of-*/*"],
+                },
+            ),
+        ]
+
+    def get_associated_ruff_rules(self) -> list[str]:
+        return ["PT"]
+
+
+ALL_TOOLS: list[Tool] = [PreCommitTool(), DeptryTool(), RuffTool(), PytestTool()]

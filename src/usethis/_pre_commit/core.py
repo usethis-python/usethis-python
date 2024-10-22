@@ -2,9 +2,9 @@ import subprocess
 from pathlib import Path
 
 from usethis import console
-from usethis._github import GitHubTagError, get_github_latest_tag
+from usethis._github.tags import GitHubTagError, get_github_latest_tag
 
-_YAML_CONTENTS_TEMPLATE = """
+_YAML_CONTENTS_TEMPLATE = """\
 repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: "{pkg_version}"

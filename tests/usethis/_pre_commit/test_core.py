@@ -20,7 +20,7 @@ class TestAddPreCommitConfig:
         # Assert
         contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
         assert contents == (
-            f"""
+            f"""\
 repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: "{_VALIDATEPYPROJECT_VERSION}"
@@ -48,7 +48,7 @@ repos:
         # Assert
         contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
         assert contents == (
-            f"""
+            f"""\
 repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: "{_VALIDATEPYPROJECT_VERSION}"

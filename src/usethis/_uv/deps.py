@@ -1,12 +1,11 @@
-from pathlib import Path
-
-import tomlkit
 from packaging.requirements import Requirement
 from pydantic import TypeAdapter
 
+from usethis._pyproject.io import read_pyproject_toml
 
-def get_dev_deps(proj_dir: Path) -> list[str]:
-    pyproject = tomlkit.parse((proj_dir / "pyproject.toml").read_text())
+
+def get_dev_deps() -> list[str]:
+    pyproject = read_pyproject_toml()
     try:
         dev_deps_section = pyproject["tool"]["uv"]["dev-dependencies"]
     except KeyError:

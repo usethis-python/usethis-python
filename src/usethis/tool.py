@@ -10,10 +10,10 @@ from usethis._pre_commit.core import (
     uninstall_pre_commit,
 )
 from usethis._pytest.core import add_pytest_dir, remove_pytest_dir
-from usethis._ruff.core import deselect_ruff_rules, select_ruff_rules
+from usethis._ruff.rules import deselect_ruff_rules, select_ruff_rules
 from usethis._tool import ALL_TOOLS, DeptryTool, PreCommitTool, PytestTool, RuffTool
 
-app = typer.Typer(help="Add and configure development tools, e.g. linters")
+app = typer.Typer(help="Add and configure development tools, e.g. linters.")
 
 
 @app.command(

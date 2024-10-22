@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from usethis._test import change_cwd
 from usethis._uv.deps import get_dev_deps
 
 
@@ -7,25 +8,29 @@ class TestGetDevDeps:
     def test_no_dev_section(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").touch()
 
-        assert get_dev_deps(tmp_path) == []
+        with change_cwd(tmp_path):
+            assert get_dev_deps() == []
 
     def test_empty_dev_section(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text(
             "[tool.uv]\n" "dev-dependencies = []\n"
         )
 
-        assert get_dev_deps(tmp_path) == []
+        with change_cwd(tmp_path):
+            assert get_dev_deps() == []
 
     def test_single_dev_dep(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text(
             "[tool.uv]\n" 'dev-dependencies = ["pytest"]\n'
         )
 
-        assert get_dev_deps(tmp_path) == ["pytest"]
+        with change_cwd(tmp_path):
+            assert get_dev_deps() == ["pytest"]
 
     def test_multiple_dev_deps(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text(
             "[tool.uv]\n" 'dev-dependencies = ["pytest", "flake8", "black"]\n'
         )
 
-        assert get_dev_deps(tmp_path) == ["pytest", "flake8", "black"]
+        with change_cwd(tmp_path):
+            assert get_dev_deps() == ["pytest", "flake8", "black"]

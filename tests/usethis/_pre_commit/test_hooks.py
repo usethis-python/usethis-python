@@ -73,7 +73,9 @@ class TestRemoveHook:
 class TestGetHookNames:
     def test_empty(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n")
-        assert get_hook_names(tmp_path) == []
+
+        with change_cwd(tmp_path):
+            assert get_hook_names() == []
 
     def test_single(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text(
@@ -84,7 +86,8 @@ repos:
       - id: bar
 """
         )
-        assert get_hook_names(tmp_path) == ["bar"]
+        with change_cwd(tmp_path):
+            assert get_hook_names() == ["bar"]
 
     def test_multihooks(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text(
@@ -96,7 +99,8 @@ repos:
       - id: baz
 """
         )
-        assert get_hook_names(tmp_path) == ["bar", "baz"]
+        with change_cwd(tmp_path):
+            assert get_hook_names() == ["bar", "baz"]
 
     def test_multirepo(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text(
@@ -110,7 +114,8 @@ repos:
     - id: qux
 """
         )
-        assert get_hook_names(tmp_path) == ["bar", "qux"]
+        with change_cwd(tmp_path):
+            assert get_hook_names() == ["bar", "qux"]
 
     def test_duplicated_raises(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text(
@@ -125,7 +130,10 @@ repos:
 """
         )
 
-        with pytest.raises(
-            DuplicatedHookNameError, match="Hook name 'bar' is duplicated"
+        with (
+            change_cwd(tmp_path),
+            pytest.raises(
+                DuplicatedHookNameError, match="Hook name 'bar' is duplicated"
+            ),
         ):
-            get_hook_names(tmp_path)
+            get_hook_names()

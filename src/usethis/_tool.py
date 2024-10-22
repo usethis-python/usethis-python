@@ -4,8 +4,6 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-import tomlkit
-
 from usethis import console
 from usethis._pre_commit.config import HookConfig, PreCommitRepoConfig
 from usethis._pre_commit.core import add_pre_commit_config
@@ -21,6 +19,7 @@ from usethis._pyproject.core import (
     remove_config_value,
     set_config_value,
 )
+from usethis._pyproject.io import read_pyproject_toml
 from usethis._uv.deps import get_dev_deps
 
 
@@ -64,9 +63,7 @@ class Tool(Protocol):
 
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project."""
-        return any(
-            _strip_extras(dep) in get_dev_deps(Path.cwd()) for dep in self.dev_deps
-        )
+        return any(_strip_extras(dep) in get_dev_deps() for dep in self.dev_deps)
 
     def add_pre_commit_repo_config(self) -> None:
         """Add the tool's pre-commit configuration."""
@@ -80,7 +77,7 @@ class Tool(Protocol):
         # Add the config for this specific tool.
         first_time_adding = True
         for hook in repo_config.hooks:
-            if hook.id not in get_hook_names(Path.cwd()):
+            if hook.id not in get_hook_names():
                 # Need to add this hook, it is missing.
                 if first_time_adding:
                     console.print(
@@ -105,7 +102,7 @@ class Tool(Protocol):
         # Remove the config for this specific tool.
         first_removal = True
         for hook in repo_config.hooks:
-            if hook.id in get_hook_names(Path.cwd()):
+            if hook.id in get_hook_names():
                 if first_removal:
                     console.print(
                         f"✔ Removing {self.name} config from '.pre-commit-config.yaml'.",
@@ -159,7 +156,7 @@ class Tool(Protocol):
 
     def add_dev_deps(self) -> None:
         """Add the tool's development dependencies, if not already added."""
-        existing_dev_deps = get_dev_deps(Path.cwd())
+        existing_dev_deps = get_dev_deps()
 
         for dep in self.dev_deps:
             if _strip_extras(dep) in existing_dev_deps:
@@ -173,7 +170,7 @@ class Tool(Protocol):
 
     def remove_dev_deps(self) -> None:
         """Remove the tool's development dependencies, if present."""
-        existing_dev_deps = get_dev_deps(Path.cwd())
+        existing_dev_deps = get_dev_deps()
 
         for dep in self.dev_deps:
             if _strip_extras(dep) not in existing_dev_deps:
@@ -257,7 +254,7 @@ class RuffTool(Tool):
         return ["ruff"]
 
     def is_used(self) -> bool:
-        pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+        pyproject = read_pyproject_toml()
 
         try:
             pyproject["tool"]["ruff"]

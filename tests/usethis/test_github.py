@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from usethis._github import (
+from usethis._github.tags import (
     GitHubTagError,
     NoGitHubTagsFoundError,
     get_github_latest_tag,

@@ -1,8 +1,8 @@
-from pathlib import Path
 from typing import Any, Literal, assert_never
 
 import mergedeep
-import tomlkit
+
+from usethis._pyproject.io import read_pyproject_toml, write_pyproject_toml
 
 
 class ConfigValueAlreadySetError(ValueError):
@@ -14,7 +14,7 @@ class ConfigValueMissingError(ValueError):
 
 
 def get_config_value(id_keys: list[str]) -> Any:
-    pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+    pyproject = read_pyproject_toml()
 
     p = pyproject
     for key in id_keys:
@@ -23,40 +23,44 @@ def get_config_value(id_keys: list[str]) -> Any:
     return p
 
 
-def set_config_value(id_keys: list[str], value: Any) -> None:
+def set_config_value(
+    id_keys: list[str], value: Any, *, exists_ok: bool = False
+) -> None:
     """Set a value in the pyproject.toml configuration file.
 
     Raises:
         ConfigValueAlreadySetError: If the configuration value is already set.
     """
-    pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+    pyproject = read_pyproject_toml()
 
     try:
         p = pyproject
         for key in id_keys:
-            p = p[key]
+            p, parent = p[key], p
     except KeyError:
-        pass
+        # The old configuration should be kept for all ID keys except the
+        # final/deepest one which shouldn't exist anyway since we checked as much,
+        # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
+        # with [tool.deptry]; they should coexist. So under the "tool" key, we need
+        # to merge the two dicts.
+        contents = value
+        for key in reversed(id_keys):
+            contents = {key: contents}
+        pyproject = mergedeep.merge(pyproject, contents)
     else:
-        # The configuration is already present.
-        msg = f"Configuration value [{'.'.join(id_keys)}] is already set."
-        raise ConfigValueAlreadySetError(msg)
+        if not exists_ok:
+            # The configuration is already present, which is not allowed.
+            msg = f"Configuration value [{'.'.join(id_keys)}] is already set."
+            raise ConfigValueAlreadySetError(msg)
+        else:
+            # The configuration is already present, but we're allowed to overwrite it.
+            parent[id_keys[-1]] = value
 
-    # The old configuration should be kept for all ID keys except the
-    # final/deepest one which shouldn't exist anyway since we checked as much,
-    # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
-    # with [tool.deptry]; they should coexist. So under the "tool" key, we need
-    # to merge the two dicts.
-    contents = value
-    for key in reversed(id_keys):
-        contents = {key: contents}
-    pyproject = mergedeep.merge(pyproject, contents)
-
-    (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(pyproject))
+    write_pyproject_toml(pyproject)
 
 
-def remove_config_value(id_keys: list[str]) -> None:
-    pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None:
+    pyproject = read_pyproject_toml()
 
     # Exit early if the configuration is not present.
     try:
@@ -64,10 +68,14 @@ def remove_config_value(id_keys: list[str]) -> None:
         for key in id_keys:
             p = p[key]
     except KeyError:
-        # The configuration is not present.
-        raise ConfigValueMissingError(
-            f"Configuration value [{'.'.join(id_keys)}] is missing."
-        )
+        if not missing_ok:
+            # The configuration is not present, which is not allowed.
+            raise ConfigValueMissingError(
+                f"Configuration value [{'.'.join(id_keys)}] is missing."
+            )
+        else:
+            # The configuration is not present, but that's okay; nothing left to do.
+            return
 
     # Remove the configuration.
     p = pyproject
@@ -79,11 +87,11 @@ def remove_config_value(id_keys: list[str]) -> None:
     for idx in range(len(id_keys) - 1):
         p = pyproject
         for key in id_keys[: idx + 1]:
-            p = p[key]
+            p, parent = p[key], p
         if not p:
-            del p
+            del parent[id_keys[idx]]
 
-    (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(pyproject))
+    write_pyproject_toml(pyproject)
 
 
 def append_config_list(
@@ -93,7 +101,7 @@ def append_config_list(
     order: Literal["sorted", "preserved"] = "sorted",
 ) -> list[str]:
     """Append values to a list in the pyproject.toml configuration file."""
-    pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+    pyproject = read_pyproject_toml()
 
     try:
         p = pyproject
@@ -117,11 +125,11 @@ def append_config_list(
 
         p_parent[id_keys[-1]] = new_values
 
-    (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(pyproject))
+    write_pyproject_toml(pyproject)
 
 
 def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
-    pyproject = tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+    pyproject = read_pyproject_toml()
 
     try:
         p = pyproject
@@ -137,4 +145,4 @@ def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
     new_values = [value for value in p if value not in values]
     p_parent[id_keys[-1]] = new_values
 
-    (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(pyproject))
+    write_pyproject_toml(pyproject)

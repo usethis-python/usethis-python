@@ -19,8 +19,8 @@ class TestToolPreCommit:
         with change_cwd(uv_init_dir):
             _pre_commit()
 
-        # Assert
-        (dev_dep,) = get_dev_deps(uv_init_dir)
+            # Assert
+            (dev_dep,) = get_dev_deps()
         assert dev_dep == "pre-commit"
 
     def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
@@ -53,7 +53,7 @@ class TestToolPreCommit:
         # Assert
         contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
         assert contents == (
-            f"""
+            f"""\
 repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: "{_VALIDATEPYPROJECT_VERSION}"
@@ -142,8 +142,8 @@ class TestDeptry:
         with change_cwd(uv_init_dir):
             _deptry()
 
-        # Assert
-        (dev_dep,) = get_dev_deps(uv_init_dir)
+            # Assert
+            (dev_dep,) = get_dev_deps()
         assert dev_dep == "deptry"
 
     def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
@@ -194,16 +194,19 @@ class TestDeptry:
             _deptry()
             _pre_commit()
 
-        # Assert
+            # Assert
+            hook_names = get_hook_names()
+
         # 1. File exists
         assert (uv_init_dir / ".pre-commit-config.yaml").exists()
 
         # 2. Hook is in the file
-        assert "deptry" in get_hook_names(uv_init_dir)
+        assert "deptry" in hook_names
 
         # 3. Test file contents
         assert (uv_init_dir / ".pre-commit-config.yaml").read_text() == (
-            f"""repos:
+            f"""\
+repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: {_VALIDATEPYPROJECT_VERSION}
     hooks:
@@ -240,12 +243,14 @@ class TestDeptry:
             _pre_commit()
             _deptry()
 
-        # Assert
+            # Assert
+            hook_names = get_hook_names()
+
         # 1. File exists
         assert (uv_init_dir / ".pre-commit-config.yaml").exists()
 
         # 2. Hook is in the file
-        assert "deptry" in get_hook_names(uv_init_dir)
+        assert "deptry" in hook_names
 
         # 3. Test file contents
         assert (uv_init_dir / ".pre-commit-config.yaml").read_text() == (
@@ -285,8 +290,8 @@ class TestRuff:
         with change_cwd(uv_init_dir):
             _ruff()
 
-        # Assert
-        (dev_dep,) = get_dev_deps(uv_init_dir)
+            # Assert
+            (dev_dep,) = get_dev_deps()
         assert dev_dep == "ruff"
 
     def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
@@ -315,9 +320,11 @@ class TestRuff:
             _ruff()
             _pre_commit()
 
-        # Assert
-        assert "ruff-format" in get_hook_names(uv_init_dir)
-        assert "ruff-check" in get_hook_names(uv_init_dir)
+            # Assert
+            hook_names = get_hook_names()
+
+        assert "ruff-format" in hook_names
+        assert "ruff-check" in hook_names
 
 
 class TestAllHooksList:

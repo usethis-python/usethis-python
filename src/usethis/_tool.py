@@ -172,7 +172,10 @@ class PreCommitTool(Tool):
         raise NotImplementedError
 
     def is_used(self) -> bool:
-        return (Path.cwd() / ".pre-commit-config.yaml").exists()
+        return (
+            any(is_dep_used(dep) for dep in self.dev_deps)
+            or (Path.cwd() / ".pre-commit-config.yaml").exists()
+        )
 
 
 class DeptryTool(Tool):
@@ -229,7 +232,11 @@ class RuffTool(Tool):
             Path.cwd() / ".ruff.toml"
         ).exists()
 
-        return super().is_used() or is_pyproject_config or is_ruff_toml_config
+        return (
+            any(is_dep_used(dep) for dep in self.dev_deps)
+            or is_pyproject_config
+            or is_ruff_toml_config
+        )
 
     def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
         return PreCommitRepoConfig(

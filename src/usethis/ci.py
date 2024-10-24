@@ -2,6 +2,7 @@ from pathlib import Path
 
 import typer
 
+from usethis import console, offline_opt
 from usethis._bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
@@ -18,11 +19,14 @@ def bitbucket(
     remove: bool = typer.Option(
         False, "--remove", help="Remove Bitbucket pipelines CI instead of adding it."
     ),
+    offline: bool = offline_opt,
 ) -> None:
-    _bitbucket(remove=remove)
+    _bitbucket(remove=remove, offline=offline)
 
 
-def _bitbucket(*, remove: bool = False) -> None:
+def _bitbucket(*, remove: bool = False, offline: bool = False) -> None:
+    _ = offline  # Already offline
+
     config_yaml_path = Path.cwd() / "bitbucket-pipelines.yml"
 
     if config_yaml_path.exists():
@@ -70,4 +74,8 @@ def _bitbucket(*, remove: bool = False) -> None:
             )
         )
 
+        console.print("☐ Populate the placeholder step in 'bitbucket-pipelines.yml'.")
+
     add_steps(steps, is_parallel=True)
+
+    console.print("☐ Run your first pipeline on the Bitbucket website.")

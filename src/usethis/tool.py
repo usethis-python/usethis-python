@@ -2,7 +2,7 @@ import contextlib
 
 import typer
 
-from usethis import console
+from usethis import console, offline_opt
 from usethis._pre_commit.core import (
     add_pre_commit_config,
     install_pre_commit,
@@ -12,6 +12,7 @@ from usethis._pre_commit.core import (
 from usethis._pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._ruff.rules import deselect_ruff_rules, select_ruff_rules
 from usethis._tool import ALL_TOOLS, DeptryTool, PreCommitTool, PytestTool, RuffTool
+from usethis._uv.deps import add_dev_deps, remove_dev_deps
 
 app = typer.Typer(help="Add and configure development tools, e.g. linters.")
 
@@ -23,29 +24,32 @@ def pre_commit(
     remove: bool = typer.Option(
         False, "--remove", help="Remove pre-commit instead of adding it."
     ),
+    offline: bool = offline_opt,
 ) -> None:
-    _pre_commit(remove=remove)
+    _pre_commit(remove=remove, offline=offline)
 
 
-def _pre_commit(*, remove: bool = False) -> None:
+def _pre_commit(*, remove: bool = False, offline: bool = False) -> None:
     tool = PreCommitTool()
 
     if not remove:
-        tool.add_dev_deps()
+        add_dev_deps(tool.dev_deps, offline=offline)
         add_pre_commit_config()
-        for tool in ALL_TOOLS:
-            if tool.is_used():
-                tool.add_pre_commit_repo_config()
+        for _tool in ALL_TOOLS:
+            if _tool.is_used():
+                _tool.add_pre_commit_repo_config()
         install_pre_commit()
 
         console.print(
             "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.",
         )
     else:
-        tool.add_dev_deps()  # Need pre-commit to be installed so we can uninstall hooks
+        add_dev_deps(  # Need pre-commit to be installed so we can uninstall hooks
+            tool.dev_deps, offline=offline
+        )
         uninstall_pre_commit()
         remove_pre_commit_config()
-        tool.remove_dev_deps()
+        remove_dev_deps(tool.dev_deps, offline=offline)
 
 
 @app.command(
@@ -55,15 +59,16 @@ def deptry(
     remove: bool = typer.Option(
         False, "--remove", help="Remove deptry instead of adding it."
     ),
+    offline: bool = offline_opt,
 ) -> None:
-    _deptry(remove=remove)
+    _deptry(remove=remove, offline=offline)
 
 
-def _deptry(*, remove: bool = False) -> None:
+def _deptry(*, remove: bool = False, offline: bool = False) -> None:
     tool = DeptryTool()
 
     if not remove:
-        tool.add_dev_deps()
+        add_dev_deps(tool.dev_deps, offline=offline)
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_config()
 
@@ -73,7 +78,7 @@ def _deptry(*, remove: bool = False) -> None:
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_config()
-        tool.remove_dev_deps()
+        remove_dev_deps(tool.dev_deps, offline=offline)
 
 
 @app.command(help="Use ruff: an extremely fast Python linter and code formatter.")
@@ -81,11 +86,12 @@ def ruff(
     remove: bool = typer.Option(
         False, "--remove", help="Remove ruff instead of adding it."
     ),
+    offline: bool = offline_opt,
 ) -> None:
-    _ruff(remove=remove)
+    _ruff(remove=remove, offline=offline)
 
 
-def _ruff(*, remove: bool = False) -> None:
+def _ruff(*, remove: bool = False, offline: bool = False) -> None:
     tool = RuffTool()
 
     rules = []
@@ -94,7 +100,7 @@ def _ruff(*, remove: bool = False) -> None:
             rules += _tool.get_associated_ruff_rules()
 
     if not remove:
-        tool.add_dev_deps()
+        add_dev_deps(tool.dev_deps, offline=offline)
         tool.add_pyproject_configs()
         select_ruff_rules(rules)
         if PreCommitTool().is_used():
@@ -108,7 +114,7 @@ def _ruff(*, remove: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_config()
         tool.remove_pyproject_configs()  # N.B. this will remove the selected ruff rules
-        tool.remove_dev_deps()
+        remove_dev_deps(tool.dev_deps, offline=offline)
 
 
 @app.command(help="Use the pytest testing framework.")
@@ -116,15 +122,16 @@ def pytest(
     remove: bool = typer.Option(
         False, "--remove", help="Remove pytest instead of adding it."
     ),
+    offline: bool = offline_opt,
 ) -> None:
-    _pytest(remove=remove)
+    _pytest(remove=remove, offline=offline)
 
 
-def _pytest(*, remove: bool = False) -> None:
+def _pytest(*, remove: bool = False, offline: bool = False) -> None:
     tool = PytestTool()
 
     if not remove:
-        tool.add_dev_deps()
+        add_dev_deps(tool.dev_deps, offline=offline)
         tool.add_pyproject_configs()
         if RuffTool().is_used():
             select_ruff_rules(tool.get_associated_ruff_rules())
@@ -141,5 +148,5 @@ def _pytest(*, remove: bool = False) -> None:
         if RuffTool().is_used():
             deselect_ruff_rules(tool.get_associated_ruff_rules())
         tool.remove_pyproject_configs()
-        tool.remove_dev_deps()
+        remove_dev_deps(tool.dev_deps, offline=offline)
         remove_pytest_dir()  # Last, since this is a manual step

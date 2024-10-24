@@ -1,5 +1,3 @@
-import re
-import subprocess
 from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
@@ -20,7 +18,7 @@ from usethis._pyproject.core import (
     set_config_value,
 )
 from usethis._pyproject.io import read_pyproject_toml
-from usethis._uv.deps import get_dev_deps
+from usethis._uv.deps import is_dep_used
 
 
 class Tool(Protocol):
@@ -63,7 +61,7 @@ class Tool(Protocol):
 
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project."""
-        return any(_strip_extras(dep) in get_dev_deps() for dep in self.dev_deps)
+        return any(is_dep_used(dep) for dep in self.dev_deps)
 
     def add_pre_commit_repo_config(self) -> None:
         """Add the tool's pre-commit configuration."""
@@ -153,42 +151,6 @@ class Tool(Protocol):
                         style="green",
                     )
                     first_removal = False
-
-    def add_dev_deps(self) -> None:
-        """Add the tool's development dependencies, if not already added."""
-        existing_dev_deps = get_dev_deps()
-
-        for dep in self.dev_deps:
-            if _strip_extras(dep) in existing_dev_deps:
-                # Early exit; the tool is already a dev dependency.
-                continue
-
-            console.print(
-                f"✔ Adding '{dep}' as a development dependency.", style="green"
-            )
-            subprocess.run(["uv", "add", "--dev", "--quiet", dep], check=True)
-
-    def remove_dev_deps(self) -> None:
-        """Remove the tool's development dependencies, if present."""
-        existing_dev_deps = get_dev_deps()
-
-        for dep in self.dev_deps:
-            if _strip_extras(dep) not in existing_dev_deps:
-                # Early exit; the tool is already not a dev dependency.
-                continue
-
-            console.print(
-                f"✔ Removing '{dep}' as a development dependency.",
-                style="green",
-            )
-            subprocess.run(
-                ["uv", "remove", "--dev", "--quiet", _strip_extras(dep)], check=True
-            )
-
-
-def _strip_extras(dep: str) -> str:
-    """Remove extras from a dependency string."""
-    return re.sub(r"\[.*\]", "", dep)
 
 
 class PreCommitTool(Tool):

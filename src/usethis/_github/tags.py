@@ -31,7 +31,7 @@ def get_github_latest_tag(owner: str, repo: str) -> str:
     try:
         response = requests.get(api_url, timeout=1)
         response.raise_for_status()  # Raise an error for HTTP issues
-    except requests.exceptions.HTTPError as err:
+    except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError) as err:
         raise GitHubTagError(f"Failed to fetch tags from GitHub API: {err}")
 
     tags = response.json()

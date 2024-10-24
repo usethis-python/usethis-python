@@ -8,7 +8,6 @@ from usethis._pyproject.core import (
 
 def select_ruff_rules(rules: list[str]) -> None:
     """Add ruff rules to the project."""
-
     rules = sorted(set(rules) - set(get_ruff_rules()))
 
     if not rules:

@@ -2,23 +2,23 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-from usethis import console
-from usethis._pre_commit.config import HookConfig, PreCommitRepoConfig
-from usethis._pre_commit.core import add_pre_commit_config
-from usethis._pre_commit.hooks import (
+from usethis._console import console
+from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
+from usethis._integrations.pre_commit.core import add_pre_commit_config
+from usethis._integrations.pre_commit.hooks import (
     add_hook,
     get_hook_names,
     remove_hook,
 )
-from usethis._pyproject.config import PyProjectConfig
-from usethis._pyproject.core import (
+from usethis._integrations.pyproject.config import PyProjectConfig
+from usethis._integrations.pyproject.core import (
     ConfigValueAlreadySetError,
     ConfigValueMissingError,
     remove_config_value,
     set_config_value,
 )
-from usethis._pyproject.io import read_pyproject_toml
-from usethis._uv.deps import is_dep_used
+from usethis._integrations.pyproject.io import read_pyproject_toml
+from usethis._integrations.uv.deps import is_dep_used
 
 
 class Tool(Protocol):

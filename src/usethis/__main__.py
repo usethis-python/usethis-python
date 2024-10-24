@@ -1,8 +1,8 @@
 import typer
 
-import usethis.browse
-import usethis.ci
-import usethis.tool
+import usethis._interface.browse
+import usethis._interface.ci
+import usethis._interface.tool
 
 app = typer.Typer(
     help=(
@@ -10,7 +10,9 @@ app = typer.Typer(
         "performed manually."
     )
 )
-app.add_typer(usethis.tool.app, name="tool")
-app.add_typer(usethis.browse.app, name="browse")
-app.add_typer(usethis.ci.app, name="ci")
+app.add_typer(usethis._interface.tool.app, name="tool")
+app.add_typer(usethis._interface.browse.app, name="browse")
+app.add_typer(usethis._interface.ci.app, name="ci")
 app(prog_name="usethis")
+
+__all__ = ["app"]

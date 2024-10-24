@@ -33,6 +33,7 @@ dev-dependencies = [
     "pytest-cov>=5.0.0",
     "gitpython>=3.1.43",
     "pre-commit>=4.0.1",
+    "import-linter>=2.1",
 ]
 
 [tool.ruff]
@@ -52,3 +53,19 @@ addopts = [
 [tool.coverage.run]
 source = ["src"]
 omit = ["*/pytest-of-*/*"]
+
+[tool.importlinter]
+root_packages = ["usethis"]
+
+[[tool.importlinter.contracts]]
+name = "Modular Design"
+type = "layers"
+layers = [
+    "__main__",
+    "_interface",
+    "_tool",
+    "_integrations",
+    "_utils"
+]
+containers=["usethis"]
+exhaustive=true

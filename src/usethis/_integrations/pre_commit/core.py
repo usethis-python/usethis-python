@@ -13,7 +13,7 @@ repos:
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
 """
 # Manually bump this version when necessary
-_VALIDATEPYPROJECT_VERSION = "v0.21"
+_VALIDATEPYPROJECT_VERSION = "v0.22"
 
 
 def add_pre_commit_config() -> None:

@@ -8,52 +8,54 @@ from usethis._pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,
 )
-from usethis._test import change_cwd
-from usethis._tool import ALL_TOOLS, get_dev_deps
+from usethis._test import change_cwd, is_offline
+from usethis._tool import ALL_TOOLS
+from usethis._uv.deps import add_dev_deps, get_dev_deps
 from usethis.tool import _deptry, _pre_commit, _ruff
 
 
 class TestToolPreCommit:
-    def test_dependency_added(self, uv_init_dir: Path):
-        # Act
-        with change_cwd(uv_init_dir):
-            _pre_commit()
+    class TestAdd:
+        def test_dependency_added(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir):
+                _pre_commit(offline=is_offline())
+
+                # Assert
+                (dev_dep,) = get_dev_deps()
+            assert dev_dep == "pre-commit"
+
+        def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir):
+                _pre_commit(offline=is_offline())
 
             # Assert
-            (dev_dep,) = get_dev_deps()
-        assert dev_dep == "pre-commit"
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding 'pre-commit' as a development dependency.\n"
+                "✔ Writing '.pre-commit-config.yaml'.\n"
+                "✔ Ensuring pre-commit hooks are installed.\n"
+                "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
+            )
 
-    def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        # Act
-        with change_cwd(uv_init_dir):
-            _pre_commit()
+        def test_config_file_exists(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir):
+                _pre_commit(offline=is_offline())
 
-        # Assert
-        out, _ = capfd.readouterr()
-        assert out == (
-            "✔ Adding 'pre-commit' as a development dependency.\n"
-            "✔ Writing '.pre-commit-config.yaml'.\n"
-            "✔ Ensuring pre-commit hooks are installed.\n"
-            "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
-        )
+            # Assert
+            assert (uv_init_dir / ".pre-commit-config.yaml").exists()
 
-    def test_config_file_exists(self, uv_init_dir: Path):
-        # Act
-        with change_cwd(uv_init_dir):
-            _pre_commit()
+        def test_config_file_contents(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir):
+                _pre_commit(offline=is_offline())
 
-        # Assert
-        assert (uv_init_dir / ".pre-commit-config.yaml").exists()
-
-    def test_config_file_contents(self, uv_init_dir: Path):
-        # Act
-        with change_cwd(uv_init_dir):
-            _pre_commit()
-
-        # Assert
-        contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
-        assert contents == (
-            f"""\
+            # Assert
+            contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
+            assert contents == (
+                f"""\
 repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: "{_VALIDATEPYPROJECT_VERSION}"
@@ -61,79 +63,118 @@ repos:
       - id: validate-pyproject
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
 """
-        )
-
-    def test_already_exists(self, uv_init_repo_dir: Path):
-        # Arrange
-        (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
-            """
-repos:
-  - repo: foo
-    hooks:
-      - id: bar
-"""
-        )
-
-        # Act
-        with change_cwd(uv_init_repo_dir):
-            _pre_commit()
-
-        # Assert
-        contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
-        assert contents == (
-            """
-repos:
-  - repo: foo
-    hooks:
-      - id: bar
-"""
-        )
-
-    def test_bad_commit(self, uv_init_repo_dir: Path):
-        # Act
-        with change_cwd(uv_init_repo_dir):
-            _pre_commit()
-        subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
-        subprocess.run(
-            ["git", "commit", "-m", "Good commit"], cwd=uv_init_repo_dir, check=True
-        )
-
-        # Assert
-        with pytest.raises(subprocess.CalledProcessError):
-            (uv_init_repo_dir / "pyproject.toml").write_text("[")
-            subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
-            subprocess.run(
-                ["git", "commit", "-m", "Bad commit"], cwd=uv_init_repo_dir, check=True
             )
 
-    def test_cli_pass(self, uv_init_repo_dir: Path):
-        subprocess.run(
-            ["usethis", "tool", "pre-commit"], cwd=uv_init_repo_dir, check=True
-        )
+        def test_already_exists(self, uv_init_repo_dir: Path):
+            # Arrange
+            (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
+                """\
+repos:
+- repo: foo
+    hooks:
+    - id: bar
+"""
+            )
 
-        subprocess.run(
-            ["uv", "run", "pre-commit", "run", "--all-files"],
-            cwd=uv_init_repo_dir,
-            check=True,
-        )
+            # Act
+            with change_cwd(uv_init_repo_dir):
+                _pre_commit(offline=is_offline())
 
-    def test_cli_fail(self, uv_init_repo_dir: Path):
-        subprocess.run(
-            ["usethis", "tool", "pre-commit"], cwd=uv_init_repo_dir, check=True
-        )
+            # Assert
+            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert contents == (
+                """\
+repos:
+- repo: foo
+    hooks:
+    - id: bar
+"""
+            )
 
-        # Pass invalid TOML to fail the pre-commit for validate-pyproject
-        (uv_init_repo_dir / "pyproject.toml").write_text("[")
-        try:
+        def test_bad_commit(self, uv_init_repo_dir: Path):
+            # Act
+            with change_cwd(uv_init_repo_dir):
+                _pre_commit(offline=is_offline())
+            subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
+            subprocess.run(
+                ["git", "commit", "-m", "Good commit"], cwd=uv_init_repo_dir, check=True
+            )
+
+            # Assert
+            with pytest.raises(subprocess.CalledProcessError):
+                (uv_init_repo_dir / "pyproject.toml").write_text("[")
+                subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
+                subprocess.run(
+                    ["git", "commit", "-m", "Bad commit"],
+                    cwd=uv_init_repo_dir,
+                    check=True,
+                )
+
+        def test_cli_pass(self, uv_init_repo_dir: Path):
+            if not is_offline():
+                subprocess.run(
+                    ["usethis", "tool", "pre-commit"], cwd=uv_init_repo_dir, check=True
+                )
+            else:
+                subprocess.run(
+                    ["usethis", "tool", "pre-commit", "--offline"],
+                    cwd=uv_init_repo_dir,
+                    check=True,
+                )
+
             subprocess.run(
                 ["uv", "run", "pre-commit", "run", "--all-files"],
                 cwd=uv_init_repo_dir,
                 check=True,
             )
-        except subprocess.CalledProcessError:
-            pass
-        else:
-            pytest.fail("Expected subprocess.CalledProcessError")
+
+        def test_cli_fail(self, uv_init_repo_dir: Path):
+            if not is_offline():
+                subprocess.run(
+                    ["usethis", "tool", "pre-commit"], cwd=uv_init_repo_dir, check=True
+                )
+            else:
+                subprocess.run(
+                    ["usethis", "tool", "pre-commit", "--offline"],
+                    cwd=uv_init_repo_dir,
+                    check=True,
+                )
+
+            # Pass invalid TOML to fail the pre-commit for validate-pyproject
+            (uv_init_repo_dir / "pyproject.toml").write_text("[")
+            try:
+                subprocess.run(
+                    ["uv", "run", "pre-commit", "run", "--all-files"],
+                    cwd=uv_init_repo_dir,
+                    check=True,
+                )
+            except subprocess.CalledProcessError:
+                pass
+            else:
+                pytest.fail("Expected subprocess.CalledProcessError")
+
+    class TestRemove:
+        def test_config_file(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / ".pre-commit-config.yaml").touch()
+
+            # Act
+            with change_cwd(uv_init_dir):
+                _pre_commit(remove=True, offline=is_offline())
+
+            # Assert
+            assert not (uv_init_dir / ".pre-commit-config.yaml").exists()
+
+        def test_dep(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir):
+                # Arrange
+                add_dev_deps(["pre-commit"], offline=is_offline())
+
+                # Act
+                _pre_commit(remove=True, offline=is_offline())
+
+                # Assert
+                assert not get_dev_deps()
 
 
 class TestDeptry:
@@ -191,8 +232,8 @@ class TestDeptry:
     ):
         # Act
         with change_cwd(uv_init_dir):
-            _deptry()
-            _pre_commit()
+            _deptry(offline=is_offline())
+            _pre_commit(offline=is_offline())
 
             # Assert
             hook_names = get_hook_names()
@@ -240,8 +281,8 @@ repos:
     ):
         # Act
         with change_cwd(uv_init_dir):
-            _pre_commit()
-            _deptry()
+            _pre_commit(offline=is_offline())
+            _deptry(offline=is_offline())
 
             # Assert
             hook_names = get_hook_names()
@@ -285,46 +326,71 @@ repos:
 
 
 class TestRuff:
-    def test_dependency_added(self, uv_init_dir: Path):
-        # Act
-        with change_cwd(uv_init_dir):
-            _ruff()
+    class TestAdd:
+        def test_dependency_added(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir):
+                _ruff(offline=is_offline())
+
+                # Assert
+                (dev_dep,) = get_dev_deps()
+            assert dev_dep == "ruff"
+
+        def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir):
+                _ruff(offline=is_offline())
 
             # Assert
-            (dev_dep,) = get_dev_deps()
-        assert dev_dep == "ruff"
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding 'ruff' as a development dependency.\n"
+                "✔ Adding ruff config to 'pyproject.toml'.\n"
+                "✔ Enabling ruff rules 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', 'PLR', \n'PT', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "☐ Call the 'ruff check' command to run the ruff linter.\n"
+                "☐ Call the 'ruff format' command to run the ruff formatter.\n"
+            )
 
-    def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        # Act
-        with change_cwd(uv_init_dir):
-            _ruff()
+        def test_cli(self, uv_init_dir: Path):
+            if not is_offline():
+                subprocess.run(["usethis", "tool", "ruff"], cwd=uv_init_dir, check=True)
+            else:
+                subprocess.run(
+                    ["usethis", "tool", "ruff", "--offline"],
+                    cwd=uv_init_dir,
+                    check=True,
+                )
 
-        # Assert
-        out, _ = capfd.readouterr()
-        assert out == (
-            "✔ Adding 'ruff' as a development dependency.\n"
-            "✔ Adding ruff config to 'pyproject.toml'.\n"
-            "✔ Enabling ruff rules 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', 'PLR', \n'PT', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
-            "☐ Call the 'ruff check' command to run the ruff linter.\n"
-            "☐ Call the 'ruff format' command to run the ruff formatter.\n"
-        )
+        def test_pre_commit_first(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir):
+                _ruff(offline=is_offline())
+                _pre_commit(offline=is_offline())
 
-    def test_cli(self, uv_init_dir: Path):
-        subprocess.run(["usethis", "tool", "ruff"], cwd=uv_init_dir, check=True)
+                # Assert
+                hook_names = get_hook_names()
 
-    def test_pre_commit_first(
-        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-    ):
-        # Act
-        with change_cwd(uv_init_dir):
-            _ruff()
-            _pre_commit()
+            assert "ruff-format" in hook_names
+            assert "ruff-check" in hook_names
+
+    class TestRemove:
+        def test_config_file(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["A", "B", "C"]
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir):
+                _ruff(remove=True, offline=is_offline())
 
             # Assert
-            hook_names = get_hook_names()
-
-        assert "ruff-format" in hook_names
-        assert "ruff-check" in hook_names
+            assert (uv_init_dir / "pyproject.toml").read_text() == ""
 
 
 class TestAllHooksList:

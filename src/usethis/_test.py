@@ -1,4 +1,5 @@
 import os
+import socket
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
@@ -13,3 +14,16 @@ def change_cwd(new_dir: Path) -> Generator[None, None, None]:
         yield
     finally:
         os.chdir(old_dir)
+
+
+def is_offline() -> bool:
+    # Try to detect if we are offline with a simple connection
+    # to a well-known host.
+
+    try:
+        # Connect to Google's DNS server
+        socket.create_connection(("8.8.8.8", 53), timeout=3)
+    except OSError:
+        return False
+    else:
+        return True

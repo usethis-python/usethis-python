@@ -1,4 +1,4 @@
-from typing import Any, Literal, assert_never
+from typing import Any
 
 import mergedeep
 
@@ -97,8 +97,6 @@ def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None
 def append_config_list(
     id_keys: list[str],
     values: list[Any],
-    *,
-    order: Literal["sorted", "preserved"] = "sorted",
 ) -> list[str]:
     """Append values to a list in the pyproject.toml configuration file."""
     pyproject = read_pyproject_toml()
@@ -115,15 +113,7 @@ def append_config_list(
             contents = {key: contents}
         pyproject = mergedeep.merge(pyproject, contents)
     else:
-        # Append to the existing configuration.
-        if order == "sorted":
-            new_values = sorted(p + values)
-        elif order == "preserved":
-            new_values = p + values
-        else:
-            assert_never(order)
-
-        p_parent[id_keys[-1]] = new_values
+        p_parent[id_keys[-1]] = p + values
 
     write_pyproject_toml(pyproject)
 

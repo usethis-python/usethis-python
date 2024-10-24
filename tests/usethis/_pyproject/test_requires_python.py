@@ -17,9 +17,14 @@ from usethis._test import change_cwd
 
 class TestMaxMajorPy3:
     def test_max_major_py3(self):
-        endoflife_info: list[dict[str, Any] | dict[Literal["cycle"], str]] = (
-            requests.get(r"https://endoflife.date/api/python.json", timeout=5).json()
-        )
+        try:
+            endoflife_info: list[dict[str, Any] | dict[Literal["cycle"], str]] = (
+                requests.get(
+                    r"https://endoflife.date/api/python.json", timeout=5
+                ).json()
+            )
+        except requests.exceptions.ConnectionError:
+            pytest.skip(reason="Failed to connect to https://endoflife.date/")
 
         assert (
             max(int(x["cycle"].split(".")[1]) for x in endoflife_info) == MAX_MAJOR_PY3

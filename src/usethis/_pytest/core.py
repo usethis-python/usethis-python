@@ -1,9 +1,10 @@
+import shutil
 from pathlib import Path
 
 from usethis import console
 
 
-def add_pytest_dir():
+def add_pytest_dir() -> None:
     tests_dir = Path.cwd() / "tests"
 
     if not tests_dir.exists():
@@ -20,14 +21,19 @@ def add_pytest_dir():
     )
 
 
-def remove_pytest_dir():
+def remove_pytest_dir() -> None:
     tests_dir = Path.cwd() / "tests"
 
     if not tests_dir.exists():
         # Early exit; tests directory does not exist
         return
 
-    console.print(
-        "☐ Reconfigure the /tests directory to run without pytest", style="blue"
-    )
-    # Note we don't actually remove the directory, just explain what needs to be done.
+    if set(tests_dir.iterdir()) <= {tests_dir / "conftest.py"}:
+        # The only file in the directory is conftest.py
+        console.print("✔ Removing '/tests'.", style="green")
+        shutil.rmtree(tests_dir)
+    else:
+        console.print(
+            "☐ Reconfigure the /tests directory to run without pytest", style="blue"
+        )
+        # Note we don't actually remove the directory, just explain what needs to be done.

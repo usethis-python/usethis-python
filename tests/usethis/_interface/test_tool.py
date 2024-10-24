@@ -405,6 +405,38 @@ select = ["A", "B", "C"]
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == ""
 
+        def test_blank_slate(self, uv_init_dir: Path):
+            # Arrange
+            contents = (uv_init_dir / "pyproject.toml").read_text()
+
+            # Act
+            with change_cwd(uv_init_dir):
+                _ruff(remove=True, offline=is_offline())
+
+            # Assert
+            assert (uv_init_dir / "pyproject.toml").read_text() == contents
+
+        def test_roundtrip(self, uv_init_dir: Path):
+            # Arrange
+            contents = (uv_init_dir / "pyproject.toml").read_text()
+
+            # Act
+            with change_cwd(uv_init_dir):
+                _ruff(offline=is_offline())
+                _ruff(remove=True, offline=is_offline())
+
+            # Assert
+            assert (
+                (uv_init_dir / "pyproject.toml").read_text()
+                == contents
+                + """\
+
+[tool.uv]
+dev-dependencies = []
+
+"""
+            )
+
 
 class TestPytest:
     def test_dep(self, uv_init_dir: Path):

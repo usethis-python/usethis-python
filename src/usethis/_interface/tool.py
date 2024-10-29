@@ -11,7 +11,7 @@ from usethis._integrations.pre_commit.core import (
 )
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.ruff.rules import deselect_ruff_rules, select_ruff_rules
-from usethis._integrations.uv.deps import add_dev_deps, remove_dev_deps
+from usethis._integrations.uv.deps import add_deps_to_group, remove_deps_from_group
 from usethis._interface import offline_opt
 from usethis._tool import ALL_TOOLS, DeptryTool, PreCommitTool, PytestTool, RuffTool
 
@@ -34,7 +34,7 @@ def _pre_commit(*, remove: bool = False, offline: bool = False) -> None:
     tool = PreCommitTool()
 
     if not remove:
-        add_dev_deps(tool.dev_deps, offline=offline)
+        add_deps_to_group(tool.dev_deps, "dev", offline=offline)
         add_pre_commit_config()
         for _tool in ALL_TOOLS:
             if _tool.is_used():
@@ -45,12 +45,12 @@ def _pre_commit(*, remove: bool = False, offline: bool = False) -> None:
             "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.",
         )
     else:
-        add_dev_deps(  # Need pre-commit to be installed so we can uninstall hooks
-            tool.dev_deps, offline=offline
+        add_deps_to_group(  # Need pre-commit to be installed so we can uninstall hooks
+            tool.dev_deps, "dev", offline=offline
         )
         uninstall_pre_commit()
         remove_pre_commit_config()
-        remove_dev_deps(tool.dev_deps, offline=offline)
+        remove_deps_from_group(tool.dev_deps, "dev", offline=offline)
 
 
 @app.command(
@@ -69,7 +69,7 @@ def _deptry(*, remove: bool = False, offline: bool = False) -> None:
     tool = DeptryTool()
 
     if not remove:
-        add_dev_deps(tool.dev_deps, offline=offline)
+        add_deps_to_group(tool.dev_deps, "dev", offline=offline)
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_config()
 
@@ -79,7 +79,7 @@ def _deptry(*, remove: bool = False, offline: bool = False) -> None:
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_config()
-        remove_dev_deps(tool.dev_deps, offline=offline)
+        remove_deps_from_group(tool.dev_deps, "dev", offline=offline)
 
 
 @app.command(help="Use ruff: an extremely fast Python linter and code formatter.")
@@ -101,7 +101,7 @@ def _ruff(*, remove: bool = False, offline: bool = False) -> None:
             rules += _tool.get_associated_ruff_rules()
 
     if not remove:
-        add_dev_deps(tool.dev_deps, offline=offline)
+        add_deps_to_group(tool.dev_deps, "dev", offline=offline)
         tool.add_pyproject_configs()
         select_ruff_rules(rules)
         if PreCommitTool().is_used():
@@ -115,7 +115,7 @@ def _ruff(*, remove: bool = False, offline: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_config()
         tool.remove_pyproject_configs()  # N.B. this will remove the selected ruff rules
-        remove_dev_deps(tool.dev_deps, offline=offline)
+        remove_deps_from_group(tool.dev_deps, "dev", offline=offline)
 
 
 @app.command(help="Use the pytest testing framework.")
@@ -132,7 +132,7 @@ def _pytest(*, remove: bool = False, offline: bool = False) -> None:
     tool = PytestTool()
 
     if not remove:
-        add_dev_deps(tool.dev_deps, offline=offline)
+        add_deps_to_group(tool.dev_deps, "test", offline=offline)
         tool.add_pyproject_configs()
         if RuffTool().is_used():
             select_ruff_rules(tool.get_associated_ruff_rules())
@@ -149,5 +149,5 @@ def _pytest(*, remove: bool = False, offline: bool = False) -> None:
         if RuffTool().is_used():
             deselect_ruff_rules(tool.get_associated_ruff_rules())
         tool.remove_pyproject_configs()
-        remove_dev_deps(tool.dev_deps, offline=offline)
+        remove_deps_from_group(tool.dev_deps, "test", offline=offline)
         remove_pytest_dir()  # Last, since this is a manual step

@@ -8,7 +8,10 @@ from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,
 )
-from usethis._integrations.uv.deps import add_dev_deps, get_dev_deps
+from usethis._integrations.uv.deps import (
+    add_deps_to_group,
+    get_deps_from_group,
+)
 from usethis._interface.tool import _deptry, _pre_commit, _pytest, _ruff
 from usethis._tool import ALL_TOOLS
 from usethis._utils._test import change_cwd, is_offline
@@ -35,7 +38,7 @@ class TestPreCommit:
                 _pre_commit(offline=is_offline())
 
                 # Assert
-                (dev_dep,) = get_dev_deps()
+                (dev_dep,) = get_deps_from_group("dev")
             assert dev_dep == "pre-commit"
 
         def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
@@ -46,7 +49,7 @@ class TestPreCommit:
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding 'pre-commit' as a development dependency.\n"
+                "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
                 "✔ Ensuring pre-commit hooks are installed.\n"
                 "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
@@ -181,13 +184,13 @@ repos:
         def test_dep(self, uv_init_dir: Path):
             with change_cwd(uv_init_dir):
                 # Arrange
-                add_dev_deps(["pre-commit"], offline=is_offline())
+                add_deps_to_group(["pre-commit"], "dev", offline=is_offline())
 
                 # Act
                 _pre_commit(remove=True, offline=is_offline())
 
                 # Assert
-                assert not get_dev_deps()
+                assert not get_deps_from_group("dev")
 
 
 class TestDeptry:
@@ -197,7 +200,7 @@ class TestDeptry:
             _deptry()
 
             # Assert
-            (dev_dep,) = get_dev_deps()
+            (dev_dep,) = get_deps_from_group("dev")
         assert dev_dep == "deptry"
 
     def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
@@ -208,7 +211,7 @@ class TestDeptry:
         # Assert
         out, _ = capfd.readouterr()
         assert out == (
-            "✔ Adding 'deptry' as a development dependency.\n"
+            "✔ Adding 'deptry' to the 'dev' dependency group.\n"
             "☐ Call the 'deptry src' command to run deptry.\n"
         )
 
@@ -280,9 +283,9 @@ repos:
         # 4. Check messages
         out, _ = capfd.readouterr()
         assert out == (
-            "✔ Adding 'deptry' as a development dependency.\n"
+            "✔ Adding 'deptry' to the 'dev' dependency group.\n"
             "☐ Call the 'deptry src' command to run deptry.\n"
-            "✔ Adding 'pre-commit' as a development dependency.\n"
+            "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
             "✔ Writing '.pre-commit-config.yaml'.\n"
             "✔ Adding deptry config to '.pre-commit-config.yaml'.\n"
             "✔ Ensuring pre-commit hooks are installed.\n"
@@ -328,11 +331,11 @@ repos:
         # 4. Check messages
         out, _ = capfd.readouterr()
         assert out == (
-            "✔ Adding 'pre-commit' as a development dependency.\n"
+            "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
             "✔ Writing '.pre-commit-config.yaml'.\n"
             "✔ Ensuring pre-commit hooks are installed.\n"
             "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
-            "✔ Adding 'deptry' as a development dependency.\n"
+            "✔ Adding 'deptry' to the 'dev' dependency group.\n"
             "✔ Adding deptry config to '.pre-commit-config.yaml'.\n"
             "☐ Call the 'deptry src' command to run deptry.\n"
         )
@@ -346,7 +349,7 @@ class TestRuff:
                 _ruff(offline=is_offline())
 
                 # Assert
-                (dev_dep,) = get_dev_deps()
+                (dev_dep,) = get_deps_from_group("dev")
             assert dev_dep == "ruff"
 
         def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
@@ -357,7 +360,7 @@ class TestRuff:
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding 'ruff' as a development dependency.\n"
+                "✔ Adding 'ruff' to the 'dev' dependency group.\n"
                 "✔ Adding ruff config to 'pyproject.toml'.\n"
                 "✔ Enabling ruff rules 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', 'PLR', \n'PT', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "☐ Call the 'ruff check' command to run the ruff linter.\n"
@@ -431,8 +434,8 @@ select = ["A", "B", "C"]
                 == contents
                 + """\
 
-[tool.uv]
-dev-dependencies = []
+[dependency-groups]
+dev = []
 
 """
             )
@@ -448,4 +451,4 @@ class TestPytest:
                 "pytest-md",
                 "pytest-cov",
                 "coverage",
-            } <= set(get_dev_deps())
+            } <= set(get_deps_from_group("test"))

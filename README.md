@@ -2,6 +2,57 @@
 
 Automate Python package and project setup tasks that are otherwise performed manually.
 
+## Commands
+
+### `usethis tool`
+
+Add a new tool to a Python project, including:
+
+- declared & installed dependencies with `uv add`,
+- relevant `pyproject.toml` configuration,
+- any other relevant directories or tool-bespoke configuration files, and
+- `.pre-commit-config.yaml` configuration if using `pre-commit`.
+
+Currently supported tools:
+
+- ruff
+- pytest
+- deptry
+- pre-commit
+
+Example:
+
+`usethis tool ruff`
+
+Supported arguments:
+
+- `--remove` to remove the tool instead of adding it
+- `--offline` to disable network access and rely on caches
+
+### `usethis ci`
+
+Add Continuous Integration pipelines to the project.
+
+Currently supported platforms:
+
+- Bitbucket
+
+Example:
+
+`usethis ci bitbucket`.
+
+### `usethis browse pypi`
+
+Dispaly or open the PyPI landing page associated with another project.
+
+Example:
+
+`usethis browse pypi numpy`
+
+Supported arguments:
+
+- `--browser` to open the link in the browser automatically.
+
 ## Development
 
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)

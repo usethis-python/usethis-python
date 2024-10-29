@@ -6,7 +6,7 @@ import usethis._interface.tool
 
 app = typer.Typer(
     help=(
-        "🤖 Automate Python package and project setup tasks that are otherwise "
+        "Automate Python package and project setup tasks that are otherwise "
         "performed manually."
     )
 )

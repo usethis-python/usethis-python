@@ -5,7 +5,7 @@ requires = [ "hatch-vcs", "hatchling" ]
 
 [project]
 name = "usethis"
-description = "Automate Python package and project setup tasks that are otherwise performed manually."
+description = "Automate Python project setup and development tasks that are otherwise performed manually."
 readme = "README.md"
 keywords = ["usethis", "project", "init", "setup", "start"]
 license = { file = "LICENSE" }
@@ -65,6 +65,7 @@ source = "vcs"
 [tool.hatch.metadata.hooks.vcs.urls]
 "Source Code" = "https://github.com/nathanjmcdougall/usethis-python"
 "Bug Tracker" = "https://github.com/nathanjmcdougall/usethis-python/issues"
+"Releases" = "https://github.com/nathanjmcdougall/usethis-python/releases"
 "source_archive" = "https://github.com/nathanjmcdougall/usethis-python/archive/{commit_hash}.zip"
 
 [tool.ruff]

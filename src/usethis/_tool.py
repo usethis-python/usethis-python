@@ -18,7 +18,7 @@ from usethis._integrations.pyproject.core import (
     set_config_value,
 )
 from usethis._integrations.pyproject.io import read_pyproject_toml
-from usethis._integrations.uv.deps import is_dep_used
+from usethis._integrations.uv.deps import is_dep_in_any_group
 
 
 class Tool(Protocol):
@@ -61,7 +61,7 @@ class Tool(Protocol):
 
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project."""
-        return any(is_dep_used(dep) for dep in self.dev_deps)
+        return any(is_dep_in_any_group(dep) for dep in self.dev_deps)
 
     def add_pre_commit_repo_config(self) -> None:
         """Add the tool's pre-commit configuration."""
@@ -173,7 +173,7 @@ class PreCommitTool(Tool):
 
     def is_used(self) -> bool:
         return (
-            any(is_dep_used(dep) for dep in self.dev_deps)
+            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
             or (Path.cwd() / ".pre-commit-config.yaml").exists()
         )
 
@@ -233,7 +233,7 @@ class RuffTool(Tool):
         ).exists()
 
         return (
-            any(is_dep_used(dep) for dep in self.dev_deps)
+            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
             or is_pyproject_config
             or is_ruff_toml_config
         )

@@ -646,16 +646,18 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "coverage" },
     { name = "deptry" },
-    { name = "gitpython" },
     { name = "import-linter" },
     { name = "pre-commit" },
+    { name = "ruff" },
+]
+test = [
+    { name = "coverage" },
+    { name = "gitpython" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-emoji" },
     { name = "pytest-md" },
-    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -672,16 +674,18 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "coverage", extras = ["toml"], specifier = ">=7.6.3" },
     { name = "deptry", specifier = ">=0.20.0" },
-    { name = "gitpython", specifier = ">=3.1.43" },
     { name = "import-linter", specifier = ">=2.1" },
     { name = "pre-commit", specifier = ">=4.0.1" },
+    { name = "ruff", specifier = ">=0.7.0" },
+]
+test = [
+    { name = "coverage", extras = ["toml"], specifier = ">=7.6.3" },
+    { name = "gitpython", specifier = ">=3.1.43" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
     { name = "pytest-emoji", specifier = ">=0.2.0" },
     { name = "pytest-md", specifier = ">=0.2.0" },
-    { name = "ruff", specifier = ">=0.7.0" },
 ]
 
 [[package]]

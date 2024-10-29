@@ -2,7 +2,7 @@ import contextlib
 
 import typer
 
-from usethis._console import console
+from usethis._console import box_print
 from usethis._integrations.pre_commit.core import (
     add_pre_commit_config,
     install_pre_commit,
@@ -41,8 +41,8 @@ def _pre_commit(*, remove: bool = False, offline: bool = False) -> None:
                 _tool.add_pre_commit_repo_config()
         install_pre_commit()
 
-        console.print(
-            "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.",
+        box_print(
+            "Call the 'pre-commit run --all-files' command to run the hooks manually."
         )
     else:
         add_deps_to_group(  # Need pre-commit to be installed so we can uninstall hooks
@@ -73,9 +73,7 @@ def _deptry(*, remove: bool = False, offline: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_config()
 
-        console.print(
-            "☐ Call the 'deptry src' command to run deptry.",
-        )
+        box_print("Call the 'deptry src' command to run deptry.")
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_config()
@@ -107,10 +105,8 @@ def _ruff(*, remove: bool = False, offline: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_config()
 
-        console.print(
-            "☐ Call the 'ruff check' command to run the ruff linter.\n"
-            "☐ Call the 'ruff format' command to run the ruff formatter.",
-        )
+        box_print("Call the 'ruff check' command to run the ruff linter.")
+        box_print("Call the 'ruff format' command to run the ruff formatter.")
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_config()
@@ -140,11 +136,11 @@ def _pytest(*, remove: bool = False, offline: bool = False) -> None:
         # https://github.com/fpgmaas/deptry/issues/302
         add_pytest_dir()
 
-        console.print(
-            "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
-            "☐ Add test functions with the format 'test_*()'.\n"
-            "☐ Call the 'pytest' command to run the tests.",
+        box_print(
+            "Add test files to the '/tests' directory with the format 'test_*.py'."
         )
+        box_print("Add test functions with the format 'test_*()'.")
+        box_print("Call the 'pytest' command to run the tests.")
     else:
         if RuffTool().is_used():
             deselect_ruff_rules(tool.get_associated_ruff_rules())

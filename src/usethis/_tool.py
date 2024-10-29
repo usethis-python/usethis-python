@@ -2,7 +2,7 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-from usethis._console import console
+from usethis._console import tick_print
 from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
 from usethis._integrations.pre_commit.core import add_pre_commit_config
 from usethis._integrations.pre_commit.hooks import (
@@ -78,9 +78,8 @@ class Tool(Protocol):
             if hook.id not in get_hook_names():
                 # Need to add this hook, it is missing.
                 if first_time_adding:
-                    console.print(
-                        f"✔ Adding {self.name} config to '.pre-commit-config.yaml'.",
-                        style="green",
+                    tick_print(
+                        f"Adding {self.name} config to '.pre-commit-config.yaml'."
                     )
                     first_time_adding = False
 
@@ -102,9 +101,8 @@ class Tool(Protocol):
         for hook in repo_config.hooks:
             if hook.id in get_hook_names():
                 if first_removal:
-                    console.print(
-                        f"✔ Removing {self.name} config from '.pre-commit-config.yaml'.",
-                        style="green",
+                    tick_print(
+                        f"Removing {self.name} config from '.pre-commit-config.yaml'."
                     )
                     first_removal = False
                 remove_hook(hook.id)
@@ -125,10 +123,7 @@ class Tool(Protocol):
                 pass
             else:
                 if first_addition:
-                    console.print(
-                        f"✔ Adding {self.name} config to 'pyproject.toml'.",
-                        style="green",
-                    )
+                    tick_print(f"Adding {self.name} config to 'pyproject.toml'.")
                     first_addition = False
 
     def remove_pyproject_configs(self) -> None:
@@ -146,10 +141,7 @@ class Tool(Protocol):
                 pass
             else:
                 if first_removal:
-                    console.print(
-                        f"✔ Removing {self.name} config from 'pyproject.toml'.",
-                        style="green",
-                    )
+                    tick_print(f"Removing {self.name} config from 'pyproject.toml'.")
                     first_removal = False
 
 

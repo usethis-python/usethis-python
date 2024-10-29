@@ -2,7 +2,7 @@ from pathlib import Path
 
 import typer
 
-from usethis._console import console
+from usethis._console import box_print
 from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
@@ -77,8 +77,8 @@ def _bitbucket(*, remove: bool = False, offline: bool = False) -> None:
             )
         )
 
-        console.print("☐ Populate the placeholder step in 'bitbucket-pipelines.yml'.")
+        box_print("Populate the placeholder step in 'bitbucket-pipelines.yml'.")
 
     add_steps(steps, is_parallel=True)
 
-    console.print("☐ Run your first pipeline on the Bitbucket website.")
+    box_print("Run your first pipeline on the Bitbucket website.")

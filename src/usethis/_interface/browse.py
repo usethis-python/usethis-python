@@ -1,6 +1,6 @@
 import typer
 
-from usethis._console import console
+from usethis._console import box_print
 
 app = typer.Typer(help="Visit important project-related web pages.")
 
@@ -21,4 +21,4 @@ def _pypi(*, package: str, browser: bool = False) -> None:
     if browser:
         typer.launch(url)
     else:
-        console.print(f"☐ Open URL <{url}>.", style="blue")
+        box_print(f"Open URL <{url}>.")

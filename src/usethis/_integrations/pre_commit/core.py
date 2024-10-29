@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-from usethis._console import console
+from usethis._console import tick_print
 from usethis._integrations.github.tags import GitHubTagError, get_github_latest_tag
 
 _YAML_CONTENTS_TEMPLATE = """\
@@ -21,7 +21,7 @@ def add_pre_commit_config() -> None:
         # Early exit; the file already exists
         return
 
-    console.print("✔ Writing '.pre-commit-config.yaml'.", style="green")
+    tick_print("Writing '.pre-commit-config.yaml'.")
     try:
         pkg_version = get_github_latest_tag("abravalheri", "validate-pyproject")
     except GitHubTagError:
@@ -37,12 +37,12 @@ def remove_pre_commit_config() -> None:
         # Early exit; the file already doesn't exist
         return
 
-    console.print("✔ Removing .pre-commit-config.yaml file", style="green")
+    tick_print("Removing .pre-commit-config.yaml file.")
     (Path.cwd() / ".pre-commit-config.yaml").unlink()
 
 
 def install_pre_commit() -> None:
-    console.print("✔ Ensuring pre-commit hooks are installed.", style="green")
+    tick_print("Ensuring pre-commit hooks are installed.")
     subprocess.run(
         ["uv", "run", "pre-commit", "install"],
         check=True,
@@ -51,7 +51,7 @@ def install_pre_commit() -> None:
 
 
 def uninstall_pre_commit() -> None:
-    console.print("✔ Ensuring pre-commit hooks are uninstalled.", style="green")
+    tick_print("Ensuring pre-commit hooks are uninstalled.")
     subprocess.run(
         ["uv", "run", "pre-commit", "uninstall"],
         check=True,

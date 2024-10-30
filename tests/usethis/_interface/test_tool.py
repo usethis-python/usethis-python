@@ -442,13 +442,106 @@ dev = []
 
 
 class TestPytest:
-    def test_dep(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
-            _pytest(offline=is_offline())
+    class TestAdd:
+        def test_dep(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir):
+                _pytest(offline=is_offline())
 
-            assert {
-                "pytest",
-                "pytest-md",
-                "pytest-cov",
-                "coverage",
-            } <= set(get_deps_from_group("test"))
+                assert {
+                    "pytest",
+                    "pytest-md",
+                    "pytest-cov",
+                    "coverage",
+                } <= set(get_deps_from_group("test"))
+
+    class TestRemove:
+        class TestRuffIntegration:
+            def test_deselected(self, uv_init_dir: Path):
+                # Arrange
+                (uv_init_dir / "pyproject.toml").write_text(
+                    """\
+[tool.ruff.lint]
+select = ["E", "PT"]
+"""
+                )
+
+                # Act
+                with change_cwd(uv_init_dir):
+                    _pytest(remove=True, offline=is_offline())
+
+                # Assert
+                assert (uv_init_dir / "pyproject.toml").read_text() == (
+                    """\
+[tool.ruff.lint]
+select = ["E"]
+"""
+                )
+
+            def test_message(
+                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            ):
+                # Arrange
+                (uv_init_dir / "pyproject.toml").write_text(
+                    """\
+[tool.ruff.lint]
+select = ["PT"]
+"""
+                )
+
+                # Act
+                with change_cwd(uv_init_dir):
+                    _pytest(remove=True, offline=is_offline())
+
+                # Assert
+                out, _ = capfd.readouterr()
+                assert out == ("✔ Disabling ruff rule 'PT' in 'pyproject.toml'.\n")
+
+        class TestPyproject:
+            def test_removed(self, uv_init_dir: Path):
+                # Arrange
+                (uv_init_dir / "pyproject.toml").write_text(
+                    """\
+    [tool.pytest]
+    foo = "bar"
+    """
+                )
+
+                # Act
+                with change_cwd(uv_init_dir):
+                    _pytest(remove=True, offline=is_offline())
+
+                # Assert
+                assert (uv_init_dir / "pyproject.toml").read_text() == ""
+
+            def test_message(
+                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            ):
+                # Arrange
+                (uv_init_dir / "pyproject.toml").write_text(
+                    """\
+    [tool.pytest]
+    foo = "bar"
+    """
+                )
+
+                # Act
+                with change_cwd(uv_init_dir):
+                    _pytest(remove=True, offline=is_offline())
+
+                # Assert
+                out, _ = capfd.readouterr()
+                # N.B. we don't put `pytest` in quotes because we are referring to the
+                # tool, not the package.
+                assert out == "✔ Removing pytest config from 'pyproject.toml'.\n"
+
+        class Dependencies:
+            def test_removed(self, uv_init_dir: Path):
+                # Arrange
+                add_deps_to_group(["pytest"], "test", offline=is_offline())
+
+                # Act
+                with change_cwd(uv_init_dir):
+                    _pytest(remove=True, offline=is_offline())
+
+                # Assert
+                assert not get_deps_from_group("test")

@@ -105,25 +105,28 @@ pipelines:
                 assert "pytest" not in contents
 
     class TestRemove:
-        def test_config_file_gone(self, uv_init_dir: Path):
-            # Arrange
-            (uv_init_dir / "bitbucket-pipelines.yml").touch()
+        class TestPyproject:
+            def test_removed(self, uv_init_dir: Path):
+                # Arrange
+                (uv_init_dir / "bitbucket-pipelines.yml").touch()
 
-            # Act
-            with change_cwd(uv_init_dir):
-                _bitbucket(remove=True, offline=is_offline())
+                # Act
+                with change_cwd(uv_init_dir):
+                    _bitbucket(remove=True, offline=is_offline())
 
-            # Assert
-            assert not (uv_init_dir / "bitbucket-pipelines.yml").exists()
+                # Assert
+                assert not (uv_init_dir / "bitbucket-pipelines.yml").exists()
 
-        def test_message(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-            # Arrange
-            (uv_init_dir / "bitbucket-pipelines.yml").touch()
+            def test_message(
+                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            ):
+                # Arrange
+                (uv_init_dir / "bitbucket-pipelines.yml").touch()
 
-            # Act
-            with change_cwd(uv_init_dir):
-                _bitbucket(remove=True, offline=is_offline())
+                # Act
+                with change_cwd(uv_init_dir):
+                    _bitbucket(remove=True, offline=is_offline())
 
-            # Assert
-            out, _ = capfd.readouterr()
-            assert out == "✔ Removing 'bitbucket-pipelines.yml' file.\n"
+                # Assert
+                out, _ = capfd.readouterr()
+                assert out == "✔ Removing 'bitbucket-pipelines.yml' file.\n"

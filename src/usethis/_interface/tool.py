@@ -101,8 +101,9 @@ def _ruff(*, remove: bool = False, offline: bool = False) -> None:
 
     rules = []
     for _tool in ALL_TOOLS:
-        with contextlib.suppress(NotImplementedError):
-            rules += _tool.get_associated_ruff_rules()
+        if _tool.is_used() or _tool.name == "ruff":
+            with contextlib.suppress(NotImplementedError):
+                rules += _tool.get_associated_ruff_rules()
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev", offline=offline)

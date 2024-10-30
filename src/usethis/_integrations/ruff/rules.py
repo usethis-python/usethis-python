@@ -15,10 +15,7 @@ def select_ruff_rules(rules: list[str]) -> None:
 
     rules_str = ", ".join([f"'{rule}'" for rule in rules])
     s = "" if len(rules) == 1 else "s"
-    console.print(
-        f"✔ Enabling ruff rule{s} {rules_str} in 'pyproject.toml'.",
-        style="green",
-    )
+    console.tick_print(f"Enabling ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
     append_config_list(["tool", "ruff", "lint", "select"], rules)
 
@@ -33,10 +30,7 @@ def deselect_ruff_rules(rules: list[str]) -> None:
 
     rules_str = ", ".join([f"'{rule}'" for rule in rules])
     s = "" if len(rules) == 1 else "s"
-    console.print(
-        f"✔ Disabling ruff rule{s} {rules_str} in 'pyproject.toml'.",
-        style="green",
-    )
+    console.tick_print(f"Disabling ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
     remove_from_config_list(["tool", "ruff", "lint", "select"], rules)
 

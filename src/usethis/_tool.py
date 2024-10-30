@@ -78,9 +78,8 @@ class Tool(Protocol):
             if hook.id not in get_hook_names():
                 # Need to add this hook, it is missing.
                 if first_time_adding:
-                    console.print(
-                        f"✔ Adding {self.name} config to '.pre-commit-config.yaml'.",
-                        style="green",
+                    console.tick_print(
+                        f"Adding {self.name} config to '.pre-commit-config.yaml'."
                     )
                     first_time_adding = False
 
@@ -102,9 +101,8 @@ class Tool(Protocol):
         for hook in repo_config.hooks:
             if hook.id in get_hook_names():
                 if first_removal:
-                    console.print(
-                        f"✔ Removing {self.name} config from '.pre-commit-config.yaml'.",
-                        style="green",
+                    console.tick_print(
+                        f"Removing {self.name} config from '.pre-commit-config.yaml'."
                     )
                     first_removal = False
                 remove_hook(hook.id)
@@ -125,9 +123,8 @@ class Tool(Protocol):
                 pass
             else:
                 if first_addition:
-                    console.print(
-                        f"✔ Adding {self.name} config to 'pyproject.toml'.",
-                        style="green",
+                    console.tick_print(
+                        f"Adding {self.name} config to 'pyproject.toml'."
                     )
                     first_addition = False
 
@@ -146,9 +143,8 @@ class Tool(Protocol):
                 pass
             else:
                 if first_removal:
-                    console.print(
-                        f"✔ Removing {self.name} config from 'pyproject.toml'.",
-                        style="green",
+                    console.tick_print(
+                        f"Removing {self.name} config from 'pyproject.toml'."
                     )
                     first_removal = False
 
@@ -218,26 +214,6 @@ class RuffTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["ruff"]
 
-    def is_used(self) -> bool:
-        pyproject = read_pyproject_toml()
-
-        try:
-            pyproject["tool"]["ruff"]
-        except KeyError:
-            is_pyproject_config = False
-        else:
-            is_pyproject_config = True
-
-        is_ruff_toml_config = (Path.cwd() / "ruff.toml").exists() or (
-            Path.cwd() / ".ruff.toml"
-        ).exists()
-
-        return (
-            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-            or is_pyproject_config
-            or is_ruff_toml_config
-        )
-
     def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
         return PreCommitRepoConfig(
             repo="local",
@@ -289,6 +265,26 @@ class RuffTool(Tool):
             "UP",
         ]
 
+    def is_used(self) -> bool:
+        pyproject = read_pyproject_toml()
+
+        try:
+            pyproject["tool"]["ruff"]
+        except KeyError:
+            is_pyproject_config = False
+        else:
+            is_pyproject_config = True
+
+        is_ruff_toml_config = (Path.cwd() / "ruff.toml").exists() or (
+            Path.cwd() / ".ruff.toml"
+        ).exists()
+
+        return (
+            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
+            or is_pyproject_config
+            or is_ruff_toml_config
+        )
+
 
 class PytestTool(Tool):
     @property
@@ -326,6 +322,24 @@ class PytestTool(Tool):
 
     def get_associated_ruff_rules(self) -> list[str]:
         return ["PT"]
+
+    def is_used(self) -> bool:
+        pyproject = read_pyproject_toml()
+
+        try:
+            pyproject["tool"]["pytest"]
+        except KeyError:
+            is_pyproject_config = False
+        else:
+            is_pyproject_config = True
+
+        is_conftest = (Path.cwd() / "tests" / "conftest.py").exists()
+
+        return (
+            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
+            or is_pyproject_config
+            or is_conftest
+        )
 
 
 ALL_TOOLS: list[Tool] = [PreCommitTool(), DeptryTool(), RuffTool(), PytestTool()]

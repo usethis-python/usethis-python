@@ -117,9 +117,9 @@ repos:
             )
 
             # Assert
+            (uv_init_repo_dir / "pyproject.toml").write_text("[")
+            subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
             with pytest.raises(subprocess.CalledProcessError):
-                (uv_init_repo_dir / "pyproject.toml").write_text("[")
-                subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
                 subprocess.run(
                     ["git", "commit", "-m", "Bad commit"],
                     cwd=uv_init_repo_dir,
@@ -363,7 +363,7 @@ class TestRuff:
                 "✔ Adding 'ruff' to the 'dev' dependency group.\n"
                 "✔ Adding ruff config to 'pyproject.toml'.\n"
                 "✔ Enabling ruff rules 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', 'PLR', \n'PT', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
-                "☐ Call the 'ruff check' command to run the ruff linter.\n"
+                "☐ Call the 'ruff check --fix' command to run the ruff linter with autofixes.\n"
                 "☐ Call the 'ruff format' command to run the ruff formatter.\n"
             )
 

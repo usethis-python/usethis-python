@@ -44,9 +44,7 @@ def add_deps_to_group(pypi_names: list[str], group: str, *, offline: bool) -> No
             # Early exit; the tool is already a dev dependency.
             continue
 
-        console.print(
-            f"✔ Adding '{dep}' to the '{group}' dependency group.", style="green"
-        )
+        console.tick_print(f"Adding '{dep}' to the '{group}' dependency group.")
         if not offline:
             subprocess.run(
                 ["uv", "add", "--group", group, "--quiet", dep],
@@ -68,9 +66,7 @@ def remove_deps_from_group(pypi_names: list[str], group: str, *, offline: bool) 
             # Early exit; the tool is already not a dependency.
             continue
 
-        console.print(
-            f"✔ Removing '{dep}' from the '{group}' dependency group.", style="green"
-        )
+        console.tick_print(f"Removing '{dep}' from the '{group}' dependency group.")
         if not offline:
             subprocess.run(
                 [

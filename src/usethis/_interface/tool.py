@@ -12,7 +12,7 @@ from usethis._integrations.pre_commit.core import (
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.ruff.rules import deselect_ruff_rules, select_ruff_rules
 from usethis._integrations.uv.deps import add_deps_to_group, remove_deps_from_group
-from usethis._interface import offline_opt
+from usethis._interface import offline_opt, quiet_opt
 from usethis._tool import ALL_TOOLS, DeptryTool, PreCommitTool, PytestTool, RuffTool
 
 app = typer.Typer(help="Add and configure development tools, e.g. linters.")
@@ -26,8 +26,10 @@ def pre_commit(
         False, "--remove", help="Remove pre-commit instead of adding it."
     ),
     offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
 ) -> None:
-    _pre_commit(remove=remove, offline=offline)
+    with console.set(quiet=quiet):
+        _pre_commit(remove=remove, offline=offline)
 
 
 def _pre_commit(*, remove: bool = False, offline: bool = False) -> None:
@@ -41,8 +43,8 @@ def _pre_commit(*, remove: bool = False, offline: bool = False) -> None:
                 _tool.add_pre_commit_repo_config()
         install_pre_commit()
 
-        console.print(
-            "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.",
+        console.box_print(
+            "Call the 'pre-commit run --all-files' command to run the hooks manually."
         )
     else:
         add_deps_to_group(  # Need pre-commit to be installed so we can uninstall hooks
@@ -61,8 +63,10 @@ def deptry(
         False, "--remove", help="Remove deptry instead of adding it."
     ),
     offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
 ) -> None:
-    _deptry(remove=remove, offline=offline)
+    with console.set(quiet=quiet):
+        _deptry(remove=remove, offline=offline)
 
 
 def _deptry(*, remove: bool = False, offline: bool = False) -> None:
@@ -73,9 +77,7 @@ def _deptry(*, remove: bool = False, offline: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_config()
 
-        console.print(
-            "☐ Call the 'deptry src' command to run deptry.",
-        )
+        console.box_print("Call the 'deptry src' command to run deptry.")
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_config()
@@ -88,8 +90,10 @@ def ruff(
         False, "--remove", help="Remove ruff instead of adding it."
     ),
     offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
 ) -> None:
-    _ruff(remove=remove, offline=offline)
+    with console.set(quiet=quiet):
+        _ruff(remove=remove, offline=offline)
 
 
 def _ruff(*, remove: bool = False, offline: bool = False) -> None:
@@ -107,10 +111,10 @@ def _ruff(*, remove: bool = False, offline: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_config()
 
-        console.print(
-            "☐ Call the 'ruff check' command to run the ruff linter.\n"
-            "☐ Call the 'ruff format' command to run the ruff formatter.",
+        console.box_print(
+            "Call the 'ruff check --fix' command to run the ruff linter with autofixes."
         )
+        console.box_print("Call the 'ruff format' command to run the ruff formatter.")
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_config()
@@ -124,8 +128,10 @@ def pytest(
         False, "--remove", help="Remove pytest instead of adding it."
     ),
     offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
 ) -> None:
-    _pytest(remove=remove, offline=offline)
+    with console.set(quiet=quiet):
+        _pytest(remove=remove, offline=offline)
 
 
 def _pytest(*, remove: bool = False, offline: bool = False) -> None:
@@ -140,11 +146,11 @@ def _pytest(*, remove: bool = False, offline: bool = False) -> None:
         # https://github.com/fpgmaas/deptry/issues/302
         add_pytest_dir()
 
-        console.print(
-            "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
-            "☐ Add test functions with the format 'test_*()'.\n"
-            "☐ Call the 'pytest' command to run the tests.",
+        console.box_print(
+            "Add test files to the '/tests' directory with the format 'test_*.py'."
         )
+        console.box_print("Add test functions with the format 'test_*()'.")
+        console.box_print("Call the 'pytest' command to run the tests.")
     else:
         if RuffTool().is_used():
             deselect_ruff_rules(tool.get_associated_ruff_rules())

@@ -103,7 +103,7 @@ class TestRemovePreCommitConfig:
 
         # Assert
         out, _ = capfd.readouterr()
-        assert out == "✔ Removing .pre-commit-config.yaml file\n"
+        assert out == "✔ Removing .pre-commit-config.yaml file.\n"
 
     def test_already_missing(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]

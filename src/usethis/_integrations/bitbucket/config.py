@@ -27,7 +27,7 @@ def add_bitbucket_pipeline_config() -> None:
         # Early exit; the file already exists
         return
 
-    console.print("✔ Writing 'bitbucket-pipelines.yml'.", style="green")
+    console.tick_print("Writing 'bitbucket-pipelines.yml'.")
     yaml_contents = _YAML_CONTENTS
 
     (Path.cwd() / "bitbucket-pipelines.yml").write_text(yaml_contents)
@@ -38,5 +38,5 @@ def remove_bitbucket_pipeline_config() -> None:
         # Early exit; the file already doesn't exist
         return
 
-    console.print("✔ Removing bitbucket-pipelines.yml file", style="green")
+    console.tick_print("Removing 'bitbucket-pipelines.yml' file.")
     (Path.cwd() / "bitbucket-pipelines.yml").unlink()

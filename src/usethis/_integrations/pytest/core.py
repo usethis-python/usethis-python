@@ -8,14 +8,14 @@ def add_pytest_dir() -> None:
     tests_dir = Path.cwd() / "tests"
 
     if not tests_dir.exists():
-        console.print("✔ Creating '/tests'.", style="green")
+        console.tick_print("Creating '/tests'.")
         tests_dir.mkdir()
 
     if (tests_dir / "conftest.py").exists():
         # Early exit; conftest.py already exists
         return
 
-    console.print("✔ Writing '/tests/conftest.py'.", style="green")
+    console.tick_print("Writing '/tests/conftest.py'.")
     (tests_dir / "conftest.py").write_text(
         "collect_ignore_glob = []\npytest_plugins = []\n"
     )
@@ -30,10 +30,8 @@ def remove_pytest_dir() -> None:
 
     if set(tests_dir.iterdir()) <= {tests_dir / "conftest.py"}:
         # The only file in the directory is conftest.py
-        console.print("✔ Removing '/tests'.", style="green")
+        console.tick_print("Removing '/tests'.")
         shutil.rmtree(tests_dir)
     else:
-        console.print(
-            "☐ Reconfigure the /tests directory to run without pytest", style="blue"
-        )
+        console.box_print("Reconfigure the /tests directory to run without pytest.")
         # Note we don't actually remove the directory, just explain what needs to be done.

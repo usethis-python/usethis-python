@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from usethis._interface.ci import _bitbucket
 from usethis._utils._test import change_cwd, is_offline
 
@@ -45,3 +47,83 @@ pipelines:
               - echo 'Hello, world!'
 """
                 )
+
+            def test_already_exists(self, uv_init_dir: Path):
+                # Arrange
+                (uv_init_dir / "bitbucket-pipelines.yml").touch()
+
+                # Act
+                with change_cwd(uv_init_dir):
+                    _bitbucket(offline=is_offline())
+
+                # Assert
+                assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == ""
+
+        class TestPreCommitIntegration:
+            def test_mentioned_in_file(self, uv_init_dir: Path):
+                # Arrange
+                (uv_init_dir / ".pre-commit-config.yaml").touch()
+
+                # Act
+                with change_cwd(uv_init_dir):
+                    _bitbucket(offline=is_offline())
+
+                # Assert
+                contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+                assert "pre-commit" in contents
+
+            def test_not_mentioned_if_not_used(self, uv_init_dir: Path):
+                # Act
+                with change_cwd(uv_init_dir):
+                    _bitbucket(offline=is_offline())
+
+                # Assert
+                contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+                assert "pre-commit" not in contents
+
+        class TestPytestIntegration:
+            def test_mentioned_in_file(self, uv_init_dir: Path):
+                # Arrange
+                (uv_init_dir / "tests").mkdir()
+                (uv_init_dir / "tests" / "conftest.py").touch()
+
+                # Act
+                with change_cwd(uv_init_dir):
+                    _bitbucket(offline=is_offline())
+
+                # Assert
+                contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+                assert "pytest" in contents
+
+            def test_not_mentioned_if_not_used(self, uv_init_dir: Path):
+                # Act
+                with change_cwd(uv_init_dir):
+                    _bitbucket(offline=is_offline())
+
+                # Assert
+                contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+                assert "pytest" not in contents
+
+    class TestRemove:
+        def test_config_file_gone(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / "bitbucket-pipelines.yml").touch()
+
+            # Act
+            with change_cwd(uv_init_dir):
+                _bitbucket(remove=True, offline=is_offline())
+
+            # Assert
+            assert not (uv_init_dir / "bitbucket-pipelines.yml").exists()
+
+        def test_message(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            (uv_init_dir / "bitbucket-pipelines.yml").touch()
+
+            # Act
+            with change_cwd(uv_init_dir):
+                _bitbucket(remove=True, offline=is_offline())
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == "✔ Removing 'bitbucket-pipelines.yml' file.\n"

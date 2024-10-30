@@ -48,7 +48,7 @@ dev = [
   "import-linter>=2.1",
   "pre-commit>=4.0.1",
   "pyproject-fmt>=2.4.3",
-  "ruff>=0.7.0",
+  "ruff>=0.7.1",
 ]
 test = [
   "coverage[toml]>=7.6.3",
@@ -72,7 +72,7 @@ source = "vcs"
 line-length = 88
 
 src = [ "src" ]
-lint.select = [ "C4", "E4", "E7", "E9", "F", "FURB", "I", "PLE", "PLR", "RUF", "SIM", "UP" ]
+lint.select = ["C4", "E4", "E7", "E9", "F", "FURB", "I", "PLE", "PLR", "RUF", "SIM", "UP", "PT"]
 
 [tool.pytest.ini_options]
 testpaths = [ "tests" ]
@@ -98,6 +98,7 @@ layers = [
   "_interface",
   "_tool",
   "_integrations",
+  "_console",
   "_utils",
 ]
 containers = [ "usethis" ]

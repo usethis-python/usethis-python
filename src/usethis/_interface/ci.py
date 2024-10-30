@@ -2,7 +2,7 @@ from pathlib import Path
 
 import typer
 
-from usethis._console import box_print
+from usethis._console import console
 from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
@@ -11,7 +11,7 @@ from usethis._integrations.bitbucket.steps import Step, StepRef, add_steps
 from usethis._integrations.pyproject.requires_python import (
     get_supported_major_python_versions,
 )
-from usethis._interface import offline_opt
+from usethis._interface import offline_opt, quiet_opt
 from usethis._tool import PreCommitTool, PytestTool
 
 app = typer.Typer(help="Add config for Continuous Integration (CI) pipelines.")
@@ -23,8 +23,10 @@ def bitbucket(
         False, "--remove", help="Remove Bitbucket pipelines CI instead of adding it."
     ),
     offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
 ) -> None:
-    _bitbucket(remove=remove, offline=offline)
+    with console.set(quiet=quiet):
+        _bitbucket(remove=remove, offline=offline)
 
 
 def _bitbucket(*, remove: bool = False, offline: bool = False) -> None:
@@ -77,8 +79,8 @@ def _bitbucket(*, remove: bool = False, offline: bool = False) -> None:
             )
         )
 
-        box_print("Populate the placeholder step in 'bitbucket-pipelines.yml'.")
+        console.box_print("Populate the placeholder step in 'bitbucket-pipelines.yml'.")
 
     add_steps(steps, is_parallel=True)
 
-    box_print("Run your first pipeline on the Bitbucket website.")
+    console.box_print("Run your first pipeline on the Bitbucket website.")

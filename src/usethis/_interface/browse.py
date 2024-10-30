@@ -1,6 +1,7 @@
 import typer
 
-from usethis._console import box_print
+from usethis._console import console
+from usethis._interface import offline_opt, quiet_opt
 
 app = typer.Typer(help="Visit important project-related web pages.")
 
@@ -12,13 +13,18 @@ def pypi(
     browser: bool = typer.Option(
         False, "--browser", help="Open the URL in the default web browser."
     ),
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
 ) -> None:
-    _pypi(package=package, browser=browser)
+    with console.set(quiet=quiet):
+        _pypi(package=package, browser=browser, offline=offline)
 
 
-def _pypi(*, package: str, browser: bool = False) -> None:
+def _pypi(*, package: str, browser: bool = False, offline: bool = False) -> None:
+    _ = offline  # Already no network access required
+
     url = f"https://pypi.org/project/{package}/"
     if browser:
         typer.launch(url)
     else:
-        box_print(f"Open URL <{url}>.")
+        console.box_print(f"Open URL <{url}>.")

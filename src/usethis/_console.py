@@ -1,16 +1,29 @@
-import typer
+from collections.abc import Generator
+from contextlib import contextmanager
+
+from pydantic import BaseModel
 from rich.console import Console
 
-console = Console()
-
-offline_opt = typer.Option(False, "--offline", help="Disable network access")
+typer_console = Console()
 
 
-def tick_print(msg: str, *, quiet: bool = False) -> None:
-    if not quiet:
-        console.print(f"✔ {msg}", style="green")
+class UsethisConsole(BaseModel):
+    quiet: bool
+
+    def tick_print(self, msg: str) -> None:
+        if not self.quiet:
+            typer_console.print(f"✔ {msg}", style="green")
+
+    def box_print(self, msg: str) -> None:
+        if not self.quiet:
+            typer_console.print(f"☐ {msg}", style="blue")
+
+    @contextmanager
+    def set(self, *, quiet: bool) -> Generator[None, None, None]:
+        """Temporarily set the console to quiet mode."""
+        self.quiet = quiet
+        yield
+        self.quiet = False
 
 
-def box_print(msg: str, *, quiet: bool = False) -> None:
-    if not quiet:
-        console.print(f"☐ {msg}", style="blue")
+console = UsethisConsole(quiet=False)

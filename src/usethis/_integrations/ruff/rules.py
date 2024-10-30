@@ -1,4 +1,4 @@
-from usethis._console import tick_print
+from usethis._console import console
 from usethis._integrations.pyproject.core import (
     append_config_list,
     get_config_value,
@@ -15,7 +15,7 @@ def select_ruff_rules(rules: list[str]) -> None:
 
     rules_str = ", ".join([f"'{rule}'" for rule in rules])
     s = "" if len(rules) == 1 else "s"
-    tick_print(f"Enabling ruff rule{s} {rules_str} in 'pyproject.toml'.")
+    console.tick_print(f"Enabling ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
     append_config_list(["tool", "ruff", "lint", "select"], rules)
 
@@ -30,7 +30,7 @@ def deselect_ruff_rules(rules: list[str]) -> None:
 
     rules_str = ", ".join([f"'{rule}'" for rule in rules])
     s = "" if len(rules) == 1 else "s"
-    tick_print(f"Disabling ruff rule{s} {rules_str} in 'pyproject.toml'.")
+    console.tick_print(f"Disabling ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
     remove_from_config_list(["tool", "ruff", "lint", "select"], rules)
 

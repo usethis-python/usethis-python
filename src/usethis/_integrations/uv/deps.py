@@ -4,7 +4,7 @@ import subprocess
 from packaging.requirements import Requirement
 from pydantic import TypeAdapter
 
-from usethis._console import tick_print
+from usethis._console import console
 from usethis._integrations.pyproject.io import read_pyproject_toml
 
 
@@ -44,7 +44,7 @@ def add_deps_to_group(pypi_names: list[str], group: str, *, offline: bool) -> No
             # Early exit; the tool is already a dev dependency.
             continue
 
-        tick_print(f"✔ Adding '{dep}' to the '{group}' dependency group.")
+        console.tick_print(f"✔ Adding '{dep}' to the '{group}' dependency group.")
         if not offline:
             subprocess.run(
                 ["uv", "add", "--group", group, "--quiet", dep],
@@ -66,7 +66,7 @@ def remove_deps_from_group(pypi_names: list[str], group: str, *, offline: bool) 
             # Early exit; the tool is already not a dependency.
             continue
 
-        tick_print(f"Removing '{dep}' from the '{group}' dependency group.")
+        console.tick_print(f"Removing '{dep}' from the '{group}' dependency group.")
         if not offline:
             subprocess.run(
                 [

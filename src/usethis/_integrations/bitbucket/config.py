@@ -38,5 +38,5 @@ def remove_bitbucket_pipeline_config() -> None:
         # Early exit; the file already doesn't exist
         return
 
-    console.tick_print("Removing bitbucket-pipelines.yml file")
+    console.tick_print("Removing 'bitbucket-pipelines.yml' file.")
     (Path.cwd() / "bitbucket-pipelines.yml").unlink()

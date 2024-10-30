@@ -214,26 +214,6 @@ class RuffTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["ruff"]
 
-    def is_used(self) -> bool:
-        pyproject = read_pyproject_toml()
-
-        try:
-            pyproject["tool"]["ruff"]
-        except KeyError:
-            is_pyproject_config = False
-        else:
-            is_pyproject_config = True
-
-        is_ruff_toml_config = (Path.cwd() / "ruff.toml").exists() or (
-            Path.cwd() / ".ruff.toml"
-        ).exists()
-
-        return (
-            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-            or is_pyproject_config
-            or is_ruff_toml_config
-        )
-
     def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
         return PreCommitRepoConfig(
             repo="local",
@@ -285,6 +265,26 @@ class RuffTool(Tool):
             "UP",
         ]
 
+    def is_used(self) -> bool:
+        pyproject = read_pyproject_toml()
+
+        try:
+            pyproject["tool"]["ruff"]
+        except KeyError:
+            is_pyproject_config = False
+        else:
+            is_pyproject_config = True
+
+        is_ruff_toml_config = (Path.cwd() / "ruff.toml").exists() or (
+            Path.cwd() / ".ruff.toml"
+        ).exists()
+
+        return (
+            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
+            or is_pyproject_config
+            or is_ruff_toml_config
+        )
+
 
 class PytestTool(Tool):
     @property
@@ -322,6 +322,24 @@ class PytestTool(Tool):
 
     def get_associated_ruff_rules(self) -> list[str]:
         return ["PT"]
+
+    def is_used(self) -> bool:
+        pyproject = read_pyproject_toml()
+
+        try:
+            pyproject["tool"]["pytest"]
+        except KeyError:
+            is_pyproject_config = False
+        else:
+            is_pyproject_config = True
+
+        is_conftest = (Path.cwd() / "tests" / "conftest.py").exists()
+
+        return (
+            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
+            or is_pyproject_config
+            or is_conftest
+        )
 
 
 ALL_TOOLS: list[Tool] = [PreCommitTool(), DeptryTool(), RuffTool(), PytestTool()]

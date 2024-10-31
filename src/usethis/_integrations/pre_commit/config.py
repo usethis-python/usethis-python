@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class HookConfig(BaseModel):
     id: str
-    name: str
+    name: str | None = None
     entry: str | None = None
     language: Literal["system", "python"] | None = None
     always_run: bool | None = None

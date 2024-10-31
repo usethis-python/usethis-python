@@ -147,31 +147,6 @@ class Tool(Protocol):
                     first_removal = False
 
 
-class PreCommitTool(Tool):
-    @property
-    def name(self) -> str:
-        return "pre-commit"
-
-    @property
-    def dev_deps(self) -> list[str]:
-        return ["pre-commit"]
-
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        raise NotImplementedError
-
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
-        raise NotImplementedError
-
-    def get_associated_ruff_rules(self) -> list[str]:
-        raise NotImplementedError
-
-    def is_used(self) -> bool:
-        return (
-            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-            or (Path.cwd() / ".pre-commit-config.yaml").exists()
-        )
-
-
 class DeptryTool(Tool):
     @property
     def name(self) -> str:
@@ -201,6 +176,136 @@ class DeptryTool(Tool):
 
     def get_associated_ruff_rules(self) -> list[str]:
         raise NotImplementedError
+
+
+class PreCommitTool(Tool):
+    @property
+    def name(self) -> str:
+        return "pre-commit"
+
+    @property
+    def dev_deps(self) -> list[str]:
+        return ["pre-commit"]
+
+    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
+        raise NotImplementedError
+
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+        raise NotImplementedError
+
+    def get_associated_ruff_rules(self) -> list[str]:
+        raise NotImplementedError
+
+    def is_used(self) -> bool:
+        return (
+            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
+            or (Path.cwd() / ".pre-commit-config.yaml").exists()
+        )
+
+
+class PyprojectFmtTool(Tool):
+    @property
+    def name(self) -> str:
+        return "pyproject-fmt"
+
+    @property
+    def dev_deps(self) -> list[str]:
+        return ["pyproject-fmt"]
+
+    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
+        return PreCommitRepoConfig(
+            repo="https://github.com/tox-dev/pyproject-fmt",
+            rev="v2.5.0",  # Manually bump this version when necessary
+            hooks=[HookConfig(id="pyproject-fmt")],
+        )
+
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+        return [
+            PyProjectConfig(
+                id_keys=["tool", "pyproject-fmt"],
+                main_contents={"keep_full_version": True},
+            )
+        ]
+
+    def get_associated_ruff_rules(self) -> list[str]:
+        return []
+
+    def is_used(self) -> bool:
+        pyproject = read_pyproject_toml()
+
+        try:
+            tool = pyproject["tool"]
+            TypeAdapter(dict).validate_python(tool)
+            assert isinstance(tool, dict)
+            tool["pyproject-fmt"]
+        except KeyError:
+            is_pyproject_config = False
+        else:
+            is_pyproject_config = True
+
+        return (
+            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
+            or is_pyproject_config
+        )
+
+
+class PytestTool(Tool):
+    @property
+    def name(self) -> str:
+        return "pytest"
+
+    @property
+    def dev_deps(self) -> list[str]:
+        return ["pytest", "pytest-md", "pytest-cov", "coverage[toml]"]
+
+    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
+        raise NotImplementedError
+
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+        return [
+            PyProjectConfig(
+                id_keys=["tool", "pytest"],
+                main_contents={
+                    "ini_options": {
+                        "testpaths": ["tests"],
+                        "addopts": [
+                            "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
+                        ],
+                    }
+                },
+            ),
+            PyProjectConfig(
+                id_keys=["tool", "coverage", "run"],
+                main_contents={
+                    "source": ["src"],
+                    "omit": ["*/pytest-of-*/*"],
+                },
+            ),
+        ]
+
+    def get_associated_ruff_rules(self) -> list[str]:
+        return ["PT"]
+
+    def is_used(self) -> bool:
+        pyproject = read_pyproject_toml()
+
+        try:
+            tool = pyproject["tool"]
+            TypeAdapter(dict).validate_python(tool)
+            assert isinstance(tool, dict)
+            tool["pytest"]
+        except KeyError:
+            is_pyproject_config = False
+        else:
+            is_pyproject_config = True
+
+        is_conftest = (Path.cwd() / "tests" / "conftest.py").exists()
+
+        return (
+            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
+            or is_pyproject_config
+            or is_conftest
+        )
 
 
 class RuffTool(Tool):
@@ -287,63 +392,10 @@ class RuffTool(Tool):
         )
 
 
-class PytestTool(Tool):
-    @property
-    def name(self) -> str:
-        return "pytest"
-
-    @property
-    def dev_deps(self) -> list[str]:
-        return ["pytest", "pytest-md", "pytest-cov", "coverage[toml]"]
-
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        raise NotImplementedError
-
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
-        return [
-            PyProjectConfig(
-                id_keys=["tool", "pytest"],
-                main_contents={
-                    "ini_options": {
-                        "testpaths": ["tests"],
-                        "addopts": [
-                            "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
-                        ],
-                    }
-                },
-            ),
-            PyProjectConfig(
-                id_keys=["tool", "coverage", "run"],
-                main_contents={
-                    "source": ["src"],
-                    "omit": ["*/pytest-of-*/*"],
-                },
-            ),
-        ]
-
-    def get_associated_ruff_rules(self) -> list[str]:
-        return ["PT"]
-
-    def is_used(self) -> bool:
-        pyproject = read_pyproject_toml()
-
-        try:
-            tool = pyproject["tool"]
-            TypeAdapter(dict).validate_python(tool)
-            assert isinstance(tool, dict)
-            tool["pytest"]
-        except KeyError:
-            is_pyproject_config = False
-        else:
-            is_pyproject_config = True
-
-        is_conftest = (Path.cwd() / "tests" / "conftest.py").exists()
-
-        return (
-            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-            or is_pyproject_config
-            or is_conftest
-        )
-
-
-ALL_TOOLS: list[Tool] = [PreCommitTool(), DeptryTool(), RuffTool(), PytestTool()]
+ALL_TOOLS: list[Tool] = [
+    DeptryTool(),
+    PreCommitTool(),
+    PyprojectFmtTool(),
+    PytestTool(),
+    RuffTool(),
+]

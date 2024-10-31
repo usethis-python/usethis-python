@@ -8,6 +8,7 @@ from usethis._utils._yaml import edit_yaml
 
 _HOOK_ORDER = [
     "validate-pyproject",
+    "pyproject-fmt",
     "ruff-format",
     "ruff-check",
     "deptry",

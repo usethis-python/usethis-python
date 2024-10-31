@@ -47,7 +47,6 @@ dev = [
   "deptry>=0.20.0",
   "import-linter>=2.1",
   "pre-commit>=4.0.1",
-  "pyproject-fmt>=2.4.3",
   "pyright>=1.1.387",
   "ruff>=0.7.1",
 ]
@@ -74,7 +73,10 @@ line-length = 88
 
 src = [ "src" ]
 lint.select = [ "C4", "E4", "E7", "E9", "F", "FURB", "I", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
-lint.ignore = ["PT004", "PT005"]
+lint.ignore = [ "PT004", "PT005" ]
+
+[tool.pyproject-fmt]
+keep_full_version = true
 
 [tool.pytest.ini_options]
 testpaths = [ "tests" ]

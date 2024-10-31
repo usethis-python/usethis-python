@@ -5,6 +5,7 @@ import pytest
 import requests
 from packaging.specifiers import SpecifierSet
 
+from usethis._config import usethis_config
 from usethis._integrations.pyproject.io import PyProjectTOMLNotFoundError
 from usethis._integrations.pyproject.requires_python import (
     MAX_MAJOR_PY3,
@@ -16,15 +17,13 @@ from usethis._utils._test import change_cwd
 
 
 class TestMaxMajorPy3:
-    def test_max_major_py3(self):
-        try:
-            endoflife_info: list[dict[str, Any] | dict[Literal["cycle"], str]] = (
-                requests.get(
-                    r"https://endoflife.date/api/python.json", timeout=5
-                ).json()
-            )
-        except requests.exceptions.ConnectionError:
-            pytest.skip(reason="Failed to connect to https://endoflife.date/")
+    def test_max_major_py3(self, vary_network_conn: None):
+        if usethis_config.offline:
+            pytest.skip("Test requires network connection to fetch Python release data")
+
+        endoflife_info: list[dict[str, Any] | dict[Literal["cycle"], str]] = (
+            requests.get(r"https://endoflife.date/api/python.json", timeout=5).json()
+        )
 
         assert (
             max(int(x["cycle"].split(".")[1]) for x in endoflife_info) == MAX_MAJOR_PY3

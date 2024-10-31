@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from usethis._console import console
+from usethis._console import tick_print
 
 _YAML_CONTENTS = """\
 image: atlassian/default-image:3
@@ -27,7 +27,7 @@ def add_bitbucket_pipeline_config() -> None:
         # Early exit; the file already exists
         return
 
-    console.tick_print("Writing 'bitbucket-pipelines.yml'.")
+    tick_print("Writing 'bitbucket-pipelines.yml'.")
     yaml_contents = _YAML_CONTENTS
 
     (Path.cwd() / "bitbucket-pipelines.yml").write_text(yaml_contents)
@@ -38,5 +38,5 @@ def remove_bitbucket_pipeline_config() -> None:
         # Early exit; the file already doesn't exist
         return
 
-    console.tick_print("Removing 'bitbucket-pipelines.yml' file.")
+    tick_print("Removing 'bitbucket-pipelines.yml' file.")
     (Path.cwd() / "bitbucket-pipelines.yml").unlink()

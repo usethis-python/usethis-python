@@ -28,3 +28,19 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
+  - repo: local
+    hooks:
+      - id: import-linter
+        name: import-linter
+        entry: uv run --frozen lint-imports
+        language: system
+        always_run: true
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: uv run --frozen pyright
+        language: system
+        always_run: true
+        pass_filenames: false

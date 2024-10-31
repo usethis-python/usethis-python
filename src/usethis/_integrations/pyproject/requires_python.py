@@ -1,4 +1,5 @@
 from packaging.specifiers import SpecifierSet
+from pydantic import TypeAdapter
 
 from usethis._integrations.pyproject.io import read_pyproject_toml
 
@@ -14,7 +15,9 @@ def get_requires_python() -> SpecifierSet:
     pyproject = read_pyproject_toml()
 
     try:
-        requires_python = pyproject["project"]["requires-python"]
+        requires_python = TypeAdapter(str).validate_python(
+            TypeAdapter(dict).validate_python(pyproject["project"])["requires-python"]
+        )
     except KeyError:
         raise MissingRequiresPythonError(
             "The [project.requires-python] value is missing from 'pyproject.toml'."

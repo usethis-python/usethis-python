@@ -2,7 +2,9 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-from usethis._console import console
+from pydantic import TypeAdapter
+
+from usethis._console import tick_print
 from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
 from usethis._integrations.pre_commit.core import add_pre_commit_config
 from usethis._integrations.pre_commit.hooks import (
@@ -78,7 +80,7 @@ class Tool(Protocol):
             if hook.id not in get_hook_names():
                 # Need to add this hook, it is missing.
                 if first_time_adding:
-                    console.tick_print(
+                    tick_print(
                         f"Adding {self.name} config to '.pre-commit-config.yaml'."
                     )
                     first_time_adding = False
@@ -101,7 +103,7 @@ class Tool(Protocol):
         for hook in repo_config.hooks:
             if hook.id in get_hook_names():
                 if first_removal:
-                    console.tick_print(
+                    tick_print(
                         f"Removing {self.name} config from '.pre-commit-config.yaml'."
                     )
                     first_removal = False
@@ -123,9 +125,7 @@ class Tool(Protocol):
                 pass
             else:
                 if first_addition:
-                    console.tick_print(
-                        f"Adding {self.name} config to 'pyproject.toml'."
-                    )
+                    tick_print(f"Adding {self.name} config to 'pyproject.toml'.")
                     first_addition = False
 
     def remove_pyproject_configs(self) -> None:
@@ -143,9 +143,7 @@ class Tool(Protocol):
                 pass
             else:
                 if first_removal:
-                    console.tick_print(
-                        f"Removing {self.name} config from 'pyproject.toml'."
-                    )
+                    tick_print(f"Removing {self.name} config from 'pyproject.toml'.")
                     first_removal = False
 
 
@@ -269,7 +267,10 @@ class RuffTool(Tool):
         pyproject = read_pyproject_toml()
 
         try:
-            pyproject["tool"]["ruff"]
+            tool = pyproject["tool"]
+            TypeAdapter(dict).validate_python(tool)
+            assert isinstance(tool, dict)
+            tool["ruff"]
         except KeyError:
             is_pyproject_config = False
         else:
@@ -327,7 +328,10 @@ class PytestTool(Tool):
         pyproject = read_pyproject_toml()
 
         try:
-            pyproject["tool"]["pytest"]
+            tool = pyproject["tool"]
+            TypeAdapter(dict).validate_python(tool)
+            assert isinstance(tool, dict)
+            tool["pytest"]
         except KeyError:
             is_pyproject_config = False
         else:

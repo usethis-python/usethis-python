@@ -67,7 +67,7 @@ source = "vcs"
 "Source Code" = "https://github.com/nathanjmcdougall/usethis-python"
 "Bug Tracker" = "https://github.com/nathanjmcdougall/usethis-python/issues"
 "Releases" = "https://github.com/nathanjmcdougall/usethis-python/releases"
-"source_archive" = "https://github.com/nathanjmcdougall/usethis-python/archive/{commit_hash}.zip"
+"Source Archive" = "https://github.com/nathanjmcdougall/usethis-python/archive/{commit_hash}.zip"
 
 [tool.ruff]
 line-length = 88

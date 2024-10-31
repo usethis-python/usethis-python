@@ -30,8 +30,8 @@ class NetworkConn(Enum):
 
 @pytest.fixture(
     params=[
+        NetworkConn.ONLINE,  # Run online first since we want to populate caches
         NetworkConn.OFFLINE,
-        NetworkConn.ONLINE,
     ],
 )
 def vary_network_conn(request: pytest.FixtureRequest) -> Generator[bool, None, None]:

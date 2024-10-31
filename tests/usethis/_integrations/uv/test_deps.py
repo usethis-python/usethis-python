@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from usethis._integrations.uv.deps import get_dep_groups
+from usethis._integrations.uv.deps import (
+    add_deps_to_group,
+    get_dep_groups,
+    get_deps_from_group,
+    remove_deps_from_group,
+)
 from usethis._utils._test import change_cwd
 
 
@@ -35,7 +40,7 @@ test=['pytest']
 """)
 
         with change_cwd(tmp_path):
-            assert get_dep_groups() == {"test": "pytest"}
+            assert get_dep_groups() == {"test": ["pytest"]}
 
     def test_multiple_dev_deps(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text("""\
@@ -60,3 +65,26 @@ test=['pytest']
                 "qa": ["flake8", "black", "isort"],
                 "test": ["pytest"],
             }
+
+
+class TestAddDepsToGroup:
+    def test_pyproject_changed(self, uv_init_dir: Path, vary_network_conn: None):
+        with change_cwd(uv_init_dir):
+            # Act
+            add_deps_to_group(["pytest"], "test")
+
+            # Assert
+            assert "pytest" in get_deps_from_group("test")
+
+
+class TestRemoveDepsFromGroup:
+    def test_pyproject_changed(self, uv_init_dir: Path, vary_network_conn: None):
+        with change_cwd(uv_init_dir):
+            # Arrange
+            add_deps_to_group(["pytest"], "test")
+
+            # Act
+            remove_deps_from_group(["pytest"], "test")
+
+            # Assert
+            assert "pytest" not in get_deps_from_group("test")

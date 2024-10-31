@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._interface.ci import _bitbucket
-from usethis._utils._test import change_cwd, is_offline
+from usethis._utils._test import change_cwd
 
 
 class TestBitBucket:
@@ -12,7 +12,7 @@ class TestBitBucket:
             def test_exists(self, uv_init_dir: Path):
                 # Act
                 with change_cwd(uv_init_dir):
-                    _bitbucket(offline=is_offline())
+                    _bitbucket()
 
                 # Assert
                 assert (uv_init_dir / "bitbucket-pipelines.yml").exists()
@@ -20,7 +20,7 @@ class TestBitBucket:
             def test_contents(self, uv_init_dir: Path):
                 # Act
                 with change_cwd(uv_init_dir):
-                    _bitbucket(offline=is_offline())
+                    _bitbucket()
 
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -54,7 +54,7 @@ pipelines:
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _bitbucket(offline=is_offline())
+                    _bitbucket()
 
                 # Assert
                 assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == ""
@@ -66,7 +66,7 @@ pipelines:
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _bitbucket(offline=is_offline())
+                    _bitbucket()
 
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -75,7 +75,7 @@ pipelines:
             def test_not_mentioned_if_not_used(self, uv_init_dir: Path):
                 # Act
                 with change_cwd(uv_init_dir):
-                    _bitbucket(offline=is_offline())
+                    _bitbucket()
 
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -89,7 +89,7 @@ pipelines:
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _bitbucket(offline=is_offline())
+                    _bitbucket()
 
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -98,7 +98,7 @@ pipelines:
             def test_not_mentioned_if_not_used(self, uv_init_dir: Path):
                 # Act
                 with change_cwd(uv_init_dir):
-                    _bitbucket(offline=is_offline())
+                    _bitbucket()
 
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -112,7 +112,7 @@ pipelines:
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _bitbucket(remove=True, offline=is_offline())
+                    _bitbucket(remove=True)
 
                 # Assert
                 assert not (uv_init_dir / "bitbucket-pipelines.yml").exists()
@@ -125,7 +125,7 @@ pipelines:
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _bitbucket(remove=True, offline=is_offline())
+                    _bitbucket(remove=True)
 
                 # Assert
                 out, _ = capfd.readouterr()

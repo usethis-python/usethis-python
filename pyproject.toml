@@ -7,7 +7,7 @@ requires = [ "hatch-vcs", "hatchling" ]
 name = "usethis"
 description = "Automate Python project setup and development tasks that are otherwise performed manually."
 readme = "README.md"
-keywords = ["usethis", "project", "init", "setup", "start"]
+keywords = [ "init", "project", "setup", "start", "usethis" ]
 license = { file = "LICENSE" }
 authors = [
   { name = "Nathan McDougall", email = "nathan.j.mcdougall@gmail.com" },
@@ -48,6 +48,7 @@ dev = [
   "import-linter>=2.1",
   "pre-commit>=4.0.1",
   "pyproject-fmt>=2.4.3",
+  "pyright>=1.1.387",
   "ruff>=0.7.1",
 ]
 test = [
@@ -66,13 +67,14 @@ source = "vcs"
 "Source Code" = "https://github.com/nathanjmcdougall/usethis-python"
 "Bug Tracker" = "https://github.com/nathanjmcdougall/usethis-python/issues"
 "Releases" = "https://github.com/nathanjmcdougall/usethis-python/releases"
-"source_archive" = "https://github.com/nathanjmcdougall/usethis-python/archive/{commit_hash}.zip"
+"Source Archive" = "https://github.com/nathanjmcdougall/usethis-python/archive/{commit_hash}.zip"
 
 [tool.ruff]
 line-length = 88
 
 src = [ "src" ]
-lint.select = ["C4", "E4", "E7", "E9", "F", "FURB", "I", "PLE", "PLR", "RUF", "SIM", "UP", "PT"]
+lint.select = [ "C4", "E4", "E7", "E9", "F", "FURB", "I", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
+lint.ignore = ["PT004", "PT005"]
 
 [tool.pytest.ini_options]
 testpaths = [ "tests" ]
@@ -99,6 +101,7 @@ layers = [
   "_tool",
   "_integrations",
   "_console",
+  "_config",
   "_utils",
 ]
 containers = [ "usethis" ]

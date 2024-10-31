@@ -4,7 +4,8 @@ import subprocess
 from packaging.requirements import Requirement
 from pydantic import TypeAdapter
 
-from usethis._console import console
+from usethis._config import usethis_config
+from usethis._console import tick_print
 from usethis._integrations.pyproject.io import read_pyproject_toml
 
 
@@ -35,7 +36,7 @@ def get_deps_from_group(group: str) -> list[str]:
         return []
 
 
-def add_deps_to_group(pypi_names: list[str], group: str, *, offline: bool) -> None:
+def add_deps_to_group(pypi_names: list[str], group: str) -> None:
     """Add a package as a non-build dependency using PEP 735 dependency groups."""
     existing_group = get_deps_from_group(group)
 
@@ -44,8 +45,8 @@ def add_deps_to_group(pypi_names: list[str], group: str, *, offline: bool) -> No
             # Early exit; the tool is already a dev dependency.
             continue
 
-        console.tick_print(f"Adding '{dep}' to the '{group}' dependency group.")
-        if not offline:
+        tick_print(f"Adding '{dep}' to the '{group}' dependency group.")
+        if not usethis_config.offline:
             subprocess.run(
                 ["uv", "add", "--group", group, "--quiet", dep],
                 check=True,
@@ -57,7 +58,7 @@ def add_deps_to_group(pypi_names: list[str], group: str, *, offline: bool) -> No
             )
 
 
-def remove_deps_from_group(pypi_names: list[str], group: str, *, offline: bool) -> None:
+def remove_deps_from_group(pypi_names: list[str], group: str) -> None:
     """Remove the tool's development dependencies, if present."""
     existing_group = get_deps_from_group(group)
 
@@ -66,8 +67,8 @@ def remove_deps_from_group(pypi_names: list[str], group: str, *, offline: bool) 
             # Early exit; the tool is already not a dependency.
             continue
 
-        console.tick_print(f"Removing '{dep}' from the '{group}' dependency group.")
-        if not offline:
+        tick_print(f"Removing '{dep}' from the '{group}' dependency group.")
+        if not usethis_config.offline:
             subprocess.run(
                 [
                     "uv",

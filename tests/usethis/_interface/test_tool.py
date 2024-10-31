@@ -35,7 +35,7 @@ class TestPreCommit:
         def test_dependency_added(self, uv_init_dir: Path):
             # Act
             with change_cwd(uv_init_dir):
-                _pre_commit(offline=is_offline())
+                _pre_commit()
 
                 # Assert
                 (dev_dep,) = get_deps_from_group("dev")
@@ -44,7 +44,7 @@ class TestPreCommit:
         def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
             with change_cwd(uv_init_dir):
-                _pre_commit(offline=is_offline())
+                _pre_commit()
 
             # Assert
             out, _ = capfd.readouterr()
@@ -58,7 +58,7 @@ class TestPreCommit:
         def test_config_file_exists(self, uv_init_dir: Path):
             # Act
             with change_cwd(uv_init_dir):
-                _pre_commit(offline=is_offline())
+                _pre_commit()
 
             # Assert
             assert (uv_init_dir / ".pre-commit-config.yaml").exists()
@@ -66,7 +66,7 @@ class TestPreCommit:
         def test_config_file_contents(self, uv_init_dir: Path):
             # Act
             with change_cwd(uv_init_dir):
-                _pre_commit(offline=is_offline())
+                _pre_commit()
 
             # Assert
             contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
@@ -94,7 +94,7 @@ repos:
 
             # Act
             with change_cwd(uv_init_repo_dir):
-                _pre_commit(offline=is_offline())
+                _pre_commit()
 
             # Assert
             contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
@@ -110,7 +110,7 @@ repos:
         def test_bad_commit(self, uv_init_repo_dir: Path):
             # Act
             with change_cwd(uv_init_repo_dir):
-                _pre_commit(offline=is_offline())
+                _pre_commit()
             subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
             subprocess.run(
                 ["git", "commit", "-m", "Good commit"], cwd=uv_init_repo_dir, check=True
@@ -176,7 +176,7 @@ repos:
 
             # Act
             with change_cwd(uv_init_dir):
-                _pre_commit(remove=True, offline=is_offline())
+                _pre_commit(remove=True)
 
             # Assert
             assert not (uv_init_dir / ".pre-commit-config.yaml").exists()
@@ -184,10 +184,10 @@ repos:
         def test_dep(self, uv_init_dir: Path):
             with change_cwd(uv_init_dir):
                 # Arrange
-                add_deps_to_group(["pre-commit"], "dev", offline=is_offline())
+                add_deps_to_group(["pre-commit"], "dev")
 
                 # Act
-                _pre_commit(remove=True, offline=is_offline())
+                _pre_commit(remove=True)
 
                 # Assert
                 assert not get_deps_from_group("dev")
@@ -248,8 +248,8 @@ class TestDeptry:
     ):
         # Act
         with change_cwd(uv_init_dir):
-            _deptry(offline=is_offline())
-            _pre_commit(offline=is_offline())
+            _deptry()
+            _pre_commit()
 
             # Assert
             hook_names = get_hook_names()
@@ -297,8 +297,8 @@ repos:
     ):
         # Act
         with change_cwd(uv_init_dir):
-            _pre_commit(offline=is_offline())
-            _deptry(offline=is_offline())
+            _pre_commit()
+            _deptry()
 
             # Assert
             hook_names = get_hook_names()
@@ -346,7 +346,7 @@ class TestRuff:
         def test_dependency_added(self, uv_init_dir: Path):
             # Act
             with change_cwd(uv_init_dir):
-                _ruff(offline=is_offline())
+                _ruff()
 
                 # Assert
                 (dev_dep,) = get_deps_from_group("dev")
@@ -355,7 +355,7 @@ class TestRuff:
         def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
             with change_cwd(uv_init_dir):
-                _ruff(offline=is_offline())
+                _ruff()
 
             # Assert
             out, _ = capfd.readouterr()
@@ -382,8 +382,8 @@ class TestRuff:
         ):
             # Act
             with change_cwd(uv_init_dir):
-                _ruff(offline=is_offline())
-                _pre_commit(offline=is_offline())
+                _ruff()
+                _pre_commit()
 
                 # Assert
                 hook_names = get_hook_names()
@@ -403,7 +403,7 @@ select = ["A", "B", "C"]
 
             # Act
             with change_cwd(uv_init_dir):
-                _ruff(remove=True, offline=is_offline())
+                _ruff(remove=True)
 
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == ""
@@ -414,7 +414,7 @@ select = ["A", "B", "C"]
 
             # Act
             with change_cwd(uv_init_dir):
-                _ruff(remove=True, offline=is_offline())
+                _ruff(remove=True)
 
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == contents
@@ -425,8 +425,8 @@ select = ["A", "B", "C"]
 
             # Act
             with change_cwd(uv_init_dir):
-                _ruff(offline=is_offline())
-                _ruff(remove=True, offline=is_offline())
+                _ruff()
+                _ruff(remove=True)
 
             # Assert
             assert (
@@ -445,7 +445,7 @@ class TestPytest:
     class TestAdd:
         def test_dep(self, uv_init_dir: Path):
             with change_cwd(uv_init_dir):
-                _pytest(offline=is_offline())
+                _pytest()
 
                 assert {
                     "pytest",
@@ -467,7 +467,7 @@ select = ["E", "PT"]
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _pytest(remove=True, offline=is_offline())
+                    _pytest(remove=True)
 
                 # Assert
                 assert (uv_init_dir / "pyproject.toml").read_text() == (
@@ -490,7 +490,7 @@ select = ["PT"]
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _pytest(remove=True, offline=is_offline())
+                    _pytest(remove=True)
 
                 # Assert
                 out, _ = capfd.readouterr()
@@ -508,7 +508,7 @@ select = ["PT"]
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _pytest(remove=True, offline=is_offline())
+                    _pytest(remove=True)
 
                 # Assert
                 assert (uv_init_dir / "pyproject.toml").read_text() == ""
@@ -526,7 +526,7 @@ select = ["PT"]
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _pytest(remove=True, offline=is_offline())
+                    _pytest(remove=True)
 
                 # Assert
                 out, _ = capfd.readouterr()
@@ -537,11 +537,11 @@ select = ["PT"]
         class Dependencies:
             def test_removed(self, uv_init_dir: Path):
                 # Arrange
-                add_deps_to_group(["pytest"], "test", offline=is_offline())
+                add_deps_to_group(["pytest"], "test")
 
                 # Act
                 with change_cwd(uv_init_dir):
-                    _pytest(remove=True, offline=is_offline())
+                    _pytest(remove=True)
 
                 # Assert
                 assert not get_deps_from_group("test")

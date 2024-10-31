@@ -40,7 +40,7 @@ test=['pytest']
 """)
 
         with change_cwd(tmp_path):
-            assert get_dep_groups() == {"test": "pytest"}
+            assert get_dep_groups() == {"test": ["pytest"]}
 
     def test_multiple_dev_deps(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text("""\

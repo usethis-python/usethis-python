@@ -1,5 +1,3 @@
-import contextlib
-
 import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
@@ -190,11 +188,23 @@ def ruff(
 def _ruff(*, remove: bool = False) -> None:
     tool = RuffTool()
 
-    rules = []
+    rules = [
+        "C4",
+        "E4",
+        "E7",
+        "E9",
+        "F",
+        "FURB",
+        "I",
+        "PLE",
+        "PLR",
+        "RUF",
+        "SIM",
+        "UP",
+    ]
     for _tool in ALL_TOOLS:
-        if _tool.is_used() or _tool.name == "ruff":
-            with contextlib.suppress(NotImplementedError):
-                rules += _tool.get_associated_ruff_rules()
+        if _tool.is_used():
+            rules += _tool.get_associated_ruff_rules()
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev")

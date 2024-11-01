@@ -23,7 +23,9 @@ class TestAllHooksList:
         for tool in ALL_TOOLS:
             try:
                 hook_names = [
-                    hook.id for hook in tool.get_pre_commit_repo_config().hooks
+                    hook.id
+                    for repo_config in tool.get_pre_commit_repo_configs()
+                    for hook in repo_config.hooks
                 ]
             except NotImplementedError:
                 continue

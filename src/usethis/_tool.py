@@ -30,47 +30,79 @@ class Tool(Protocol):
         """The name of the tool, for display purposes."""
 
     @property
-    @abstractmethod
     def dev_deps(self) -> list[str]:
         """The name of the tool's development dependencies."""
+        return []
 
-    @abstractmethod
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        """Get the pre-commit repository configuration for the tool.
+    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+        """Get the pre-commit repository configurations for the tool."""
+        return []
 
-        Raises:
-            NotImplementedError: If the tool does not have a pre-commit configuration.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
-        """Get the pyproject configurations for the tool.
+        """Get the pyproject configurations for the tool."""
+        return []
 
-        Raises:
-            NotImplementedError: If the tool does not have a pyproject configuration.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def get_associated_ruff_rules(self) -> list[str]:
-        """Get the ruff rule codes associated with the tool.
+        """Get the ruff rule codes associated with the tool."""
+        return []
 
-        Raises:
-            NotImplementedError: If the tool does not have associated ruff rules.
-        """
-        raise NotImplementedError
+    def get_unique_dev_deps(self) -> list[str]:
+        """Any development dependencies only used by this tool (not shared)."""
+        return self.dev_deps
+
+    def get_managed_files(self) -> list[Path]:
+        """Get (relative) paths to files managed by the tool."""
+        return []
+
+    def get_pyproject_id_keys(self) -> list[list[str]]:
+        """Get keys for any pyproject.toml sections only used by this tool (not shared)."""
+        return []
 
     def is_used(self) -> bool:
-        """Whether the tool is being used in the current project."""
-        return any(is_dep_in_any_group(dep) for dep in self.dev_deps)
+        """Whether the tool is being used in the current project.
+
+        Three heuristics are used by default:
+        1. Whether any of the tool's development dependencies are in the project.
+        2. Whether any of the tool's managed files are in the project.
+        3. Whether any of the tool's managed pyproject.toml sections are present.
+        """
+        is_any_deps = any(is_dep_in_any_group(dep) for dep in self.dev_deps)
+        is_any_files = False
+        for file in self.get_managed_files():
+            if file.exists() and file.is_file():
+                is_any_files = True
+                break
+
+        pyproject = read_pyproject_toml()
+
+        is_any_pyproject = False
+        for id_keys in self.get_pyproject_id_keys():
+            p = pyproject
+            try:
+                for key in id_keys:
+                    TypeAdapter(dict).validate_python(p)
+                    assert isinstance(p, dict)
+                    p = p[key]
+            except KeyError:
+                pass
+            else:
+                is_any_pyproject = True
+                break
+
+        return is_any_deps or is_any_files or is_any_pyproject
 
     def add_pre_commit_repo_config(self) -> None:
         """Add the tool's pre-commit configuration."""
-        try:
-            repo_config = self.get_pre_commit_repo_config()
-        except NotImplementedError:
+        repo_configs = self.get_pre_commit_repo_configs()
+
+        if not repo_configs:
             return
+
+        if len(repo_configs) > 1:
+            raise NotImplementedError(
+                "Multiple pre-commit repo configurations not yet supported."
+            )
+        repo_config = repo_configs[0]
 
         add_pre_commit_config()
 
@@ -93,10 +125,16 @@ class Tool(Protocol):
 
     def remove_pre_commit_repo_config(self) -> None:
         """Remove the tool's pre-commit configuration."""
-        try:
-            repo_config = self.get_pre_commit_repo_config()
-        except NotImplementedError:
+        repo_configs = self.get_pre_commit_repo_configs()
+
+        if not repo_configs:
             return
+
+        if len(repo_configs) > 1:
+            raise NotImplementedError(
+                "Multiple pre-commit repo configurations not yet supported."
+            )
+        repo_config = repo_configs[0]
 
         # Remove the config for this specific tool.
         first_removal = True
@@ -112,9 +150,8 @@ class Tool(Protocol):
     def add_pyproject_configs(self) -> None:
         """Add the tool's pyproject.toml configurations."""
 
-        try:
-            configs = self.get_pyproject_configs()
-        except NotImplementedError:
+        configs = self.get_pyproject_configs()
+        if not configs:
             return
 
         first_addition = True
@@ -130,9 +167,9 @@ class Tool(Protocol):
 
     def remove_pyproject_configs(self) -> None:
         """Remove the tool's pyproject.toml configuration."""
-        try:
-            configs = self.get_pyproject_configs()
-        except NotImplementedError:
+
+        configs = self.get_pyproject_configs()
+        if not configs:
             return
 
         first_removal = True
@@ -156,26 +193,22 @@ class DeptryTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["deptry"]
 
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        return PreCommitRepoConfig(
-            repo="local",
-            hooks=[
-                HookConfig(
-                    id="deptry",
-                    name="deptry",
-                    entry="uv run --frozen deptry src",
-                    language="system",
-                    always_run=True,
-                    pass_filenames=False,
-                )
-            ],
-        )
-
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
-        raise NotImplementedError
-
-    def get_associated_ruff_rules(self) -> list[str]:
-        raise NotImplementedError
+    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+        return [
+            PreCommitRepoConfig(
+                repo="local",
+                hooks=[
+                    HookConfig(
+                        id="deptry",
+                        name="deptry",
+                        entry="uv run --frozen deptry src",
+                        language="system",
+                        always_run=True,
+                        pass_filenames=False,
+                    )
+                ],
+            )
+        ]
 
 
 class PreCommitTool(Tool):
@@ -187,20 +220,8 @@ class PreCommitTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["pre-commit"]
 
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        raise NotImplementedError
-
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
-        raise NotImplementedError
-
-    def get_associated_ruff_rules(self) -> list[str]:
-        raise NotImplementedError
-
-    def is_used(self) -> bool:
-        return (
-            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-            or (Path.cwd() / ".pre-commit-config.yaml").exists()
-        )
+    def get_managed_files(self):
+        return [Path(".pre-commit-config.yaml")]
 
 
 class PyprojectFmtTool(Tool):
@@ -212,12 +233,14 @@ class PyprojectFmtTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["pyproject-fmt"]
 
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        return PreCommitRepoConfig(
-            repo="https://github.com/tox-dev/pyproject-fmt",
-            rev="v2.5.0",  # Manually bump this version when necessary
-            hooks=[HookConfig(id="pyproject-fmt")],
-        )
+    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+        return [
+            PreCommitRepoConfig(
+                repo="https://github.com/tox-dev/pyproject-fmt",
+                rev="v2.5.0",  # Manually bump this version when necessary
+                hooks=[HookConfig(id="pyproject-fmt")],
+            )
+        ]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
@@ -227,26 +250,8 @@ class PyprojectFmtTool(Tool):
             )
         ]
 
-    def get_associated_ruff_rules(self) -> list[str]:
-        return []
-
-    def is_used(self) -> bool:
-        pyproject = read_pyproject_toml()
-
-        try:
-            tool = pyproject["tool"]
-            TypeAdapter(dict).validate_python(tool)
-            assert isinstance(tool, dict)
-            tool["pyproject-fmt"]
-        except KeyError:
-            is_pyproject_config = False
-        else:
-            is_pyproject_config = True
-
-        return (
-            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-            or is_pyproject_config
-        )
+    def get_pyproject_id_keys(self):
+        return [["tool", "pyproject-fmt"]]
 
 
 class PytestTool(Tool):
@@ -257,9 +262,6 @@ class PytestTool(Tool):
     @property
     def dev_deps(self) -> list[str]:
         return ["pytest", "pytest-md", "pytest-cov", "coverage[toml]"]
-
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        raise NotImplementedError
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
@@ -286,26 +288,14 @@ class PytestTool(Tool):
     def get_associated_ruff_rules(self) -> list[str]:
         return ["PT"]
 
-    def is_used(self) -> bool:
-        pyproject = read_pyproject_toml()
+    def get_unique_dev_deps(self):
+        return ["pytest", "pytest-md", "pytest-cov"]
 
-        try:
-            tool = pyproject["tool"]
-            TypeAdapter(dict).validate_python(tool)
-            assert isinstance(tool, dict)
-            tool["pytest"]
-        except KeyError:
-            is_pyproject_config = False
-        else:
-            is_pyproject_config = True
+    def get_pyproject_id_keys(self):
+        return [["tool", "pytest"]]
 
-        is_conftest = (Path.cwd() / "tests" / "conftest.py").exists()
-
-        return (
-            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-            or is_pyproject_config
-            or is_conftest
-        )
+    def get_managed_files(self):
+        return [Path("tests/conftest.py")]
 
 
 class RuffTool(Tool):
@@ -317,28 +307,30 @@ class RuffTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["ruff"]
 
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        return PreCommitRepoConfig(
-            repo="local",
-            hooks=[
-                HookConfig(
-                    id="ruff-format",
-                    name="ruff-format",
-                    entry="uv run --frozen ruff format",
-                    language="system",
-                    always_run=True,
-                    pass_filenames=False,
-                ),
-                HookConfig(
-                    id="ruff-check",
-                    name="ruff-check",
-                    entry="uv run --frozen ruff check --fix",
-                    language="system",
-                    always_run=True,
-                    pass_filenames=False,
-                ),
-            ],
-        )
+    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+        return [
+            PreCommitRepoConfig(
+                repo="local",
+                hooks=[
+                    HookConfig(
+                        id="ruff-format",
+                        name="ruff-format",
+                        entry="uv run --frozen ruff format",
+                        language="system",
+                        always_run=True,
+                        pass_filenames=False,
+                    ),
+                    HookConfig(
+                        id="ruff-check",
+                        name="ruff-check",
+                        entry="uv run --frozen ruff check --fix",
+                        language="system",
+                        always_run=True,
+                        pass_filenames=False,
+                    ),
+                ],
+            )
+        ]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
@@ -352,44 +344,11 @@ class RuffTool(Tool):
             )
         ]
 
-    def get_associated_ruff_rules(self) -> list[str]:
-        return [
-            "C4",
-            "E4",
-            "E7",
-            "E9",
-            "F",
-            "FURB",
-            "I",
-            "PLE",
-            "PLR",
-            "RUF",
-            "SIM",
-            "UP",
-        ]
+    def get_pyproject_id_keys(self):
+        return [["tool", "ruff"]]
 
-    def is_used(self) -> bool:
-        pyproject = read_pyproject_toml()
-
-        try:
-            tool = pyproject["tool"]
-            TypeAdapter(dict).validate_python(tool)
-            assert isinstance(tool, dict)
-            tool["ruff"]
-        except KeyError:
-            is_pyproject_config = False
-        else:
-            is_pyproject_config = True
-
-        is_ruff_toml_config = (Path.cwd() / "ruff.toml").exists() or (
-            Path.cwd() / ".ruff.toml"
-        ).exists()
-
-        return (
-            any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-            or is_pyproject_config
-            or is_ruff_toml_config
-        )
+    def get_managed_files(self):
+        return [Path("ruff.toml"), Path(".ruff.toml")]
 
 
 ALL_TOOLS: list[Tool] = [

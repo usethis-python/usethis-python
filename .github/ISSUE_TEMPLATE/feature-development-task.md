@@ -2,7 +2,7 @@
 name: Feature Development Task
 about: A tightly scoped task for a developer.
 title: ''
-labels: ''
+labels: 'enhancement'
 assignees: nathanjmcdougall
 
 ---

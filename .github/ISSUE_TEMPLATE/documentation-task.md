@@ -2,7 +2,7 @@
 name: Documentation Task
 about: A tightly scoped task for adding or updating documentation.
 title: ''
-labels: ''
+labels: 'documentation'
 assignees: nathanjmcdougall
 
 ---

@@ -396,7 +396,6 @@ class TestPytest:
 
                 assert {
                     "pytest",
-                    "pytest-md",
                     "pytest-cov",
                     "coverage",
                 } <= set(get_deps_from_group("test"))

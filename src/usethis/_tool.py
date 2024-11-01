@@ -34,13 +34,9 @@ class Tool(Protocol):
         """The name of the tool's development dependencies."""
         return []
 
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        """Get the pre-commit repository configuration for the tool.
-
-        Raises:
-            NotImplementedError: If the tool does not have a pre-commit configuration.
-        """
-        raise NotImplementedError
+    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+        """Get the pre-commit repository configurations for the tool."""
+        return []
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         """Get the pyproject configurations for the tool."""
@@ -97,10 +93,16 @@ class Tool(Protocol):
 
     def add_pre_commit_repo_config(self) -> None:
         """Add the tool's pre-commit configuration."""
-        try:
-            repo_config = self.get_pre_commit_repo_config()
-        except NotImplementedError:
+        repo_configs = self.get_pre_commit_repo_configs()
+
+        if not repo_configs:
             return
+
+        if len(repo_configs) > 1:
+            raise NotImplementedError(
+                "Multiple pre-commit repo configurations not yet supported."
+            )
+        repo_config = repo_configs[0]
 
         add_pre_commit_config()
 
@@ -123,10 +125,16 @@ class Tool(Protocol):
 
     def remove_pre_commit_repo_config(self) -> None:
         """Remove the tool's pre-commit configuration."""
-        try:
-            repo_config = self.get_pre_commit_repo_config()
-        except NotImplementedError:
+        repo_configs = self.get_pre_commit_repo_configs()
+
+        if not repo_configs:
             return
+
+        if len(repo_configs) > 1:
+            raise NotImplementedError(
+                "Multiple pre-commit repo configurations not yet supported."
+            )
+        repo_config = repo_configs[0]
 
         # Remove the config for this specific tool.
         first_removal = True
@@ -185,20 +193,22 @@ class DeptryTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["deptry"]
 
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        return PreCommitRepoConfig(
-            repo="local",
-            hooks=[
-                HookConfig(
-                    id="deptry",
-                    name="deptry",
-                    entry="uv run --frozen deptry src",
-                    language="system",
-                    always_run=True,
-                    pass_filenames=False,
-                )
-            ],
-        )
+    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+        return [
+            PreCommitRepoConfig(
+                repo="local",
+                hooks=[
+                    HookConfig(
+                        id="deptry",
+                        name="deptry",
+                        entry="uv run --frozen deptry src",
+                        language="system",
+                        always_run=True,
+                        pass_filenames=False,
+                    )
+                ],
+            )
+        ]
 
 
 class PreCommitTool(Tool):
@@ -223,12 +233,14 @@ class PyprojectFmtTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["pyproject-fmt"]
 
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        return PreCommitRepoConfig(
-            repo="https://github.com/tox-dev/pyproject-fmt",
-            rev="v2.5.0",  # Manually bump this version when necessary
-            hooks=[HookConfig(id="pyproject-fmt")],
-        )
+    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+        return [
+            PreCommitRepoConfig(
+                repo="https://github.com/tox-dev/pyproject-fmt",
+                rev="v2.5.0",  # Manually bump this version when necessary
+                hooks=[HookConfig(id="pyproject-fmt")],
+            )
+        ]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
@@ -295,28 +307,30 @@ class RuffTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["ruff"]
 
-    def get_pre_commit_repo_config(self) -> PreCommitRepoConfig:
-        return PreCommitRepoConfig(
-            repo="local",
-            hooks=[
-                HookConfig(
-                    id="ruff-format",
-                    name="ruff-format",
-                    entry="uv run --frozen ruff format",
-                    language="system",
-                    always_run=True,
-                    pass_filenames=False,
-                ),
-                HookConfig(
-                    id="ruff-check",
-                    name="ruff-check",
-                    entry="uv run --frozen ruff check --fix",
-                    language="system",
-                    always_run=True,
-                    pass_filenames=False,
-                ),
-            ],
-        )
+    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+        return [
+            PreCommitRepoConfig(
+                repo="local",
+                hooks=[
+                    HookConfig(
+                        id="ruff-format",
+                        name="ruff-format",
+                        entry="uv run --frozen ruff format",
+                        language="system",
+                        always_run=True,
+                        pass_filenames=False,
+                    ),
+                    HookConfig(
+                        id="ruff-check",
+                        name="ruff-check",
+                        entry="uv run --frozen ruff check --fix",
+                        language="system",
+                        always_run=True,
+                        pass_filenames=False,
+                    ),
+                ],
+            )
+        ]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [

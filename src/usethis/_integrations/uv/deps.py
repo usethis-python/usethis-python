@@ -1,5 +1,4 @@
 import re
-import subprocess
 
 from packaging.requirements import Requirement
 from pydantic import TypeAdapter
@@ -7,6 +6,7 @@ from pydantic import TypeAdapter
 from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.pyproject.io import read_pyproject_toml
+from usethis._integrations.uv.call import call_subprocess
 
 
 def get_dep_groups() -> dict[str, list[str]]:
@@ -47,14 +47,10 @@ def add_deps_to_group(pypi_names: list[str], group: str) -> None:
 
         tick_print(f"Adding '{dep}' to the '{group}' dependency group.")
         if not usethis_config.offline:
-            subprocess.run(
-                ["uv", "add", "--group", group, "--quiet", dep],
-                check=True,
-            )
+            call_subprocess(["uv", "add", "--group", group, "--quiet", dep])
         else:
-            subprocess.run(
-                ["uv", "add", "--group", group, "--quiet", "--offline", dep],
-                check=True,
+            call_subprocess(
+                ["uv", "add", "--group", group, "--quiet", "--offline", dep]
             )
 
 
@@ -68,30 +64,12 @@ def remove_deps_from_group(pypi_names: list[str], group: str) -> None:
             continue
 
         tick_print(f"Removing '{dep}' from the '{group}' dependency group.")
+        se_dep = _strip_extras(dep)
         if not usethis_config.offline:
-            subprocess.run(
-                [
-                    "uv",
-                    "remove",
-                    "--group",
-                    group,
-                    "--quiet",
-                    _strip_extras(dep),
-                ],
-                check=True,
-            )
+            call_subprocess(["uv", "remove", "--group", group, "--quiet", se_dep])
         else:
-            subprocess.run(
-                [
-                    "uv",
-                    "remove",
-                    "--group",
-                    group,
-                    "--quiet",
-                    "--offline",
-                    _strip_extras(dep),
-                ],
-                check=True,
+            call_subprocess(
+                ["uv", "remove", "--group", group, "--quiet", "--offline", se_dep]
             )
 
 

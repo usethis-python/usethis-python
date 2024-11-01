@@ -1,4 +1,3 @@
-import subprocess
 from collections.abc import Generator
 from enum import Enum
 from pathlib import Path
@@ -7,18 +6,21 @@ import pytest
 from git import Repo
 
 from usethis._config import usethis_config
-from usethis._utils._test import is_offline
+from usethis._integrations.uv.call import call_subprocess
+from usethis._utils._test import change_cwd, is_offline
 
 
 @pytest.fixture
 def uv_init_dir(tmp_path: Path) -> Path:
-    subprocess.run(["uv", "init", "--lib"], cwd=tmp_path, check=True)
+    with change_cwd(tmp_path):
+        call_subprocess(["uv", "init", "--lib"])
     return tmp_path
 
 
 @pytest.fixture
 def uv_init_repo_dir(tmp_path: Path) -> Path:
-    subprocess.run(["uv", "init", "--lib"], cwd=tmp_path, check=True)
+    with change_cwd(tmp_path):
+        call_subprocess(["uv", "init", "--lib"])
     Repo.init(tmp_path)
     return tmp_path
 

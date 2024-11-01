@@ -1,8 +1,8 @@
-import subprocess
 from pathlib import Path
 
 from usethis._console import tick_print
 from usethis._integrations.github.tags import GitHubTagError, get_github_latest_tag
+from usethis._integrations.uv.call import call_subprocess
 
 _YAML_CONTENTS_TEMPLATE = """\
 repos:
@@ -43,17 +43,9 @@ def remove_pre_commit_config() -> None:
 
 def install_pre_commit() -> None:
     tick_print("Ensuring pre-commit hooks are installed.")
-    subprocess.run(
-        ["uv", "run", "pre-commit", "install"],
-        check=True,
-        stdout=subprocess.DEVNULL,
-    )
+    call_subprocess(["uv", "run", "pre-commit", "install"])
 
 
 def uninstall_pre_commit() -> None:
     tick_print("Ensuring pre-commit hooks are uninstalled.")
-    subprocess.run(
-        ["uv", "run", "pre-commit", "uninstall"],
-        check=True,
-        stdout=subprocess.DEVNULL,
-    )
+    call_subprocess(["uv", "run", "pre-commit", "uninstall"])

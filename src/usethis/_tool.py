@@ -261,7 +261,7 @@ class PytestTool(Tool):
 
     @property
     def dev_deps(self) -> list[str]:
-        return ["pytest", "pytest-md", "pytest-cov", "coverage[toml]"]
+        return ["pytest", "pytest-cov", "coverage[toml]"]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
@@ -289,7 +289,7 @@ class PytestTool(Tool):
         return ["PT"]
 
     def get_unique_dev_deps(self):
-        return ["pytest", "pytest-md", "pytest-cov"]
+        return ["pytest", "pytest-cov"]
 
     def get_pyproject_id_keys(self):
         return [["tool", "pytest"]]

@@ -7,6 +7,7 @@ from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.pyproject.io import read_pyproject_toml
 from usethis._integrations.uv.call import call_subprocess
+from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 
 
 def get_dep_groups() -> dict[str, list[str]]:
@@ -46,12 +47,14 @@ def add_deps_to_group(pypi_names: list[str], group: str) -> None:
             continue
 
         tick_print(f"Adding '{dep}' to the '{group}' dependency group.")
-        if not usethis_config.offline:
-            call_subprocess(["uv", "add", "--group", group, "--quiet", dep])
-        else:
-            call_subprocess(
-                ["uv", "add", "--group", group, "--quiet", "--offline", dep]
-            )
+        try:
+            if not usethis_config.offline:
+                call_subprocess(["add", "--group", group, "--quiet", dep])
+            else:
+                call_subprocess(["add", "--group", group, "--quiet", "--offline", dep])
+        except UVSubprocessFailedError as err:
+            msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
+            raise UVDepGroupError(msg) from None
 
 
 def remove_deps_from_group(pypi_names: list[str], group: str) -> None:
@@ -65,12 +68,18 @@ def remove_deps_from_group(pypi_names: list[str], group: str) -> None:
 
         tick_print(f"Removing '{dep}' from the '{group}' dependency group.")
         se_dep = _strip_extras(dep)
-        if not usethis_config.offline:
-            call_subprocess(["uv", "remove", "--group", group, "--quiet", se_dep])
-        else:
-            call_subprocess(
-                ["uv", "remove", "--group", group, "--quiet", "--offline", se_dep]
+        try:
+            if not usethis_config.offline:
+                call_subprocess(["remove", "--group", group, "--quiet", se_dep])
+            else:
+                call_subprocess(
+                    ["remove", "--group", group, "--quiet", "--offline", se_dep]
+                )
+        except UVSubprocessFailedError as err:
+            msg = (
+                f"Failed to remove '{dep}' from the '{group}' dependency group:\n{err}"
             )
+            raise UVDepGroupError(msg) from None
 
 
 def is_dep_in_any_group(dep: str) -> bool:

@@ -1,7 +1,9 @@
+import sys
+
 import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
-from usethis._console import box_print
+from usethis._console import box_print, err_print
 from usethis._integrations.pre_commit.core import (
     add_pre_commit_config,
     install_pre_commit,
@@ -19,6 +21,7 @@ from usethis._tool import (
     PytestTool,
     RuffTool,
 )
+from usethis.errors import UsethisError
 
 app = typer.Typer(help="Add and configure development tools, e.g. linters.")
 
@@ -33,8 +36,12 @@ def deptry(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet):
-        _deptry(remove=remove)
+    try:
+        with usethis_config.set(offline=offline, quiet=quiet):
+            _deptry(remove=remove)
+    except UsethisError as err:
+        err_print(err)
+        sys.exit(1)
 
 
 def _deptry(*, remove: bool = False) -> None:
@@ -62,8 +69,12 @@ def pre_commit(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet):
-        _pre_commit(remove=remove)
+    try:
+        with usethis_config.set(offline=offline, quiet=quiet):
+            _pre_commit(remove=remove)
+    except UsethisError as err:
+        err_print(err)
+        sys.exit(1)
 
 
 def _pre_commit(*, remove: bool = False) -> None:
@@ -104,8 +115,12 @@ def pyproject_fmt(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet):
-        _pyproject_fmt(remove=remove)
+    try:
+        with usethis_config.set(offline=offline, quiet=quiet):
+            _pyproject_fmt(remove=remove)
+    except UsethisError as err:
+        err_print(err)
+        sys.exit(1)
 
 
 def _pyproject_fmt(*, remove: bool = False) -> None:
@@ -144,8 +159,12 @@ def pytest(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet):
-        _pytest(remove=remove)
+    try:
+        with usethis_config.set(offline=offline, quiet=quiet):
+            _pytest(remove=remove)
+    except UsethisError as err:
+        err_print(err)
+        sys.exit(1)
 
 
 def _pytest(*, remove: bool = False) -> None:
@@ -181,8 +200,12 @@ def ruff(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet):
-        _ruff(remove=remove)
+    try:
+        with usethis_config.set(offline=offline, quiet=quiet):
+            _ruff(remove=remove)
+    except UsethisError as err:
+        err_print(err)
+        sys.exit(1)
 
 
 def _ruff(*, remove: bool = False) -> None:

@@ -13,14 +13,14 @@ from usethis._utils._test import change_cwd, is_offline
 @pytest.fixture
 def uv_init_dir(tmp_path: Path) -> Path:
     with change_cwd(tmp_path):
-        call_subprocess(["uv", "init", "--lib"])
+        call_subprocess(["init", "--lib"])
     return tmp_path
 
 
 @pytest.fixture
 def uv_init_repo_dir(tmp_path: Path) -> Path:
     with change_cwd(tmp_path):
-        call_subprocess(["uv", "init", "--lib"])
+        call_subprocess(["init", "--lib"])
     Repo.init(tmp_path)
     return tmp_path
 

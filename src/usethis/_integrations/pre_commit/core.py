@@ -2,7 +2,9 @@ from pathlib import Path
 
 from usethis._console import tick_print
 from usethis._integrations.github.tags import GitHubTagError, get_github_latest_tag
+from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.uv.call import call_subprocess
+from usethis._integrations.uv.errors import UVSubprocessFailedError
 
 _YAML_CONTENTS_TEMPLATE = """\
 repos:
@@ -13,7 +15,7 @@ repos:
         additional_dependencies: ["validate-pyproject-schema-store[all]"]
 """
 # Manually bump this version when necessary
-_VALIDATEPYPROJECT_VERSION = "v0.22"
+_VALIDATEPYPROJECT_VERSION = "v0.23"
 
 
 def add_pre_commit_config() -> None:
@@ -43,9 +45,17 @@ def remove_pre_commit_config() -> None:
 
 def install_pre_commit() -> None:
     tick_print("Ensuring pre-commit hooks are installed.")
-    call_subprocess(["uv", "run", "pre-commit", "install"])
+    try:
+        call_subprocess(["run", "pre-commit", "install"])
+    except UVSubprocessFailedError as err:
+        msg = f"Failed to install pre-commit hooks:\n{err}"
+        raise PreCommitInstallationError(msg) from None
 
 
 def uninstall_pre_commit() -> None:
     tick_print("Ensuring pre-commit hooks are uninstalled.")
-    call_subprocess(["uv", "run", "pre-commit", "uninstall"])
+    try:
+        call_subprocess(["run", "pre-commit", "uninstall"])
+    except UVSubprocessFailedError as err:
+        msg = f"Failed to uninstall pre-commit hooks:\n{err}"
+        raise PreCommitInstallationError(msg) from None

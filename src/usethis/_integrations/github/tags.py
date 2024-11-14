@@ -1,12 +1,6 @@
 import requests
 
-
-class GitHubTagError(Exception):
-    """Custom exception for GitHub tag-related errors."""
-
-
-class NoGitHubTagsFoundError(GitHubTagError):
-    """Custom exception raised when no tags are found."""
+from usethis._integrations.github.errors import GitHubTagError, NoGitHubTagsFoundError
 
 
 def get_github_latest_tag(owner: str, repo: str) -> str:

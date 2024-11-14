@@ -1,15 +1,33 @@
+import tomllib
 from pathlib import Path
+from typing import Any
 
 import tomlkit
 
-
-class PyProjectTOMLNotFoundError(Exception):
-    """Raised when a pyproject.toml file is not found."""
+from usethis._integrations.pyproject.errors import (
+    PyProjectTOMLDecodeError,
+    PyProjectTOMLNotFoundError,
+)
 
 
 def read_pyproject_toml() -> tomlkit.TOMLDocument:
     try:
         return tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
+    except FileNotFoundError:
+        raise PyProjectTOMLNotFoundError(
+            "'pyproject.toml' not found in the current directory."
+        )
+
+
+def read_pyproject_dict() -> dict[str, Any]:
+    try:
+        with Path("pyproject.toml").open("rb") as f:
+            try:
+                return tomllib.load(f)
+            except tomllib.TOMLDecodeError as err:
+                msg = f"Error decoding 'pyproject.toml': {err}"
+                raise PyProjectTOMLDecodeError(msg)
+
     except FileNotFoundError:
         raise PyProjectTOMLNotFoundError(
             "'pyproject.toml' not found in the current directory."

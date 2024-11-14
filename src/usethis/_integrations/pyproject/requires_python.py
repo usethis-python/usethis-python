@@ -20,7 +20,7 @@ def get_requires_python() -> SpecifierSet:
         )
     except KeyError:
         raise MissingRequiresPythonError(
-            "The [project.requires-python] value is missing from 'pyproject.toml'."
+            "The 'project.requires-python' value is missing from 'pyproject.toml'."
         )
 
     return SpecifierSet(requires_python)

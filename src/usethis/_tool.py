@@ -14,8 +14,8 @@ from usethis._integrations.pre_commit.hooks import (
 )
 from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import (
-    ConfigValueAlreadySetError,
-    ConfigValueMissingError,
+    PyPorjectTOMLValueMIssingError,
+    PyProjectTOMLValueAlreadySetError,
     remove_config_value,
     set_config_value,
 )
@@ -158,7 +158,7 @@ class Tool(Protocol):
         for config in configs:
             try:
                 set_config_value(config.id_keys, config.main_contents)
-            except ConfigValueAlreadySetError:
+            except PyProjectTOMLValueAlreadySetError:
                 pass
             else:
                 if first_addition:
@@ -176,7 +176,7 @@ class Tool(Protocol):
         for config in configs:
             try:
                 remove_config_value(config.id_keys)
-            except ConfigValueMissingError:
+            except PyPorjectTOMLValueMIssingError:
                 pass
             else:
                 if first_removal:

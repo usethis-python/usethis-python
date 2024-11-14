@@ -4,18 +4,14 @@ import mergedeep
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 
+from usethis._integrations.pyproject.errors import (
+    PyPorjectTOMLValueMIssingError,
+    PyProjectTOMLValueAlreadySetError,
+)
 from usethis._integrations.pyproject.io import (
     read_pyproject_toml,
     write_pyproject_toml,
 )
-
-
-class ConfigValueAlreadySetError(ValueError):
-    """Raised when a value is unexpectedly already set in the configuration file."""
-
-
-class ConfigValueMissingError(ValueError):
-    """Raised when a value is unexpectedly missing from the configuration file."""
 
 
 def get_config_value(id_keys: list[str]) -> Any:
@@ -66,8 +62,8 @@ def set_config_value(
     else:
         if not exists_ok:
             # The configuration is already present, which is not allowed.
-            msg = f"Configuration value [{'.'.join(id_keys)}] is already set."
-            raise ConfigValueAlreadySetError(msg)
+            msg = f"Configuration value '{'.'.join(id_keys)}' is already set."
+            raise PyProjectTOMLValueAlreadySetError(msg)
         else:
             # The configuration is already present, but we're allowed to overwrite it.
             TypeAdapter(dict).validate_python(parent)
@@ -93,8 +89,8 @@ def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None
     except KeyError:
         if not missing_ok:
             # The configuration is not present, which is not allowed.
-            raise ConfigValueMissingError(
-                f"Configuration value [{'.'.join(id_keys)}] is missing."
+            raise PyPorjectTOMLValueMIssingError(
+                f"Configuration value '{'.'.join(id_keys)}' is missing."
             )
         else:
             # The configuration is not present, but that's okay; nothing left to do.

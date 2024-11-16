@@ -4,15 +4,15 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.pyproject.core import (
-    PyPorjectTOMLValueMIssingError,
     PyProjectTOMLValueAlreadySetError,
+    PyProjectTOMLValueMissingError,
     append_config_list,
     get_config_value,
     remove_config_value,
     set_config_value,
 )
 from usethis._integrations.pyproject.io import PyProjectTOMLNotFoundError
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestGetConfigValue:
@@ -142,7 +142,7 @@ class TestRemoveConfigValue:
         (tmp_path / "pyproject.toml").touch()
 
         # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(PyPorjectTOMLValueMIssingError):
+        with change_cwd(tmp_path), pytest.raises(PyProjectTOMLValueMissingError):
             remove_config_value(["tool", "usethis", "key"])
 
     def test_missing_pyproject(self, tmp_path: Path):

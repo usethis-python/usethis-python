@@ -4,18 +4,27 @@ from usethis._console import tick_print
 
 _YAML_CONTENTS = """\
 image: atlassian/default-image:3
-
 definitions:
-  caches:
-    uv: ~/.cache/uv
-  scripts:
-    - script: &install-uv |-
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        source $HOME/.cargo/env
-        export UV_LINK_MODE=copy
+    caches:
+        uv: ~/.cache/uv
+    scripts:
+      - script: &install-uv |-
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            source $HOME/.local/env
+            export UV_LINK_MODE=copy
+            uv --version
 pipelines:
-  default: []
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
 """
+
+# TODO make sure we test that the placeholder gets removed when adding new steps
 
 
 def add_bitbucket_pipeline_config() -> None:

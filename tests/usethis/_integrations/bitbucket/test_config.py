@@ -5,7 +5,14 @@ from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
 )
-from usethis._utils._test import change_cwd
+from usethis._integrations.bitbucket.pipeline import Model, Script
+from usethis._integrations.bitbucket.steps import (
+    _ANCHOR_PREFIX,
+    Step,
+    add_step_in_default,
+)
+from usethis._integrations.yaml.io import edit_yaml
+from usethis._test import change_cwd
 
 
 class TestAddBitbucketPipelineConfig:
@@ -26,6 +33,23 @@ class TestAddBitbucketPipelineConfig:
         assert (tmp_path / "bitbucket-pipelines.yml").exists()
         content = (tmp_path / "bitbucket-pipelines.yml").read_text()
         assert content == "existing content"
+
+    def test_satisfies_schema(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path):
+            add_bitbucket_pipeline_config()
+            add_step_in_default(
+                Step(
+                    name="Placeholder - add your own steps!",
+                    script=Script(
+                        [f"{_ANCHOR_PREFIX}-install-uv", "echo 'Hello, world!'"]
+                    ),
+                ),
+            )
+
+        # Assert
+        with edit_yaml(tmp_path / "bitbucket-pipelines.yml") as yaml_document:
+            assert Model.model_validate(yaml_document.content)
 
 
 class TestRemoveBitbucketPipelineConfig:

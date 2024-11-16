@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestAddPytestDir:

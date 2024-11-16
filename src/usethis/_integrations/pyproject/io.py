@@ -14,9 +14,8 @@ def read_pyproject_toml() -> tomlkit.TOMLDocument:
     try:
         return tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
     except FileNotFoundError:
-        raise PyProjectTOMLNotFoundError(
-            "'pyproject.toml' not found in the current directory."
-        )
+        msg = "'pyproject.toml' not found in the current directory."
+        raise PyProjectTOMLNotFoundError(msg)
 
 
 def read_pyproject_dict() -> dict[str, Any]:
@@ -29,9 +28,8 @@ def read_pyproject_dict() -> dict[str, Any]:
                 raise PyProjectTOMLDecodeError(msg)
 
     except FileNotFoundError:
-        raise PyProjectTOMLNotFoundError(
-            "'pyproject.toml' not found in the current directory."
-        )
+        msg = "'pyproject.toml' not found in the current directory."
+        raise PyProjectTOMLNotFoundError(msg)
 
 
 def write_pyproject_toml(toml_document: tomlkit.TOMLDocument) -> None:

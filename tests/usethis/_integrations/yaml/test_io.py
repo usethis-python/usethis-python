@@ -1,0 +1,381 @@
+from collections import OrderedDict
+from collections.abc import Generator
+from contextlib import contextmanager
+from pathlib import Path
+
+import pytest
+import ruamel.yaml
+from ruamel.yaml.comments import (
+    CommentedMap,
+    CommentedOrderedMap,
+    CommentedSeq,
+    CommentedSet,
+    TaggedScalar,
+)
+from ruamel.yaml.scalarbool import ScalarBoolean
+from ruamel.yaml.scalarfloat import ScalarFloat
+from ruamel.yaml.scalarint import (
+    BinaryInt,
+    HexCapsInt,
+    HexInt,
+    OctalInt,
+    ScalarInt,
+)
+from ruamel.yaml.scalarstring import (
+    FoldedScalarString,
+    LiteralScalarString,
+)
+from ruamel.yaml.timestamp import TimeStamp
+from ruamel.yaml.util import load_yaml_guess_indent
+
+from usethis._integrations.yaml.io import YAMLDocument
+from usethis._test import change_cwd
+
+
+# TODO remove this copy, import OG
+@contextmanager
+def edit_yaml(yaml_path: Path) -> Generator[YAMLDocument, None, None]:
+    """A context manager to modify a YAML file in-place, with managed read and write."""
+
+    with yaml_path.open(mode="r") as f:
+        content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
+
+    yaml = ruamel.yaml.YAML(typ="rt")
+    yaml.indent(mapping=sequence_ind, sequence=sequence_ind, offset=offset_ind)
+    yaml.preserve_quotes = True
+
+    yaml_document = YAMLDocument(content=content)
+    yield yaml_document
+
+    yaml.dump(yaml_document.content, yaml_path)
+
+
+class TestEditYaml:
+    class TestLiterals:
+        """The list of literals is from ruamel/yaml/representer.py near the bottom"""
+
+        def test_none(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("hello: null")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == {"hello": None}
+
+        def test_str(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("hello")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == "hello"
+                assert type(content) is str
+
+        def test_literal_scalar_string(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("""\
+hello: |
+    world
+""")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == {"hello": "world\n"}
+                assert isinstance(content, CommentedMap)
+                assert type(content["hello"]) is LiteralScalarString
+
+        def test_folded_scalar_string(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("""\
+hello: >
+    world
+""")
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == {"hello": "world\n"}
+                assert isinstance(content, CommentedMap)
+                assert type(content["hello"]) is FoldedScalarString
+
+        def test_int(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("3")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == 3
+                assert type(content) is int
+
+        def test_float(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("3.14")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == 3.14
+                assert type(content) is ScalarFloat
+
+        def test_scientific_notation(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("3.14e-2")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == 3.14e-2
+                assert type(content) is ScalarFloat
+
+        def test_hex(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("0x3")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == 3
+                assert type(content) is HexInt
+
+        def test_hex_caps(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("0xE")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == 14
+                assert type(content) is HexCapsInt
+
+        def test_octal(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("0o3")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == 3
+                assert type(content) is OctalInt
+
+        def test_binary(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("0b11")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == 3
+                assert type(content) is BinaryInt
+
+        def test_scalar_int(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("&anchor 3")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == 3
+                assert type(content) is ScalarInt
+
+        def test_bool(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("true")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content is True
+                assert type(content) is bool
+
+        def test_scalar_bool(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("&anchor true")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content
+                assert type(content) is ScalarBoolean
+
+        def test_commented_seq(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("""\
+- one
+- two
+""")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == ["one", "two"]
+                assert type(content) is CommentedSeq
+
+        def test_commented_set(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("""\
+!!set
+  ? one
+  ? two
+""")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == {"one", "two"}
+                assert type(content) is CommentedSet
+
+        def test_commented_map(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("""\
+hello: world
+""")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == {"hello": "world"}
+                assert type(content) is CommentedMap
+
+        def test_commented_ordered_map(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("""\
+!!omap
+- hello: world
+""")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert content == OrderedDict([("hello", "world")])
+                assert type(content) is CommentedOrderedMap
+
+        def test_tagged_scalar(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("""\
+!!custom 3
+""")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert type(content) is TaggedScalar
+
+        def test_time_stamp(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("2001-12-15T02:59:43.1Z")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert type(content) is TimeStamp
+
+    # TODO also need to investigate ruamel.yaml's ability to preserve quote styles
+
+    class TestRoundTrip:
+        # TODO test function names actually match the indentation levels detemrined by ruamel.yaml
+        def test_indentation_4_2(self, uv_init_dir: Path):
+            path = uv_init_dir / "x.yml"
+            path.write_text(
+                """\
+x:
+  - y:
+        z:
+          - w
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), edit_yaml(path) as _:
+                pass
+
+            # Assert
+            contents = path.read_text()
+            assert (
+                contents
+                == """\
+x:
+  - y:
+        z:
+          - w
+"""
+            )
+
+        def test_indentation_0_2(self, uv_init_dir: Path):
+            path = uv_init_dir / "x.yml"
+            path.write_text(
+                """\
+x:
+  - y:
+    z:
+      - w
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), edit_yaml(path) as _:
+                pass
+
+            # Assert
+            contents = path.read_text()
+            assert (
+                contents
+                == """\
+x:
+  - y:
+    z:
+      - w
+"""
+            )
+
+        @pytest.mark.skip(
+            reason="ruamel.yaml's guess function doesn't seem powerful enough yet."
+        )
+        def test_indentation_2_2(self, uv_init_dir: Path):
+            path = uv_init_dir / "x.yml"
+            path.write_text(
+                """\
+x:
+  - y:
+      z:
+        - w
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), edit_yaml(path) as _:
+                pass
+
+            # Assert
+            contents = path.read_text()
+            assert (
+                contents
+                == """\
+x:
+  - y:
+      z:
+        - w
+"""
+            )

@@ -19,9 +19,8 @@ def get_requires_python() -> SpecifierSet:
             TypeAdapter(dict).validate_python(pyproject["project"])["requires-python"]
         )
     except KeyError:
-        raise MissingRequiresPythonError(
-            "The 'project.requires-python' value is missing from 'pyproject.toml'."
-        )
+        msg = "The 'project.requires-python' value is missing from 'pyproject.toml'."
+        raise MissingRequiresPythonError(msg)
 
     return SpecifierSet(requires_python)
 

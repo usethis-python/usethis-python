@@ -14,8 +14,8 @@ from usethis._integrations.pre_commit.hooks import (
 )
 from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import (
-    PyPorjectTOMLValueMIssingError,
     PyProjectTOMLValueAlreadySetError,
+    PyProjectTOMLValueMissingError,
     remove_config_value,
     set_config_value,
 )
@@ -99,9 +99,8 @@ class Tool(Protocol):
             return
 
         if len(repo_configs) > 1:
-            raise NotImplementedError(
-                "Multiple pre-commit repo configurations not yet supported."
-            )
+            msg = "Multiple pre-commit repo configurations not yet supported."
+            raise NotImplementedError(msg)
         repo_config = repo_configs[0]
 
         add_pre_commit_config()
@@ -131,9 +130,8 @@ class Tool(Protocol):
             return
 
         if len(repo_configs) > 1:
-            raise NotImplementedError(
-                "Multiple pre-commit repo configurations not yet supported."
-            )
+            msg = "Multiple pre-commit repo configurations not yet supported."
+            raise NotImplementedError(msg)
         repo_config = repo_configs[0]
 
         # Remove the config for this specific tool.
@@ -176,7 +174,7 @@ class Tool(Protocol):
         for config in configs:
             try:
                 remove_config_value(config.id_keys)
-            except PyPorjectTOMLValueMIssingError:
+            except PyProjectTOMLValueMissingError:
                 pass
             else:
                 if first_removal:

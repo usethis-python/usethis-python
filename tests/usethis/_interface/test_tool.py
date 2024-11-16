@@ -14,8 +14,8 @@ from usethis._integrations.uv.deps import (
     get_deps_from_group,
 )
 from usethis._interface.tool import _deptry, _pre_commit, _pyproject_fmt, _pytest, _ruff
+from usethis._test import change_cwd
 from usethis._tool import ALL_TOOLS
-from usethis._utils._test import change_cwd, is_offline
 
 
 class TestAllHooksList:
@@ -34,7 +34,7 @@ class TestAllHooksList:
 
 
 class TestDeptry:
-    def test_dependency_added(self, uv_init_dir: Path):
+    def test_dependency_added(self, uv_init_dir: Path, vary_network_conn: None):
         # Act
         with change_cwd(uv_init_dir):
             _deptry()
@@ -43,7 +43,12 @@ class TestDeptry:
             (dev_dep,) = get_deps_from_group("dev")
         assert dev_dep == "deptry"
 
-    def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+    def test_stdout(
+        self,
+        uv_init_dir: Path,
+        capfd: pytest.CaptureFixture[str],
+        vary_network_conn: None,
+    ):
         # Act
         with change_cwd(uv_init_dir):
             _deptry()
@@ -55,7 +60,7 @@ class TestDeptry:
             "☐ Call the 'deptry src' command to run deptry.\n"
         )
 
-    def test_run_deptry_fail(self, uv_init_dir: Path):
+    def test_run_deptry_fail(self, uv_init_dir: Path, vary_network_conn: None):
         # Arrange
         f = uv_init_dir / "bad.py"
         f.write_text("import broken_dependency")
@@ -68,7 +73,7 @@ class TestDeptry:
         with pytest.raises(subprocess.CalledProcessError):
             subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
 
-    def test_run_deptry_pass(self, uv_init_dir: Path):
+    def test_run_deptry_pass(self, uv_init_dir: Path, vary_network_conn: None):
         # Arrange
         f = uv_init_dir / "good.py"
         f.write_text("import sys")
@@ -80,11 +85,19 @@ class TestDeptry:
         # Assert
         subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
 
-    def test_cli(self, uv_init_dir: Path):
-        subprocess.run(["usethis", "tool", "deptry"], cwd=uv_init_dir, check=True)
+    def test_cli(self, uv_init_dir: Path, vary_network_conn: None):
+        if not usethis_config.offline:
+            subprocess.run(["usethis", "tool", "deptry"], cwd=uv_init_dir, check=True)
+        else:
+            subprocess.run(
+                ["usethis", "tool", "deptry", "--offline"], cwd=uv_init_dir, check=True
+            )
 
     def test_pre_commit_after(
-        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        self,
+        uv_init_dir: Path,
+        capfd: pytest.CaptureFixture[str],
+        vary_network_conn: None,
     ):
         # Act
         with change_cwd(uv_init_dir):
@@ -133,7 +146,10 @@ repos:
         )
 
     def test_pre_commit_first(
-        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        self,
+        uv_init_dir: Path,
+        capfd: pytest.CaptureFixture[str],
+        vary_network_conn: None,
     ):
         # Act
         with change_cwd(uv_init_dir):
@@ -183,7 +199,7 @@ repos:
 
 class TestPreCommit:
     class TestAdd:
-        def test_dependency_added(self, uv_init_dir: Path):
+        def test_dependency_added(self, uv_init_dir: Path, vary_network_conn: None):
             # Act
             with change_cwd(uv_init_dir):
                 _pre_commit()
@@ -192,7 +208,12 @@ class TestPreCommit:
                 (dev_dep,) = get_deps_from_group("dev")
             assert dev_dep == "pre-commit"
 
-        def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        def test_stdout(
+            self,
+            uv_init_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+            vary_network_conn: None,
+        ):
             # Act
             with change_cwd(uv_init_dir):
                 _pre_commit()
@@ -206,7 +227,7 @@ class TestPreCommit:
                 "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
             )
 
-        def test_config_file_exists(self, uv_init_dir: Path):
+        def test_config_file_exists(self, uv_init_dir: Path, vary_network_conn: None):
             # Act
             with change_cwd(uv_init_dir):
                 _pre_commit()
@@ -214,7 +235,7 @@ class TestPreCommit:
             # Assert
             assert (uv_init_dir / ".pre-commit-config.yaml").exists()
 
-        def test_config_file_contents(self, uv_init_dir: Path):
+        def test_config_file_contents(self, uv_init_dir: Path, vary_network_conn: None):
             # Act
             with change_cwd(uv_init_dir):
                 _pre_commit()
@@ -232,7 +253,7 @@ repos:
 """
             )
 
-        def test_already_exists(self, uv_init_repo_dir: Path):
+        def test_already_exists(self, uv_init_repo_dir: Path, vary_network_conn: None):
             # Arrange
             (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
                 """\
@@ -258,7 +279,7 @@ repos:
 """
             )
 
-        def test_bad_commit(self, uv_init_repo_dir: Path):
+        def test_bad_commit(self, uv_init_repo_dir: Path, vary_network_conn: None):
             # Act
             with change_cwd(uv_init_repo_dir):
                 _pre_commit()
@@ -277,8 +298,8 @@ repos:
                     check=True,
                 )
 
-        def test_cli_pass(self, uv_init_repo_dir: Path):
-            if not is_offline():
+        def test_cli_pass(self, uv_init_repo_dir: Path, vary_network_conn: None):
+            if not usethis_config.offline:
                 subprocess.run(
                     ["usethis", "tool", "pre-commit"], cwd=uv_init_repo_dir, check=True
                 )
@@ -295,8 +316,8 @@ repos:
                 check=True,
             )
 
-        def test_cli_fail(self, uv_init_repo_dir: Path):
-            if not is_offline():
+        def test_cli_fail(self, uv_init_repo_dir: Path, vary_network_conn: None):
+            if not usethis_config.offline:
                 subprocess.run(
                     ["usethis", "tool", "pre-commit"], cwd=uv_init_repo_dir, check=True
                 )
@@ -321,7 +342,7 @@ repos:
                 pytest.fail("Expected subprocess.CalledProcessError")
 
     class TestRemove:
-        def test_config_file(self, uv_init_dir: Path):
+        def test_config_file(self, uv_init_dir: Path, vary_network_conn: None):
             # Arrange
             (uv_init_dir / ".pre-commit-config.yaml").touch()
 
@@ -332,7 +353,7 @@ repos:
             # Assert
             assert not (uv_init_dir / ".pre-commit-config.yaml").exists()
 
-        def test_dep(self, uv_init_dir: Path):
+        def test_dep(self, uv_init_dir: Path, vary_network_conn: None):
             with change_cwd(uv_init_dir):
                 # Arrange
                 add_deps_to_group(["pre-commit"], "dev")
@@ -347,7 +368,12 @@ repos:
 class TestPyprojectFormat:
     class TestAdd:
         class TestPyproject:
-            def test_added(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            def test_added(
+                self,
+                uv_init_dir: Path,
+                capfd: pytest.CaptureFixture[str],
+                vary_network_conn: None,
+            ):
                 # Arrange
                 with change_cwd(uv_init_dir), usethis_config.set(quiet=True):
                     add_deps_to_group(["pyproject-fmt"], "dev")
@@ -373,7 +399,12 @@ keep_full_version = true
                 )
 
         class TestDeps:
-            def test_added(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            def test_added(
+                self,
+                uv_init_dir: Path,
+                capfd: pytest.CaptureFixture[str],
+                vary_network_conn: None,
+            ):
                 with change_cwd(uv_init_dir):
                     # Act
                     _pyproject_fmt()
@@ -390,7 +421,7 @@ keep_full_version = true
 
 class TestPytest:
     class TestAdd:
-        def test_dep(self, uv_init_dir: Path):
+        def test_dep(self, uv_init_dir: Path, vary_network_conn: None):
             with change_cwd(uv_init_dir):
                 _pytest()
 
@@ -495,7 +526,7 @@ select = ["PT"]
 
 class TestRuff:
     class TestAdd:
-        def test_dependency_added(self, uv_init_dir: Path):
+        def test_dependency_added(self, uv_init_dir: Path, vary_network_conn: None):
             # Act
             with change_cwd(uv_init_dir):
                 _ruff()
@@ -504,7 +535,12 @@ class TestRuff:
                 (dev_dep,) = get_deps_from_group("dev")
             assert dev_dep == "ruff"
 
-        def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        def test_stdout(
+            self,
+            uv_init_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+            vary_network_conn: None,
+        ):
             # Act
             with change_cwd(uv_init_dir):
                 _ruff()
@@ -514,13 +550,13 @@ class TestRuff:
             assert out == (
                 "✔ Adding 'ruff' to the 'dev' dependency group.\n"
                 "✔ Adding ruff config to 'pyproject.toml'.\n"
-                "✔ Enabling ruff rules 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', 'PLR', \n'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Enabling ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', \n'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "☐ Call the 'ruff check --fix' command to run the ruff linter with autofixes.\n"
                 "☐ Call the 'ruff format' command to run the ruff formatter.\n"
             )
 
-        def test_cli(self, uv_init_dir: Path):
-            if not is_offline():
+        def test_cli(self, uv_init_dir: Path, vary_network_conn: None):
+            if not usethis_config.offline:
                 subprocess.run(["usethis", "tool", "ruff"], cwd=uv_init_dir, check=True)
             else:
                 subprocess.run(
@@ -530,7 +566,10 @@ class TestRuff:
                 )
 
         def test_pre_commit_first(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            self,
+            uv_init_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+            vary_network_conn: None,
         ):
             # Act
             with change_cwd(uv_init_dir):
@@ -544,7 +583,7 @@ class TestRuff:
             assert "ruff-check" in hook_names
 
     class TestRemove:
-        def test_config_file(self, uv_init_dir: Path):
+        def test_config_file(self, uv_init_dir: Path, vary_network_conn: None):
             # Arrange
             (uv_init_dir / "pyproject.toml").write_text(
                 """\
@@ -560,7 +599,7 @@ select = ["A", "B", "C"]
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == ""
 
-        def test_blank_slate(self, uv_init_dir: Path):
+        def test_blank_slate(self, uv_init_dir: Path, vary_network_conn: None):
             # Arrange
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
@@ -571,7 +610,7 @@ select = ["A", "B", "C"]
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == contents
 
-        def test_roundtrip(self, uv_init_dir: Path):
+        def test_roundtrip(self, uv_init_dir: Path, vary_network_conn: None):
             # Arrange
             contents = (uv_init_dir / "pyproject.toml").read_text()
 

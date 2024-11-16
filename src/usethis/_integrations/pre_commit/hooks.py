@@ -2,9 +2,10 @@ from collections import Counter
 from pathlib import Path
 
 import ruamel.yaml
+from ruamel.yaml.comments import CommentedMap
 
 from usethis._integrations.pre_commit.config import PreCommitRepoConfig
-from usethis._utils._yaml import edit_yaml
+from usethis._integrations.yaml.io import edit_yaml
 
 _HOOK_ORDER = [
     "validate-pyproject",
@@ -22,7 +23,12 @@ class DuplicatedHookNameError(ValueError):
 def add_hook(config: PreCommitRepoConfig) -> None:
     path = Path.cwd() / ".pre-commit-config.yaml"
 
-    with edit_yaml(path) as content:
+    with edit_yaml(path) as yaml_document:
+        content = yaml_document.content
+        if not isinstance(content, CommentedMap):
+            msg = f"Unrecognized pre-commit configuration file format of type {type(content)}"
+            raise NotImplementedError(msg)
+
         (hook_config,) = config.hooks
         hook_name = hook_config.id
 
@@ -36,7 +42,8 @@ def add_hook(config: PreCommitRepoConfig) -> None:
         try:
             hook_idx = _HOOK_ORDER.index(hook_name)
         except ValueError:
-            raise NotImplementedError(f"Hook '{hook_name}' not recognized")
+            msg = f"Hook '{hook_name}' not recognized"
+            raise NotImplementedError(msg)
         precedents = _HOOK_ORDER[:hook_idx]
 
         # Find the last of the precedents in the existing hooks
@@ -55,6 +62,8 @@ def add_hook(config: PreCommitRepoConfig) -> None:
             new_repos.append(repo)
             for hook in repo["hooks"]:
                 if hook["id"] == last_precedent:
+                    # TODO check this shouldn't be a fancy model dump that chooses
+                    # sensible key order automatically
                     new_repos.append(config.model_dump(exclude_none=True))
         content["repos"] = new_repos
 
@@ -62,7 +71,12 @@ def add_hook(config: PreCommitRepoConfig) -> None:
 def remove_hook(name: str) -> None:
     path = Path.cwd() / ".pre-commit-config.yaml"
 
-    with edit_yaml(path) as content:
+    with edit_yaml(path) as yaml_document:
+        content = yaml_document.content
+        if not isinstance(content, CommentedMap):
+            msg = f"Unrecognized pre-commit configuration file format of type {type(content)}"
+            raise NotImplementedError(msg)
+
         # search across the repos for any hooks with ID equal to name
         for repo in content["repos"]:
             for hook in repo["hooks"]:
@@ -87,6 +101,7 @@ def get_hook_names() -> list[str]:
     # Need to validate there are no duplciates
     for name, count in Counter(hook_names).items():
         if count > 1:
-            raise DuplicatedHookNameError(f"Hook name '{name}' is duplicated")
+            msg = f"Hook name '{name}' is duplicated"
+            raise DuplicatedHookNameError(msg)
 
     return hook_names

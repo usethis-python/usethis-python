@@ -6,7 +6,7 @@ from usethis._integrations.uv.deps import (
     get_deps_from_group,
     remove_deps_from_group,
 )
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestGetDepGroups:

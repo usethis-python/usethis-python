@@ -44,8 +44,10 @@ scripts.usethis = "usethis.__main__:app"
 
 [dependency-groups]
 dev = [
+  "datamodel-code-generator>=0.26.2",
   "deptry>=0.20.0",
   "import-linter>=2.1",
+  "jax>=0.4.35",
   "pre-commit>=4.0.1",
   "pyright>=1.1.389",
   "ruff>=0.7.1",
@@ -72,8 +74,26 @@ source = "vcs"
 line-length = 88
 
 src = [ "src" ]
-lint.select = [ "C4", "E4", "E7", "E9", "F", "FURB", "I", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
-lint.ignore = [ "PT004", "PT005" ]
+lint.select = [
+  "A",
+  "C4",
+  "E4",
+  "E7",
+  "E9",
+  "EM",
+  "F",
+  # "FIX002",
+  "FURB",
+  "I",
+  "PLE",
+  "PLR",
+  "PT",
+  "RUF",
+  "SIM",
+  "UP",
+]
+lint.ignore = [ "PT004", "PT005", "SIM108" ]
+lint.per-file-ignores."tests/**/*.py" = [ "PLR2004", "S101" ]
 
 [tool.pyproject-fmt]
 keep_full_version = true
@@ -98,13 +118,13 @@ root_packages = [ "usethis" ]
 name = "Modular Design"
 type = "layers"
 layers = [
+  "_test",
   "__main__",
   "_interface",
   "_tool",
   "_integrations",
   "_console",
   "_config",
-  "_utils",
   "errors",
 ]
 containers = [ "usethis" ]

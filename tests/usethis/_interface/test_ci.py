@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._interface.ci import _bitbucket
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestBitBucket:
@@ -29,19 +29,21 @@ class TestBitBucket:
                     contents
                     == """\
 image: atlassian/default-image:3
-
 definitions:
     caches:
         uv: ~/.cache/uv
     scripts:
       - script: &install-uv |-
             curl -LsSf https://astral.sh/uv/install.sh | sh
-            source $HOME/.cargo/env
+            source $HOME/.local/env
             export UV_LINK_MODE=copy
+            uv --version
 pipelines:
     default:
       - step:
             name: Placeholder - add your own steps!
+            caches:
+              - uv
             script:
               - *install-uv
               - echo 'Hello, world!'

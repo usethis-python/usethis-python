@@ -212,6 +212,7 @@ def _ruff(*, remove: bool = False) -> None:
     tool = RuffTool()
 
     rules = [
+        "A",
         "C4",
         "E4",
         "E7",

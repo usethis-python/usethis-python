@@ -9,7 +9,7 @@ from usethis._integrations.pre_commit.hooks import (
     get_hook_names,
     remove_hook,
 )
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestAddHook:

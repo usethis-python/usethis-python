@@ -13,7 +13,7 @@ from usethis._integrations.pyproject.requires_python import (
     get_requires_python,
     get_supported_major_python_versions,
 )
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestMaxMajorPy3:

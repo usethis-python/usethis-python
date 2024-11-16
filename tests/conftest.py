@@ -7,7 +7,7 @@ from git import Repo
 
 from usethis._config import usethis_config
 from usethis._integrations.uv.call import call_subprocess
-from usethis._utils._test import change_cwd, is_offline
+from usethis._test import change_cwd, is_offline
 
 
 @pytest.fixture

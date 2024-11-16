@@ -26,12 +26,14 @@ def get_github_latest_tag(owner: str, repo: str) -> str:
         response = requests.get(api_url, timeout=1)
         response.raise_for_status()  # Raise an error for HTTP issues
     except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError) as err:
-        raise GitHubTagError(f"Failed to fetch tags from GitHub API: {err}")
+        msg = f"Failed to fetch tags from GitHub API: {err}"
+        raise GitHubTagError(msg)
 
     tags = response.json()
 
     if not tags:
-        raise NoGitHubTagsFoundError(f"No tags found for repository '{owner}/{repo}'")
+        msg = f"No tags found for repository '{owner}/{repo}'"
+        raise NoGitHubTagsFoundError(msg)
 
     # Most recent tag's name
     return tags[0]["name"]

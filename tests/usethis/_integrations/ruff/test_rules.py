@@ -8,7 +8,7 @@ from usethis._integrations.ruff.rules import (
     get_ruff_rules,
     select_ruff_rules,
 )
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestSelectRuffRules:

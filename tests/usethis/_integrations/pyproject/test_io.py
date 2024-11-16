@@ -7,7 +7,7 @@ from usethis._integrations.pyproject.errors import (
     PyProjectTOMLNotFoundError,
 )
 from usethis._integrations.pyproject.io import read_pyproject_dict
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestReadPyProjectDict:

@@ -8,7 +8,7 @@ from usethis._integrations.pre_commit.core import (
     add_pre_commit_config,
     remove_pre_commit_config,
 )
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestAddPreCommitConfig:
@@ -35,7 +35,8 @@ repos:
         def mock_get(*args, **kwargs):
             class MockResponse:
                 def raise_for_status(self):
-                    raise requests.exceptions.HTTPError("Failed to fetch tags")
+                    msg = "Failed to fetch tags"
+                    raise requests.exceptions.HTTPError(msg)
 
             return MockResponse()
 

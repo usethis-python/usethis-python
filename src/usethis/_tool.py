@@ -2,11 +2,9 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-from pydantic import TypeAdapter
-
 from usethis._console import tick_print
 from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
-from usethis._integrations.pre_commit.core import add_pre_commit_config
+from usethis._integrations.pre_commit.core import add_pre_commit_config_file
 from usethis._integrations.pre_commit.hooks import (
     add_hook,
     get_hook_names,
@@ -16,10 +14,10 @@ from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import (
     PyProjectTOMLValueAlreadySetError,
     PyProjectTOMLValueMissingError,
+    do_id_keys_exist,
     remove_config_value,
     set_config_value,
 )
-from usethis._integrations.pyproject.io import read_pyproject_toml
 from usethis._integrations.uv.deps import is_dep_in_any_group
 
 
@@ -27,7 +25,11 @@ class Tool(Protocol):
     @property
     @abstractmethod
     def name(self) -> str:
-        """The name of the tool, for display purposes."""
+        """The name of the tool, for display purposes.
+
+        It is assumed that this name is also the name of the Python package associated
+        with the tool; if not, make sure to override methods which access this property.
+        """
 
     @property
     def dev_deps(self) -> list[str]:
@@ -62,36 +64,23 @@ class Tool(Protocol):
         """Whether the tool is being used in the current project.
 
         Three heuristics are used by default:
-        1. Whether any of the tool's development dependencies are in the project.
+        1. Whether any of the tool's characteristic dev dependencies are in the project.
         2. Whether any of the tool's managed files are in the project.
         3. Whether any of the tool's managed pyproject.toml sections are present.
         """
-        is_any_deps = any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-        is_any_files = False
-        for file in self.get_managed_files():
-            if file.exists() and file.is_file():
-                is_any_files = True
-                break
-
-        pyproject = read_pyproject_toml()
-
-        is_any_pyproject = False
-        for id_keys in self.get_pyproject_id_keys():
-            p = pyproject
-            try:
-                for key in id_keys:
-                    TypeAdapter(dict).validate_python(p)
-                    assert isinstance(p, dict)
-                    p = p[key]
-            except KeyError:
-                pass
-            else:
-                is_any_pyproject = True
-                break
+        is_any_deps = any(
+            is_dep_in_any_group(dep) for dep in self.get_unique_dev_deps()
+        )
+        is_any_files = any(
+            file.exists() and file.is_file() for file in self.get_managed_files()
+        )
+        is_any_pyproject = any(
+            do_id_keys_exist(id_keys) for id_keys in self.get_pyproject_id_keys()
+        )
 
         return is_any_deps or is_any_files or is_any_pyproject
 
-    def add_pre_commit_repo_config(self) -> None:
+    def add_pre_commit_repo_configs(self) -> None:
         """Add the tool's pre-commit configuration."""
         repo_configs = self.get_pre_commit_repo_configs()
 
@@ -103,7 +92,7 @@ class Tool(Protocol):
             raise NotImplementedError(msg)
         repo_config = repo_configs[0]
 
-        add_pre_commit_config()
+        add_pre_commit_config_file()
 
         # Add the config for this specific tool.
         first_time_adding = True
@@ -111,6 +100,8 @@ class Tool(Protocol):
             if hook.id not in get_hook_names():
                 # Need to add this hook, it is missing.
                 if first_time_adding:
+                    # TODO I'd prefer to put this message at a lower level, and control
+                    # the duplication with a context manager or similar.
                     tick_print(
                         f"Adding {self.name} config to '.pre-commit-config.yaml'."
                     )
@@ -122,7 +113,7 @@ class Tool(Protocol):
                     )
                 )
 
-    def remove_pre_commit_repo_config(self) -> None:
+    def remove_pre_commit_repo_configs(self) -> None:
         """Remove the tool's pre-commit configuration."""
         repo_configs = self.get_pre_commit_repo_configs()
 
@@ -139,6 +130,8 @@ class Tool(Protocol):
         for hook in repo_config.hooks:
             if hook.id in get_hook_names():
                 if first_removal:
+                    # TODO I'd prefer to put this message at a lower level, and control
+                    # the duplication with a context manager or similar.
                     tick_print(
                         f"Removing {self.name} config from '.pre-commit-config.yaml'."
                     )

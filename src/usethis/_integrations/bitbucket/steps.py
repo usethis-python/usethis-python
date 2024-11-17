@@ -133,7 +133,7 @@ def anchorize_script_refs(
 ) -> Step:
     step = step.model_copy(deep=True)
 
-    for idx, script_item in enumerate(step.script):
+    for idx, script_item in enumerate(step.script.root):
         if isinstance(script_item, str) and script_item.startswith(_ANCHOR_PREFIX):
             name = script_item.removeprefix(_ANCHOR_PREFIX)
             try:

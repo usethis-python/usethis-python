@@ -16,7 +16,7 @@ def get_dep_groups() -> dict[str, list[str]]:
         dep_groups_section = pyproject["dependency-groups"]
     except KeyError:
         # In the past might have been in [tool.uv.dev-dependencies] section but this
-        # will be deprecated/
+        # will be deprecated.
         return {}
 
     req_strs_by_group = TypeAdapter(dict[str, list[str]]).validate_python(

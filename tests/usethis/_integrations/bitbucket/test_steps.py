@@ -1,7 +1,11 @@
 from pathlib import Path
 
 from usethis._integrations.bitbucket.pipeline import Script
-from usethis._integrations.bitbucket.steps import Step, add_step_in_default
+from usethis._integrations.bitbucket.steps import (
+    Step,
+    add_step_in_default,
+    anchorize_script_refs,
+)
 from usethis._test import change_cwd
 
 
@@ -119,3 +123,54 @@ pipelines:
       - echo 'Hello, world!'
 """
         )
+
+
+class TestAnchorizeScriptRefs:
+    def test_no_lookup(self):
+        # Arrange
+        step = Step(
+            name="Greeting",
+            script=Script(["echo 'Hello, world!'"]),
+        )
+
+        # Act
+        new_step = anchorize_script_refs(step, script_item_by_name={})
+
+        # Assert
+        assert new_step == step
+
+    def test_lookup(self):
+        # Arrange
+        step = Step(name="Greeting", script=Script(["usethis-anchor-example"]))
+
+        # Act
+        new_step = anchorize_script_refs(step, script_item_by_name={"example": "value"})
+
+        # Assert
+        assert new_step == Step(name="Greeting", script=Script(["value"]))
+        # Check no mutation/side-effects on the original
+        assert step == Step(name="Greeting", script=Script(["usethis-anchor-example"]))
+
+    def test_unknown_lookup(self):
+        # Arrange
+        step = Step(name="Greeting", script=Script(["usethis-anchor-example"]))
+
+        # Act
+        new_step = anchorize_script_refs(step, script_item_by_name={})
+
+        # Assert
+        assert new_step == Step(
+            name="Greeting", script=Script(["usethis-anchor-example"])
+        )
+
+    def test_unused_lookup(self):
+        # Arrange
+        step = Step(name="Greeting", script=Script(["script"]))
+
+        # Act
+        new_step = anchorize_script_refs(
+            step, script_item_by_name={"example2": "value"}
+        )
+
+        # Assert
+        assert new_step == Step(name="Greeting", script=Script(["script"]))

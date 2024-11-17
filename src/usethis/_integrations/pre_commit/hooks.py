@@ -87,6 +87,8 @@ def remove_hook(name: str) -> None:
             if not repo["hooks"]:
                 content["repos"].remove(repo)
 
+    # TODO but what if there's no hooks left at all? Should we delete the file?
+
 
 def get_hook_names() -> list[str]:
     yaml = ruamel.yaml.YAML()

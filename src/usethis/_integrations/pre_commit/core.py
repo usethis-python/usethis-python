@@ -18,12 +18,15 @@ repos:
 _VALIDATEPYPROJECT_VERSION = "v0.23"
 
 
-def add_pre_commit_config() -> None:
-    if (Path.cwd() / ".pre-commit-config.yaml").exists():
+def add_pre_commit_config_file() -> None:
+    name = ".pre-commit-config.yaml"
+    path = Path.cwd() / name
+
+    if path.exists():
         # Early exit; the file already exists
         return
 
-    tick_print("Writing '.pre-commit-config.yaml'.")
+    tick_print(f"Writing '{name}'.")
     try:
         pkg_version = get_github_latest_tag("abravalheri", "validate-pyproject")
     except GitHubTagError:
@@ -31,7 +34,7 @@ def add_pre_commit_config() -> None:
         pkg_version = _VALIDATEPYPROJECT_VERSION
     yaml_contents = _YAML_CONTENTS_TEMPLATE.format(pkg_version=pkg_version)
 
-    (Path.cwd() / ".pre-commit-config.yaml").write_text(yaml_contents)
+    path.write_text(yaml_contents)
 
 
 def remove_pre_commit_config() -> None:

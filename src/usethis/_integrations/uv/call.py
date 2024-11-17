@@ -15,7 +15,6 @@ def call_subprocess(args: list[str]) -> None:
             check=True,
             capture_output=True,
         )
-
     except subprocess.CalledProcessError as err:
         bmsg: bytes = err.stderr
         msg = f"Failed to run uv subprocess:\n{bmsg.decode()}"

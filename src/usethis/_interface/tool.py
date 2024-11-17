@@ -5,7 +5,7 @@ import typer
 from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._console import box_print, err_print
 from usethis._integrations.pre_commit.core import (
-    add_pre_commit_config,
+    add_pre_commit_config_file,
     install_pre_commit,
     remove_pre_commit_config,
     uninstall_pre_commit,
@@ -50,12 +50,12 @@ def _deptry(*, remove: bool = False) -> None:
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev")
         if PreCommitTool().is_used():
-            tool.add_pre_commit_repo_config()
+            tool.add_pre_commit_repo_configs()
 
         box_print("Call the 'deptry src' command to run deptry.")
     else:
         if PreCommitTool().is_used():
-            tool.remove_pre_commit_repo_config()
+            tool.remove_pre_commit_repo_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
 
 
@@ -82,10 +82,10 @@ def _pre_commit(*, remove: bool = False) -> None:
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev")
-        add_pre_commit_config()
+        add_pre_commit_config_file()
         for _tool in ALL_TOOLS:
             if _tool.is_used():
-                _tool.add_pre_commit_repo_config()
+                _tool.add_pre_commit_repo_configs()
         install_pre_commit()
 
         box_print(
@@ -132,7 +132,7 @@ def _pyproject_fmt(*, remove: bool = False) -> None:
         if not is_precommit:
             add_deps_to_group(tool.dev_deps, "dev")
         else:
-            tool.add_pre_commit_repo_config()
+            tool.add_pre_commit_repo_configs()
 
         tool.add_pyproject_configs()
 
@@ -147,7 +147,7 @@ def _pyproject_fmt(*, remove: bool = False) -> None:
     else:
         tool.remove_pyproject_configs()
         if PreCommitTool().is_used():
-            tool.remove_pre_commit_repo_config()
+            tool.remove_pre_commit_repo_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
 
 
@@ -235,7 +235,7 @@ def _ruff(*, remove: bool = False) -> None:
         tool.add_pyproject_configs()
         select_ruff_rules(rules)
         if PreCommitTool().is_used():
-            tool.add_pre_commit_repo_config()
+            tool.add_pre_commit_repo_configs()
 
         box_print(
             "Call the 'ruff check --fix' command to run the ruff linter with autofixes."
@@ -243,6 +243,6 @@ def _ruff(*, remove: bool = False) -> None:
         box_print("Call the 'ruff format' command to run the ruff formatter.")
     else:
         if PreCommitTool().is_used():
-            tool.remove_pre_commit_repo_config()
+            tool.remove_pre_commit_repo_configs()
         tool.remove_pyproject_configs()  # N.B. this will remove the selected ruff rules
         remove_deps_from_group(tool.dev_deps, "dev")

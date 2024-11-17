@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class HookConfig(BaseModel):
@@ -16,4 +16,4 @@ class HookConfig(BaseModel):
 class PreCommitRepoConfig(BaseModel):
     repo: str
     rev: str | None = None
-    hooks: list[HookConfig]
+    hooks: list[HookConfig] = Field(min_length=1)

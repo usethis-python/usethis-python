@@ -193,3 +193,17 @@ def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
     p_parent[id_keys[-1]] = new_values
 
     write_pyproject_toml(pyproject)
+
+
+def do_id_keys_exist(id_keys: list[str]) -> bool:
+    pyproject = read_pyproject_toml()
+
+    try:
+        for key in id_keys:
+            TypeAdapter(dict).validate_python(pyproject)
+            assert isinstance(pyproject, dict)
+            pyproject = pyproject[key]
+    except KeyError:
+        return False
+
+    return True

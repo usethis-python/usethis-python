@@ -5,17 +5,17 @@ import requests
 
 from usethis._integrations.pre_commit.core import (
     _VALIDATEPYPROJECT_VERSION,
-    add_pre_commit_config,
+    add_pre_commit_config_file,
     remove_pre_commit_config,
 )
 from usethis._test import change_cwd
 
 
-class TestAddPreCommitConfig:
+class TestAddPreCommitConfigFile:
     def test_exists(self, uv_init_dir: Path):
         # Act
         with change_cwd(uv_init_dir):
-            add_pre_commit_config()
+            add_pre_commit_config_file()
 
         # Assert
         contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
@@ -44,7 +44,7 @@ repos:
 
         # Act
         with change_cwd(uv_init_dir):
-            add_pre_commit_config()
+            add_pre_commit_config_file()
 
         # Assert
         contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
@@ -62,7 +62,7 @@ repos:
     def test_message(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
         with change_cwd(uv_init_dir):
-            add_pre_commit_config()
+            add_pre_commit_config_file()
 
         # Assert
         out, _ = capfd.readouterr()
@@ -74,7 +74,7 @@ repos:
 
         # Act
         with change_cwd(uv_init_dir):
-            add_pre_commit_config()
+            add_pre_commit_config_file()
 
         # Assert
         out, _ = capfd.readouterr()

@@ -81,10 +81,12 @@ lint.select = [
   "E7",
   "E9",
   "EM",
+  # "ERA",
   "F",
   # "FIX002",
   "FURB",
   "I",
+  "INP",
   "PLE",
   "PLR",
   "PT",
@@ -92,8 +94,8 @@ lint.select = [
   "SIM",
   "UP",
 ]
-lint.ignore = [ "PT004", "PT005", "SIM108" ]
-lint.per-file-ignores."tests/**/*.py" = [ "PLR2004", "S101" ]
+lint.ignore = [ "PLR2004", "PT004", "PT005", "SIM108" ]
+lint.per-file-ignores."tests/**/*.py" = [ "INP", "S101" ]
 
 [tool.pyproject-fmt]
 keep_full_version = true
@@ -121,6 +123,7 @@ layers = [
   "_test",
   "__main__",
   "_interface",
+  "_core",
   "_tool",
   "_integrations",
   "_console",

@@ -11,7 +11,8 @@ from usethis._integrations.uv.errors import UVSubprocessFailedError
 # doesn't exist.
 # We will have other pre-commit configs to add automatically, e.g. from uv-pre-commit.
 # In any case, the way we do it should be consistent with the bitbucket pipelines approach.
-
+# Also, this is in the wrong layer of abstraction. It is not fundamental to pre-commit
+# integration.
 _YAML_CONTENTS_TEMPLATE = """\
 repos:
   - repo: https://github.com/abravalheri/validate-pyproject

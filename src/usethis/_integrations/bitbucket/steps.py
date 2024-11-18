@@ -254,8 +254,6 @@ def _step1tostep(step1: Step1) -> Step:
     return step
 
 
-# TODO ruff rule & associated GitHub issue for commented-out code.
-
 # TODO Rather than using StepRef, let's encode the actual step, and refer via variable
 # rather than string ref.
 # This will allow us to do smarter things like autoamtically add an anchor if the step
@@ -272,7 +270,6 @@ def _step1tostep(step1: Step1) -> Step:
 #     caches: list[Literal["uv", "pre-commit"]]
 #     script: list[StepRef | str]
 
-# TODO commented out code
 # # The canonical SPG for Bitbucket pipeline steps.
 # # The idea is that each element in the outer list is in series, and each element in the
 # # inner list is in parallel

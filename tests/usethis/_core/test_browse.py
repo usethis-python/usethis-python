@@ -1,13 +1,13 @@
 import pytest
 import typer
 
-from usethis._interface.browse import _pypi
+from usethis._core.browse import browse_pypi
 
 
 class TestPyPI:
     def test_message(self, capfd: pytest.CaptureFixture[str]):
         # Act
-        _pypi(package="numpy", browser=False)
+        browse_pypi(package="numpy", browser=False)
 
         # Assert
         output = capfd.readouterr().out
@@ -27,7 +27,7 @@ class TestPyPI:
         monkeypatch.setattr(typer, "launch", mock_launch)
 
         # Act
-        _pypi(package="numpy", browser=True)
+        browse_pypi(package="numpy", browser=True)
 
         # Assert
         assert mock_launch.url == "https://pypi.org/project/numpy/"

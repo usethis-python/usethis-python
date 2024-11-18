@@ -29,8 +29,7 @@ def add_caches(cache_by_name: dict[str, Cache]) -> None:
         return
     elif len(names) == 1:
         name_str = f"'{names[0]}'"
-    # TODO PLR2004 is too opinionated and should be disabled by default by usethis
-    elif len(names) == 2:  # noqa: PLR2004
+    elif len(names) == 2:
         name_str = f"'{names[0]}' and '{names[1]}'"
     else:
         name_str = (

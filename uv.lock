@@ -951,7 +951,7 @@ wheels = [
 
 [[package]]
 name = "usethis"
-version = "0.2.1.dev7+g52280db.d20241114"
+version = "0.2.1.dev11+g5ba4248.d20241118"
 source = { editable = "." }
 dependencies = [
     { name = "mergedeep" },

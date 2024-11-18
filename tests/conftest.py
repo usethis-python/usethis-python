@@ -35,6 +35,7 @@ class NetworkConn(Enum):
         NetworkConn.ONLINE,  # Run online first since we want to populate caches
         NetworkConn.OFFLINE,
     ],
+    scope="session",
 )
 def vary_network_conn(request: pytest.FixtureRequest) -> Generator[bool, None, None]:
     """Fixture to vary the network connection; returns True if offline."""

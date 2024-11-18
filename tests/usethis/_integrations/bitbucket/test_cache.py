@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from usethis._integrations.bitbucket.cache import (
     Cache,
     add_caches,
@@ -14,39 +16,90 @@ from usethis._test import change_cwd
 
 
 class TestAddCaches:
-    def test_in_caches(self, uv_init_dir: Path):
+    def test_in_caches(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         cache_by_name = {"example": Cache(CachePath("~/.cache/example"))}
 
-        # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             add_bitbucket_pipeline_config()
+            capfd.readouterr()
+
+            # Act
             add_caches(cache_by_name)
 
             # Assert
             default_cache_by_name = {"uv": Cache(CachePath("~/.cache/uv"))}
             assert get_cache_by_name() == cache_by_name | default_cache_by_name
+            output = capfd.readouterr().out
+            assert output == (
+                "✔ Adding cache definition 'example' to 'bitbucket-pipelines.yml'.\n"
+            )
 
-    def test_already_exists(self, uv_init_dir: Path):
+    def test_two(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Arrange
+        cache_by_name = {
+            "example": Cache(CachePath("~/.cache/example")),
+            "another": Cache(CachePath("~/.local/hello")),
+        }
+
+        with change_cwd(tmp_path):
+            add_bitbucket_pipeline_config()
+            capfd.readouterr()
+            # Act
+            add_caches(cache_by_name)
+
+            # Assert
+            default_cache_by_name = {"uv": Cache(CachePath("~/.cache/uv"))}
+            assert get_cache_by_name() == cache_by_name | default_cache_by_name
+            output = capfd.readouterr().out
+            assert output == (
+                "✔ Adding cache definitions 'example' and 'another' to \n"
+                "'bitbucket-pipelines.yml'.\n"
+            )
+
+    def test_many(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Arrange
+        cache_by_name = {
+            "example": Cache(CachePath("~/.cache/example")),
+            "another": Cache(CachePath("~/.local/hello")),
+            "yetanother": Cache(CachePath("~/.cache/ya")),
+        }
+
+        with change_cwd(tmp_path):
+            add_bitbucket_pipeline_config()
+            capfd.readouterr()
+            # Act
+            add_caches(cache_by_name)
+
+            # Assert
+            default_cache_by_name = {"uv": Cache(CachePath("~/.cache/uv"))}
+            assert get_cache_by_name() == cache_by_name | default_cache_by_name
+            output = capfd.readouterr().out
+            assert output == (
+                "✔ Adding cache definitions 'example', 'another', and 'yetanother' "
+                "to \n'bitbucket-pipelines.yml'.\n"
+            )
+
+    def test_already_exists(self, tmp_path: Path):
         # Arrange
         cache_by_name = {
             "uv": Cache(CachePath("~/.cache/uv"))  # uv cache is in the default config
         }
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             add_bitbucket_pipeline_config()
             add_caches(cache_by_name)
 
             # Assert
             assert get_cache_by_name() == cache_by_name
 
-    def test_definitions_order(self, uv_init_dir: Path):
+    def test_definitions_order(self, tmp_path: Path):
         """Test that the newly-created definitions section is placed after the image."""
         # Arrange
         cache_by_name = {"example": Cache(CachePath("~/.cache/example"))}
 
-        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
             """\
 image: atlassian/default-image:3
 pipelines:
@@ -57,11 +110,11 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             add_caches(cache_by_name)
 
         # Assert
-        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\

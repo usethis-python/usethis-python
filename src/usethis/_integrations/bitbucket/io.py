@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pydantic import ValidationError
+from ruamel.yaml.comments import CommentedMap
 
 from usethis._integrations.bitbucket.pipeline import PipelinesConfiguration
 from usethis._integrations.yaml.io import (
-    YAMLDocument,
     YAMLLiteral,
     edit_yaml,
     load_yaml,
@@ -19,7 +19,9 @@ class BitbucketPipelinesYAMLConfigError(Exception):
 
 
 @dataclass
-class BitbucketPipelinesYAMLDocument(YAMLDocument):
+class BitbucketPipelinesYAMLDocument:
+    # TODO add docstring
+    content: CommentedMap
     model: PipelinesConfiguration
 
 

@@ -1,10 +1,22 @@
 from pathlib import Path
 
-from usethis._integrations.bitbucket.pipeline import Script
+from usethis._integrations.bitbucket.pipeline import (
+    Parallel,
+    ParallelExpanded,
+    ParallelItem,
+    ParallelSteps,
+    Script,
+    Stage,
+    StageItem,
+    Step1,
+    Step2,
+    StepItem,
+)
 from usethis._integrations.bitbucket.steps import (
     Step,
     add_step_in_default,
     anchorize_script_refs,
+    get_steps_in_pipeline_item,
 )
 from usethis._test import change_cwd
 
@@ -174,3 +186,112 @@ class TestAnchorizeScriptRefs:
 
         # Assert
         assert new_step == Step(name="Greeting", script=Script(["script"]))
+
+
+class TestGetStepsInPipelineItem:
+    class TestStepItem:
+        def test_none(self):
+            # Arrange
+            item = StepItem(step=None)
+
+            # Act
+            steps = get_steps_in_pipeline_item(item)
+
+            # Assert
+            assert steps == []
+
+        def test_step(self):
+            # Arrange
+            step = Step(script=Script(["echo 'Hello, world!'"]))
+            item = StepItem(step=step)
+
+            # Act
+            steps = get_steps_in_pipeline_item(item)
+
+            # Assert
+            assert steps == [step]
+
+    class TestParallelItem:
+        def test_none(self):
+            # Arrange
+            item = ParallelItem(parallel=None)
+
+            # Act
+            steps = get_steps_in_pipeline_item(item)
+
+            # Assert
+            assert steps == []
+
+        def test_parallel_steps(self):
+            # Arrange
+            original_steps = [
+                Step(script=Script(["echo 'Hello, world!'"])),
+                Step(script=Script(["echo 'Why, hello!'"])),
+            ]
+            item = ParallelItem(
+                parallel=Parallel(
+                    ParallelSteps([StepItem(step=step) for step in original_steps])
+                )
+            )
+
+            # Act
+            steps = get_steps_in_pipeline_item(item)
+
+            # Assert
+            assert steps == original_steps
+
+        def test_parallel_expanded(self):
+            # Arrange
+            original_steps = [
+                Step(script=Script(["echo 'Hello, world!'"])),
+                Step(script=Script(["echo 'Why, hello!'"])),
+            ]
+            item = ParallelItem(
+                parallel=Parallel(
+                    ParallelExpanded(
+                        steps=ParallelSteps(
+                            [StepItem(step=step) for step in original_steps]
+                        )
+                    )
+                )
+            )
+
+            # Act
+            steps = get_steps_in_pipeline_item(item)
+
+            # Assert
+            assert steps == original_steps
+
+    class TestStageItem:
+        def test_none(self):
+            # Arrange
+            item = StageItem(stage=None)
+
+            # Act
+            steps = get_steps_in_pipeline_item(item)
+
+            # Assert
+            assert steps == []
+
+        def test_steps(self):
+            # Arrange
+            script = Script(["echo 'Hello, world!'"])
+            item = StageItem(
+                stage=Stage(
+                    steps=[
+                        Step1(step=None),
+                        Step1(
+                            step=Step2(
+                                name="greetings",
+                                script=Script(["echo 'Hello, world!'"]),
+                            )
+                        ),
+                    ]
+                )
+            )
+
+            # Act
+            steps = get_steps_in_pipeline_item(item)
+
+            # Assert
+            assert steps == [Step(name="greetings", script=script)]

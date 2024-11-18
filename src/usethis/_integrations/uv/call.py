@@ -3,7 +3,7 @@ import subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 
 
-def call_subprocess(args: list[str]) -> None:
+def call_uv_subprocess(args: list[str]) -> None:
     """Run a subprocess using the uv command-line tool.
 
     Raises:

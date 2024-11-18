@@ -18,9 +18,9 @@ ORDER_BY_CLS = {
 def fancy_pipelines_model_dump(
     config: PipelinesConfiguration, *, reference: ModelRepresentation
 ) -> dict[str, ModelRepresentation]:
+    # TODO should test this function; by extension we should be testing ORDER_BY_CLS
     dump = fancy_model_dump(config, reference=reference, order_by_cls=ORDER_BY_CLS)
 
-    # TODO this feels a bit hacky, tidy up
     if not isinstance(dump, dict):
         msg = (
             f"Trying to represent Bitbucket pipelines configuration.\n"

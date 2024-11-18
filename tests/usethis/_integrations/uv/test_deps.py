@@ -96,7 +96,7 @@ class TestIsDepInAnyGroup:
         with change_cwd(uv_init_dir):
             assert not is_dep_in_any_group("pytest")
 
-    def test_in_group(self, uv_init_dir: Path):
+    def test_in_group(self, uv_init_dir: Path, vary_network_conn: None):
         # Arrange
         with change_cwd(uv_init_dir):
             add_deps_to_group(["pytest"], "test")
@@ -107,7 +107,7 @@ class TestIsDepInAnyGroup:
         # Assert
         assert result
 
-    def test_not_in_group(self, uv_init_dir: Path):
+    def test_not_in_group(self, uv_init_dir: Path, vary_network_conn: None):
         # Arrange
         with change_cwd(uv_init_dir):
             add_deps_to_group(["pytest"], "test")

@@ -6,9 +6,9 @@ from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._console import box_print, err_print
 from usethis._integrations.pre_commit.core import (
     add_pre_commit_config_file,
-    install_pre_commit,
+    install_pre_commit_hooks,
     remove_pre_commit_config,
-    uninstall_pre_commit,
+    uninstall_pre_commit_hooks,
 )
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.ruff.rules import deselect_ruff_rules, select_ruff_rules
@@ -86,7 +86,7 @@ def _pre_commit(*, remove: bool = False) -> None:
         for _tool in ALL_TOOLS:
             if _tool.is_used():
                 _tool.add_pre_commit_repo_configs()
-        install_pre_commit()
+        install_pre_commit_hooks()
 
         box_print(
             "Call the 'pre-commit run --all-files' command to run the hooks manually."
@@ -95,7 +95,7 @@ def _pre_commit(*, remove: bool = False) -> None:
         # Need pre-commit to be installed so we can uninstall hooks
         add_deps_to_group(tool.dev_deps, "dev")
 
-        uninstall_pre_commit()
+        uninstall_pre_commit_hooks()
         remove_pre_commit_config()
         remove_deps_from_group(tool.dev_deps, "dev")
 

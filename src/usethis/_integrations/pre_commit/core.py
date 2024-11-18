@@ -3,8 +3,14 @@ from pathlib import Path
 from usethis._console import tick_print
 from usethis._integrations.github.tags import GitHubTagError, get_github_latest_tag
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
-from usethis._integrations.uv.call import call_subprocess
+from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
+
+# TODO is this the best way to do this? Shouldn't this be an add function, and we start
+# with the file not existing by default? The add function can create the file if it
+# doesn't exist.
+# We will have other pre-commit configs to add automatically, e.g. from uv-pre-commit.
+# In any case, the way we do it should be consistent with the bitbucket pipelines approach.
 
 _YAML_CONTENTS_TEMPLATE = """\
 repos:
@@ -46,19 +52,29 @@ def remove_pre_commit_config() -> None:
     (Path.cwd() / ".pre-commit-config.yaml").unlink()
 
 
-def install_pre_commit() -> None:
+def install_pre_commit_hooks() -> None:
+    """Install pre-commit hooks.
+
+    Note that this requires pre-commit to be installed.
+    """
+
     tick_print("Ensuring pre-commit hooks are installed.")
     try:
-        call_subprocess(["run", "pre-commit", "install"])
+        call_uv_subprocess(["run", "pre-commit", "install"])
     except UVSubprocessFailedError as err:
         msg = f"Failed to install pre-commit hooks:\n{err}"
         raise PreCommitInstallationError(msg) from None
 
 
-def uninstall_pre_commit() -> None:
+def uninstall_pre_commit_hooks() -> None:
+    """Uninstall pre-commit hooks.
+
+    Note that this requires pre-commit to be installed.
+    """
+
     tick_print("Ensuring pre-commit hooks are uninstalled.")
     try:
-        call_subprocess(["run", "pre-commit", "uninstall"])
+        call_uv_subprocess(["run", "pre-commit", "uninstall"])
     except UVSubprocessFailedError as err:
         msg = f"Failed to uninstall pre-commit hooks:\n{err}"
         raise PreCommitInstallationError(msg) from None

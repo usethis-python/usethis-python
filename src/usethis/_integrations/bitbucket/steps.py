@@ -1,8 +1,6 @@
 from functools import singledispatch
 from typing import assert_never
 
-from ruamel.yaml.comments import CommentedMap
-
 from usethis._integrations.bitbucket.cache import add_caches
 from usethis._integrations.bitbucket.dump import fancy_pipelines_model_dump
 from usethis._integrations.bitbucket.io import (
@@ -21,6 +19,7 @@ from usethis._integrations.bitbucket.pipeline import (
     Pipelines,
     StageItem,
     Step,
+    Step1,
     StepItem,
 )
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
@@ -69,12 +68,6 @@ def add_step_in_default(
         # manager. On the other hand, what we're doing here is really "lazy" validation
         # and if there is no other case where we _need_ to do this validation then
         # maybe it's not worth it.
-        if not isinstance(doc.content, CommentedMap):
-            msg = (
-                f"Error when parsing Bitbucket Pipelines configuration. Expected file "
-                f"to be a map, got {type(doc.content)}."
-            )
-            raise ValueError(msg)
 
         # TODO currently adding to the end, but need to test desired functionality
         # of adding after a specific step
@@ -193,16 +186,16 @@ def _get_steps_in_pipeline(pipeline: Pipeline) -> list[Step]:
 
     steps = []
     for item in items:
-        steps.extend(_get_steps_in_pipeline_item(item))
+        steps.extend(get_steps_in_pipeline_item(item))
 
     return steps
 
 
 @singledispatch
-def _get_steps_in_pipeline_item(item) -> list[Step]: ...
+def get_steps_in_pipeline_item(item) -> list[Step]: ...
 
 
-@_get_steps_in_pipeline_item.register(StepItem)
+@get_steps_in_pipeline_item.register(StepItem)
 def _(item: StepItem) -> list[Step]:
     if item.step is None:
         return []
@@ -210,7 +203,7 @@ def _(item: StepItem) -> list[Step]:
     return [item.step]
 
 
-@_get_steps_in_pipeline_item.register(ParallelItem)
+@get_steps_in_pipeline_item.register(ParallelItem)
 def _(item: ParallelItem) -> list[Step]:
     if item.parallel is None:
         return []
@@ -223,16 +216,11 @@ def _(item: ParallelItem) -> list[Step]:
     else:
         assert_never(_p)
 
-    steps = []
-    for step_item in step_items:
-        if step_item.step is None:
-            continue
-
-        steps.append(step_item.step)
+    steps = [step_item.step for step_item in step_items if step_item.step is not None]
     return steps
 
 
-@_get_steps_in_pipeline_item.register(StageItem)
+@get_steps_in_pipeline_item.register(StageItem)
 def _(item: StageItem) -> list[Step]:
     if item.stage is None:
         return []
@@ -244,19 +232,29 @@ def _(item: StageItem) -> list[Step]:
     # stage, whereas at time of writing they are constrained in all other
     # circumstances. This gives rise to strange naming in the output of
     # datamodel-code-generator (which is repeated here for consistency).
-    steps = []
-    for step1 in step1s:
-        if step1.step is None:
-            continue
+    steps = [_step1tostep(step1) for step1 in step1s if step1.step is not None]
 
-        step2 = step1.step
-        # Here, we are casting our Step2 to a standard step, which is fine
-        # since one is the subtype of another
-        # TODO should test this is actually the case.
-        step = Step(**step2.model_dump())
-        steps.append(step)
     return steps
 
+
+def _step1tostep(step1: Step1) -> Step:
+    # Here, we are promoting our Step1 to a standard step, which is fine
+    # since Step2 is the supertype of Step. # TODO this comment needs clarification
+    # TODO should test this is actually the case.
+    if step1.step is None:
+        msg = (
+            "When parsing Bitbucket pipelines, expected each step of a stage to itself "
+            "have a non-null step, but got null."
+        )
+        raise ValueError(msg)
+
+    step2 = step1.step
+
+    step = Step(**step2.model_dump())
+    return step
+
+
+# TODO ruff rule & associated GitHub issue for commented-out code.
 
 # TODO Rather than using StepRef, let's encode the actual step, and refer via variable
 # rather than string ref.

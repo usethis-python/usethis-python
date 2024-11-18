@@ -1,5 +1,3 @@
-from ruamel.yaml.comments import CommentedMap
-
 from usethis._console import tick_print
 from usethis._integrations.bitbucket.dump import fancy_pipelines_model_dump
 from usethis._integrations.bitbucket.io import (
@@ -31,23 +29,18 @@ def add_caches(cache_by_name: dict[str, Cache]) -> None:
         return
     elif len(names) == 1:
         name_str = f"'{names[0]}'"
+    # TODO PLR2004 is too opinionated and should be disabled by default by usethis
+    elif len(names) == 2:  # noqa: PLR2004
+        name_str = f"'{names[0]}' and '{names[1]}'"
     else:
         name_str = (
             ", ".join(f"'{name}'" for name in names[:-1]) + f", and '{names[-1]}'"
         )
+    s = "" if len(names) == 1 else "s"
 
-    # TODO test this message.
-    tick_print(f"Adding cache definitions {name_str} to 'bitbucket-pipelines.yml'.")
+    tick_print(f"Adding cache definition{s} {name_str} to 'bitbucket-pipelines.yml'.")
 
     with edit_bitbucket_pipelines_yaml() as doc:
-        # TODO this is duplciated in cache.py
-        if not isinstance(doc.content, CommentedMap):
-            msg = (
-                f"Error when parsing Bitbucket Pipelines configuration. Expected file "
-                f"to be a map, got {type(doc.content)}."
-            )
-            raise ValueError(msg)
-
         config = doc.model
 
         if config.definitions is None:

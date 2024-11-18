@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, RootModel
 
 from usethis._integrations.pydantic.dump import fancy_model_dump
@@ -18,18 +20,94 @@ class TestFancyModelDump:
         # Assert
         assert output == {"x": 1, "y": 2.0}
 
-    def test_root_model(self):
-        # Arrange
-        class MyRootModel(RootModel):
-            root: list[int]
+    class TestRootModel:
+        def test_singleton_list(self):
+            # Arrange
+            class MyRootModel(RootModel):
+                root: list[int]
 
-        mrm = MyRootModel([2])
+            mrm = MyRootModel([2])
 
-        # Act
-        output = fancy_model_dump(mrm)
+            # Act
+            output = fancy_model_dump(mrm)
 
-        # Assert
-        assert output == [2]
+            # Assert
+            assert output == [2]
+
+        def test_list_length_differs_ref_length(self):
+            # Arrange
+            class MySubModel(BaseModel):
+                x: Literal[0, 1] = 1
+                y: Literal[0, 1] = 0
+
+            class MyRootModel(RootModel):
+                root: list[MySubModel]
+
+            mrm = MyRootModel(
+                [
+                    MySubModel(x=0, y=0),
+                    MySubModel(x=0, y=1),
+                    MySubModel(x=1, y=0),
+                    MySubModel(x=1, y=0),
+                ]
+            )
+
+            # Act
+            output = fancy_model_dump(mrm, reference=[2, 3, MySubModel(x=1, y=0)])
+
+            # Assert
+            assert output == [
+                {"x": 0},
+                {"x": 0, "y": 1},
+                {"x": 1, "y": 0},
+                {},
+            ]
+
+        def test_mismatch_list_ref(self):
+            # Arrange
+            class MyRootModel(RootModel):
+                root: list[int]
+
+            mrm = MyRootModel([2])
+
+            # Act
+            output = fancy_model_dump(mrm, reference=3)
+
+            # Assert
+            assert output == [2]
+
+        def test_constant(self):
+            # Arrange
+            class MyRootModel(RootModel):
+                root: str
+
+            mrm = MyRootModel("yo")
+
+            # Act
+            output = fancy_model_dump(mrm)
+
+            # Assert
+            assert output == "yo"
+
+        def test_basemodel(self):
+            # Arrange
+
+            class MySubModel(BaseModel):
+                x: int = -1
+                y: int = 0
+                z: int = 1
+                w: int
+
+            class MyRootModel(RootModel):
+                root: MySubModel
+
+            mrm = MyRootModel(MySubModel(x=-1, y=1, z=1, w=2))
+
+            # Act
+            output = fancy_model_dump(mrm, reference={"x": -1, "y": 0})
+
+            # Assert
+            assert output == {"x": -1, "y": 1, "w": 2}
 
     def test_bool_type(self):
         # Arrange

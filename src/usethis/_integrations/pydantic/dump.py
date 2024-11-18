@@ -95,30 +95,7 @@ def _(
     reference: ModelRepresentation | None = None,
     order_by_cls: dict[type[BaseModel], list[str]] | None = None,
 ) -> ModelRepresentation:
-    if order_by_cls is None:
-        order_by_cls = {}
-
-    if isinstance(model.root, list):
-        # TODO duplication with the list above; can we use single dispatch or something?
-        if reference is None:
-            reference = []
-        if not isinstance(reference, list):
-            reference = []
-
-        x = []
-        for value, ref in zip_longest(model.root, reference, fillvalue=None):
-            # TODO test the case where the zip longest aspect kicks in
-            dump = fancy_model_dump(value, reference=ref, order_by_cls=order_by_cls)
-            x.append(dump)
-        return x
-    elif isinstance(model.root, bool | int | float | str | BaseModel):
-        return fancy_model_dump(
-            model.root, reference=reference, order_by_cls=order_by_cls
-        )
-    else:
-        _t = model.model_fields["root"].annotation
-        msg = f"RootModel of type '{type(model)}' is of unsupported root type: '{_t}'"
-        raise NotImplementedError(msg)
+    return fancy_model_dump(model.root, reference=reference, order_by_cls=order_by_cls)
 
 
 @fancy_model_dump.register(BaseModel)

@@ -1,10 +1,7 @@
 from collections import OrderedDict
-from collections.abc import Generator
-from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
-import ruamel.yaml
 from ruamel.yaml.comments import (
     CommentedMap,
     CommentedOrderedMap,
@@ -26,28 +23,9 @@ from ruamel.yaml.scalarstring import (
     LiteralScalarString,
 )
 from ruamel.yaml.timestamp import TimeStamp
-from ruamel.yaml.util import load_yaml_guess_indent
 
-from usethis._integrations.yaml.io import YAMLDocument
+from usethis._integrations.yaml.io import edit_yaml
 from usethis._test import change_cwd
-
-
-# TODO remove this copy, import OG
-@contextmanager
-def edit_yaml(yaml_path: Path) -> Generator[YAMLDocument, None, None]:
-    """A context manager to modify a YAML file in-place, with managed read and write."""
-
-    with yaml_path.open(mode="r") as f:
-        content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
-
-    yaml = ruamel.yaml.YAML(typ="rt")
-    yaml.indent(mapping=sequence_ind, sequence=sequence_ind, offset=offset_ind)
-    yaml.preserve_quotes = True
-
-    yaml_document = YAMLDocument(content=content)
-    yield yaml_document
-
-    yaml.dump(yaml_document.content, yaml_path)
 
 
 class TestEditYaml:

@@ -95,18 +95,8 @@ class Tool(Protocol):
         add_pre_commit_config_file()
 
         # Add the config for this specific tool.
-        first_time_adding = True
         for hook in repo_config.hooks:
             if hook.id not in get_hook_names():
-                # Need to add this hook, it is missing.
-                if first_time_adding:
-                    # TODO I'd prefer to put this message at a lower level, and control
-                    # the duplication with a context manager or similar.
-                    tick_print(
-                        f"Adding {self.name} config to '.pre-commit-config.yaml'."
-                    )
-                    first_time_adding = False
-
                 add_hook(
                     PreCommitRepoConfig(
                         repo=repo_config.repo, rev=repo_config.rev, hooks=[hook]
@@ -126,16 +116,8 @@ class Tool(Protocol):
         repo_config = repo_configs[0]
 
         # Remove the config for this specific tool.
-        first_removal = True
         for hook in repo_config.hooks:
             if hook.id in get_hook_names():
-                if first_removal:
-                    # TODO I'd prefer to put this message at a lower level, and control
-                    # the duplication with a context manager or similar.
-                    tick_print(
-                        f"Removing {self.name} config from '.pre-commit-config.yaml'."
-                    )
-                    first_removal = False
                 remove_hook(hook.id)
 
     def add_pyproject_configs(self) -> None:

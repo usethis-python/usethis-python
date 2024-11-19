@@ -32,52 +32,7 @@ class TestAddCaches:
             assert get_cache_by_name() == cache_by_name | default_cache_by_name
             output = capfd.readouterr().out
             assert output == (
-                "✔ Adding cache definition 'example' to 'bitbucket-pipelines.yml'.\n"
-            )
-
-    def test_two(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
-        # Arrange
-        cache_by_name = {
-            "example": Cache(CachePath("~/.cache/example")),
-            "another": Cache(CachePath("~/.local/hello")),
-        }
-
-        with change_cwd(tmp_path):
-            add_bitbucket_pipeline_config()
-            capfd.readouterr()
-            # Act
-            add_caches(cache_by_name)
-
-            # Assert
-            default_cache_by_name = {"uv": Cache(CachePath("~/.cache/uv"))}
-            assert get_cache_by_name() == cache_by_name | default_cache_by_name
-            output = capfd.readouterr().out
-            assert output == (
-                "✔ Adding cache definitions 'example' and 'another' to \n"
-                "'bitbucket-pipelines.yml'.\n"
-            )
-
-    def test_many(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
-        # Arrange
-        cache_by_name = {
-            "example": Cache(CachePath("~/.cache/example")),
-            "another": Cache(CachePath("~/.local/hello")),
-            "yetanother": Cache(CachePath("~/.cache/ya")),
-        }
-
-        with change_cwd(tmp_path):
-            add_bitbucket_pipeline_config()
-            capfd.readouterr()
-            # Act
-            add_caches(cache_by_name)
-
-            # Assert
-            default_cache_by_name = {"uv": Cache(CachePath("~/.cache/uv"))}
-            assert get_cache_by_name() == cache_by_name | default_cache_by_name
-            output = capfd.readouterr().out
-            assert output == (
-                "✔ Adding cache definitions 'example', 'another', and 'yetanother' "
-                "to \n'bitbucket-pipelines.yml'.\n"
+                "✔ Adding cache 'example' definition to 'bitbucket-pipelines.yml'.\n"
             )
 
     def test_already_exists(self, tmp_path: Path):

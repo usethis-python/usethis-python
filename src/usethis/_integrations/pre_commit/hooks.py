@@ -4,6 +4,7 @@ from pathlib import Path
 import ruamel.yaml
 from ruamel.yaml.comments import CommentedMap
 
+from usethis._console import tick_print
 from usethis._integrations.pre_commit.config import PreCommitRepoConfig
 from usethis._integrations.yaml.io import edit_yaml
 
@@ -21,6 +22,10 @@ class DuplicatedHookNameError(ValueError):
 
 
 def add_hook(config: PreCommitRepoConfig) -> None:
+    # TODO docstring. Need to mention that this function assumes the hook doesn't
+    # already exist
+    # TODO in general need a convention around "add" versus "ensure", "use", etc.
+    # which indicates whether we assume the hook already exists or not.
     path = Path.cwd() / ".pre-commit-config.yaml"
 
     with edit_yaml(path) as yaml_document:
@@ -61,6 +66,7 @@ def add_hook(config: PreCommitRepoConfig) -> None:
         for repo in content["repos"]:
             new_repos.append(repo)
             for hook in repo["hooks"]:
+                tick_print(f"Adding hook '{hook["id"]}' to '.pre-commit-config.yaml'.")
                 if hook["id"] == last_precedent:
                     # TODO check this shouldn't be a fancy model dump that chooses
                     # sensible key order automatically
@@ -69,6 +75,9 @@ def add_hook(config: PreCommitRepoConfig) -> None:
 
 
 def remove_hook(name: str) -> None:
+    # TODO similar to above discussion. Need to make docstring explain that this
+    # function assumes that the hook isn't already removed. And need a naming convention
+    # to reflect this difference in assumption: remove vs. drop perhaps?
     path = Path.cwd() / ".pre-commit-config.yaml"
 
     with edit_yaml(path) as yaml_document:
@@ -81,6 +90,9 @@ def remove_hook(name: str) -> None:
         for repo in content["repos"]:
             for hook in repo["hooks"]:
                 if hook["id"] == name:
+                    tick_print(
+                        f"Removing {hook["id"]} config from '.pre-commit-config.yaml'."
+                    )
                     repo["hooks"].remove(hook)
 
             # if repo has no hooks, remove it

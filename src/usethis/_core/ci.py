@@ -36,11 +36,14 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
                 ),
             )
         if PytestTool().is_used():
-            # TODO: remove "Run tests with Python 3.*" steps for no-longer-supported
+            # TODO: GitHub issue; remove "Run tests with Python 3.*" steps for
+            # no-longer-supported
             # Python versions. We should read the existing steps' names to determine
             # which ones are the pipeline versus the ones we want added, determined
             # below.
             # Any step which is no longer required should be removed at this point.
+            # But some consideration to interface needed. Is this updating a default
+            # behaviour or opt-in via some kind of --switch or --upgrade style flag?
 
             matrix = get_supported_major_python_versions()
             for version in matrix:

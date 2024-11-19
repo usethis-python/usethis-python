@@ -276,7 +276,7 @@ class TestTool:
                 output = capfd.readouterr().out
                 assert output == (
                     "✔ Writing '.pre-commit-config.yaml'.\n"
-                    "✔ Adding my_tool config to '.pre-commit-config.yaml'.\n"
+                    "✔ Adding hook 'validate-pyproject' to '.pre-commit-config.yaml'.\n"
                 )
                 assert "deptry" in get_hook_names()
 

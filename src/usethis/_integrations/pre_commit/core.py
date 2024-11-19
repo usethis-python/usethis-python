@@ -7,10 +7,12 @@ from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 
 # TODO is this the best way to do this? Shouldn't this be an add function, and we start
-# with the file not existing by default? The add function can create the file if it
+# with the hook not existing by default? The add function can create the file if it
 # doesn't exist.
 # We will have other pre-commit configs to add automatically, e.g. from uv-pre-commit.
 # In any case, the way we do it should be consistent with the bitbucket pipelines approach.
+# Which is to start with a placeholder repo/hook which does something trivial, like
+# echoes hello.
 # Also, this is in the wrong layer of abstraction. It is not fundamental to pre-commit
 # integration.
 _YAML_CONTENTS_TEMPLATE = """\

@@ -1,6 +1,7 @@
 from usethis._console import tick_print
 from usethis._integrations.bitbucket.dump import fancy_pipelines_model_dump
 from usethis._integrations.bitbucket.io import (
+    BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
     read_bitbucket_pipelines_yaml,
 )
@@ -23,22 +24,6 @@ def get_cache_by_name() -> dict[str, Cache]:
 
 
 def add_caches(cache_by_name: dict[str, Cache]) -> None:
-    # Tell the user what we are doing.
-    names = list(cache_by_name.keys())
-    if len(names) == 0:
-        return
-    elif len(names) == 1:
-        name_str = f"'{names[0]}'"
-    elif len(names) == 2:
-        name_str = f"'{names[0]}' and '{names[1]}'"
-    else:
-        name_str = (
-            ", ".join(f"'{name}'" for name in names[:-1]) + f", and '{names[-1]}'"
-        )
-    s = "" if len(names) == 1 else "s"
-
-    tick_print(f"Adding cache definition{s} {name_str} to 'bitbucket-pipelines.yml'.")
-
     with edit_bitbucket_pipelines_yaml() as doc:
         config = doc.model
 
@@ -48,10 +33,21 @@ def add_caches(cache_by_name: dict[str, Cache]) -> None:
             config.definitions.caches = cache_by_name
         else:
             for name, cache in cache_by_name.items():
-                if name not in config.definitions.caches:
+                if not _cache_exists(name, doc=doc):
+                    tick_print(
+                        f"Adding cache '{name}' definition to "
+                        f"'bitbucket-pipelines.yml'."
+                    )
                     config.definitions.caches[name] = cache
                 # Otherwise, the cache is already present so we'll leave it alone.
-                # TODO we could check whether it's the same content but different name
 
         dump = fancy_pipelines_model_dump(config, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+
+
+def _cache_exists(name: str, *, doc: BitbucketPipelinesYAMLDocument) -> bool:
+    if doc.model.definitions is None or doc.model.definitions.caches is None:
+        return False
+
+    # TODO we could check whether it's the same content but different name
+    return name in doc.model.definitions.caches

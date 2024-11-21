@@ -239,6 +239,45 @@ class TestTool:
                 assert not (tmp_path / ".pre-commit-config.yaml").exists()
 
         # TODO test multiple pre-commit configs
+        def test_multiple_repo_configs(self, tmp_path: Path):
+            # Arrange
+            class MultiRepoTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "multi_repo_tool"
+
+                def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+                    return [
+                        PreCommitRepoConfig(
+                            repo="example",
+                            hooks=[
+                                HookConfig(id="ruff-format"),
+                                HookConfig(id="ruff-check"),
+                            ],
+                        ),
+                        PreCommitRepoConfig(
+                            repo="other",
+                            hooks=[
+                                HookConfig(
+                                    id="deptry",
+                                )
+                            ],
+                        ),
+                    ]
+
+            mrt_tool = MultiRepoTool()
+
+            # Act
+            with change_cwd(tmp_path):
+                mrt_tool.add_pre_commit_repo_configs()
+
+                # Assert
+                assert (tmp_path / ".pre-commit-config.yaml").exists()
+
+                # Note that this deliberately doesn't include validate-pyproject
+                # That should only be included as a default when using the
+                # `use_precommit` interface.
+                assert get_hook_names() == ["ruff-format", "ruff-check", "deptry"]
 
         def test_file_created(self, tmp_path: Path):
             # Arrange
@@ -276,7 +315,7 @@ class TestTool:
                 output = capfd.readouterr().out
                 assert output == (
                     "✔ Writing '.pre-commit-config.yaml'.\n"
-                    "✔ Adding hook 'validate-pyproject' to '.pre-commit-config.yaml'.\n"
+                    "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 )
                 assert "deptry" in get_hook_names()
 

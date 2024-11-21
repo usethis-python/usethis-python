@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from usethis._console import tick_print
-from usethis._integrations.github.tags import GitHubTagError, get_github_latest_tag
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
@@ -13,37 +12,50 @@ from usethis._integrations.uv.errors import UVSubprocessFailedError
 # In any case, the way we do it should be consistent with the bitbucket pipelines approach.
 # Which is to start with a placeholder repo/hook which does something trivial, like
 # echoes hello.
+# Arguably though, that approach is wrong too! Perhaps, we should be refusing to create
+# empty files unless we have contents to fill them. This avoids coding-up placeholder
+# logic. So we have two behaviours, add_<thing> where file already exists and where
+# it doesn't exist.
 # Also, this is in the wrong layer of abstraction. It is not fundamental to pre-commit
 # integration.
-_YAML_CONTENTS_TEMPLATE = """\
-repos:
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "{pkg_version}"
-    hooks:
-      - id: validate-pyproject
-        additional_dependencies: ["validate-pyproject-schema-store[all]"]
-"""
-# Manually bump this version when necessary
-_VALIDATEPYPROJECT_VERSION = "v0.23"
+# So we need a usethis tool validate-pyproject or similar. Not sure.
+# _YAML_CONTENTS_TEMPLATE = """\
+# repos:
+#   - repo: https://github.com/abravalheri/validate-pyproject
+#     rev: "{pkg_version}"
+#     hooks:
+#       - id: validate-pyproject
+#         additional_dependencies: ["validate-pyproject-schema-store[all]"]
+# """
+# # Manually bump this version when necessary
+# _VALIDATEPYPROJECT_VERSION = "v0.23"
 
 
-def add_pre_commit_config_file() -> None:
-    name = ".pre-commit-config.yaml"
-    path = Path.cwd() / name
+# def add_pre_commit_config_file(config: PreCommitRepoConfig) -> None:
+#     """Add a pre-commit configuration file to the repository.
 
-    if path.exists():
-        # Early exit; the file already exists
-        return
+#     Args:
+#         config: Pre-commit configuration for the repository. Note that this is
+#                 mandatory, as the configuration file must contain at least one hook.
+#     """
+#     name = ".pre-commit-config.yaml"
+#     path = Path.cwd() / name
 
-    tick_print(f"Writing '{name}'.")
-    try:
-        pkg_version = get_github_latest_tag("abravalheri", "validate-pyproject")
-    except GitHubTagError:
-        # Fallback to last known working version
-        pkg_version = _VALIDATEPYPROJECT_VERSION
-    yaml_contents = _YAML_CONTENTS_TEMPLATE.format(pkg_version=pkg_version)
+#     raise NotImplementedError
 
-    path.write_text(yaml_contents)
+# if path.exists():
+#     # Early exit; the file already exists
+#     return
+
+# tick_print(f"Writing '{name}'.")
+# try:
+#     pkg_version = get_github_latest_tag("abravalheri", "validate-pyproject")
+# except GitHubTagError:
+#     # Fallback to last known working version
+#     pkg_version = _VALIDATEPYPROJECT_VERSION
+# yaml_contents = _YAML_CONTENTS_TEMPLATE.format(pkg_version=pkg_version)
+
+# path.write_text(yaml_contents)
 
 
 def remove_pre_commit_config() -> None:

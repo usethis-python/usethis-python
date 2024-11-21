@@ -132,3 +132,14 @@ layers = [
 ]
 containers = [ "usethis" ]
 exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "Integrations Modular Design"
+type = "layers"
+layers = [
+  "bitbucket | github | pre_commit | pytest | ruff",
+  "uv | pydantic",
+  "pyproject | yaml",
+]
+containers = [ "usethis._integrations" ]
+exhaustive = true

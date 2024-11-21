@@ -19,10 +19,18 @@ def fancy_model_dump(
     reference: ModelRepresentation | None = None,
     order_by_cls: dict[type[BaseModel], list[str]] | None = None,
 ) -> ModelRepresentation:
-    # TODO docstring. N.B. in order_by_cls we ignore if a RootModel
-    # Also note that if keys are missing from the order list, we will place them at the
-    # end in the Model definition order.
-    # Need to explain the point of reference is to minimize a diff
+    """Like ``pydantic.model_dump`` but with bespoke formatting options.
+
+    Args:
+        reference: A representation to minimize the diff against. For example, if you
+                   have a previous model_dump output and it contains default fields,
+                   these will continue be included. If it omits default fields, these
+                   will be omitted.
+        order_by_cls: A lookup for different pydantic models, allowing each model's
+                      fields to be forced to occur in a specific order in the output.
+                      Unspecified fields will be placed at the end, in model definition
+                      order. RootModels are ignored.
+    """
     ...
 
 

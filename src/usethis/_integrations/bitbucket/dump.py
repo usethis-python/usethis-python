@@ -1,3 +1,5 @@
+from pydantic import BaseModel
+
 from usethis._integrations.bitbucket.pipeline import (
     PipelinesConfiguration,
     Step,
@@ -6,8 +8,7 @@ from usethis._integrations.bitbucket.pipeline import (
 )
 from usethis._integrations.pydantic.dump import ModelRepresentation, fancy_model_dump
 
-# TODO test RHS list values are all attributes of LHS
-ORDER_BY_CLS = {
+ORDER_BY_CLS: dict[type[BaseModel], list[str]] = {
     PipelinesConfiguration: ["image", "clone", "definitions"],
     StepBase: ["name", "caches", "script"],
     Step: ["name", "caches", "script"],

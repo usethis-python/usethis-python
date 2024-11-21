@@ -1,10 +1,11 @@
 from usethis._console import box_print
 from usethis._integrations.pre_commit.core import (
-    add_pre_commit_config_file,
+    # add_pre_commit_config_file,
     install_pre_commit_hooks,
     remove_pre_commit_config,
     uninstall_pre_commit_hooks,
 )
+from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_names
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.ruff.rules import deselect_ruff_rules, select_ruff_rules
 from usethis._integrations.uv.deps import add_deps_to_group, remove_deps_from_group
@@ -38,10 +39,12 @@ def use_pre_commit(*, remove: bool = False) -> None:
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev")
-        add_pre_commit_config_file()
         for _tool in ALL_TOOLS:
             if _tool.is_used():
                 _tool.add_pre_commit_repo_configs()
+        if not get_hook_names():
+            add_placeholder_hook()
+
         install_pre_commit_hooks()
 
         box_print(

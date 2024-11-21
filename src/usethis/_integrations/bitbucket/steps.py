@@ -64,11 +64,6 @@ def add_step_in_default(
 
     # Add the step to the default pipeline
     with edit_bitbucket_pipelines_yaml() as doc:
-        # TODO this validation might be better shared across all uses of the context
-        # manager. On the other hand, what we're doing here is really "lazy" validation
-        # and if there is no other case where we _need_ to do this validation then
-        # maybe it's not worth it.
-
         # TODO currently adding to the end, but need to test desired functionality
         # of adding after a specific step
         pipelines = doc.model.pipelines
@@ -102,7 +97,8 @@ def add_step_in_default(
             preserve_comments=True,
         )
 
-    # TODO need to tell the user to review the pipeline, it might be wrong.
+    # TODO need to tell the user to review the pipeline, it might be wrong. Test
+    # associated message.
 
 
 def add_step_caches(step: Step) -> None:
@@ -227,20 +223,20 @@ def _(item: StageItem) -> list[Step]:
 
     step1s = item.stage.steps
 
-    # Some unusual inconsistency in the JSON Schema for Bitbucket pipelines
-    # means that conditions are not constrained by type when occurring in a
-    # stage, whereas at time of writing they are constrained in all other
-    # circumstances. This gives rise to strange naming in the output of
-    # datamodel-code-generator (which is repeated here for consistency).
     steps = [_step1tostep(step1) for step1 in step1s if step1.step is not None]
 
     return steps
 
 
 def _step1tostep(step1: Step1) -> Step:
-    # Here, we are promoting our Step1 to a standard step, which is fine
-    # since Step2 is the supertype of Step. # TODO this comment needs clarification
-    # TODO should test this is actually the case.
+    """Promoting Step1 to a standard Step.
+
+    This is necessary because there is some unusual inconsistency in the JSON Schema
+    for Bitbucket pipelines that means conditions are not constrained by type when
+    occurring in a stage, whereas at time of writing they are constrained in all other
+    circumstances. This gives rise to strange naming in the output of
+    datamodel-code-generator (which is repeated here for consistency).
+    """
     if step1.step is None:
         msg = (
             "When parsing Bitbucket pipelines, expected each step of a stage to itself "

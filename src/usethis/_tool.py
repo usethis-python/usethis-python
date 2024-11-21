@@ -4,7 +4,6 @@ from typing import Protocol
 
 from usethis._console import tick_print
 from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
-from usethis._integrations.pre_commit.core import add_pre_commit_config_file
 from usethis._integrations.pre_commit.hooks import (
     add_hook,
     get_hook_names,
@@ -87,21 +86,15 @@ class Tool(Protocol):
         if not repo_configs:
             return
 
-        if len(repo_configs) > 1:
-            msg = "Multiple pre-commit repo configurations not yet supported."
-            raise NotImplementedError(msg)
-        repo_config = repo_configs[0]
-
-        add_pre_commit_config_file()
-
         # Add the config for this specific tool.
-        for hook in repo_config.hooks:
-            if hook.id not in get_hook_names():
-                add_hook(
-                    PreCommitRepoConfig(
-                        repo=repo_config.repo, rev=repo_config.rev, hooks=[hook]
+        for repo_config in repo_configs:
+            for hook in repo_config.hooks:
+                if hook.id not in get_hook_names():
+                    add_hook(
+                        PreCommitRepoConfig(
+                            repo=repo_config.repo, rev=repo_config.rev, hooks=[hook]
+                        )
                     )
-                )
 
     def remove_pre_commit_repo_configs(self) -> None:
         """Remove the tool's pre-commit configuration."""

@@ -11,7 +11,8 @@ from usethis._core.tool import (
     use_pytest,
     use_ruff,
 )
-from usethis._integrations.pre_commit.core import _VALIDATEPYPROJECT_VERSION
+
+# from usethis._integrations.pre_commit.core import _VALIDATEPYPROJECT_VERSION
 from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,
@@ -113,13 +114,8 @@ class TestDeptry:
 
         # 3. Test file contents
         assert (uv_init_dir / ".pre-commit-config.yaml").read_text() == (
-            f"""\
+            """\
 repos:
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: {_VALIDATEPYPROJECT_VERSION}
-    hooks:
-      - id: validate-pyproject
-        additional_dependencies: ['validate-pyproject-schema-store[all]']
   - repo: local
     hooks:
       - id: deptry
@@ -138,7 +134,7 @@ repos:
             "☐ Call the 'deptry src' command to run deptry.\n"
             "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
             "✔ Writing '.pre-commit-config.yaml'.\n"
-            "✔ Adding deptry config to '.pre-commit-config.yaml'.\n"
+            "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
             "✔ Ensuring pre-commit hooks are installed.\n"
             "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
         )
@@ -149,6 +145,8 @@ repos:
         capfd: pytest.CaptureFixture[str],
         vary_network_conn: None,
     ):
+        """Basically this checks that the placeholders gets removed."""
+
         # Act
         with change_cwd(uv_init_dir):
             use_pre_commit()
@@ -165,12 +163,8 @@ repos:
 
         # 3. Test file contents
         assert (uv_init_dir / ".pre-commit-config.yaml").read_text() == (
-            f"""repos:
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: {_VALIDATEPYPROJECT_VERSION}
-    hooks:
-      - id: validate-pyproject
-        additional_dependencies: ['validate-pyproject-schema-store[all]']
+            """\
+repos:
   - repo: local
     hooks:
       - id: deptry
@@ -190,23 +184,14 @@ repos:
             "✔ Ensuring pre-commit hooks are installed.\n"
             "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
             "✔ Adding 'deptry' to the 'dev' dependency group.\n"
-            "✔ Adding deptry config to '.pre-commit-config.yaml'.\n"
+            "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
             "☐ Call the 'deptry src' command to run deptry.\n"
         )
 
 
 class TestPreCommit:
-    class TestAdd:
-        def test_dependency_added(self, uv_init_dir: Path, vary_network_conn: None):
-            # Act
-            with change_cwd(uv_init_dir):
-                use_pre_commit()
-
-                # Assert
-                (dev_dep,) = get_deps_from_group("dev")
-            assert dev_dep == "pre-commit"
-
-        def test_stdout(
+    class TestUse:
+        def test_fresh(
             self,
             uv_init_dir: Path,
             capfd: pytest.CaptureFixture[str],
@@ -216,7 +201,11 @@ class TestPreCommit:
             with change_cwd(uv_init_dir):
                 use_pre_commit()
 
-            # Assert
+                # Assert
+                # Has dev dep
+                (dev_dep,) = get_deps_from_group("dev")
+                assert dev_dep == "pre-commit"
+            # Correct stdout
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
@@ -224,30 +213,18 @@ class TestPreCommit:
                 "✔ Ensuring pre-commit hooks are installed.\n"
                 "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
             )
-
-        def test_config_file_exists(self, uv_init_dir: Path, vary_network_conn: None):
-            # Act
-            with change_cwd(uv_init_dir):
-                use_pre_commit()
-
-            # Assert
+            # Config file
             assert (uv_init_dir / ".pre-commit-config.yaml").exists()
-
-        def test_config_file_contents(self, uv_init_dir: Path, vary_network_conn: None):
-            # Act
-            with change_cwd(uv_init_dir):
-                use_pre_commit()
-
-            # Assert
             contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
             assert contents == (
-                f"""\
+                """\
 repos:
-  - repo: https://github.com/abravalheri/validate-pyproject
-    rev: "{_VALIDATEPYPROJECT_VERSION}"
+  - repo: local
     hooks:
-      - id: validate-pyproject
-        additional_dependencies: ["validate-pyproject-schema-store[all]"]
+      - id: placeholder
+        name: Placeholder - add your own hooks!
+        entry: uv run python -V
+        language: python
 """
             )
 
@@ -257,8 +234,8 @@ repos:
                 """\
 repos:
 - repo: foo
-    hooks:
-    - id: bar
+  hooks:
+  - id: bar
 """
             )
 
@@ -272,8 +249,8 @@ repos:
                 """\
 repos:
 - repo: foo
-    hooks:
-    - id: bar
+  hooks:
+  - id: bar
 """
             )
 

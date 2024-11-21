@@ -56,12 +56,6 @@ type YAMLLiteral = (
 )
 
 
-def load_yaml(yaml_path: Path) -> YAMLLiteral:
-    yaml = ruamel.yaml.YAML()
-    with yaml_path.open(mode="r") as f:
-        return yaml.load(f)
-
-
 @dataclass
 class YAMLDocument:
     """A dataclass to represent a YAML document in memory.

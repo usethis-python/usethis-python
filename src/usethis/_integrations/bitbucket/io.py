@@ -7,11 +7,7 @@ from pydantic import ValidationError
 from ruamel.yaml.comments import CommentedMap
 
 from usethis._integrations.bitbucket.pipeline import PipelinesConfiguration
-from usethis._integrations.yaml.io import (
-    YAMLLiteral,
-    edit_yaml,
-    load_yaml,
-)
+from usethis._integrations.yaml.io import YAMLLiteral, edit_yaml
 
 
 class BitbucketPipelinesYAMLConfigError(Exception):
@@ -20,7 +16,13 @@ class BitbucketPipelinesYAMLConfigError(Exception):
 
 @dataclass
 class BitbucketPipelinesYAMLDocument:
-    # TODO add docstring
+    """A dataclass to represent a Bitbucket Pipelines configuration YAML file in memory.
+
+    Attributes:
+        content: The content of the YAML document as a ruamel.yaml map (dict-like).
+        model: A pydantic model containing a copy of the content.
+    """
+
     content: CommentedMap
     model: PipelinesConfiguration
 
@@ -28,9 +30,8 @@ class BitbucketPipelinesYAMLDocument:
 def read_bitbucket_pipelines_yaml() -> PipelinesConfiguration:
     path = Path.cwd() / "bitbucket-pipelines.yml"
 
-    ruamel_content = load_yaml(path)
-
-    return _validate_config(ruamel_content)
+    with edit_yaml(path) as doc:
+        return _validate_config(doc.content)
 
 
 @contextmanager

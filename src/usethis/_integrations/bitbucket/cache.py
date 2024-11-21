@@ -49,5 +49,22 @@ def _cache_exists(name: str, *, doc: BitbucketPipelinesYAMLDocument) -> bool:
     if doc.model.definitions is None or doc.model.definitions.caches is None:
         return False
 
-    # TODO we could check whether it's the same content but different name
     return name in doc.model.definitions.caches
+
+    # TODO also we could check whether it's the same content but different name. That's
+    # harder because it requires we identify the differing name and start using that
+    # instead in our adding the hook... or change the name, which is a bit aggressive.
+    #
+    # Record this in GitHub perhaps... more thought needed on the architectural impacts
+    # of trying to support this.
+
+    # Here's some more thought... we're trying to identify a cache by name as a kind
+    # of identifying ID. But maybe better to identify a cache by its content. If we
+    # need to add it because it doesn't already exist, then we could have a lookup
+    # which gives conventional names for different contents (turning it on its head;
+    # it becomes name_by_cache). But what about if the user keeps a cache's name but
+    # modifies the script? We should allow that to also be referring to the same thing.
+    # So more thought needed.
+
+    # Also note that there's currently an issue where the user might define multiple
+    # scripts with the same contents

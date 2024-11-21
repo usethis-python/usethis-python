@@ -2,8 +2,8 @@ version = 1
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version < '3.13'",
-    "python_full_version >= '4.0'",
     "python_full_version >= '3.13' and python_full_version < '4.0'",
+    "python_full_version >= '4.0'",
 ]
 
 [[package]]
@@ -951,7 +951,7 @@ wheels = [
 
 [[package]]
 name = "usethis"
-version = "0.2.1.dev11+g5ba4248.d20241118"
+version = "0.2.1.dev13+ge3299a3.d20241119"
 source = { editable = "." }
 dependencies = [
     { name = "mergedeep" },

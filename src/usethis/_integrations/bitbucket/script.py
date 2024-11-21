@@ -19,7 +19,7 @@ class ScriptDefinition(RootModel[list[Script]]):
 # TODO not related to this file but need to ensure the tests dir matches the src dir
 
 
-def add_script_to_definitions(script: Script, anchor_name: str) -> None:  # TODO None?
+def add_script_to_definitions(script: Script, anchor_name: str) -> None:
     # TODO need to document that there is a specific format in which the definitions.scripts
     # should be added.
     with edit_bitbucket_pipelines_yaml() as doc:
@@ -47,5 +47,3 @@ def add_script_to_definitions(script: Script, anchor_name: str) -> None:  # TODO
             scripts.root.append(script)
 
         update_ruamel_yaml_map(doc.content, config.model_dump(), preserve_comments=True)
-
-        # Now that everything's added, we should get the new script and TODO???

@@ -24,8 +24,6 @@ pipelines:
               - echo 'Hello, world!'
 """
 
-# TODO make sure we test that the placeholder gets removed when adding new steps
-
 
 def add_bitbucket_pipeline_config() -> None:
     """Add a Bitbucket pipeline configuration.

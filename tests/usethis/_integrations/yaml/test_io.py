@@ -1,7 +1,6 @@
 from collections import OrderedDict
 from pathlib import Path
 
-import pytest
 from ruamel.yaml.comments import (
     CommentedMap,
     CommentedOrderedMap,
@@ -270,12 +269,32 @@ hello: world
                 # Assert
                 assert type(content) is TimeStamp
 
-    # TODO also need to investigate ruamel.yaml's ability to preserve quote styles
-
     class TestRoundTrip:
-        # TODO test function names actually match the indentation levels detemrined by ruamel.yaml
-        def test_indentation_4_2(self, uv_init_dir: Path):
-            path = uv_init_dir / "x.yml"
+        def test_single_quote_preserved(self, tmp_path: Path):
+            path = tmp_path / "x.yml"
+            path.write_text(
+                """\
+x: 'hi'
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), edit_yaml(path) as _:
+                pass
+
+            # Assert
+            contents = path.read_text()
+            assert (
+                contents
+                == """\
+x: 'hi'
+"""
+            )
+
+        # TODO also test unquoted and single quoted are preserved
+
+        def test_indentation_4_2(self, tmp_path: Path):
+            path = tmp_path / "x.yml"
             path.write_text(
                 """\
 x:
@@ -286,7 +305,7 @@ x:
             )
 
             # Act
-            with change_cwd(uv_init_dir), edit_yaml(path) as _:
+            with change_cwd(tmp_path), edit_yaml(path) as _:
                 pass
 
             # Assert
@@ -298,62 +317,5 @@ x:
   - y:
         z:
           - w
-"""
-            )
-
-        def test_indentation_0_2(self, uv_init_dir: Path):
-            path = uv_init_dir / "x.yml"
-            path.write_text(
-                """\
-x:
-  - y:
-    z:
-      - w
-"""
-            )
-
-            # Act
-            with change_cwd(uv_init_dir), edit_yaml(path) as _:
-                pass
-
-            # Assert
-            contents = path.read_text()
-            assert (
-                contents
-                == """\
-x:
-  - y:
-    z:
-      - w
-"""
-            )
-
-        @pytest.mark.skip(
-            reason="ruamel.yaml's guess function doesn't seem powerful enough yet."
-        )
-        def test_indentation_2_2(self, uv_init_dir: Path):
-            path = uv_init_dir / "x.yml"
-            path.write_text(
-                """\
-x:
-  - y:
-      z:
-        - w
-"""
-            )
-
-            # Act
-            with change_cwd(uv_init_dir), edit_yaml(path) as _:
-                pass
-
-            # Assert
-            contents = path.read_text()
-            assert (
-                contents
-                == """\
-x:
-  - y:
-      z:
-        - w
 """
             )

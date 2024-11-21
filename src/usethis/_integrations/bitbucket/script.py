@@ -16,9 +16,6 @@ class ScriptDefinition(RootModel[list[Script]]):
     )
 
 
-# TODO not related to this file but need to ensure the tests dir matches the src dir
-
-
 def add_script_to_definitions(script: Script, anchor_name: str) -> None:
     # TODO need to document that there is a specific format in which the definitions.scripts
     # should be added.

@@ -19,7 +19,6 @@ ORDER_BY_CLS: dict[type[BaseModel], list[str]] = {
 def fancy_pipelines_model_dump(
     config: PipelinesConfiguration, *, reference: ModelRepresentation
 ) -> dict[str, ModelRepresentation]:
-    # TODO should test this function; by extension we should be testing ORDER_BY_CLS
     dump = fancy_model_dump(config, reference=reference, order_by_cls=ORDER_BY_CLS)
 
     if not isinstance(dump, dict):

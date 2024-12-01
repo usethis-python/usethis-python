@@ -318,4 +318,209 @@ class TestTool:
                 )
                 assert "deptry" in get_hook_names()
 
-    class TestRemovePreCommitRepoConfigs: ...  # TODO
+        def test_add_two_hooks_in_one_repo_when_one_already_exists(
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+        ):
+            # Arrange
+            class TwoHooksTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "two_hooks_tool"
+
+                def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+                    return [
+                        UriRepo(
+                            repo="example",
+                            hooks=[
+                                HookDefinition(id="ruff-format"),
+                                HookDefinition(id="ruff-check"),
+                            ],
+                        ),
+                    ]
+
+            th_tool = TwoHooksTool()
+
+            # Create a pre-commit config file with one of the two hooks
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        entry: echo "different now!"
+""")
+
+            # Act
+            with change_cwd(tmp_path):
+                # Currently, we are expecting multiple hooks to not be supported.
+                # At the point where we do support it, this with-raises block and
+                # test skip can be removed - the rest of the test becomes valid.
+                with pytest.raises(NotImplementedError):
+                    th_tool.add_pre_commit_repo_configs()
+                pytest.skip("Multiple hooks in one repo not supported yet")
+
+                # Assert
+                output = capfd.readouterr().out
+                assert output == (
+                    "✔ Adding hook 'ruff-format' to '.pre-commit-config.yaml'.\n"
+                )
+                assert get_hook_names() == ["ruff-format", "ruff-check"]
+
+            assert (
+                (tmp_path / ".pre-commit-config.yaml").read_text()
+                == """\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        entry: ruff format
+      - id: ruff-check
+        entry: echo "different now!"
+"""
+            )
+
+    class TestRemovePreCommitRepoConfigs:
+        def test_no_file_remove_none(self, tmp_path: Path):
+            # Arrange
+            nc_tool = DefaultTool()
+
+            # Act
+            with change_cwd(tmp_path):
+                nc_tool.remove_pre_commit_repo_configs()
+
+                # Assert
+                assert not (tmp_path / ".pre-commit-config.yaml").exists()
+
+        def test_no_file_remove_one(self, tmp_path: Path):
+            # Arrange
+            tool = MyTool()
+
+            # Act
+            with change_cwd(tmp_path):
+                tool.remove_pre_commit_repo_configs()
+
+                # Assert
+                assert not (tmp_path / ".pre-commit-config.yaml").exists()
+
+        def test_one_hook_remove_none(self, tmp_path: Path):
+            # Arrange
+            tool = DefaultTool()
+
+            # Create a pre-commit config file with one hook
+            contents = """\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        entry: ruff format
+"""
+            (tmp_path / ".pre-commit-config.yaml").write_text(contents)
+
+            # Act
+            with change_cwd(tmp_path):
+                tool.remove_pre_commit_repo_configs()
+
+                # Assert
+                assert (tmp_path / ".pre-commit-config.yaml").exists()
+                assert get_hook_names() == ["ruff-format"]
+                assert (tmp_path / ".pre-commit-config.yaml").read_text() == contents
+
+        def test_one_hook_remove_different_one(self, tmp_path: Path):
+            # Arrange
+            tool = MyTool()
+
+            # Create a pre-commit config file with one hook
+            contents = """\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        entry: ruff format
+"""
+            (tmp_path / ".pre-commit-config.yaml").write_text(contents)
+
+            # Act
+            with change_cwd(tmp_path):
+                tool.remove_pre_commit_repo_configs()
+
+                # Assert
+                assert (tmp_path / ".pre-commit-config.yaml").exists()
+                assert get_hook_names() == ["ruff-format"]
+                assert (tmp_path / ".pre-commit-config.yaml").read_text() == contents
+
+        def test_one_hook_remove_same_hook(self, tmp_path: Path):
+            # Arrange
+            tool = MyTool()
+
+            # Create a pre-commit config file with one hook
+            contents = """\
+repos:
+  - repo: local
+    hooks:
+      - id: deptry
+        entry: deptry
+"""
+            (tmp_path / ".pre-commit-config.yaml").write_text(contents)
+
+            # Act
+            with change_cwd(tmp_path):
+                tool.remove_pre_commit_repo_configs()
+
+                # Assert
+                assert (tmp_path / ".pre-commit-config.yaml").exists()
+                assert get_hook_names() == ["placeholder"]
+
+        def test_two_repos_remove_same_two(self, tmp_path: Path):
+            # Arrange
+            class TwoRepoTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "two_repo_tool"
+
+                def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+                    return [
+                        UriRepo(
+                            repo="example",
+                            hooks=[
+                                HookDefinition(id="ruff-format"),
+                                HookDefinition(id="ruff-check"),
+                            ],
+                        ),
+                        UriRepo(
+                            repo="other",
+                            hooks=[
+                                HookDefinition(
+                                    id="deptry",
+                                )
+                            ],
+                        ),
+                    ]
+
+            tr_tool = TwoRepoTool()
+
+            # Create a pre-commit config file with two hooks
+            contents = """\
+repos:
+    - repo: local
+      hooks:
+        - id: ruff-format
+          entry: ruff format
+        - id: ruff-check
+          entry: ruff check
+"""
+
+            (tmp_path / ".pre-commit-config.yaml").write_text(contents)
+
+            # Act
+            with change_cwd(tmp_path):
+                tr_tool.remove_pre_commit_repo_configs()
+
+                # Assert
+                assert (tmp_path / ".pre-commit-config.yaml").exists()
+                assert get_hook_names() == ["placeholder"]
+
+
+# TODO test creating a Repo class (from the schema.py) for a local repo with multiple
+# hooks. I think it might not be possible at the moment? In which case the schema is
+# wrong.

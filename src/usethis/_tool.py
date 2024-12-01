@@ -98,35 +98,37 @@ class Tool(Protocol):
             if repo_config.hooks is None:
                 continue
 
+            if len(repo_config.hooks) > 1:
+                msg = "Multiple hooks in a single repo not yet supported."
+                raise NotImplementedError(msg)
+
             for hook in repo_config.hooks:
                 if hook.id not in get_hook_names():
-                    add_repo(
-                        # TODO this is a bug; what if we have a repo with two hooks and
-                        # only one has the relevant hook?
-                        repo_config
-                    )
+                    add_repo(repo_config)
+
+    # TODO wrong place but find all the examples of NotImplementedError and test it is
+    # being raised.
 
     def remove_pre_commit_repo_configs(self) -> None:
-        """Remove the tool's pre-commit configuration."""
+        """Remove the tool's pre-commit configuration.
+
+        If the .pre-commit-config.yaml file does not exist, this method has no effect.
+        """
         repo_configs = self.get_pre_commit_repos()
 
         if not repo_configs:
             return
 
-        if len(repo_configs) > 1:
-            msg = "Multiple pre-commit repo configurations not yet supported."
-            raise NotImplementedError(msg)  # TODO not the best
-        (repo_config,) = repo_configs
+        for repo_config in repo_configs:
+            if repo_config.hooks is None:
+                continue
 
-        if repo_config.hooks is None:
-            return
-
-        # Remove the config for this specific tool.
-        for hook in repo_config.hooks:
-            # TODO mixing the idea of adding + removing hooks with repos (in
-            # filesnames!)
-            if hook.id in get_hook_names():
-                remove_hook(hook.id)
+            # Remove the config for this specific tool.
+            for hook in repo_config.hooks:
+                # TODO mixing the idea of adding + removing hooks with repos (in
+                # filesnames!)
+                if hook.id in get_hook_names():
+                    remove_hook(hook.id)
 
     def add_pyproject_configs(self) -> None:
         """Add the tool's pyproject.toml configurations."""

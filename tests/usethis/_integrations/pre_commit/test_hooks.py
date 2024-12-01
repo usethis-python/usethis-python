@@ -2,13 +2,13 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
 from usethis._integrations.pre_commit.hooks import (
     DuplicatedHookNameError,
-    add_hook,
+    add_repo,
     get_hook_names,
     remove_hook,
 )
+from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
 from usethis._test import change_cwd
 
 
@@ -24,23 +24,34 @@ repos:
             change_cwd(tmp_path),
             pytest.raises(NotImplementedError, match="Hook 'foo' not recognized"),
         ):
-            add_hook(
-                PreCommitRepoConfig(
-                    repo="foo", rev="foo", hooks=[HookConfig(id="foo", name="foo")]
+            add_repo(
+                UriRepo(
+                    repo="foo", rev="foo", hooks=[HookDefinition(id="foo", name="foo")]
                 )
             )
 
 
 class TestRemoveHook:
     def test_empty(self, tmp_path: Path):
-        (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n")
         with change_cwd(tmp_path):
             remove_hook("foo")
-        assert (tmp_path / ".pre-commit-config.yaml").read_text() == "repos: []\n"
+        assert (
+            (tmp_path / ".pre-commit-config.yaml").read_text()
+            == """\
+repos:
+  - repo: local
+    hooks:
+      - id: placeholder
+        name: Placeholder - add your own hooks!
+        entry: uv run python -c "print('hello world!')"
+        language: python
+"""
+        )
 
     def test_single(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text(
-            """repos:
+            """\
+repos:
   - repo: foo
     hooks:    
     - id: bar
@@ -48,24 +59,48 @@ class TestRemoveHook:
         )
         with change_cwd(tmp_path):
             remove_hook("bar")
-        assert (tmp_path / ".pre-commit-config.yaml").read_text() == "repos: []\n"
+        assert (
+            (tmp_path / ".pre-commit-config.yaml").read_text()
+            == """\
+repos:
+  - repo: local
+    hooks:
+      - id: placeholder
+        name: Placeholder - add your own hooks!
+        entry: uv run python -c "print('hello world!')"
+        language: python
+"""
+        )
 
     def test_multihooks(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text(
-            """repos:
-  - repo: foo # comment
+            """\
+repos:
+  - repo: local # comment
     hooks:    
-    - id: bar
-    - id: baz
+      - id: bar
+        name: bar
+        entry: bar
+        language: python
+  - repo: local # other comment
+    hooks:
+      - id: baz
+        name: baz
+        entry: baz
+        language: python
 """
         )
         with change_cwd(tmp_path):
             remove_hook("bar")
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == (
-            """repos:
-  - repo: foo # comment
+            """\
+repos:
+  - repo: local # other comment
     hooks:
       - id: baz
+        name: baz
+        entry: baz
+        language: python
 """
         )
 

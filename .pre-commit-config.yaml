@@ -14,16 +14,18 @@ repos:
         name: ruff-format
         entry: uv run --frozen ruff format
         language: system
+        types_or: [python, pyi, jupyter]
         always_run: true
-        pass_filenames: false
+        pass_filenames: true
   - repo: local
     hooks:
       - id: ruff-check
         name: ruff-check
         entry: uv run --frozen ruff check --fix
         language: system
+        types_or: [python, pyi, jupyter]
         always_run: true
-        pass_filenames: false
+        pass_filenames: true
   - repo: local
     hooks:
       - id: deptry
@@ -46,5 +48,6 @@ repos:
         name: pyright
         entry: uv run --frozen pyright
         language: system
+        types_or: [python, pyi]
         always_run: true
-        pass_filenames: false
+        pass_filenames: true

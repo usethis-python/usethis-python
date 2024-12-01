@@ -5,6 +5,30 @@ from usethis._integrations.yaml.update import lcs_list_update, update_ruamel_yam
 
 
 class TestUpdateRuamelYamlMap:
+    def test_no_change(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "test.yaml"
+        path.write_text("""\
+hello: world # comment
+""")
+
+        # Act
+        with edit_yaml(path) as yaml_document:
+            assert isinstance(yaml_document.content, CommentedMap)  # Help pyright
+            update_ruamel_yaml_map(
+                yaml_document.content,
+                {"hello": "world"},
+                preserve_comments=True,
+            )
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+hello: world # comment
+"""
+        )
+
     def test_map(self, tmp_path: Path):
         # Arrange
         path = tmp_path / "test.yaml"
@@ -90,7 +114,7 @@ key: new value
         path.write_text("""\
 key: # comment1
   hello: world # comment2
-this: willberemoved
+this: willberemoved                  
 """)
 
         # Act
@@ -147,6 +171,66 @@ key:
     - hello: 4 # yet another
     -   # another comment
       hello: 4 # yet another
+"""
+        )
+
+    def test_remove_list_element(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "test.yaml"
+        path.write_text("""\
+key:
+    - 1 # comment
+    - 2
+    - 3 # another comment
+""")
+
+        # Act
+        with edit_yaml(path) as yaml_document:
+            assert isinstance(yaml_document.content, CommentedMap)
+
+            update_ruamel_yaml_map(
+                yaml_document.content,
+                {"key": [1, 3]},
+                preserve_comments=True,
+            )
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+key:
+    - 1 # comment
+    - 3 # another comment
+"""
+        )
+
+    def test_remove_nested_list(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "test.yaml"
+        path.write_text("""\
+key:
+    - lookup: 1
+      value: 2
+    - lookup: 3
+      value: 4
+""")
+        # Act
+        with edit_yaml(path) as yaml_document:
+            assert isinstance(yaml_document.content, CommentedMap)
+
+            update_ruamel_yaml_map(
+                yaml_document.content,
+                {"key": [{"lookup": 1, "value": 2}]},
+                preserve_comments=True,
+            )
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+key:
+    - lookup: 1
+      value: 2
 """
         )
 

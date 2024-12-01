@@ -4,7 +4,7 @@ from usethis._integrations.bitbucket.io import (
     BitbucketPipelinesYAMLConfigError,
     edit_bitbucket_pipelines_yaml,
 )
-from usethis._integrations.bitbucket.pipeline import Definitions, Script
+from usethis._integrations.bitbucket.schema import Definitions, Script
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 
@@ -17,8 +17,11 @@ class ScriptDefinition(RootModel[list[Script]]):
 
 
 def add_script_to_definitions(script: Script, anchor_name: str) -> None:
-    # TODO need to document that there is a specific format in which the definitions.scripts
-    # should be added.
+    """Add an anchorized script definition to a Bitbucket pipeline configuration.
+
+    Note that the definitions.script section is not currently a part of the schema as of
+    2024-11-22, although it is valid.
+    """
     with edit_bitbucket_pipelines_yaml() as doc:
         config = doc.model
 
@@ -40,7 +43,6 @@ def add_script_to_definitions(script: Script, anchor_name: str) -> None:
                 )
                 raise BitbucketPipelinesYAMLConfigError(msg) from None
 
-            # TODO: can we put it in a canonical order?
             scripts.root.append(script)
 
         update_ruamel_yaml_map(doc.content, config.model_dump(), preserve_comments=True)

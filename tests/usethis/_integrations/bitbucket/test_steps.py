@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from usethis._integrations.bitbucket.pipeline import (
+from usethis._integrations.bitbucket.schema import (
     Parallel,
     ParallelExpanded,
     ParallelItem,

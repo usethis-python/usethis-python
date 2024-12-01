@@ -5,8 +5,18 @@ from ruamel.yaml.comments import CommentedMap
 
 from usethis._config import usethis_config
 from usethis._console import tick_print
-from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
+from usethis._integrations.pre_commit.dump import fancy_precommit_config_model_dump
+from usethis._integrations.pre_commit.io import edit_pre_commit_config_yaml
+from usethis._integrations.pre_commit.schema import (
+    HookDefinition,
+    Language,
+    LocalRepo,
+    MetaRepo,
+    UriRepo,
+)
+from usethis._integrations.pydantic.dump import fancy_model_dump
 from usethis._integrations.yaml.io import edit_yaml
+from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 _HOOK_ORDER = [
     "validate-pyproject",
@@ -21,52 +31,41 @@ class DuplicatedHookNameError(ValueError):
     """Raised when a hook name is duplicated in a pre-commit configuration file."""
 
 
-def add_hook(config: PreCommitRepoConfig) -> None:
+def add_repo(repo: LocalRepo | UriRepo) -> None:
     # TODO docstring. Need to mention that this function assumes the hook doesn't
     # already exist
     # TODO in general need a convention around "add" versus "ensure", "use", etc.
     # which indicates whether we assume the hook already exists or not.
-    path = Path.cwd() / ".pre-commit-config.yaml"
 
-    is_first_hook = not path.exists()
-    if is_first_hook:
-        tick_print("Writing '.pre-commit-config.yaml'.")
-        # This might seem pointless, but it is to give the ruamel.yaml indention guesser
-        # an idea of the indentation level we'd like by default.
-        # TODO instead of this, edit_yaml should accept a bool "guess_indent: bool = True"
-        # which we would set to False for first hook = True
-        path.write_text("""\
-repos:
-  - repo: local
-""")
+    with edit_pre_commit_config_yaml() as doc:
+        if repo.hooks is None or len(repo.hooks) != 1:
+            msg = "Currently, only repos with exactly one hook are supported."
+            raise NotImplementedError(msg)  # Should allow multiple or 0 hooks per repo
 
-    with edit_yaml(path) as doc:
-        if is_first_hook:
-            doc.content = CommentedMap({})
-        # TODO need to remove placeholder hook if present and test
-
-        # TODO test the case where we try to add a hook of the same name that already
-        # exists. Related to above docstring and naming convention issue.
-        content = doc.content
-        if not isinstance(content, CommentedMap):
-            msg = f"Unrecognized pre-commit configuration file format of type {type(content)}"
-            raise NotImplementedError(msg)
-
-        (hook_config,) = (
-            config.hooks
-        )  # TODO Weird assumption! Should allow multiple hooks per repo config.
+        (hook_config,) = repo.hooks
         hook_name = hook_config.id
 
-        # Get an ordered list of the hooks already in the file
-        existing_hooks = get_hook_names()
+        if hook_name is None:
+            msg = "Hook ID must be specified"
+            raise ValueError(msg)
+
+        content = doc.content
+
+        # Ordered list of the hooks already in the file
+        existing_hooks = extract_hook_names(content)
 
         if not existing_hooks:
             # TODO duplicated message.
             tick_print(f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'.")
             if "repos" not in content:
                 content["repos"] = []
-            content["repos"].append(config.model_dump(exclude_none=True))
+            # TODO use of model_dump without fancy dump
+            content["repos"].append(fancy_model_dump(repo))
             return
+
+        # TODO not the right place for this TODO but we should be showing a message
+        # when adding a placeholder hook that they need to populate it with real
+        # content, similar to the bitbucket hook.
 
         # Get the precendents, i.e. hooks occuring before the new hook
         try:
@@ -88,13 +87,13 @@ repos:
         # Do this by iterating over the repos and hooks, and inserting the new hook
         # after the last precedent
         new_repos = []
-        for repo in content["repos"]:
-            # TODO shouldn't use model_dump because of inconistent handling of defaults
-            # should use some kind of dict subset approach. Need internet to think about
-            # this properly. So test the edge cases.
-            if repo != _get_placeholder_repo_config().model_dump(exclude_defaults=True):
-                new_repos.append(repo)
-            for hook in repo["hooks"]:
+        for _repo in content["repos"]:
+            # TODO shouldn't hard-code placeholder, should reference the placeholder
+            # function's hard-coded value.
+            # Also need to move these dicts to pydamtic classes.
+            if [hook["id"] for hook in _repo["hooks"]] != ["placeholder"]:
+                new_repos.append(_repo)
+            for hook in _repo["hooks"]:
                 # TODO Also need to think about this precedent logic in terms of how
                 # it handles repos - there might be other hooks in-between from the same
                 # repo as the one we are adding, in which case we are "giving up" on
@@ -109,31 +108,34 @@ repos:
                     tick_print(
                         f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'."
                     )
-                    new_repos.append(config.model_dump(exclude_none=True))
+                    # TODO should have a wrapper around fancy_model_dump.
+                    # should ctrl-f to find all instances of raw fancy_model_dump and
+                    # ensure they are all wrapped
+                    new_repos.append(fancy_model_dump(repo))
         content["repos"] = new_repos
 
 
 def add_placeholder_hook() -> None:
-    # print statement is duplicated...
+    # TODO print statement is duplicated...
     tick_print("Writing '.pre-commit-config.yaml'.")
     with usethis_config.set(quiet=True):
-        add_hook(_get_placeholder_repo_config())
+        add_repo(_get_placeholder_repo_config())
     # TODO message and test for need to replace placeholder - c.f. BBPL msg
 
 
-def _get_placeholder_repo_config() -> PreCommitRepoConfig:
+def _get_placeholder_repo_config() -> LocalRepo:
     # TODO there might be a pre-commit repo already existent which purely does
     # placeholder activity - we should consider it.
     # On the other hand, local prevents downloads & versions which complicates
     # things, so maybe this is good.
-    return PreCommitRepoConfig(
+    return LocalRepo(
         repo="local",
         hooks=[
-            HookConfig(
+            HookDefinition(
                 id="placeholder",
                 name="Placeholder - add your own hooks!",
-                entry="uv run python -V",  # TODO better to do hello world.
-                language="python",
+                entry="""uv run python -c "print('hello world!')\"""",
+                language=Language("python"),
             )
         ],
     )
@@ -142,33 +144,44 @@ def _get_placeholder_repo_config() -> PreCommitRepoConfig:
 def remove_hook(name: str) -> None:
     """Remove pre-commit hook configuration.
 
-    If the hook doesn't exist, this function will have no effect.
+    If the hook doesn't exist, this function will have no effect. Meta hooks are
+    ignored.
     """
     # TODO similar to above discussion. Need a naming convention
     # to reflect this difference in assumption: remove vs. drop perhaps? For assuming
     # that the hook isn't already removed.
-    path = Path.cwd() / ".pre-commit-config.yaml"
-
-    with edit_yaml(path) as yaml_document:
-        content = yaml_document.content
-        if not isinstance(content, CommentedMap):
-            msg = f"Unrecognized pre-commit configuration file format of type {type(content)}"
-            raise NotImplementedError(msg)
+    with edit_pre_commit_config_yaml() as doc:
+        # TODO we should use the pydantic schema + update function rather than
+        # directly over-writing dictionaries.
 
         # search across the repos for any hooks with ID equal to name
-        for repo in content["repos"]:
-            for hook in repo["hooks"]:
-                if hook["id"] == name:
+        for repo in doc.model.repos:
+            if isinstance(repo, MetaRepo) or repo.hooks is None:
+                continue
+
+            for hook in repo.hooks:
+                if hook.id == name:
                     tick_print(
-                        f"Removing {hook["id"]} config from '.pre-commit-config.yaml'."
+                        f"Removing {hook.id} config from '.pre-commit-config.yaml'."
                     )
-                    repo["hooks"].remove(hook)
+                    repo.hooks.remove(hook)
 
             # if repo has no hooks, remove it
             # TODO we shouldn't remove it if we haven't touched the repo, we should be
             # minimizing the diff. Need to test this.
-            if not repo["hooks"]:
-                content["repos"].remove(repo)
+            if not repo.hooks:
+                doc.model.repos.remove(repo)
+
+        # If there are no more hooks, we should add a placeholder.
+        if not doc.model.repos:
+            doc.model.repos.append(_get_placeholder_repo_config())
+
+        # TODO should have a fancy_model_dump for pre-commit hook files specifically
+        # TODO both here and for BBPL we should consider having update_ruamel_yaml_map
+        # layer than takes a doc from the context manager and does the update with
+        # correct fancy dumping. And maybe should be built-in to the context managers??
+        dump = fancy_precommit_config_model_dump(doc.model, reference=doc.content)
+        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
     # TODO but what if there's no hooks left at all? Should we delete the file?
 

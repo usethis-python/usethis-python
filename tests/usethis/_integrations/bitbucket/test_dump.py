@@ -2,7 +2,7 @@ from usethis._integrations.bitbucket.dump import (
     ORDER_BY_CLS,
     fancy_pipelines_model_dump,
 )
-from usethis._integrations.bitbucket.pipeline import (
+from usethis._integrations.bitbucket.schema import (
     Cache,
     CachePath,
     Clone,

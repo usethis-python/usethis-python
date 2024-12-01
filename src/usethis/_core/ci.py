@@ -5,7 +5,7 @@ from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
 )
-from usethis._integrations.bitbucket.pipeline import Script, Step
+from usethis._integrations.bitbucket.schema import Script, Step
 from usethis._integrations.bitbucket.steps import _ANCHOR_PREFIX, add_step_in_default
 from usethis._integrations.pyproject.requires_python import (
     get_supported_major_python_versions,

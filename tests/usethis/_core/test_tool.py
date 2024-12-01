@@ -31,8 +31,8 @@ class TestAllHooksList:
             try:
                 hook_names = [
                     hook.id
-                    for repo_config in tool.get_pre_commit_repo_configs()
-                    for hook in repo_config.hooks
+                    for repo_config in tool.get_pre_commit_repos()
+                    for hook in repo_config.hooks or []
                 ]
             except NotImplementedError:
                 continue
@@ -120,10 +120,9 @@ repos:
     hooks:
       - id: deptry
         name: deptry
+        always_run: true
         entry: uv run --frozen deptry src
         language: system
-        always_run: true
-        pass_filenames: false
 """
         )
 
@@ -169,10 +168,9 @@ repos:
     hooks:
       - id: deptry
         name: deptry
+        always_run: true
         entry: uv run --frozen deptry src
         language: system
-        always_run: true
-        pass_filenames: false
 """
         )
 
@@ -223,7 +221,7 @@ repos:
     hooks:
       - id: placeholder
         name: Placeholder - add your own hooks!
-        entry: uv run python -V
+        entry: uv run python -c "print('hello world!')"
         language: python
 """
             )

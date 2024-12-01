@@ -3,19 +3,19 @@ from usethis._integrations.bitbucket.dump import fancy_pipelines_model_dump
 from usethis._integrations.bitbucket.io import (
     BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
-    read_bitbucket_pipelines_yaml,
 )
-from usethis._integrations.bitbucket.pipeline import Cache, Definitions
+from usethis._integrations.bitbucket.schema import Cache, Definitions
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 
 def get_cache_by_name() -> dict[str, Cache]:
-    content = read_bitbucket_pipelines_yaml()
+    with edit_bitbucket_pipelines_yaml() as doc:
+        config = doc.model
 
-    if content.definitions is None:
+    if config.definitions is None:
         return {}
 
-    cache_by_name = content.definitions.caches
+    cache_by_name = config.definitions.caches
 
     if cache_by_name is None:
         return {}

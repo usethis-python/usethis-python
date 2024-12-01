@@ -8,7 +8,7 @@ from usethis._integrations.bitbucket.cache import (
     get_cache_by_name,
 )
 from usethis._integrations.bitbucket.config import add_bitbucket_pipeline_config
-from usethis._integrations.bitbucket.pipeline import CachePath
+from usethis._integrations.bitbucket.schema import CachePath
 from usethis._test import change_cwd
 
 # TODO it makes sense for errors about incorrect config to get handled in the ui layer.

@@ -1,8 +1,9 @@
 # TODO test that schema.json matches https://api.bitbucket.org/schemas/pipelines-configuration
+# TODO we should use tjhe public API at https://www.schemastore.org/json/ to get the schema
 # TODO Bump the 3.12 version in the command - also a test for bumping this.
 # Corresponds to earliest supported python version.
 
-from usethis._integrations.bitbucket.pipeline import Script, Step, Step2, StepBase
+from usethis._integrations.bitbucket.schema import Script, Step, Step2, StepBase
 
 
 class TestStep2:

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from usethis._integrations.bitbucket.pipeline import (
+from usethis._integrations.bitbucket.schema import (
     PipelinesConfiguration,
     Step,
     Step2,

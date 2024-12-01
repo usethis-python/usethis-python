@@ -44,7 +44,7 @@ scripts.usethis = "usethis.__main__:app"
 
 [dependency-groups]
 dev = [
-  "datamodel-code-generator>=0.26.2",
+  "datamodel-code-generator[http]>=0.26.2",
   "deptry>=0.20.0",
   "import-linter>=2.1",
   "jax>=0.4.35",

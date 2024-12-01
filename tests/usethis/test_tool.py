@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
 from usethis._integrations.pre_commit.hooks import get_hook_names
+from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import set_config_value
 from usethis._integrations.uv.deps import add_deps_to_group
@@ -36,10 +36,11 @@ class MyTool(Tool):
     def dev_deps(self) -> list[str]:
         return [self.name, "black", "flake8"]
 
-    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
-            PreCommitRepoConfig(
-                repo=f"repo for {self.name}", hooks=[HookConfig(id="deptry")]
+            UriRepo(
+                repo=f"repo for {self.name}",
+                hooks=[HookDefinition(id="deptry")],
             )
         ]
 
@@ -83,14 +84,12 @@ class TestTool:
     class TestGetPreCommitRepoConfigs:
         def test_default(self):
             tool = DefaultTool()
-            assert tool.get_pre_commit_repo_configs() == []
+            assert tool.get_pre_commit_repos() == []
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.get_pre_commit_repo_configs() == [
-                PreCommitRepoConfig(
-                    repo="repo for my_tool", hooks=[HookConfig(id="deptry")]
-                )
+            assert tool.get_pre_commit_repos() == [
+                UriRepo(repo="repo for my_tool", hooks=[HookDefinition(id="deptry")])
             ]
 
     class TestGetPyprojectConfigs:
@@ -226,7 +225,7 @@ class TestTool:
                 def name(self) -> str:
                     return "no_repo_configs_tool"
 
-                def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+                def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
                     return []
 
             nrc_tool = NoRepoConfigsTool()
@@ -238,7 +237,7 @@ class TestTool:
                 # Assert
                 assert not (tmp_path / ".pre-commit-config.yaml").exists()
 
-        # TODO test multiple pre-commit configs
+        @pytest.mark.skip("Feature not needed yet, so not implemented")
         def test_multiple_repo_configs(self, tmp_path: Path):
             # Arrange
             class MultiRepoTool(Tool):
@@ -246,19 +245,19 @@ class TestTool:
                 def name(self) -> str:
                     return "multi_repo_tool"
 
-                def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+                def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
                     return [
-                        PreCommitRepoConfig(
+                        UriRepo(
                             repo="example",
                             hooks=[
-                                HookConfig(id="ruff-format"),
-                                HookConfig(id="ruff-check"),
+                                HookDefinition(id="ruff-format"),
+                                HookDefinition(id="ruff-check"),
                             ],
                         ),
-                        PreCommitRepoConfig(
+                        UriRepo(
                             repo="other",
                             hooks=[
-                                HookConfig(
+                                HookDefinition(
                                     id="deptry",
                                 )
                             ],

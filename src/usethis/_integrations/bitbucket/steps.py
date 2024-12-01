@@ -5,9 +5,8 @@ from usethis._integrations.bitbucket.cache import add_caches
 from usethis._integrations.bitbucket.dump import fancy_pipelines_model_dump
 from usethis._integrations.bitbucket.io import (
     edit_bitbucket_pipelines_yaml,
-    read_bitbucket_pipelines_yaml,
 )
-from usethis._integrations.bitbucket.pipeline import (
+from usethis._integrations.bitbucket.schema import (
     CachePath,
     ImportPipeline,
     Items,
@@ -126,13 +125,10 @@ def anchorize_script_refs(
         if isinstance(script_item, str) and script_item.startswith(_ANCHOR_PREFIX):
             name = script_item.removeprefix(_ANCHOR_PREFIX)
             try:
-                # TODO this line needs testing big-time - it had a bug but wasn't
-                # caught until doing refactoring!
                 script_item = script_item_by_name[name]
             except KeyError:
                 pass
             else:
-                # TODO test this branch of the if-statement.
                 step.script.root[idx] = script_item
 
     return step
@@ -160,7 +156,8 @@ def get_steps_in_default() -> list[Step]:
     Raises:
         UnexpectedImportPipelineError: If the pipeline is an import pipeline.
     """
-    config = read_bitbucket_pipelines_yaml()
+    with edit_bitbucket_pipelines_yaml() as doc:
+        config = doc.model
 
     if config.pipelines is None:
         return []

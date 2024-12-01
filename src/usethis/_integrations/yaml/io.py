@@ -68,11 +68,18 @@ class YAMLDocument:
 
 
 @contextmanager
-def edit_yaml(yaml_path: Path) -> Generator[YAMLDocument, None, None]:
+def edit_yaml(
+    yaml_path: Path, *, guess_indent: bool = True
+) -> Generator[YAMLDocument, None, None]:
     """A context manager to modify a YAML file in-place, with managed read and write."""
 
     with yaml_path.open(mode="r") as f:
+        # Can't preserve quotes so don't keep the content.
+        # Yes, it' not very efficient to load the content twice.
         content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
+
+    if not guess_indent:
+        sequence_ind, offset_ind = 4, 2
 
     yaml = ruamel.yaml.YAML(typ="rt")
     yaml.indent(mapping=sequence_ind, sequence=sequence_ind, offset=offset_ind)

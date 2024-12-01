@@ -12,6 +12,13 @@ type ModelRepresentation = (
 )
 
 
+class _FillValue:
+    pass
+
+
+_FILL_VALUE = _FillValue()
+
+
 @singledispatch
 def fancy_model_dump(
     model: BaseModel | ModelRepresentation,
@@ -50,8 +57,17 @@ def _(
         reference = []
 
     x = []
-    for value, ref in zip_longest(model, reference, fillvalue=None):
+    for value, ref in zip_longest(model, reference, fillvalue=_FILL_VALUE):
         # TODO test the case where the zip longest aspect kicks in
+        if value is _FILL_VALUE:
+            # we've exhausted all the content.
+            break
+        if ref is _FILL_VALUE:
+            # there's still content but nothing to compare it against
+            ref = None
+
+        # We don't use None as the fillvalue because it could be confused with the
+        # case where the content itself is None.
         dump = fancy_model_dump(value, reference=ref, order_by_cls=order_by_cls)
         x.append(dump)
     return x
@@ -133,7 +149,7 @@ def _(
         # There is an exception though: if we have a reference which we are trying
         # to minimize the diff against, then if the diff includes the default
         # explicitly, we should include it too.
-        # This is tehcnically a limitation in what kind of diffs we can express in
+        # This is technically a limitation in what kind of diffs we can express in
         # the dump but it's a relatively minor one.
 
         if value_ref is not None:

@@ -3,11 +3,18 @@ from pathlib import Path
 from typing import Protocol
 
 from usethis._console import tick_print
-from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
 from usethis._integrations.pre_commit.hooks import (
-    add_hook,
+    add_repo,
     get_hook_names,
     remove_hook,
+)
+from usethis._integrations.pre_commit.schema import (
+    FileType,
+    FileTypes,
+    HookDefinition,
+    Language,
+    LocalRepo,
+    UriRepo,
 )
 from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import (
@@ -35,7 +42,7 @@ class Tool(Protocol):
         """The name of the tool's development dependencies."""
         return []
 
-    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         """Get the pre-commit repository configurations for the tool."""
         return []
 
@@ -81,35 +88,43 @@ class Tool(Protocol):
 
     def add_pre_commit_repo_configs(self) -> None:
         """Add the tool's pre-commit configuration."""
-        repo_configs = self.get_pre_commit_repo_configs()
+        repos = self.get_pre_commit_repos()
 
-        if not repo_configs:
+        if not repos:
             return
 
         # Add the config for this specific tool.
-        for repo_config in repo_configs:
+        for repo_config in repos:
+            if repo_config.hooks is None:
+                continue
+
             for hook in repo_config.hooks:
                 if hook.id not in get_hook_names():
-                    add_hook(
-                        PreCommitRepoConfig(
-                            repo=repo_config.repo, rev=repo_config.rev, hooks=[hook]
-                        )
+                    add_repo(
+                        # TODO this is a bug; what if we have a repo with two hooks and
+                        # only one has the relevant hook?
+                        repo_config
                     )
 
     def remove_pre_commit_repo_configs(self) -> None:
         """Remove the tool's pre-commit configuration."""
-        repo_configs = self.get_pre_commit_repo_configs()
+        repo_configs = self.get_pre_commit_repos()
 
         if not repo_configs:
             return
 
         if len(repo_configs) > 1:
             msg = "Multiple pre-commit repo configurations not yet supported."
-            raise NotImplementedError(msg)
-        repo_config = repo_configs[0]
+            raise NotImplementedError(msg)  # TODO not the best
+        (repo_config,) = repo_configs
+
+        if repo_config.hooks is None:
+            return
 
         # Remove the config for this specific tool.
         for hook in repo_config.hooks:
+            # TODO mixing the idea of adding + removing hooks with repos (in
+            # filesnames!)
             if hook.id in get_hook_names():
                 remove_hook(hook.id)
 
@@ -159,18 +174,17 @@ class DeptryTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["deptry"]
 
-    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
-            PreCommitRepoConfig(
+            LocalRepo(
                 repo="local",
                 hooks=[
-                    HookConfig(
+                    HookDefinition(
                         id="deptry",
                         name="deptry",
                         entry="uv run --frozen deptry src",
-                        language="system",
+                        language=Language("system"),
                         always_run=True,
-                        pass_filenames=False,
                     )
                 ],
             )
@@ -199,12 +213,12 @@ class PyprojectFmtTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["pyproject-fmt"]
 
-    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
-            PreCommitRepoConfig(
+            UriRepo(
                 repo="https://github.com/tox-dev/pyproject-fmt",
                 rev="v2.5.0",  # Manually bump this version when necessary
-                hooks=[HookConfig(id="pyproject-fmt")],
+                hooks=[HookDefinition(id="pyproject-fmt")],
             )
         ]
 
@@ -273,29 +287,40 @@ class RuffTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["ruff"]
 
-    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
-            PreCommitRepoConfig(
+            LocalRepo(
                 repo="local",
                 hooks=[
-                    HookConfig(
+                    HookDefinition(
                         id="ruff-format",
                         name="ruff-format",
                         entry="uv run --frozen ruff format",
-                        language="system",
+                        language=Language("system"),
+                        types_or=FileTypes(
+                            [FileType("python"), FileType("pyi"), FileType("jupyter")]
+                        ),
                         always_run=True,
-                        pass_filenames=False,
+                        pass_filenames=True,
                     ),
-                    HookConfig(
+                ],
+            ),
+            LocalRepo(
+                repo="local",
+                hooks=[
+                    HookDefinition(
                         id="ruff-check",
                         name="ruff-check",
                         entry="uv run --frozen ruff check --fix",
-                        language="system",
+                        language=Language("system"),
+                        types_or=FileTypes(
+                            [FileType("python"), FileType("pyi"), FileType("jupyter")]
+                        ),
                         always_run=True,
-                        pass_filenames=False,
+                        pass_filenames=True,
                     ),
                 ],
-            )
+            ),
         ]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:

@@ -2,6 +2,9 @@ from pathlib import Path
 
 from usethis._console import tick_print
 
+# TODO should we really be hard-coding the placeholder? Should be doing the same thing
+# as pre-commit in terms of refactoring so that we only create when the placeholder
+# doesn't already exist, etc.
 _YAML_CONTENTS = """\
 image: atlassian/default-image:3
 definitions:

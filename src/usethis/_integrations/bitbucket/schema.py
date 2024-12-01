@@ -2,7 +2,7 @@
 #   filename:  schema.json
 #   timestamp: 2024-11-16T21:07:13+00:00
 # using the command:
-#   datamodel-codegen --input tests\usethis\_integrations\bitbucket\schema.json --input-file-type jsonschema --output src\usethis\_integrations\bitbucket\pipeline.py --enum-field-as-literal all --field-constraints --use-double-quotes --use-union-operator --use-standard-collections --use-default-kwarg --output-model-type pydantic_v2.BaseModel --target-python-version 3.12
+#   datamodel-codegen --input tests\usethis\_integrations\bitbucket\schema.json --input-file-type jsonschema --output src\usethis\_integrations\bitbucket\schema.py --enum-field-as-literal all --field-constraints --use-double-quotes --use-union-operator --use-standard-collections --use-default-kwarg --output-model-type pydantic_v2.BaseModel --target-python-version 3.12
 # pyright: reportGeneralTypeIssues=false
 
 from __future__ import annotations

@@ -6,6 +6,8 @@ from usethis._integrations.pydantic.dump import fancy_model_dump
 
 
 class TestFancyModelDump:
+    # TODO test list where we remove an element.
+
     def test_base_model(self):
         # Arrange
         class MyBaseModel(BaseModel):

@@ -1,21 +1,27 @@
 from functools import singledispatch
+from pathlib import Path
 from typing import assert_never
 
+from ruamel.yaml.comments import CommentedSeq
+from ruamel.yaml.scalarstring import LiteralScalarString
+
+from usethis._config import usethis_config
 from usethis._integrations.bitbucket.cache import add_caches
-from usethis._integrations.bitbucket.dump import fancy_pipelines_model_dump
+from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.io import (
     edit_bitbucket_pipelines_yaml,
 )
 from usethis._integrations.bitbucket.schema import (
     CachePath,
+    Definitions,
     ImportPipeline,
     Items,
     ParallelExpanded,
     ParallelItem,
     ParallelSteps,
-    Pipe,
     Pipeline,
     Pipelines,
+    Script,
     StageItem,
     Step,
     Step1,
@@ -35,15 +41,24 @@ _CACHE_LOOKUP = {
     "pre-commit": CachePath("~/.cache/pre-commit"),
 }
 
+# TODO can we just set the anchor in here somehow and then share?
+_SCRIPT_ITEM_LOOKUP: dict[str, LiteralScalarString] = {
+    "install-uv": LiteralScalarString("""\
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+export UV_LINK_MODE=copy
+uv --version
+""")
+}
 
-def add_step_in_default(
-    step: Step, *, script_item_by_name: dict[str, str | Pipe] | None = None
-) -> None:
+
+# TODO reduce the complexity of the below function and enable the ruff rule
+def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
     # TODO need to explain that script items which start with the prefix "usethis-anchor-"
-    # get the dict value imputed as an anchor
-    if script_item_by_name is None:
-        script_item_by_name = {}
-
+    # get the anchor imputed
+    # TODO we can handle it with caches, where we hard-code some anchors which
+    # we plan to know about, and add them if they are missing. This will let us use
+    # *install-uv syntax instead of usethis-anchor-install-uv which is much clearer.
     try:
         existing_steps = get_steps_in_default()
     except UnexpectedImportPipelineError:
@@ -59,17 +74,47 @@ def add_step_in_default(
             return
 
     add_step_caches(step)
-    anchorize_script_refs(step, script_item_by_name=script_item_by_name)
 
     # Add the step to the default pipeline
     with edit_bitbucket_pipelines_yaml() as doc:
+        step = step.model_copy(deep=True)
+
+        for idx, script_item in enumerate(step.script.root):
+            if isinstance(script_item, str) and script_item.startswith(_ANCHOR_PREFIX):
+                name = script_item.removeprefix(_ANCHOR_PREFIX)
+                try:
+                    script_item = _SCRIPT_ITEM_LOOKUP[name]
+                except KeyError:
+                    pass
+                else:
+                    # TODO shouldn't add this if it already exists - need to test this case
+                    config = doc.model
+
+                    if config.definitions is None:
+                        config.definitions = Definitions()
+
+                    script_items = config.definitions.script_items
+
+                    if script_items is None:
+                        script_items = CommentedSeq()
+                        config.definitions.script_items = script_items
+
+                    # N.B. when we add the definition, we are relying on this being an append
+                    # (and below return statement)
+                    # TODO revisit this - maybe we should add alphabetically.
+                    script_items.append(script_item)
+                    script_items = CommentedSeq(script_items)
+
+                    # Add an anchor.
+                    script_item.yaml_set_anchor(value=name, always_dump=True)
+                    step.script.root[idx] = script_item
+
         # TODO currently adding to the end, but need to test desired functionality
         # of adding after a specific step
+        if doc.model.pipelines is None:
+            doc.model.pipelines = Pipelines()
+
         pipelines = doc.model.pipelines
-
-        if pipelines is None:
-            pipelines = Pipelines()
-
         default = pipelines.default
 
         if default is None:
@@ -83,12 +128,12 @@ def add_step_in_default(
         else:
             items = default.root.root
 
-        items.append(StepItem(step=step.model_copy()))
+        items.append(StepItem(step=step))
 
         if default is None:
             pipelines.default = Pipeline(Items(items))
 
-        dump = fancy_pipelines_model_dump(doc.model, reference=doc.content)
+        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
 
         update_ruamel_yaml_map(
             doc.content,
@@ -116,24 +161,6 @@ def add_step_caches(step: Step) -> None:
         add_caches(cache_by_name)
 
 
-def anchorize_script_refs(
-    step: Step, *, script_item_by_name: dict[str, str | Pipe]
-) -> Step:
-    step = step.model_copy(deep=True)
-
-    for idx, script_item in enumerate(step.script.root):
-        if isinstance(script_item, str) and script_item.startswith(_ANCHOR_PREFIX):
-            name = script_item.removeprefix(_ANCHOR_PREFIX)
-            try:
-                script_item = script_item_by_name[name]
-            except KeyError:
-                pass
-            else:
-                step.script.root[idx] = script_item
-
-    return step
-
-
 def _steps_are_equivalent(step1: Step, step2: Step) -> bool:
     # Same name
     if step1.name == step2.name:
@@ -156,6 +183,9 @@ def get_steps_in_default() -> list[Step]:
     Raises:
         UnexpectedImportPipelineError: If the pipeline is an import pipeline.
     """
+    if not (Path.cwd() / "bitbucket-pipelines.yml").exists():
+        return []
+
     with edit_bitbucket_pipelines_yaml() as doc:
         config = doc.model
 
@@ -245,6 +275,28 @@ def _step1tostep(step1: Step1) -> Step:
 
     step = Step(**step2.model_dump())
     return step
+
+
+def add_placeholder_step_in_default() -> None:
+    # TODO message and test?
+    with usethis_config.set(quiet=True):
+        add_step_in_default(_get_placeholder_step())
+
+
+def _get_placeholder_step() -> Step:
+    return Step(
+        name="Placeholder - add your own steps!",
+        # TODO maybe instead of doing anchors with this string-prefix thing, we can
+        # use * as a symbol, which presumably would be invalid in a script so fine in
+        # this context. Need to learn more about this.
+        script=Script(
+            [
+                "usethis-anchor-install-uv",
+                "echo 'Hello, world!'",
+            ]
+        ),
+        caches=["uv"],
+    )
 
 
 # TODO Rather than using StepRef, let's encode the actual step, and refer via variable

@@ -37,16 +37,25 @@ def edit_bitbucket_pipelines_yaml() -> (
     path = Path.cwd() / name
 
     if not path.exists():
-        # TODO test this message. Also test the validation passes - it should
-        # but we should test it (maybe we already do?). If it is valid, we should
-        # add a comment to to path.touch() line.
+        # TODO test this message.
         tick_print(f"Writing '{name}'.")
-        path.touch()
+        path.write_text("image: atlassian/default-image:3")
+        guess_indent = False
+    else:
+        # # TODO this is quite clumsy, see if there's a better way.
+        # See if there are any pipelines defined - if not, we won't guess the indent
+        # yet.
+        with edit_yaml(path) as doc:
+            if isinstance(doc.content, dict) and "pipelines" in doc.content:
+                guess_indent = True
+            else:
+                guess_indent = False
 
-    with edit_yaml(path) as doc:
+    # TODO test the schema.py file is up-to-date.
+    with edit_yaml(path, guess_indent=guess_indent) as doc:
         config = _validate_config(doc.content)
         yield BitbucketPipelinesYAMLDocument(content=doc.content, model=config)
-        config = _validate_config(doc.content)
+        _validate_config(doc.content)
 
 
 def _validate_config(ruamel_content: YAMLLiteral) -> PipelinesConfiguration:

@@ -47,7 +47,6 @@ dev = [
   "datamodel-code-generator[http]>=0.26.2",
   "deptry>=0.20.0",
   "import-linter>=2.1",
-  "jax>=0.4.35",
   "pre-commit>=4.0.1",
   "pyright>=1.1.389",
   "ruff>=0.7.1",
@@ -128,7 +127,7 @@ layers = [
   "_integrations",
   "_console",
   "_config",
-  "errors",
+  "errors | _subprocess",
 ]
 containers = [ "usethis" ]
 exhaustive = true

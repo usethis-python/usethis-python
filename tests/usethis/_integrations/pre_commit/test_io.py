@@ -10,3 +10,5 @@ class TestEditPreCommitConfigYAML:
             pass
 
         assert (tmp_path / ".pre-commit-config.yaml").exists()
+
+    # TODO really should have a lot more tests here - check test coverage.

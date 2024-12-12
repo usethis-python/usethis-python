@@ -1,5 +1,5 @@
 from usethis._console import tick_print
-from usethis._integrations.bitbucket.dump import fancy_pipelines_model_dump
+from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.io import (
     BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
@@ -41,7 +41,7 @@ def add_caches(cache_by_name: dict[str, Cache]) -> None:
                     config.definitions.caches[name] = cache
                 # Otherwise, the cache is already present so we'll leave it alone.
 
-        dump = fancy_pipelines_model_dump(config, reference=doc.content)
+        dump = bitbucket_fancy_dump(config, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 

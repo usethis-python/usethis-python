@@ -234,6 +234,104 @@ key:
 """
         )
 
+    def test_anchor_with_ref(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "test.yaml"
+        path.write_text("""\
+key: &anchor
+    - 1
+    - 2
+""")
+        # Act
+        with edit_yaml(path) as yaml_document:
+            assert isinstance(yaml_document.content, CommentedMap)
+
+            update_ruamel_yaml_map(
+                yaml_document.content,
+                {
+                    "key": yaml_document.content["key"],
+                    "new_key": yaml_document.content["key"],
+                },
+                preserve_comments=True,
+            )
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+key: &anchor
+    - 1
+    - 2
+new_key: *anchor
+"""
+        )
+
+    def test_anchor_without_ref(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "test.yaml"
+        path.write_text("""\
+key:
+    - 1
+    - 2
+""")
+        # Act
+        with edit_yaml(path) as yaml_document:
+            assert isinstance(yaml_document.content, CommentedMap)
+
+            key = yaml_document.content["key"]
+            assert isinstance(key, CommentedSeq)
+
+            update_ruamel_yaml_map(
+                yaml_document.content,
+                {
+                    "key": key,
+                    "new_key": key,
+                },
+                preserve_comments=True,
+            )
+            key.yaml_set_anchor("banana")
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+key: &banana
+    - 1
+    - 2
+new_key: *banana
+"""
+        )
+
+    def test_new_anchor(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "test.yaml"
+        path.write_text("{}")
+
+        # Act
+        with edit_yaml(path, guess_indent=False) as yaml_document:
+            key = CommentedSeq([1, 2])
+
+            update_ruamel_yaml_map(
+                yaml_document.content,
+                {
+                    "key": key,
+                    "new_key": key,
+                },
+                preserve_comments=True,
+            )
+            key.yaml_set_anchor("banana")
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+key: &banana
+  - 1
+  - 2
+new_key: *banana
+"""
+        )
+
 
 class TestLCSListUpdate:
     def test_identical(self):

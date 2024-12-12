@@ -1,27 +1,43 @@
 from pathlib import Path
 
-from usethis._integrations.bitbucket.config import _YAML_CONTENTS
+import pytest
+
 from usethis._integrations.bitbucket.io import (
+    BitbucketPipelinesYAMLConfigError,
     edit_bitbucket_pipelines_yaml,
 )
 from usethis._test import change_cwd
 
 
 class TestEditBitbucketPipelinesYAML:
-    def test_do_nothing(self, uv_init_dir: Path):
+    def test_does_not_exist(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as _:
+            pass
+
+        # Assert
+        assert (tmp_path / "bitbucket-pipelines.yml").is_file()
+        assert (
+            (tmp_path / "bitbucket-pipelines.yml").read_text()
+            == """\
+image: atlassian/default-image:3
+"""
+        )
+
+    def test_do_nothing(self, tmp_path: Path):
         # Arrange
-        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
             """\
 image: atlassian/default-image:3
 """
         )
 
         # Act
-        with change_cwd(uv_init_dir), edit_bitbucket_pipelines_yaml() as _:
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as _:
             pass
 
         # Assert
-        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\
@@ -29,21 +45,21 @@ image: atlassian/default-image:3
 """
         )
 
-    def test_change_image(self, uv_init_dir: Path):
+    def test_change_image(self, tmp_path: Path):
         # Arrange
-        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
             """\
 image: atlassian/default-image:3
 """
         )
 
         # Act
-        with change_cwd(uv_init_dir), edit_bitbucket_pipelines_yaml() as doc:
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
             assert isinstance(doc.content, dict)  # Help pyright
             doc.content["image"] = "atlassian/default-image:2"
 
         # Assert
-        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\
@@ -51,9 +67,9 @@ image: atlassian/default-image:2
 """
         )
 
-    def test_change_default(self, uv_init_dir: Path):
+    def test_change_default(self, tmp_path: Path):
         # Arrange
-        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
             """\
 pipelines:
     default:
@@ -64,7 +80,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir), edit_bitbucket_pipelines_yaml() as doc:
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
             # Help pyright with assertions
             assert isinstance(doc.content, dict)
             assert isinstance(doc.content["pipelines"], dict)
@@ -74,7 +90,7 @@ pipelines:
             doc.content["pipelines"]["default"][0]["step"]["script"] = ["echo 'Bye!'"]
 
         # Assert
-        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\
@@ -86,9 +102,9 @@ pipelines:
 """
         )
 
-    def test_roundtrip_indentation(self, uv_init_dir: Path):
+    def test_roundtrip_indentation(self, tmp_path: Path):
         # Arrange
-        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
             """\
 pipelines:
       default:
@@ -99,11 +115,11 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir), edit_bitbucket_pipelines_yaml() as _:
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as _:
             pass
 
         # Assert
-        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\
@@ -115,13 +131,18 @@ pipelines:
 """
         )
 
-    def test_default_yaml_contents_do_nothing(self, uv_init_dir: Path):
+    # TODO test a round-trip case of editing immediately after creating
+
+    def test_invalid_contents(self, tmp_path: Path):
         # Arrange
-        (uv_init_dir / "bitbucket-pipelines.yml").write_text(_YAML_CONTENTS)
+        (tmp_path / "bitbucket-pipelines.yml").write_text("""\
+awfpah28yqh2an ran  2rqa0-2 }[
+""")
 
-        # Act
-        with change_cwd(uv_init_dir), edit_bitbucket_pipelines_yaml() as _:
+        # Act, Assert
+        with (
+            change_cwd(tmp_path),
+            pytest.raises(BitbucketPipelinesYAMLConfigError),
+            edit_bitbucket_pipelines_yaml() as _,
+        ):
             pass
-
-        # Assert
-        assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == _YAML_CONTENTS

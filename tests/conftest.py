@@ -3,7 +3,6 @@ from enum import Enum
 from pathlib import Path
 
 import pytest
-from git import Repo
 
 from usethis._config import usethis_config
 from usethis._integrations.uv.call import call_uv_subprocess
@@ -13,7 +12,7 @@ from usethis._test import change_cwd, is_offline
 @pytest.fixture
 def uv_init_dir(tmp_path: Path) -> Path:
     with change_cwd(tmp_path):
-        call_uv_subprocess(["init", "--lib"])
+        call_uv_subprocess(["init", "--lib", "--vcs", "none"])
     return tmp_path
 
 
@@ -21,7 +20,6 @@ def uv_init_dir(tmp_path: Path) -> Path:
 def uv_init_repo_dir(tmp_path: Path) -> Path:
     with change_cwd(tmp_path):
         call_uv_subprocess(["init", "--lib"])
-    Repo.init(tmp_path)
     return tmp_path
 
 

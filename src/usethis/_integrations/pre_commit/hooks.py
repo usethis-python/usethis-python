@@ -5,7 +5,7 @@ from ruamel.yaml.comments import CommentedMap
 
 from usethis._config import usethis_config
 from usethis._console import tick_print
-from usethis._integrations.pre_commit.dump import fancy_precommit_config_model_dump
+from usethis._integrations.pre_commit.dump import precommit_fancy_dump
 from usethis._integrations.pre_commit.io import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
@@ -180,7 +180,7 @@ def remove_hook(name: str) -> None:
         # TODO both here and for BBPL we should consider having update_ruamel_yaml_map
         # layer than takes a doc from the context manager and does the update with
         # correct fancy dumping. And maybe should be built-in to the context managers??
-        dump = fancy_precommit_config_model_dump(doc.model, reference=doc.content)
+        dump = precommit_fancy_dump(doc.model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
     # TODO but what if there's no hooks left at all? Should we delete the file?

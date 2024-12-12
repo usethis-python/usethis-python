@@ -22,7 +22,8 @@ def remove_pre_commit_config() -> None:
 def install_pre_commit_hooks() -> None:
     """Install pre-commit hooks.
 
-    Note that this requires pre-commit to be installed.
+    Note that this requires pre-commit to be installed. It also requires the user to be
+    in a git repo.
     """
 
     tick_print("Ensuring pre-commit hooks are installed.")
@@ -36,7 +37,8 @@ def install_pre_commit_hooks() -> None:
 def uninstall_pre_commit_hooks() -> None:
     """Uninstall pre-commit hooks.
 
-    Note that this requires pre-commit to be installed.
+    Note that this requires pre-commit to be installed. It also requires the user to be
+    in a git repo.
     """
 
     tick_print("Ensuring pre-commit hooks are uninstalled.")

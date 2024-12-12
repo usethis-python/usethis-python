@@ -94,12 +94,12 @@ class TestDeptry:
 
     def test_pre_commit_after(
         self,
-        uv_init_dir: Path,
+        uv_init_repo_dir: Path,
         capfd: pytest.CaptureFixture[str],
         vary_network_conn: None,
     ):
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_repo_dir):
             use_deptry()
             use_pre_commit()
 
@@ -107,13 +107,13 @@ class TestDeptry:
             hook_names = get_hook_names()
 
         # 1. File exists
-        assert (uv_init_dir / ".pre-commit-config.yaml").exists()
+        assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
 
         # 2. Hook is in the file
         assert "deptry" in hook_names
 
         # 3. Test file contents
-        assert (uv_init_dir / ".pre-commit-config.yaml").read_text() == (
+        assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
             """\
 repos:
   - repo: local
@@ -140,14 +140,14 @@ repos:
 
     def test_pre_commit_first(
         self,
-        uv_init_dir: Path,
+        uv_init_repo_dir: Path,
         capfd: pytest.CaptureFixture[str],
         vary_network_conn: None,
     ):
         """Basically this checks that the placeholders gets removed."""
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_repo_dir):
             use_pre_commit()
             use_deptry()
 
@@ -155,13 +155,13 @@ repos:
             hook_names = get_hook_names()
 
         # 1. File exists
-        assert (uv_init_dir / ".pre-commit-config.yaml").exists()
+        assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
 
         # 2. Hook is in the file
         assert "deptry" in hook_names
 
         # 3. Test file contents
-        assert (uv_init_dir / ".pre-commit-config.yaml").read_text() == (
+        assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
             """\
 repos:
   - repo: local
@@ -191,12 +191,12 @@ class TestPreCommit:
     class TestUse:
         def test_fresh(
             self,
-            uv_init_dir: Path,
+            uv_init_repo_dir: Path,
             capfd: pytest.CaptureFixture[str],
             vary_network_conn: None,
         ):
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_repo_dir):
                 use_pre_commit()
 
                 # Assert
@@ -212,8 +212,8 @@ class TestPreCommit:
                 "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
             )
             # Config file
-            assert (uv_init_dir / ".pre-commit-config.yaml").exists()
-            contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
             assert contents == (
                 """\
 repos:
@@ -272,19 +272,19 @@ repos:
                 )
 
     class TestRemove:
-        def test_config_file(self, uv_init_dir: Path, vary_network_conn: None):
+        def test_config_file(self, uv_init_repo_dir: Path, vary_network_conn: None):
             # Arrange
-            (uv_init_dir / ".pre-commit-config.yaml").touch()
+            (uv_init_repo_dir / ".pre-commit-config.yaml").touch()
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_repo_dir):
                 use_pre_commit(remove=True)
 
             # Assert
-            assert not (uv_init_dir / ".pre-commit-config.yaml").exists()
+            assert not (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
 
-        def test_dep(self, uv_init_dir: Path, vary_network_conn: None):
-            with change_cwd(uv_init_dir):
+        def test_dep(self, uv_init_repo_dir: Path, vary_network_conn: None):
+            with change_cwd(uv_init_repo_dir):
                 # Arrange
                 add_deps_to_group(["pre-commit"], "dev")
 
@@ -487,12 +487,12 @@ class TestRuff:
 
         def test_pre_commit_first(
             self,
-            uv_init_dir: Path,
+            uv_init_repo_dir: Path,
             capfd: pytest.CaptureFixture[str],
             vary_network_conn: None,
         ):
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_repo_dir):
                 use_ruff()
                 use_pre_commit()
 

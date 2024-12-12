@@ -3,6 +3,7 @@
 #   timestamp: 2024-11-16T21:07:13+00:00
 # using the command:
 #   datamodel-codegen --input tests\usethis\_integrations\bitbucket\schema.json --input-file-type jsonschema --output src\usethis\_integrations\bitbucket\schema.py --enum-field-as-literal all --field-constraints --use-double-quotes --use-union-operator --use-standard-collections --use-default-kwarg --output-model-type pydantic_v2.BaseModel --target-python-version 3.12
+# plus manually add Definitions.scripts for type hinting
 # pyright: reportGeneralTypeIssues=false
 
 from __future__ import annotations
@@ -280,7 +281,7 @@ class Script(RootModel[list[str | Pipe]]):
 class ArtifactsExpanded(BaseModel):
     download: bool | None = Field(
         default=True,
-        description="Enables downloading of all available artifacts at the start of a step.",
+        description="Enables downloading of all available artifacts at thge start of a step.",
     )
     paths: ArtifactsPaths | None = None
 
@@ -534,6 +535,9 @@ class Definitions(BaseModel):
     )
     services: dict[str, Service] | None = Field(
         default=None, title="Service definitions"
+    )
+    script_items: list[str | Pipe] | None = Field(
+        default=None, title="Script Item definitions"
     )
 
 

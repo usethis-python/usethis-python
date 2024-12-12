@@ -1,31 +1,9 @@
 from pathlib import Path
 
 from usethis._console import tick_print
-
-# TODO should we really be hard-coding the placeholder? Should be doing the same thing
-# as pre-commit in terms of refactoring so that we only create when the placeholder
-# doesn't already exist, etc.
-_YAML_CONTENTS = """\
-image: atlassian/default-image:3
-definitions:
-    caches:
-        uv: ~/.cache/uv
-    scripts:
-      - script: &install-uv |-
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            source $HOME/.local/env
-            export UV_LINK_MODE=copy
-            uv --version
-pipelines:
-    default:
-      - step:
-            name: Placeholder - add your own steps!
-            caches:
-              - uv
-            script:
-              - *install-uv
-              - echo 'Hello, world!'
-"""
+from usethis._integrations.bitbucket.steps import (
+    add_placeholder_step_in_default,
+)
 
 
 def add_bitbucket_pipeline_config() -> None:
@@ -37,10 +15,14 @@ def add_bitbucket_pipeline_config() -> None:
         # Early exit; the file already exists
         return
 
-    tick_print("Writing 'bitbucket-pipelines.yml'.")
-    yaml_contents = _YAML_CONTENTS
-
-    (Path.cwd() / "bitbucket-pipelines.yml").write_text(yaml_contents)
+    # TODO wrong place but we need a way of removing the placeholder once it's been
+    # added - likewise of removing caches which aren't referenced, and anchorized
+    # scripts that aren't referenced.
+    # We might be able to get around the weird anchorization attribute-access logic
+    # by just directly writing to the CommentedMap etc. with the same list - the
+    # ruamel.yaml engine will add the anchor automatically.
+    # TODO check the equivalent pre-commit function to make sure this makes sense.
+    add_placeholder_step_in_default()
 
 
 def remove_bitbucket_pipeline_config() -> None:

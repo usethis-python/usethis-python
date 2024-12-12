@@ -16,6 +16,7 @@ class TestSelectRuffRules:
         # Act
         with change_cwd(tmp_path), pytest.raises(PyProjectTOMLNotFoundError):
             select_ruff_rules(["A", "B", "C"])
+            # TODO test message
 
     def test_blank_slate(self, tmp_path: Path):
         # Arrange

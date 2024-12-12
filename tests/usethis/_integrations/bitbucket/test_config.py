@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from usethis._integrations.bitbucket.config import (
-    _YAML_CONTENTS,
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
 )
@@ -22,7 +21,29 @@ class TestAddBitbucketPipelineConfig:
 
         assert (tmp_path / "bitbucket-pipelines.yml").exists()
         content = (tmp_path / "bitbucket-pipelines.yml").read_text()
-        assert content == _YAML_CONTENTS
+        assert content == (
+            """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+        )
 
     def test_existing_file(self, tmp_path: Path):
         (tmp_path / "bitbucket-pipelines.yml").write_text("existing content")

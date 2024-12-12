@@ -1,6 +1,6 @@
 from usethis._integrations.bitbucket.dump import (
     ORDER_BY_CLS,
-    fancy_pipelines_model_dump,
+    bitbucket_fancy_dump,
 )
 from usethis._integrations.bitbucket.schema import (
     Cache,
@@ -20,7 +20,7 @@ class TestOrderByCls:
                 assert field in cls.model_fields
 
 
-class TestFancyPipelinesModelDump:
+class TestBitbucketFancyDump:
     def test_order(self):
         # Arrange
         config = PipelinesConfiguration(
@@ -34,7 +34,7 @@ class TestFancyPipelinesModelDump:
         )
 
         # Act
-        dump = fancy_pipelines_model_dump(config, reference={})
+        dump = bitbucket_fancy_dump(config, reference={})
 
         # Assert
         assert dump == {

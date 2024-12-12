@@ -77,6 +77,7 @@ def edit_yaml(
         # Can't preserve quotes so don't keep the content.
         # Yes, it' not very efficient to load the content twice.
         content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
+        # Is the guess
 
     if not guess_indent:
         sequence_ind, offset_ind = 4, 2

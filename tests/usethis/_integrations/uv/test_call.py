@@ -15,9 +15,6 @@ class TestCallUVSubprocess:
 
     def test_nonexistent_command(self):
         # Act and Assert
-        msg = (
-            "Failed to run uv subprocess:\n"
-            "error: unrecognized subcommand 'does-not-exist'"
-        )
-        with pytest.raises(UVSubprocessFailedError, match=msg):
+        match = ".*error: unrecognized subcommand 'does-not-exist'.*"
+        with pytest.raises(UVSubprocessFailedError, match=match):
             call_uv_subprocess(["does-not-exist"])

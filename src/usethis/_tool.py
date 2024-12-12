@@ -106,9 +106,6 @@ class Tool(Protocol):
                 if hook.id not in get_hook_names():
                     add_repo(repo_config)
 
-    # TODO wrong place but find all the examples of NotImplementedError and test it is
-    # being raised.
-
     def remove_pre_commit_repo_configs(self) -> None:
         """Remove the tool's pre-commit configuration.
 
@@ -125,8 +122,6 @@ class Tool(Protocol):
 
             # Remove the config for this specific tool.
             for hook in repo_config.hooks:
-                # TODO mixing the idea of adding + removing hooks with repos (in
-                # filesnames!)
                 if hook.id in get_hook_names():
                     remove_hook(hook.id)
 
@@ -291,13 +286,14 @@ class RuffTool(Tool):
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
+            # TODO sync this with the dev config file
             LocalRepo(
                 repo="local",
                 hooks=[
                     HookDefinition(
                         id="ruff-format",
                         name="ruff-format",
-                        entry="uv run --frozen ruff format",
+                        entry="uv run --frozen ruff format --force-exclude",
                         language=Language("system"),
                         types_or=FileTypes(
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]
@@ -313,7 +309,7 @@ class RuffTool(Tool):
                     HookDefinition(
                         id="ruff-check",
                         name="ruff-check",
-                        entry="uv run --frozen ruff check --fix",
+                        entry="uv run --frozen ruff check --fix --force-exclude",
                         language=Language("system"),
                         types_or=FileTypes(
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]

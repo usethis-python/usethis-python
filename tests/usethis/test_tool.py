@@ -62,6 +62,23 @@ class MyTool(Tool):
         return [["tool", self.name], ["project", "classifiers"]]
 
 
+class TwoHooksTool(Tool):
+    @property
+    def name(self) -> str:
+        return "two_hooks_tool"
+
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+        return [
+            UriRepo(
+                repo="example",
+                hooks=[
+                    HookDefinition(id="ruff-format"),
+                    HookDefinition(id="ruff-check"),
+                ],
+            ),
+        ]
+
+
 class TestTool:
     class TestName:
         def test_default(self):
@@ -218,7 +235,7 @@ class TestTool:
             assert not result
 
     class TestAddPreCommitRepoConfigs:
-        def test_no_repo_configs(self, tmp_path: Path):
+        def test_no_repo_configs(self, uv_init_dir: Path):
             # Arrange
             class NoRepoConfigsTool(Tool):
                 @property
@@ -231,14 +248,13 @@ class TestTool:
             nrc_tool = NoRepoConfigsTool()
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(uv_init_dir):
                 nrc_tool.add_pre_commit_repo_configs()
 
                 # Assert
-                assert not (tmp_path / ".pre-commit-config.yaml").exists()
+                assert not (uv_init_dir / ".pre-commit-config.yaml").exists()
 
-        @pytest.mark.skip("Feature not needed yet, so not implemented")
-        def test_multiple_repo_configs(self, tmp_path: Path):
+        def test_multiple_repo_configs(self, uv_init_dir: Path):
             # Arrange
             class MultiRepoTool(Tool):
                 @property
@@ -267,11 +283,16 @@ class TestTool:
             mrt_tool = MultiRepoTool()
 
             # Act
-            with change_cwd(tmp_path):
-                mrt_tool.add_pre_commit_repo_configs()
+            with change_cwd(uv_init_dir):
+                # Currently this feature isn't implemented, so when it is this
+                # with-raises block can be removed and the test no longer needs to be
+                # skipped.
+                with pytest.raises(NotImplementedError):
+                    mrt_tool.add_pre_commit_repo_configs()
+                pytest.skip("Multiple hooks in one repo not supported yet.")
 
                 # Assert
-                assert (tmp_path / ".pre-commit-config.yaml").exists()
+                assert (uv_init_dir / ".pre-commit-config.yaml").exists()
 
                 # Note that this deliberately doesn't include validate-pyproject
                 # That should only be included as a default when using the
@@ -324,22 +345,6 @@ class TestTool:
             capfd: pytest.CaptureFixture[str],
         ):
             # Arrange
-            class TwoHooksTool(Tool):
-                @property
-                def name(self) -> str:
-                    return "two_hooks_tool"
-
-                def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-                    return [
-                        UriRepo(
-                            repo="example",
-                            hooks=[
-                                HookDefinition(id="ruff-format"),
-                                HookDefinition(id="ruff-check"),
-                            ],
-                        ),
-                    ]
-
             th_tool = TwoHooksTool()
 
             # Create a pre-commit config file with one of the two hooks
@@ -379,6 +384,23 @@ repos:
         entry: echo "different now!"
 """
             )
+
+        def test_two_hooks_one_repo(
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+        ):
+            # Arrange
+            th_tool = TwoHooksTool()
+
+            # Act
+            with change_cwd(tmp_path):
+                # Currently, multiple hooks are not supported.
+                # If we do ever support it, this with-raises block and
+                # test skip can be removed. Instead, we will need to write this test.
+                with pytest.raises(NotImplementedError):
+                    th_tool.add_pre_commit_repo_configs()
+                pytest.skip("Multiple hooks in one repo not supported yet")
 
     class TestRemovePreCommitRepoConfigs:
         def test_no_file_remove_none(self, tmp_path: Path):

@@ -16,8 +16,8 @@ ORDER_BY_CLS: dict[type[BaseModel], list[str]] = {
 }
 
 
-def fancy_pipelines_model_dump(
-    config: PipelinesConfiguration, *, reference: ModelRepresentation
+def bitbucket_fancy_dump(
+    config: PipelinesConfiguration, *, reference: ModelRepresentation | None = None
 ) -> dict[str, ModelRepresentation]:
     dump = fancy_model_dump(config, reference=reference, order_by_cls=ORDER_BY_CLS)
 

@@ -32,12 +32,12 @@ image: atlassian/default-image:3
 definitions:
     caches:
         uv: ~/.cache/uv
-    scripts:
-      - script: &install-uv |-
-            curl -LsSf https://astral.sh/uv/install.sh | sh
-            source $HOME/.local/env
-            export UV_LINK_MODE=copy
-            uv --version
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
 pipelines:
     default:
       - step:
@@ -50,16 +50,19 @@ pipelines:
 """
                 )
 
-            def test_already_exists(self, uv_init_dir: Path):
+            def test_already_exists(self, tmp_path: Path):
                 # Arrange
-                (uv_init_dir / "bitbucket-pipelines.yml").touch()
+                (tmp_path / "bitbucket-pipelines.yml").touch()
 
                 # Act
-                with change_cwd(uv_init_dir):
+                with change_cwd(tmp_path):
                     use_ci_bitbucket()
 
                 # Assert
-                assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == ""
+                # TODO perhaps we should be invalidating empty config manually
+                # even though the schema allows it. Maybe we should be trying to
+                # fix the schema or the way we are using pydantic?
+                assert (tmp_path / "bitbucket-pipelines.yml").read_text() == ""
 
         class TestPreCommitIntegration:
             def test_mentioned_in_file(self, uv_init_dir: Path):
@@ -108,25 +111,23 @@ pipelines:
 
     class TestRemove:
         class TestPyproject:
-            def test_removed(self, uv_init_dir: Path):
+            def test_removed(self, tmp_path: Path):
                 # Arrange
-                (uv_init_dir / "bitbucket-pipelines.yml").touch()
+                (tmp_path / "bitbucket-pipelines.yml").touch()
 
                 # Act
-                with change_cwd(uv_init_dir):
+                with change_cwd(tmp_path):
                     use_ci_bitbucket(remove=True)
 
                 # Assert
-                assert not (uv_init_dir / "bitbucket-pipelines.yml").exists()
+                assert not (tmp_path / "bitbucket-pipelines.yml").exists()
 
-            def test_message(
-                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-            ):
+            def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
                 # Arrange
-                (uv_init_dir / "bitbucket-pipelines.yml").touch()
+                (tmp_path / "bitbucket-pipelines.yml").touch()
 
                 # Act
-                with change_cwd(uv_init_dir):
+                with change_cwd(tmp_path):
                     use_ci_bitbucket(remove=True)
 
                 # Assert

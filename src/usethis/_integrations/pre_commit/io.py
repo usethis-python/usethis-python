@@ -45,7 +45,7 @@ def edit_pre_commit_config_yaml() -> Generator[PreCommitConfigYAMLDocument, None
     with edit_yaml(path, guess_indent=guess_indent) as doc:
         config = _validate_config(doc.content)
         yield PreCommitConfigYAMLDocument(content=doc.content, model=config)
-        config = _validate_config(doc.content)
+        _validate_config(doc.content)
 
 
 def _validate_config(ruamel_content: YAMLLiteral) -> JsonSchemaForPreCommitConfigYaml:

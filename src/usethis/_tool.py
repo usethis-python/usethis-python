@@ -286,7 +286,6 @@ class RuffTool(Tool):
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
-            # TODO sync this with the dev config file
             LocalRepo(
                 repo="local",
                 hooks=[

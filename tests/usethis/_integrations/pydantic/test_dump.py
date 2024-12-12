@@ -6,8 +6,6 @@ from usethis._integrations.pydantic.dump import fancy_model_dump
 
 
 class TestFancyModelDump:
-    # TODO test list where we remove an element.
-
     def test_base_model(self):
         # Arrange
         class MyBaseModel(BaseModel):
@@ -21,6 +19,19 @@ class TestFancyModelDump:
 
         # Assert
         assert output == {"x": 1, "y": 2.0}
+
+    def test_list_remove_element(self):
+        # Arrange
+        class MyRootModel(RootModel):
+            root: list[int]
+
+        mrm = MyRootModel([1, 3])
+
+        # Act
+        output = fancy_model_dump(mrm, reference=[1, 2, 3])
+
+        # Assert
+        assert output == [1, 3]
 
     class TestRootModel:
         def test_singleton_list(self):

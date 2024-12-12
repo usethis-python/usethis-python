@@ -295,7 +295,50 @@ x: 'hi'
 """
             )
 
-        # TODO also test unquoted and single quoted are preserved
+        @pytest.mark.skip(
+            "Not providing this guarentee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
+        )
+        def test_single_quoted_preserved(self, tmp_path: Path):
+            path = tmp_path / "x.yml"
+            path.write_text(
+                """\
+x: 'hi'
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), edit_yaml(path) as _:
+                pass
+
+            # Assert
+            contents = path.read_text()
+            assert (
+                contents
+                == """\
+x: 'hi'
+"""
+            )
+
+        def test_unquoted_preserved(self, tmp_path: Path):
+            path = tmp_path / "x.yml"
+            path.write_text(
+                """\
+x: hi
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), edit_yaml(path) as _:
+                pass
+
+            # Assert
+            contents = path.read_text()
+            assert (
+                contents
+                == """\
+x: hi
+"""
+            )
 
         def test_indentation_5_3(self, tmp_path: Path):
             path = tmp_path / "x.yml"

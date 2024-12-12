@@ -80,7 +80,7 @@ lint.select = [
   "E7",
   "E9",
   "EM",
-  # "ERA",
+  "ERA",
   "F",
   # "FIX002",
   "FURB",

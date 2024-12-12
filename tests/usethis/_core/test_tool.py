@@ -11,8 +11,6 @@ from usethis._core.tool import (
     use_pytest,
     use_ruff,
 )
-
-# from usethis._integrations.pre_commit.core import _VALIDATEPYPROJECT_VERSION
 from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,

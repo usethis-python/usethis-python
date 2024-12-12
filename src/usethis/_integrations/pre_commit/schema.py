@@ -3,9 +3,10 @@
 #   timestamp: 2024-11-21T21:05:40+00:00
 # using the command:
 #   datamodel-codegen --input tests\usethis\_integrations\pre_commit\schema.json --input-file-type jsonschema --output src\usethis\_integrations\pre_commit\schema.py --enum-field-as-literal all --field-constraints --use-double-quotes --use-union-operator --use-standard-collections --use-default-kwarg --output-model-type pydantic_v2.BaseModel --target-python-version 3.12
-# plus manually remove default for LocalRepo.repo
-# plus manually add HookDefinition.require_serial
+# ruff: noqa: ERA001
 # pyright: reportGeneralTypeIssues=false
+# plus manually remove default for LocalRepo.repo
+# plus manually add HookDefinition.require_serial for type hinting
 
 
 from __future__ import annotations

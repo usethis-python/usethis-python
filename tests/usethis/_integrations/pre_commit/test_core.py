@@ -28,7 +28,7 @@ from usethis._test import change_cwd
 #     rev: "{_VALIDATEPYPROJECT_VERSION}"
 #     hooks:
 #       - id: validate-pyproject
-#         additional_dependencies: ["validate-pyproject-schema-store[all]"]
+#         additional_dependencies: ['validate-pyproject-schema-store[all]']
 # """
 #         )
 
@@ -57,7 +57,7 @@ from usethis._test import change_cwd
 #     rev: "{_VALIDATEPYPROJECT_VERSION}"
 #     hooks:
 #       - id: validate-pyproject
-#         additional_dependencies: ["validate-pyproject-schema-store[all]"]
+#         additional_dependencies: ['validate-pyproject-schema-store[all]']
 # """
 #         )
 

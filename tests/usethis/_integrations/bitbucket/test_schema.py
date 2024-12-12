@@ -1,9 +1,13 @@
-# TODO test that schema.json matches https://api.bitbucket.org/schemas/pipelines-configuration
-# TODO we should use tjhe public API at https://www.schemastore.org/json/ to get the schema
-# TODO Bump the 3.12 version in the command - also a test for bumping this.
-# Corresponds to earliest supported python version.
+import importlib
+import importlib.resources
+from pathlib import Path
+
+import pytest
+import requests
+import tests.usethis._integrations.bitbucket
 
 from usethis._integrations.bitbucket.schema import Script, Step, Step2, StepBase
+from usethis._test import is_offline
 
 
 class TestStep2:
@@ -13,3 +17,25 @@ class TestStep2:
 
     def test_field_subset(self):
         assert set(Step2.model_fields.keys()) == set(Step.model_fields.keys())
+
+
+class TestSchemaJSON:
+    def test_matches_schema_store(self):
+        if is_offline():
+            pytest.skip("Cannot fetch JSON schema when offline")
+
+        local_schema_json = (
+            importlib.resources.files(tests.usethis._integrations.bitbucket)
+            .joinpath("schema.json")
+            .read_text()
+        )
+        online_schema_json = requests.get(
+            "https://api.bitbucket.org/schemas/pipelines-configuration"
+        ).text
+
+        # Compare the JSON
+        assert local_schema_json == online_schema_json
+
+    def test_target_python_version(self):
+        # If this test fails, we should bump the version in the command in schema.py
+        assert Path(".python-version").read_text().startswith("3.12")

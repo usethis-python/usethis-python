@@ -131,8 +131,6 @@ pipelines:
 """
         )
 
-    # TODO test a round-trip case of editing immediately after creating
-
     def test_invalid_contents(self, tmp_path: Path):
         # Arrange
         (tmp_path / "bitbucket-pipelines.yml").write_text("""\

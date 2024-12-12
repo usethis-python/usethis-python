@@ -283,7 +283,7 @@ class Script(RootModel[list[str | Pipe]]):
 class ArtifactsExpanded(BaseModel):
     download: bool | None = Field(
         default=True,
-        description="Enables downloading of all available artifacts at thge start of a step.",
+        description="Enables downloading of all available artifacts at the start of a step.",
     )
     paths: ArtifactsPaths | None = None
 

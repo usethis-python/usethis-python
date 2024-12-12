@@ -299,6 +299,7 @@ class RuffTool(Tool):
                         ),
                         always_run=True,
                         pass_filenames=True,
+                        require_serial=True,
                     ),
                 ],
             ),
@@ -306,8 +307,8 @@ class RuffTool(Tool):
                 repo="local",
                 hooks=[
                     HookDefinition(
-                        id="ruff-check",
-                        name="ruff-check",
+                        id="ruff",
+                        name="ruff",
                         entry="uv run --frozen ruff check --fix --force-exclude",
                         language=Language("system"),
                         types_or=FileTypes(
@@ -315,6 +316,7 @@ class RuffTool(Tool):
                         ),
                         always_run=True,
                         pass_filenames=True,
+                        require_serial=True,
                     ),
                 ],
             ),

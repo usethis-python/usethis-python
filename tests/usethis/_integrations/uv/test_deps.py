@@ -9,9 +9,6 @@ from usethis._integrations.uv.deps import (
 )
 from usethis._test import change_cwd
 
-# TODO this is the wrong place but pyright might meant to have require_serial in
-# pre-commit hook should check official repo
-
 
 class TestGetDepGroups:
     def test_no_dev_section(self, tmp_path: Path):

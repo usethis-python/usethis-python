@@ -500,7 +500,7 @@ class TestRuff:
                 hook_names = get_hook_names()
 
             assert "ruff-format" in hook_names
-            assert "ruff-check" in hook_names
+            assert "ruff" in hook_names
 
     class TestRemove:
         def test_config_file(self, uv_init_dir: Path, vary_network_conn: None):

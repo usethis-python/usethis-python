@@ -4,6 +4,7 @@
 # using the command:
 #   datamodel-codegen --input tests\usethis\_integrations\pre_commit\schema.json --input-file-type jsonschema --output src\usethis\_integrations\pre_commit\schema.py --enum-field-as-literal all --field-constraints --use-double-quotes --use-union-operator --use-standard-collections --use-default-kwarg --output-model-type pydantic_v2.BaseModel --target-python-version 3.12
 # plus manually remove default for LocalRepo.repo
+# plus manually add HookDefinition.require_serial
 # pyright: reportGeneralTypeIssues=false
 
 
@@ -729,6 +730,10 @@ class HookDefinition(BaseModel):
     pass_filenames: bool | None = Field(
         default=False,
         description="Whether to pass filenames to the current hook or not\nhttps://pre-commit.com/#pre-commit-configyaml---hooks",
+    )
+    require_serial: bool | None = Field(
+        default=False,
+        description="Whether to run the current hook in serial or not\nhttps://pre-commit.com/#pre-commit-configyaml---hooks",
     )
 
 

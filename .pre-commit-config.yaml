@@ -16,6 +16,7 @@ repos:
         types_or: [python, pyi, jupyter]
         language: system
         always_run: true
+        require_serial: true
   - repo: local
     hooks:
       - id: ruff
@@ -24,6 +25,7 @@ repos:
         types_or: [python, pyi, jupyter]
         language: system
         always_run: true
+        require_serial: true
   - repo: local
     hooks:
       - id: deptry
@@ -48,3 +50,4 @@ repos:
         language: system
         types_or: [python, pyi]
         always_run: true
+        require_serial: true

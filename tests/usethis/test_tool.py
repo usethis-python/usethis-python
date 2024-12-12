@@ -72,8 +72,8 @@ class TwoHooksTool(Tool):
             UriRepo(
                 repo="example",
                 hooks=[
+                    HookDefinition(id="ruff"),
                     HookDefinition(id="ruff-format"),
-                    HookDefinition(id="ruff-check"),
                 ],
             ),
         ]
@@ -266,8 +266,8 @@ class TestTool:
                         UriRepo(
                             repo="example",
                             hooks=[
+                                HookDefinition(id="ruff"),
                                 HookDefinition(id="ruff-format"),
-                                HookDefinition(id="ruff-check"),
                             ],
                         ),
                         UriRepo(
@@ -297,7 +297,7 @@ class TestTool:
                 # Note that this deliberately doesn't include validate-pyproject
                 # That should only be included as a default when using the
                 # `use_precommit` interface.
-                assert get_hook_names() == ["ruff-format", "ruff-check", "deptry"]
+                assert get_hook_names() == ["ruff", "ruff-format", "deptry"]
 
         def test_file_created(self, tmp_path: Path):
             # Arrange
@@ -352,7 +352,7 @@ class TestTool:
 repos:
   - repo: local
     hooks:
-      - id: ruff-check
+      - id: ruff
         entry: echo "different now!"
 """)
 
@@ -370,7 +370,7 @@ repos:
                 assert output == (
                     "✔ Adding hook 'ruff-format' to '.pre-commit-config.yaml'.\n"
                 )
-                assert get_hook_names() == ["ruff-format", "ruff-check"]
+                assert get_hook_names() == ["ruff", "ruff-format"]
 
             assert (
                 (tmp_path / ".pre-commit-config.yaml").read_text()
@@ -380,7 +380,7 @@ repos:
     hooks:
       - id: ruff-format
         entry: ruff format
-      - id: ruff-check
+      - id: ruff
         entry: echo "different now!"
 """
             )
@@ -505,8 +505,8 @@ repos:
                         UriRepo(
                             repo="example",
                             hooks=[
+                                HookDefinition(id="ruff"),
                                 HookDefinition(id="ruff-format"),
-                                HookDefinition(id="ruff-check"),
                             ],
                         ),
                         UriRepo(
@@ -528,7 +528,7 @@ repos:
       hooks:
         - id: ruff-format
           entry: ruff format
-        - id: ruff-check
+        - id: ruff
           entry: ruff check
 """
 

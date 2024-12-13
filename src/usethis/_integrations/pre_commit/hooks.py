@@ -30,8 +30,10 @@ class DuplicatedHookNameError(ValueError):
 
 
 def add_repo(repo: LocalRepo | UriRepo) -> None:
-    # TODO docstring. Need to mention that this function assumes the hook doesn't
-    # already exist
+    """Add a pre-commit repo configuration to the pre-commit configuration file.
+
+    This assumes the hook doesn't already exist in the configuration file.
+    """
     # TODO in general need a convention around "add" versus "ensure", "use", etc.
     # which indicates whether we assume the hook already exists or not.
 

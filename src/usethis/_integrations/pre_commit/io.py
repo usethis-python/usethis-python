@@ -41,7 +41,6 @@ def edit_pre_commit_config_yaml() -> Generator[PreCommitConfigYAMLDocument, None
     else:
         guess_indent = True
 
-    # TODO test the schema.py file is up-to-date.
     with edit_yaml(path, guess_indent=guess_indent) as doc:
         config = _validate_config(doc.content)
         yield PreCommitConfigYAMLDocument(content=doc.content, model=config)

@@ -37,7 +37,6 @@ def edit_bitbucket_pipelines_yaml() -> (
     path = Path.cwd() / name
 
     if not path.exists():
-        # TODO test this message.
         tick_print(f"Writing '{name}'.")
         path.write_text("image: atlassian/default-image:3")
         guess_indent = False

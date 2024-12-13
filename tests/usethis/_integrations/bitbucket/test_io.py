@@ -10,7 +10,7 @@ from usethis._test import change_cwd
 
 
 class TestEditBitbucketPipelinesYAML:
-    def test_does_not_exist(self, tmp_path: Path):
+    def test_does_not_exist(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Act
         with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as _:
             pass
@@ -23,6 +23,8 @@ class TestEditBitbucketPipelinesYAML:
 image: atlassian/default-image:3
 """
         )
+        output = capfd.readouterr().out
+        assert output == ("✔ Writing 'bitbucket-pipelines.yml'.\n")
 
     def test_do_nothing(self, tmp_path: Path):
         # Arrange

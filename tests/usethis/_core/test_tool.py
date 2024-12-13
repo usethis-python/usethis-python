@@ -144,9 +144,12 @@ repos:
     ):
         """Basically this checks that the placeholders gets removed."""
 
-        # Act
         with change_cwd(uv_init_repo_dir):
+            # Arrange
             use_pre_commit()
+            capfd.readouterr()
+
+            # Act
             use_deptry()
 
             # Assert
@@ -175,10 +178,6 @@ repos:
         # 4. Check messages
         out, _ = capfd.readouterr()
         assert out == (
-            "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
-            "✔ Writing '.pre-commit-config.yaml'.\n"
-            "✔ Ensuring pre-commit hooks are installed.\n"
-            "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
             "✔ Adding 'deptry' to the 'dev' dependency group.\n"
             "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
             "☐ Call the 'deptry src' command to run deptry.\n"
@@ -206,6 +205,10 @@ class TestPreCommit:
             assert out == (
                 "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
+                "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
+                "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
+                "☐ Replace it with your own hooks.\n"
+                "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
                 "✔ Ensuring pre-commit hooks are installed.\n"
                 "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
             )

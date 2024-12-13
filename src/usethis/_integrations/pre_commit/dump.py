@@ -14,9 +14,8 @@ def precommit_fancy_dump(
     dump = fancy_model_dump(config, reference=reference, order_by_cls=ORDER_BY_CLS)
 
     if not isinstance(dump, dict):
-        name = f"{JsonSchemaForPreCommitConfigYaml=}".split("=")[0]
         msg = (
-            f"Invalid '{name}' representation when dumping; expected dict, got "
+            f"Invalid '{type(config)}' representation when dumping; expected dict, got "
             f"{type(dump)}"
         )
         raise TypeError(msg)

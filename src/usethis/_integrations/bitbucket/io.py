@@ -50,7 +50,6 @@ def edit_bitbucket_pipelines_yaml() -> (
             else:
                 guess_indent = False
 
-    # TODO test the schema.py file is up-to-date.
     with edit_yaml(path, guess_indent=guess_indent) as doc:
         config = _validate_config(doc.content)
         yield BitbucketPipelinesYAMLDocument(content=doc.content, model=config)

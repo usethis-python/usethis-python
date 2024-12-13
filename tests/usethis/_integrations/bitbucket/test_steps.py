@@ -250,7 +250,6 @@ class TestGetStepsInPipelineItem:
 
 class TestAddPlaceholderStepInDefault:
     def test_contents(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
-        # TODO do the same for pre-commit
         # Act
         with change_cwd(tmp_path):
             add_placeholder_step_in_default()
@@ -283,8 +282,11 @@ pipelines:
         )
 
         out, _ = capfd.readouterr()
+        # Keep these messages in sync with the ones used for pre-commit
         assert out == (
             "✔ Writing 'bitbucket-pipelines.yml'.\n"
-            "✔ Adding placeholder step in default pipeline in 'bitbucket-pipelines.yml'.\n"
-            "☐ Replace placeholder pipeline step in 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.\n"
+            "☐ Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.\n"
+            "☐ Replace it with your own pipeline steps.\n"
+            "☐ Alternatively, use 'usethis tool' to add other tools and their steps.\n"
         )

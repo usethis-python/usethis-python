@@ -1,7 +1,7 @@
 from collections import Counter
 from pathlib import Path
 
-from usethis._console import tick_print
+from usethis._console import box_print, tick_print
 from usethis._integrations.pre_commit.dump import precommit_fancy_dump
 from usethis._integrations.pre_commit.io import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
@@ -28,7 +28,8 @@ class DuplicatedHookNameError(ValueError):
     """Raised when a hook name is duplicated in a pre-commit configuration file."""
 
 
-def add_repo(repo: LocalRepo | UriRepo) -> None:
+# TODO refactor to avoid complexity and enable the below ruff rule
+def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
     """Add a pre-commit repo configuration to the pre-commit configuration file.
 
     This assumes the hook doesn't already exist in the configuration file.
@@ -49,70 +50,85 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
             msg = "Hook ID must be specified"
             raise ValueError(msg)
 
-        content = doc.content
-
         # Ordered list of the hooks already in the file
         existing_hooks = extract_hook_names(doc.model)
 
         if not existing_hooks:
-            if hook_name != "placeholder":
+            if hook_name == "placeholder":
+                tick_print("Adding placeholder hook to '.pre-commit-config.yaml'.")
+            else:
                 tick_print(f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'.")
-            if "repos" not in content:
-                content["repos"] = []
-            content["repos"].append(fancy_model_dump(repo))
-            return
 
-        # Get the precendents, i.e. hooks occuring before the new hook
-        try:
-            hook_idx = _HOOK_ORDER.index(hook_name)
-        except ValueError:
-            msg = f"Hook '{hook_name}' not recognized"
-            raise NotImplementedError(msg)
-        precedents = _HOOK_ORDER[:hook_idx]
-
-        # Find the last of the precedents in the existing hooks
-        existings_precedents = [hook for hook in existing_hooks if hook in precedents]
-        if existings_precedents:
-            last_precedent = existings_precedents[-1]
+            doc.model.repos.append(repo)
         else:
-            # Use the last existing hook
-            last_precedent = existing_hooks[-1]
+            # Get the precendents, i.e. hooks occuring before the new hook
+            try:
+                hook_idx = _HOOK_ORDER.index(hook_name)
+            except ValueError:
+                msg = f"Hook '{hook_name}' not recognized"
+                raise NotImplementedError(msg)
+            precedents = _HOOK_ORDER[:hook_idx]
 
-        # Insert the new hook after the last precedent repo
-        # Do this by iterating over the repos and hooks, and inserting the new hook
-        # after the last precedent
-        new_repos = []
-        for _repo in content["repos"]:
-            # TODO shouldn't hard-code placeholder, should reference the placeholder
-            # function's hard-coded value.
-            # Also need to move these dicts to pydamtic classes.
-            if [hook["id"] for hook in _repo["hooks"]] != ["placeholder"]:
-                new_repos.append(_repo)
-            for hook in _repo["hooks"]:
-                # TODO Also need to think about this precedent logic in terms of how
-                # it handles repos - there might be other hooks in-between from the same
-                # repo as the one we are adding, in which case we are "giving up" on
-                # keeping precedent order so nicely.
-                # Maybe the solution is that precedent order is in a repo:hook pair, not
-                # just a hook. more thought needed.
+            # Find the last of the precedents in the existing hooks
+            existings_precedents = [
+                hook for hook in existing_hooks if hook in precedents
+            ]
+            if existings_precedents:
+                last_precedent = existings_precedents[-1]
+            else:
+                # Use the last existing hook
+                last_precedent = existing_hooks[-1]
 
-                if hook["id"] == last_precedent:
-                    # TODO check this shouldn't be a fancy model dump that chooses
-                    # sensible key order automatically
-                    # TODO Test this message; it was probably wrong before.
-                    tick_print(
-                        f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'."
-                    )
-                    # TODO should have a wrapper around fancy_model_dump.
-                    # should ctrl-f to find all instances of raw fancy_model_dump and
-                    # ensure they are all wrapped
-                    new_repos.append(fancy_model_dump(repo))
-        content["repos"] = new_repos
+            # Insert the new hook after the last precedent repo
+            # Do this by iterating over the repos and hooks, and inserting the new hook
+            # after the last precedent
+            new_repos = []
+            for _repo in doc.model.repos:
+                # TODO shouldn't hard-code placeholder, should reference the placeholder
+                # function's hard-coded value.
+                # Also need to move these dicts to pydamtic classes.
+                hooks = _repo.hooks
+                if hooks is None:
+                    hooks = []
+
+                # Check consistency in the way we handle placeholders - are they
+                # automatically removed once we have a way to do so?
+                if [hook.id for hook in hooks] != ["placeholder"]:
+                    new_repos.append(_repo)
+                for hook in hooks:
+                    # TODO Also need to think about this precedent logic in terms of how
+                    # it handles repos - there might be other hooks in-between from the same
+                    # repo as the one we are adding, in which case we are "giving up" on
+                    # keeping precedent order so nicely.
+                    # Maybe the solution is that precedent order is in a repo:hook pair, not
+                    # just a hook. more thought needed.
+
+                    if hook.id == last_precedent:
+                        # TODO check this shouldn't be a fancy model dump that chooses
+                        # sensible key order automatically
+                        # TODO Test this message; it was probably wrong before.
+                        # TODO this message should have an if-statement style exception
+                        tick_print(
+                            f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'."
+                        )
+                        # TODO should have a wrapper around fancy_model_dump.
+                        # should ctrl-f to find all instances of raw fancy_model_dump and
+                        # ensure they are all wrapped
+                        new_repos.append(fancy_model_dump(repo))
+            doc.model.repos = new_repos
+
+        update_ruamel_yaml_map(
+            doc.content,
+            precommit_fancy_dump(doc.model, reference=doc.content),
+            preserve_comments=True,
+        )
 
 
 def add_placeholder_hook() -> None:
-    # TODO should have a message to instruct the user they need to replace the placeholder
     add_repo(_get_placeholder_repo_config())
+    box_print("Remove the placeholder hook in '.pre-commit-config.yaml'.")
+    box_print("Replace it with your own hooks.")
+    box_print("Alternatively, use 'usethis tool' to add other tools and their hooks.")
 
 
 def _get_placeholder_repo_config() -> LocalRepo:

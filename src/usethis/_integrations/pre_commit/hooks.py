@@ -3,7 +3,6 @@ from pathlib import Path
 
 from ruamel.yaml.comments import CommentedMap
 
-from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.pre_commit.dump import precommit_fancy_dump
 from usethis._integrations.pre_commit.io import edit_pre_commit_config_yaml
@@ -54,8 +53,8 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
         existing_hooks = extract_hook_names(content)
 
         if not existing_hooks:
-            # TODO duplicated message.
-            tick_print(f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'.")
+            if hook_name != "placeholder":
+                tick_print(f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'.")
             if "repos" not in content:
                 content["repos"] = []
             # TODO use of model_dump without fancy dump
@@ -115,11 +114,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
 
 
 def add_placeholder_hook() -> None:
-    # TODO print statement is duplicated...
-    tick_print("Writing '.pre-commit-config.yaml'.")
-    with usethis_config.set(quiet=True):
-        add_repo(_get_placeholder_repo_config())
-    # TODO message and test for need to replace placeholder - c.f. BBPL msg
+    add_repo(_get_placeholder_repo_config())
 
 
 def _get_placeholder_repo_config() -> LocalRepo:

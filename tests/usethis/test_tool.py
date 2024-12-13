@@ -541,8 +541,3 @@ repos:
                 # Assert
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
                 assert get_hook_names() == ["placeholder"]
-
-
-# TODO test creating a Repo class (from the schema.py) for a local repo with multiple
-# hooks. I think it might not be possible at the moment? In which case the schema is
-# wrong.

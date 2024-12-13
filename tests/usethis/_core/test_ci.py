@@ -59,9 +59,6 @@ pipelines:
                     use_ci_bitbucket()
 
                 # Assert
-                # TODO perhaps we should be invalidating empty config manually
-                # even though the schema allows it. Maybe we should be trying to
-                # fix the schema or the way we are using pydantic?
                 assert (tmp_path / "bitbucket-pipelines.yml").read_text() == ""
 
         class TestPreCommitIntegration:

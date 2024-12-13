@@ -11,9 +11,6 @@ from usethis._integrations.bitbucket.config import add_bitbucket_pipeline_config
 from usethis._integrations.bitbucket.schema import CachePath
 from usethis._test import change_cwd
 
-# TODO it makes sense for errors about incorrect config to get handled in the ui layer.
-# So let's raise - but the raise interface needs to be documented in all docstrings.
-
 
 class TestAddCaches:
     def test_in_caches(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):

@@ -41,7 +41,7 @@ _CACHE_LOOKUP = {
     "pre-commit": CachePath("~/.cache/pre-commit"),
 }
 
-# TODO can we just set the anchor in here somehow and then share?
+
 _SCRIPT_ITEM_LOOKUP: dict[str, LiteralScalarString] = {
     "install-uv": LiteralScalarString("""\
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -50,6 +50,8 @@ export UV_LINK_MODE=copy
 uv --version
 """)
 }
+for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
+    script_item.yaml_set_anchor(value=name, always_dump=True)
 
 
 # TODO reduce the complexity of the below function and enable the ruff rule
@@ -105,8 +107,6 @@ def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
                     script_items.append(script_item)
                     script_items = CommentedSeq(script_items)
 
-                    # Add an anchor.
-                    script_item.yaml_set_anchor(value=name, always_dump=True)
                     step.script.root[idx] = script_item
 
         # TODO currently adding to the end, but need to test desired functionality

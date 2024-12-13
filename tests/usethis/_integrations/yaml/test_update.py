@@ -113,7 +113,7 @@ key: new value
         path = tmp_path / "test.yaml"
         path.write_text("""\
 key: # comment1
-  hello: world # comment2
+    hello: world # comment2
 this: willberemoved                  
 """)
 
@@ -131,7 +131,7 @@ this: willberemoved
             path.read_text()
             == """\
 key: # comment1
-  hello: universe # comment2
+    hello: universe # comment2
 banana: yummy
 """
         )

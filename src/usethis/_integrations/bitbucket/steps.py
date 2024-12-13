@@ -152,7 +152,10 @@ def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
         )
 
     # TODO need to tell the user to review the pipeline, it might be wrong. Test
-    # associated message.
+    # associated message. This is mostly the case if there are unrecognized
+    # aspects detected, no need if we are starting from scratch and/or fully supported
+    # hooks are already present. And some thought needed around whether we can just take
+    # for granted that things always need review.
 
 
 def add_step_caches(step: Step) -> None:

@@ -90,11 +90,11 @@ pipelines: {}
             == """\
 image: atlassian/default-image:3
 pipelines:
-  default:
-  - step:
-      name: Greeting
-      script:
-      - echo 'Hello, world!'
+    default:
+      - step:
+            name: Greeting
+            script:
+              - echo 'Hello, world!'
 """
         )
 
@@ -125,16 +125,16 @@ pipelines: {}
             == """\
 image: atlassian/default-image:3
 definitions:
-  caches:
-    uv: ~/.cache/uv
+    caches:
+        uv: ~/.cache/uv
 pipelines:
-  default:
-  - step:
-      name: Greeting
-      caches:
-      - uv
-      script:
-      - echo 'Hello, world!'
+    default:
+      - step:
+            name: Greeting
+            caches:
+              - uv
+            script:
+              - echo 'Hello, world!'
 """
         )
 

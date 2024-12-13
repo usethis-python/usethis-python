@@ -5,10 +5,6 @@ from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 
-# TODO make an issue to add usethis tool validate-pyproject or similar.
-# I like usethis tool pyproject to add both validate-pyproject, pyproject-fmt, and
-# to create the file if it doesn't exist with minimal config.
-
 
 def remove_pre_commit_config() -> None:
     if not (Path.cwd() / ".pre-commit-config.yaml").exists():

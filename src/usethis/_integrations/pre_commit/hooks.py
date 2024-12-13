@@ -91,8 +91,10 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
                 if hooks is None:
                     hooks = []
 
-                # Check consistency in the way we handle placeholders - are they
+                # TODO Check consistency in the way we handle placeholders - are they
                 # automatically removed once we have a way to do so?
+                # TODO for both here and pre-commit we should define a variable
+                # rather than hard-coding the name of the placeholder
                 if [hook.id for hook in hooks] != ["placeholder"]:
                     new_repos.append(_repo)
                 for hook in hooks:

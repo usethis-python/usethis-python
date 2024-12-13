@@ -41,14 +41,7 @@ def edit_bitbucket_pipelines_yaml() -> (
         path.write_text("image: atlassian/default-image:3")
         guess_indent = False
     else:
-        # # TODO this is quite clumsy, see if there's a better way.
-        # See if there are any pipelines defined - if not, we won't guess the indent
-        # yet.
-        with edit_yaml(path) as doc:
-            if isinstance(doc.content, dict) and "pipelines" in doc.content:
-                guess_indent = True
-            else:
-                guess_indent = False
+        guess_indent = _has_indentation(path)
 
     with edit_yaml(path, guess_indent=guess_indent) as doc:
         config = _validate_config(doc.content)
@@ -62,3 +55,8 @@ def _validate_config(ruamel_content: YAMLLiteral) -> PipelinesConfiguration:
     except ValidationError as err:
         msg = f"Invalid 'bitbucket-pipelines.yml' file:\n{err}"
         raise BitbucketPipelinesYAMLConfigError(msg) from None
+
+
+def _has_indentation(path: Path) -> bool:
+    lines = path.read_text().splitlines()
+    return any(line.startswith(" ") or line.startswith("\t") for line in lines)

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from usethis._integrations.bitbucket.schema import (
     Parallel,
     ParallelExpanded,
@@ -14,6 +16,7 @@ from usethis._integrations.bitbucket.schema import (
 )
 from usethis._integrations.bitbucket.steps import (
     Step,
+    add_placeholder_step_in_default,
     add_step_in_default,
     get_steps_in_pipeline_item,
 )
@@ -243,3 +246,45 @@ class TestGetStepsInPipelineItem:
 
             # Assert
             assert steps == [Step(name="greetings", script=script)]
+
+
+class TestAddPlaceholderStepInDefault:
+    def test_contents(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # TODO do the same for pre-commit
+        # Act
+        with change_cwd(tmp_path):
+            add_placeholder_step_in_default()
+
+        # Assert
+        assert (tmp_path / "bitbucket-pipelines.yml").exists()
+        assert (
+            (tmp_path / "bitbucket-pipelines.yml").read_text()
+            == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+        )
+
+        out, _ = capfd.readouterr()
+        assert out == (
+            "✔ Writing 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding placeholder step in default pipeline in 'bitbucket-pipelines.yml'.\n"
+            "☐ Replace placeholder pipeline step in 'bitbucket-pipelines.yml'.\n"
+        )

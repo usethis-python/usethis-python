@@ -5,7 +5,7 @@ from typing import assert_never
 from ruamel.yaml.comments import CommentedSeq
 from ruamel.yaml.scalarstring import LiteralScalarString
 
-from usethis._config import usethis_config
+from usethis._console import box_print, tick_print
 from usethis._integrations.bitbucket.cache import add_caches
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.io import (
@@ -79,6 +79,16 @@ def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
 
     # Add the step to the default pipeline
     with edit_bitbucket_pipelines_yaml() as doc:
+        if step.name == "Placeholder - add your own steps!":
+            tick_print(
+                "Adding placeholder step in default pipeline in 'bitbucket-pipelines.yml'."
+            )
+        else:
+            tick_print(
+                f"Adding step '{step.name}' to default pipeline in "
+                f"'bitbucket-pipelines.yml'."
+            )
+
         step = step.model_copy(deep=True)
 
         for idx, script_item in enumerate(step.script.root):
@@ -279,8 +289,8 @@ def _step1tostep(step1: Step1) -> Step:
 
 def add_placeholder_step_in_default() -> None:
     # TODO message and test?
-    with usethis_config.set(quiet=True):
-        add_step_in_default(_get_placeholder_step())
+    add_step_in_default(_get_placeholder_step())
+    box_print("Replace placeholder pipeline step in 'bitbucket-pipelines.yml'.")
 
 
 def _get_placeholder_step() -> Step:

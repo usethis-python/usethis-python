@@ -59,13 +59,8 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
                 tick_print(f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'.")
             if "repos" not in content:
                 content["repos"] = []
-            # TODO use of model_dump without fancy dump
             content["repos"].append(fancy_model_dump(repo))
             return
-
-        # TODO not the right place for this TODO but we should be showing a message
-        # when adding a placeholder hook that they need to populate it with real
-        # content, similar to the bitbucket hook.
 
         # Get the precendents, i.e. hooks occuring before the new hook
         try:
@@ -116,6 +111,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
 
 
 def add_placeholder_hook() -> None:
+    # TODO should have a message to instruct the user they need to replace the placeholder
     add_repo(_get_placeholder_repo_config())
 
 

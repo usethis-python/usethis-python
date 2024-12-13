@@ -8,17 +8,16 @@ from usethis._integrations.pydantic.dump import ModelRepresentation, fancy_model
 ORDER_BY_CLS: dict[type[BaseModel], list[str]] = {}
 
 
-# TODO I don't think this function is tested
 def precommit_fancy_dump(
     config: JsonSchemaForPreCommitConfigYaml, *, reference: ModelRepresentation
 ) -> dict[str, ModelRepresentation]:
     dump = fancy_model_dump(config, reference=reference, order_by_cls=ORDER_BY_CLS)
 
     if not isinstance(dump, dict):
-        # TODO better error message for this and BBPL.
+        name = f"{JsonSchemaForPreCommitConfigYaml=}".split("=")[0]
         msg = (
-            f"Trying to represent pre-commit configuration.\n"
-            f"Expected dict, got {type(dump)}"
+            f"Invalid '{name}' representation when dumping; expected dict, got "
+            f"{type(dump)}"
         )
         raise TypeError(msg)
 

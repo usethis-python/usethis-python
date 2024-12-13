@@ -22,9 +22,10 @@ def bitbucket_fancy_dump(
     dump = fancy_model_dump(config, reference=reference, order_by_cls=ORDER_BY_CLS)
 
     if not isinstance(dump, dict):
+        name = f"{PipelinesConfiguration=}".split("=")[0]
         msg = (
-            f"Trying to represent Bitbucket pipelines configuration.\n"
-            f"Expected dict, got {type(dump)}"
+            f"Invalid '{name}' representation when dumping; expected dict, got "
+            f"{type(dump)}"
         )
         raise TypeError(msg)
 

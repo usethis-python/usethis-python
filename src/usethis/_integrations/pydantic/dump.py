@@ -58,7 +58,6 @@ def _(
 
     x = []
     for value, ref in zip_longest(model, reference, fillvalue=_FILL_VALUE):
-        # TODO test the case where the zip longest aspect kicks in
         if value is _FILL_VALUE:
             # we've exhausted all the content.
             break
@@ -82,8 +81,6 @@ def _(
 ) -> ModelRepresentation:
     if order_by_cls is None:
         order_by_cls = {}
-
-    # TODO duplication with other dict-like handling?
     d = {}
     for key, value in model.items():
         if reference is None:
@@ -101,7 +98,6 @@ def _(
     return d
 
 
-# TODO reduce duplication, also above. Try to use variable ref to type
 @fancy_model_dump.register(bool | int | float | str)
 def _(
     model: ModelLiteral,

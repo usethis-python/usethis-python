@@ -15,7 +15,6 @@ from usethis._integrations.pre_commit.schema import (
     UriRepo,
 )
 from usethis._integrations.pydantic.dump import fancy_model_dump
-from usethis._integrations.yaml.io import edit_yaml
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 _HOOK_ORDER = [
@@ -186,26 +185,14 @@ def remove_hook(name: str) -> None:
     # TODO but what if there's no hooks left at all? Should we delete the file?
 
 
-# TODO look at places where we use the fast read-in functions: we should make sure that
-# in such cases it is not possible to call the function concurrently with a context
-# manager (concurrent reads). It's not obvious how we'd achieve this anyway.
-
-
 def get_hook_names() -> list[str]:
     path = Path.cwd() / ".pre-commit-config.yaml"
 
     if not path.exists():
         return []
 
-    with edit_yaml(path) as yaml_document:
-        # TODO duplication with above - should have a new abstraction specifically
-        # edit_precommit_yaml
-        content = yaml_document.content
-        if not isinstance(content, CommentedMap):
-            msg = f"Unrecognized pre-commit configuration file format of type {type(content)}"
-            raise NotImplementedError(msg)
-
-        return extract_hook_names(content)
+    with edit_pre_commit_config_yaml() as doc:
+        return extract_hook_names(doc.content)
 
 
 def extract_hook_names(cmap: CommentedMap) -> list[str]:

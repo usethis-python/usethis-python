@@ -1,13 +1,12 @@
 from collections import Counter
 from pathlib import Path
 
-from ruamel.yaml.comments import CommentedMap
-
 from usethis._console import tick_print
 from usethis._integrations.pre_commit.dump import precommit_fancy_dump
 from usethis._integrations.pre_commit.io import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
+    JsonSchemaForPreCommitConfigYaml,
     Language,
     LocalRepo,
     MetaRepo,
@@ -36,6 +35,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
     """
     # TODO in general need a convention around "add" versus "ensure", "use", etc.
     # which indicates whether we assume the hook already exists or not.
+    # TODO this function should use the classes.
 
     with edit_pre_commit_config_yaml() as doc:
         if repo.hooks is None or len(repo.hooks) != 1:
@@ -52,7 +52,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
         content = doc.content
 
         # Ordered list of the hooks already in the file
-        existing_hooks = extract_hook_names(content)
+        existing_hooks = extract_hook_names(doc.model)
 
         if not existing_hooks:
             if hook_name != "placeholder":
@@ -168,7 +168,6 @@ def remove_hook(name: str) -> None:
         if not doc.model.repos:
             doc.model.repos.append(_get_placeholder_repo_config())
 
-        # TODO should have a fancy_model_dump for pre-commit hook files specifically
         # TODO both here and for BBPL we should consider having update_ruamel_yaml_map
         # layer than takes a doc from the context manager and does the update with
         # correct fancy dumping. And maybe should be built-in to the context managers??
@@ -185,20 +184,17 @@ def get_hook_names() -> list[str]:
         return []
 
     with edit_pre_commit_config_yaml() as doc:
-        return extract_hook_names(doc.content)
+        return extract_hook_names(doc.model)
 
 
-def extract_hook_names(cmap: CommentedMap) -> list[str]:
-    if cmap is None:
-        return []
-
+def extract_hook_names(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
     hook_names = []
-    for repo in cmap["repos"]:
-        if "hooks" not in repo:
+    for repo in model.repos:
+        if repo.hooks is None:
             continue
 
-        for hook in repo["hooks"]:
-            hook_names.append(hook["id"])
+        for hook in repo.hooks:
+            hook_names.append(hook.id)
 
     # Need to validate there are no duplciates
     for name, count in Counter(hook_names).items():

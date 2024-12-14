@@ -297,9 +297,6 @@ def add_placeholder_step_in_default() -> None:
 def _get_placeholder_step() -> Step:
     return Step(
         name=_PLACEHOLDER_NAME,
-        # TODO maybe instead of doing anchors with this string-prefix thing, we can
-        # use * as a symbol, which presumably would be invalid in a script so fine in
-        # this context. Need to learn more about this.
         script=Script(
             [
                 ScriptItemAnchor(name="install-uv"),

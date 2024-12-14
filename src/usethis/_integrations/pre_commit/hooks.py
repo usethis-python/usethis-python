@@ -12,7 +12,6 @@ from usethis._integrations.pre_commit.schema import (
     MetaRepo,
     UriRepo,
 )
-from usethis._integrations.pydantic.dump import fancy_model_dump
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 _HOOK_ORDER = [
@@ -36,9 +35,6 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
 
     This assumes the hook doesn't already exist in the configuration file.
     """
-    # TODO in general need a convention around "add" versus "ensure", "use", etc.
-    # which indicates whether we assume the hook already exists or not.
-    # TODO this function should use the classes.
 
     with edit_pre_commit_config_yaml() as doc:
         if repo.hooks is None or len(repo.hooks) != 1:
@@ -103,17 +99,12 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
                     # just a hook. more thought needed.
 
                     if hook.id == last_precedent:
-                        # TODO check this shouldn't be a fancy model dump that chooses
-                        # sensible key order automatically
-                        # TODO Test this message; it was probably wrong before.
-                        # TODO this message should have an if-statement style exception
+                        # TODO Test this message
+                        # TODO Check/test the placeholder can't get to this point.
                         tick_print(
                             f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'."
                         )
-                        # TODO should have a wrapper around fancy_model_dump.
-                        # should ctrl-f to find all instances of raw fancy_model_dump and
-                        # ensure they are all wrapped
-                        new_repos.append(fancy_model_dump(repo))
+                        new_repos.append(repo)
             doc.model.repos = new_repos
 
         update_ruamel_yaml_map(
@@ -154,13 +145,7 @@ def remove_hook(name: str) -> None:
     If the hook doesn't exist, this function will have no effect. Meta hooks are
     ignored.
     """
-    # TODO similar to above discussion. Need a naming convention
-    # to reflect this difference in assumption: remove vs. drop perhaps? For assuming
-    # that the hook isn't already removed.
     with edit_pre_commit_config_yaml() as doc:
-        # TODO we should use the pydantic schema + update function rather than
-        # directly over-writing dictionaries.
-
         # search across the repos for any hooks with ID equal to name
         for repo in doc.model.repos:
             if isinstance(repo, MetaRepo) or repo.hooks is None:
@@ -183,13 +168,11 @@ def remove_hook(name: str) -> None:
         if not doc.model.repos:
             doc.model.repos.append(_get_placeholder_repo_config())
 
-        # TODO both here and for BBPL we should consider having update_ruamel_yaml_map
-        # layer than takes a doc from the context manager and does the update with
-        # correct fancy dumping. And maybe should be built-in to the context managers??
         dump = precommit_fancy_dump(doc.model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
-    # TODO but what if there's no hooks left at all? Should we delete the file?
+    # TODO but what if there's no hooks left at all? We should add the placeholder hook
+    # back in.
 
 
 def get_hook_names() -> list[str]:

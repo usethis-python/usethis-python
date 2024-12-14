@@ -2,6 +2,7 @@ from functools import singledispatch
 from pathlib import Path
 from typing import assert_never
 
+from ruamel.yaml.anchor import Anchor
 from ruamel.yaml.comments import CommentedSeq
 from ruamel.yaml.scalarstring import LiteralScalarString
 
@@ -71,7 +72,7 @@ def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
 
     add_step_caches(step)
 
-    defined_script_item_names = get_defined_script_anchor_names()
+    defined_script_item_names = get_defined_script_item_names()
 
     # Add the step to the default pipeline
     with edit_bitbucket_pipelines_yaml() as doc:
@@ -308,8 +309,8 @@ def _get_placeholder_step() -> Step:
     )
 
 
-def get_defined_script_anchor_names() -> list[str | None]:
-    # TODO test this function
+def get_defined_script_item_names() -> list[str | None]:
+    """These are the names of the anchors."""
     with edit_bitbucket_pipelines_yaml() as doc:
         config = doc.model
 
@@ -325,8 +326,45 @@ def get_defined_script_anchor_names() -> list[str | None]:
         for script_item_content in script_item_contents:
             if not isinstance(script_item_content, LiteralScalarString):
                 script_anchor_names.append(None)
+                continue
 
-            anchor_name = script_item_content.anchor.value
+            anchor: Anchor = script_item_content.yaml_anchor()
+
+            if anchor is None:
+                script_anchor_names.append(None)
+                continue
+
+            anchor_name = anchor.value
             script_anchor_names.append(anchor_name)
 
         return script_anchor_names
+
+
+# TODO should test we are not double-defining an anchor with one defined elsewhere in
+# the file. We should forbid some anchor names from being defined outside of the context
+# we expect them.
+# Alternatively, we could just assume that if it has the same name, it's the same anchor.
+# This would probably be better in terms of not needing to hard-fail but it might be
+# a bit dodgy since the anchor might refer to a different kind of object, and hence give
+# invalid results. This needs some thought. Here is a draft of a function to traverse to
+# find all anchors.
+# ruff: noqa: ERA001
+# def find_anchors(yaml_content):
+#     yaml = YAML()
+#     data = yaml.load(yaml_content)
+#     anchors = []
+
+#     def extract_anchors(node):
+#         if isinstance(node, dict):
+#             for key, value in node.items():
+#                 if isinstance(key, Anchor):
+#                     anchors.append(key.anchor)
+#                 extract_anchors(value)
+#         elif isinstance(node, list):
+#             for item in node:
+#                 extract_anchors(item)
+#         elif hasattr(node, 'anchor') and node.anchor.value is not None:
+#             anchors.append(node.anchor.value)
+
+#     extract_anchors(data)
+#     return anchors

@@ -19,7 +19,7 @@ from usethis._integrations.bitbucket.steps import (
     Step,
     add_placeholder_step_in_default,
     add_step_in_default,
-    get_defined_script_anchor_names,
+    get_defined_script_item_names,
     get_steps_in_pipeline_item,
 )
 from usethis._test import change_cwd
@@ -190,7 +190,7 @@ pipelines:
             add_step_in_default(other_step)
 
             # Assert
-            assert len(get_defined_script_anchor_names()) == 1
+            assert len(get_defined_script_item_names()) == 1
 
 
 class TestGetStepsInPipelineItem:
@@ -360,3 +360,101 @@ pipelines:
         assert (
             tmp_path / "bitbucket-pipelines.yml"
         ).read_text() == self.EXPECTED_YML_SIMPLE_PLACEHOLDER
+
+
+class TestGetDefinedScriptItemNames:
+    def test_empty(self):
+        # Act
+        names = get_defined_script_item_names()
+
+        # Assert
+        assert names == []
+
+    def test_no_definitions_section(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            names = get_defined_script_item_names()
+
+        # Assert
+        assert names == []
+
+    def test_no_script_items_definitions_section(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            names = get_defined_script_item_names()
+
+        # Assert
+        assert names == []
+
+    def test_no_anchor(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - echo 'Hello, world!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            names = get_defined_script_item_names()
+
+        # Assert
+        assert names == [None]
+
+    def test_anchor(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &say-hello |
+        echo 'Hello, world!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            names = get_defined_script_item_names()
+
+        # Assert
+        assert names == ["say-hello"]
+
+    def test_multiline_no_anchor(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - |
+        echo 'Hello, world!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            names = get_defined_script_item_names()
+
+        # Assert
+        assert names == [None]

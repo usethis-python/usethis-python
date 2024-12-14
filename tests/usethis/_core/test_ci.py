@@ -7,8 +7,6 @@ from usethis._test import change_cwd
 
 
 class TestBitBucket:
-    # TODO not necessarily in this file but need to test that the placeholder step
-    # gets removed when another step is added, e.g. pre-commit
     class TestAdd:
         class TestConfigFile:
             def test_exists(self, uv_init_dir: Path):

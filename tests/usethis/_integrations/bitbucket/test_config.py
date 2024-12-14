@@ -61,7 +61,7 @@ pipelines:
             add_bitbucket_pipeline_config()
             add_step_in_default(
                 Step(
-                    name="Placeholder - add your own steps!",
+                    name="Example step",
                     script=Script(
                         [ScriptItemAnchor(name="install-uv"), "echo 'Hello, world!'"]
                     ),

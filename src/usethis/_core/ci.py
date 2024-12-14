@@ -7,7 +7,10 @@ from usethis._integrations.bitbucket.config import (
     remove_bitbucket_pipeline_config,
 )
 from usethis._integrations.bitbucket.schema import Script, Step
-from usethis._integrations.bitbucket.steps import add_step_in_default
+from usethis._integrations.bitbucket.steps import (
+    add_placeholder_step_in_default,
+    add_step_in_default,
+)
 from usethis._integrations.pyproject.requires_python import (
     get_supported_major_python_versions,
 )
@@ -23,6 +26,10 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
         add_bitbucket_pipeline_config()
 
         steps = []
+        # TODO need integration in the other direction (and to test it) - if we run
+        # usethis tool pre-commit and then usethis ci bitbucket, we should get the
+        # pre-commit step in the pipeline
+        # Also need a mechanism for removals if we run usethis tool pre-commit --remove
         if PreCommitTool().is_used():
             add_step_in_default(
                 Step(
@@ -54,20 +61,7 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
 
         if not steps:
             # Add a dummy step
-            add_step_in_default(
-                Step(
-                    name="Placeholder - add your own steps!",
-                    caches=["uv"],
-                    script=Script(
-                        [
-                            ScriptItemAnchor(name="install-uv"),
-                            "echo 'Hello, world!'",
-                        ]
-                    ),
-                ),
-            )
-
-            box_print("Populate the placeholder step in 'bitbucket-pipelines.yml'.")
+            add_placeholder_step_in_default()
             info_print(
                 "Consider `usethis tool pytest` to start testing your code, including in the pipeline."
             )

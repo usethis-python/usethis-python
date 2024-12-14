@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pre_commit.hooks import get_hook_names
+from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import set_config_value
@@ -491,7 +491,7 @@ repos:
 
                 # Assert
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
-                assert get_hook_names() == ["placeholder"]
+                assert get_hook_names() == [_PLACEHOLDER_ID]
 
         def test_two_repos_remove_same_two(self, tmp_path: Path):
             # Arrange
@@ -540,4 +540,4 @@ repos:
 
                 # Assert
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
-                assert get_hook_names() == ["placeholder"]
+                assert get_hook_names() == [_PLACEHOLDER_ID]

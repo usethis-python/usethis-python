@@ -41,6 +41,7 @@ _CACHE_LOOKUP = {
     "pre-commit": CachePath("~/.cache/pre-commit"),
 }
 
+_PLACEHOLDER_NAME = "Placeholder - add your own steps!"
 
 _SCRIPT_ITEM_LOOKUP: dict[str, LiteralScalarString] = {
     "install-uv": LiteralScalarString("""\
@@ -76,7 +77,7 @@ def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
 
     # Add the step to the default pipeline
     with edit_bitbucket_pipelines_yaml() as doc:
-        if step.name == "Placeholder - add your own steps!":
+        if step.name == _PLACEHOLDER_NAME:
             tick_print(
                 "Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'."
             )
@@ -295,7 +296,7 @@ def add_placeholder_step_in_default() -> None:
 
 def _get_placeholder_step() -> Step:
     return Step(
-        name="Placeholder - add your own steps!",
+        name=_PLACEHOLDER_NAME,
         # TODO maybe instead of doing anchors with this string-prefix thing, we can
         # use * as a symbol, which presumably would be invalid in a script so fine in
         # this context. Need to learn more about this.

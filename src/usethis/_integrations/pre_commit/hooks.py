@@ -23,6 +23,8 @@ _HOOK_ORDER = [
     "deptry",
 ]
 
+_PLACEHOLDER_ID = "placeholder"
+
 
 class DuplicatedHookNameError(ValueError):
     """Raised when a hook name is duplicated in a pre-commit configuration file."""
@@ -54,7 +56,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
         existing_hooks = extract_hook_names(doc.model)
 
         if not existing_hooks:
-            if hook_name == "placeholder":
+            if hook_name == _PLACEHOLDER_ID:
                 tick_print("Adding placeholder hook to '.pre-commit-config.yaml'.")
             else:
                 tick_print(f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'.")
@@ -90,9 +92,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
 
                 # TODO Check consistency in the way we handle placeholders - are they
                 # automatically removed once we have a way to do so?
-                # TODO for both here and pre-commit we should define a variable
-                # rather than hard-coding the name of the placeholder
-                if [hook.id for hook in hooks] != ["placeholder"]:
+                if [hook.id for hook in hooks] != [_PLACEHOLDER_ID]:
                     new_repos.append(_repo)
                 for hook in hooks:
                     # TODO Also need to think about this precedent logic in terms of how
@@ -139,7 +139,7 @@ def _get_placeholder_repo_config() -> LocalRepo:
         repo="local",
         hooks=[
             HookDefinition(
-                id="placeholder",
+                id=_PLACEHOLDER_ID,
                 name="Placeholder - add your own hooks!",
                 entry="""uv run python -c "print('hello world!')\"""",
                 language=Language("python"),

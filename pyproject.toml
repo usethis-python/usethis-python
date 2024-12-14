@@ -124,7 +124,7 @@ layers = [
   "__main__",
   "_interface",
   "_core",
-  "_tool",
+  "_tool | _ci",
   "_integrations",
   "_console",
   "_config",

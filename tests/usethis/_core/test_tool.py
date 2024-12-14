@@ -295,6 +295,23 @@ repos:
                 # Assert
                 assert not get_deps_from_group("dev")
 
+    class TestBitbucketCIIntegration:
+        def test_prexisting(self, uv_init_repo_dir: Path):
+            # Arrange
+            (uv_init_repo_dir / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+"""
+            )
+
+            with change_cwd(uv_init_repo_dir):
+                # Act
+                use_pre_commit()
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "pre-commit" in contents
+
 
 class TestPyprojectFormat:
     class TestAdd:

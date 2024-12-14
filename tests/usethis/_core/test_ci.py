@@ -83,6 +83,9 @@ pipelines:
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
                 assert "pre-commit" not in contents
 
+            # TODO consistency in precommit vs pre_commit
+            # and PreCommit vs Precommit
+
         class TestPytestIntegration:
             def test_mentioned_in_file(self, uv_init_dir: Path):
                 # Arrange
@@ -105,6 +108,9 @@ pipelines:
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
                 assert "pytest" not in contents
+
+            # TODO add test for when pytest is added first
+            # should add this test in the pytest test file, not this one.
 
     class TestRemove:
         class TestPyproject:

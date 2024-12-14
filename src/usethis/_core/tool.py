@@ -1,3 +1,8 @@
+from usethis._ci import (
+    add_bitbucket_precommit_step,
+    add_bitbucket_pytest_steps,
+    is_bitbucket_used,
+)
 from usethis._console import box_print
 from usethis._integrations.pre_commit.core import (
     # add_pre_commit_config_file,
@@ -46,6 +51,9 @@ def use_pre_commit(*, remove: bool = False) -> None:
             add_placeholder_hook()
 
         install_pre_commit_hooks()
+
+        if is_bitbucket_used():
+            add_bitbucket_precommit_step()
 
         box_print(
             "Call the 'pre-commit run --all-files' command to run the hooks manually."
@@ -103,6 +111,9 @@ def use_pytest(*, remove: bool = False) -> None:
         # deptry currently can't scan the tests folder for dev deps
         # https://github.com/fpgmaas/deptry/issues/302
         add_pytest_dir()
+
+        if is_bitbucket_used():
+            add_bitbucket_pytest_steps()
 
         box_print(
             "Add test files to the '/tests' directory with the format 'test_*.py'."

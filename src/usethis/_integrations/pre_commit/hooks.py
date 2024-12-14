@@ -84,9 +84,6 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
             # after the last precedent
             new_repos = []
             for _repo in doc.model.repos:
-                # TODO shouldn't hard-code placeholder, should reference the placeholder
-                # function's hard-coded value.
-                # Also need to move these dicts to pydamtic classes.
                 hooks = _repo.hooks
                 if hooks is None:
                     hooks = []

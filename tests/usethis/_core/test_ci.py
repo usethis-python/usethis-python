@@ -68,6 +68,7 @@ pipelines:
 
                 # Act
                 with change_cwd(uv_init_dir):
+                    # TODO this is emitting a warning about duplicate anchors
                     use_ci_bitbucket()
 
                 # Assert

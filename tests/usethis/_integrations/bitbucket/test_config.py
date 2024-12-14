@@ -1,12 +1,12 @@
 from pathlib import Path
 
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
 )
 from usethis._integrations.bitbucket.schema import Model, Script
 from usethis._integrations.bitbucket.steps import (
-    _ANCHOR_PREFIX,
     Step,
     add_step_in_default,
 )
@@ -63,7 +63,7 @@ pipelines:
                 Step(
                     name="Placeholder - add your own steps!",
                     script=Script(
-                        [f"{_ANCHOR_PREFIX}-install-uv", "echo 'Hello, world!'"]
+                        [ScriptItemAnchor(name="install-uv"), "echo 'Hello, world!'"]
                     ),
                 ),
             )

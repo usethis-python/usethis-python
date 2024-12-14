@@ -6,6 +6,7 @@
 # ruff: noqa: ERA001
 # pyright: reportGeneralTypeIssues=false
 # plus manually add Definitions.scripts for type hinting
+# plus manually add ScriptItemAnchor as a root type of Script, and import it
 
 
 from __future__ import annotations
@@ -13,6 +14,8 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
+
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 
 
 class Depth(RootModel[int]):
@@ -276,8 +279,8 @@ class ImageNoAuth(ImageBase):
     username: Any | None = None
 
 
-class Script(RootModel[list[str | Pipe]]):
-    root: list[str | Pipe] = Field(..., min_length=1)
+class Script(RootModel[list[str | Pipe | ScriptItemAnchor]]):
+    root: list[str | Pipe | ScriptItemAnchor] = Field(..., min_length=1)
 
 
 class ArtifactsExpanded(BaseModel):

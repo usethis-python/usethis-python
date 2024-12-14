@@ -1,12 +1,13 @@
 from pathlib import Path
 
 from usethis._console import box_print, info_print
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
 )
 from usethis._integrations.bitbucket.schema import Script, Step
-from usethis._integrations.bitbucket.steps import _ANCHOR_PREFIX, add_step_in_default
+from usethis._integrations.bitbucket.steps import add_step_in_default
 from usethis._integrations.pyproject.requires_python import (
     get_supported_major_python_versions,
 )
@@ -29,7 +30,7 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
                     caches=["uv", "pre-commit"],
                     script=Script(
                         [
-                            f"{_ANCHOR_PREFIX}-install-uv",
+                            ScriptItemAnchor(name="install-uv"),
                             "uv run pre-commit run --all-files",
                         ]
                     ),
@@ -44,7 +45,7 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
                         caches=["uv"],
                         script=Script(
                             [
-                                f"{_ANCHOR_PREFIX}-install-uv",
+                                ScriptItemAnchor(name="install-uv"),
                                 f"uv run --python 3.{version} pytest",
                             ]
                         ),
@@ -59,7 +60,7 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
                     caches=["uv"],
                     script=Script(
                         [
-                            f"{_ANCHOR_PREFIX}-install-uv",
+                            ScriptItemAnchor(name="install-uv"),
                             "echo 'Hello, world!'",
                         ]
                     ),

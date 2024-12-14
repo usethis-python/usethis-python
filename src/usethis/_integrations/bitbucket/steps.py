@@ -6,6 +6,7 @@ from ruamel.yaml.comments import CommentedSeq
 from ruamel.yaml.scalarstring import LiteralScalarString
 
 from usethis._console import box_print, tick_print
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.cache import add_caches
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.io import (
@@ -28,8 +29,6 @@ from usethis._integrations.bitbucket.schema import (
     StepItem,
 )
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
-
-_ANCHOR_PREFIX = "usethis-anchor-"
 
 
 class UnexpectedImportPipelineError(Exception):
@@ -56,11 +55,6 @@ for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
 
 # TODO reduce the complexity of the below function and enable the ruff rule
 def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
-    # TODO need to explain that script items which start with the prefix "usethis-anchor-"
-    # get the anchor imputed
-    # TODO we can handle it with caches, where we hard-code some anchors which
-    # we plan to know about, and add them if they are missing. This will let us use
-    # *install-uv syntax instead of usethis-anchor-install-uv which is much clearer.
     try:
         existing_steps = get_steps_in_default()
     except UnexpectedImportPipelineError:
@@ -92,10 +86,9 @@ def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
         step = step.model_copy(deep=True)
 
         for idx, script_item in enumerate(step.script.root):
-            if isinstance(script_item, str) and script_item.startswith(_ANCHOR_PREFIX):
-                name = script_item.removeprefix(_ANCHOR_PREFIX)
+            if isinstance(script_item, ScriptItemAnchor):
                 try:
-                    script_item = _SCRIPT_ITEM_LOOKUP[name]
+                    script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
                 except KeyError:
                     pass
                 else:
@@ -305,7 +298,7 @@ def _get_placeholder_step() -> Step:
         # this context. Need to learn more about this.
         script=Script(
             [
-                "usethis-anchor-install-uv",
+                ScriptItemAnchor(name="install-uv"),
                 "echo 'Hello, world!'",
             ]
         ),

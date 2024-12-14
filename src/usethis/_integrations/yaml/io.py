@@ -83,9 +83,6 @@ def edit_yaml(
         sequence_ind = None
         offset_ind = None
 
-    print(f"{sequence_ind=}, {offset_ind=}, file contents:")
-    print(yaml_path.read_text())
-
     if sequence_ind is None:
         sequence_ind = 4
     if offset_ind is None:

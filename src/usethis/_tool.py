@@ -250,6 +250,7 @@ class PytestTool(Tool):
                         "addopts": [
                             "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
                         ],
+                        "filterwarnings": ["error"],
                     }
                 },
             ),

@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.schema import (
     Parallel,
     ParallelExpanded,
@@ -18,6 +19,7 @@ from usethis._integrations.bitbucket.steps import (
     Step,
     add_placeholder_step_in_default,
     add_step_in_default,
+    get_defined_script_anchor_names,
     get_steps_in_pipeline_item,
 )
 from usethis._test import change_cwd
@@ -138,6 +140,58 @@ pipelines:
 """
         )
 
+    def test_add_same_step_twice(self, tmp_path: Path):
+        # Arrange
+        step = Step(
+            name="Greeting",
+            script=Script(
+                [
+                    ScriptItemAnchor(name="install-uv"),
+                    "echo 'Hello, world!'",
+                ]
+            ),
+        )
+
+        with change_cwd(tmp_path):
+            add_step_in_default(step)
+
+            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+
+            # Act
+            add_step_in_default(step)
+
+        # Assert
+        assert contents == (tmp_path / "bitbucket-pipelines.yml").read_text()
+
+    def test_add_different_steps_sharing_same_script_step_anchor(self, tmp_path: Path):
+        # Assert
+        step = Step(
+            name="Greeting",
+            script=Script(
+                [
+                    ScriptItemAnchor(name="install-uv"),
+                    "echo 'Hello, world!'",
+                ]
+            ),
+        )
+        other_step = Step(
+            name="Farewell",
+            script=Script(
+                [
+                    ScriptItemAnchor(name="install-uv"),
+                    "echo 'Goodbye!'",
+                ]
+            ),
+        )
+
+        with change_cwd(tmp_path):
+            # Act
+            add_step_in_default(step)
+            add_step_in_default(other_step)
+
+            # Assert
+            assert len(get_defined_script_anchor_names()) == 1
+
 
 class TestGetStepsInPipelineItem:
     class TestStepItem:
@@ -249,16 +303,7 @@ class TestGetStepsInPipelineItem:
 
 
 class TestAddPlaceholderStepInDefault:
-    def test_contents(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
-        # Act
-        with change_cwd(tmp_path):
-            add_placeholder_step_in_default()
-
-        # Assert
-        assert (tmp_path / "bitbucket-pipelines.yml").exists()
-        assert (
-            (tmp_path / "bitbucket-pipelines.yml").read_text()
-            == """\
+    EXPECTED_YML_SIMPLE_PLACEHOLDER = """\
 image: atlassian/default-image:3
 definitions:
     caches:
@@ -279,7 +324,17 @@ pipelines:
               - *install-uv
               - echo 'Hello, world!'
 """
-        )
+
+    def test_contents(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Act
+        with change_cwd(tmp_path):
+            add_placeholder_step_in_default()
+
+        # Assert
+        assert (tmp_path / "bitbucket-pipelines.yml").exists()
+        assert (
+            tmp_path / "bitbucket-pipelines.yml"
+        ).read_text() == self.EXPECTED_YML_SIMPLE_PLACEHOLDER
 
         out, _ = capfd.readouterr()
         # Keep these messages in sync with the ones used for pre-commit
@@ -290,3 +345,18 @@ pipelines:
             "☐ Replace it with your own pipeline steps.\n"
             "☐ Alternatively, use 'usethis tool' to add other tools and their steps.\n"
         )
+
+    def test_idempotent(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            self.EXPECTED_YML_SIMPLE_PLACEHOLDER
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            add_placeholder_step_in_default()
+
+        # Assert
+        assert (
+            tmp_path / "bitbucket-pipelines.yml"
+        ).read_text() == self.EXPECTED_YML_SIMPLE_PLACEHOLDER

@@ -45,6 +45,7 @@ class TestAddCaches:
 
             # Assert
             assert get_cache_by_name() == cache_by_name
+            # TODO test that we should not duplicate definitions
 
     def test_definitions_order(self, tmp_path: Path):
         """Test that the newly-created definitions section is placed after the image."""

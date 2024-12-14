@@ -71,6 +71,8 @@ def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
 
     add_step_caches(step)
 
+    defined_script_item_names = get_defined_script_anchor_names()
+
     # Add the step to the default pipeline
     with edit_bitbucket_pipelines_yaml() as doc:
         if step.name == "Placeholder - add your own steps!":
@@ -83,34 +85,34 @@ def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
                 f"'bitbucket-pipelines.yml'."
             )
 
+        config = doc.model
+
         step = step.model_copy(deep=True)
 
         for idx, script_item in enumerate(step.script.root):
             if isinstance(script_item, ScriptItemAnchor):
-                try:
-                    script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
-                except KeyError:
-                    pass
-                else:
-                    # TODO shouldn't add this if it already exists - need to test this case
-                    config = doc.model
+                if script_item.name not in defined_script_item_names:
+                    try:
+                        script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
+                    except KeyError:
+                        pass
+                    else:
+                        if config.definitions is None:
+                            config.definitions = Definitions()
 
-                    if config.definitions is None:
-                        config.definitions = Definitions()
+                        script_items = config.definitions.script_items
 
-                    script_items = config.definitions.script_items
+                        if script_items is None:
+                            script_items = CommentedSeq()
+                            config.definitions.script_items = script_items
 
-                    if script_items is None:
-                        script_items = CommentedSeq()
-                        config.definitions.script_items = script_items
+                        # N.B. when we add the definition, we are relying on this being
+                        # an append (and below return statement)
+                        # TODO revisit this - maybe we should add alphabetically.
+                        script_items.append(script_item)
+                        script_items = CommentedSeq(script_items)
 
-                    # N.B. when we add the definition, we are relying on this being an append
-                    # (and below return statement)
-                    # TODO revisit this - maybe we should add alphabetically.
-                    script_items.append(script_item)
-                    script_items = CommentedSeq(script_items)
-
-                    step.script.root[idx] = script_item
+                step.script.root[idx] = script_item
 
         # TODO currently adding to the end, but need to test desired functionality
         # of adding after a specific step
@@ -304,3 +306,27 @@ def _get_placeholder_step() -> Step:
         ),
         caches=["uv"],
     )
+
+
+def get_defined_script_anchor_names() -> list[str | None]:
+    # TODO test this function
+    with edit_bitbucket_pipelines_yaml() as doc:
+        config = doc.model
+
+        if config.definitions is None:
+            return []
+
+        if config.definitions.script_items is None:
+            return []
+
+        script_item_contents = doc.content["definitions"]["script_items"]
+
+        script_anchor_names = []
+        for script_item_content in script_item_contents:
+            if not isinstance(script_item_content, LiteralScalarString):
+                script_anchor_names.append(None)
+
+            anchor_name = script_item_content.anchor.value
+            script_anchor_names.append(anchor_name)
+
+        return script_anchor_names

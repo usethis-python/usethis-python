@@ -19,8 +19,9 @@ def change_cwd(new_dir: Path) -> Generator[None, None, None]:
 def is_offline() -> bool:
     try:
         # Connect to Google's DNS server
-        socket.create_connection(("8.8.8.8", 53), timeout=3)
+        s = socket.create_connection(("8.8.8.8", 53), timeout=3)
     except OSError:
         return True
     else:
+        s.close()
         return False

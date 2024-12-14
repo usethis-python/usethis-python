@@ -104,6 +104,7 @@ testpaths = [ "tests" ]
 addopts = [
   "--import-mode=importlib",
 ]
+filterwarnings = [ "error" ]
 
 [tool.coverage.run]
 source = [ "src" ]

@@ -312,6 +312,28 @@ image: atlassian/default-image:3
             contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
             assert "pre-commit" in contents
 
+        def test_remove(self, uv_init_repo_dir: Path):
+            # Arrange
+            (uv_init_repo_dir / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+        - step:
+            name: Run pre-commit hooks
+            script:
+                - echo "Hello, World!"
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_repo_dir):
+                use_pre_commit(remove=True)
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "pre-commit" not in contents
+
 
 class TestPyprojectFormat:
     class TestAdd:

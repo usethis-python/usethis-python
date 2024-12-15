@@ -2,6 +2,7 @@ from usethis._ci import (
     add_bitbucket_precommit_step,
     add_bitbucket_pytest_steps,
     is_bitbucket_used,
+    remove_bitbucket_precommit_step,
 )
 from usethis._console import box_print
 from usethis._integrations.pre_commit.core import (
@@ -59,6 +60,9 @@ def use_pre_commit(*, remove: bool = False) -> None:
             "Call the 'pre-commit run --all-files' command to run the hooks manually."
         )
     else:
+        if is_bitbucket_used():
+            remove_bitbucket_precommit_step()
+
         # Need pre-commit to be installed so we can uninstall hooks
         add_deps_to_group(tool.dev_deps, "dev")
 

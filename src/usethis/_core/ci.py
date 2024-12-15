@@ -22,7 +22,6 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
         add_bitbucket_pipeline_config()
 
         steps = []
-        # TODO need a mechanism for removals if we run usethis tool pre-commit --remove
         if PreCommitTool().is_used():
             add_bitbucket_precommit_step()
 

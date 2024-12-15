@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
+from usethis._integrations.bitbucket.io import edit_bitbucket_pipelines_yaml
 from usethis._integrations.bitbucket.schema import (
     Parallel,
     ParallelExpanded,
@@ -17,10 +18,12 @@ from usethis._integrations.bitbucket.schema import (
 )
 from usethis._integrations.bitbucket.steps import (
     Step,
+    UnexpectedImportPipelineError,
     add_placeholder_step_in_default,
     add_step_in_default,
-    get_defined_script_item_names,
+    get_defined_script_item_names_via_doc,
     get_steps_in_pipeline_item,
+    remove_step_from_default,
 )
 from usethis._test import change_cwd
 
@@ -190,7 +193,303 @@ pipelines:
             add_step_in_default(other_step)
 
             # Assert
-            assert len(get_defined_script_item_names()) == 1
+            with edit_bitbucket_pipelines_yaml() as doc:
+                names = get_defined_script_item_names_via_doc(doc=doc)
+                assert len(names) == 1
+
+
+class TestRemoveStepFromDefault:
+    def test_remove_remove_one_step(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Greeting
+            script: 
+                - echo 'Hello, world!'
+      - step:
+            name: Farewell
+            script:
+                - echo 'Goodbye!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Greeting",
+                    script=Script(["echo 'Hello, world!'"]),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Farewell
+            script:
+              - echo 'Goodbye!'
+"""
+        )
+
+    def test_no_file(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Greeting",
+                    script=Script(["echo 'Hello, world!'"]),
+                )
+            )
+
+        # Assert
+        assert not (tmp_path / "bitbucket-pipelines.yml").exists()
+
+    def test_no_default_pipeline(self, tmp_path: Path):
+        # Arrange
+        txt = """\
+image: atlassian/default-image:3
+pipelines: {}
+"""
+        (tmp_path / "bitbucket-pipelines.yml").write_text(txt)
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Greeting",
+                    script=Script(["echo 'Hello, world!'"]),
+                )
+            )
+
+        # Assert
+        assert (tmp_path / "bitbucket-pipelines.yml").read_text() == txt
+
+    def test_no_pipelines(self, tmp_path: Path):
+        # Arrange
+        txt = """\
+image: atlassian/default-image:3
+"""
+        (tmp_path / "bitbucket-pipelines.yml").write_text(txt)
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Greeting",
+                    script=Script(["echo 'Hello, world!'"]),
+                )
+            )
+
+        # Assert
+        assert (tmp_path / "bitbucket-pipelines.yml").read_text() == txt
+
+    def test_import_pipeline_fails(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+        import: shared-pipeline:master:share-pipeline-1
+"""
+        )
+
+        # Act, Assert
+        with change_cwd(tmp_path), pytest.raises(UnexpectedImportPipelineError):
+            remove_step_from_default(
+                Step(
+                    name="Greeting",
+                    script=Script(["echo 'Hello, world!'"]),
+                )
+            )
+
+    def test_parallel_item(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: Greeting
+                script:
+                  - echo 'Hello, world!'
+          - step:
+                name: Farewell
+                script:
+                    - echo 'Goodbye!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Greeting",
+                    script=Script(["echo 'Hello, world!'"]),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Farewell
+            script:
+              - echo 'Goodbye!'
+"""
+        )
+
+    def test_remove_single_parallel_step(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            - step:
+                name: Greeting
+                script:
+                    - echo 'Hello, world!'
+      - step:
+            name: Farewell
+            script:
+              - echo 'Goodbye!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Greeting",
+                    script=Script(["echo 'Hello, world!"]),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Farewell
+            script:
+              - echo 'Goodbye!'
+"""
+        )
+
+    def test_remove_leaving_single_parallel_step(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            - step:
+                name: Greeting
+                script:
+                    - echo 'Hello, world!'
+      - step:
+            name: Farewell
+            script:
+              - echo 'Goodbye!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Farewell",
+                    script=Script(["echo 'Goodbye!'"]),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: Greeting
+                script:
+                  - echo 'Hello, world!'
+"""
+        )
+
+    def test_remove_step_leaving_placeholder(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Farewell
+            script:
+              - echo 'Goodbye!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Farewell",
+                    script=Script(["echo 'Goodbye!'"]),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+        )
 
 
 class TestGetStepsInPipelineItem:
@@ -363,9 +662,10 @@ pipelines:
 
 
 class TestGetDefinedScriptItemNames:
-    def test_empty(self):
+    def test_empty(self, tmp_path: Path):
         # Act
-        names = get_defined_script_item_names()
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
+            names = get_defined_script_item_names_via_doc(doc=doc)
 
         # Assert
         assert names == []
@@ -379,8 +679,8 @@ image: atlassian/default-image:3
         )
 
         # Act
-        with change_cwd(tmp_path):
-            names = get_defined_script_item_names()
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
+            names = get_defined_script_item_names_via_doc(doc=doc)
 
         # Assert
         assert names == []
@@ -397,8 +697,8 @@ definitions:
         )
 
         # Act
-        with change_cwd(tmp_path):
-            names = get_defined_script_item_names()
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
+            names = get_defined_script_item_names_via_doc(doc=doc)
 
         # Assert
         assert names == []
@@ -415,8 +715,8 @@ definitions:
         )
 
         # Act
-        with change_cwd(tmp_path):
-            names = get_defined_script_item_names()
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
+            names = get_defined_script_item_names_via_doc(doc=doc)
 
         # Assert
         assert names == [None]
@@ -434,8 +734,8 @@ definitions:
         )
 
         # Act
-        with change_cwd(tmp_path):
-            names = get_defined_script_item_names()
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
+            names = get_defined_script_item_names_via_doc(doc=doc)
 
         # Assert
         assert names == ["say-hello"]
@@ -453,8 +753,8 @@ definitions:
         )
 
         # Act
-        with change_cwd(tmp_path):
-            names = get_defined_script_item_names()
+        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
+            names = get_defined_script_item_names_via_doc(doc=doc)
 
         # Assert
         assert names == [None]

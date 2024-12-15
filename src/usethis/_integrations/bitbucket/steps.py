@@ -11,6 +11,7 @@ from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.cache import add_caches
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.io import (
+    BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
 )
 from usethis._integrations.bitbucket.schema import (
@@ -18,6 +19,7 @@ from usethis._integrations.bitbucket.schema import (
     Definitions,
     ImportPipeline,
     Items,
+    Parallel,
     ParallelExpanded,
     ParallelItem,
     ParallelSteps,
@@ -55,8 +57,7 @@ for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
     script_item.yaml_set_anchor(value=name, always_dump=True)
 
 
-# TODO reduce the complexity of the below function and enable the ruff rule
-def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
+def add_step_in_default(step: Step) -> None:
     try:
         existing_steps = get_steps_in_default()
     except UnexpectedImportPipelineError:
@@ -73,86 +74,175 @@ def add_step_in_default(step: Step) -> None:  # noqa: PLR0912
 
     add_step_caches(step)
 
-    defined_script_item_names = get_defined_script_item_names()
-
     # Add the step to the default pipeline
     with edit_bitbucket_pipelines_yaml() as doc:
-        if step.name == _PLACEHOLDER_NAME:
-            tick_print(
-                "Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'."
-            )
-        else:
-            tick_print(
-                f"Adding step '{step.name}' to default pipeline in "
-                f"'bitbucket-pipelines.yml'."
-            )
-
-        config = doc.model
-
-        step = step.model_copy(deep=True)
-
-        for idx, script_item in enumerate(step.script.root):
-            if isinstance(script_item, ScriptItemAnchor):
-                if script_item.name not in defined_script_item_names:
-                    try:
-                        script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
-                    except KeyError:
-                        pass
-                    else:
-                        if config.definitions is None:
-                            config.definitions = Definitions()
-
-                        script_items = config.definitions.script_items
-
-                        if script_items is None:
-                            script_items = CommentedSeq()
-                            config.definitions.script_items = script_items
-
-                        # N.B. when we add the definition, we are relying on this being
-                        # an append (and below return statement)
-                        # TODO revisit this - maybe we should add alphabetically.
-                        script_items.append(script_item)
-                        script_items = CommentedSeq(script_items)
-
-                step.script.root[idx] = script_item
-
-        # TODO currently adding to the end, but need to test desired functionality
-        # of adding after a specific step
-        if doc.model.pipelines is None:
-            doc.model.pipelines = Pipelines()
-
-        pipelines = doc.model.pipelines
-        default = pipelines.default
-
-        if default is None:
-            items = []
-        elif isinstance(default.root, ImportPipeline):
-            msg = (
-                f"Cannot add step '{step.name}' to default pipeline in "
-                f"'bitbucket-pipelines.yml' because it is an import pipeline."
-            )
-            raise UnexpectedImportPipelineError(msg)
-        else:
-            items = default.root.root
-
-        items.append(StepItem(step=step))
-
-        if default is None:
-            pipelines.default = Pipeline(Items(items))
-
+        _add_step_in_default_via_doc(step, doc=doc)
         dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
-
         update_ruamel_yaml_map(
             doc.content,
             dump,
             preserve_comments=True,
         )
 
+
+# TODO reduce the complexity of the below function and enable the ruff rule
+def _add_step_in_default_via_doc(  # noqa: PLR0912
+    step: Step, *, doc: BitbucketPipelinesYAMLDocument
+) -> None:
+    if step.name == _PLACEHOLDER_NAME:
+        tick_print(
+            "Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'."
+        )
+    else:
+        tick_print(
+            f"Adding step '{step.name}' to default pipeline in "
+            f"'bitbucket-pipelines.yml'."
+        )
+
+    config = doc.model
+
+    step = step.model_copy(deep=True)
+
+    for idx, script_item in enumerate(step.script.root):
+        if isinstance(script_item, ScriptItemAnchor):
+            defined_script_item_names = get_defined_script_item_names_via_doc(doc=doc)
+            if script_item.name not in defined_script_item_names:
+                try:
+                    script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
+                except KeyError:
+                    pass
+                else:
+                    if config.definitions is None:
+                        config.definitions = Definitions()
+
+                    script_items = config.definitions.script_items
+
+                    if script_items is None:
+                        script_items = CommentedSeq()
+                        config.definitions.script_items = script_items
+
+                    # N.B. when we add the definition, we are relying on this being
+                    # an append (and below return statement)
+                    # TODO revisit this - maybe we should add alphabetically.
+                    script_items.append(script_item)
+                    script_items = CommentedSeq(script_items)
+
+            step.script.root[idx] = script_item
+
+    # TODO currently adding to the end, but need to test desired functionality
+    # of adding after a specific step
+    if doc.model.pipelines is None:
+        doc.model.pipelines = Pipelines()
+
+    pipelines = doc.model.pipelines
+    default = pipelines.default
+
+    if default is None:
+        items = []
+    elif isinstance(default.root, ImportPipeline):
+        msg = (
+            f"Cannot add step '{step.name}' to default pipeline in "
+            f"'bitbucket-pipelines.yml' because it is an import pipeline."
+        )
+        raise UnexpectedImportPipelineError(msg)
+    else:
+        items = default.root.root
+
+    items.append(StepItem(step=step))
+
+    if default is None:
+        pipelines.default = Pipeline(Items(items))
+
     # TODO need to tell the user to review the pipeline, it might be wrong. Test
     # associated message. This is mostly the case if there are unrecognized
     # aspects detected, no need if we are starting from scratch and/or fully supported
     # hooks are already present. And some thought needed around whether we can just take
     # for granted that things always need review.
+
+
+# TODO refactor the below to reduce complexity and enable the ruff rule
+def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912
+    """Remove a step from the default pipeline in the Bitbucket Pipelines configuration.
+
+    If the default pipeline does not exist, or the step is not found, nothing happens.
+    """
+    if not (Path.cwd() / "bitbucket-pipelines.yml").exists():
+        return
+
+    with edit_bitbucket_pipelines_yaml() as doc:
+        config = doc.model
+
+        if config.pipelines is None:
+            return
+
+        if config.pipelines.default is None:
+            return
+
+        pipeline = config.pipelines.default
+
+        if isinstance(pipeline.root, ImportPipeline):
+            msg = "Cannot remove steps from an import pipeline."
+            raise UnexpectedImportPipelineError(msg)
+
+        items = pipeline.root.root
+
+        new_items: list[StepItem | ParallelItem | StageItem] = []
+        for item in items:
+            if isinstance(item, ParallelItem):
+                if item.parallel is None:
+                    continue
+
+                par_item = item.parallel.root
+
+                if isinstance(par_item, ParallelSteps):
+                    step_items = par_item.root
+
+                    new_step_items: list[StepItem] = []
+                    for step_item in step_items:
+                        if step_item.step is None:
+                            continue
+
+                        if _steps_are_equivalent(step_item.step, step):
+                            continue
+
+                        new_step_items.append(step_item)
+
+                    if len(new_step_items) == 0:
+                        continue
+                    elif len(new_step_items) == 1 and len(step_items) != 1:
+                        # Collapse the parallel step down to a single step, but only if
+                        # it wasn't already a single step, in which case we'll leave it
+                        # alone.
+                        new_items.append(new_step_items[0])
+                    else:
+                        new_items.append(
+                            ParallelItem(
+                                parallel=Parallel(ParallelSteps(new_step_items))
+                            )
+                        )
+                elif isinstance(par_item, ParallelExpanded):
+                    raise NotImplementedError
+                else:
+                    assert_never(par_item)
+            elif isinstance(item, StageItem):
+                raise NotImplementedError
+            elif isinstance(item, StepItem):
+                if item.step is None:
+                    continue
+
+                if _steps_are_equivalent(item.step, step):
+                    continue
+
+                new_items.append(item)
+            else:
+                assert_never(item)
+        pipeline.root.root = new_items
+
+        if len(new_items) == 0:
+            _add_step_in_default_via_doc(_get_placeholder_step(), doc=doc)
+
+        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
+        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 
 def add_step_caches(step: Step) -> None:
@@ -171,7 +261,10 @@ def add_step_caches(step: Step) -> None:
         add_caches(cache_by_name)
 
 
-def _steps_are_equivalent(step1: Step, step2: Step) -> bool:
+def _steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
+    if step1 is None:
+        return False
+
     # Same name
     if step1.name == step2.name:
         return True
@@ -307,35 +400,36 @@ def _get_placeholder_step() -> Step:
     )
 
 
-def get_defined_script_item_names() -> list[str | None]:
+def get_defined_script_item_names_via_doc(
+    doc: BitbucketPipelinesYAMLDocument,
+) -> list[str | None]:
     """These are the names of the anchors."""
-    with edit_bitbucket_pipelines_yaml() as doc:
-        config = doc.model
+    config = doc.model
 
-        if config.definitions is None:
-            return []
+    if config.definitions is None:
+        return []
 
-        if config.definitions.script_items is None:
-            return []
+    if config.definitions.script_items is None:
+        return []
 
-        script_item_contents = doc.content["definitions"]["script_items"]
+    script_item_contents = doc.content["definitions"]["script_items"]
 
-        script_anchor_names = []
-        for script_item_content in script_item_contents:
-            if not isinstance(script_item_content, LiteralScalarString):
-                script_anchor_names.append(None)
-                continue
+    script_anchor_names = []
+    for script_item_content in script_item_contents:
+        if not isinstance(script_item_content, LiteralScalarString):
+            script_anchor_names.append(None)
+            continue
 
-            anchor: Anchor = script_item_content.yaml_anchor()
+        anchor: Anchor = script_item_content.yaml_anchor()
 
-            if anchor is None:
-                script_anchor_names.append(None)
-                continue
+        if anchor is None:
+            script_anchor_names.append(None)
+            continue
 
-            anchor_name = anchor.value
-            script_anchor_names.append(anchor_name)
+        anchor_name = anchor.value
+        script_anchor_names.append(anchor_name)
 
-        return script_anchor_names
+    return script_anchor_names
 
 
 # TODO should test we are not double-defining an anchor with one defined elsewhere in

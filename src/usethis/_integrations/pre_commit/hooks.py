@@ -80,6 +80,10 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
             # Insert the new hook after the last precedent repo
             # Do this by iterating over the repos and hooks, and inserting the new hook
             # after the last precedent
+            # TODO but what if a repo has multiple hooks and the one we are
+            # inserting now is a precedent for one in the repo? Then we would break
+            # something by inserting this hook afterwards. Related to how to
+            # model stages in bitbucket pipelines
             new_repos = []
             for _repo in doc.model.repos:
                 hooks = _repo.hooks

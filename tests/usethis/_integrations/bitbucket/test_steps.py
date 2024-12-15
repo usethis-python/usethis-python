@@ -197,6 +197,51 @@ pipelines:
                 names = get_defined_script_item_names_via_doc(doc=doc)
                 assert len(names) == 1
 
+    def test_order(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path):
+            # This step should be listed second
+            add_step_in_default(
+                Step(
+                    name="Run tests with Python 3.12",
+                    script=Script(["echo 'Running'"]),
+                ),
+            )
+            # This one should come first
+            add_step_in_default(
+                Step(
+                    name="Run pre-commit hooks",
+                    script=Script(["echo 'Running'"]),
+                ),
+            )
+
+        # Assert
+        with open(tmp_path / "bitbucket-pipelines.yml") as f:
+            contents = f.read()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Run pre-commit hooks
+            script:
+              - echo 'Running'
+      - step:
+            name: Run tests with Python 3.12
+            script:
+              - echo 'Running'
+"""
+        )
+        # TODO so in terms of passing this test, I suspect the key is to revisit the
+        # "precedent" logic used for hooks. The complication is that we have a notion
+        # stages and parallel steps. Actually stages are conceptually very similar to
+        # repos in pre-commit in the sense that it's a set of grouped steps in an
+        # order. Ideally we can create some abstraction.
+        # Parallel steps should probably be handled natively by the abstraction.
+        # This deserves some kind of design, most likely.
+
 
 class TestRemoveStepFromDefault:
     def test_remove_remove_one_step(self, tmp_path: Path):

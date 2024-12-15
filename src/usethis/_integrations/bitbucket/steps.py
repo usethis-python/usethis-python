@@ -31,6 +31,7 @@ from usethis._integrations.bitbucket.schema import (
     Step1,
     StepItem,
 )
+from usethis._integrations.pyproject.requires_python import _ALL_MAJOR_VERSIONS
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 
@@ -42,6 +43,13 @@ _CACHE_LOOKUP = {
     "uv": CachePath("~/.cache/uv"),
     "pre-commit": CachePath("~/.cache/pre-commit"),
 }
+
+# TODO shold consider adding all "Run tests with Python 3.x" steps to run in
+# parallel
+_STEP_ORDER = [
+    "Run pre-commit hooks",
+    *[f"Run tests with Python 3.{maj}" for maj in _ALL_MAJOR_VERSIONS],
+]
 
 _PLACEHOLDER_NAME = "Placeholder - add your own steps!"
 
@@ -129,8 +137,6 @@ def _add_step_in_default_via_doc(  # noqa: PLR0912
 
             step.script.root[idx] = script_item
 
-    # TODO currently adding to the end, but need to test desired functionality
-    # of adding after a specific step
     if doc.model.pipelines is None:
         doc.model.pipelines = Pipelines()
 

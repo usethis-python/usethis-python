@@ -228,7 +228,27 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
                 else:
                     assert_never(par)
             elif isinstance(item, StageItem):
-                raise NotImplementedError
+                if item.stage is None:
+                    continue
+
+                step1s = item.stage.steps
+
+                new_step1s = []
+                for step1 in step1s:
+                    if step1.step is None:
+                        continue
+
+                    if _steps_are_equivalent(_step1tostep(step1), step):
+                        continue
+
+                    new_step1s.append(step1)
+
+                if len(new_step1s) == 0:
+                    continue
+
+                new_stage = item.stage.model_copy()
+                new_stage.steps = new_step1s
+                new_items.append(StageItem(stage=new_stage))
             elif isinstance(item, StepItem):
                 if item.step is None:
                     continue

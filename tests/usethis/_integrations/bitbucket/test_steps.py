@@ -584,6 +584,113 @@ pipelines:
 """
         )
 
+    def test_stage_item(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Greeting
+            script:
+              - echo 'Hello, world!'
+      - stage:
+            name: Farewell
+            steps:
+              - step:
+                    name: Farewell
+                    script:
+                      - echo 'Goodbye!'  
+              - step:
+                    name: Well wishes
+                    script:
+                      - echo 'Be well!'  
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Farewell",
+                    script=Script(["echo 'Goodbye!'"]),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Greeting
+            script:
+              - echo 'Hello, world!'
+      - stage:
+            name: Farewell
+            steps:
+              - step:
+                    name: Well wishes
+                    script:
+                      - echo 'Be well!'
+"""
+        )
+
+    def test_remove_stage_item_leaving_placeholder(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - stage:
+            name: Farewell
+            steps:
+              - step:
+                    name: Farewell
+                    script:
+                      - echo 'Goodbye!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Farewell",
+                    script=Script(["echo 'Goodbye!'"]),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+        )
+
 
 class TestGetStepsInPipelineItem:
     class TestStepItem:

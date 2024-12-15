@@ -122,10 +122,6 @@ def add_placeholder_hook() -> None:
 
 
 def _get_placeholder_repo_config() -> LocalRepo:
-    # TODO there might be a pre-commit repo already existent which purely does
-    # placeholder activity - we should consider it.
-    # On the other hand, local prevents downloads & versions which complicates
-    # things, so maybe this is good.
     return LocalRepo(
         repo="local",
         hooks=[
@@ -170,9 +166,6 @@ def remove_hook(name: str) -> None:
 
         dump = precommit_fancy_dump(doc.model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
-
-    # TODO but what if there's no hooks left at all? We should add the placeholder hook
-    # back in.
 
 
 def get_hook_names() -> list[str]:

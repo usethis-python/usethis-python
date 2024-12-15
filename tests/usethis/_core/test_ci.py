@@ -109,9 +109,6 @@ pipelines:
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
                 assert "pytest" not in contents
 
-            # TODO add test for when pytest is added first
-            # should add this test in the pytest test file, not this one.
-
     class TestRemove:
         class TestPyproject:
             def test_removed(self, tmp_path: Path):

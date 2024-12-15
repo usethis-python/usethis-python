@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
+from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import (
     use_deptry,
     use_pre_commit,
@@ -400,6 +401,17 @@ class TestPytest:
                     "pytest-cov",
                     "coverage",
                 } <= set(get_deps_from_group("test"))
+
+        def test_bitbucket_integration(self, uv_init_dir: Path, vary_network_conn):
+            with change_cwd(uv_init_dir):
+                # Arrange
+                use_ci_bitbucket()
+
+                # Act
+                use_pytest()
+
+            # Assert
+            assert "pytest" in (uv_init_dir / "bitbucket-pipelines.yml").read_text()
 
     class TestRemove:
         class TestRuffIntegration:

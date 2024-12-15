@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel, Field, RootModel
 
 from usethis._integrations.pydantic.dump import fancy_model_dump
 
@@ -32,6 +32,20 @@ class TestFancyModelDump:
 
         # Assert
         assert output == [1, 3]
+
+    def test_alias(self):
+        # Arrange
+        class MyModel(BaseModel):
+            x: int
+            y: float = Field(alias="z")
+
+        mm = MyModel(x=1, z=2.0)
+
+        # Act
+        output = fancy_model_dump(mm)
+
+        # Assert
+        assert output == {"x": 1, "z": 2.0}
 
     class TestRootModel:
         def test_singleton_list(self):

@@ -160,8 +160,8 @@ def _add_step_in_default_via_doc(  # noqa: PLR0912
     # for granted that things always need review.
 
 
-# TODO refactor the below to reduce complexity and enable the ruff rule
-def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912
+# TODO refactor the below to reduce complexity and enable the ruff rules
+def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
     """Remove a step from the default pipeline in the Bitbucket Pipelines configuration.
 
     If the default pipeline does not exist, or the step is not found, nothing happens.
@@ -192,38 +192,41 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912
                 if item.parallel is None:
                     continue
 
-                par_item = item.parallel.root
+                par = item.parallel.root
 
-                if isinstance(par_item, ParallelSteps):
-                    step_items = par_item.root
-
-                    new_step_items: list[StepItem] = []
-                    for step_item in step_items:
-                        if step_item.step is None:
-                            continue
-
-                        if _steps_are_equivalent(step_item.step, step):
-                            continue
-
-                        new_step_items.append(step_item)
-
-                    if len(new_step_items) == 0:
-                        continue
-                    elif len(new_step_items) == 1 and len(step_items) != 1:
-                        # Collapse the parallel step down to a single step, but only if
-                        # it wasn't already a single step, in which case we'll leave it
-                        # alone.
-                        new_items.append(new_step_items[0])
-                    else:
-                        new_items.append(
-                            ParallelItem(
-                                parallel=Parallel(ParallelSteps(new_step_items))
-                            )
-                        )
-                elif isinstance(par_item, ParallelExpanded):
-                    raise NotImplementedError
+                if isinstance(par, ParallelSteps):
+                    step_items = par.root
+                elif isinstance(par, ParallelExpanded):
+                    step_items = par.steps.root
                 else:
-                    assert_never(par_item)
+                    assert_never(par)
+
+                new_step_items: list[StepItem] = []
+                for step_item in step_items:
+                    if step_item.step is None:
+                        continue
+
+                    if _steps_are_equivalent(step_item.step, step):
+                        continue
+
+                    new_step_items.append(step_item)
+
+                if len(new_step_items) == 0:
+                    continue
+                elif len(new_step_items) == 1 and len(step_items) != 1:
+                    # Collapse the parallel step down to a single step, but only if
+                    # it wasn't already a single step, in which case we'll leave it
+                    # alone.
+                    new_items.append(new_step_items[0])
+                elif isinstance(par, ParallelSteps):
+                    new_items.append(
+                        ParallelItem(parallel=Parallel(ParallelSteps(new_step_items)))
+                    )
+                elif isinstance(par, ParallelExpanded):
+                    par.steps = ParallelSteps(new_step_items)
+                    new_items.append(ParallelItem(parallel=Parallel(par)))
+                else:
+                    assert_never(par)
             elif isinstance(item, StageItem):
                 raise NotImplementedError
             elif isinstance(item, StepItem):

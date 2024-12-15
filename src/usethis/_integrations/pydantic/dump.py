@@ -118,6 +118,10 @@ def _(
     return fancy_model_dump(model.root, reference=reference, order_by_cls=order_by_cls)
 
 
+# TODO Need to think about how we deal with removing
+# non-schema logic inadvertedly. It might be we just forget about it.
+
+
 @fancy_model_dump.register(BaseModel)
 def _(
     model: BaseModel,
@@ -156,7 +160,14 @@ def _(
         if (value == default_value) and not ref_has_default:
             continue
 
-        d[key] = fancy_model_dump(value, reference=value_ref, order_by_cls=order_by_cls)
+        # Find the key for display - there might be an alias
+        display_key = model.model_fields[key].alias
+        if display_key is None:
+            display_key = key
+
+        d[display_key] = fancy_model_dump(
+            value, reference=value_ref, order_by_cls=order_by_cls
+        )
 
     try:
         order = order_by_cls[type(model)]

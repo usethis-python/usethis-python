@@ -491,6 +491,99 @@ pipelines:
 """
         )
 
+    def test_remove_expanded_parallel_step(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            failfast: true
+            steps:
+              - step:
+                    name: Greeting
+                    script:
+                        - echo 'Hello, world!'
+              - step:
+                    name: Farewell
+                    script:
+                      - echo 'Goodbye!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Greeting",
+                    script=Script(["echo 'Hello, world!'"]),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Farewell
+            script:
+              - echo 'Goodbye!'
+"""
+        )
+
+    def test_remove_leaving_single_expanded_parallel_step(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            fail-fast: true
+            steps:
+              - step:
+                    name: Greeting
+                    script:
+                      - echo 'Hello, world!'
+      - step:
+            name: Farewell
+            script:
+              - echo 'Goodbye!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_step_from_default(
+                Step(
+                    name="Farewell",
+                    script=Script(["echo 'Goodbye!'"]),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            fail-fast: true
+            steps:
+              - step:
+                    name: Greeting
+                    script:
+                      - echo 'Hello, world!'
+"""
+        )
+
 
 class TestGetStepsInPipelineItem:
     class TestStepItem:

@@ -129,6 +129,7 @@ layers = [
   "_console",
   "_config",
   "errors | _subprocess",
+  "_pipeweld",
 ]
 containers = [ "usethis" ]
 exhaustive = true

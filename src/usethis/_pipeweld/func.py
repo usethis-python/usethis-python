@@ -6,18 +6,20 @@ from usethis._pipeweld.result import WeldResult
 
 
 def add(pipeline: Series, *, step: str) -> WeldResult:
-    if len(pipeline) > 0:
-        # We're adding to a pipeline that already has elements so the way we add in
-        # parallel will vary.
-        component = pipeline.root[0]
-        if isinstance(component, Parallel):
-            solution = series(parallel(step) | component)
-        elif isinstance(component, Series | str):
-            solution = series(parallel(step, component))
-        else:
-            assert_never(component)
+    if len(pipeline) == 0:
+        return WeldResult(
+            instructions=[InsertParallel(before=None, step=step)],
+            solution=series(step),
+            traceback=[series(), series(step)],
+        )
+
+    solution = pipeline.model_copy(deep=True)
+    if isinstance(pipeline[0], Parallel):
+        solution[0] = parallel(step) | pipeline[0]
+    elif isinstance(pipeline[0], Series | str):
+        solution[0] = parallel(step, pipeline[0])
     else:
-        solution = series(step)
+        assert_never(pipeline[0])
 
     return WeldResult(
         instructions=[InsertParallel(before=None, step=step)],

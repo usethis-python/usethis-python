@@ -70,3 +70,25 @@ class TestAdd:
             # Instruction 1.
             series(parallel("A", "B")),
         ]
+
+    def test_two_element_start(self):
+        # Arrange
+        step = "C"
+        pipeline = series("A", "B")
+
+        # Act
+        result = add(pipeline, step=step)
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.instructions == [
+            # N.B. None means Place at the start of the pipeline
+            InsertParallel(before=None, step="C")
+        ]
+        assert result.solution == series(parallel("A", "C"), "B")
+        assert result.traceback == [
+            # Initial config
+            series("A", "B"),
+            # Instruction 1.
+            series(parallel("A", "C"), "B"),
+        ]

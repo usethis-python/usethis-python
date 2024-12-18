@@ -8,6 +8,9 @@ class Series(RootModel[list["Series | Parallel | str"]]):
     def __getitem__(self, item):
         return self.root[item]
 
+    def __setitem__(self, item, value):
+        self.root[item] = value
+
     def __len__(self):
         return len(self.root)
 

@@ -48,3 +48,25 @@ class TestAdd:
             # Instruction 1.
             series(parallel("A", "B")),
         ]
+
+    def test_parallel_singleton_start(self):
+        # Arrange
+        step = "B"
+        pipeline = series(parallel("A"))
+
+        # Act
+        result = add(pipeline, step=step)
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.instructions == [
+            # N.B. None means Place at the start of the pipeline
+            InsertParallel(before=None, step="B")
+        ]
+        assert result.solution == series(parallel("A", "B"))
+        assert result.traceback == [
+            # Initial config
+            series(parallel("A")),
+            # Instruction 1.
+            series(parallel("A", "B")),
+        ]

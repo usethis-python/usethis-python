@@ -240,13 +240,14 @@ compatible_config_groups = []
 mandatory_config_group = []
 max_depth = None
 ...
-instructions = [InsertSeries(None, "A")] # N.B. Place at the start of the pipeline
+instructions = [InsertParallel(None, "A")] # N.B. Place at the start of the pipeline
 solution = ["A"]
 traceback = [
     # Initial config
     [],
     # Instruction 1.
-    ["A"],
+    [{"A"}],
+    ["A"], # Simplify
 ]
 ```
 

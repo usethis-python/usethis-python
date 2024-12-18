@@ -6,5 +6,5 @@ class BaseOperation(BaseModel):
     step: str
 
 
-class InsertSeries(BaseOperation):
+class InsertParallel(BaseOperation):
     pass

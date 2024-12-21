@@ -92,3 +92,23 @@ class TestAdd:
             # Instruction 1.
             series(parallel("A", "C"), "B"),
         ]
+
+    def test_prerequisite(self):
+        # Arrange
+        step = "C"
+        pipeline = series("A", "B")
+        prerequisites = {"A"}
+
+        # Act
+        result = add(pipeline, step=step, prerequisites=prerequisites)
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.instructions == [InsertParallel(before="A", step="C")]
+        assert result.solution == series("A", parallel("B", "C"))
+        assert result.traceback == [
+            # Initial config
+            series("A", "B"),
+            # Instruction 1.
+            series("A", parallel("B", "C")),
+        ]

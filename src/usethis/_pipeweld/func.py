@@ -18,9 +18,8 @@ def add(
 ) -> WeldResult:
     if len(pipeline) == 0:
         return WeldResult(
-            instructions=[InsertParallel(before=None, step=step)],
+            instructions=[InsertParallel(after=None, step=step)],
             solution=series(step),
-            traceback=[series(), series(step)],
         )
 
     instructions = []
@@ -42,18 +41,38 @@ def add(
         # Find our final pre-requisite partition
         if partition.prerequisite_component is not None:
             # Insert the new step after the pre-requisite
-            instructions.append(
-                InsertParallel(before=partition.top_ranked_endpoint, step=step)
-            )
-            partitions[idx + 1] = _parallel_merge_partitions(
-                partitions[idx + 1], step_partition
-            )
+            if (
+                idx < len(partitions)
+                and partition.postrequisite_component is not None
+                and partition.nondependent_component is not None
+            ):
+                partitions[idx] = _parallel_merge_partitions(partition, step_partition)
+                after = get_endpoint(partition.nondependent_component)
+                instructions.append(InsertParallel(after=after, step=step))
+            elif (
+                idx < len(partitions) and partition.postrequisite_component is not None
+            ):
+                partitions[idx] = _parallel_merge_partitions(partition, step_partition)
+                after = get_endpoint(partition.prerequisite_component)
+                instructions.append(InsertParallel(after=after, step=step))
+            elif idx + 1 < len(partitions):
+                partitions[idx + 1] = _parallel_merge_partitions(
+                    partitions[idx + 1], step_partition
+                )
+                after = get_endpoint(partition.top_ranked_endpoint)
+                instructions.append(InsertParallel(after=after, step=step))
+            else:
+                partitions.append(step_partition)
+                instructions.append(
+                    InsertParallel(after=partition.top_ranked_endpoint, step=step)
+                )
 
             inserted = True
             break
+
     if not inserted:
         # No pre-requisites found, so insert at the start
-        instructions.append(InsertParallel(before=None, step=step))
+        instructions.append(InsertParallel(after=None, step=step))
         partitions[0] = _parallel_merge_partitions(partitions[0], step_partition)
 
     solution_partition = reduce(_op_series_merge_partitions, partitions)
@@ -61,12 +80,8 @@ def add(
     solution = _flatten_partition(solution_partition)
 
     return WeldResult(
-        instructions=instructions,
         solution=solution,
-        traceback=[
-            pipeline,
-            solution,
-        ],
+        instructions=instructions,
     )
 
 
@@ -267,17 +282,57 @@ def _parallel_merge_partitions(*partitions: Partition) -> Partition:
         if p.postrequisite_component is not None
     ]
     # Element-wise parallelism
+
+    if prerequisite_components:
+        prerequisite_component = _union(*prerequisite_components)
+        if len(prerequisite_component) == 1:
+            # Collapse singleton
+            (prerequisite_component,) = prerequisite_component.root
+    else:
+        prerequisite_component = None
+
+    if nondependent_components:
+        nondependent_component = _union(*nondependent_components)
+        if len(nondependent_component) == 1:
+            # Collapse singleton
+            (nondependent_component,) = nondependent_component.root
+    else:
+        nondependent_component = None
+
+    if postrequisite_components:
+        postrequisite_component = _union(*postrequisite_components)
+        if len(postrequisite_component) == 1:
+            # Collapse singleton
+            (postrequisite_component,) = postrequisite_component.root
+    else:
+        postrequisite_component = None
+
+    top_ranked_prerequisite_endpoints = [
+        p.top_ranked_endpoint
+        for p in partitions
+        if p.prerequisite_component is not None
+    ]
+    top_ranked_nondependent_endpoints = [
+        p.top_ranked_endpoint
+        for p in partitions
+        if p.nondependent_component is not None
+    ]
+    top_ranked_postrequisite_endpoints = [
+        p.top_ranked_endpoint
+        for p in partitions
+        if p.postrequisite_component is not None
+    ]
+    top_ranked_endpoint = min(
+        top_ranked_postrequisite_endpoints
+        or top_ranked_nondependent_endpoints
+        or top_ranked_prerequisite_endpoints
+    )
+
     return Partition(
-        prerequisite_component=_union(*prerequisite_components)
-        if prerequisite_components
-        else None,
-        nondependent_component=_union(*nondependent_components)
-        if nondependent_components
-        else None,
-        postrequisite_component=_union(*postrequisite_components)
-        if postrequisite_components
-        else None,
-        top_ranked_endpoint=min(p.top_ranked_endpoint for p in partitions),
+        prerequisite_component=prerequisite_component,
+        nondependent_component=nondependent_component,
+        postrequisite_component=postrequisite_component,
+        top_ranked_endpoint=top_ranked_endpoint,
     )
 
 

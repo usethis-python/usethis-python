@@ -14,10 +14,10 @@ class Series(RootModel[list["Series | Parallel | str"]]):
     def __len__(self):
         return len(self.root)
 
-    def __print__(self):
+    def __repr__(self):
         return str(self.root)
 
-    def __repr__(self):
+    def __print__(self):
         return str(self.root)
 
 
@@ -25,14 +25,17 @@ class Parallel(RootModel[frozenset["Series | Parallel | str"]]):
     def __hash__(self):
         return hash(frozenset(self))
 
-    def __print__(self):
-        return str(set(self.root))
+    def __or__(self, other: "Parallel") -> "Parallel":
+        return Parallel(self.root | other.root)
+
+    def __len__(self):
+        return len(self.root)
 
     def __repr__(self):
         return str(set(self.root))
 
-    def __or__(self, other: "Parallel") -> "Parallel":
-        return Parallel(self.root | other.root)
+    def __print__(self):
+        return str(set(self.root))
 
 
 def parallel(*args: Series | Parallel | str) -> Parallel:

@@ -5,7 +5,7 @@ from typing import assert_never
 from pydantic import BaseModel
 
 from usethis._pipeweld.containers import Parallel, Series, parallel, series
-from usethis._pipeweld.ops import BaseOperation, InsertAfter, InsertParallel
+from usethis._pipeweld.ops import BaseOperation, InsertParallel, InsertSuccessor
 from usethis._pipeweld.result import WeldResult
 
 
@@ -78,7 +78,7 @@ def _insert_step(
                     # i.e. there is no successor; append
                     component.root.append(step)
                     return [
-                        InsertAfter(after=subcomponent, step=step)
+                        InsertSuccessor(after=subcomponent, step=step)
                     ]  # TODO make sure this is tested
         elif isinstance(subcomponent, Series):
             added = _insert_step(
@@ -129,7 +129,7 @@ def _insert_before_postrequisites(
         if _has_any_steps(successor_component, steps=postrequisites):
             # Insert before this step
             component.root.insert(idx + 1, step)
-            return [InsertAfter(after=predecessor, step=step)]
+            return [InsertSuccessor(after=predecessor, step=step)]
         else:
             union = _union(successor_component, step)
             if union is None:

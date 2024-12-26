@@ -10,5 +10,5 @@ class InsertParallel(BaseOperation):
     pass
 
 
-class InsertAfter(BaseOperation):
+class InsertSuccessor(BaseOperation):
     pass

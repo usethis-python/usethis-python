@@ -1,6 +1,6 @@
 from usethis._pipeweld.containers import parallel, series
 from usethis._pipeweld.func import Partition, _parallel_merge_partitions, add
-from usethis._pipeweld.ops import InsertParallel
+from usethis._pipeweld.ops import InsertParallel, InsertSuccessor
 from usethis._pipeweld.result import WeldResult
 
 
@@ -101,7 +101,11 @@ class TestAdd:
         # Assert
         assert isinstance(result, WeldResult)
         assert result.solution == series("A", "C", "B")
-        # TODO - assert about the instructions.
+        assert result.instructions == [
+            InsertParallel(after=None, step="A"),
+            InsertParallel(after="B", step="B"),
+            InsertSuccessor(after="A", step="C"),
+        ]
 
     def test_mixed_dependency_parallelism_of_series(self):
         # Arrange

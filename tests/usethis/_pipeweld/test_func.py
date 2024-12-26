@@ -246,6 +246,25 @@ class TestAdd:
                 "A", "H", "B", "C", parallel(series("D", "E", "F"), "G")
             )
 
+    def test_multi_level_heirarchy(self):
+        # Arrange
+        step = "E"
+        pipeline = series("A", parallel("B", series("C", "D")))
+        prerequisites = {"C"}
+
+        # Act
+        result = add(
+            pipeline,
+            step=step,
+            prerequisites=prerequisites,
+        )
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.solution == series(
+            "A", parallel("B", series("C", parallel("D", "E")))
+        )
+
 
 class TestParallelMergePartitions:
     def test_basic(self):

@@ -286,7 +286,7 @@ class TestAdd:
 
         # Assert
         assert isinstance(result, WeldResult)
-        assert result.solution == series("A", parallel("E", "B"), "C", "D")
+        assert result.solution == series("A", parallel("C", "E", "B"), "D")
 
 
 class TestParallelMergePartitions:

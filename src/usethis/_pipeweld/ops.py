@@ -8,3 +8,7 @@ class BaseOperation(BaseModel):
 
 class InsertParallel(BaseOperation):
     pass
+
+
+class InsertAfter(BaseOperation):
+    pass

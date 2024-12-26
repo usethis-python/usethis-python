@@ -5,7 +5,7 @@ from typing import assert_never
 from pydantic import BaseModel
 
 from usethis._pipeweld.containers import Parallel, Series, parallel, series
-from usethis._pipeweld.ops import InsertParallel
+from usethis._pipeweld.ops import BaseOperation, InsertAfter, InsertParallel
 from usethis._pipeweld.result import WeldResult
 
 
@@ -17,72 +17,147 @@ def add(
     postrequisites: set[str] = set(),
 ) -> WeldResult:
     if len(pipeline) == 0:
+        # Empty pipeline
         return WeldResult(
             instructions=[InsertParallel(after=None, step=step)],
             solution=series(step),
         )
 
-    instructions = []
+    rearranged_pipeline = _flatten_partition(
+        partition_component(
+            pipeline,
+            predecessor=None,
+            prerequisites=prerequisites,
+            postrequisites=postrequisites,
+        )
+    )
 
-    partitions = _get_series_partitions(
-        pipeline,
-        predecessor=None,
+    instructions = _insert_step(
+        rearranged_pipeline,
+        step=step,
         prerequisites=prerequisites,
         postrequisites=postrequisites,
     )
 
-    step_partition = Partition(
-        nondependent_component=step,
-        top_ranked_endpoint=step,
-    )
-
-    inserted = False
-    for idx, partition in reversed(list(enumerate(partitions))):
-        # Find our final pre-requisite partition
-        if partition.prerequisite_component is not None:
-            # Insert the new step after the pre-requisite
-            if (
-                idx < len(partitions)
-                and partition.postrequisite_component is not None
-                and partition.nondependent_component is not None
-            ):
-                partitions[idx] = _parallel_merge_partitions(partition, step_partition)
-                after = get_endpoint(partition.nondependent_component)
-                instructions.append(InsertParallel(after=after, step=step))
-            elif (
-                idx < len(partitions) and partition.postrequisite_component is not None
-            ):
-                partitions[idx] = _parallel_merge_partitions(partition, step_partition)
-                after = get_endpoint(partition.prerequisite_component)
-                instructions.append(InsertParallel(after=after, step=step))
-            elif idx + 1 < len(partitions):
-                partitions[idx + 1] = _parallel_merge_partitions(
-                    partitions[idx + 1], step_partition
-                )
-                after = get_endpoint(partition.top_ranked_endpoint)
-                instructions.append(InsertParallel(after=after, step=step))
-            else:
-                partitions.append(step_partition)
-                instructions.append(
-                    InsertParallel(after=partition.top_ranked_endpoint, step=step)
-                )
-
-            inserted = True
-            break
-
-    if not inserted:
-        # No pre-requisites found, so insert at the start
-        instructions.append(InsertParallel(after=None, step=step))
-        partitions[0] = _parallel_merge_partitions(partitions[0], step_partition)
-
-    solution_partition = reduce(_op_series_merge_partitions, partitions)
-
-    solution = _flatten_partition(solution_partition)
-
+    if not instructions:
+        # Didn't find a pre-requisite so just add the step in parallel to everything
+        instructions = _insert_before_postrequisites(
+            rearranged_pipeline,
+            idx=-1,
+            predecessor=None,
+            step=step,
+            postrequisites=postrequisites,
+        )
     return WeldResult(
-        solution=solution,
+        solution=rearranged_pipeline,
         instructions=instructions,
     )
+
+
+def _insert_step(
+    component: Series, *, step: str, prerequisites: set[str], postrequisites: set[str]
+) -> list[BaseOperation]:
+    # Iterate through the pipeline and insert the step
+    # Work backwards until we find a pre-requisite (which is the final one), and then
+    # insert after it - in parallel to its successor (or append if no successor). If we
+    # don't find any pre-requsite then we insert in parallel to everything.
+    for idx, subcomponent in reversed(list(enumerate(component.root))):
+        if isinstance(subcomponent, str):
+            if subcomponent in prerequisites:
+                # Insert after this step
+                if idx + 1 < len(component.root):
+                    # i.e. there is a successor
+                    return _insert_before_postrequisites(
+                        component,
+                        idx=idx,
+                        predecessor=subcomponent,
+                        step=step,
+                        postrequisites=postrequisites,
+                    )
+                else:
+                    # i.e. there is no successor; append
+                    component.root.append(step)
+                    return [
+                        InsertAfter(after=subcomponent, step=step)
+                    ]  # TODO make sure this is tested
+        elif isinstance(subcomponent, Series):
+            added = _insert_step(
+                subcomponent,
+                step=step,
+                prerequisites=prerequisites,
+                postrequisites=postrequisites,
+            )
+            if added:
+                return added
+        elif isinstance(subcomponent, Parallel):
+            added = _insert_step(
+                Series(list(subcomponent.root)),
+                step=step,
+                prerequisites=prerequisites,
+                postrequisites=postrequisites,
+            )
+            if added:
+                return added
+
+    return []
+
+
+def _insert_before_postrequisites(
+    component: Series,
+    *,
+    idx: int,
+    predecessor: str | None,
+    step: str,
+    postrequisites: set[str],
+) -> list[BaseOperation]:
+    successor_component = component.root[idx + 1]
+
+    if isinstance(successor_component, Parallel) and len(successor_component.root) == 1:
+        container = Series(list(successor_component.root))
+        instructions = _insert_before_postrequisites(
+            container,
+            idx=-1,
+            predecessor=predecessor,
+            step=step,
+            postrequisites=postrequisites,
+        )
+        if len(container) == 1 and container[0] == _union(successor_component, step):
+            component[idx + 1] = _union(successor_component, step)
+
+        return instructions
+    elif isinstance(successor_component, Parallel | str):
+        if _has_any_steps(successor_component, steps=postrequisites):
+            # Insert before this step
+            component.root.insert(idx + 1, step)
+            return [InsertAfter(after=predecessor, step=step)]
+        else:
+            union = _union(successor_component, step)
+            if union is None:
+                raise AssertionError
+            component.root[idx + 1] = union
+            return [InsertParallel(after=predecessor, step=step)]
+    elif isinstance(successor_component, Series):
+        return _insert_before_postrequisites(
+            successor_component,
+            idx=-1,
+            predecessor=predecessor,
+            step=step,
+            postrequisites=postrequisites,
+        )
+    else:
+        assert_never(successor_component)
+
+
+def _has_any_steps(component: Series | Parallel | str, *, steps: set[str]) -> bool:
+    if isinstance(component, str):
+        return component in steps
+    elif isinstance(component, Parallel | Series):
+        for subcomponent in component.root:
+            if _has_any_steps(subcomponent, steps=steps):
+                return True
+        return False
+    else:
+        assert_never(component)
 
 
 class Partition(BaseModel):
@@ -93,11 +168,15 @@ class Partition(BaseModel):
 
 
 def _flatten_partition(partition: Partition) -> Series:
-    return _concat(
+    component = _concat(
         partition.prerequisite_component,
         partition.nondependent_component,
         partition.postrequisite_component,
     )
+    if component is None:
+        msg = "Flatten failed: no components"
+        raise ValueError(msg)
+    return component
 
 
 @singledispatch
@@ -188,7 +267,22 @@ def _(
         prerequisites=prerequisites,
         postrequisites=postrequisites,
     )
-    return reduce(_op_series_merge_partitions, partitions)
+    if len(partitions) > 1:
+        return reduce(_op_series_merge_partitions, partitions)
+    else:
+        partition = partitions[0]
+        return Partition(
+            prerequisite_component=series(partition.prerequisite_component)
+            if partition.prerequisite_component is not None
+            else None,
+            nondependent_component=series(partition.nondependent_component)
+            if partition.nondependent_component is not None
+            else None,
+            postrequisite_component=series(partition.postrequisite_component)
+            if partition.postrequisite_component is not None
+            else None,
+            top_ranked_endpoint=partition.top_ranked_endpoint,
+        )
 
 
 def _get_series_partitions(
@@ -248,19 +342,37 @@ def _op_series_merge_partitions(
             top_ranked_endpoint=next_partition.top_ranked_endpoint,
         )
     else:
-        return Partition(
-            prerequisite_component=_concat(
-                partition.prerequisite_component,
-                next_partition.prerequisite_component,
-            ),
-            nondependent_component=_concat(
-                partition.nondependent_component,
-                next_partition.nondependent_component,
-            ),
-            postrequisite_component=_concat(
+        # Element-wise concatenation
+        if partition.prerequisite_component is None:
+            prerequisite_component = next_partition.prerequisite_component
+        elif next_partition.prerequisite_component is None:
+            prerequisite_component = partition.prerequisite_component
+        else:
+            prerequisite_component = _concat(
+                partition.prerequisite_component, next_partition.prerequisite_component
+            )
+        if partition.nondependent_component is None:
+            nondependent_component = next_partition.nondependent_component
+        elif next_partition.nondependent_component is None:
+            nondependent_component = partition.nondependent_component
+        else:
+            nondependent_component = _concat(
+                partition.nondependent_component, next_partition.nondependent_component
+            )
+        if partition.postrequisite_component is None:
+            postrequisite_component = next_partition.postrequisite_component
+        elif next_partition.postrequisite_component is None:
+            postrequisite_component = partition.postrequisite_component
+        else:
+            postrequisite_component = _concat(
                 partition.postrequisite_component,
                 next_partition.postrequisite_component,
-            ),
+            )
+
+        return Partition(
+            prerequisite_component=prerequisite_component,
+            nondependent_component=nondependent_component,
+            postrequisite_component=postrequisite_component,
             top_ranked_endpoint=next_partition.top_ranked_endpoint,
         )
 
@@ -281,27 +393,25 @@ def _parallel_merge_partitions(*partitions: Partition) -> Partition:
         for p in partitions
         if p.postrequisite_component is not None
     ]
-    # Element-wise parallelism
 
+    # Element-wise parallelism
     if prerequisite_components:
         prerequisite_component = _union(*prerequisite_components)
-        if len(prerequisite_component) == 1:
+        if prerequisite_component is not None and len(prerequisite_component) == 1:
             # Collapse singleton
             (prerequisite_component,) = prerequisite_component.root
     else:
         prerequisite_component = None
-
     if nondependent_components:
         nondependent_component = _union(*nondependent_components)
-        if len(nondependent_component) == 1:
+        if nondependent_component is not None and len(nondependent_component) == 1:
             # Collapse singleton
             (nondependent_component,) = nondependent_component.root
     else:
         nondependent_component = None
-
     if postrequisite_components:
         postrequisite_component = _union(*postrequisite_components)
-        if len(postrequisite_component) == 1:
+        if postrequisite_component is not None and len(postrequisite_component) == 1:
             # Collapse singleton
             (postrequisite_component,) = postrequisite_component.root
     else:
@@ -336,7 +446,7 @@ def _parallel_merge_partitions(*partitions: Partition) -> Partition:
     )
 
 
-def _concat(*components: str | Series | Parallel | None) -> Series:
+def _concat(*components: str | Series | Parallel | None) -> Series | None:
     s = []
     for component in components:
         if isinstance(component, Series):
@@ -347,10 +457,14 @@ def _concat(*components: str | Series | Parallel | None) -> Series:
             pass
         else:
             assert_never(component)
+
+    if not s:
+        return None
+
     return series(*s)
 
 
-def _union(*components: str | Series | Parallel | None) -> Parallel:
+def _union(*components: str | Series | Parallel | None) -> Parallel | None:
     p = []
     for component in components:
         if isinstance(component, Parallel):
@@ -361,6 +475,10 @@ def _union(*components: str | Series | Parallel | None) -> Parallel:
             pass
         else:
             assert_never(component)
+
+    if not p:
+        return None
+
     return parallel(*p)
 
 

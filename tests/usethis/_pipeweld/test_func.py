@@ -103,6 +103,149 @@ class TestAdd:
         assert result.solution == series("A", "C", "B")
         # TODO - assert about the instructions.
 
+    def test_mixed_dependency_parallelism_of_series(self):
+        # Arrange
+        step = "F"
+        pipeline = series("A", parallel(series("B", "D"), series("C", "E")))
+        prerequisites = {"B"}
+        postrequisites = {"E"}
+
+        # Act
+        result = add(
+            pipeline,
+            step=step,
+            prerequisites=prerequisites,
+            postrequisites=postrequisites,
+        )
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.solution == series("A", "B", parallel("D", "C", "F"), "E")
+
+    def test_singleton_series(self):
+        # Arrange
+        step = "B"
+        pipeline = series("A")
+
+        # Act
+        result = add(pipeline, step=step)
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.solution == series(parallel("A", "B"))
+
+    def test_nested_series(self):
+        # Arrange
+        step = "B"
+        pipeline = series(series("A"))
+
+        # Act
+        result = add(pipeline, step=step)
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.solution == series(series(parallel("A", "B")))
+
+    class TestDoubleNesting:
+        """A series of related tests building up to a complex case"""
+
+        def test_no_nesting(self):
+            # Arrange
+            step = "H"
+            pipeline = series("D", "E", "F")
+            prerequisites = {"A"}
+            postrequisites = {"B", "E"}
+
+            # Act
+            result = add(
+                pipeline,
+                step=step,
+                prerequisites=prerequisites,
+                postrequisites=postrequisites,
+            )
+
+            # Assert
+            assert isinstance(result, WeldResult)
+            assert result.solution == series(parallel("D", "H"), "E", "F")
+
+        def test_single_nesting(self):
+            # Arrange
+            step = "H"
+            pipeline = series(series("D", "E", "F"))
+
+            # Act
+            result = add(
+                pipeline,
+                step=step,
+            )
+
+            # Assert
+            assert isinstance(result, WeldResult)
+            assert result.solution == series(series(parallel("D", "H"), "E", "F"))
+
+        def test_single_nesting_with_dep(self):
+            # Arrange
+            step = "H"
+            pipeline = series(series("D", "E", "F"))
+            prerequisites = {"A"}
+            postrequisites = {"B", "E"}
+
+            # Act
+            result = add(
+                pipeline,
+                step=step,
+                prerequisites=prerequisites,
+                postrequisites=postrequisites,
+            )
+
+            # Assert
+            assert isinstance(result, WeldResult)
+            assert result.solution == series(parallel("D", "H"), series("E", "F"))
+
+        def test_multiple_nesting(self):
+            # Arrange
+            step = "H"
+            pipeline = series(series(parallel(series("D", "E", "F"))))
+            prerequisites = {"A"}
+            postrequisites = {"B", "E"}
+
+            # Act
+            result = add(
+                pipeline,
+                step=step,
+                prerequisites=prerequisites,
+                postrequisites=postrequisites,
+            )
+
+            # Assert
+            assert isinstance(result, WeldResult)
+            assert result.solution == series(
+                series(parallel(series(parallel("D", "H"), "E", "F")))
+            )
+
+        def test_full_complex_case(self):
+            # Arrange
+            step = "H"
+            pipeline = series(
+                parallel("A", "B"), "C", series(parallel(series("D", "E", "F"), "G"))
+            )
+            prerequisites = {"A"}
+            postrequisites = {"B", "E"}
+
+            # Act
+            result = add(
+                pipeline,
+                step=step,
+                prerequisites=prerequisites,
+                postrequisites=postrequisites,
+            )
+
+            # Assert
+            assert isinstance(result, WeldResult)
+            assert result.solution == series(
+                "A", "H", "B", "C", parallel(series("D", "E", "F"), "G")
+            )
+
 
 class TestParallelMergePartitions:
     def test_basic(self):

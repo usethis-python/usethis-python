@@ -265,6 +265,25 @@ class TestAdd:
             "A", parallel("B", series("C", parallel("D", "E")))
         )
 
+    def test_mixed_dependency_parallelism_of_series_pure_parallel(self):
+        # Arrange
+        step = "E"
+        pipeline = series(parallel(series("A", "B"), series("C", "D")))
+        prerequisites = {"A"}
+        postrequisites = {"D"}
+
+        # Act
+        result = add(
+            pipeline,
+            step=step,
+            prerequisites=prerequisites,
+            postrequisites=postrequisites,
+        )
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.solution == series("A", parallel("E", "B"), "C", "D")
+
 
 class TestParallelMergePartitions:
     def test_basic(self):

@@ -125,6 +125,13 @@ class TestAdd:
         # Assert
         assert isinstance(result, WeldResult)
         assert result.solution == series("A", "B", parallel("D", "C", "F"), "E")
+        assert result.instructions == [
+            InsertSuccessor(after="A", step="B"),
+            InsertParallel(after="B", step="C"),
+            InsertSuccessor(after="B", step="D"),
+            InsertSuccessor(after="C", step="E"),
+            InsertParallel(after="B", step="F"),
+        ]
 
     def test_singleton_series(self):
         # Arrange

@@ -491,17 +491,45 @@ def _get_instructions_insert_successor(
         return [InsertSuccessor(after=after, step=component)], component
     elif isinstance(component, Series):
         instructions = []
-        for subcomponent in component.root:
+        for idx, subcomponent in enumerate(component.root):
             new_instructions, endpoint = _get_instructions_insert_successor(
                 subcomponent, after=after
             )
             instructions.extend(new_instructions)
             after = endpoint
         return instructions, after
-    else:
-        # TODO implement this
-        instructions = []
-        return instructions, after
+    elif isinstance(component, Parallel):
+        instructions: list[BaseOperation] = []
+        endpoints = []
+        min_idx = None
+        min_endpoint = None
+        for idx, subcomponent in enumerate(component.root):
+            new_instructions, endpoint = _get_instructions_insert_successor(
+                subcomponent,
+                after=after,
+            )
+            if endpoint is not None and (
+                min_endpoint is None or endpoint < min_endpoint
+            ):
+                min_idx = idx
+                min_endpoint = endpoint
+
+            endpoints.append(endpoint)
+            instructions.extend(new_instructions)
+
+        if min_idx is None:
+            msg = "The endpoint of all parallel subcomponents were None unexpectedly"
+            raise AssertionError(msg)
+
+        instructions[min_idx] = InsertParallel(
+            after=instructions[min_idx].after, step=instructions[min_idx].step
+        )
+
+        sorted_idxs = sorted(range(len(endpoints)), key=lambda k: endpoints[k])
+
+        instructions = [instructions[idx] for idx in sorted_idxs]
+
+        return instructions, min(endpoints)
 
 
 def _concat(*components: str | Series | Parallel | None) -> Series | None:

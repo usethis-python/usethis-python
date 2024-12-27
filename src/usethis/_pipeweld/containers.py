@@ -1,11 +1,11 @@
 from typing import Any
 
-from pydantic import RootModel
+from pydantic import BaseModel, RootModel
 
 _HASH_SALT = "e6fdde87-adc6-42f6-8e66-4aabe4ba05f2"
 
 
-class Series(RootModel[list["Series | Parallel | str"]]):
+class Series(RootModel[list["Series | Parallel | DepGroup | str"]]):
     def __hash__(self):
         return hash((_HASH_SALT, tuple(self.root)))
 
@@ -30,7 +30,7 @@ class Series(RootModel[list["Series | Parallel | str"]]):
         return str(self.root)
 
 
-class Parallel(RootModel[frozenset["Series | Parallel | str"]]):
+class Parallel(RootModel[frozenset["Series | Parallel | DepGroup | str"]]):
     def __hash__(self):
         return hash((_HASH_SALT, frozenset(self)))
 
@@ -55,9 +55,18 @@ class Parallel(RootModel[frozenset["Series | Parallel | str"]]):
         return str(set(self.root))
 
 
-def parallel(*args: Series | Parallel | str) -> Parallel:
+class DepGroup(BaseModel):
+    series: Series
+    category: str
+
+
+def parallel(*args: Series | Parallel | DepGroup | str) -> Parallel:
     return Parallel(frozenset(args))
 
 
-def series(*args: Series | Parallel | str) -> Series:
+def series(*args: Series | Parallel | DepGroup | str) -> Series:
     return Series(list(args))
+
+
+def depgroup(*args: Series | Parallel | str, category: str) -> DepGroup:
+    return DepGroup(series=series(*args), category=category)

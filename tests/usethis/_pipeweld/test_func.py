@@ -1,4 +1,4 @@
-from usethis._pipeweld.containers import parallel, series
+from usethis._pipeweld.containers import depgroup, parallel, series
 from usethis._pipeweld.func import Partition, _parallel_merge_partitions, add
 from usethis._pipeweld.ops import InsertParallel, InsertSuccessor
 from usethis._pipeweld.result import WeldResult
@@ -295,6 +295,32 @@ class TestAdd:
         # Assert
         assert isinstance(result, WeldResult)
         assert result.solution == series("A", parallel("C", "E", "B"), "D")
+
+    def test_dependency_groups(self):
+        # Arrange
+        step = "E"
+        pipeline = series("A", depgroup("B", "C", category="x"))
+        prerequisites = {"B"}
+        compatible_config_groups = {"x"}
+
+        # Act
+        result = add(
+            pipeline,
+            step=step,
+            prerequisites=prerequisites,
+            compatible_config_groups=compatible_config_groups,
+        )
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.solution == series(
+            "A", depgroup("B", category="x"), parallel(depgroup("C", category="x"), "E")
+        )
+
+    # TODO need to decide how to determine when a step should be removed via
+    # instructions. We don't need to remove steps which are being added for the first
+    # time. It could just be assumed that names are unique and then it's a "remove if
+    # present" approach.
 
 
 class TestParallelMergePartitions:

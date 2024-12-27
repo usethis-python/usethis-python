@@ -453,7 +453,7 @@ pipeline = ["A", Group(["B", "C"], "x")]
 prerequisites = ["B"]
 postrequisites = []
 compatible_config_groups = ["x"]
-mandatory_config_group = []
+mandatory_config_groups = []
 max_depth = None
 ...
 instructions = [
@@ -462,7 +462,7 @@ instructions = [
     InsertParallel("B", "E") # Insert in parallel since B's successor C is not a
                              # post-requisite.
 ]
-solution = ["A", Group(["B"], "x"), {Group(["C"], "x"). "E"}]
+solution = ["A", Group(["B"], "x"), {Group(["C"], "x"), "E"}]
 traceback = [
     # Initial config
     ["A", Group(["B", "C"], "x")],

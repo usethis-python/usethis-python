@@ -4,7 +4,7 @@ from typing import assert_never
 
 from pydantic import BaseModel
 
-from usethis._pipeweld.containers import Parallel, Series, parallel, series
+from usethis._pipeweld.containers import DepGroup, Parallel, Series, parallel, series
 from usethis._pipeweld.ops import BaseOperation, InsertParallel, InsertSuccessor
 from usethis._pipeweld.result import WeldResult
 
@@ -15,6 +15,7 @@ def add(
     step: str,
     prerequisites: set[str] = set(),
     postrequisites: set[str] = set(),
+    compatible_config_groups: set[str] = set(),
 ) -> WeldResult:
     if len(pipeline) == 0:
         # Empty pipeline
@@ -147,11 +148,21 @@ def _insert_before_postrequisites(
             step=step,
             postrequisites=postrequisites,
         )
+    elif isinstance(successor_component, DepGroup):
+        return _insert_before_postrequisites(
+            successor_component.series,
+            idx=-1,
+            predecessor=predecessor,
+            step=step,
+            postrequisites=postrequisites,
+        )
     else:
         assert_never(successor_component)
 
 
-def _has_any_steps(component: Series | Parallel | str, *, steps: set[str]) -> bool:
+def _has_any_steps(
+    component: Series | Parallel | DepGroup | str, *, steps: set[str]
+) -> bool:
     if isinstance(component, str):
         return component in steps
     elif isinstance(component, Parallel | Series):
@@ -159,14 +170,16 @@ def _has_any_steps(component: Series | Parallel | str, *, steps: set[str]) -> bo
             if _has_any_steps(subcomponent, steps=steps):
                 return True
         return False
+    elif isinstance(component, DepGroup):
+        return _has_any_steps(component.series, steps=steps)
     else:
         assert_never(component)
 
 
 class Partition(BaseModel):
-    prerequisite_component: str | Series | Parallel | None = None
-    nondependent_component: str | Series | Parallel | None = None
-    postrequisite_component: str | Series | Parallel | None = None
+    prerequisite_component: str | Series | DepGroup | Parallel | None = None
+    nondependent_component: str | Series | DepGroup | Parallel | None = None
+    postrequisite_component: str | Series | DepGroup | Parallel | None = None
     top_ranked_endpoint: str
 
 
@@ -485,7 +498,7 @@ def _parallel_merge_partitions(  # noqa: PLR0912
 
 
 def _get_instructions_insert_successor(
-    component: Series | Parallel | str, *, after: str | None
+    component: Series | Parallel | DepGroup | str, *, after: str | None
 ) -> tuple[list[BaseOperation], str | None]:
     if isinstance(component, str):
         return [InsertSuccessor(after=after, step=component)], component
@@ -530,9 +543,16 @@ def _get_instructions_insert_successor(
         instructions = [instructions[idx] for idx in sorted_idxs]
 
         return instructions, min(endpoints)
+    elif isinstance(component, DepGroup):
+        return _get_instructions_insert_successor(
+            component.series,
+            after=after,
+        )
+    else:
+        assert_never(component)
 
 
-def _concat(*components: str | Series | Parallel | None) -> Series | None:
+def _concat(*components: str | Series | DepGroup | Parallel | None) -> Series | None:
     s = []
     for component in components:
         if isinstance(component, Series):
@@ -541,6 +561,8 @@ def _concat(*components: str | Series | Parallel | None) -> Series | None:
             s.append(component)
         elif component is None:
             pass
+        elif isinstance(component, DepGroup):
+            s.extend(component)
         else:
             assert_never(component)
 
@@ -550,7 +572,7 @@ def _concat(*components: str | Series | Parallel | None) -> Series | None:
     return series(*s)
 
 
-def _union(*components: str | Series | Parallel | None) -> Parallel | None:
+def _union(*components: str | Series | DepGroup | Parallel | None) -> Parallel | None:
     p = []
     for component in components:
         if isinstance(component, Parallel):
@@ -559,6 +581,8 @@ def _union(*components: str | Series | Parallel | None) -> Parallel | None:
             p.append(component)
         elif component is None:
             pass
+        elif isinstance(component, DepGroup):
+            p.append(component)
         else:
             assert_never(component)
 
@@ -568,7 +592,7 @@ def _union(*components: str | Series | Parallel | None) -> Parallel | None:
     return parallel(*p)
 
 
-def get_endpoint(component: str | Series | Parallel) -> str:
+def get_endpoint(component: str | Series | DepGroup | Parallel) -> str:
     if isinstance(component, str):
         return component
     elif isinstance(component, Series):
@@ -591,5 +615,7 @@ def get_endpoint(component: str | Series | Parallel) -> str:
             msg = """No endpoints are defined for a Parallel block with no steps"""
             raise ValueError(msg)
         return sorted(endpoints)[0]
+    elif isinstance(component, DepGroup):
+        return get_endpoint(component.series)
     else:
         assert_never(component)

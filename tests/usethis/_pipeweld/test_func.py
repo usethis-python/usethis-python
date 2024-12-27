@@ -275,6 +275,7 @@ class TestAdd:
         assert result.solution == series(
             "A", parallel("B", series("C", parallel("D", "E")))
         )
+        assert result.instructions == [InsertParallel(after="C", step="E")]
 
     def test_mixed_dependency_parallelism_of_series_pure_parallel(self):
         # Arrange

@@ -102,8 +102,8 @@ class TestAdd:
         assert isinstance(result, WeldResult)
         assert result.solution == series("A", "C", "B")
         assert result.instructions == [
-            InsertParallel(after=None, step="A"),
-            InsertParallel(after="B", step="B"),
+            InsertSuccessor(after=None, step="A"),
+            InsertSuccessor(after="A", step="B"),
             InsertSuccessor(after="A", step="C"),
         ]
 
@@ -306,7 +306,9 @@ class TestParallelMergePartitions:
         )
 
         # Act
-        result = _parallel_merge_partitions(partition1, partition2)
+        result, instructions = _parallel_merge_partitions(
+            partition1, partition2, predecessor=None
+        )
 
         # Assert
         assert result == Partition(
@@ -315,3 +317,8 @@ class TestParallelMergePartitions:
             postrequisite_component="B",
             top_ranked_endpoint="B",
         )
+        assert instructions == [
+            InsertSuccessor(after=None, step="A"),
+            InsertSuccessor(after="A", step="C"),
+            InsertSuccessor(after="C", step="B"),
+        ]

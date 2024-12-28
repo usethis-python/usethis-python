@@ -57,7 +57,10 @@ class Parallel(RootModel[frozenset["Series | Parallel | DepGroup | str"]]):
 
 class DepGroup(BaseModel):
     series: Series
-    category: str
+    config_group: str
+
+    def __hash__(self):
+        return hash((_HASH_SALT, hash(self.series), self.config_group))
 
 
 def parallel(*args: Series | Parallel | DepGroup | str) -> Parallel:
@@ -68,5 +71,5 @@ def series(*args: Series | Parallel | DepGroup | str) -> Series:
     return Series(list(args))
 
 
-def depgroup(*args: Series | Parallel | str, category: str) -> DepGroup:
-    return DepGroup(series=series(*args), category=category)
+def depgroup(*args: Series | Parallel | DepGroup | str, category: str) -> DepGroup:
+    return DepGroup(series=series(*args), config_group=category)

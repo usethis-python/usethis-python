@@ -298,6 +298,27 @@ class TestAdd:
 
     def test_dependency_groups(self):
         # Arrange
+        step = "A"
+        pipeline = series(depgroup("B", "C", category="x"))
+        prerequisites = {"B"}
+        postrequisites = {"C"}
+
+        # Act
+        result = add(
+            pipeline,
+            step=step,
+            prerequisites=prerequisites,
+            postrequisites=postrequisites,
+        )
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.solution == series(
+            depgroup("B", category="x"), "A", depgroup("C", category="x")
+        )
+
+    def test_dependency_groups_in_series(self):
+        # Arrange
         step = "E"
         pipeline = series("A", depgroup("B", "C", category="x"))
         prerequisites = {"B"}
@@ -314,7 +335,7 @@ class TestAdd:
         # Assert
         assert isinstance(result, WeldResult)
         assert result.solution == series(
-            "A", depgroup("B", category="x"), parallel(depgroup("C", category="x"), "E")
+            "A", depgroup("B", "E", category="x"), depgroup("C", category="x")
         )
 
     # TODO need to decide how to determine when a step should be removed via

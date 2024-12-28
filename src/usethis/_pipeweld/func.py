@@ -4,9 +4,18 @@ from typing import assert_never
 
 from pydantic import BaseModel
 
-from usethis._pipeweld.containers import DepGroup, Parallel, Series, parallel, series
+from usethis._pipeweld.containers import (
+    DepGroup,
+    Parallel,
+    Series,
+    depgroup,
+    parallel,
+    series,
+)
 from usethis._pipeweld.ops import BaseOperation, InsertParallel, InsertSuccessor
 from usethis._pipeweld.result import WeldResult
+
+# TODO conside a class structure with global state e.g. for instructions, compatible_config_groups, etc. to reduce complexity
 
 
 def add(
@@ -38,6 +47,7 @@ def add(
         step=step,
         prerequisites=prerequisites,
         postrequisites=postrequisites,
+        compatible_config_groups=compatible_config_groups,
     )
 
     if not new_instructions:
@@ -48,6 +58,7 @@ def add(
             predecessor=None,
             step=step,
             postrequisites=postrequisites,
+            compatible_config_groups=compatible_config_groups,
         )
 
     instructions += new_instructions
@@ -58,8 +69,14 @@ def add(
     )
 
 
-def _insert_step(
-    component: Series, *, step: str, prerequisites: set[str], postrequisites: set[str]
+# TODO reduce complexity and enable ruff rules
+def _insert_step(  # noqa: PLR0911, PLR0912
+    component: Series,
+    *,
+    step: str,
+    prerequisites: set[str],
+    postrequisites: set[str],
+    compatible_config_groups: set[str],
 ) -> list[BaseOperation]:
     # Iterate through the pipeline and insert the step
     # Work backwards until we find a pre-requisite (which is the final one), and then
@@ -77,6 +94,7 @@ def _insert_step(
                         predecessor=subcomponent,
                         step=step,
                         postrequisites=postrequisites,
+                        compatible_config_groups=compatible_config_groups,
                     )
                 else:
                     # i.e. there is no successor; append
@@ -90,6 +108,7 @@ def _insert_step(
                 step=step,
                 prerequisites=prerequisites,
                 postrequisites=postrequisites,
+                compatible_config_groups=compatible_config_groups,
             )
             if added:
                 return added
@@ -99,20 +118,47 @@ def _insert_step(
                 step=step,
                 prerequisites=prerequisites,
                 postrequisites=postrequisites,
+                compatible_config_groups=compatible_config_groups,
             )
             if added:
                 return added
+        elif isinstance(subcomponent, DepGroup):
+            if subcomponent.config_group in compatible_config_groups:
+                added = _insert_step(
+                    subcomponent.series,
+                    step=step,
+                    prerequisites=prerequisites,
+                    postrequisites=postrequisites,
+                    compatible_config_groups=compatible_config_groups,
+                )
+                if added:
+                    return added
+            elif _has_any_steps(subcomponent, steps=prerequisites):
+                added = _insert_before_postrequisites(
+                    component,
+                    idx=idx,
+                    predecessor=get_endpoint(subcomponent),
+                    step=step,
+                    postrequisites=postrequisites,
+                    compatible_config_groups=compatible_config_groups,
+                )
+                if added:
+                    return added
+        else:
+            assert_never(subcomponent)
 
     return []
 
 
-def _insert_before_postrequisites(
+# TODO reduce complexity and enable ruff rule
+def _insert_before_postrequisites(  # noqa: PLR0913
     component: Series,
     *,
     idx: int,
     predecessor: str | None,
     step: str,
     postrequisites: set[str],
+    compatible_config_groups: set[str],
 ) -> list[BaseOperation]:
     successor_component = component.root[idx + 1]
 
@@ -124,12 +170,13 @@ def _insert_before_postrequisites(
             predecessor=predecessor,
             step=step,
             postrequisites=postrequisites,
+            compatible_config_groups=compatible_config_groups,
         )
         if len(container) == 1 and container[0] == _union(successor_component, step):
             component[idx + 1] = _union(successor_component, step)
 
         return instructions
-    elif isinstance(successor_component, Parallel | str):
+    elif isinstance(successor_component, Parallel | DepGroup | str):
         if _has_any_steps(successor_component, steps=postrequisites):
             # Insert before this step
             component.root.insert(idx + 1, step)
@@ -147,14 +194,7 @@ def _insert_before_postrequisites(
             predecessor=predecessor,
             step=step,
             postrequisites=postrequisites,
-        )
-    elif isinstance(successor_component, DepGroup):
-        return _insert_before_postrequisites(
-            successor_component.series,
-            idx=-1,
-            predecessor=predecessor,
-            step=step,
-            postrequisites=postrequisites,
+            compatible_config_groups=compatible_config_groups,
         )
     else:
         assert_never(successor_component)
@@ -201,7 +241,8 @@ def partition_component(
     predecessor: str | None,
     prerequisites: set[str],
     postrequisites: set[str],
-) -> tuple[Partition, list[BaseOperation]]: ...
+) -> tuple[Partition, list[BaseOperation]]:
+    raise NotImplementedError
 
 
 @partition_component.register(str)
@@ -291,6 +332,7 @@ def _(
     else:
         partition = partitions[0]
         return Partition(
+            # TODO should this be series(DepGroup(...)) or do we need a special case?
             prerequisite_component=series(partition.prerequisite_component)
             if partition.prerequisite_component is not None
             else None,
@@ -302,6 +344,41 @@ def _(
             else None,
             top_ranked_endpoint=partition.top_ranked_endpoint,
         ), instructions
+
+
+@partition_component.register(DepGroup)
+def _(
+    component: DepGroup,
+    *,
+    predecessor: str | None,
+    prerequisites: set[str],
+    postrequisites: set[str],
+) -> tuple[Partition, list[BaseOperation]]:
+    partition, instructions = partition_component(
+        component.series,
+        predecessor=predecessor,
+        prerequisites=prerequisites,
+        postrequisites=postrequisites,
+    )
+    partition = Partition(
+        prerequisite_component=depgroup(
+            partition.prerequisite_component, category=component.config_group
+        )
+        if partition.prerequisite_component is not None
+        else None,
+        nondependent_component=depgroup(
+            partition.nondependent_component, category=component.config_group
+        )
+        if partition.nondependent_component is not None
+        else None,
+        postrequisite_component=depgroup(
+            partition.postrequisite_component, category=component.config_group
+        )
+        if partition.postrequisite_component is not None
+        else None,
+        top_ranked_endpoint=partition.top_ranked_endpoint,
+    )
+    return partition, instructions
 
 
 def _get_series_partitions(
@@ -562,7 +639,7 @@ def _concat(*components: str | Series | DepGroup | Parallel | None) -> Series | 
         elif component is None:
             pass
         elif isinstance(component, DepGroup):
-            s.extend(component)
+            s.append(component)
         else:
             assert_never(component)
 

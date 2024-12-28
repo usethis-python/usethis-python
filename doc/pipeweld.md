@@ -163,7 +163,7 @@ steps, then we can apply the same algorithm above to the SP-subgraph associated 
 configuration group. If the solution satisfies the dependencies (post-requisites and
 pre-requisites), then we are done. Otherwise, there is a contradiction, so we need to
 choose whether it is better to satisfy dependencies or configuration groups. Pipeweld
-would choose to satisfy dependencies in this case an will backtrack to resolve without
+would choose to satisfy dependencies in this case and will backtrack to resolve without
 the condition that the configuration group is mandatory (basically, it will ignore this
 constraint).
 
@@ -469,7 +469,7 @@ traceback = [
     # Instruction 1.
     ["A", Group(["B"], "x"), Group(["C"], "x")],
     # Instruction 2.
-    ["A", Group(["B"], "x"), {Group(["C"], "x"). "E"}],
+    ["A", Group(["B"], "x"), {Group(["C"], "x"), "E"}],
 ]
 ```
 

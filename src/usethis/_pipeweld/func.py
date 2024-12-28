@@ -70,7 +70,7 @@ def add(
 
 
 # TODO reduce complexity and enable ruff rules
-def _insert_step(  # noqa: PLR0911, PLR0912
+def _insert_step(  # noqa: PLR0912
     component: Series,
     *,
     step: str,
@@ -123,17 +123,7 @@ def _insert_step(  # noqa: PLR0911, PLR0912
             if added:
                 return added
         elif isinstance(subcomponent, DepGroup):
-            if subcomponent.config_group in compatible_config_groups:
-                added = _insert_step(
-                    subcomponent.series,
-                    step=step,
-                    prerequisites=prerequisites,
-                    postrequisites=postrequisites,
-                    compatible_config_groups=compatible_config_groups,
-                )
-                if added:
-                    return added
-            elif _has_any_steps(subcomponent, steps=prerequisites):
+            if _has_any_steps(subcomponent, steps=prerequisites):
                 added = _insert_before_postrequisites(
                     component,
                     idx=idx,
@@ -176,7 +166,9 @@ def _insert_before_postrequisites(  # noqa: PLR0913
             component[idx + 1] = _union(successor_component, step)
 
         return instructions
-    elif isinstance(successor_component, Parallel | DepGroup | str):
+    elif isinstance(
+        successor_component, Parallel | DepGroup | str
+    ):  # TODO test the DepGroup case
         if _has_any_steps(successor_component, steps=postrequisites):
             # Insert before this step
             component.root.insert(idx + 1, step)

@@ -335,7 +335,7 @@ class TestAdd:
         # Assert
         assert isinstance(result, WeldResult)
         assert result.solution == series(
-            "A", depgroup("B", "E", category="x"), depgroup("C", category="x")
+            "A", depgroup("B", category="x"), parallel(depgroup("C", category="x"), "E")
         )
 
     # TODO need to decide how to determine when a step should be removed via

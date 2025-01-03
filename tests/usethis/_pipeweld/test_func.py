@@ -296,7 +296,7 @@ class TestAdd:
         assert isinstance(result, WeldResult)
         assert result.solution == series("A", parallel("C", "E", "B"), "D")
 
-    def test_dependency_groups(self):
+    def test_config_groups(self):
         # Arrange
         step = "A"
         pipeline = series(depgroup("B", "C", category="x"))
@@ -317,7 +317,7 @@ class TestAdd:
             depgroup("B", category="x"), "A", depgroup("C", category="x")
         )
 
-    def test_dependency_groups_in_series(self):
+    def test_config_groups_in_series(self):
         # Arrange
         step = "E"
         pipeline = series("A", depgroup("B", "C", category="x"))

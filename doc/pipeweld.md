@@ -124,7 +124,7 @@ node (similar to the case of where the identified node is a post-requisite).
 
 ### Handling restrictions on composition depth
 
-If parallelism is only possible between nodes and not fully subgraphs then the solution
+If parallelism is only possible between nodes and not full subgraphs then the solution
 is the same as above, except the new step should only be inserted in parallel with the
 identified node if the identified node is not already in a parallel subgraph. Otherwise,
 the new step should be inserted in series before the identified node.
@@ -390,7 +390,7 @@ traceback = [
 ]
 ```
 
-### Example 8 (Mixed depency parallelism of series)
+### Example 8 (Mixed depedency parallelism of series)
 
 ```Python
 step = "E"
@@ -459,9 +459,10 @@ max_depth = None
 instructions = [
     SplitGroup("B"),         # We are about to InsertParallel to B but configuration
                              # groups must be in series, so split first.
-    InsertParallel("B", "E") # Insert in parallel since B's successor C is not a
-                             # post-requisite.
+    InsertParallel("B", "E")
 ]
+# Note the motivation here: we want to maximize parallelism so we are willing to break
+# up the dependency group!
 solution = ["A", Group(["B"], "x"), {Group(["C"], "x"), "E"}]
 traceback = [
     # Initial config

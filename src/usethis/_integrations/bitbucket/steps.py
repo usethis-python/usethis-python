@@ -6,38 +6,38 @@ from ruamel.yaml.anchor import Anchor
 from ruamel.yaml.comments import CommentedSeq
 from ruamel.yaml.scalarstring import LiteralScalarString
 
+import usethis._pipeweld.func
 from usethis._console import box_print, tick_print
 from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.cache import add_caches
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
+from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
 from usethis._integrations.bitbucket.io import (
     BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
+)
+from usethis._integrations.bitbucket.pipeweld import (
+    apply_pipeweld_instruction,
+    get_pipeweld_pipeline_from_default,
+    get_pipeweld_step,
 )
 from usethis._integrations.bitbucket.schema import (
     CachePath,
     Definitions,
     ImportPipeline,
-    Items,
     Parallel,
     ParallelExpanded,
     ParallelItem,
     ParallelSteps,
     Pipeline,
-    Pipelines,
     Script,
     StageItem,
     Step,
-    Step1,
     StepItem,
 )
+from usethis._integrations.bitbucket.schema_utils import step1tostep
 from usethis._integrations.pyproject.requires_python import _ALL_MAJOR_VERSIONS
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
-
-
-class UnexpectedImportPipelineError(Exception):
-    """Raised when an import pipeline is unexpectedly encountered."""
-
 
 _CACHE_LOOKUP = {
     "uv": CachePath("~/.cache/uv"),
@@ -94,7 +94,7 @@ def add_step_in_default(step: Step) -> None:
 
 
 # TODO reduce the complexity of the below function and enable the ruff rule
-def _add_step_in_default_via_doc(  # noqa: PLR0912
+def _add_step_in_default_via_doc(
     step: Step, *, doc: BitbucketPipelinesYAMLDocument
 ) -> None:
     if step.name == _PLACEHOLDER_NAME:
@@ -111,6 +111,8 @@ def _add_step_in_default_via_doc(  # noqa: PLR0912
 
     step = step.model_copy(deep=True)
 
+    # If the step uses an anchorized script definition, add it to the definitions
+    # section
     for idx, script_item in enumerate(step.script.root):
         if isinstance(script_item, ScriptItemAnchor):
             defined_script_item_names = get_defined_script_item_names_via_doc(doc=doc)
@@ -130,34 +132,27 @@ def _add_step_in_default_via_doc(  # noqa: PLR0912
                         config.definitions.script_items = script_items
 
                     # N.B. when we add the definition, we are relying on this being
-                    # an append (and below return statement)
+                    # an append
                     # TODO revisit this - maybe we should add alphabetically.
                     script_items.append(script_item)
                     script_items = CommentedSeq(script_items)
 
             step.script.root[idx] = script_item
 
-    if doc.model.pipelines is None:
-        doc.model.pipelines = Pipelines()
+    # N.B. if the step is unrecognized, it will go at the end.
+    prerequisites: set[str] = set()
+    for step_name in _STEP_ORDER:
+        if step_name == step.name:
+            break
+        prerequisites.add(step_name)
 
-    pipelines = doc.model.pipelines
-    default = pipelines.default
-
-    if default is None:
-        items = []
-    elif isinstance(default.root, ImportPipeline):
-        msg = (
-            f"Cannot add step '{step.name}' to default pipeline in "
-            f"'bitbucket-pipelines.yml' because it is an import pipeline."
-        )
-        raise UnexpectedImportPipelineError(msg)
-    else:
-        items = default.root.root
-
-    items.append(StepItem(step=step))
-
-    if default is None:
-        pipelines.default = Pipeline(Items(items))
+    weld_result = usethis._pipeweld.func.add(
+        pipeline=get_pipeweld_pipeline_from_default(doc.model),
+        step=get_pipeweld_step(step),
+        prerequisites=prerequisites,
+    )
+    for instruction in weld_result.instructions:
+        apply_pipeweld_instruction(instruction=instruction, new_step=step, doc=doc)
 
     # TODO need to tell the user to review the pipeline, it might be wrong. Test
     # associated message. This is mostly the case if there are unrecognized
@@ -244,7 +239,7 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
                     if step1.step is None:
                         continue
 
-                    if _steps_are_equivalent(_step1tostep(step1), step):
+                    if _steps_are_equivalent(step1tostep(step1), step):
                         continue
 
                     new_step1s.append(step1)
@@ -382,31 +377,9 @@ def _(item: StageItem) -> list[Step]:
 
     step1s = item.stage.steps
 
-    steps = [_step1tostep(step1) for step1 in step1s if step1.step is not None]
+    steps = [step1tostep(step1) for step1 in step1s if step1.step is not None]
 
     return steps
-
-
-def _step1tostep(step1: Step1) -> Step:
-    """Promoting Step1 to a standard Step.
-
-    This is necessary because there is some unusual inconsistency in the JSON Schema
-    for Bitbucket pipelines that means conditions are not constrained by type when
-    occurring in a stage, whereas at time of writing they are constrained in all other
-    circumstances. This gives rise to strange naming in the output of
-    datamodel-code-generator (which is repeated here for consistency).
-    """
-    if step1.step is None:
-        msg = (
-            "When parsing Bitbucket pipelines, expected each step of a stage to itself "
-            "have a non-null step, but got null."
-        )
-        raise ValueError(msg)
-
-    step2 = step1.step
-
-    step = Step(**step2.model_dump())
-    return step
 
 
 def add_placeholder_step_in_default() -> None:

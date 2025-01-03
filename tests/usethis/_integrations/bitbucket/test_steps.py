@@ -55,17 +55,18 @@ pipelines:
         with open(tmp_path / "bitbucket-pipelines.yml") as f:
             contents = f.read()
         assert (
+            # N.B. the step is added as soon as possible, i.e. at the top of the pipeline
             contents
             == """\
 image: atlassian/default-image:3
 pipelines:
     default:
       - step:
-            script: ["echo 'Hello, world!'"]
-      - step:
             name: Greeting
             script:
               - echo 'Why, hello!'
+      - step:
+            script: ["echo 'Hello, world!'"]
 """
         )
 
@@ -204,14 +205,14 @@ pipelines:
             add_step_in_default(
                 Step(
                     name="Run tests with Python 3.12",
-                    script=Script(["echo 'Running'"]),
+                    script=Script(["echo 'Running #2'"]),
                 ),
             )
             # This one should come first
             add_step_in_default(
                 Step(
                     name="Run pre-commit hooks",
-                    script=Script(["echo 'Running'"]),
+                    script=Script(["echo 'Running #1'"]),
                 ),
             )
 
@@ -227,11 +228,11 @@ pipelines:
       - step:
             name: Run pre-commit hooks
             script:
-              - echo 'Running'
+              - "echo 'Running #1'"
       - step:
             name: Run tests with Python 3.12
             script:
-              - echo 'Running'
+              - "echo 'Running #2'"
 """
         )
         # TODO so in terms of passing this test, I suspect the key is to revisit the

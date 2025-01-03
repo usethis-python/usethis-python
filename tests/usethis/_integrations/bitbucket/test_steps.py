@@ -235,13 +235,48 @@ pipelines:
               - "echo 'Running #2'"
 """
         )
-        # TODO so in terms of passing this test, I suspect the key is to revisit the
-        # "precedent" logic used for hooks. The complication is that we have a notion
-        # stages and parallel steps. Actually stages are conceptually very similar to
-        # repos in pre-commit in the sense that it's a set of grouped steps in an
-        # order. Ideally we can create some abstraction.
-        # Parallel steps should probably be handled natively by the abstraction.
-        # This deserves some kind of design, most likely.
+
+    def test_placeholder_removed(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            # Arrange
+            add_placeholder_step_in_default()
+
+            # Act
+            add_step_in_default(
+                Step(
+                    name="Greeting",
+                    script=Script(["echo 'Hello, world!'"]),
+                )
+            )
+
+            # Assert
+            with open(tmp_path / "bitbucket-pipelines.yml") as f:
+                contents = f.read()
+
+            assert (
+                contents
+                == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+    script_items:   
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Greeting
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+            )
 
 
 class TestRemoveStepFromDefault:

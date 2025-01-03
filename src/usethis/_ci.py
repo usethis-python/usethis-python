@@ -28,10 +28,6 @@ def remove_bitbucket_precommit_step() -> None:
 
 def _get_bitbucket_precommit_step() -> Step:
     return Step(
-        # TODO need some way of syncing this name with the name in steps.py
-        # Perhaps this function should live in there really? See what we do for the
-        # equivalent when adding pre-commit hooks. Where do the hook implementations
-        # live? Perhaps they merit their own module.
         name="Run pre-commit hooks",
         caches=["uv", "pre-commit"],
         script=Script(

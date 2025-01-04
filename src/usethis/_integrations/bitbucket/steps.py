@@ -92,6 +92,13 @@ def add_step_in_default(step: Step) -> None:
             preserve_comments=True,
         )
 
+    # Remove the placeholder step if it already exists
+    # TODO test messages to user about this.
+    placeholder = _get_placeholder_step()
+    if not _steps_are_equivalent(placeholder, step):
+        # Only remove the placeholder if it hasn't already been added.
+        remove_step_from_default(placeholder)
+
 
 # TODO reduce the complexity of the below function and enable the ruff rule
 def _add_step_in_default_via_doc(

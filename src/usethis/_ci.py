@@ -17,7 +17,6 @@ def is_bitbucket_used() -> bool:
 
 
 def add_bitbucket_precommit_step() -> None:
-    tick_print("Adding pre-commit step to 'bitbucket-pipelines.yml'.")
     add_step_in_default(_get_bitbucket_precommit_step())
 
 
@@ -40,7 +39,6 @@ def _get_bitbucket_precommit_step() -> Step:
 
 
 def add_bitbucket_pytest_steps() -> None:
-    tick_print("Adding pytest matrix steps to 'bitbucket-pipelines.yml'.")
     matrix = get_supported_major_python_versions()
     for version in matrix:
         add_step_in_default(

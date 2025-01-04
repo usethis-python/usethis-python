@@ -1,35 +1,34 @@
 from usethis._ci import (
     add_bitbucket_precommit_step,
     add_bitbucket_pytest_steps,
-    is_bitbucket_used,
 )
+from usethis._config import usethis_config
 from usethis._console import box_print, info_print
 from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
-)
-from usethis._integrations.bitbucket.steps import (
-    add_placeholder_step_in_default,
 )
 from usethis._tool import PreCommitTool, PytestTool
 
 
 def use_ci_bitbucket(*, remove: bool = False) -> None:
     if not remove:
-        if is_bitbucket_used():
-            return
+        use_precommit = PreCommitTool().is_used()
+        use_pytest = PytestTool().is_used()
+        use_any_tool = use_precommit or use_pytest
 
-        add_bitbucket_pipeline_config()
+        with usethis_config.set(quiet=use_any_tool):
+            # If we're planning to remove the placeholder, there's no need to
+            # notify the user about this so set to quiet.
+            add_bitbucket_pipeline_config()
 
-        steps = []
-        if PreCommitTool().is_used():
+        if use_precommit:
             add_bitbucket_precommit_step()
 
-        if PytestTool().is_used():
+        if use_pytest:
             add_bitbucket_pytest_steps()
 
-        if not steps:
-            add_placeholder_step_in_default()
+        else:
             info_print(
                 "Consider `usethis tool pytest` to start testing your code, including in the pipeline."
             )

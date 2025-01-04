@@ -260,7 +260,7 @@ image: atlassian/default-image:3
 definitions:
     caches:
         uv: ~/.cache/uv
-    script_items:   
+    script_items:
       - &install-uv |
         curl -LsSf https://astral.sh/uv/install.sh | sh
         source $HOME/.local/bin/env
@@ -270,10 +270,7 @@ pipelines:
     default:
       - step:
             name: Greeting
-            caches:
-              - uv
             script:
-              - *install-uv
               - echo 'Hello, world!'
 """
             )

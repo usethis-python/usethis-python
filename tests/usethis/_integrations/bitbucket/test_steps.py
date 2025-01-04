@@ -275,6 +275,11 @@ pipelines:
 """
             )
 
+    # TODO test we have a "Writing 'bitbucket-pipelines.yml'." message
+
+    def test_add_cache_to_existing_file(self, tmp_path: Path):
+        raise NotImplementedError
+
 
 class TestRemoveStepFromDefault:
     def test_remove_remove_one_step(self, tmp_path: Path):

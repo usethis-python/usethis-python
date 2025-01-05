@@ -1,9 +1,11 @@
+from pathlib import Path
+
 from usethis._ci import (
     add_bitbucket_precommit_step,
     add_bitbucket_pytest_steps,
 )
 from usethis._config import usethis_config
-from usethis._console import box_print, info_print
+from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
@@ -17,9 +19,13 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
         use_pytest = PytestTool().is_used()
         use_any_tool = use_precommit or use_pytest
 
-        with usethis_config.set(quiet=use_any_tool):
-            # If we're planning to remove the placeholder, there's no need to
-            # notify the user about this so set to quiet.
+        # If we're planning to remove the placeholder, there's no need to
+        # notify the user about this so set to quiet.
+        quiet = use_any_tool
+
+        if quiet and not (Path.cwd() / "bitbucket-pipelines.yml").exists():
+            tick_print("Writing 'bitbucket-pipelines.yml'.")
+        with usethis_config.set(quiet=quiet):
             add_bitbucket_pipeline_config()
 
         if use_precommit:

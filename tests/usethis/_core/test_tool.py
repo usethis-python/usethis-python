@@ -321,7 +321,7 @@ image: atlassian/default-image:3
 pipelines:
     default:
         - step:
-            name: Run pre-commit hooks
+            name: Run pre-commit
             script:
                 - echo "Hello, World!"
 """

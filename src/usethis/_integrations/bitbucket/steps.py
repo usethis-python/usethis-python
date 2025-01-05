@@ -44,11 +44,11 @@ _CACHE_LOOKUP = {
     "pre-commit": CachePath("~/.cache/pre-commit"),
 }
 
-# TODO shold consider adding all "Run tests with Python 3.x" steps to run in
+# TODO shold consider adding all "Test - Python 3.x" steps to run in
 # parallel
 _STEP_ORDER = [
-    "Run pre-commit hooks",
-    *[f"Run tests with Python 3.{maj}" for maj in _ALL_MAJOR_VERSIONS],
+    "Run pre-commit",
+    *[f"Test - Python 3.{maj}" for maj in _ALL_MAJOR_VERSIONS],
 ]
 
 _PLACEHOLDER_NAME = "Placeholder - add your own steps!"
@@ -110,7 +110,7 @@ def _add_step_in_default_via_doc(
         )
     else:
         tick_print(
-            f"Adding step '{step.name}' to default pipeline in "
+            f"Adding '{step.name}' to default pipeline in "
             f"'bitbucket-pipelines.yml'."
         )
 

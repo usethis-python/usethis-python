@@ -87,7 +87,9 @@ pipelines:
             # and PreCommit vs Precommit
 
         class TestPytestIntegration:
-            def test_mentioned_in_file(self, uv_init_dir: Path):
+            def test_mentioned_in_file(
+                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            ):
                 # Arrange
                 (uv_init_dir / "tests").mkdir()
                 (uv_init_dir / "tests" / "conftest.py").touch()
@@ -99,6 +101,16 @@ pipelines:
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
                 assert "pytest" in contents
+                out, err = capfd.readouterr()
+                assert not err
+                assert out == (
+                    "✔ Writing 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding 'Test - Python 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding 'Test - Python 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "☐ Run your first pipeline on the Bitbucket website.\n"
+                )
+                # TODO test a similar message situation but where the file already
+                # exists in which case the box_print should not be called
 
             def test_not_mentioned_if_not_used(self, uv_init_dir: Path):
                 # Act

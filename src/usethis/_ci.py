@@ -27,7 +27,7 @@ def remove_bitbucket_precommit_step() -> None:
 
 def _get_bitbucket_precommit_step() -> Step:
     return Step(
-        name="Run pre-commit hooks",
+        name="Run pre-commit",
         caches=["uv", "pre-commit"],
         script=Script(
             [
@@ -43,7 +43,7 @@ def add_bitbucket_pytest_steps() -> None:
     for version in matrix:
         add_step_in_default(
             Step(
-                name=f"Run tests with Python 3.{version}",
+                name=f"Test - Python 3.{version}",
                 caches=["uv"],
                 script=Script(
                     [

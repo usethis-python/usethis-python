@@ -144,8 +144,7 @@ pipelines:
 """
         )
 
-    def test_add_same_step_twice(self, tmp_path: Path):
-        # Arrange
+    def test_add_same_step_twice(self, tmp_path: Path):  # Arrange
         step = Step(
             name="Greeting",
             script=Script(
@@ -198,20 +197,20 @@ pipelines:
                 item_by_name = get_defined_script_items_via_doc(doc=doc)
                 assert len(item_by_name) == 1
 
-    def test_order(self, tmp_path: Path):
+    def test_order(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Act
         with change_cwd(tmp_path):
             # This step should be listed second
             add_step_in_default(
                 Step(
-                    name="Run tests with Python 3.12",
+                    name="Test - Python 3.12",
                     script=Script(["echo 'Running #2'"]),
                 ),
             )
             # This one should come first
             add_step_in_default(
                 Step(
-                    name="Run pre-commit hooks",
+                    name="Run pre-commit",
                     script=Script(["echo 'Running #1'"]),
                 ),
             )
@@ -226,14 +225,20 @@ image: atlassian/default-image:3
 pipelines:
     default:
       - step:
-            name: Run pre-commit hooks
+            name: Run pre-commit
             script:
               - "echo 'Running #1'"
       - step:
-            name: Run tests with Python 3.12
+            name: Test - Python 3.12
             script:
               - "echo 'Running #2'"
 """
+        )
+        out, err = capfd.readouterr()
+        assert out == (
+            "✔ Writing 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding 'Test - Python 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding 'Run pre-commit' to default pipeline in 'bitbucket-pipelines.yml'.\n"
         )
 
     def test_placeholder_removed(self, tmp_path: Path):
@@ -275,9 +280,9 @@ pipelines:
 """
             )
 
-    # TODO test we have a "Writing 'bitbucket-pipelines.yml'." message
-
-    def test_add_script_item_to_existing_file(self, tmp_path: Path):
+    def test_add_script_item_to_existing_file(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
         # Arrange
         (tmp_path / "bitbucket-pipelines.yml").write_text(
             """\
@@ -340,6 +345,11 @@ pipelines:
               - echo 'Hello, world!'
 """
         )
+        out, err = capfd.readouterr()
+        assert out == (
+            "✔ Adding 'Farewell' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+        )
+        assert not err
 
 
 class TestRemoveStepFromDefault:

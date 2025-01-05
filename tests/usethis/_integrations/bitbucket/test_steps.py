@@ -277,8 +277,69 @@ pipelines:
 
     # TODO test we have a "Writing 'bitbucket-pipelines.yml'." message
 
-    def test_add_cache_to_existing_file(self, tmp_path: Path):
-        raise NotImplementedError
+    def test_add_script_item_to_existing_file(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Greeting
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            add_step_in_default(
+                Step(
+                    name="Farewell",
+                    script=Script(
+                        [
+                            ScriptItemAnchor(name="install-uv"),
+                            "echo 'Goodbye!'",
+                        ]
+                    ),
+                )
+            )
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Farewell
+            script:
+              - *install-uv
+              - echo 'Goodbye!'
+      - step:
+            name: Greeting
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+        )
 
 
 class TestRemoveStepFromDefault:

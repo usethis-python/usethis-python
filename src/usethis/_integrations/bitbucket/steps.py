@@ -105,9 +105,8 @@ def _add_step_in_default_via_doc(
     step: Step, *, doc: BitbucketPipelinesYAMLDocument
 ) -> None:
     if step.name == _PLACEHOLDER_NAME:
-        tick_print(
-            "Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'."
-        )
+        pass  # We need to selectively choose to report at a higher level.
+        # It's not always notable that the placeholder is being added.
     else:
         tick_print(
             f"Adding '{step.name}' to default pipeline in "
@@ -399,11 +398,18 @@ def _(item: StageItem) -> list[Step]:
     return steps
 
 
-def add_placeholder_step_in_default() -> None:
+def add_placeholder_step_in_default(report_placeholder: bool = True) -> None:
     add_step_in_default(_get_placeholder_step())
-    box_print("Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.")
-    box_print("Replace it with your own pipeline steps.")
-    box_print("Alternatively, use 'usethis tool' to add other tools and their steps.")
+
+    if report_placeholder:
+        tick_print(
+            "Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'."
+        )
+        box_print("Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.")
+        box_print("Replace it with your own pipeline steps.")
+        box_print(
+            "Alternatively, use 'usethis tool' to add other tools and their steps."
+        )
 
 
 def _get_placeholder_step() -> Step:

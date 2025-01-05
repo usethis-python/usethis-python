@@ -28,18 +28,17 @@ def add_caches(cache_by_name: dict[str, Cache]) -> None:
         config = doc.model
 
         if config.definitions is None:
-            config.definitions = Definitions(caches=cache_by_name)
-        elif config.definitions.caches is None:
-            config.definitions.caches = cache_by_name
-        else:
-            for name, cache in cache_by_name.items():
-                if not _cache_exists(name, doc=doc):
-                    tick_print(
-                        f"Adding cache '{name}' definition to "
-                        f"'bitbucket-pipelines.yml'."
-                    )
-                    config.definitions.caches[name] = cache
-                # Otherwise, the cache is already present so we'll leave it alone.
+            config.definitions = Definitions()
+        if config.definitions.caches is None:
+            config.definitions.caches = {}
+
+        for name, cache in cache_by_name.items():
+            if not _cache_exists(name, doc=doc):
+                tick_print(
+                    f"Adding cache '{name}' definition to "
+                    f"'bitbucket-pipelines.yml'."
+                )
+                config.definitions.caches[name] = cache
 
         dump = bitbucket_fancy_dump(config, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)

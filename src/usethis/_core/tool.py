@@ -59,6 +59,8 @@ def use_pre_commit(*, remove: bool = False) -> None:
         box_print(
             "Call the 'pre-commit run --all-files' command to run the hooks manually."
         )
+        # TODO check we remove the placeholder step if is no longer needed. Where
+        # is this done? Try and add a comment to make this clearer.
     else:
         if is_bitbucket_used():
             remove_bitbucket_precommit_step()

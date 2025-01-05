@@ -62,7 +62,9 @@ pipelines:
                 assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == ""
 
         class TestPreCommitIntegration:
-            def test_mentioned_in_file(self, uv_init_dir: Path):
+            def test_mentioned_in_file(
+                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            ):
                 # Arrange
                 (uv_init_dir / ".pre-commit-config.yaml").touch()
 
@@ -73,6 +75,19 @@ pipelines:
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
                 assert "pre-commit" in contents
+                out, err = capfd.readouterr()
+                assert not err
+                assert (
+                    out
+                    == (
+                        "✔ Writing 'bitbucket-pipelines.yml'.\n"
+                        "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
+                        "✔ Adding cache 'pre-commit' definition to 'bitbucket-pipelines.yml'.\n"
+                        "✔ Adding 'Run pre-commit' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                        "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
+                        "☐ Run your first pipeline on the Bitbucket website.\n"
+                    )
+                )
 
             def test_not_mentioned_if_not_used(self, uv_init_dir: Path):
                 # Act
@@ -105,6 +120,7 @@ pipelines:
                 assert not err
                 assert out == (
                     "✔ Writing 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding 'Test - Python 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding 'Test - Python 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "☐ Run your first pipeline on the Bitbucket website.\n"

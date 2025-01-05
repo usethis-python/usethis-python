@@ -6,7 +6,7 @@ from usethis._integrations.bitbucket.steps import (
 )
 
 
-def add_bitbucket_pipeline_config() -> None:
+def add_bitbucket_pipeline_config(report_placeholder: bool = True) -> None:
     """Add a Bitbucket pipeline configuration.
 
     Note that the pipeline is empty and will need steps added to it to run successfully.
@@ -22,7 +22,7 @@ def add_bitbucket_pipeline_config() -> None:
     # by just directly writing to the CommentedMap etc. with the same list - the
     # ruamel.yaml engine will add the anchor automatically.
     # TODO check the equivalent pre-commit function to make sure this makes sense.
-    add_placeholder_step_in_default()
+    add_placeholder_step_in_default(report_placeholder=report_placeholder)
 
 
 def remove_bitbucket_pipeline_config() -> None:

@@ -21,7 +21,7 @@ from usethis._integrations.bitbucket.steps import (
     UnexpectedImportPipelineError,
     add_placeholder_step_in_default,
     add_step_in_default,
-    get_defined_script_item_names_via_doc,
+    get_defined_script_items_via_doc,
     get_steps_in_pipeline_item,
     remove_step_from_default,
 )
@@ -195,8 +195,8 @@ pipelines:
 
             # Assert
             with edit_bitbucket_pipelines_yaml() as doc:
-                names = get_defined_script_item_names_via_doc(doc=doc)
-                assert len(names) == 1
+                item_by_name = get_defined_script_items_via_doc(doc=doc)
+                assert len(item_by_name) == 1
 
     def test_order(self, tmp_path: Path):
         # Act
@@ -1009,10 +1009,10 @@ class TestGetDefinedScriptItemNames:
     def test_empty(self, tmp_path: Path):
         # Act
         with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            names = get_defined_script_item_names_via_doc(doc=doc)
+            item_by_name = get_defined_script_items_via_doc(doc=doc)
 
         # Assert
-        assert names == []
+        assert item_by_name == {}
 
     def test_no_definitions_section(self, tmp_path: Path):
         # Arrange
@@ -1024,10 +1024,10 @@ image: atlassian/default-image:3
 
         # Act
         with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            names = get_defined_script_item_names_via_doc(doc=doc)
+            item_by_name = get_defined_script_items_via_doc(doc=doc)
 
         # Assert
-        assert names == []
+        assert item_by_name == {}
 
     def test_no_script_items_definitions_section(self, tmp_path: Path):
         # Arrange
@@ -1042,10 +1042,10 @@ definitions:
 
         # Act
         with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            names = get_defined_script_item_names_via_doc(doc=doc)
+            item_by_name = get_defined_script_items_via_doc(doc=doc)
 
         # Assert
-        assert names == []
+        assert item_by_name == {}
 
     def test_no_anchor(self, tmp_path: Path):
         # Arrange
@@ -1060,10 +1060,10 @@ definitions:
 
         # Act
         with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            names = get_defined_script_item_names_via_doc(doc=doc)
+            item_by_name = get_defined_script_items_via_doc(doc=doc)
 
         # Assert
-        assert names == [None]
+        assert item_by_name == {}
 
     def test_anchor(self, tmp_path: Path):
         # Arrange
@@ -1079,10 +1079,10 @@ definitions:
 
         # Act
         with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            names = get_defined_script_item_names_via_doc(doc=doc)
+            item_by_name = get_defined_script_items_via_doc(doc=doc)
 
         # Assert
-        assert names == ["say-hello"]
+        assert list(item_by_name.keys()) == ["say-hello"]
 
     def test_multiline_no_anchor(self, tmp_path: Path):
         # Arrange
@@ -1098,7 +1098,7 @@ definitions:
 
         # Act
         with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            names = get_defined_script_item_names_via_doc(doc=doc)
+            item_by_name = get_defined_script_items_via_doc(doc=doc)
 
         # Assert
-        assert names == [None]
+        assert item_by_name == {}

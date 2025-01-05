@@ -8,7 +8,7 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 
 import usethis._pipeweld.func
 from usethis._console import box_print, tick_print
-from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor, ScriptItemName
 from usethis._integrations.bitbucket.cache import add_caches
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
@@ -53,7 +53,7 @@ _STEP_ORDER = [
 
 _PLACEHOLDER_NAME = "Placeholder - add your own steps!"
 
-_SCRIPT_ITEM_LOOKUP: dict[str, LiteralScalarString] = {
+_SCRIPT_ITEM_LOOKUP: dict[ScriptItemName, LiteralScalarString] = {
     "install-uv": LiteralScalarString("""\
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
@@ -122,27 +122,37 @@ def _add_step_in_default_via_doc(
     # section
     for idx, script_item in enumerate(step.script.root):
         if isinstance(script_item, ScriptItemAnchor):
-            defined_script_item_names = get_defined_script_item_names_via_doc(doc=doc)
-            if script_item.name not in defined_script_item_names:
+            # We've found an anchorized script definition...
+
+            # Get the names of the anchors which are already defined in the file.
+            defined_script_item_by_name = get_defined_script_items_via_doc(doc=doc)
+
+            # If our anchor doesn't have a definition yet, we need to add it.
+            if script_item.name not in defined_script_item_by_name:
                 try:
                     script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
                 except KeyError:
-                    pass
-                else:
-                    if config.definitions is None:
-                        config.definitions = Definitions()
+                    msg = f"Unrecognized script item anchor: {script_item.name}"
+                    raise NotImplementedError(msg) from None
 
-                    script_items = config.definitions.script_items
+                if config.definitions is None:
+                    config.definitions = Definitions()
 
-                    if script_items is None:
-                        script_items = CommentedSeq()
-                        config.definitions.script_items = script_items
+                script_items = config.definitions.script_items
 
-                    # N.B. when we add the definition, we are relying on this being
-                    # an append
-                    # TODO revisit this - maybe we should add alphabetically.
-                    script_items.append(script_item)
-                    script_items = CommentedSeq(script_items)
+                if script_items is None:
+                    script_items = CommentedSeq()
+                    config.definitions.script_items = script_items
+
+                # N.B. when we add the definition, we are relying on this being
+                # an append
+                # TODO revisit this - maybe we should add alphabetically.
+                script_items.append(script_item)
+                script_items = CommentedSeq(script_items)
+            else:
+                # Otherwise, if the anchor is already defined, we need to use the
+                # reference
+                script_item = defined_script_item_by_name[script_item.name]
 
             step.script.root[idx] = script_item
 
@@ -409,36 +419,36 @@ def _get_placeholder_step() -> Step:
     )
 
 
-def get_defined_script_item_names_via_doc(
+def get_defined_script_items_via_doc(
     doc: BitbucketPipelinesYAMLDocument,
-) -> list[str | None]:
+) -> dict[str, str]:
     """These are the names of the anchors."""
     config = doc.model
 
     if config.definitions is None:
-        return []
+        return {}
 
     if config.definitions.script_items is None:
-        return []
+        return {}
 
     script_item_contents = doc.content["definitions"]["script_items"]
 
-    script_anchor_names = []
+    script_anchor_by_name = {}
     for script_item_content in script_item_contents:
         if not isinstance(script_item_content, LiteralScalarString):
-            script_anchor_names.append(None)
+            # Not a script item definition
             continue
 
         anchor: Anchor = script_item_content.yaml_anchor()
 
         if anchor is None:
-            script_anchor_names.append(None)
+            # Unnamed definition, can't be used as an anchor
             continue
 
         anchor_name = anchor.value
-        script_anchor_names.append(anchor_name)
+        script_anchor_by_name[anchor_name] = script_item_content
 
-    return script_anchor_names
+    return script_anchor_by_name
 
 
 # TODO should test we are not double-defining an anchor with one defined elsewhere in

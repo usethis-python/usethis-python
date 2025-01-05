@@ -50,16 +50,16 @@ pipelines:
 """
                 )
 
-            def test_already_exists(self, tmp_path: Path):
+            def test_already_exists(self, uv_init_dir: Path):
                 # Arrange
-                (tmp_path / "bitbucket-pipelines.yml").touch()
+                (uv_init_dir / "bitbucket-pipelines.yml").touch()
 
                 # Act
-                with change_cwd(tmp_path):
+                with change_cwd(uv_init_dir):
                     use_ci_bitbucket()
 
                 # Assert
-                assert (tmp_path / "bitbucket-pipelines.yml").read_text() == ""
+                assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == ""
 
         class TestPreCommitIntegration:
             def test_mentioned_in_file(self, uv_init_dir: Path):

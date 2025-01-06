@@ -104,6 +104,7 @@ class Tool(Protocol):
 
             for hook in repo_config.hooks:
                 if hook.id not in get_hook_names():
+                    # This will remove the placeholder, if present.
                     add_repo(repo_config)
 
     def remove_pre_commit_repo_configs(self) -> None:

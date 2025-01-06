@@ -13,6 +13,7 @@ from ruamel.yaml.comments import (
     CommentedSet,
     TaggedScalar,
 )
+from ruamel.yaml.error import YAMLError
 from ruamel.yaml.scalarbool import ScalarBoolean
 from ruamel.yaml.scalarfloat import ScalarFloat
 from ruamel.yaml.scalarint import (
@@ -28,6 +29,8 @@ from ruamel.yaml.scalarstring import (
 )
 from ruamel.yaml.timestamp import TimeStamp
 from ruamel.yaml.util import load_yaml_guess_indent
+
+from usethis._integrations.yaml.errors import InvalidYAMLError
 
 T = TypeVar("T")
 
@@ -78,7 +81,17 @@ def edit_yaml(
     with yaml_path.open(mode="r") as f:
         # Can't preserve quotes so don't keep the content.
         # Yes, it' not very efficient to load the content twice.
-        content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
+        try:
+            content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
+        except YAMLError as err:
+            # TODO add test for this case
+            # You can get that with this (invalid) file:
+            # repos:
+            #   - repo: local
+            #         hooks:
+            #           - id: placeholder
+            msg = f"Error reading '{yaml_path}':\n{err}"
+            raise InvalidYAMLError(msg) from None
     if not guess_indent:
         sequence_ind = None
         offset_ind = None

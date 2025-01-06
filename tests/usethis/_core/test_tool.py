@@ -184,6 +184,27 @@ repos:
             "☐ Call the 'deptry src' command to run deptry.\n"
         )
 
+    def test_placeholder_removed(self, uv_init_repo_dir: Path, vary_network_conn: None):
+        # Arrange
+        (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
+            """\
+repos:
+  - repo: local
+    hooks:
+      - id: placeholder
+"""
+        )
+
+        # Act
+        with change_cwd(uv_init_repo_dir):
+            use_deptry()
+
+        # Assert
+        contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+        assert "deptry" in contents
+        assert "placeholder" not in contents
+        # TODO test message
+
 
 class TestPreCommit:
     class TestUse:

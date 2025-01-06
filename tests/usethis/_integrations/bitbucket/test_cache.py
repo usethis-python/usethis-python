@@ -84,10 +84,58 @@ pipelines:
 
 
 class TestRemoveCache:
-    def test_empty_section_not_removed_unnecessarily(self, tmp_path: Path):
+    def test_removal_succeeds(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         (tmp_path / "bitbucket-pipelines.yml").write_text(
             """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+pipelines:
+    default:
+      - step:
+            caches: [uv]
+            script: ["echo 'Hello, world!'"]
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_cache("uv")
+
+        # Assert
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            caches: [uv]
+            script: ["echo 'Hello, world!'"]
+"""
+        )
+        out, err = capfd.readouterr()
+        assert not err
+        assert (
+            out == "✔ Removing cache 'uv' definition from 'bitbucket-pipelines.yml'.\n"
+        )
+
+    def test_roundtrip(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            # Arrange
+            add_bitbucket_pipeline_config()
+            add_caches({"mycache": Cache(CachePath("~/.cache/mytool"))})
+
+            # Act
+            remove_cache("mycache")
+
+            # Assert
+            assert "mycache" not in get_cache_by_name()
+
+    def test_empty_section_not_removed_unnecessarily(self, tmp_path: Path):
+        # Arrange
+        original = """\
 image: atlassian/default-image:3
 definitions:
     caches: {}
@@ -96,7 +144,7 @@ pipelines:
       - step:
             script: ["echo 'Hello, world!'"]
 """
-        )
+        (tmp_path / "bitbucket-pipelines.yml").write_text(original)
 
         # Act
         with change_cwd(tmp_path):
@@ -104,17 +152,44 @@ pipelines:
 
         # Assert
         contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
-        assert (
-            contents
-            == """\
+        assert contents == original
+
+    def test_no_definitions_section(self, tmp_path: Path):
+        # Arrange
+        original = """\
 image: atlassian/default-image:3
-definitions:
-    caches: {}
 pipelines:
     default:
       - step:
             script: ["echo 'Hello, world!'"]
 """
-        )
+        (tmp_path / "bitbucket-pipelines.yml").write_text(original)
 
-    # TODO write more unit tests to get full coverage
+        # Act
+        with change_cwd(tmp_path):
+            remove_cache("whatever")
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert contents == original
+
+    def test_no_cache_definitions_section(self, tmp_path: Path):
+        # Arrange
+        original = """\
+image: atlassian/default-image:3
+definitions:
+    something_else: {}
+pipelines:
+    default:
+      - step:
+            script: ["echo 'Hello, world!'"]
+"""
+        (tmp_path / "bitbucket-pipelines.yml").write_text(original)
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_cache("whatever")
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert contents == original

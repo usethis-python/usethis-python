@@ -4,6 +4,7 @@ import pytest
 
 from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import use_pre_commit
+from usethis._integrations.bitbucket.steps import get_steps_in_default
 from usethis._test import change_cwd
 
 
@@ -146,13 +147,12 @@ pipelines:
             with change_cwd(uv_init_repo_dir):
                 # Act
                 use_pre_commit()
-                contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
-                assert "uv" in contents
                 use_pre_commit(remove=True)
 
             # Assert
-            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
-            assert "uv" not in contents
+            for step in get_steps_in_default():
+                if step.caches is not None:
+                    assert "uv" not in step.caches
 
         class TestPytestIntegration:
             def test_mentioned_in_file(

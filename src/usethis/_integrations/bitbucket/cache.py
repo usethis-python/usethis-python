@@ -44,6 +44,23 @@ def add_caches(cache_by_name: dict[str, Cache]) -> None:
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 
+def remove_cache(cache: str) -> None:
+    with edit_bitbucket_pipelines_yaml() as doc:
+        config = doc.model
+
+        if config.definitions is None or config.definitions.caches is None:
+            return
+
+        if cache in config.definitions.caches:
+            tick_print(
+                f"Removing cache '{cache}' definition from 'bitbucket-pipelines.yml'."
+            )
+            del config.definitions.caches[cache]
+
+        dump = bitbucket_fancy_dump(config, reference=doc.content)
+        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+
+
 def _cache_exists(name: str, *, doc: BitbucketPipelinesYAMLDocument) -> bool:
     if doc.model.definitions is None or doc.model.definitions.caches is None:
         return False

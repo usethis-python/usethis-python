@@ -9,7 +9,7 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 import usethis._pipeweld.func
 from usethis._console import box_print, tick_print
 from usethis._integrations.bitbucket.anchor import ScriptItemAnchor, ScriptItemName
-from usethis._integrations.bitbucket.cache import add_caches
+from usethis._integrations.bitbucket.cache import add_caches, remove_cache
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
 from usethis._integrations.bitbucket.io import (
@@ -283,6 +283,19 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
 
         dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+
+    if step.caches is not None:
+        for cache in step.caches:
+            if not is_cache_used(cache):
+                remove_cache(cache)
+
+
+def is_cache_used(cache: str) -> bool:
+    for step in get_steps_in_default():
+        if step.caches is not None and cache in step.caches:
+            return True
+
+    return False
 
 
 def add_step_caches(step: Step) -> None:

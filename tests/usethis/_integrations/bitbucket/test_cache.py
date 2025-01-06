@@ -6,6 +6,7 @@ from usethis._integrations.bitbucket.cache import (
     Cache,
     add_caches,
     get_cache_by_name,
+    remove_cache,
 )
 from usethis._integrations.bitbucket.config import add_bitbucket_pipeline_config
 from usethis._integrations.bitbucket.schema import CachePath
@@ -80,3 +81,40 @@ pipelines:
             script: ["echo 'Hello, world!'"]
 """
         )
+
+
+class TestRemoveCache:
+    def test_empty_section_not_removed_unnecessarily(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+    caches: {}
+pipelines:
+    default:
+      - step:
+            script: ["echo 'Hello, world!'"]
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_cache("whatever")
+
+        # Assert
+        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+    caches: {}
+pipelines:
+    default:
+      - step:
+            script: ["echo 'Hello, world!'"]
+"""
+        )
+
+    # TODO write more unit tests to get full coverage

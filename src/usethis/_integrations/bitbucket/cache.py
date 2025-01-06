@@ -58,8 +58,6 @@ def remove_cache(cache: str) -> None:
             del config.definitions.caches[cache]
 
             # Remove an empty caches section
-            # TODO test that empty section is not removed in case where we don't end
-            # up removing a cache
             if not config.definitions.caches:
                 del config.definitions.caches
 

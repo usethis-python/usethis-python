@@ -24,6 +24,7 @@ from ruamel.yaml.scalarstring import (
 )
 from ruamel.yaml.timestamp import TimeStamp
 
+from usethis._integrations.yaml.errors import InvalidYAMLError
 from usethis._integrations.yaml.io import edit_yaml
 from usethis._test import change_cwd
 
@@ -393,3 +394,22 @@ x:
       - w
 """
         )
+
+    def test_invalid_indentation(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "x.yml").write_text(
+            """\
+repos:
+  - repo: local
+        hooks:
+          - id: placeholder
+"""
+        )
+
+        # Act, Assert
+        with (
+            change_cwd(tmp_path),
+            pytest.raises(InvalidYAMLError),
+            edit_yaml(tmp_path / "x.yml") as _,
+        ):
+            pass

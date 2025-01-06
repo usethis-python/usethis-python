@@ -84,12 +84,6 @@ def edit_yaml(
         try:
             content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
         except YAMLError as err:
-            # TODO add test for this case
-            # You can get that with this (invalid) file:
-            # repos:
-            #   - repo: local
-            #         hooks:
-            #           - id: placeholder
             msg = f"Error reading '{yaml_path}':\n{err}"
             raise InvalidYAMLError(msg) from None
     if not guess_indent:

@@ -93,7 +93,6 @@ def add_step_in_default(step: Step) -> None:
         )
 
     # Remove the placeholder step if it already exists
-    # TODO test messages to user about this.
     placeholder = _get_placeholder_step()
     if not _steps_are_equivalent(placeholder, step):
         # Only remove the placeholder if it hasn't already been added.

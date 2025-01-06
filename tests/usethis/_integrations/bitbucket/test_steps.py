@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.io import edit_bitbucket_pipelines_yaml
 from usethis._integrations.bitbucket.schema import (
@@ -241,10 +242,13 @@ pipelines:
             "✔ Adding 'Run pre-commit' to default pipeline in 'bitbucket-pipelines.yml'.\n"
         )
 
-    def test_placeholder_removed(self, tmp_path: Path):
+    def test_placeholder_removed(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
         with change_cwd(tmp_path):
             # Arrange
-            add_placeholder_step_in_default()
+            with usethis_config.set(quiet=True):
+                add_placeholder_step_in_default()
 
             # Act
             add_step_in_default(
@@ -263,8 +267,6 @@ pipelines:
                 == """\
 image: atlassian/default-image:3
 definitions:
-    caches:
-        uv: ~/.cache/uv
     script_items:
       - &install-uv |
         curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -278,6 +280,12 @@ pipelines:
             script:
               - echo 'Hello, world!'
 """
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding 'Greeting' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                "✔ Removing cache 'uv' definition from 'bitbucket-pipelines.yml'.\n"
             )
 
     def test_add_script_item_to_existing_file(
@@ -993,6 +1001,7 @@ pipelines:
         # Keep these messages in sync with the ones used for pre-commit
         assert out == (
             "✔ Writing 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
             "✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.\n"
             "☐ Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.\n"
             "☐ Replace it with your own pipeline steps.\n"

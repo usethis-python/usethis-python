@@ -153,6 +153,8 @@ pipelines:
             for step in get_steps_in_default():
                 if step.caches is not None:
                     assert "uv" not in step.caches
+            content = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "caches" not in content  # Should remove the empty cache section
 
         class TestPytestIntegration:
             def test_mentioned_in_file(

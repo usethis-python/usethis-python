@@ -184,7 +184,12 @@ repos:
             "☐ Call the 'deptry src' command to run deptry.\n"
         )
 
-    def test_placeholder_removed(self, uv_init_repo_dir: Path, vary_network_conn: None):
+    def test_placeholder_removed(
+        self,
+        uv_init_repo_dir: Path,
+        capfd: pytest.CaptureFixture[str],
+        vary_network_conn: None,
+    ):
         # Arrange
         (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
             """\
@@ -203,7 +208,14 @@ repos:
         contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
         assert "deptry" in contents
         assert "placeholder" not in contents
-        # TODO test message
+        out, err = capfd.readouterr()
+        assert not err
+        # Expecting not to get a specific message about removing the placeholder.
+        assert out == (
+            "✔ Adding 'deptry' to the 'dev' dependency group.\n"
+            "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
+            "☐ Call the 'deptry src' command to run deptry.\n"
+        )
 
 
 class TestPreCommit:

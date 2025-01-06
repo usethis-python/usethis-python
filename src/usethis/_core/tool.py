@@ -1,8 +1,8 @@
 from usethis._ci import (
-    add_bitbucket_precommit_step,
+    add_bitbucket_pre_commit_step,
     add_bitbucket_pytest_steps,
     is_bitbucket_used,
-    remove_bitbucket_precommit_step,
+    remove_bitbucket_pre_commit_step,
 )
 from usethis._console import box_print
 from usethis._integrations.pre_commit.core import (
@@ -54,14 +54,14 @@ def use_pre_commit(*, remove: bool = False) -> None:
         install_pre_commit_hooks()
 
         if is_bitbucket_used():
-            add_bitbucket_precommit_step()
+            add_bitbucket_pre_commit_step()
 
         box_print(
             "Call the 'pre-commit run --all-files' command to run the hooks manually."
         )
     else:
         if is_bitbucket_used():
-            remove_bitbucket_precommit_step()
+            remove_bitbucket_pre_commit_step()
 
         # Need pre-commit to be installed so we can uninstall hooks
         add_deps_to_group(tool.dev_deps, "dev")
@@ -80,16 +80,16 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
     tool = PyprojectFmtTool()
 
     if not remove:
-        is_precommit = PreCommitTool().is_used()
+        is_pre_commit = PreCommitTool().is_used()
 
-        if not is_precommit:
+        if not is_pre_commit:
             add_deps_to_group(tool.dev_deps, "dev")
         else:
             tool.add_pre_commit_repo_configs()
 
         tool.add_pyproject_configs()
 
-        if not is_precommit:
+        if not is_pre_commit:
             box_print(
                 "Call the 'pyproject-fmt pyproject.toml' command to run pyproject-fmt."
             )

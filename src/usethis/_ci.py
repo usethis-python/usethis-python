@@ -16,16 +16,16 @@ def is_bitbucket_used() -> bool:
     return (Path.cwd() / "bitbucket-pipelines.yml").exists()
 
 
-def add_bitbucket_precommit_step() -> None:
-    add_step_in_default(_get_bitbucket_precommit_step())
+def add_bitbucket_pre_commit_step() -> None:
+    add_step_in_default(_get_bitbucket_pre_commit_step())
 
 
-def remove_bitbucket_precommit_step() -> None:
+def remove_bitbucket_pre_commit_step() -> None:
     tick_print("Removing pre-commit step from 'bitbucket-pipelines.yml'.")
-    remove_step_from_default(_get_bitbucket_precommit_step())
+    remove_step_from_default(_get_bitbucket_pre_commit_step())
 
 
-def _get_bitbucket_precommit_step() -> Step:
+def _get_bitbucket_pre_commit_step() -> Step:
     return Step(
         name="Run pre-commit",
         caches=["uv", "pre-commit"],

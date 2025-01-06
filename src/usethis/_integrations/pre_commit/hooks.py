@@ -2,7 +2,7 @@ from collections import Counter
 from pathlib import Path
 
 from usethis._console import box_print, tick_print
-from usethis._integrations.pre_commit.dump import precommit_fancy_dump
+from usethis._integrations.pre_commit.dump import pre_commit_fancy_dump
 from usethis._integrations.pre_commit.io import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
@@ -113,7 +113,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
 
         update_ruamel_yaml_map(
             doc.content,
-            precommit_fancy_dump(doc.model, reference=doc.content),
+            pre_commit_fancy_dump(doc.model, reference=doc.content),
             preserve_comments=True,
         )
 
@@ -168,7 +168,7 @@ def remove_hook(name: str) -> None:
         if not doc.model.repos:
             doc.model.repos.append(_get_placeholder_repo_config())
 
-        dump = precommit_fancy_dump(doc.model, reference=doc.content)
+        dump = pre_commit_fancy_dump(doc.model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 

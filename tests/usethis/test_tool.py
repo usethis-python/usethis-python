@@ -296,7 +296,7 @@ class TestTool:
 
                 # Note that this deliberately doesn't include validate-pyproject
                 # That should only be included as a default when using the
-                # `use_precommit` interface.
+                # `use_pre_commit` interface.
                 assert get_hook_names() == ["ruff", "ruff-format", "deptry"]
 
         def test_file_created(self, tmp_path: Path):

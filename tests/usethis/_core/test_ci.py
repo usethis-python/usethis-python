@@ -100,9 +100,6 @@ pipelines:
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
                 assert "pre-commit" not in contents
 
-            # TODO consistency in precommit vs pre_commit
-            # and PreCommit vs Precommit
-
         def test_placeholder_removed(self, uv_init_repo_dir: Path):
             with change_cwd(uv_init_repo_dir):
                 # Arrange

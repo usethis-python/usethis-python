@@ -8,7 +8,7 @@ from usethis._integrations.pydantic.dump import ModelRepresentation, fancy_model
 ORDER_BY_CLS: dict[type[BaseModel], list[str]] = {}
 
 
-def precommit_fancy_dump(
+def pre_commit_fancy_dump(
     config: JsonSchemaForPreCommitConfigYaml, *, reference: ModelRepresentation
 ) -> dict[str, ModelRepresentation]:
     dump = fancy_model_dump(config, reference=reference, order_by_cls=ORDER_BY_CLS)

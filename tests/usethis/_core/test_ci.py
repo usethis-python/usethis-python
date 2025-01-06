@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._core.ci import use_ci_bitbucket
+from usethis._core.tool import use_pre_commit
 from usethis._test import change_cwd
 
 
@@ -100,6 +101,58 @@ pipelines:
 
             # TODO consistency in precommit vs pre_commit
             # and PreCommit vs Precommit
+
+        def test_placeholder_removed(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_ci_bitbucket()
+                contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+                assert "Placeholder" in contents
+
+                # Act
+                use_pre_commit()
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "Placeholder" not in contents
+
+        def test_placeholder_restored(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_pre_commit()
+                use_ci_bitbucket()
+                contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+                assert "Placeholder" not in contents
+
+                # Act
+                use_pre_commit(remove=True)
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "Placeholder" in contents
+
+        def test_unused_cache_removed(self, uv_init_repo_dir: Path):
+            # Arrange
+            (uv_init_repo_dir / "bitbucket-pipelines.yml").write_text("""\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: This step doesn't cache anything
+            script:
+              - echo 'Hello, world!'
+""")
+
+            with change_cwd(uv_init_repo_dir):
+                # Act
+                use_pre_commit()
+                contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+                assert "uv" in contents
+                use_pre_commit(remove=True)
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "uv" not in contents
 
         class TestPytestIntegration:
             def test_mentioned_in_file(

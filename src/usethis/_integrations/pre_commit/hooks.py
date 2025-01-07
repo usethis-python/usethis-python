@@ -119,7 +119,6 @@ def _get_placeholder_repo_config() -> LocalRepo:
                 name="Placeholder - add your own hooks!",
                 entry="""uv run python -c "print('hello world!')\"""",
                 language=Language("system"),
-                always_run=True,
             )
         ],
     )

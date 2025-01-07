@@ -25,23 +25,27 @@ def get_cache_by_name() -> dict[str, Cache]:
 
 def add_caches(cache_by_name: dict[str, Cache]) -> None:
     with edit_bitbucket_pipelines_yaml() as doc:
-        config = doc.model
-
-        if config.definitions is None:
-            config.definitions = Definitions()
-        if config.definitions.caches is None:
-            config.definitions.caches = {}
-
-        for name, cache in cache_by_name.items():
-            if not _cache_exists(name, doc=doc):
-                tick_print(
-                    f"Adding cache '{name}' definition to "
-                    f"'bitbucket-pipelines.yml'."
-                )
-                config.definitions.caches[name] = cache
-
-        dump = bitbucket_fancy_dump(config, reference=doc.content)
+        _add_caches_via_doc(cache_by_name, doc=doc)
+        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+
+
+def _add_caches_via_doc(
+    cache_by_name: dict[str, Cache], *, doc: BitbucketPipelinesYAMLDocument
+) -> None:
+    config = doc.model
+
+    if config.definitions is None:
+        config.definitions = Definitions()
+    if config.definitions.caches is None:
+        config.definitions.caches = {}
+
+    for name, cache in cache_by_name.items():
+        if not _cache_exists(name, doc=doc):
+            tick_print(
+                f"Adding cache '{name}' definition to " f"'bitbucket-pipelines.yml'."
+            )
+            config.definitions.caches[name] = cache
 
 
 def remove_cache(cache: str) -> None:

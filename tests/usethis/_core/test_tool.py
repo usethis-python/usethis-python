@@ -257,7 +257,7 @@ repos:
       - id: placeholder
         name: Placeholder - add your own hooks!
         entry: uv run python -c "print('hello world!')"
-        language: python
+        language: system
 """
             )
 
@@ -367,6 +367,8 @@ pipelines:
             # Assert
             contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
             assert "pre-commit" not in contents
+            # TODO need to test contents of bitbucket pipelines file explicitly
+            # TODO test messages
 
 
 class TestPyprojectFormat:
@@ -489,23 +491,7 @@ select = ["PT"]
                 assert out == ("✔ Disabling ruff rule 'PT' in 'pyproject.toml'.\n")
 
         class TestPyproject:
-            def test_removed(self, uv_init_dir: Path):
-                # Arrange
-                (uv_init_dir / "pyproject.toml").write_text(
-                    """\
-    [tool.pytest]
-    foo = "bar"
-    """
-                )
-
-                # Act
-                with change_cwd(uv_init_dir):
-                    use_pytest(remove=True)
-
-                # Assert
-                assert (uv_init_dir / "pyproject.toml").read_text() == ""
-
-            def test_message(
+            def test_removed(
                 self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
             ):
                 # Arrange
@@ -521,25 +507,83 @@ select = ["PT"]
                     use_pytest(remove=True)
 
                 # Assert
+                assert (uv_init_dir / "pyproject.toml").read_text() == ""
                 out, _ = capfd.readouterr()
                 # N.B. we don't put `pytest` in quotes because we are referring to the
                 # tool, not the package.
                 assert out == "✔ Removing pytest config from 'pyproject.toml'.\n"
 
-        class Dependencies:
+        class TestDependencies:
             def test_removed(self, uv_init_dir: Path):
+                with change_cwd(uv_init_dir):
+                    # Arrange
+                    add_deps_to_group(["pytest"], "test")
+
+                    # Act
+                    use_pytest(remove=True)
+
+                    # Assert
+                    assert not get_deps_from_group("test")
+
+        class TestBitbucketIntegration:
+            def test_remove(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
                 # Arrange
-                add_deps_to_group(["pytest"], "test")
+                with change_cwd(uv_init_dir), usethis_config.set(quiet=True):
+                    use_pytest()
+
+                (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+                    """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Test - Python 3.12
+            script:
+              - uv run --python 3.12 pytest
+"""
+                )
 
                 # Act
                 with change_cwd(uv_init_dir):
                     use_pytest(remove=True)
 
                 # Assert
-                assert not get_deps_from_group("test")
-
-        # TODO we need to test the bitbucket integration, that there is no message
-        # suggesting we use pytest (after all, we just removed it).
+                out, err = capfd.readouterr()
+                assert not err
+                assert out == (
+                    "✔ Removing pytest steps from 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
+                    "✔ Removing pytest config from 'pyproject.toml'.\n"
+                    "✔ Removing 'pytest' from the 'test' dependency group.\n"
+                    "✔ Removing 'pytest-cov' from the 'test' dependency group.\n"
+                    "✔ Removing 'coverage' from the 'test' dependency group.\n"
+                    "✔ Removing '/tests'.\n"
+                )
+                contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+                assert (
+                    contents
+                    == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+                )
 
 
 class TestRuff:

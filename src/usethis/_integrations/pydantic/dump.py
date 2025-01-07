@@ -118,10 +118,6 @@ def _(
     return fancy_model_dump(model.root, reference=reference, order_by_cls=order_by_cls)
 
 
-# TODO Need to think about how we deal with removing
-# non-schema logic inadvertedly. It might be we just forget about it.
-
-
 @fancy_model_dump.register(BaseModel)
 def _(
     model: BaseModel,

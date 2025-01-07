@@ -9,7 +9,7 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 import usethis._pipeweld.func
 from usethis._console import box_print, tick_print
 from usethis._integrations.bitbucket.anchor import ScriptItemAnchor, ScriptItemName
-from usethis._integrations.bitbucket.cache import add_caches, remove_cache
+from usethis._integrations.bitbucket.cache import _add_caches_via_doc, remove_cache
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
 from usethis._integrations.bitbucket.io import (
@@ -74,8 +74,6 @@ def add_step_in_default(step: Step) -> None:
         if _steps_are_equivalent(existing_step, step):
             return
 
-    add_step_caches(step)
-
     # Add the step to the default pipeline
     with edit_bitbucket_pipelines_yaml() as doc:
         _add_step_in_default_via_doc(step, doc=doc)
@@ -97,6 +95,8 @@ def add_step_in_default(step: Step) -> None:
 def _add_step_in_default_via_doc(
     step: Step, *, doc: BitbucketPipelinesYAMLDocument
 ) -> None:
+    _add_step_caches_via_doc(step, doc=doc)
+
     if step.name == _PLACEHOLDER_NAME:
         pass  # We need to selectively choose to report at a higher level.
         # It's not always notable that the placeholder is being added.
@@ -275,7 +275,8 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
         pipeline.root.root = new_items
 
         if len(new_items) == 0:
-            _add_step_in_default_via_doc(_get_placeholder_step(), doc=doc)
+            placeholder = _get_placeholder_step()
+            _add_step_in_default_via_doc(placeholder, doc=doc)
 
         dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
@@ -294,20 +295,24 @@ def is_cache_used(cache: str) -> bool:
     return False
 
 
-def add_step_caches(step: Step) -> None:
+def _add_step_caches_via_doc(
+    step: Step, *, doc: BitbucketPipelinesYAMLDocument
+) -> None:
     if step.caches is not None:
         cache_by_name = {}
         for name in step.caches:
             try:
                 cache = _CACHE_LOOKUP[name]
             except KeyError:
+                # TODO test this error message in the same test that the keys are
+                # tested to avoid sync errors
                 msg = (
                     f"Unrecognized cache name '{name}' in step '{step.name}'. "
                     f"Supported caches are 'uv' and 'pre-commit'."
                 )
                 raise NotImplementedError(msg) from None
             cache_by_name[name] = cache
-        add_caches(cache_by_name)
+        _add_caches_via_doc(cache_by_name, doc=doc)
 
 
 def _steps_are_equivalent(step1: Step | None, step2: Step) -> bool:

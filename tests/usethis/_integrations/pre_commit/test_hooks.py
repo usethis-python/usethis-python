@@ -100,7 +100,6 @@ repos:
     hooks:
       - id: placeholder
         name: Placeholder - add your own hooks!
-        always_run: true
         entry: uv run python -c "print('hello world!')"
         language: system
 """
@@ -126,7 +125,7 @@ repos:
       - id: placeholder
         name: Placeholder - add your own hooks!
         entry: uv run python -c "print('hello world!')"
-        language: python
+        language: system
 """
         )
 
@@ -150,7 +149,7 @@ repos:
       - id: placeholder
         name: Placeholder - add your own hooks!
         entry: uv run python -c "print('hello world!')"
-        language: python
+        language: system
 """
         )
 
@@ -291,7 +290,7 @@ repos:
       - id: placeholder
         name: Placeholder - add your own hooks!
         entry: uv run python -c "print('hello world!')"
-        language: python
+        language: system
 """
         )
 

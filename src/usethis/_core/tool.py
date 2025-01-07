@@ -3,6 +3,7 @@ from usethis._ci import (
     add_bitbucket_pytest_steps,
     is_bitbucket_used,
     remove_bitbucket_pre_commit_step,
+    remove_bitbucket_pytest_steps,
 )
 from usethis._console import box_print
 from usethis._integrations.pre_commit.core import (
@@ -125,6 +126,9 @@ def use_pytest(*, remove: bool = False) -> None:
         box_print("Add test functions with the format 'test_*()'.")
         box_print("Call the 'pytest' command to run the tests.")
     else:
+        if is_bitbucket_used():
+            remove_bitbucket_pytest_steps()
+
         if RuffTool().is_used():
             deselect_ruff_rules(tool.get_associated_ruff_rules())
         tool.remove_pyproject_configs()

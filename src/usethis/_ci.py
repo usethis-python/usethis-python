@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from usethis._console import tick_print
@@ -5,6 +6,7 @@ from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.schema import Script, Step
 from usethis._integrations.bitbucket.steps import (
     add_step_in_default,
+    get_steps_in_default,
     remove_step_from_default,
 )
 from usethis._integrations.uv.python import get_supported_major_python_versions
@@ -37,6 +39,7 @@ def _get_bitbucket_pre_commit_step() -> Step:
 
 
 def add_bitbucket_pytest_steps() -> None:
+    # TODO need messages to the user and test
     matrix = get_supported_major_python_versions()
     for version in matrix:
         add_step_in_default(
@@ -51,3 +54,11 @@ def add_bitbucket_pytest_steps() -> None:
                 ),
             ),
         )
+
+
+def remove_bitbucket_pytest_steps() -> None:
+    tick_print("Removing pytest steps from 'bitbucket-pipelines.yml'.")
+    # Remove any with pattern "^Test - Python 3.\d+$"
+    for step in get_steps_in_default():
+        if step.name is not None and re.match(r"^Test - Python 3.\d+$", step.name):
+            remove_step_from_default(step)

@@ -637,6 +637,8 @@ pipelines:
             == """\
 image: atlassian/default-image:3
 definitions:
+    caches:
+        uv: ~/.cache/uv
     script_items:
       - &install-uv |
         curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -837,6 +839,8 @@ pipelines:
             == """\
 image: atlassian/default-image:3
 definitions:
+    caches:
+        uv: ~/.cache/uv
     script_items:
       - &install-uv |
         curl -LsSf https://astral.sh/uv/install.sh | sh

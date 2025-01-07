@@ -164,9 +164,7 @@ def _insert_before_postrequisites(  # noqa: PLR0913
             component[idx + 1] = _union(successor_component, step)
 
         return instructions
-    elif isinstance(
-        successor_component, Parallel | DepGroup | str
-    ):  # TODO test the DepGroup case
+    elif isinstance(successor_component, Parallel | DepGroup | str):
         if _has_any_steps(successor_component, steps=postrequisites):
             # Insert before this step
             component.root.insert(idx + 1, step)
@@ -322,7 +320,6 @@ def _(
     else:
         partition = partitions[0]
         return Partition(
-            # TODO should this be series(DepGroup(...)) or do we need a special case?
             prerequisite_component=series(partition.prerequisite_component)
             if partition.prerequisite_component is not None
             else None,
@@ -398,9 +395,6 @@ def _op_series_merge_partitions(
     partition: Partition, next_partition: Partition
 ) -> Partition:
     if next_partition.prerequisite_component is not None:
-        # TODO don't return; should be "accumulating" the binary operator
-        # This is just applying it to the first two and returning
-        # likely the pairwise generator is not the right choice.
         return Partition(
             prerequisite_component=_concat(
                 partition.prerequisite_component,

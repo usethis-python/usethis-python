@@ -15,12 +15,12 @@ from usethis._test import change_cwd
 
 
 class TestAddBitbucketPipelineConfig:
-    def test_blank_slate(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+    def test_blank_slate(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
             add_bitbucket_pipeline_config()
 
-        assert (tmp_path / "bitbucket-pipelines.yml").exists()
-        content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (uv_init_dir / "bitbucket-pipelines.yml").exists()
+        content = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
         assert content == (
             """\
 image: atlassian/default-image:3
@@ -55,9 +55,9 @@ pipelines:
         content = (tmp_path / "bitbucket-pipelines.yml").read_text()
         assert content == "existing content"
 
-    def test_satisfies_schema(self, tmp_path: Path):
+    def test_satisfies_schema(self, uv_init_dir: Path):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             add_bitbucket_pipeline_config()
             add_step_in_default(
                 Step(
@@ -69,7 +69,7 @@ pipelines:
             )
 
         # Assert
-        with edit_yaml(tmp_path / "bitbucket-pipelines.yml") as yaml_document:
+        with edit_yaml(uv_init_dir / "bitbucket-pipelines.yml") as yaml_document:
             assert Model.model_validate(yaml_document.content)
 
 

@@ -36,7 +36,7 @@ from usethis._integrations.bitbucket.schema import (
     StepItem,
 )
 from usethis._integrations.bitbucket.schema_utils import step1tostep
-from usethis._integrations.pyproject.requires_python import _ALL_MAJOR_VERSIONS
+from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 _CACHE_LOOKUP = {
@@ -44,12 +44,6 @@ _CACHE_LOOKUP = {
     "pre-commit": CachePath("~/.cache/pre-commit"),
 }
 
-# TODO shold consider adding all "Test - Python 3.x" steps to run in
-# parallel
-_STEP_ORDER = [
-    "Run pre-commit",
-    *[f"Test - Python 3.{maj}" for maj in _ALL_MAJOR_VERSIONS],
-]
 
 _PLACEHOLDER_NAME = "Placeholder - add your own steps!"
 
@@ -156,7 +150,15 @@ def _add_step_in_default_via_doc(
 
     # N.B. if the step is unrecognized, it will go at the end.
     prerequisites: set[str] = set()
-    for step_name in _STEP_ORDER:
+
+    # TODO shold consider adding all "Test - Python 3.x" steps to run in
+    # parallel
+    step_order = [
+        "Run pre-commit",
+        *[f"Test - Python 3.{maj}" for maj in get_supported_major_python_versions()],
+    ]
+
+    for step_name in step_order:
         if step_name == step.name:
             break
         prerequisites.add(step_name)

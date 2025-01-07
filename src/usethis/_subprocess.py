@@ -5,13 +5,14 @@ class SubprocessFailedError(Exception):
     pass
 
 
-def call_subprocess(args: list[str]) -> None:
+def call_subprocess(args: list[str]) -> str:
     try:
-        subprocess.run(
+        process = subprocess.run(
             args,
             check=True,
             capture_output=True,
         )
+        return process.stdout.decode()
     except subprocess.CalledProcessError as err:
         bmsg_stderr: bytes = err.stderr
         bmsg_stdout: bytes = err.stdout

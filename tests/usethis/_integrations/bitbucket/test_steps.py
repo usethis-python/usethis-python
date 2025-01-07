@@ -30,10 +30,10 @@ from usethis._test import change_cwd
 
 
 class TestAddStepInDefault:
-    def test_contents(self, tmp_path: Path):
+    def test_contents(self, uv_init_dir: Path):
         # Arrange
 
-        (tmp_path / "bitbucket-pipelines.yml").write_text(
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
             """\
 image: atlassian/default-image:3
 pipelines:
@@ -44,7 +44,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             add_step_in_default(
                 Step(
                     name="Greeting",
@@ -53,7 +53,7 @@ pipelines:
             )
 
         # Assert
-        with open(tmp_path / "bitbucket-pipelines.yml") as f:
+        with open(uv_init_dir / "bitbucket-pipelines.yml") as f:
             contents = f.read()
         assert (
             # N.B. the step is added as soon as possible, i.e. at the top of the pipeline
@@ -71,10 +71,10 @@ pipelines:
 """
         )
 
-    def test_pipeline_doesnt_exist(self, tmp_path: Path):
+    def test_pipeline_doesnt_exist(self, uv_init_dir: Path):
         # Arrange
 
-        (tmp_path / "bitbucket-pipelines.yml").write_text(
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
             """\
 image: atlassian/default-image:3
 pipelines: {}
@@ -82,7 +82,7 @@ pipelines: {}
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             add_step_in_default(
                 Step(
                     name="Greeting",
@@ -91,7 +91,7 @@ pipelines: {}
             )
 
         # Assert
-        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\
@@ -105,10 +105,10 @@ pipelines:
 """
         )
 
-    def test_with_caches(self, tmp_path: Path):
+    def test_with_caches(self, uv_init_dir: Path):
         # Arrange
 
-        (tmp_path / "bitbucket-pipelines.yml").write_text(
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
             """\
 image: atlassian/default-image:3
 pipelines: {}
@@ -116,7 +116,7 @@ pipelines: {}
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             add_step_in_default(
                 Step(
                     name="Greeting",
@@ -126,7 +126,7 @@ pipelines: {}
             )
 
         # Assert
-        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\
@@ -145,7 +145,7 @@ pipelines:
 """
         )
 
-    def test_add_same_step_twice(self, tmp_path: Path):  # Arrange
+    def test_add_same_step_twice(self, uv_init_dir: Path):  # Arrange
         step = Step(
             name="Greeting",
             script=Script(
@@ -156,18 +156,20 @@ pipelines:
             ),
         )
 
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             add_step_in_default(step)
 
-            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
 
             # Act
             add_step_in_default(step)
 
         # Assert
-        assert contents == (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert contents == (uv_init_dir / "bitbucket-pipelines.yml").read_text()
 
-    def test_add_different_steps_sharing_same_script_step_anchor(self, tmp_path: Path):
+    def test_add_different_steps_sharing_same_script_step_anchor(
+        self, uv_init_dir: Path
+    ):
         # Assert
         step = Step(
             name="Greeting",
@@ -188,7 +190,7 @@ pipelines:
             ),
         )
 
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             # Act
             add_step_in_default(step)
             add_step_in_default(other_step)
@@ -198,9 +200,9 @@ pipelines:
                 item_by_name = get_defined_script_items_via_doc(doc=doc)
                 assert len(item_by_name) == 1
 
-    def test_order(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+    def test_order(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             # This step should be listed second
             add_step_in_default(
                 Step(
@@ -217,7 +219,7 @@ pipelines:
             )
 
         # Assert
-        with open(tmp_path / "bitbucket-pipelines.yml") as f:
+        with open(uv_init_dir / "bitbucket-pipelines.yml") as f:
             contents = f.read()
         assert (
             contents
@@ -243,9 +245,9 @@ pipelines:
         )
 
     def test_placeholder_removed(
-        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             # Arrange
             with usethis_config.set(quiet=True):
                 add_placeholder_step_in_default()
@@ -259,7 +261,7 @@ pipelines:
             )
 
             # Assert
-            with open(tmp_path / "bitbucket-pipelines.yml") as f:
+            with open(uv_init_dir / "bitbucket-pipelines.yml") as f:
                 contents = f.read()
 
             assert (
@@ -289,10 +291,10 @@ pipelines:
             )
 
     def test_add_script_item_to_existing_file(
-        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
         # Arrange
-        (tmp_path / "bitbucket-pipelines.yml").write_text(
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
             """\
 image: atlassian/default-image:3
 definitions:
@@ -313,7 +315,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             add_step_in_default(
                 Step(
                     name="Farewell",
@@ -327,7 +329,7 @@ pipelines:
             )
 
         # Assert
-        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\
@@ -605,9 +607,9 @@ pipelines:
 """
         )
 
-    def test_remove_step_leaving_placeholder(self, tmp_path: Path):
+    def test_remove_step_leaving_placeholder(self, uv_init_dir: Path):
         # Arrange
-        (tmp_path / "bitbucket-pipelines.yml").write_text(
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
             """\
 image: atlassian/default-image:3
 pipelines:
@@ -620,7 +622,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             remove_step_from_default(
                 Step(
                     name="Farewell",
@@ -629,7 +631,7 @@ pipelines:
             )
 
         # Assert
-        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\
@@ -802,9 +804,9 @@ pipelines:
 """
         )
 
-    def test_remove_stage_item_leaving_placeholder(self, tmp_path: Path):
+    def test_remove_stage_item_leaving_placeholder(self, uv_init_dir: Path):
         # Arrange
-        (tmp_path / "bitbucket-pipelines.yml").write_text(
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
             """\
 image: atlassian/default-image:3
 pipelines:
@@ -820,7 +822,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             remove_step_from_default(
                 Step(
                     name="Farewell",
@@ -829,7 +831,7 @@ pipelines:
             )
 
         # Assert
-        contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
         assert (
             contents
             == """\
@@ -986,15 +988,15 @@ pipelines:
               - echo 'Hello, world!'
 """
 
-    def test_contents(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+    def test_contents(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             add_placeholder_step_in_default()
 
         # Assert
-        assert (tmp_path / "bitbucket-pipelines.yml").exists()
+        assert (uv_init_dir / "bitbucket-pipelines.yml").exists()
         assert (
-            tmp_path / "bitbucket-pipelines.yml"
+            uv_init_dir / "bitbucket-pipelines.yml"
         ).read_text() == self.EXPECTED_YML_SIMPLE_PLACEHOLDER
 
         out, _ = capfd.readouterr()

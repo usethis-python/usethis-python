@@ -14,11 +14,11 @@ from usethis._test import change_cwd
 
 
 class TestAddCaches:
-    def test_in_caches(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+    def test_in_caches(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         cache_by_name = {"example": Cache(CachePath("~/.cache/example"))}
 
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             add_bitbucket_pipeline_config()
             capfd.readouterr()
 
@@ -33,14 +33,14 @@ class TestAddCaches:
                 "✔ Adding cache 'example' definition to 'bitbucket-pipelines.yml'.\n"
             )
 
-    def test_already_exists(self, tmp_path: Path):
+    def test_already_exists(self, uv_init_dir: Path):
         # Arrange
         cache_by_name = {
             "uv": Cache(CachePath("~/.cache/uv"))  # uv cache is in the default config
         }
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             add_bitbucket_pipeline_config()
             add_caches(cache_by_name)
 
@@ -121,8 +121,8 @@ pipelines:
             out == "✔ Removing cache 'uv' definition from 'bitbucket-pipelines.yml'.\n"
         )
 
-    def test_roundtrip(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+    def test_roundtrip(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
             # Arrange
             add_bitbucket_pipeline_config()
             add_caches({"mycache": Cache(CachePath("~/.cache/mytool"))})

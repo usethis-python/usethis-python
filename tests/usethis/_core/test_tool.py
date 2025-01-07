@@ -329,6 +329,33 @@ repos:
                 # Assert
                 assert not get_deps_from_group("dev")
 
+        def test_stdout(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: pre-commit
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_repo_dir):
+                use_pre_commit(remove=True)
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
+                "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                "✔ Removing '.pre-commit-config.yaml'.\n"
+                "✔ Removing 'pre-commit' from the 'dev' dependency group.\n"
+            )
+
     class TestBitbucketCIIntegration:
         def test_prexisting(self, uv_init_repo_dir: Path):
             # Arrange
@@ -346,17 +373,21 @@ image: atlassian/default-image:3
             contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
             assert "pre-commit" in contents
 
-        def test_remove(self, uv_init_repo_dir: Path):
+        def test_remove(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
             # Arrange
+            with change_cwd(uv_init_repo_dir), usethis_config.set(quiet=True):
+                use_pre_commit()
             (uv_init_repo_dir / "bitbucket-pipelines.yml").write_text(
                 """\
 image: atlassian/default-image:3
 pipelines:
     default:
-        - step:
+      - step:
             name: Run pre-commit
             script:
-                - echo "Hello, World!"
+              - echo "Hello, World!"
 """
             )
 
@@ -366,9 +397,39 @@ pipelines:
 
             # Assert
             contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
-            assert "pre-commit" not in contents
-            # TODO need to test contents of bitbucket pipelines file explicitly
-            # TODO test messages
+            assert (
+                contents
+                == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Removing pre-commit step from 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
+                "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                "✔ Removing '.pre-commit-config.yaml'.\n"
+                "✔ Removing 'pre-commit' from the 'dev' dependency group.\n"
+            )
 
 
 class TestPyprojectFormat:

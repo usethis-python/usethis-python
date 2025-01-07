@@ -7,12 +7,13 @@ from usethis._integrations.uv.errors import UVSubprocessFailedError
 
 
 def remove_pre_commit_config() -> None:
-    if not (Path.cwd() / ".pre-commit-config.yaml").exists():
+    name = ".pre-commit-config.yaml"
+    if not (Path.cwd() / name).exists():
         # Early exit; the file already doesn't exist
         return
 
-    tick_print("Removing .pre-commit-config.yaml file.")
-    (Path.cwd() / ".pre-commit-config.yaml").unlink()
+    tick_print(f"Removing '{name}'.")
+    (Path.cwd() / name).unlink()
 
 
 def install_pre_commit_hooks() -> None:

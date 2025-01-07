@@ -210,4 +210,4 @@ pipelines:
 
                 # Assert
                 out, _ = capfd.readouterr()
-                assert out == "✔ Removing 'bitbucket-pipelines.yml' file.\n"
+                assert out == "✔ Removing 'bitbucket-pipelines.yml'.\n"

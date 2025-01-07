@@ -7,9 +7,7 @@ from usethis._integrations.bitbucket.steps import (
     add_step_in_default,
     remove_step_from_default,
 )
-from usethis._integrations.pyproject.requires_python import (
-    get_supported_major_python_versions,
-)
+from usethis._integrations.uv.python import get_supported_major_python_versions
 
 
 def is_bitbucket_used() -> bool:

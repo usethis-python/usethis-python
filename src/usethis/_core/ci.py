@@ -29,6 +29,6 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
                 "Consider `usethis tool pytest` to test your code for the pipeline."
             )
 
-        box_print("Run your first pipeline on the Bitbucket website.")
+        box_print("Run your pipeline via the Bitbucket website.")
     else:
         remove_bitbucket_pipeline_config()

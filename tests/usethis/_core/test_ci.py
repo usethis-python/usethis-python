@@ -87,7 +87,7 @@ pipelines:
                         "✔ Adding cache 'pre-commit' definition to 'bitbucket-pipelines.yml'.\n"
                         "✔ Adding 'Run pre-commit' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                         "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
-                        "☐ Run your first pipeline on the Bitbucket website.\n"
+                        "☐ Run your pipeline via the Bitbucket website.\n"
                     )
                 )
 
@@ -175,10 +175,8 @@ pipelines:
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding 'Test - Python 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding 'Test - Python 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-                    "☐ Run your first pipeline on the Bitbucket website.\n"
+                    "☐ Run your pipeline via the Bitbucket website.\n"
                 )
-                # TODO test a similar message situation but where the file already
-                # exists in which case the box_print should not be called
 
             def test_not_mentioned_if_not_used(self, uv_init_dir: Path):
                 # Act

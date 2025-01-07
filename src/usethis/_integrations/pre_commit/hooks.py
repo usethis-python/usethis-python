@@ -80,28 +80,15 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
             # Insert the new hook after the last precedent repo
             # Do this by iterating over the repos and hooks, and inserting the new hook
             # after the last precedent
-            # TODO but what if a repo has multiple hooks and the one we are
-            # inserting now is a precedent for one in the repo? Then we would break
-            # something by inserting this hook afterwards. Related to how to
-            # model stages in bitbucket pipelines
             new_repos = []
             for _repo in doc.model.repos:
                 hooks = _repo.hooks
                 if hooks is None:
                     hooks = []
 
-                # TODO Check consistency in the way we handle placeholders - are they
-                # automatically removed once we have a way to do so?
                 if [hook.id for hook in hooks] != [_PLACEHOLDER_ID]:
                     new_repos.append(_repo)
                 for hook in hooks:
-                    # TODO Also need to think about this precedent logic in terms of how
-                    # it handles repos - there might be other hooks in-between from the same
-                    # repo as the one we are adding, in which case we are "giving up" on
-                    # keeping precedent order so nicely.
-                    # Maybe the solution is that precedent order is in a repo:hook pair, not
-                    # just a hook. more thought needed.
-
                     if hook.id == last_precedent:
                         tick_print(
                             f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'."
@@ -158,8 +145,6 @@ def remove_hook(name: str) -> None:
                     repo.hooks.remove(hook)
 
             # if repo has no hooks, remove it
-            # TODO we shouldn't remove it if we haven't touched the repo, we should be
-            # minimizing the diff. Need to test this.
             if not repo.hooks:
                 doc.model.repos.remove(repo)
 

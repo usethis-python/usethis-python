@@ -186,6 +186,24 @@ repos:
 """
         )
 
+    def test_dont_delete_no_hook_repo(self, tmp_path: Path):
+        (tmp_path / ".pre-commit-config.yaml").write_text(
+            """\
+repos:
+  - repo: local
+"""
+        )
+
+        with change_cwd(tmp_path):
+            remove_hook("bar")
+
+        assert (tmp_path / ".pre-commit-config.yaml").read_text() == (
+            """\
+repos:
+  - repo: local
+"""
+        )
+
 
 class TestGetHookNames:
     def test_empty(self, tmp_path: Path):

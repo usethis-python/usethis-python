@@ -39,7 +39,6 @@ def _get_bitbucket_pre_commit_step() -> Step:
 
 
 def add_bitbucket_pytest_steps() -> None:
-    # TODO need messages to the user and test
     matrix = get_supported_major_python_versions()
     for version in matrix:
         add_step_in_default(

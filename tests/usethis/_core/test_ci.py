@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._ci import add_bitbucket_pytest_steps
 from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import use_pre_commit
 from usethis._integrations.bitbucket.steps import get_steps_in_default
@@ -211,3 +212,54 @@ pipelines:
                 # Assert
                 out, _ = capfd.readouterr()
                 assert out == "✔ Removing 'bitbucket-pipelines.yml'.\n"
+
+
+class TestAddBitbucketPytestSteps:
+    def test_no_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        # Act
+        with change_cwd(uv_init_dir):
+            add_bitbucket_pytest_steps()
+
+        # Assert
+        assert (uv_init_dir / "bitbucket-pipelines.yml").exists()
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Test - Python 3.12
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - uv run --python 3.12 pytest
+      - step:
+            name: Test - Python 3.13
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - uv run --python 3.13 pytest
+"""
+        )
+
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == (
+            "✔ Writing 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding 'Test - Python 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding 'Test - Python 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+        )

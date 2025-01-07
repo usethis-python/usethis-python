@@ -18,8 +18,10 @@ from usethis._integrations.bitbucket.schema import (
     StepItem,
 )
 from usethis._integrations.bitbucket.steps import (
+    _CACHE_LOOKUP,
     Step,
     UnexpectedImportPipelineError,
+    _add_step_caches_via_doc,
     add_placeholder_step_in_default,
     add_step_in_default,
     get_defined_script_items_via_doc,
@@ -1127,3 +1129,33 @@ definitions:
 
         # Assert
         assert item_by_name == {}
+
+
+class TestAddStepCachesViaDoc:
+    def test_unrecognized(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+"""
+        )
+
+        # Act, Assert
+        assert set(_CACHE_LOOKUP.keys()) == {"uv", "pre-commit"}
+        match = (
+            "Unrecognized cache name 'unrecognized' in step 'Greeting'. "
+            "Supported caches are 'uv' and 'pre-commit'."
+        )
+        with (
+            change_cwd(tmp_path),
+            pytest.raises(NotImplementedError, match=match),
+            edit_bitbucket_pipelines_yaml() as doc,
+        ):
+            _add_step_caches_via_doc(
+                step=Step(
+                    name="Greeting",
+                    caches=["unrecognized"],
+                    script=Script(["echo 'Hello, world!'"]),
+                ),
+                doc=doc,
+            )

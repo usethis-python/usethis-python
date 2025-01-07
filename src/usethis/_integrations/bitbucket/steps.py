@@ -304,8 +304,6 @@ def _add_step_caches_via_doc(
             try:
                 cache = _CACHE_LOOKUP[name]
             except KeyError:
-                # TODO test this error message in the same test that the keys are
-                # tested to avoid sync errors
                 msg = (
                     f"Unrecognized cache name '{name}' in step '{step.name}'. "
                     f"Supported caches are 'uv' and 'pre-commit'."

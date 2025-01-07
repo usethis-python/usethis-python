@@ -105,7 +105,8 @@ def apply_pipeweld_instruction(  # noqa: PLR0912, PLR0915
     doc: BitbucketPipelinesYAMLDocument,
 ) -> None:
     if get_pipeweld_step(new_step) != instruction.step:
-        return  # TODO implement handling for moving pre-existing steps
+        # N.B. This doesn't currently handle moving existing steps
+        return
 
     if doc.model.pipelines is None:
         doc.model.pipelines = Pipelines()
@@ -134,7 +135,7 @@ def apply_pipeweld_instruction(  # noqa: PLR0912, PLR0915
 
                 if get_pipeweld_step(item.step) == instruction.after:
                     if isinstance(instruction, InsertSuccessor | InsertParallel):
-                        # TODO handle InsertParallel properly
+                        # N.B. This doesn't currently handle InsertParallel properly
                         items.insert(
                             items.index(item) + 1,
                             StepItem(step=new_step),
@@ -159,7 +160,7 @@ def apply_pipeweld_instruction(  # noqa: PLR0912, PLR0915
 
                     if get_pipeweld_step(step_item.step) == instruction.after:
                         if isinstance(instruction, InsertSuccessor | InsertParallel):
-                            # TODO handle InsertParallel properly
+                            # N.B. This doesn't currently handle InsertParallel properly
                             items.insert(
                                 items.index(item) + 1,
                                 StepItem(step=new_step),
@@ -178,7 +179,7 @@ def apply_pipeweld_instruction(  # noqa: PLR0912, PLR0915
 
                     if get_pipeweld_step(new_step) == instruction.after:
                         if isinstance(instruction, InsertSuccessor | InsertParallel):
-                            # TODO handle InsertParallel properly
+                            # N.B. This doesn't currently handle InsertParallel properly
                             items.insert(
                                 items.index(item) + 1,
                                 StepItem(step=new_step),

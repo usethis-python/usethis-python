@@ -99,9 +99,7 @@ def _insert_step(  # noqa: PLR0912
                 else:
                     # i.e. there is no successor; append
                     component.root.append(step)
-                    return [
-                        InsertSuccessor(after=subcomponent, step=step)
-                    ]  # TODO make sure this is tested
+                    return [InsertSuccessor(after=subcomponent, step=step)]
         elif isinstance(subcomponent, Series):
             added = _insert_step(
                 subcomponent,

@@ -136,9 +136,9 @@ def _add_step_in_default_via_doc(
                     script_items = CommentedSeq()
                     config.definitions.script_items = script_items
 
-                # N.B. when we add the definition, we are relying on this being
-                # an append
-                # TODO revisit this - maybe we should add alphabetically.
+                # N.B. Once we support multiple different types of script items, we will
+                # probably want to enforce a canonical order rather than just append.
+                # See also anchor.py.
                 script_items.append(script_item)
                 script_items = CommentedSeq(script_items)
             else:
@@ -148,11 +148,12 @@ def _add_step_in_default_via_doc(
 
             step.script.root[idx] = script_item
 
-    # N.B. if the step is unrecognized, it will go at the end.
+    # If the step is unrecognized, it will go at the end.
     prerequisites: set[str] = set()
 
-    # TODO shold consider adding all "Test - Python 3.x" steps to run in
-    # parallel
+    # N.B. Currently, we are not accounting for parallelism, whereas all these steps
+    # could be parallel potentially.
+    # See https://github.com/nathanjmcdougall/usethis-python/issues/149
     step_order = [
         "Run pre-commit",
         *[f"Test - Python 3.{maj}" for maj in get_supported_major_python_versions()],
@@ -170,12 +171,6 @@ def _add_step_in_default_via_doc(
     )
     for instruction in weld_result.instructions:
         apply_pipeweld_instruction(instruction=instruction, new_step=step, doc=doc)
-
-    # TODO need to tell the user to review the pipeline, it might be wrong. Test
-    # associated message. This is mostly the case if there are unrecognized
-    # aspects detected, no need if we are starting from scratch and/or fully supported
-    # hooks are already present. And some thought needed around whether we can just take
-    # for granted that things always need review.
 
 
 # TODO refactor the below to reduce complexity and enable the ruff rules
@@ -469,33 +464,3 @@ def get_defined_script_items_via_doc(
         script_anchor_by_name[anchor_name] = script_item_content
 
     return script_anchor_by_name
-
-
-# TODO should test we are not double-defining an anchor with one defined elsewhere in
-# the file. We should forbid some anchor names from being defined outside of the context
-# we expect them.
-# Alternatively, we could just assume that if it has the same name, it's the same anchor.
-# This would probably be better in terms of not needing to hard-fail but it might be
-# a bit dodgy since the anchor might refer to a different kind of object, and hence give
-# invalid results. This needs some thought. Here is a draft of a function to traverse to
-# find all anchors.
-# ruff: noqa: ERA001
-# def find_anchors(yaml_content):
-#     yaml = YAML()
-#     data = yaml.load(yaml_content)
-#     anchors = []
-
-#     def extract_anchors(node):
-#         if isinstance(node, dict):
-#             for key, value in node.items():
-#                 if isinstance(key, Anchor):
-#                     anchors.append(key.anchor)
-#                 extract_anchors(value)
-#         elif isinstance(node, list):
-#             for item in node:
-#                 extract_anchors(item)
-#         elif hasattr(node, 'anchor') and node.anchor.value is not None:
-#             anchors.append(node.anchor.value)
-
-#     extract_anchors(data)
-#     return anchors

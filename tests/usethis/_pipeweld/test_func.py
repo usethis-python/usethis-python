@@ -338,10 +338,22 @@ class TestAdd:
             "A", depgroup("B", category="x"), parallel(depgroup("C", category="x"), "E")
         )
 
-    # TODO need to decide how to determine when a step should be removed via
-    # instructions. We don't need to remove steps which are being added for the first
-    # time. It could just be assumed that names are unique and then it's a "remove if
-    # present" approach.
+    def test_insert_at_end(self):
+        # Arrange
+        step = "C"
+        pipeline = series("A", "B")
+        prerequisites = {"B"}
+
+        # Act
+        result = add(
+            pipeline,
+            step=step,
+            prerequisites=prerequisites,
+        )
+
+        # Assert
+        assert isinstance(result, WeldResult)
+        assert result.solution == series("A", "B", "C")
 
 
 class TestParallelMergePartitions:

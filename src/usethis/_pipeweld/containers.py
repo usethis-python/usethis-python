@@ -23,12 +23,6 @@ class Series(RootModel[list["Series | Parallel | DepGroup | str"]]):
     def __len__(self):
         return len(self.root)
 
-    def __repr__(self):
-        return str(self.root)
-
-    def __print__(self):
-        return str(self.root)
-
 
 class Parallel(RootModel[frozenset["Series | Parallel | DepGroup | str"]]):
     def __hash__(self):
@@ -47,12 +41,6 @@ class Parallel(RootModel[frozenset["Series | Parallel | DepGroup | str"]]):
 
     def __len__(self):
         return len(self.root)
-
-    def __repr__(self):
-        return str(set(self.root))
-
-    def __print__(self):
-        return str(set(self.root))
 
 
 class DepGroup(BaseModel):

@@ -32,10 +32,16 @@ def get_supported_major_python_versions() -> list[int]:
     versions = []
     # TODO do something more graceful for older versions of Python rather than just
     # silently ignoring it.
-    for maj in _ALL_MAJOR_VERSIONS:
-        # TODO this won't work since .0 won't be in >=3.12.6 but we should definitely
-        # test against 3.12.x in that case!
-        if requires_python.contains(f"3.{maj}.0"):
-            versions.append(maj)
+    for major_version in _ALL_MAJOR_VERSIONS:
+        if is_major_python_version_supported(
+            requires_python=requires_python, major_version=major_version
+        ):
+            versions.append(major_version)
 
     return versions
+
+
+def is_major_python_version_supported(
+    *, requires_python: SpecifierSet, major_version: int
+) -> bool:
+    return requires_python.contains(f"3.{major_version}.0")

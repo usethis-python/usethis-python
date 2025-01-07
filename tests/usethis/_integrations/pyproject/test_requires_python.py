@@ -12,6 +12,7 @@ from usethis._integrations.pyproject.requires_python import (
     MissingRequiresPythonError,
     get_requires_python,
     get_supported_major_python_versions,
+    is_major_python_version_supported,
 )
 from usethis._test import change_cwd
 
@@ -101,3 +102,44 @@ name = "foo"
         # Act
         with change_cwd(tmp_path), pytest.raises(MissingRequiresPythonError):
             get_supported_major_python_versions()
+
+
+class TestIsMajorPythonVersionSupported:
+    def test_basic_inclusion(self):
+        # Arrange
+        requires_python = SpecifierSet(specifiers=">=3.12.0")
+        major_version = 12
+
+        # Act
+        result = is_major_python_version_supported(
+            requires_python=requires_python, major_version=major_version
+        )
+
+        # Assert
+        assert result is True
+
+    def test_basic_exclusion(self):
+        # Arrange
+        requires_python = SpecifierSet(specifiers=">=3.12.0")
+        major_version = 11
+
+        # Act
+        result = is_major_python_version_supported(
+            requires_python=requires_python, major_version=major_version
+        )
+
+        # Assert
+        assert result is False
+
+    def test_ignored_minor_lower_bound(self):
+        # Arrange
+        requires_python = SpecifierSet(specifiers=">=3.12.6")
+        major_version = 12
+
+        # Act
+        result = is_major_python_version_supported(
+            requires_python=requires_python, major_version=major_version
+        )
+
+        # Assert
+        assert result is True

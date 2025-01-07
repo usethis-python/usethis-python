@@ -103,8 +103,6 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
                     # just a hook. more thought needed.
 
                     if hook.id == last_precedent:
-                        # TODO Test this message
-                        # TODO Check/test the placeholder can't get to this point.
                         tick_print(
                             f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'."
                         )
@@ -133,7 +131,8 @@ def _get_placeholder_repo_config() -> LocalRepo:
                 id=_PLACEHOLDER_ID,
                 name="Placeholder - add your own hooks!",
                 entry="""uv run python -c "print('hello world!')\"""",
-                language=Language("python"),
+                language=Language("system"),
+                always_run=True,
             )
         ],
     )

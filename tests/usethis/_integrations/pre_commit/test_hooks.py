@@ -4,18 +4,24 @@ import pytest
 
 from usethis._integrations.pre_commit.hooks import (
     DuplicatedHookNameError,
+    _get_placeholder_repo_config,
     add_placeholder_hook,
     add_repo,
     get_hook_names,
     remove_hook,
 )
-from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
+from usethis._integrations.pre_commit.schema import (
+    HookDefinition,
+    Language,
+    LocalRepo,
+    UriRepo,
+)
 from usethis._test import change_cwd
 
 
-class TestAddHook:
+class TestAddRepo:
     def test_unregistered_id(self, tmp_path: Path):
-        (tmp_path / ".pre-commit-config.yaml").write_text("""
+        (tmp_path / ".pre-commit-config.yaml").write_text("""\
 repos:
   - repo: foo
     hooks:
@@ -30,6 +36,81 @@ repos:
                     repo="foo", rev="foo", hooks=[HookDefinition(id="foo", name="foo")]
                 )
             )
+
+    def test_adding_to_existing(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: foo
+    hooks:
+    - id: bar
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="deptry",
+                            name="deptry",
+                            entry="uv run --frozen deptry src",
+                            language=Language("system"),
+                            always_run=True,
+                        )
+                    ],
+                )
+            )
+
+        # Assert
+        assert (
+            (tmp_path / ".pre-commit-config.yaml").read_text()
+            == """\
+repos:
+  - repo: foo
+    hooks:
+      - id: bar
+  - repo: local
+    hooks:
+      - id: deptry
+        name: deptry
+        always_run: true
+        entry: uv run --frozen deptry src
+        language: system
+"""
+        )
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
+
+    def test_placeholder(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Act
+        with change_cwd(tmp_path):
+            add_repo(_get_placeholder_repo_config())
+
+        # Assert
+        assert (
+            (tmp_path / ".pre-commit-config.yaml").read_text()
+            == """\
+repos:
+  - repo: local
+    hooks:
+      - id: placeholder
+        name: Placeholder - add your own hooks!
+        always_run: true
+        entry: uv run python -c "print('hello world!')"
+        language: system
+"""
+        )
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == (
+            "✔ Writing '.pre-commit-config.yaml'.\n"
+            "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
+        )
 
 
 class TestRemoveHook:

@@ -538,6 +538,9 @@ select = ["PT"]
                 # Assert
                 assert not get_deps_from_group("test")
 
+        # TODO we need to test the bitbucket integration, that there is no message
+        # suggesting we use pytest (after all, we just removed it).
+
 
 class TestRuff:
     class TestAdd:

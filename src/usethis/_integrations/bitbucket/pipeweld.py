@@ -136,6 +136,7 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
     if instruction.after is None:
         items.insert(0, StepItem(step=new_step))
     else:
+        has_inserted = False
         for item in items:
             if isinstance(item, StepItem):
                 if get_pipeweld_step(item.step) == instruction.after:
@@ -144,6 +145,7 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
                         items.index(item) + 1,
                         StepItem(step=new_step),
                     )
+                    has_inserted = True
             elif isinstance(item, ParallelItem):
                 if isinstance(item.parallel.root, ParallelSteps):
                     step_items = item.parallel.root.root
@@ -159,18 +161,26 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
                             items.index(item) + 1,
                             StepItem(step=new_step),
                         )
+                        has_inserted = True
+                        break
             elif isinstance(item, StageItem):
-                for step1 in item.stage.steps:
-                    new_step = step1tostep(step1)
+                step1s = item.stage.steps.copy()
 
-                    if get_pipeweld_step(new_step) == instruction.after:
+                for step1 in step1s:
+                    step = step1tostep(step1)
+
+                    if get_pipeweld_step(step) == instruction.after:
                         # N.B. This doesn't currently handle InsertParallel properly
                         items.insert(
                             items.index(item) + 1,
                             StepItem(step=new_step),
                         )
+                        has_inserted = True
             else:
                 assert_never(item)
+
+            if has_inserted:
+                break
 
     if default is None and items:
         pipelines.default = Pipeline(Items(items))

@@ -134,7 +134,7 @@ pipelines:
 """
             )
 
-        def parallel_item(self, tmp_path: Path):
+        def test_parallel_item(self, tmp_path: Path):
             # Arrange
             (tmp_path / "bitbucket-pipelines.yml").write_text(
                 """\
@@ -177,6 +177,102 @@ pipelines:
                 name: qux
                 script:
                   - echo qux
+      - step:
+            name: foo
+            script:
+              - echo foo
+"""
+            )
+
+        def test_parallel_expanded(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          steps:
+            - step:
+                name: baz
+                script:
+                  - echo baz
+            - step:
+                name: qux
+                script:
+                  - echo qux
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertSuccessor(step="foo", after="qux"),
+                    new_step=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            steps:
+              - step:
+                    name: baz
+                    script:
+                      - echo baz
+              - step:
+                    name: qux
+                    script:
+                      - echo qux
+      - step:
+            name: foo
+            script:
+              - echo foo
+"""
+            )
+
+        def test_stage_item(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - stage:
+            steps:
+              - step:
+                    name: baz
+                    script:
+                      - echo baz
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertSuccessor(step="foo", after="baz"),
+                    new_step=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - stage:
+            steps:
+              - step:
+                    name: baz
+                    script:
+                      - echo baz
       - step:
             name: foo
             script:

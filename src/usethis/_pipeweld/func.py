@@ -527,7 +527,7 @@ def _parallel_merge_partitions(  # noqa: PLR0912
 
     instructions = []
     if prerequisite_component is not None:
-        new_instructions, _ = _get_instructions_insert_successor(
+        new_instructions, _ = _get_instructions_for_insertion(
             prerequisite_component, after=predecessor
         )
         instructions.extend(new_instructions)
@@ -536,7 +536,7 @@ def _parallel_merge_partitions(  # noqa: PLR0912
             after = get_endpoint(prerequisite_component)
         else:
             after = predecessor
-        new_instructions, _ = _get_instructions_insert_successor(
+        new_instructions, _ = _get_instructions_for_insertion(
             nondependent_component, after=after
         )
         instructions.extend(new_instructions)
@@ -547,7 +547,7 @@ def _parallel_merge_partitions(  # noqa: PLR0912
             after = get_endpoint(prerequisite_component)
         else:
             after = predecessor
-        new_instructions, _ = _get_instructions_insert_successor(
+        new_instructions, _ = _get_instructions_for_insertion(
             postrequisite_component, after=after
         )
         instructions.extend(new_instructions)
@@ -560,59 +560,86 @@ def _parallel_merge_partitions(  # noqa: PLR0912
     ), instructions
 
 
-def _get_instructions_insert_successor(
-    component: Series | Parallel | DepGroup | str, *, after: str | None
+@singledispatch
+def _get_instructions_for_insertion(
+    component: str | Series | Parallel | DepGroup, *, after: str | None
 ) -> tuple[list[Instruction], str | None]:
-    if isinstance(component, str):
-        return [InsertSuccessor(after=after, step=component)], component
-    elif isinstance(component, Series):
-        instructions = []
-        for idx, subcomponent in enumerate(component.root):
-            new_instructions, endpoint = _get_instructions_insert_successor(
-                subcomponent, after=after
-            )
-            instructions.extend(new_instructions)
-            after = endpoint
-        return instructions, after
-    elif isinstance(component, Parallel):
-        instructions: list[Instruction] = []
-        endpoints = []
-        min_idx = None
-        min_endpoint = None
-        for idx, subcomponent in enumerate(component.root):
-            new_instructions, endpoint = _get_instructions_insert_successor(
-                subcomponent,
-                after=after,
-            )
-            if endpoint is not None and (
-                min_endpoint is None or endpoint < min_endpoint
-            ):
-                min_idx = idx
-                min_endpoint = endpoint
+    """Get the instructions to insert a component after the given step.
 
-            endpoints.append(endpoint)
-            instructions.extend(new_instructions)
+    The instructions are given as individual step-by-step insertions.
 
-        if min_idx is None:
-            msg = "The endpoint of all parallel subcomponents were None unexpectedly"
-            raise AssertionError(msg)
+    Args:
+        component: The component to insert.
+        after: The step to insert the new component after.
 
-        instructions[min_idx] = InsertParallel(
-            after=instructions[min_idx].after, step=instructions[min_idx].step
+    Returns:
+        A tuple containing the instructions to insert the new component and the endpoint
+        of the component after the new step has been inserted.
+    """
+    raise NotImplementedError
+
+
+@_get_instructions_for_insertion.register(str)
+def _(component: str, *, after: str | None) -> tuple[list[Instruction], str | None]:
+    return [InsertSuccessor(after=after, step=component)], component
+
+
+@_get_instructions_for_insertion.register(Series)
+def _(component: Series, *, after: str | None) -> tuple[list[Instruction], str | None]:
+    instructions = []
+    for subcomponent in component.root:
+        new_instructions, endpoint = _get_instructions_for_insertion(
+            subcomponent, after=after
         )
+        instructions.extend(new_instructions)
+        after = endpoint
+    return instructions, after
 
-        sorted_idxs = sorted(range(len(endpoints)), key=lambda k: endpoints[k])
 
-        instructions = [instructions[idx] for idx in sorted_idxs]
+@_get_instructions_for_insertion.register(Parallel)
+def _(
+    component: Parallel, *, after: str | None
+) -> tuple[list[Instruction], str | None]:
+    if len(component.root) == 0:
+        return [], after
 
-        return instructions, min(endpoints)
-    elif isinstance(component, DepGroup):
-        return _get_instructions_insert_successor(
-            component.series,
+    instructions: list[Instruction] = []
+    endpoints = []
+    min_idx = None
+    min_endpoint = None
+    for idx, subcomponent in enumerate(component.root):
+        new_instructions, endpoint = _get_instructions_for_insertion(
+            subcomponent,
             after=after,
         )
-    else:
-        assert_never(component)
+        if endpoint is not None and (min_endpoint is None or endpoint < min_endpoint):
+            min_idx = idx
+            min_endpoint = endpoint
+
+        endpoints.append(endpoint)
+        instructions.extend(new_instructions)
+
+    for idx in range(len(component.root)):
+        if idx != min_idx:
+            instructions[idx] = InsertParallel(
+                after=instructions[idx].after, step=instructions[idx].step
+            )
+
+    sorted_idxs = sorted(range(len(endpoints)), key=lambda k: endpoints[k])
+
+    instructions = [instructions[idx] for idx in sorted_idxs]
+
+    return instructions, min(endpoints)
+
+
+@_get_instructions_for_insertion.register(DepGroup)
+def _(
+    component: DepGroup, *, after: str | None
+) -> tuple[list[Instruction], str | None]:
+    return _get_instructions_for_insertion(
+        component.series,
+        after=after,
+    )
 
 
 def _concat(*components: str | Series | DepGroup | Parallel | None) -> Series | None:

@@ -7,7 +7,9 @@ from usethis._integrations.bitbucket.pipeweld import (
     apply_pipeweld_instruction,
 )
 from usethis._integrations.bitbucket.schema import Script, Step
-from usethis._pipeweld.ops import InsertSuccessor
+from usethis._pipeweld.containers import depgroup, parallel, series
+from usethis._pipeweld.func import _get_instructions_for_insertion
+from usethis._pipeweld.ops import InsertParallel, InsertSuccessor
 from usethis._test import change_cwd
 
 
@@ -279,3 +281,148 @@ pipelines:
               - echo foo
 """
             )
+
+
+class TestGetInstructionsForInsertion:
+    class TestStr:
+        def test_after_str(self):
+            # Arrange
+            component = "foo"
+            after = "bar"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [InsertSuccessor(step="foo", after="bar")]
+            assert endpoint == "foo"
+
+        def test_after_none(self):
+            # Arrange
+            component = "foo"
+            after = None
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [InsertSuccessor(step="foo", after=None)]
+            assert endpoint == "foo"
+
+    class TestSeries:
+        def test_empty(self):
+            # Arrange
+            component = series()
+            after = None
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == []
+            assert endpoint is None
+
+        def test_single(self):
+            # Arrange
+            component = series("A")
+            after = "0"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [InsertSuccessor(step="A", after="0")]
+            assert endpoint == "A"
+
+        def test_multiple(self):
+            # Arrange
+            component = series("A", "B", "C")
+            after = "0"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [
+                InsertSuccessor(step="A", after="0"),
+                InsertSuccessor(step="B", after="A"),
+                InsertSuccessor(step="C", after="B"),
+            ]
+            assert endpoint == "C"
+
+    class TestParallel:
+        def test_empty(self):
+            # Arrange
+            component = parallel()
+            after = None
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == []
+            assert endpoint is None
+
+        def test_single(self):
+            # Arrange
+            component = parallel("A")
+            after = "0"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [InsertSuccessor(step="A", after="0")]
+            assert endpoint == "A"
+
+        def test_multiple(self):
+            # Arrange
+            component = parallel("A", "B", "C")
+            after = "0"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [
+                InsertSuccessor(step="A", after="0"),
+                InsertParallel(step="B", after="0"),
+                InsertParallel(step="C", after="0"),
+            ]
+            assert endpoint == "A"  # Alphabetical order wins tiebreaks
+
+    class TestDepGroup:
+        def test_basic(self):
+            # Arrange
+            component = depgroup("A", series("B", "C"), category="x")
+            after = "0"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [
+                InsertSuccessor(step="A", after="0"),
+                InsertSuccessor(step="B", after="A"),
+                InsertSuccessor(step="C", after="B"),
+            ]
+
+            assert endpoint == "C"

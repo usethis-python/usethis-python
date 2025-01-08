@@ -366,48 +366,19 @@ def _op_series_merge_partitions(
         )
 
 
-# TODO reduce the complexity of the below.
-def _parallel_merge_partitions(  # noqa: PLR0912
+def _parallel_merge_partitions(
     *partitions: Partition, predecessor: str | None
 ) -> tuple[Partition, list[Instruction]]:
-    prerequisite_components = [
-        p.prerequisite_component
-        for p in partitions
-        if p.prerequisite_component is not None
-    ]
-    nondependent_components = [
-        p.nondependent_component
-        for p in partitions
-        if p.nondependent_component is not None
-    ]
-    postrequisite_components = [
-        p.postrequisite_component
-        for p in partitions
-        if p.postrequisite_component is not None
-    ]
-
     # Element-wise parallelism
-    if prerequisite_components:
-        prerequisite_component = _union(*prerequisite_components)
-        if prerequisite_component is not None and len(prerequisite_component) == 1:
-            # Collapse singleton
-            (prerequisite_component,) = prerequisite_component.root
-    else:
-        prerequisite_component = None
-    if nondependent_components:
-        nondependent_component = _union(*nondependent_components)
-        if nondependent_component is not None and len(nondependent_component) == 1:
-            # Collapse singleton
-            (nondependent_component,) = nondependent_component.root
-    else:
-        nondependent_component = None
-    if postrequisite_components:
-        postrequisite_component = _union(*postrequisite_components)
-        if postrequisite_component is not None and len(postrequisite_component) == 1:
-            # Collapse singleton
-            (postrequisite_component,) = postrequisite_component.root
-    else:
-        postrequisite_component = None
+    prerequisite_component = _collapsed_union(
+        *[p.prerequisite_component for p in partitions]
+    )
+    nondependent_component = _collapsed_union(
+        *[p.nondependent_component for p in partitions]
+    )
+    postrequisite_component = _collapsed_union(
+        *[p.postrequisite_component for p in partitions]
+    )
 
     top_ranked_prerequisite_endpoints = [
         p.top_ranked_endpoint
@@ -463,6 +434,16 @@ def _parallel_merge_partitions(  # noqa: PLR0912
         postrequisite_component=postrequisite_component,
         top_ranked_endpoint=top_ranked_endpoint,
     ), instructions
+
+
+def _collapsed_union(
+    *components: str | Series | DepGroup | Parallel | None,
+) -> str | Series | DepGroup | Parallel | None:
+    component = _union(*components)
+    if component is not None and len(component) == 1:
+        # Collapse singleton
+        (component,) = component.root
+    return component
 
 
 @singledispatch

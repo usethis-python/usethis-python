@@ -1,3 +1,4 @@
+from functools import singledispatch
 from typing import assert_never
 from uuid import uuid4
 
@@ -32,8 +33,7 @@ def get_pipeweld_step(step: Step) -> str:
     return step.model_dump_json(exclude_defaults=True)
 
 
-# TODO reduce complexity and enable below ruff rule
-def get_pipeweld_pipeline_from_default(  # noqa: PLR0912
+def get_pipeweld_pipeline_from_default(
     model: PipelinesConfiguration,
 ) -> usethis._pipeweld.containers.Series:
     if model.pipelines is None:
@@ -51,48 +51,59 @@ def get_pipeweld_pipeline_from_default(  # noqa: PLR0912
     else:
         items = default.root.root
 
-    series = []
-    for item in items:
-        if isinstance(item, StepItem):
-            series.append(get_pipeweld_step(item.step))
-        elif isinstance(item, ParallelItem):
-            parallel_steps: set[str] = set()
+    return usethis._pipeweld.containers.series(
+        *[get_pipeweld_object(item) for item in items]
+    )
 
-            if item.parallel is not None:
-                if isinstance(item.parallel.root, ParallelSteps):
-                    step_items = item.parallel.root.root
-                elif isinstance(item.parallel.root, ParallelExpanded):
-                    step_items = item.parallel.root.steps.root
-                else:
-                    assert_never(item.parallel.root)
 
-                for step_item in step_items:
-                    parallel_steps.add(get_pipeweld_step(step_item.step))
+@singledispatch
+def get_pipeweld_object(
+    item: StepItem | ParallelItem | StageItem,
+) -> (
+    str | usethis._pipeweld.containers.Parallel | usethis._pipeweld.containers.DepGroup
+):
+    raise NotImplementedError
 
-            series.append(
-                usethis._pipeweld.containers.Parallel(frozenset(parallel_steps))
-            )
-        elif isinstance(item, StageItem):
-            depgroup_steps: list[str] = []
 
-            if item.stage.name is not None:
-                name = item.stage.name
-            else:
-                name = str(f"Unnamed Stage {uuid4()}")
+@get_pipeweld_object.register
+def _(item: StepItem):
+    return get_pipeweld_step(item.step)
 
-            for step in item.stage.steps:
-                depgroup_steps.append(get_pipeweld_step(step1tostep(step)))
 
-            series.append(
-                usethis._pipeweld.containers.DepGroup(
-                    series=usethis._pipeweld.containers.series(*depgroup_steps),
-                    config_group=name,
-                )
-            )
+@get_pipeweld_object.register
+def _(item: ParallelItem):
+    parallel_steps: set[str] = set()
+
+    if item.parallel is not None:
+        if isinstance(item.parallel.root, ParallelSteps):
+            step_items = item.parallel.root.root
+        elif isinstance(item.parallel.root, ParallelExpanded):
+            step_items = item.parallel.root.steps.root
         else:
-            assert_never(item)
+            assert_never(item.parallel.root)
 
-    return usethis._pipeweld.containers.series(*series)
+        for step_item in step_items:
+            parallel_steps.add(get_pipeweld_step(step_item.step))
+
+    return usethis._pipeweld.containers.Parallel(frozenset(parallel_steps))
+
+
+@get_pipeweld_object.register
+def _(item: StageItem):
+    depgroup_steps: list[str] = []
+
+    if item.stage.name is not None:
+        name = item.stage.name
+    else:
+        name = str(f"Unnamed Stage {uuid4()}")
+
+    for step in item.stage.steps:
+        depgroup_steps.append(get_pipeweld_step(step1tostep(step)))
+
+    return usethis._pipeweld.containers.DepGroup(
+        series=usethis._pipeweld.containers.series(*depgroup_steps),
+        config_group=name,
+    )
 
 
 def apply_pipeweld_instruction(instruction: Instruction, *, new_step: Step) -> None:
@@ -102,8 +113,7 @@ def apply_pipeweld_instruction(instruction: Instruction, *, new_step: Step) -> N
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 
-# TODO: reduce complexity and enable ruff rules
-def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
+def apply_pipeweld_instruction_via_doc(
     instruction: Instruction,
     *,
     new_step: Step,
@@ -133,51 +143,57 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
     if instruction.after is None:
         items.insert(0, StepItem(step=new_step))
     else:
-        has_inserted = False
         for item in items:
-            if isinstance(item, StepItem):
-                if get_pipeweld_step(item.step) == instruction.after:
-                    # N.B. This doesn't currently handle InsertParallel properly
-                    items.insert(
-                        items.index(item) + 1,
-                        StepItem(step=new_step),
-                    )
-                    has_inserted = True
-            elif isinstance(item, ParallelItem):
-                if isinstance(item.parallel.root, ParallelSteps):
-                    step_items = item.parallel.root.root
-                elif isinstance(item.parallel.root, ParallelExpanded):
-                    step_items = item.parallel.root.steps.root
-                else:
-                    assert_never(item.parallel.root)
-
-                for step_item in step_items:
-                    if get_pipeweld_step(step_item.step) == instruction.after:
-                        # N.B. This doesn't currently handle InsertParallel properly
-                        items.insert(
-                            items.index(item) + 1,
-                            StepItem(step=new_step),
-                        )
-                        has_inserted = True
-                        break
-            elif isinstance(item, StageItem):
-                step1s = item.stage.steps.copy()
-
-                for step1 in step1s:
-                    step = step1tostep(step1)
-
-                    if get_pipeweld_step(step) == instruction.after:
-                        # N.B. This doesn't currently handle InsertParallel properly
-                        items.insert(
-                            items.index(item) + 1,
-                            StepItem(step=new_step),
-                        )
-                        has_inserted = True
-            else:
-                assert_never(item)
-
-            if has_inserted:
+            if _is_insertion_necessary(item, instruction=instruction):
+                # N.B. This doesn't currently handle InsertParallel properly
+                items.insert(
+                    items.index(item) + 1,
+                    StepItem(step=new_step),
+                )
                 break
 
     if default is None and items:
         pipelines.default = Pipeline(Items(items))
+
+
+@singledispatch
+def _is_insertion_necessary(
+    item: StepItem | ParallelItem | StageItem,
+    *,
+    instruction: Instruction,
+) -> bool:
+    raise NotImplementedError
+
+
+@_is_insertion_necessary.register
+def _(item: StepItem, *, instruction: Instruction):
+    return get_pipeweld_step(item.step) == instruction.after
+
+
+@_is_insertion_necessary.register
+def _(item: ParallelItem, *, instruction: Instruction):
+    if item.parallel is not None:
+        if isinstance(item.parallel.root, ParallelSteps):
+            step_items = item.parallel.root.root
+        elif isinstance(item.parallel.root, ParallelExpanded):
+            step_items = item.parallel.root.steps.root
+        else:
+            assert_never(item.parallel.root)
+
+        for step_item in step_items:
+            if get_pipeweld_step(step_item.step) == instruction.after:
+                return True
+    return False
+
+
+@_is_insertion_necessary.register
+def _(item: StageItem, *, instruction: Instruction):
+    step1s = item.stage.steps.copy()
+
+    for step1 in step1s:
+        step = step1tostep(step1)
+
+        if get_pipeweld_step(step) == instruction.after:
+            return True
+
+    return False

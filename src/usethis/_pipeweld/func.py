@@ -396,6 +396,10 @@ def _op_series_merge_partitions(
 ) -> Partition:
     if next_partition.prerequisite_component is not None:
         return Partition(
+            # N.B. this concat will never be singleton since at least one of the LHS
+            # partitions will have a non-None prerequisite_component, and this branch of
+            # the if-else will only be taken if the next_partition has a non-None
+            # prerequisite_component too.
             prerequisite_component=_concat(
                 partition.prerequisite_component,
                 partition.nondependent_component,
@@ -410,11 +414,13 @@ def _op_series_merge_partitions(
         next_partition.nondependent_component is not None
         and partition.postrequisite_component is not None
     ):
+        if partition.prerequisite_component is not None:
+            prerequisite_component = partition.prerequisite_component
+        else:
+            prerequisite_component = None
+
         return Partition(
-            prerequisite_component=_concat(
-                partition.prerequisite_component,
-                next_partition.prerequisite_component,
-            ),
+            prerequisite_component=prerequisite_component,
             nondependent_component=partition.nondependent_component,
             postrequisite_component=_concat(
                 partition.postrequisite_component,
@@ -427,12 +433,9 @@ def _op_series_merge_partitions(
         # Element-wise concatenation
         if partition.prerequisite_component is None:
             prerequisite_component = next_partition.prerequisite_component
-        elif next_partition.prerequisite_component is None:
-            prerequisite_component = partition.prerequisite_component
         else:
-            prerequisite_component = _concat(
-                partition.prerequisite_component, next_partition.prerequisite_component
-            )
+            prerequisite_component = partition.prerequisite_component
+
         if partition.nondependent_component is None:
             nondependent_component = next_partition.nondependent_component
         elif next_partition.nondependent_component is None:
@@ -441,10 +444,9 @@ def _op_series_merge_partitions(
             nondependent_component = _concat(
                 partition.nondependent_component, next_partition.nondependent_component
             )
+
         if partition.postrequisite_component is None:
             postrequisite_component = next_partition.postrequisite_component
-        elif next_partition.postrequisite_component is None:
-            postrequisite_component = partition.postrequisite_component
         else:
             postrequisite_component = _concat(
                 partition.postrequisite_component,

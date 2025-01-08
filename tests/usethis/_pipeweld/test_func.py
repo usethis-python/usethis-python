@@ -1,5 +1,13 @@
+import pytest
+
 from usethis._pipeweld.containers import depgroup, parallel, series
-from usethis._pipeweld.func import Partition, _parallel_merge_partitions, add
+from usethis._pipeweld.func import (
+    Partition,
+    _flatten_partition,
+    _op_series_merge_partitions,
+    _parallel_merge_partitions,
+    add,
+)
 from usethis._pipeweld.ops import InsertParallel, InsertSuccessor
 from usethis._pipeweld.result import WeldResult
 
@@ -389,3 +397,273 @@ class TestParallelMergePartitions:
             InsertSuccessor(after="A", step="C"),
             InsertSuccessor(after="C", step="B"),
         ]
+
+
+class TestFlattenPartition:
+    def test_basic(self):
+        # Arrange
+        partition = Partition(
+            prerequisite_component="A",
+            nondependent_component="B",
+            postrequisite_component="C",
+            top_ranked_endpoint="C",
+        )
+
+        # Act
+        result = _flatten_partition(partition)
+
+        # Assert
+        assert result == series("A", "B", "C")
+
+    def test_no_components(self):
+        # Arrange
+        partition = Partition(
+            prerequisite_component=None,
+            nondependent_component=None,
+            postrequisite_component=None,
+            top_ranked_endpoint="fake",
+        )
+
+        # Act, Assert
+        with pytest.raises(ValueError, match="Flatten failed: no components"):
+            _flatten_partition(partition)
+
+
+class TestOpSeriesMergePartitions:
+    def test_rhs_prerequisite_lhs_no_prerequisite(self):
+        # Arrange
+        partition1 = Partition(
+            prerequisite_component=None,
+            nondependent_component="C",
+            postrequisite_component=None,
+            top_ranked_endpoint="C",
+        )
+        partition2 = Partition(
+            prerequisite_component="A",
+            nondependent_component=None,
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )
+
+        # Act
+        partition = _op_series_merge_partitions(partition1, partition2)
+
+        # Assert
+        assert partition == Partition(
+            prerequisite_component=series("C", "A"),
+            nondependent_component=None,
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )
+
+    def test_both_prerequisite(self):
+        # Arrange
+        partition1 = Partition(
+            prerequisite_component="A",
+            nondependent_component=None,
+            postrequisite_component=None,
+            top_ranked_endpoint="A",
+        )
+        partition2 = Partition(
+            prerequisite_component="B",
+            nondependent_component=None,
+            postrequisite_component=None,
+            top_ranked_endpoint="B",
+        )
+
+        # Act
+        partition = _op_series_merge_partitions(partition1, partition2)
+
+        # Assert
+        assert partition == Partition(
+            prerequisite_component=series("A", "B"),
+            nondependent_component=None,
+            postrequisite_component=None,
+            top_ranked_endpoint="B",
+        )
+
+    def test_no_rhs_prerequsite_rhs_non_dependent_and_lhs_postrequsite(self):
+        # Arrange
+        partition1 = Partition(
+            prerequisite_component="A",
+            nondependent_component=None,
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )
+        partition2 = Partition(
+            prerequisite_component=None,
+            nondependent_component="C",
+            postrequisite_component=None,
+            top_ranked_endpoint="C",
+        )
+
+        # Act
+        partition = _op_series_merge_partitions(partition1, partition2)
+
+        # Assert
+        assert partition == Partition(
+            prerequisite_component="A",
+            nondependent_component=None,
+            postrequisite_component=series("B", "C"),
+            top_ranked_endpoint="C",
+        )
+
+    def test_both_prerequisite_rhs_non_dependent_and_lhs_postrequsite(self):
+        # Arrange
+        partition1 = Partition(
+            prerequisite_component="A",
+            nondependent_component=None,
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )
+        partition2 = Partition(
+            prerequisite_component="D",
+            nondependent_component="C",
+            postrequisite_component=None,
+            top_ranked_endpoint="C",
+        )
+
+        # Act
+        partition = _op_series_merge_partitions(partition1, partition2)
+
+        # Assert
+        assert partition == Partition(
+            prerequisite_component=series("A", "B", "D"),
+            nondependent_component="C",
+            postrequisite_component=None,
+            top_ranked_endpoint="C",
+        )
+
+    def test_no_prerequsites_rhs_non_dependent_and_lhs_postrequsite(self):
+        # Arrange
+        partition1 = Partition(
+            prerequisite_component=None,
+            nondependent_component=None,
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )
+        partition2 = Partition(
+            prerequisite_component=None,
+            nondependent_component="A",
+            postrequisite_component=None,
+            top_ranked_endpoint="A",
+        )
+
+        # Act
+        partition = _op_series_merge_partitions(partition1, partition2)
+
+        # Assert
+        assert partition == Partition(
+            prerequisite_component=None,
+            nondependent_component=None,
+            postrequisite_component=series("B", "A"),
+            top_ranked_endpoint="A",
+        )
+
+    def test_no_prequisites_and_no_nondependents_both_postrequisites(self):
+        # Arrange
+        partition1 = Partition(
+            prerequisite_component=None,
+            nondependent_component=None,
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )
+        partition2 = Partition(
+            prerequisite_component=None,
+            nondependent_component=None,
+            postrequisite_component="A",
+            top_ranked_endpoint="A",
+        )
+
+        # Act
+        partition = _op_series_merge_partitions(partition1, partition2)
+
+        # Assert
+        assert partition == Partition(
+            prerequisite_component=None,
+            nondependent_component=None,
+            postrequisite_component=series("B", "A"),
+            top_ranked_endpoint="A",
+        )
+
+    def test_no_rhs_prequisite_and_lhs_prerequisite_and_no_nondependents(self):
+        # Arrange
+        partition1 = Partition(
+            prerequisite_component="A",
+            nondependent_component=None,
+            postrequisite_component=None,
+            top_ranked_endpoint="A",
+        )
+        partition2 = Partition(
+            prerequisite_component=None,
+            nondependent_component=None,
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )
+
+        # Act
+        partition = _op_series_merge_partitions(partition1, partition2)
+
+        # Assert
+        assert partition == Partition(
+            prerequisite_component="A",
+            nondependent_component=None,
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )
+
+    def test_rhs_nondependents_and_no_prequisites_and_lhs_prerequisite_and_nondependents(
+        self,
+    ):
+        # Arrange
+        partition1 = Partition(
+            prerequisite_component="A",
+            nondependent_component="C",
+            postrequisite_component=None,
+            top_ranked_endpoint="A",
+        )
+        partition2 = Partition(
+            prerequisite_component=None,
+            nondependent_component="B",
+            postrequisite_component=None,
+            top_ranked_endpoint="B",
+        )
+
+        # Act
+        partition = _op_series_merge_partitions(partition1, partition2)
+
+        # Assert
+        assert partition == Partition(
+            prerequisite_component="A",
+            nondependent_component=series("C", "B"),
+            postrequisite_component=None,
+            top_ranked_endpoint="B",
+        )
+
+    def test_rhs_no_nondependents_and_no_prequisites_and_lhs_prerequisite_and_nondependents(
+        self,
+    ):
+        # Arrange
+        partition1 = Partition(
+            prerequisite_component="A",
+            nondependent_component="C",
+            postrequisite_component=None,
+            top_ranked_endpoint="A",
+        )
+        partition2 = Partition(
+            prerequisite_component=None,
+            nondependent_component=None,
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )
+
+        # Act
+        partition = _op_series_merge_partitions(partition1, partition2)
+
+        # Assert
+        assert partition == Partition(
+            prerequisite_component="A",
+            nondependent_component="C",
+            postrequisite_component="B",
+            top_ranked_endpoint="B",
+        )

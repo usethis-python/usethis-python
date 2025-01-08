@@ -1,13 +1,34 @@
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
 from usethis._integrations.bitbucket.pipeweld import (
     apply_pipeweld_instruction,
+    get_pipeweld_pipeline_from_default,
 )
-from usethis._integrations.bitbucket.schema import Script, Step
-from usethis._pipeweld.containers import depgroup, parallel, series
+from usethis._integrations.bitbucket.schema import (
+    Image,
+    ImageName,
+    ImportPipeline,
+    Items,
+    Parallel,
+    ParallelExpanded,
+    ParallelItem,
+    ParallelSteps,
+    Pipeline,
+    Pipelines,
+    PipelinesConfiguration,
+    Script,
+    Stage,
+    StageItem,
+    Step,
+    Step1,
+    Step2,
+    StepItem,
+)
+from usethis._pipeweld.containers import DepGroup, depgroup, parallel, series
 from usethis._pipeweld.func import _get_instructions_for_insertion
 from usethis._pipeweld.ops import InsertParallel, InsertSuccessor
 from usethis._test import change_cwd
@@ -410,7 +431,7 @@ class TestGetInstructionsForInsertion:
     class TestDepGroup:
         def test_basic(self):
             # Arrange
-            component = depgroup("A", series("B", "C"), category="x")
+            component = depgroup("A", series("B", "C"), config_group="x")
             after = "0"
 
             # Act
@@ -428,4 +449,219 @@ class TestGetInstructionsForInsertion:
             assert endpoint == "C"
 
 
-# TODO test get_pipeweld_pipeline_from_default
+class TestGetPipeweldPipelineFromDefault:
+    def test_image_only(self):
+        # Arrange
+        model = PipelinesConfiguration(
+            image=Image(ImageName("atlassian/default-image:3"))
+        )
+
+        # Act
+        result = get_pipeweld_pipeline_from_default(model)
+
+        # Assert
+        assert result == series()
+
+    def test_import_pipeline_raises(self):
+        # Arrange
+        model = PipelinesConfiguration(
+            pipelines=Pipelines(
+                default=Pipeline(
+                    ImportPipeline(
+                        # import is a keyword so we need to use a dict
+                        **{"import": "shared-pipeline:master:share-pipeline-1"}
+                    )
+                ),
+            ),
+        )
+
+        # Act, Assert
+        with pytest.raises(UnexpectedImportPipelineError):
+            get_pipeweld_pipeline_from_default(model)
+
+    def test_series(self):
+        # Arrange
+        model = PipelinesConfiguration(
+            pipelines=Pipelines(
+                default=Pipeline(
+                    Items(
+                        [
+                            StepItem(
+                                step=Step(
+                                    name="foo",
+                                    script=Script(["echo foo"]),
+                                )
+                            )
+                        ]
+                    )
+                ),
+            ),
+        )
+
+        # Act
+        result = get_pipeweld_pipeline_from_default(model)
+
+        # Assert
+        assert result == series("foo")
+
+    def test_parallel(self):
+        # Arrange
+        model = PipelinesConfiguration(
+            pipelines=Pipelines(
+                default=Pipeline(
+                    Items(
+                        [
+                            ParallelItem(
+                                parallel=Parallel(
+                                    ParallelSteps(
+                                        [
+                                            StepItem(
+                                                step=Step(
+                                                    name="foo",
+                                                    script=Script(["echo foo"]),
+                                                )
+                                            ),
+                                            StepItem(
+                                                step=Step(
+                                                    name="bar",
+                                                    script=Script(["echo bar"]),
+                                                )
+                                            ),
+                                        ]
+                                    )
+                                )
+                            )
+                        ]
+                    )
+                ),
+            ),
+        )
+
+        # Act
+        result = get_pipeweld_pipeline_from_default(model)
+
+        # Assert
+        assert result == series(
+            parallel("foo", "bar"),
+        )
+
+    def test_parallel_expanded(self):
+        # Arrange
+        model = PipelinesConfiguration(
+            pipelines=Pipelines(
+                default=Pipeline(
+                    Items(
+                        [
+                            ParallelItem(
+                                parallel=Parallel(
+                                    ParallelExpanded(
+                                        steps=ParallelSteps(
+                                            [
+                                                StepItem(
+                                                    step=Step(
+                                                        name="foo",
+                                                        script=Script(["echo foo"]),
+                                                    )
+                                                ),
+                                                StepItem(
+                                                    step=Step(
+                                                        name="bar",
+                                                        script=Script(["echo bar"]),
+                                                    )
+                                                ),
+                                            ]
+                                        )
+                                    )
+                                )
+                            )
+                        ]
+                    )
+                ),
+            ),
+        )
+
+        # Act
+        result = get_pipeweld_pipeline_from_default(model)
+
+        # Assert
+        assert result == series(
+            parallel("foo", "bar"),
+        )
+
+    def test_named_stage_item(self):
+        # Arrange
+        model = PipelinesConfiguration(
+            pipelines=Pipelines(
+                default=Pipeline(
+                    Items(
+                        [
+                            StageItem(
+                                stage=Stage(
+                                    name="mystage",
+                                    steps=[
+                                        Step1(
+                                            step=Step2(
+                                                name="foo",
+                                                script=Script(["echo foo"]),
+                                            )
+                                        )
+                                    ],
+                                )
+                            )
+                        ]
+                    )
+                ),
+            ),
+        )
+
+        # Act
+        result = get_pipeweld_pipeline_from_default(model)
+
+        # Assert
+        assert result == series(
+            depgroup(
+                "foo",
+                config_group="mystage",
+            )
+        )
+
+    def test_unnamed_stage_item(self):
+        # Arrange
+        model = PipelinesConfiguration(
+            pipelines=Pipelines(
+                default=Pipeline(
+                    Items(
+                        [
+                            StageItem(
+                                stage=Stage(
+                                    steps=[
+                                        Step1(
+                                            step=Step2(
+                                                name="foo",
+                                                script=Script(["echo foo"]),
+                                            )
+                                        )
+                                    ],
+                                )
+                            )
+                        ]
+                    )
+                ),
+            ),
+        )
+
+        # Act
+        result = get_pipeweld_pipeline_from_default(model)
+
+        # Assert
+        dg = result[0]
+        assert isinstance(dg, DepGroup)
+        assert result == series(
+            depgroup(
+                "foo",
+                config_group=dg.config_group,
+            )
+        )
+        assert dg.config_group.startswith("Unnamed Stage ")
+        uuid = dg.config_group.removeprefix("Unnamed Stage ")
+        UUID(uuid)  # Raises no error

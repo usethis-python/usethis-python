@@ -75,16 +75,13 @@ def get_pipeweld_pipeline_from_default(  # noqa: PLR0912
         elif isinstance(item, StageItem):
             depgroup_steps: list[str] = []
 
-            if item.stage is not None:
-                if item.stage.name is not None:
-                    name = item.stage.name
-                else:
-                    name = str(f"Unnamed Stage {uuid4()}")
-
-                for step in item.stage.steps:
-                    depgroup_steps.append(get_pipeweld_step(step1tostep(step)))
+            if item.stage.name is not None:
+                name = item.stage.name
             else:
                 name = str(f"Unnamed Stage {uuid4()}")
+
+            for step in item.stage.steps:
+                depgroup_steps.append(get_pipeweld_step(step1tostep(step)))
 
             series.append(
                 usethis._pipeweld.containers.DepGroup(

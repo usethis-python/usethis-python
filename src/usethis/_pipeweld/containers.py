@@ -59,5 +59,5 @@ def series(*args: Series | Parallel | DepGroup | str) -> Series:
     return Series(list(args))
 
 
-def depgroup(*args: Series | Parallel | DepGroup | str, category: str) -> DepGroup:
-    return DepGroup(series=series(*args), config_group=category)
+def depgroup(*args: Series | Parallel | DepGroup | str, config_group: str) -> DepGroup:
+    return DepGroup(series=series(*args), config_group=config_group)

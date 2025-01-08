@@ -349,17 +349,17 @@ def _(
     )
     partition = Partition(
         prerequisite_component=depgroup(
-            partition.prerequisite_component, category=component.config_group
+            partition.prerequisite_component, config_group=component.config_group
         )
         if partition.prerequisite_component is not None
         else None,
         nondependent_component=depgroup(
-            partition.nondependent_component, category=component.config_group
+            partition.nondependent_component, config_group=component.config_group
         )
         if partition.nondependent_component is not None
         else None,
         postrequisite_component=depgroup(
-            partition.postrequisite_component, category=component.config_group
+            partition.postrequisite_component, config_group=component.config_group
         )
         if partition.postrequisite_component is not None
         else None,

@@ -75,7 +75,7 @@ class TestParallel:
 
 class TestDepGroup:
     def test_func(self):
-        assert depgroup("a", "b", category="group") == DepGroup(
+        assert depgroup("a", "b", config_group="group") == DepGroup(
             series=series("a", "b"), config_group="group"
         )
 

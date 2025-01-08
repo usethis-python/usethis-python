@@ -307,7 +307,7 @@ class TestAdd:
     def test_config_groups(self):
         # Arrange
         step = "A"
-        pipeline = series(depgroup("B", "C", category="x"))
+        pipeline = series(depgroup("B", "C", config_group="x"))
         prerequisites = {"B"}
         postrequisites = {"C"}
 
@@ -322,13 +322,13 @@ class TestAdd:
         # Assert
         assert isinstance(result, WeldResult)
         assert result.solution == series(
-            depgroup("B", category="x"), "A", depgroup("C", category="x")
+            depgroup("B", config_group="x"), "A", depgroup("C", config_group="x")
         )
 
     def test_config_groups_in_series(self):
         # Arrange
         step = "E"
-        pipeline = series("A", depgroup("B", "C", category="x"))
+        pipeline = series("A", depgroup("B", "C", config_group="x"))
         prerequisites = {"B"}
         compatible_config_groups = {"x"}
 
@@ -343,7 +343,9 @@ class TestAdd:
         # Assert
         assert isinstance(result, WeldResult)
         assert result.solution == series(
-            "A", depgroup("B", category="x"), parallel(depgroup("C", category="x"), "E")
+            "A",
+            depgroup("B", config_group="x"),
+            parallel(depgroup("C", config_group="x"), "E"),
         )
 
     def test_insert_at_end(self):

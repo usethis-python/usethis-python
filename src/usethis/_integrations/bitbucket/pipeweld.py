@@ -2,8 +2,12 @@ from typing import assert_never
 from uuid import uuid4
 
 import usethis._pipeweld.containers
+from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
-from usethis._integrations.bitbucket.io import BitbucketPipelinesYAMLDocument
+from usethis._integrations.bitbucket.io import (
+    BitbucketPipelinesYAMLDocument,
+    edit_bitbucket_pipelines_yaml,
+)
 from usethis._integrations.bitbucket.schema import (
     ImportPipeline,
     Items,
@@ -18,6 +22,7 @@ from usethis._integrations.bitbucket.schema import (
     StepItem,
 )
 from usethis._integrations.bitbucket.schema_utils import step1tostep
+from usethis._integrations.yaml.update import update_ruamel_yaml_map
 from usethis._pipeweld.ops import BaseOperation, InsertParallel, InsertSuccessor
 
 
@@ -97,8 +102,15 @@ def get_pipeweld_pipeline_from_default(  # noqa: PLR0912
     return usethis._pipeweld.containers.series(*series)
 
 
+def apply_pipeweld_instruction(instruction: BaseOperation, *, new_step: Step) -> None:
+    with edit_bitbucket_pipelines_yaml() as doc:
+        apply_pipeweld_instruction_via_doc(instruction, doc=doc, new_step=new_step)
+        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
+        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+
+
 # TODO: reduce complexity and enable ruff rules
-def apply_pipeweld_instruction(  # noqa: PLR0912, PLR0915
+def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912, PLR0915
     instruction: BaseOperation,
     *,
     new_step: Step,
@@ -130,9 +142,6 @@ def apply_pipeweld_instruction(  # noqa: PLR0912, PLR0915
     else:
         for item in items:
             if isinstance(item, StepItem):
-                if item.step is None:
-                    continue
-
                 if get_pipeweld_step(item.step) == instruction.after:
                     if isinstance(instruction, InsertSuccessor | InsertParallel):
                         # N.B. This doesn't currently handle InsertParallel properly

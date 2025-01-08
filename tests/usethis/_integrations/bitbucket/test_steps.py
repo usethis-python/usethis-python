@@ -864,16 +864,6 @@ pipelines:
 
 class TestGetStepsInPipelineItem:
     class TestStepItem:
-        def test_none(self):
-            # Arrange
-            item = StepItem(step=None)
-
-            # Act
-            steps = get_steps_in_pipeline_item(item)
-
-            # Assert
-            assert steps == []
-
         def test_step(self):
             # Arrange
             step = Step(script=Script(["echo 'Hello, world!'"]))

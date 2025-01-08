@@ -17,7 +17,7 @@ from usethis._integrations.bitbucket.io import (
     edit_bitbucket_pipelines_yaml,
 )
 from usethis._integrations.bitbucket.pipeweld import (
-    apply_pipeweld_instruction,
+    apply_pipeweld_instruction_via_doc,
     get_pipeweld_pipeline_from_default,
     get_pipeweld_step,
 )
@@ -170,7 +170,9 @@ def _add_step_in_default_via_doc(
         prerequisites=prerequisites,
     )
     for instruction in weld_result.instructions:
-        apply_pipeweld_instruction(instruction=instruction, new_step=step, doc=doc)
+        apply_pipeweld_instruction_via_doc(
+            instruction=instruction, new_step=step, doc=doc
+        )
 
 
 # TODO refactor the below to reduce complexity and enable the ruff rules

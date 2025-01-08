@@ -48,7 +48,7 @@ dev = [
   "deptry>=0.20.0",
   "import-linter>=2.1",
   "pre-commit>=4.0.1",
-  "pyright>=1.1.390",
+  "pyright>=1.1.391",
   "ruff>=0.7.1",
 ]
 test = [

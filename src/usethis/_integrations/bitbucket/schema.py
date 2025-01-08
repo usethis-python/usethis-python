@@ -7,7 +7,7 @@
 # pyright: reportGeneralTypeIssues=false
 # plus manually add Definitions.scripts for type hinting
 # plus manually add ScriptItemAnchor as a root type of Script, and import it
-
+# plus manually forbid StepItem.step from being None
 
 from __future__ import annotations
 
@@ -461,7 +461,7 @@ class StepItem(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    step: Step | None = None
+    step: Step
 
 
 class ParallelSteps(RootModel[list[StepItem]]):

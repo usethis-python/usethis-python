@@ -12,7 +12,7 @@ from usethis._pipeweld.containers import (
     parallel,
     series,
 )
-from usethis._pipeweld.ops import BaseOperation, InsertParallel, InsertSuccessor
+from usethis._pipeweld.ops import InsertParallel, InsertSuccessor, Instruction
 from usethis._pipeweld.result import WeldResult
 
 # TODO conside a class structure with global state e.g. for instructions, compatible_config_groups, etc. to reduce complexity
@@ -77,7 +77,7 @@ def _insert_step(  # noqa: PLR0912
     prerequisites: set[str],
     postrequisites: set[str],
     compatible_config_groups: set[str],
-) -> list[BaseOperation]:
+) -> list[Instruction]:
     # Iterate through the pipeline and insert the step
     # Work backwards until we find a pre-requisite (which is the final one), and then
     # insert after it - in parallel to its successor (or append if no successor). If we
@@ -147,7 +147,7 @@ def _insert_before_postrequisites(  # noqa: PLR0913
     step: str,
     postrequisites: set[str],
     compatible_config_groups: set[str],
-) -> list[BaseOperation]:
+) -> list[Instruction]:
     successor_component = component.root[idx + 1]
 
     if isinstance(successor_component, Parallel) and len(successor_component.root) == 1:
@@ -229,7 +229,7 @@ def partition_component(
     predecessor: str | None,
     prerequisites: set[str],
     postrequisites: set[str],
-) -> tuple[Partition, list[BaseOperation]]:
+) -> tuple[Partition, list[Instruction]]:
     raise NotImplementedError
 
 
@@ -240,7 +240,7 @@ def _(
     predecessor: str | None,
     prerequisites: set[str],
     postrequisites: set[str],
-) -> tuple[Partition, list[BaseOperation]]:
+) -> tuple[Partition, list[Instruction]]:
     if component in prerequisites:
         return Partition(
             prerequisite_component=component,
@@ -265,7 +265,7 @@ def _(
     predecessor: str | None,
     prerequisites: set[str],
     postrequisites: set[str],
-) -> tuple[Partition, list[BaseOperation]]:
+) -> tuple[Partition, list[Instruction]]:
     partition_with_instruction_tuples = [
         partition_component(
             subcomponent,
@@ -308,7 +308,7 @@ def _(
     predecessor: str | None,
     prerequisites: set[str],
     postrequisites: set[str],
-) -> tuple[Partition, list[BaseOperation]]:
+) -> tuple[Partition, list[Instruction]]:
     partitions, instructions = _get_series_partitions(
         component,
         predecessor=predecessor,
@@ -340,7 +340,7 @@ def _(
     predecessor: str | None,
     prerequisites: set[str],
     postrequisites: set[str],
-) -> tuple[Partition, list[BaseOperation]]:
+) -> tuple[Partition, list[Instruction]]:
     partition, instructions = partition_component(
         component.series,
         predecessor=predecessor,
@@ -374,7 +374,7 @@ def _get_series_partitions(
     predecessor: str | None,
     prerequisites: set[str],
     postrequisites: set[str],
-) -> tuple[list[Partition], list[BaseOperation]]:
+) -> tuple[list[Partition], list[Instruction]]:
     partitions: list[Partition] = []
     instructions = []
     for subcomponent in component.root:
@@ -464,7 +464,7 @@ def _op_series_merge_partitions(
 # TODO reduce the complexity of the below.
 def _parallel_merge_partitions(  # noqa: PLR0912
     *partitions: Partition, predecessor: str | None
-) -> tuple[Partition, list[BaseOperation]]:
+) -> tuple[Partition, list[Instruction]]:
     prerequisite_components = [
         p.prerequisite_component
         for p in partitions
@@ -562,7 +562,7 @@ def _parallel_merge_partitions(  # noqa: PLR0912
 
 def _get_instructions_insert_successor(
     component: Series | Parallel | DepGroup | str, *, after: str | None
-) -> tuple[list[BaseOperation], str | None]:
+) -> tuple[list[Instruction], str | None]:
     if isinstance(component, str):
         return [InsertSuccessor(after=after, step=component)], component
     elif isinstance(component, Series):
@@ -575,7 +575,7 @@ def _get_instructions_insert_successor(
             after = endpoint
         return instructions, after
     elif isinstance(component, Parallel):
-        instructions: list[BaseOperation] = []
+        instructions: list[Instruction] = []
         endpoints = []
         min_idx = None
         min_endpoint = None

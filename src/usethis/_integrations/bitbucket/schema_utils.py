@@ -10,13 +10,6 @@ def step1tostep(step1: Step1) -> Step:
     circumstances. This gives rise to strange naming in the output of
     datamodel-code-generator (which is repeated here for consistency).
     """
-    if step1.step is None:
-        msg = (
-            "When parsing Bitbucket pipelines, expected each step of a stage to itself "
-            "have a non-null step, but got null."
-        )
-        raise ValueError(msg)
-
     step2 = step1.step
 
     step = Step(**step2.model_dump())

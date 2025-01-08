@@ -12,3 +12,6 @@ class InsertParallel(BaseOperation):
 
 class InsertSuccessor(BaseOperation):
     pass
+
+
+type Instruction = InsertSuccessor | InsertParallel

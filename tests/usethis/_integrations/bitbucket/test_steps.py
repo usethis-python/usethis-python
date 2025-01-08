@@ -876,16 +876,6 @@ class TestGetStepsInPipelineItem:
             assert steps == [step]
 
     class TestParallelItem:
-        def test_none(self):
-            # Arrange
-            item = ParallelItem(parallel=None)
-
-            # Act
-            steps = get_steps_in_pipeline_item(item)
-
-            # Assert
-            assert steps == []
-
         def test_parallel_steps(self):
             # Arrange
             original_steps = [
@@ -927,23 +917,12 @@ class TestGetStepsInPipelineItem:
             assert steps == original_steps
 
     class TestStageItem:
-        def test_none(self):
-            # Arrange
-            item = StageItem(stage=None)
-
-            # Act
-            steps = get_steps_in_pipeline_item(item)
-
-            # Assert
-            assert steps == []
-
         def test_steps(self):
             # Arrange
             script = Script(["echo 'Hello, world!'"])
             item = StageItem(
                 stage=Stage(
                     steps=[
-                        Step1(step=None),
                         Step1(
                             step=Step2(
                                 name="greetings",

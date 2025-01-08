@@ -23,7 +23,7 @@ from usethis._integrations.bitbucket.schema import (
 )
 from usethis._integrations.bitbucket.schema_utils import step1tostep
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
-from usethis._pipeweld.ops import BaseOperation, InsertParallel, InsertSuccessor
+from usethis._pipeweld.ops import Instruction
 
 
 def get_pipeweld_step(step: Step) -> str:
@@ -54,8 +54,6 @@ def get_pipeweld_pipeline_from_default(  # noqa: PLR0912
     series = []
     for item in items:
         if isinstance(item, StepItem):
-            if item.step is None:
-                continue
             series.append(get_pipeweld_step(item.step))
         elif isinstance(item, ParallelItem):
             parallel_steps: set[str] = set()
@@ -69,8 +67,6 @@ def get_pipeweld_pipeline_from_default(  # noqa: PLR0912
                     assert_never(item.parallel.root)
 
                 for step_item in step_items:
-                    if step_item.step is None:
-                        continue
                     parallel_steps.add(get_pipeweld_step(step_item.step))
 
             series.append(
@@ -102,7 +98,7 @@ def get_pipeweld_pipeline_from_default(  # noqa: PLR0912
     return usethis._pipeweld.containers.series(*series)
 
 
-def apply_pipeweld_instruction(instruction: BaseOperation, *, new_step: Step) -> None:
+def apply_pipeweld_instruction(instruction: Instruction, *, new_step: Step) -> None:
     with edit_bitbucket_pipelines_yaml() as doc:
         apply_pipeweld_instruction_via_doc(instruction, doc=doc, new_step=new_step)
         dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
@@ -110,8 +106,8 @@ def apply_pipeweld_instruction(instruction: BaseOperation, *, new_step: Step) ->
 
 
 # TODO: reduce complexity and enable ruff rules
-def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912, PLR0915
-    instruction: BaseOperation,
+def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
+    instruction: Instruction,
     *,
     new_step: Step,
     doc: BitbucketPipelinesYAMLDocument,
@@ -143,19 +139,12 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912, PLR0915
         for item in items:
             if isinstance(item, StepItem):
                 if get_pipeweld_step(item.step) == instruction.after:
-                    if isinstance(instruction, InsertSuccessor | InsertParallel):
-                        # N.B. This doesn't currently handle InsertParallel properly
-                        items.insert(
-                            items.index(item) + 1,
-                            StepItem(step=new_step),
-                        )
-                    else:
-                        msg = f"Unexpected instruction type: {instruction}"
-                        raise NotImplementedError(msg)
+                    # N.B. This doesn't currently handle InsertParallel properly
+                    items.insert(
+                        items.index(item) + 1,
+                        StepItem(step=new_step),
+                    )
             elif isinstance(item, ParallelItem):
-                if item.parallel is None:
-                    continue
-
                 if isinstance(item.parallel.root, ParallelSteps):
                     step_items = item.parallel.root.root
                 elif isinstance(item.parallel.root, ParallelExpanded):
@@ -164,38 +153,22 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912, PLR0915
                     assert_never(item.parallel.root)
 
                 for step_item in step_items:
-                    if step_item.step is None:
-                        continue
-
                     if get_pipeweld_step(step_item.step) == instruction.after:
-                        if isinstance(instruction, InsertSuccessor | InsertParallel):
-                            # N.B. This doesn't currently handle InsertParallel properly
-                            items.insert(
-                                items.index(item) + 1,
-                                StepItem(step=new_step),
-                            )
-                        else:
-                            msg = f"Unexpected instruction type: {instruction}"
-                            raise NotImplementedError(msg)
+                        # N.B. This doesn't currently handle InsertParallel properly
+                        items.insert(
+                            items.index(item) + 1,
+                            StepItem(step=new_step),
+                        )
             elif isinstance(item, StageItem):
-                if item.stage is None:
-                    continue
-
                 for step1 in item.stage.steps:
-                    if step1 is None:
-                        continue
                     new_step = step1tostep(step1)
 
                     if get_pipeweld_step(new_step) == instruction.after:
-                        if isinstance(instruction, InsertSuccessor | InsertParallel):
-                            # N.B. This doesn't currently handle InsertParallel properly
-                            items.insert(
-                                items.index(item) + 1,
-                                StepItem(step=new_step),
-                            )
-                        else:
-                            msg = f"Unexpected instruction type: {instruction}"
-                            raise NotImplementedError(msg)
+                        # N.B. This doesn't currently handle InsertParallel properly
+                        items.insert(
+                            items.index(item) + 1,
+                            StepItem(step=new_step),
+                        )
             else:
                 assert_never(item)
 

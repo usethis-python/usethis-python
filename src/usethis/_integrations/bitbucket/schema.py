@@ -8,6 +8,9 @@
 # plus manually add Definitions.scripts for type hinting
 # plus manually add ScriptItemAnchor as a root type of Script, and import it
 # plus manually forbid StepItem.step from being None
+# plus manually forbid Step1.step from being None
+# plus manually forbid ParallelItem.parallel from being None
+# plus manually forbid StageItem.stage from being None
 
 from __future__ import annotations
 
@@ -412,7 +415,7 @@ class Step2(StepBase):
 
 
 class Step1(BaseModel):
-    step: Step2 | None = None
+    step: Step2
 
 
 class Stage(BaseModel):
@@ -454,7 +457,7 @@ class StageItem(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    stage: Stage | None = None
+    stage: Stage
 
 
 class StepItem(BaseModel):
@@ -490,7 +493,7 @@ class ParallelItem(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    parallel: Parallel | None = None
+    parallel: Parallel
 
 
 class Items(RootModel[list[StepItem | ParallelItem | StageItem]]):

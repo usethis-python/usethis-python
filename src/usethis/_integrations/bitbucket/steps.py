@@ -204,9 +204,6 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
         new_items: list[StepItem | ParallelItem | StageItem] = []
         for item in items:
             if isinstance(item, ParallelItem):
-                if item.parallel is None:
-                    continue
-
                 par = item.parallel.root
 
                 if isinstance(par, ParallelSteps):
@@ -218,9 +215,6 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
 
                 new_step_items: list[StepItem] = []
                 for step_item in step_items:
-                    if step_item.step is None:
-                        continue
-
                     if _steps_are_equivalent(step_item.step, step):
                         continue
 
@@ -243,16 +237,10 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
                 else:
                     assert_never(par)
             elif isinstance(item, StageItem):
-                if item.stage is None:
-                    continue
-
                 step1s = item.stage.steps
 
                 new_step1s = []
                 for step1 in step1s:
-                    if step1.step is None:
-                        continue
-
                     if _steps_are_equivalent(step1tostep(step1), step):
                         continue
 
@@ -265,9 +253,6 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
                 new_stage.steps = new_step1s
                 new_items.append(StageItem(stage=new_stage))
             elif isinstance(item, StepItem):
-                if item.step is None:
-                    continue
-
                 if _steps_are_equivalent(item.step, step):
                     continue
 
@@ -377,17 +362,11 @@ def get_steps_in_pipeline_item(item) -> list[Step]: ...
 
 @get_steps_in_pipeline_item.register(StepItem)
 def _(item: StepItem) -> list[Step]:
-    if item.step is None:
-        return []
-
     return [item.step]
 
 
 @get_steps_in_pipeline_item.register(ParallelItem)
 def _(item: ParallelItem) -> list[Step]:
-    if item.parallel is None:
-        return []
-
     _p = item.parallel.root
     if isinstance(_p, ParallelSteps):
         step_items = _p.root
@@ -402,14 +381,7 @@ def _(item: ParallelItem) -> list[Step]:
 
 @get_steps_in_pipeline_item.register(StageItem)
 def _(item: StageItem) -> list[Step]:
-    if item.stage is None:
-        return []
-
-    step1s = item.stage.steps
-
-    steps = [step1tostep(step1) for step1 in step1s if step1.step is not None]
-
-    return steps
+    return [step1tostep(step1) for step1 in item.stage.steps if step1.step is not None]
 
 
 def add_placeholder_step_in_default(report_placeholder: bool = True) -> None:

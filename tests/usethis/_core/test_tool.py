@@ -743,3 +743,8 @@ dev = []
 
 """
             )
+
+
+# TODO test use_pyproject_fmt
+# TODO test use_deptry(remove=True
+# TODO test use_ruff with pre-commit integration aspect (both add and remove)

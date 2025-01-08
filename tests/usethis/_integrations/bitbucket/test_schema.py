@@ -34,6 +34,7 @@ class TestSchemaJSON:
         ).text
 
         # Compare the JSON
+        # TIP: go into debug mode to copy-and-paste into updated schema.json
         assert local_schema_json == online_schema_json
 
     def test_target_python_version(self):

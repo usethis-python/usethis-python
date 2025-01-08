@@ -7,6 +7,7 @@ from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
 from usethis._integrations.bitbucket.pipeweld import (
     apply_pipeweld_instruction,
     get_pipeweld_pipeline_from_default,
+    get_pipeweld_step,
 )
 from usethis._integrations.bitbucket.schema import (
     Image,
@@ -665,3 +666,31 @@ class TestGetPipeweldPipelineFromDefault:
         assert dg.config_group.startswith("Unnamed Stage ")
         uuid = dg.config_group.removeprefix("Unnamed Stage ")
         UUID(uuid)  # Raises no error
+
+
+class TestGetPipeweldStep:
+    def test_no_name(self):
+        # Arrange
+        step = Step(
+            name=None,
+            script=Script(["echo foo"]),
+        )
+
+        # Act
+        result = get_pipeweld_step(step)
+
+        # Assert
+        assert result == """{"script":["echo foo"]}"""
+
+    def test_with_name(self):
+        # Arrange
+        step = Step(
+            name="foo",
+            script=Script(["echo foo"]),
+        )
+
+        # Act
+        result = get_pipeweld_step(step)
+
+        # Assert
+        assert result == "foo"

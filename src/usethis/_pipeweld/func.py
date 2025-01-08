@@ -1,5 +1,5 @@
 import contextlib
-from functools import reduce, singledispatch
+from functools import reduce, singledispatch, singledispatchmethod
 from typing import assert_never
 
 from pydantic import BaseModel
@@ -15,177 +15,257 @@ from usethis._pipeweld.containers import (
 from usethis._pipeweld.ops import InsertParallel, InsertSuccessor, Instruction
 from usethis._pipeweld.result import WeldResult
 
-# TODO conside a class structure with global state e.g. for instructions, compatible_config_groups, etc. to reduce complexity
+
+class Partition(BaseModel):
+    prerequisite_component: str | Series | DepGroup | Parallel | None = None
+    nondependent_component: str | Series | DepGroup | Parallel | None = None
+    postrequisite_component: str | Series | DepGroup | Parallel | None = None
+    top_ranked_endpoint: str
 
 
-def add(
-    pipeline: Series,
-    *,
-    step: str,
-    prerequisites: set[str] = set(),
-    postrequisites: set[str] = set(),
-    compatible_config_groups: set[str] = set(),
-) -> WeldResult:
-    if len(pipeline) == 0:
-        # Empty pipeline
+class Adder(BaseModel):
+    pipeline: Series
+    step: str
+    prerequisites: set[str] = set()
+    postrequisites: set[str] = set()
+    compatible_config_groups: set[str] = set()
+
+    def add(self) -> WeldResult:
+        if len(self.pipeline) == 0:
+            # Empty pipeline
+            return WeldResult(
+                instructions=[InsertParallel(after=None, step=self.step)],
+                solution=series(self.step),
+            )
+
+        partition, instructions = self.partition_component(
+            self.pipeline, predecessor=None
+        )
+        rearranged_pipeline = _flatten_partition(partition)
+        new_instructions = self._insert_step(rearranged_pipeline)
+
+        if not new_instructions:
+            # Didn't find a pre-requisite so just add the step in parallel to everything
+            new_instructions = self._insert_before_postrequisites(
+                rearranged_pipeline, idx=-1, predecessor=None
+            )
+
+        instructions += new_instructions
+
         return WeldResult(
-            instructions=[InsertParallel(after=None, step=step)],
-            solution=series(step),
+            solution=rearranged_pipeline,
+            instructions=instructions,
         )
 
-    partition, instructions = partition_component(
-        pipeline,
-        predecessor=None,
-        prerequisites=prerequisites,
-        postrequisites=postrequisites,
-    )
+    @singledispatchmethod
+    def partition_component(
+        self, component: str | Series | Parallel | DepGroup, *, predecessor: str | None
+    ) -> tuple[Partition, list[Instruction]]:
+        raise NotImplementedError
 
-    rearranged_pipeline = _flatten_partition(partition)
+    @partition_component.register(str)
+    def _(
+        self, component: str, *, predecessor: str | None
+    ) -> tuple[Partition, list[Instruction]]:
+        if component in self.prerequisites:
+            return Partition(
+                prerequisite_component=component,
+                top_ranked_endpoint=component,
+            ), []
+        elif component in self.postrequisites:
+            return Partition(
+                postrequisite_component=component,
+                top_ranked_endpoint=component,
+            ), []
+        else:
+            return Partition(
+                nondependent_component=component,
+                top_ranked_endpoint=component,
+            ), []
 
-    new_instructions = _insert_step(
-        rearranged_pipeline,
-        step=step,
-        prerequisites=prerequisites,
-        postrequisites=postrequisites,
-        compatible_config_groups=compatible_config_groups,
-    )
+    @partition_component.register(Series)
+    def _(
+        self, component: Series, *, predecessor: str | None
+    ) -> tuple[Partition, list[Instruction]]:
+        partitions: list[Partition] = []
+        instructions = []
+        for subcomponent in component.root:
+            partition, these_instructions = self.partition_component(
+                subcomponent,
+                predecessor=predecessor,
+            )
+            partitions.append(partition)
+            instructions.extend(these_instructions)
+            predecessor = partition.top_ranked_endpoint  # For the next iteration
 
-    if not new_instructions:
-        # Didn't find a pre-requisite so just add the step in parallel to everything
-        new_instructions = _insert_before_postrequisites(
-            rearranged_pipeline,
-            idx=-1,
-            predecessor=None,
-            step=step,
-            postrequisites=postrequisites,
-            compatible_config_groups=compatible_config_groups,
+        if len(partitions) > 1:
+            return reduce(_op_series_merge_partitions, partitions), instructions
+        else:
+            partition = partitions[0]
+            return Partition(
+                prerequisite_component=series(partition.prerequisite_component)
+                if partition.prerequisite_component is not None
+                else None,
+                nondependent_component=series(partition.nondependent_component)
+                if partition.nondependent_component is not None
+                else None,
+                postrequisite_component=series(partition.postrequisite_component)
+                if partition.postrequisite_component is not None
+                else None,
+                top_ranked_endpoint=partition.top_ranked_endpoint,
+            ), instructions
+
+    @partition_component.register(Parallel)
+    def _(
+        self, component: Parallel, *, predecessor: str | None
+    ) -> tuple[Partition, list[Instruction]]:
+        partition_with_instruction_tuples = [
+            self.partition_component(
+                subcomponent,
+                predecessor=predecessor,
+            )
+            for subcomponent in component.root
+        ]
+
+        partitions = [_[0] for _ in partition_with_instruction_tuples]
+        instructions = [x for _ in partition_with_instruction_tuples for x in _[1]]
+
+        any_prerequisites = any(
+            p.prerequisite_component is not None for p in partitions
+        )
+        any_postrequisites = any(
+            p.postrequisite_component is not None for p in partitions
         )
 
-    instructions += new_instructions
+        if any_prerequisites and any_postrequisites:
+            return _parallel_merge_partitions(*partitions, predecessor=predecessor)
+        elif any_prerequisites:
+            return Partition(
+                prerequisite_component=component,
+                top_ranked_endpoint=min(p.top_ranked_endpoint for p in partitions),
+            ), instructions
+        elif any_postrequisites:
+            return Partition(
+                postrequisite_component=component,
+                top_ranked_endpoint=min(p.top_ranked_endpoint for p in partitions),
+            ), instructions
+        else:
+            return Partition(
+                nondependent_component=component,
+                top_ranked_endpoint=min(p.top_ranked_endpoint for p in partitions),
+            ), instructions
 
-    return WeldResult(
-        solution=rearranged_pipeline,
-        instructions=instructions,
-    )
+    @partition_component.register(DepGroup)
+    def _(
+        self, component: DepGroup, *, predecessor: str | None
+    ) -> tuple[Partition, list[Instruction]]:
+        partition, instructions = self.partition_component(
+            component.series,
+            predecessor=predecessor,
+        )
+        partition = Partition(
+            prerequisite_component=depgroup(
+                partition.prerequisite_component, config_group=component.config_group
+            )
+            if partition.prerequisite_component is not None
+            else None,
+            nondependent_component=depgroup(
+                partition.nondependent_component, config_group=component.config_group
+            )
+            if partition.nondependent_component is not None
+            else None,
+            postrequisite_component=depgroup(
+                partition.postrequisite_component, config_group=component.config_group
+            )
+            if partition.postrequisite_component is not None
+            else None,
+            top_ranked_endpoint=partition.top_ranked_endpoint,
+        )
+        return partition, instructions
 
-
-# TODO reduce complexity and enable ruff rules
-def _insert_step(  # noqa: PLR0912
-    component: Series,
-    *,
-    step: str,
-    prerequisites: set[str],
-    postrequisites: set[str],
-    compatible_config_groups: set[str],
-) -> list[Instruction]:
-    # Iterate through the pipeline and insert the step
-    # Work backwards until we find a pre-requisite (which is the final one), and then
-    # insert after it - in parallel to its successor (or append if no successor). If we
-    # don't find any pre-requsite then we insert in parallel to everything.
-    for idx, subcomponent in reversed(list(enumerate(component.root))):
-        if isinstance(subcomponent, str):
-            if subcomponent in prerequisites:
-                # Insert after this step
-                if idx + 1 < len(component.root):
-                    # i.e. there is a successor
-                    return _insert_before_postrequisites(
+    def _insert_step(
+        self,
+        component: Series,
+    ) -> list[Instruction]:
+        # Iterate through the pipeline and insert the step
+        # Work backwards until we find a pre-requisite (which is the final one), and then
+        # insert after it - in parallel to its successor (or append if no successor). If we
+        # don't find any pre-requsite then we insert in parallel to everything.
+        for idx, subcomponent in reversed(list(enumerate(component.root))):
+            if isinstance(subcomponent, str):
+                if subcomponent in self.prerequisites:
+                    return self._insert_before_postrequisites(
                         component,
                         idx=idx,
                         predecessor=subcomponent,
-                        step=step,
-                        postrequisites=postrequisites,
-                        compatible_config_groups=compatible_config_groups,
                     )
-                else:
-                    # i.e. there is no successor; append
-                    component.root.append(step)
-                    return [InsertSuccessor(after=subcomponent, step=step)]
-        elif isinstance(subcomponent, Series):
-            added = _insert_step(
-                subcomponent,
-                step=step,
-                prerequisites=prerequisites,
-                postrequisites=postrequisites,
-                compatible_config_groups=compatible_config_groups,
-            )
-            if added:
-                return added
-        elif isinstance(subcomponent, Parallel):
-            added = _insert_step(
-                Series(list(subcomponent.root)),
-                step=step,
-                prerequisites=prerequisites,
-                postrequisites=postrequisites,
-                compatible_config_groups=compatible_config_groups,
-            )
-            if added:
-                return added
-        elif isinstance(subcomponent, DepGroup):
-            if _has_any_steps(subcomponent, steps=prerequisites):
-                added = _insert_before_postrequisites(
-                    component,
-                    idx=idx,
-                    predecessor=get_endpoint(subcomponent),
-                    step=step,
-                    postrequisites=postrequisites,
-                    compatible_config_groups=compatible_config_groups,
-                )
+            elif isinstance(subcomponent, Series):
+                added = self._insert_step(subcomponent)
                 if added:
                     return added
+            elif isinstance(subcomponent, Parallel):
+                added = self._insert_step(Series(list(subcomponent.root)))
+                if added:
+                    return added
+            elif isinstance(subcomponent, DepGroup):
+                if _has_any_steps(subcomponent, steps=self.prerequisites):
+                    added = self._insert_before_postrequisites(
+                        component,
+                        idx=idx,
+                        predecessor=get_endpoint(subcomponent),
+                    )
+                    if added:
+                        return added
+            else:
+                assert_never(subcomponent)
+
+        return []
+
+    def _insert_before_postrequisites(
+        self, component: Series, *, idx: int, predecessor: str | None
+    ) -> list[Instruction]:
+        if idx + 1 >= len(component.root):
+            # i.e. there is no successor; append
+            component.root.append(self.step)
+            return [InsertSuccessor(after=predecessor, step=self.step)]
+
+        successor_component = component.root[idx + 1]
+
+        if (
+            isinstance(successor_component, Parallel)
+            and len(successor_component.root) == 1
+        ):
+            container = Series(list(successor_component.root))
+            instructions = self._insert_before_postrequisites(
+                container,
+                idx=-1,
+                predecessor=predecessor,
+            )
+            if len(container) == 1 and container[0] == _union(
+                successor_component, self.step
+            ):
+                component[idx + 1] = _union(successor_component, self.step)
+
+            return instructions
+        elif isinstance(successor_component, Parallel | DepGroup | str):
+            if _has_any_steps(successor_component, steps=self.postrequisites):
+                # Insert before this step
+                component.root.insert(idx + 1, self.step)
+                return [InsertSuccessor(after=predecessor, step=self.step)]
+            else:
+                union = _union(successor_component, self.step)
+                if union is None:
+                    raise AssertionError
+                component.root[idx + 1] = union
+                return [InsertParallel(after=predecessor, step=self.step)]
+        elif isinstance(successor_component, Series):
+            return self._insert_before_postrequisites(
+                successor_component,
+                idx=-1,
+                predecessor=predecessor,
+            )
         else:
-            assert_never(subcomponent)
-
-    return []
-
-
-# TODO reduce complexity and enable ruff rule
-def _insert_before_postrequisites(  # noqa: PLR0913
-    component: Series,
-    *,
-    idx: int,
-    predecessor: str | None,
-    step: str,
-    postrequisites: set[str],
-    compatible_config_groups: set[str],
-) -> list[Instruction]:
-    successor_component = component.root[idx + 1]
-
-    if isinstance(successor_component, Parallel) and len(successor_component.root) == 1:
-        container = Series(list(successor_component.root))
-        instructions = _insert_before_postrequisites(
-            container,
-            idx=-1,
-            predecessor=predecessor,
-            step=step,
-            postrequisites=postrequisites,
-            compatible_config_groups=compatible_config_groups,
-        )
-        if len(container) == 1 and container[0] == _union(successor_component, step):
-            component[idx + 1] = _union(successor_component, step)
-
-        return instructions
-    elif isinstance(successor_component, Parallel | DepGroup | str):
-        if _has_any_steps(successor_component, steps=postrequisites):
-            # Insert before this step
-            component.root.insert(idx + 1, step)
-            return [InsertSuccessor(after=predecessor, step=step)]
-        else:
-            union = _union(successor_component, step)
-            if union is None:
-                raise AssertionError
-            component.root[idx + 1] = union
-            return [InsertParallel(after=predecessor, step=step)]
-    elif isinstance(successor_component, Series):
-        return _insert_before_postrequisites(
-            successor_component,
-            idx=-1,
-            predecessor=predecessor,
-            step=step,
-            postrequisites=postrequisites,
-            compatible_config_groups=compatible_config_groups,
-        )
-    else:
-        assert_never(successor_component)
+            assert_never(successor_component)
 
 
 def _has_any_steps(
@@ -204,13 +284,6 @@ def _has_any_steps(
         assert_never(component)
 
 
-class Partition(BaseModel):
-    prerequisite_component: str | Series | DepGroup | Parallel | None = None
-    nondependent_component: str | Series | DepGroup | Parallel | None = None
-    postrequisite_component: str | Series | DepGroup | Parallel | None = None
-    top_ranked_endpoint: str
-
-
 def _flatten_partition(partition: Partition) -> Series:
     component = _concat(
         partition.prerequisite_component,
@@ -221,174 +294,6 @@ def _flatten_partition(partition: Partition) -> Series:
         msg = "Flatten failed: no components"
         raise ValueError(msg)
     return component
-
-
-@singledispatch
-def partition_component(
-    component: str | Series | Parallel,
-    predecessor: str | None,
-    prerequisites: set[str],
-    postrequisites: set[str],
-) -> tuple[Partition, list[Instruction]]:
-    raise NotImplementedError
-
-
-@partition_component.register(str)
-def _(
-    component: str,
-    *,
-    predecessor: str | None,
-    prerequisites: set[str],
-    postrequisites: set[str],
-) -> tuple[Partition, list[Instruction]]:
-    if component in prerequisites:
-        return Partition(
-            prerequisite_component=component,
-            top_ranked_endpoint=component,
-        ), []
-    elif component in postrequisites:
-        return Partition(
-            postrequisite_component=component,
-            top_ranked_endpoint=component,
-        ), []
-    else:
-        return Partition(
-            nondependent_component=component,
-            top_ranked_endpoint=component,
-        ), []
-
-
-@partition_component.register(Parallel)
-def _(
-    component: Parallel,
-    *,
-    predecessor: str | None,
-    prerequisites: set[str],
-    postrequisites: set[str],
-) -> tuple[Partition, list[Instruction]]:
-    partition_with_instruction_tuples = [
-        partition_component(
-            subcomponent,
-            predecessor=predecessor,
-            prerequisites=prerequisites,
-            postrequisites=postrequisites,
-        )
-        for subcomponent in component.root
-    ]
-
-    partitions = [_[0] for _ in partition_with_instruction_tuples]
-    instructions = [x for _ in partition_with_instruction_tuples for x in _[1]]
-
-    any_prerequisites = any(p.prerequisite_component is not None for p in partitions)
-    any_postrequisites = any(p.postrequisite_component is not None for p in partitions)
-
-    if any_prerequisites and any_postrequisites:
-        return _parallel_merge_partitions(*partitions, predecessor=predecessor)
-    elif any_prerequisites:
-        return Partition(
-            prerequisite_component=component,
-            top_ranked_endpoint=min(p.top_ranked_endpoint for p in partitions),
-        ), instructions
-    elif any_postrequisites:
-        return Partition(
-            postrequisite_component=component,
-            top_ranked_endpoint=min(p.top_ranked_endpoint for p in partitions),
-        ), instructions
-    else:
-        return Partition(
-            nondependent_component=component,
-            top_ranked_endpoint=min(p.top_ranked_endpoint for p in partitions),
-        ), instructions
-
-
-@partition_component.register(Series)
-def _(
-    component: Series,
-    *,
-    predecessor: str | None,
-    prerequisites: set[str],
-    postrequisites: set[str],
-) -> tuple[Partition, list[Instruction]]:
-    partitions, instructions = _get_series_partitions(
-        component,
-        predecessor=predecessor,
-        prerequisites=prerequisites,
-        postrequisites=postrequisites,
-    )
-    if len(partitions) > 1:
-        return reduce(_op_series_merge_partitions, partitions), instructions
-    else:
-        partition = partitions[0]
-        return Partition(
-            prerequisite_component=series(partition.prerequisite_component)
-            if partition.prerequisite_component is not None
-            else None,
-            nondependent_component=series(partition.nondependent_component)
-            if partition.nondependent_component is not None
-            else None,
-            postrequisite_component=series(partition.postrequisite_component)
-            if partition.postrequisite_component is not None
-            else None,
-            top_ranked_endpoint=partition.top_ranked_endpoint,
-        ), instructions
-
-
-@partition_component.register(DepGroup)
-def _(
-    component: DepGroup,
-    *,
-    predecessor: str | None,
-    prerequisites: set[str],
-    postrequisites: set[str],
-) -> tuple[Partition, list[Instruction]]:
-    partition, instructions = partition_component(
-        component.series,
-        predecessor=predecessor,
-        prerequisites=prerequisites,
-        postrequisites=postrequisites,
-    )
-    partition = Partition(
-        prerequisite_component=depgroup(
-            partition.prerequisite_component, config_group=component.config_group
-        )
-        if partition.prerequisite_component is not None
-        else None,
-        nondependent_component=depgroup(
-            partition.nondependent_component, config_group=component.config_group
-        )
-        if partition.nondependent_component is not None
-        else None,
-        postrequisite_component=depgroup(
-            partition.postrequisite_component, config_group=component.config_group
-        )
-        if partition.postrequisite_component is not None
-        else None,
-        top_ranked_endpoint=partition.top_ranked_endpoint,
-    )
-    return partition, instructions
-
-
-def _get_series_partitions(
-    component: Series,
-    *,
-    predecessor: str | None,
-    prerequisites: set[str],
-    postrequisites: set[str],
-) -> tuple[list[Partition], list[Instruction]]:
-    partitions: list[Partition] = []
-    instructions = []
-    for subcomponent in component.root:
-        partition, these_instructions = partition_component(
-            subcomponent,
-            predecessor=predecessor,
-            prerequisites=prerequisites,
-            postrequisites=postrequisites,
-        )
-        partitions.append(partition)
-        instructions.extend(these_instructions)
-        predecessor = partition.top_ranked_endpoint  # For the next iteration
-
-    return partitions, instructions
 
 
 def _op_series_merge_partitions(

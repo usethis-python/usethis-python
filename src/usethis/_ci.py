@@ -1,7 +1,6 @@
 import re
 from pathlib import Path
 
-from usethis._console import tick_print
 from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.schema import Script, Step
 from usethis._integrations.bitbucket.steps import (
@@ -21,7 +20,6 @@ def add_bitbucket_pre_commit_step() -> None:
 
 
 def remove_bitbucket_pre_commit_step() -> None:
-    tick_print("Removing pre-commit step from 'bitbucket-pipelines.yml'.")
     remove_step_from_default(_get_bitbucket_pre_commit_step())
 
 
@@ -38,12 +36,12 @@ def _get_bitbucket_pre_commit_step() -> Step:
     )
 
 
-def add_bitbucket_pytest_steps() -> None:
+def update_bitbucket_pytest_steps() -> None:
     matrix = get_supported_major_python_versions()
     for version in matrix:
         add_step_in_default(
             Step(
-                name=f"Test - Python 3.{version}",
+                name=f"Test on 3.{version}",
                 caches=["uv"],
                 script=Script(
                     [
@@ -53,11 +51,18 @@ def add_bitbucket_pytest_steps() -> None:
                 ),
             ),
         )
+    # We also need to remove any old steps that are not in the matrix
+    for step in get_steps_in_default():
+        if step.name is not None:
+            match = re.match(r"^Test on 3\.(\d+)$", step.name)
+            if match:
+                version = int(match.group(1))
+                if version not in matrix:
+                    remove_step_from_default(step)
 
 
 def remove_bitbucket_pytest_steps() -> None:
-    tick_print("Removing pytest steps from 'bitbucket-pipelines.yml'.")
-    # Remove any with pattern "^Test - Python 3.\d+$"
+    # Remove any with pattern "^Test on 3.\d+$"
     for step in get_steps_in_default():
-        if step.name is not None and re.match(r"^Test - Python 3.\d+$", step.name):
+        if step.name is not None and re.match(r"^Test on 3.\d+$", step.name):
             remove_step_from_default(step)

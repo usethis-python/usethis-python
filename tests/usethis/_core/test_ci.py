@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from usethis._ci import add_bitbucket_pytest_steps
+from usethis._ci import update_bitbucket_pytest_steps
 from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import use_pre_commit
 from usethis._integrations.bitbucket.steps import get_steps_in_default
@@ -174,8 +174,8 @@ pipelines:
                 assert out == (
                     "✔ Writing 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                    "✔ Adding 'Test - Python 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-                    "✔ Adding 'Test - Python 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "☐ Run your pipeline via the Bitbucket website.\n"
                 )
 
@@ -187,6 +187,40 @@ pipelines:
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
                 assert "pytest" not in contents
+
+            def test_unsupported_python_version_removed(self, uv_init_dir: Path):
+                # Arrange
+                (uv_init_dir / "tests").mkdir()
+                (uv_init_dir / "tests" / "conftest.py").touch()
+                (uv_init_dir / "pyproject.toml").write_text(
+                    """\
+[project]
+requires-python = ">=3.12,<3.13"
+"""
+                )
+                (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+                    """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Test on 3.11
+            script:
+                - echo 'Hello, world!'
+      - step:
+            name: Test on 3.12
+            script:
+                - echo 'Hello, world!'
+"""
+                )
+
+                # Act
+                with change_cwd(uv_init_dir):
+                    use_ci_bitbucket()
+
+                # Assert
+                contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+                assert "Test on 3.11" not in contents
 
     class TestRemove:
         class TestPyproject:
@@ -214,11 +248,11 @@ pipelines:
                 assert out == "✔ Removing 'bitbucket-pipelines.yml'.\n"
 
 
-class TestAddBitbucketPytestSteps:
+class TestUpdateBitbucketPytestSteps:
     def test_no_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
         with change_cwd(uv_init_dir):
-            add_bitbucket_pytest_steps()
+            update_bitbucket_pytest_steps()
 
         # Assert
         assert (uv_init_dir / "bitbucket-pipelines.yml").exists()
@@ -239,14 +273,14 @@ definitions:
 pipelines:
     default:
       - step:
-            name: Test - Python 3.12
+            name: Test on 3.12
             caches:
               - uv
             script:
               - *install-uv
               - uv run --python 3.12 pytest
       - step:
-            name: Test - Python 3.13
+            name: Test on 3.13
             caches:
               - uv
             script:
@@ -260,6 +294,57 @@ pipelines:
         assert out == (
             "✔ Writing 'bitbucket-pipelines.yml'.\n"
             "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-            "✔ Adding 'Test - Python 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-            "✔ Adding 'Test - Python 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+        )
+
+    def test_remove_old_steps(
+        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        """Note this test also checks we don't add a cache when it's not needed."""
+        # Arrange
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Test on 3.11
+            script:
+                - echo 'Hello, Python 3.11!'
+      - step:
+            name: Test on 3.12
+            script:
+                - echo 'Hello, Python 3.12!'
+"""
+        )
+        (uv_init_dir / "pyproject.toml").write_text(
+            """\
+[project]
+requires-python = ">=3.12,<3.13"
+"""
+        )
+
+        # Act
+        with change_cwd(uv_init_dir):
+            update_bitbucket_pytest_steps()
+
+        # Assert
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Test on 3.12
+            script:
+              - echo 'Hello, Python 3.12!'
+"""
+        )
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == (
+            "✔ Removing 'Test on 3.11' from default pipeline in 'bitbucket-pipelines.yml'.\n"
         )

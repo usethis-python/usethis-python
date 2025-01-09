@@ -208,7 +208,7 @@ pipelines:
             # This step should be listed second
             add_step_in_default(
                 Step(
-                    name="Test - Python 3.12",
+                    name="Test on 3.12",
                     script=Script(["echo 'Running #2'"]),
                 ),
             )
@@ -234,7 +234,7 @@ pipelines:
             script:
               - "echo 'Running #1'"
       - step:
-            name: Test - Python 3.12
+            name: Test on 3.12
             script:
               - "echo 'Running #2'"
 """
@@ -242,7 +242,7 @@ pipelines:
         out, err = capfd.readouterr()
         assert out == (
             "✔ Writing 'bitbucket-pipelines.yml'.\n"
-            "✔ Adding 'Test - Python 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+            "✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
             "✔ Adding 'Run pre-commit' to default pipeline in 'bitbucket-pipelines.yml'.\n"
         )
 

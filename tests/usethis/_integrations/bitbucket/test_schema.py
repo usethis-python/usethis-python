@@ -1,10 +1,7 @@
-import importlib
-import importlib.resources
 from pathlib import Path
 
 import pytest
 import requests
-import tests.usethis._integrations.bitbucket
 
 from usethis._integrations.bitbucket.schema import Script, Step, Step2, StepBase
 from usethis._test import is_offline
@@ -24,11 +21,7 @@ class TestSchemaJSON:
         if is_offline():
             pytest.skip("Cannot fetch JSON schema when offline")
 
-        local_schema_json = (
-            importlib.resources.files(tests.usethis._integrations.bitbucket)
-            .joinpath("schema.json")
-            .read_text()
-        )
+        local_schema_json = (Path(__file__).parent / "schema.json").read_text()
         online_schema_json = requests.get(
             "https://api.bitbucket.org/schemas/pipelines-configuration"
         ).text

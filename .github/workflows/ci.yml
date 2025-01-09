@@ -19,7 +19,7 @@ jobs:
           git config --global user.email placeholder@example.com
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@3b9817b1bf26186f03ab8277bab9b827ea5cc254 # v3.2.0
+        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
         with:
           version: "latest"
 

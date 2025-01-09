@@ -7,7 +7,7 @@ from usethis._integrations.pyproject.errors import (
     PyProjectTOMLProjectSectionError,
 )
 from usethis._integrations.pyproject.name import get_name
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestGetName:

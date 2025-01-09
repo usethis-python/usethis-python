@@ -1,56 +1,76 @@
-from pathlib import Path
-
-from pydantic import BaseModel
-
-from usethis._utils._yaml import edit_yaml, load_yaml
-
-
-class Cache(BaseModel):
-    name: str
-    path: str
+from usethis._console import tick_print
+from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
+from usethis._integrations.bitbucket.io import (
+    BitbucketPipelinesYAMLDocument,
+    edit_bitbucket_pipelines_yaml,
+)
+from usethis._integrations.bitbucket.schema import Cache, Definitions
+from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 
-class CacheAlreadyExistsError(Exception):
-    """Raised when trying to add a cache that already exists."""
+def get_cache_by_name() -> dict[str, Cache]:
+    with edit_bitbucket_pipelines_yaml() as doc:
+        config = doc.model
+
+    if config.definitions is None:
+        return {}
+
+    cache_by_name = config.definitions.caches
+
+    if cache_by_name is None:
+        return {}
+
+    return cache_by_name
 
 
-def get_caches() -> list[Cache]:
-    path = Path.cwd() / "bitbucket-pipelines.yml"
-
-    content = load_yaml(path)
-
-    try:
-        caches: dict[str, str] = content["definitions"]["caches"]
-    except KeyError:
-        return []
-
-    return [Cache(name=name, path=path) for name, path in caches.items()]
+def add_caches(cache_by_name: dict[str, Cache]) -> None:
+    with edit_bitbucket_pipelines_yaml() as doc:
+        _add_caches_via_doc(cache_by_name, doc=doc)
+        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
+        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 
-def add_cache(cache: Cache, exists_ok: bool = False) -> None:
-    path = Path.cwd() / "bitbucket-pipelines.yml"
+def _add_caches_via_doc(
+    cache_by_name: dict[str, Cache], *, doc: BitbucketPipelinesYAMLDocument
+) -> None:
+    config = doc.model
 
-    if not path.exists():
-        path.touch()
+    if config.definitions is None:
+        config.definitions = Definitions()
+    if config.definitions.caches is None:
+        config.definitions.caches = {}
 
-    with edit_yaml(path) as content:
-        try:
-            content["definitions"]
-        except KeyError:
-            content["definitions"] = {}
+    for name, cache in cache_by_name.items():
+        if not _cache_exists(name, doc=doc):
+            tick_print(
+                f"Adding cache '{name}' definition to " f"'bitbucket-pipelines.yml'."
+            )
+            config.definitions.caches[name] = cache
 
-        try:
-            content["definitions"]["caches"]
-        except KeyError:
-            content["definitions"]["caches"] = {}
 
-        try:
-            content["definitions"]["caches"][cache.name]
-        except KeyError:
-            content["definitions"]["caches"][cache.name] = cache.path
-        else:
-            if not exists_ok:
-                raise CacheAlreadyExistsError(f"Cache '{cache.name}' already exists.")
-            else:
-                # Exit early; the cache is already present so we'll leave it alone.
-                return
+def remove_cache(cache: str) -> None:
+    with edit_bitbucket_pipelines_yaml() as doc:
+        config = doc.model
+
+        if config.definitions is None or config.definitions.caches is None:
+            return
+
+        if cache in config.definitions.caches:
+            tick_print(
+                f"Removing cache '{cache}' definition from 'bitbucket-pipelines.yml'."
+            )
+            del config.definitions.caches[cache]
+
+            # Remove an empty caches section
+            if not config.definitions.caches:
+                del config.definitions.caches
+
+        dump = bitbucket_fancy_dump(config, reference=doc.content)
+        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+
+
+def _cache_exists(name: str, *, doc: BitbucketPipelinesYAMLDocument) -> bool:
+    if doc.model.definitions is None or doc.model.definitions.caches is None:
+        return False
+
+    return name in doc.model.definitions.caches

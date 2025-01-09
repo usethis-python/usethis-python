@@ -25,5 +25,5 @@ class PyProjectTOMLValueAlreadySetError(PyProjectTOMLError):
     """Raised when a value is unexpectedly already set in the 'pyproject.toml' file."""
 
 
-class PyPorjectTOMLValueMIssingError(PyProjectTOMLError):
+class PyProjectTOMLValueMissingError(PyProjectTOMLError):
     """Raised when a value is unexpectedly missing from the 'pyproject.toml' file."""

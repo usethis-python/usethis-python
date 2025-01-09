@@ -1,98 +1,450 @@
+from functools import singledispatch
 from pathlib import Path
-from typing import Any, Literal, assert_never
+from typing import assert_never
 
-from pydantic import BaseModel
+from ruamel.yaml.anchor import Anchor
+from ruamel.yaml.comments import CommentedSeq
+from ruamel.yaml.scalarstring import LiteralScalarString
 
-from usethis._integrations.bitbucket.cache import Cache, add_cache
-from usethis._utils._yaml import edit_yaml
+import usethis._pipeweld.func
+from usethis._console import box_print, tick_print
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor, ScriptItemName
+from usethis._integrations.bitbucket.cache import _add_caches_via_doc, remove_cache
+from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
+from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
+from usethis._integrations.bitbucket.io import (
+    BitbucketPipelinesYAMLDocument,
+    edit_bitbucket_pipelines_yaml,
+)
+from usethis._integrations.bitbucket.pipeweld import (
+    apply_pipeweld_instruction_via_doc,
+    get_pipeweld_pipeline_from_default,
+    get_pipeweld_step,
+)
+from usethis._integrations.bitbucket.schema import (
+    CachePath,
+    Definitions,
+    ImportPipeline,
+    Parallel,
+    ParallelExpanded,
+    ParallelItem,
+    ParallelSteps,
+    Pipeline,
+    Script,
+    StageItem,
+    Step,
+    StepItem,
+)
+from usethis._integrations.bitbucket.schema_utils import step1tostep
+from usethis._integrations.uv.python import get_supported_major_python_versions
+from usethis._integrations.yaml.update import update_ruamel_yaml_map
+
+_CACHE_LOOKUP = {
+    "uv": CachePath("~/.cache/uv"),
+    "pre-commit": CachePath("~/.cache/pre-commit"),
+}
 
 
-class StepRef(BaseModel):
-    """The reference to pre-defined step."""
+_PLACEHOLDER_NAME = "Placeholder - add your own steps!"
 
-    name: Literal["install-uv"]
+_SCRIPT_ITEM_LOOKUP: dict[ScriptItemName, LiteralScalarString] = {
+    "install-uv": LiteralScalarString("""\
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+export UV_LINK_MODE=copy
+uv --version
+""")
+}
+for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
+    script_item.yaml_set_anchor(value=name, always_dump=True)
 
 
-class Step(BaseModel):
-    name: str
-    caches: list[Literal["uv", "pre-commit"]]
-    script: list[StepRef | str]
+def add_step_in_default(step: Step) -> None:
+    try:
+        existing_steps = get_steps_in_default()
+    except UnexpectedImportPipelineError:
+        msg = (
+            f"Cannot add step '{step.name}' to default pipeline in "
+            f"'bitbucket-pipelines.yml' because it is an import pipeline."
+        )
+        raise UnexpectedImportPipelineError(msg) from None
+
+    # Early exit if the step already exists in some sense
+    for existing_step in existing_steps:
+        if _steps_are_equivalent(existing_step, step):
+            return
+
+    # Add the step to the default pipeline
+    with edit_bitbucket_pipelines_yaml() as doc:
+        _add_step_in_default_via_doc(step, doc=doc)
+        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
+        update_ruamel_yaml_map(
+            doc.content,
+            dump,
+            preserve_comments=True,
+        )
+
+    # Remove the placeholder step if it already exists
+    placeholder = _get_placeholder_step()
+    if not _steps_are_equivalent(placeholder, step):
+        # Only remove the placeholder if it hasn't already been added.
+        remove_step_from_default(placeholder)
 
 
-def add_steps(
-    steps: list[Step], *, is_parallel: bool, pipeline: str = "default"
+def _add_step_in_default_via_doc(
+    step: Step, *, doc: BitbucketPipelinesYAMLDocument
 ) -> None:
-    """Add new steps to a Bitbucket Pipelines config.
+    _add_step_caches_via_doc(step, doc=doc)
 
-    The steps are placed at the end, after any existing configuration, but joining
-    any existing parallelism if possible and applicable.
+    if step.name == _PLACEHOLDER_NAME:
+        pass  # We need to selectively choose to report at a higher level.
+        # It's not always notable that the placeholder is being added.
+    else:
+        tick_print(
+            f"Adding '{step.name}' to default pipeline in "
+            f"'bitbucket-pipelines.yml'."
+        )
 
-    Args:
-        steps: The steps to add.
-        is_parallel: Whether the steps should be parallel.
-        pipeline: The pipeline to add the steps to. Default is "default".
-    """
+    config = doc.model
 
-    # Insert any relevant caches
-    for step in steps:
-        _add_relevant_caches(step)
+    step = step.model_copy(deep=True)
 
-    path = Path.cwd() / "bitbucket-pipelines.yml"
+    # If the step uses an anchorized script definition, add it to the definitions
+    # section
+    for idx, script_item in enumerate(step.script.root):
+        if isinstance(script_item, ScriptItemAnchor):
+            # We've found an anchorized script definition...
 
-    with edit_yaml(path) as content:
-        # Get all the pre-defined scripts as anchors
-        try:
-            raw_scripts = content["definitions"]["scripts"]
-        except KeyError:
-            raw_scripts = []
+            # Get the names of the anchors which are already defined in the file.
+            defined_script_item_by_name = get_defined_script_items_via_doc(doc=doc)
 
-        scripts = {
-            raw_script["script"].anchor.value: raw_script["script"]
-            for raw_script in raw_scripts
-        }
+            # If our anchor doesn't have a definition yet, we need to add it.
+            if script_item.name not in defined_script_item_by_name:
+                try:
+                    script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
+                except KeyError:
+                    msg = f"Unrecognized script item anchor: {script_item.name}"
+                    raise NotImplementedError(msg) from None
 
-        # Rework the current steps
-        new_step_dicts = []
-        for step in steps:
-            sd = {}
-            sd["name"] = step.name
-            # Only include cache list if non-empty
-            if step.caches:
-                sd["caches"] = step.caches
+                if config.definitions is None:
+                    config.definitions = Definitions()
 
-            sd["script"] = [
-                s if not isinstance(s, StepRef) else scripts[s.name]
-                for s in step.script
-            ]
+                script_items = config.definitions.script_items
 
-            new_step_dicts.append({"step": sd})
+                if script_items is None:
+                    script_items = CommentedSeq()
+                    config.definitions.script_items = script_items
 
-        # Get the steps
-        current_steps: list[Any] = content["pipelines"][pipeline]
-
-        # Add the new steps
-        if not is_parallel:
-            current_steps.extend(new_step_dicts)
-        elif not current_steps or "parallel" not in current_steps[-1]:
-            if len(new_step_dicts) == 1:
-                current_steps.extend(new_step_dicts)
+                # N.B. Once we support multiple different types of script items, we will
+                # probably want to enforce a canonical order rather than just append.
+                # See also anchor.py.
+                script_items.append(script_item)
+                script_items = CommentedSeq(script_items)
             else:
-                current_steps.append({"parallel": new_step_dicts})
-        else:
-            current_steps[-1]["parallel"].extend(new_step_dicts)
+                # Otherwise, if the anchor is already defined, we need to use the
+                # reference
+                script_item = defined_script_item_by_name[script_item.name]
+
+            step.script.root[idx] = script_item
+
+    # If the step is unrecognized, it will go at the end.
+    prerequisites: set[str] = set()
+
+    # N.B. Currently, we are not accounting for parallelism, whereas all these steps
+    # could be parallel potentially.
+    # See https://github.com/nathanjmcdougall/usethis-python/issues/149
+    step_order = [
+        "Run pre-commit",
+        *[f"Test - Python 3.{maj}" for maj in get_supported_major_python_versions()],
+    ]
+
+    for step_name in step_order:
+        if step_name == step.name:
+            break
+        prerequisites.add(step_name)
+
+    weld_result = usethis._pipeweld.func.Adder(
+        pipeline=get_pipeweld_pipeline_from_default(doc.model),
+        step=get_pipeweld_step(step),
+        prerequisites=prerequisites,
+    ).add()
+    for instruction in weld_result.instructions:
+        apply_pipeweld_instruction_via_doc(
+            instruction=instruction, new_step=step, doc=doc
+        )
 
 
-def _add_relevant_caches(step: Step) -> None:
-    for cache in step.caches:
-        if cache == "uv":
-            add_cache(
-                Cache(name="uv", path="~/.cache/uv"),
-                exists_ok=True,
-            )
-        elif cache == "pre-commit":
-            add_cache(
-                Cache(name="pre-commit", path="~/.cache/pre-commit"),
-                exists_ok=True,
-            )
-        else:
-            assert_never(cache)
+def remove_step_from_default(step: Step) -> None:
+    """Remove a step from the default pipeline in the Bitbucket Pipelines configuration.
+
+    If the default pipeline does not exist, or the step is not found, nothing happens.
+    """
+    if not (Path.cwd() / "bitbucket-pipelines.yml").exists():
+        return
+
+    with edit_bitbucket_pipelines_yaml() as doc:
+        config = doc.model
+
+        if config.pipelines is None:
+            return
+
+        if config.pipelines.default is None:
+            return
+
+        pipeline = config.pipelines.default
+
+        if isinstance(pipeline.root, ImportPipeline):
+            msg = "Cannot remove steps from an import pipeline."
+            raise UnexpectedImportPipelineError(msg)
+
+        items = pipeline.root.root
+
+        new_items: list[StepItem | ParallelItem | StageItem] = []
+        for item in items:
+            new_item = _insert_step(item, step=step)
+            if new_item is not None:
+                new_items.append(new_item)
+        pipeline.root.root = new_items
+
+        if len(new_items) == 0:
+            placeholder = _get_placeholder_step()
+            _add_step_in_default_via_doc(placeholder, doc=doc)
+
+        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
+        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+
+    if step.caches is not None:
+        for cache in step.caches:
+            if not is_cache_used(cache):
+                remove_cache(cache)
+
+
+@singledispatch
+def _insert_step(
+    item: StepItem | ParallelItem | StageItem, *, step: Step
+) -> StepItem | ParallelItem | StageItem | None:
+    raise NotImplementedError
+
+
+@_insert_step.register(ParallelItem)
+def _(item: ParallelItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+    par = item.parallel.root
+
+    if isinstance(par, ParallelSteps):
+        step_items = par.root
+    elif isinstance(par, ParallelExpanded):
+        step_items = par.steps.root
+    else:
+        assert_never(par)
+
+    new_step_items: list[StepItem] = []
+    for step_item in step_items:
+        if _steps_are_equivalent(step_item.step, step):
+            continue
+        new_step_items.append(step_item)
+
+    if len(new_step_items) == 0:
+        return None
+    elif len(new_step_items) == 1 and len(step_items) != 1:
+        return new_step_items[0]
+    elif isinstance(par, ParallelSteps):
+        return ParallelItem(parallel=Parallel(ParallelSteps(new_step_items)))
+    elif isinstance(par, ParallelExpanded):
+        par.steps = ParallelSteps(new_step_items)
+        return ParallelItem(parallel=Parallel(par))
+    else:
+        assert_never(par)
+
+
+@_insert_step.register(StageItem)
+def _(item: StageItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+    step1s = item.stage.steps
+
+    new_step1s = []
+    for step1 in step1s:
+        if _steps_are_equivalent(step1tostep(step1), step):
+            continue
+        new_step1s.append(step1)
+
+    if len(new_step1s) == 0:
+        return None
+
+    new_stage = item.stage.model_copy()
+    new_stage.steps = new_step1s
+    return StageItem(stage=new_stage)
+
+
+@_insert_step.register(StepItem)
+def _(item: StepItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+    if _steps_are_equivalent(item.step, step):
+        return None
+    return item
+
+
+def is_cache_used(cache: str) -> bool:
+    for step in get_steps_in_default():
+        if step.caches is not None and cache in step.caches:
+            return True
+
+    return False
+
+
+def _add_step_caches_via_doc(
+    step: Step, *, doc: BitbucketPipelinesYAMLDocument
+) -> None:
+    if step.caches is not None:
+        cache_by_name = {}
+        for name in step.caches:
+            try:
+                cache = _CACHE_LOOKUP[name]
+            except KeyError:
+                msg = (
+                    f"Unrecognized cache name '{name}' in step '{step.name}'. "
+                    f"Supported caches are 'uv' and 'pre-commit'."
+                )
+                raise NotImplementedError(msg) from None
+            cache_by_name[name] = cache
+        _add_caches_via_doc(cache_by_name, doc=doc)
+
+
+def _steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
+    if step1 is None:
+        return False
+
+    # Same name
+    if step1.name == step2.name:
+        return True
+
+    # Same contents, different name
+    step1 = step1.model_copy()
+    step1.name = step2.name
+    return step1 == step2
+
+
+def get_steps_in_default() -> list[Step]:
+    """Get the steps in the default pipeline of the Bitbucket Pipelines configuration.
+
+    If the default pipeline does not exist, an empty list is returned.
+
+    Returns:
+        The steps in the default pipeline.
+
+    Raises:
+        UnexpectedImportPipelineError: If the pipeline is an import pipeline.
+    """
+    if not (Path.cwd() / "bitbucket-pipelines.yml").exists():
+        return []
+
+    with edit_bitbucket_pipelines_yaml() as doc:
+        config = doc.model
+
+    if config.pipelines is None:
+        return []
+
+    if config.pipelines.default is None:
+        return []
+
+    pipeline = config.pipelines.default
+
+    return _get_steps_in_pipeline(pipeline)
+
+
+def _get_steps_in_pipeline(pipeline: Pipeline) -> list[Step]:
+    if isinstance(pipeline.root, ImportPipeline):
+        msg = "Cannot retrieve steps from an import pipeline."
+        raise UnexpectedImportPipelineError(msg)
+
+    items = pipeline.root.root
+
+    steps = []
+    for item in items:
+        steps.extend(get_steps_in_pipeline_item(item))
+
+    return steps
+
+
+@singledispatch
+def get_steps_in_pipeline_item(item) -> list[Step]: ...
+
+
+@get_steps_in_pipeline_item.register(StepItem)
+def _(item: StepItem) -> list[Step]:
+    return [item.step]
+
+
+@get_steps_in_pipeline_item.register(ParallelItem)
+def _(item: ParallelItem) -> list[Step]:
+    _p = item.parallel.root
+    if isinstance(_p, ParallelSteps):
+        step_items = _p.root
+    elif isinstance(_p, ParallelExpanded):
+        step_items = _p.steps.root
+    else:
+        assert_never(_p)
+
+    steps = [step_item.step for step_item in step_items if step_item.step is not None]
+    return steps
+
+
+@get_steps_in_pipeline_item.register(StageItem)
+def _(item: StageItem) -> list[Step]:
+    return [step1tostep(step1) for step1 in item.stage.steps if step1.step is not None]
+
+
+def add_placeholder_step_in_default(report_placeholder: bool = True) -> None:
+    add_step_in_default(_get_placeholder_step())
+
+    if report_placeholder:
+        tick_print(
+            "Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'."
+        )
+        box_print("Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.")
+        box_print("Replace it with your own pipeline steps.")
+        box_print(
+            "Alternatively, use 'usethis tool' to add other tools and their steps."
+        )
+
+
+def _get_placeholder_step() -> Step:
+    return Step(
+        name=_PLACEHOLDER_NAME,
+        script=Script(
+            [
+                ScriptItemAnchor(name="install-uv"),
+                "echo 'Hello, world!'",
+            ]
+        ),
+        caches=["uv"],
+    )
+
+
+def get_defined_script_items_via_doc(
+    doc: BitbucketPipelinesYAMLDocument,
+) -> dict[str, str]:
+    """These are the names of the anchors."""
+    config = doc.model
+
+    if config.definitions is None:
+        return {}
+
+    if config.definitions.script_items is None:
+        return {}
+
+    script_item_contents = doc.content["definitions"]["script_items"]
+
+    script_anchor_by_name = {}
+    for script_item_content in script_item_contents:
+        if not isinstance(script_item_content, LiteralScalarString):
+            # Not a script item definition
+            continue
+
+        anchor: Anchor = script_item_content.yaml_anchor()
+
+        if anchor is None:
+            # Unnamed definition, can't be used as an anchor
+            continue
+
+        anchor_name = anchor.value
+        script_anchor_by_name[anchor_name] = script_item_content
+
+    return script_anchor_by_name

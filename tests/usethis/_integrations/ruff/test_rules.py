@@ -8,7 +8,7 @@ from usethis._integrations.ruff.rules import (
     get_ruff_rules,
     select_ruff_rules,
 )
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestSelectRuffRules:
@@ -16,6 +16,18 @@ class TestSelectRuffRules:
         # Act
         with change_cwd(tmp_path), pytest.raises(PyProjectTOMLNotFoundError):
             select_ruff_rules(["A", "B", "C"])
+
+    def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("")
+
+        # Act
+        with change_cwd(tmp_path):
+            select_ruff_rules(["A", "B", "C"])
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert "✔ Enabling ruff rules 'A', 'B', 'C' in 'pyproject.toml" in out
 
     def test_blank_slate(self, tmp_path: Path):
         # Arrange

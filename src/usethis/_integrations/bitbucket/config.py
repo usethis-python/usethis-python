@@ -1,24 +1,12 @@
 from pathlib import Path
 
 from usethis._console import tick_print
-
-_YAML_CONTENTS = """\
-image: atlassian/default-image:3
-
-definitions:
-  caches:
-    uv: ~/.cache/uv
-  scripts:
-    - script: &install-uv |-
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        source $HOME/.cargo/env
-        export UV_LINK_MODE=copy
-pipelines:
-  default: []
-"""
+from usethis._integrations.bitbucket.steps import (
+    add_placeholder_step_in_default,
+)
 
 
-def add_bitbucket_pipeline_config() -> None:
+def add_bitbucket_pipeline_config(report_placeholder: bool = True) -> None:
     """Add a Bitbucket pipeline configuration.
 
     Note that the pipeline is empty and will need steps added to it to run successfully.
@@ -27,10 +15,7 @@ def add_bitbucket_pipeline_config() -> None:
         # Early exit; the file already exists
         return
 
-    tick_print("Writing 'bitbucket-pipelines.yml'.")
-    yaml_contents = _YAML_CONTENTS
-
-    (Path.cwd() / "bitbucket-pipelines.yml").write_text(yaml_contents)
+    add_placeholder_step_in_default(report_placeholder=report_placeholder)
 
 
 def remove_bitbucket_pipeline_config() -> None:
@@ -38,5 +23,5 @@ def remove_bitbucket_pipeline_config() -> None:
         # Early exit; the file already doesn't exist
         return
 
-    tick_print("Removing 'bitbucket-pipelines.yml' file.")
+    tick_print("Removing 'bitbucket-pipelines.yml'.")
     (Path.cwd() / "bitbucket-pipelines.yml").unlink()

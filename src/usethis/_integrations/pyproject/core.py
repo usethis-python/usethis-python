@@ -5,8 +5,8 @@ from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 
 from usethis._integrations.pyproject.errors import (
-    PyPorjectTOMLValueMIssingError,
     PyProjectTOMLValueAlreadySetError,
+    PyProjectTOMLValueMissingError,
 )
 from usethis._integrations.pyproject.io import (
     read_pyproject_toml,
@@ -16,7 +16,8 @@ from usethis._integrations.pyproject.io import (
 
 def get_config_value(id_keys: list[str]) -> Any:
     if not id_keys:
-        raise ValueError("At least one ID key must be provided.")
+        msg = "At least one ID key must be provided."
+        raise ValueError(msg)
 
     pyproject = read_pyproject_toml()
 
@@ -38,7 +39,8 @@ def set_config_value(
         ConfigValueAlreadySetError: If the configuration value is already set.
     """
     if not id_keys:
-        raise ValueError("At least one ID key must be provided.")
+        msg = "At least one ID key must be provided."
+        raise ValueError(msg)
 
     pyproject = read_pyproject_toml()
 
@@ -75,7 +77,8 @@ def set_config_value(
 
 def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None:
     if not id_keys:
-        raise ValueError("At least one ID key must be provided.")
+        msg = "At least one ID key must be provided."
+        raise ValueError(msg)
 
     pyproject = read_pyproject_toml()
 
@@ -89,9 +92,8 @@ def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None
     except KeyError:
         if not missing_ok:
             # The configuration is not present, which is not allowed.
-            raise PyPorjectTOMLValueMIssingError(
-                f"Configuration value '{'.'.join(id_keys)}' is missing."
-            )
+            msg = f"Configuration value '{'.'.join(id_keys)}' is missing."
+            raise PyProjectTOMLValueMissingError(msg)
         else:
             # The configuration is not present, but that's okay; nothing left to do.
             return
@@ -128,7 +130,8 @@ def append_config_list(
 ) -> None:
     """Append values to a list in the pyproject.toml configuration file."""
     if not id_keys:
-        raise ValueError("At least one ID key must be provided.")
+        msg = "At least one ID key must be provided."
+        raise ValueError(msg)
 
     pyproject = read_pyproject_toml()
 
@@ -161,7 +164,8 @@ def append_config_list(
 
 def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
     if not id_keys:
-        raise ValueError("At least one ID key must be provided.")
+        msg = "At least one ID key must be provided."
+        raise ValueError(msg)
 
     pyproject = read_pyproject_toml()
 
@@ -189,3 +193,17 @@ def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
     p_parent[id_keys[-1]] = new_values
 
     write_pyproject_toml(pyproject)
+
+
+def do_id_keys_exist(id_keys: list[str]) -> bool:
+    pyproject = read_pyproject_toml()
+
+    try:
+        for key in id_keys:
+            TypeAdapter(dict).validate_python(pyproject)
+            assert isinstance(pyproject, dict)
+            pyproject = pyproject[key]
+    except KeyError:
+        return False
+
+    return True

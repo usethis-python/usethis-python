@@ -44,10 +44,11 @@ scripts.usethis = "usethis.__main__:app"
 
 [dependency-groups]
 dev = [
+  "datamodel-code-generator[http]>=0.26.2",
   "deptry>=0.20.0",
   "import-linter>=2.1",
   "pre-commit>=4.0.1",
-  "pyright>=1.1.389",
+  "pyright>=1.1.391",
   "ruff>=0.7.1",
 ]
 test = [
@@ -72,8 +73,28 @@ source = "vcs"
 line-length = 88
 
 src = [ "src" ]
-lint.select = [ "C4", "E4", "E7", "E9", "F", "FURB", "I", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
-lint.ignore = [ "PT004", "PT005" ]
+lint.select = [
+  "A",
+  "C4",
+  "E4",
+  "E7",
+  "E9",
+  "EM",
+  "ERA",
+  "F",
+  "FIX002",
+  "FURB",
+  "I",
+  "INP",
+  "PLE",
+  "PLR",
+  "PT",
+  "RUF",
+  "SIM",
+  "UP",
+]
+lint.ignore = [ "PLR2004", "SIM108" ]
+lint.per-file-ignores."tests/**/*.py" = [ "INP", "S101" ]
 
 [tool.pyproject-fmt]
 keep_full_version = true
@@ -83,6 +104,7 @@ testpaths = [ "tests" ]
 addopts = [
   "--import-mode=importlib",
 ]
+filterwarnings = [ "error" ]
 
 [tool.coverage.run]
 source = [ "src" ]
@@ -98,14 +120,27 @@ root_packages = [ "usethis" ]
 name = "Modular Design"
 type = "layers"
 layers = [
+  "_test",
   "__main__",
   "_interface",
-  "_tool",
+  "_core",
+  "_tool | _ci",
   "_integrations",
   "_console",
   "_config",
-  "_utils",
-  "errors",
+  "errors | _subprocess",
+  "_pipeweld",
 ]
 containers = [ "usethis" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "Integrations Modular Design"
+type = "layers"
+layers = [
+  "bitbucket | github | pre_commit | pytest | ruff",
+  "uv | pydantic",
+  "pyproject | yaml",
+]
+containers = [ "usethis._integrations" ]
 exhaustive = true

@@ -6,7 +6,7 @@ from pydantic import TypeAdapter
 from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.pyproject.io import read_pyproject_toml
-from usethis._integrations.uv.call import call_subprocess
+from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 
 
@@ -16,7 +16,7 @@ def get_dep_groups() -> dict[str, list[str]]:
         dep_groups_section = pyproject["dependency-groups"]
     except KeyError:
         # In the past might have been in [tool.uv.dev-dependencies] section but this
-        # will be deprecated/
+        # will be deprecated.
         return {}
 
     req_strs_by_group = TypeAdapter(dict[str, list[str]]).validate_python(
@@ -49,9 +49,11 @@ def add_deps_to_group(pypi_names: list[str], group: str) -> None:
         tick_print(f"Adding '{dep}' to the '{group}' dependency group.")
         try:
             if not usethis_config.offline:
-                call_subprocess(["add", "--group", group, "--quiet", dep])
+                call_uv_subprocess(["add", "--group", group, "--quiet", dep])
             else:
-                call_subprocess(["add", "--group", group, "--quiet", "--offline", dep])
+                call_uv_subprocess(
+                    ["add", "--group", group, "--quiet", "--offline", dep]
+                )
         except UVSubprocessFailedError as err:
             msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
             raise UVDepGroupError(msg) from None
@@ -70,9 +72,9 @@ def remove_deps_from_group(pypi_names: list[str], group: str) -> None:
         se_dep = _strip_extras(dep)
         try:
             if not usethis_config.offline:
-                call_subprocess(["remove", "--group", group, "--quiet", se_dep])
+                call_uv_subprocess(["remove", "--group", group, "--quiet", se_dep])
             else:
-                call_subprocess(
+                call_uv_subprocess(
                     ["remove", "--group", group, "--quiet", "--offline", se_dep]
                 )
         except UVSubprocessFailedError as err:

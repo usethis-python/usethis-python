@@ -11,3 +11,7 @@ class UVDepGroupError(UVError):
 
 class UVSubprocessFailedError(UVError):
     """Raised when a subprocess call to uv fails."""
+
+
+class UVUnparsedPythonVersionError(UVError):
+    """Raised when a Python version string cannot be parsed."""

@@ -2,24 +2,28 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-from pydantic import TypeAdapter
-
 from usethis._console import tick_print
-from usethis._integrations.pre_commit.config import HookConfig, PreCommitRepoConfig
-from usethis._integrations.pre_commit.core import add_pre_commit_config
 from usethis._integrations.pre_commit.hooks import (
-    add_hook,
+    add_repo,
     get_hook_names,
     remove_hook,
 )
+from usethis._integrations.pre_commit.schema import (
+    FileType,
+    FileTypes,
+    HookDefinition,
+    Language,
+    LocalRepo,
+    UriRepo,
+)
 from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import (
-    PyPorjectTOMLValueMIssingError,
     PyProjectTOMLValueAlreadySetError,
+    PyProjectTOMLValueMissingError,
+    do_id_keys_exist,
     remove_config_value,
     set_config_value,
 )
-from usethis._integrations.pyproject.io import read_pyproject_toml
 from usethis._integrations.uv.deps import is_dep_in_any_group
 
 
@@ -27,14 +31,18 @@ class Tool(Protocol):
     @property
     @abstractmethod
     def name(self) -> str:
-        """The name of the tool, for display purposes."""
+        """The name of the tool, for display purposes.
+
+        It is assumed that this name is also the name of the Python package associated
+        with the tool; if not, make sure to override methods which access this property.
+        """
 
     @property
     def dev_deps(self) -> list[str]:
         """The name of the tool's development dependencies."""
         return []
 
-    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         """Get the pre-commit repository configurations for the tool."""
         return []
 
@@ -62,90 +70,61 @@ class Tool(Protocol):
         """Whether the tool is being used in the current project.
 
         Three heuristics are used by default:
-        1. Whether any of the tool's development dependencies are in the project.
+        1. Whether any of the tool's characteristic dev dependencies are in the project.
         2. Whether any of the tool's managed files are in the project.
         3. Whether any of the tool's managed pyproject.toml sections are present.
         """
-        is_any_deps = any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-        is_any_files = False
-        for file in self.get_managed_files():
-            if file.exists() and file.is_file():
-                is_any_files = True
-                break
-
-        pyproject = read_pyproject_toml()
-
-        is_any_pyproject = False
-        for id_keys in self.get_pyproject_id_keys():
-            p = pyproject
-            try:
-                for key in id_keys:
-                    TypeAdapter(dict).validate_python(p)
-                    assert isinstance(p, dict)
-                    p = p[key]
-            except KeyError:
-                pass
-            else:
-                is_any_pyproject = True
-                break
+        is_any_deps = any(
+            is_dep_in_any_group(dep) for dep in self.get_unique_dev_deps()
+        )
+        is_any_files = any(
+            file.exists() and file.is_file() for file in self.get_managed_files()
+        )
+        is_any_pyproject = any(
+            do_id_keys_exist(id_keys) for id_keys in self.get_pyproject_id_keys()
+        )
 
         return is_any_deps or is_any_files or is_any_pyproject
 
-    def add_pre_commit_repo_config(self) -> None:
+    def add_pre_commit_repo_configs(self) -> None:
         """Add the tool's pre-commit configuration."""
-        repo_configs = self.get_pre_commit_repo_configs()
+        repos = self.get_pre_commit_repos()
 
-        if not repo_configs:
+        if not repos:
             return
-
-        if len(repo_configs) > 1:
-            raise NotImplementedError(
-                "Multiple pre-commit repo configurations not yet supported."
-            )
-        repo_config = repo_configs[0]
-
-        add_pre_commit_config()
 
         # Add the config for this specific tool.
-        first_time_adding = True
-        for hook in repo_config.hooks:
-            if hook.id not in get_hook_names():
-                # Need to add this hook, it is missing.
-                if first_time_adding:
-                    tick_print(
-                        f"Adding {self.name} config to '.pre-commit-config.yaml'."
-                    )
-                    first_time_adding = False
+        for repo_config in repos:
+            if repo_config.hooks is None:
+                continue
 
-                add_hook(
-                    PreCommitRepoConfig(
-                        repo=repo_config.repo, rev=repo_config.rev, hooks=[hook]
-                    )
-                )
+            if len(repo_config.hooks) > 1:
+                msg = "Multiple hooks in a single repo not yet supported."
+                raise NotImplementedError(msg)
 
-    def remove_pre_commit_repo_config(self) -> None:
-        """Remove the tool's pre-commit configuration."""
-        repo_configs = self.get_pre_commit_repo_configs()
+            for hook in repo_config.hooks:
+                if hook.id not in get_hook_names():
+                    # This will remove the placeholder, if present.
+                    add_repo(repo_config)
+
+    def remove_pre_commit_repo_configs(self) -> None:
+        """Remove the tool's pre-commit configuration.
+
+        If the .pre-commit-config.yaml file does not exist, this method has no effect.
+        """
+        repo_configs = self.get_pre_commit_repos()
 
         if not repo_configs:
             return
 
-        if len(repo_configs) > 1:
-            raise NotImplementedError(
-                "Multiple pre-commit repo configurations not yet supported."
-            )
-        repo_config = repo_configs[0]
+        for repo_config in repo_configs:
+            if repo_config.hooks is None:
+                continue
 
-        # Remove the config for this specific tool.
-        first_removal = True
-        for hook in repo_config.hooks:
-            if hook.id in get_hook_names():
-                if first_removal:
-                    tick_print(
-                        f"Removing {self.name} config from '.pre-commit-config.yaml'."
-                    )
-                    first_removal = False
-                remove_hook(hook.id)
+            # Remove the config for this specific tool.
+            for hook in repo_config.hooks:
+                if hook.id in get_hook_names():
+                    remove_hook(hook.id)
 
     def add_pyproject_configs(self) -> None:
         """Add the tool's pyproject.toml configurations."""
@@ -176,7 +155,7 @@ class Tool(Protocol):
         for config in configs:
             try:
                 remove_config_value(config.id_keys)
-            except PyPorjectTOMLValueMIssingError:
+            except PyProjectTOMLValueMissingError:
                 pass
             else:
                 if first_removal:
@@ -193,18 +172,17 @@ class DeptryTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["deptry"]
 
-    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
-            PreCommitRepoConfig(
+            LocalRepo(
                 repo="local",
                 hooks=[
-                    HookConfig(
+                    HookDefinition(
                         id="deptry",
                         name="deptry",
                         entry="uv run --frozen deptry src",
-                        language="system",
+                        language=Language("system"),
                         always_run=True,
-                        pass_filenames=False,
                     )
                 ],
             )
@@ -233,12 +211,12 @@ class PyprojectFmtTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["pyproject-fmt"]
 
-    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
-            PreCommitRepoConfig(
+            UriRepo(
                 repo="https://github.com/tox-dev/pyproject-fmt",
                 rev="v2.5.0",  # Manually bump this version when necessary
-                hooks=[HookConfig(id="pyproject-fmt")],
+                hooks=[HookDefinition(id="pyproject-fmt")],
             )
         ]
 
@@ -273,6 +251,7 @@ class PytestTool(Tool):
                         "addopts": [
                             "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
                         ],
+                        "filterwarnings": ["error"],
                     }
                 },
             ),
@@ -307,29 +286,42 @@ class RuffTool(Tool):
     def dev_deps(self) -> list[str]:
         return ["ruff"]
 
-    def get_pre_commit_repo_configs(self) -> list[PreCommitRepoConfig]:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
-            PreCommitRepoConfig(
+            LocalRepo(
                 repo="local",
                 hooks=[
-                    HookConfig(
+                    HookDefinition(
                         id="ruff-format",
                         name="ruff-format",
-                        entry="uv run --frozen ruff format",
-                        language="system",
+                        entry="uv run --frozen ruff format --force-exclude",
+                        language=Language("system"),
+                        types_or=FileTypes(
+                            [FileType("python"), FileType("pyi"), FileType("jupyter")]
+                        ),
                         always_run=True,
-                        pass_filenames=False,
-                    ),
-                    HookConfig(
-                        id="ruff-check",
-                        name="ruff-check",
-                        entry="uv run --frozen ruff check --fix",
-                        language="system",
-                        always_run=True,
-                        pass_filenames=False,
+                        pass_filenames=True,
+                        require_serial=True,
                     ),
                 ],
-            )
+            ),
+            LocalRepo(
+                repo="local",
+                hooks=[
+                    HookDefinition(
+                        id="ruff",
+                        name="ruff",
+                        entry="uv run --frozen ruff check --fix --force-exclude",
+                        language=Language("system"),
+                        types_or=FileTypes(
+                            [FileType("python"), FileType("pyi"), FileType("jupyter")]
+                        ),
+                        always_run=True,
+                        pass_filenames=True,
+                        require_serial=True,
+                    ),
+                ],
+            ),
         ]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:

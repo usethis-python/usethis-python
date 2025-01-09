@@ -1,7 +1,7 @@
 import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
-from usethis._console import box_print
+from usethis._core.browse import browse_pypi
 
 app = typer.Typer(help="Visit important project-related web pages.")
 
@@ -17,12 +17,4 @@ def pypi(
     quiet: bool = quiet_opt,
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet):
-        _pypi(package=package, browser=browser)
-
-
-def _pypi(*, package: str, browser: bool = False) -> None:
-    url = f"https://pypi.org/project/{package}/"
-    if browser:
-        typer.launch(url)
-    else:
-        box_print(f"Open URL <{url}>.")
+        browse_pypi(package=package, browser=browser)

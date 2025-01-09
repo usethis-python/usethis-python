@@ -3,78 +3,76 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestAddPytestDir:
-    def test_exists(self, uv_init_dir: Path):
+    def test_exists(self, tmp_path: Path):
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             add_pytest_dir()
 
         # Assert
-        assert (uv_init_dir / "tests").exists()
+        assert (tmp_path / "tests").exists()
 
-    def test_message(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+    def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             add_pytest_dir()
 
         # Assert
         out, _ = capfd.readouterr()
         assert out == "✔ Creating '/tests'.\n✔ Writing '/tests/conftest.py'.\n"
 
-    def test_conftest_exists(
-        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-    ):
+    def test_conftest_exists(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
-        (uv_init_dir / "tests").mkdir()
+        (tmp_path / "tests").mkdir()
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             add_pytest_dir()
 
         # Assert
-        assert (uv_init_dir / "tests" / "conftest.py").exists()
+        assert (tmp_path / "tests" / "conftest.py").exists()
         out, _ = capfd.readouterr()
         assert out == "✔ Writing '/tests/conftest.py'.\n"
 
 
 class TestRemovePytestDir:
-    def test_blank_slate(self, uv_init_dir: Path):
+    def test_blank_slate(self, tmp_path: Path):
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             remove_pytest_dir()
 
         # Assert
-        assert not (uv_init_dir / "tests").exists()
+        assert not (tmp_path / "tests").exists()
 
-    def test_dir(self, uv_init_dir: Path):
+    def test_dir(self, tmp_path: Path):
         # Arrange
-        (uv_init_dir / "tests").mkdir()
+        (tmp_path / "tests").mkdir()
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             remove_pytest_dir()
 
         # Assert
-        assert not (uv_init_dir / "tests").exists()
+        assert not (tmp_path / "tests").exists()
 
-    def test_protect_file(self, uv_init_dir: Path):
+    def test_protect_file(self, tmp_path: Path):
         # Arrange
-        (uv_init_dir / "tests").mkdir()
-        (uv_init_dir / "tests" / "test_something.py").touch()
+        (tmp_path / "tests").mkdir()
+        (tmp_path / "tests" / "test_something.py").touch()
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             remove_pytest_dir()
 
         # Assert
-        assert (uv_init_dir / "tests").exists()
-        assert (uv_init_dir / "tests" / "test_something.py").exists()
+        assert (tmp_path / "tests").exists()
+        assert (tmp_path / "tests" / "test_something.py").exists()
 
-    def test_roundtrip(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
+    def test_roundtrip(self, tmp_path: Path):
+        with change_cwd(tmp_path):
             # Arrange
             add_pytest_dir()
 
@@ -82,4 +80,4 @@ class TestRemovePytestDir:
             remove_pytest_dir()
 
         # Assert
-        assert not (uv_init_dir / "tests").exists()
+        assert not (tmp_path / "tests").exists()

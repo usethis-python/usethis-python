@@ -4,9 +4,10 @@ from usethis._integrations.uv.deps import (
     add_deps_to_group,
     get_dep_groups,
     get_deps_from_group,
+    is_dep_in_any_group,
     remove_deps_from_group,
 )
-from usethis._utils._test import change_cwd
+from usethis._test import change_cwd
 
 
 class TestGetDepGroups:
@@ -88,3 +89,31 @@ class TestRemoveDepsFromGroup:
 
             # Assert
             assert "pytest" not in get_deps_from_group("test")
+
+
+class TestIsDepInAnyGroup:
+    def test_no_group(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            assert not is_dep_in_any_group("pytest")
+
+    def test_in_group(self, uv_init_dir: Path, vary_network_conn: None):
+        # Arrange
+        with change_cwd(uv_init_dir):
+            add_deps_to_group(["pytest"], "test")
+
+            # Act
+            result = is_dep_in_any_group("pytest")
+
+        # Assert
+        assert result
+
+    def test_not_in_group(self, uv_init_dir: Path, vary_network_conn: None):
+        # Arrange
+        with change_cwd(uv_init_dir):
+            add_deps_to_group(["pytest"], "test")
+
+            # Act
+            result = is_dep_in_any_group("black")
+
+        # Assert
+        assert not result

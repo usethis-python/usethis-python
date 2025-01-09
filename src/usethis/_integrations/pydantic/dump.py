@@ -1,10 +1,11 @@
 from functools import singledispatch
 from itertools import zip_longest
+from typing import TypeAlias
 
 from pydantic import BaseModel, RootModel
 
-type ModelLiteral = bool | int | float | str
-type ModelRepresentation = (
+ModelLiteral: TypeAlias = bool | int | float | str
+ModelRepresentation: TypeAlias = (
     ModelLiteral
     | dict[str, "ModelRepresentation"]
     | list["ModelRepresentation"]

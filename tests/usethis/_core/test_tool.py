@@ -432,7 +432,7 @@ pipelines:
             )
 
 
-class TestPyprojectFormat:
+class TestPyprojectFmt:
     class TestAdd:
         class TestPyproject:
             def test_added(
@@ -484,6 +484,86 @@ keep_full_version = true
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
                     "☐ Call the 'pyproject-fmt pyproject.toml' command to run pyproject-fmt.\n"
                 )
+
+    class TestRemove:
+        def test_config_file(self, uv_init_dir: Path, vary_network_conn: None):
+            # Arrange
+            (uv_init_dir / "pyproject.toml").write_text(
+                """\
+[tool.pyproject-fmt]
+foo = "bar"
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir):
+                use_pyproject_fmt(remove=True)
+
+            # Assert
+            assert (uv_init_dir / "pyproject.toml").read_text() == ""
+
+    class TestPreCommitIntegration:
+        def test_use_first(
+            self,
+            uv_init_repo_dir: Path,
+            vary_network_conn: None,
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_pre_commit()
+
+                # Act
+                use_pyproject_fmt()
+
+                # Assert
+                hook_names = get_hook_names()
+
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+            assert "pyproject-fmt" in hook_names
+
+        def test_use_after(
+            self,
+            uv_init_repo_dir: Path,
+            vary_network_conn: None,
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_pyproject_fmt()
+
+                # Act
+                use_pre_commit()
+
+                # Assert
+                hook_names = get_hook_names()
+
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+            assert "pyproject-fmt" in hook_names
+
+        def test_remove(
+            self,
+            uv_init_repo_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+            vary_network_conn: None,
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_pyproject_fmt()
+                    use_pre_commit()
+
+                # Act
+                use_pyproject_fmt(remove=True)
+
+            # Assert
+            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert "pyproject-fmt" not in contents
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Removing pyproject-fmt config from 'pyproject.toml'.\n"
+                "✔ Removing pyproject-fmt config from '.pre-commit-config.yaml'.\n"
+                "✔ Removing 'pyproject-fmt' from the 'dev' dependency group.\n"
+            )
 
 
 class TestPytest:
@@ -745,6 +825,5 @@ dev = []
             )
 
 
-# TODO test use_pyproject_fmt
 # TODO test use_deptry(remove=True
 # TODO test use_ruff with pre-commit integration aspect (both add and remove)

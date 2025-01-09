@@ -28,8 +28,9 @@ class TestAddCaches:
             # Assert
             default_cache_by_name = {"uv": Cache(CachePath("~/.cache/uv"))}
             assert get_cache_by_name() == cache_by_name | default_cache_by_name
-            output = capfd.readouterr().out
-            assert output == (
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
                 "✔ Adding cache 'example' definition to 'bitbucket-pipelines.yml'.\n"
             )
 

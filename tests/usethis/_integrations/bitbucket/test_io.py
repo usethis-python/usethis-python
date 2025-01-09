@@ -23,8 +23,9 @@ class TestEditBitbucketPipelinesYAML:
 image: atlassian/default-image:3
 """
         )
-        output = capfd.readouterr().out
-        assert output == ("✔ Writing 'bitbucket-pipelines.yml'.\n")
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == ("✔ Writing 'bitbucket-pipelines.yml'.\n")
 
     def test_do_nothing(self, tmp_path: Path):
         # Arrange

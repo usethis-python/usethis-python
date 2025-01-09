@@ -73,8 +73,9 @@ class TestInstallPreCommitHooks:
             install_pre_commit_hooks()
 
             # Assert
-            output = capfd.readouterr().out
-            assert output == "✔ Ensuring pre-commit hooks are installed.\n"
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Ensuring pre-commit hooks are installed.\n"
 
     def test_err(self, tmp_path: Path):
         # Act, Assert
@@ -100,8 +101,9 @@ class TestUninstallPreCommitHooks:
             uninstall_pre_commit_hooks()
 
             # Assert
-            output = capfd.readouterr().out
-            assert output == "✔ Ensuring pre-commit hooks are uninstalled.\n"
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Ensuring pre-commit hooks are uninstalled.\n"
 
         # Uninstalling the hooks shouldn't remove the config file
         assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()

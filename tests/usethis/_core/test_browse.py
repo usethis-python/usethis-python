@@ -10,9 +10,9 @@ class TestPyPI:
         browse_pypi(package="numpy", browser=False)
 
         # Assert
-        output = capfd.readouterr().out
-
-        assert "☐ Open URL <https://pypi.org/project/numpy/>." in output
+        out, err = capfd.readouterr()
+        assert not err
+        assert "☐ Open URL <https://pypi.org/project/numpy/>." in out
 
     def test_open_in_browser(self, monkeypatch):
         # Arrange

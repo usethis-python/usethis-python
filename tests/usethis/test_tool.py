@@ -332,8 +332,9 @@ class TestTool:
                 tool.add_pre_commit_repo_configs()
 
                 # Assert
-                output = capfd.readouterr().out
-                assert output == (
+                out, err = capfd.readouterr()
+                assert not err
+                assert out == (
                     "✔ Writing '.pre-commit-config.yaml'.\n"
                     "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 )
@@ -366,8 +367,9 @@ repos:
                 pytest.skip("Multiple hooks in one repo not supported yet")
 
                 # Assert
-                output = capfd.readouterr().out
-                assert output == (
+                out, err = capfd.readouterr()
+                assert not err
+                assert out == (
                     "✔ Adding hook 'ruff-format' to '.pre-commit-config.yaml'.\n"
                 )
                 assert get_hook_names() == ["ruff", "ruff-format"]

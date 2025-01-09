@@ -43,5 +43,5 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.12, 3.13]
+        python-version: [3.11, 3.12, 3.13]
         resolution: [highest, lowest-direct]

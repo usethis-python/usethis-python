@@ -856,5 +856,66 @@ dev = []
 """
             )
 
+    class TestPrecommitIntegration:
+        def test_use_first(
+            self,
+            uv_init_repo_dir: Path,
+            vary_network_conn: None,
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_ruff()
 
-# TODO test use_ruff with pre-commit integration aspect (both add and remove)
+                # Act
+                use_pre_commit()
+
+                # Assert
+                hook_names = get_hook_names()
+
+            assert "ruff-format" in hook_names
+            assert "ruff" in hook_names
+
+        def test_use_after(
+            self,
+            uv_init_repo_dir: Path,
+            vary_network_conn: None,
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_pre_commit()
+
+                # Act
+                use_ruff()
+
+                # Assert
+                hook_names = get_hook_names()
+
+            assert "ruff-format" in hook_names
+            assert "ruff" in hook_names
+
+        def test_remove(
+            self,
+            uv_init_repo_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+            vary_network_conn: None,
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_ruff()
+                    use_pre_commit()
+
+                # Act
+                use_ruff(remove=True)
+
+            # Assert
+            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert "ruff" not in contents
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Removing ruff-format config from '.pre-commit-config.yaml'.\n"
+                "✔ Removing ruff config from '.pre-commit-config.yaml'.\n"
+                "✔ Removing ruff config from 'pyproject.toml'.\n"
+                "✔ Removing 'ruff' from the 'dev' dependency group.\n"
+            )

@@ -785,8 +785,8 @@ class TestRuff:
             assert out == (
                 "✔ Adding 'ruff' to the 'dev' dependency group.\n"
                 "✔ Adding ruff config to 'pyproject.toml'.\n"
-                "✔ Enabling ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', \n'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
-                "✔ Ignoring ruff rule 'SIM108' in 'pyproject.toml'.\n"
+                "✔ Enabling ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Ignoring ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
                 "☐ Call the 'ruff check --fix' command to run the ruff linter with autofixes.\n"
                 "☐ Call the 'ruff format' command to run the ruff formatter.\n"
             )

@@ -22,6 +22,7 @@ def get_supported_major_python_versions() -> list[int]:
 
     versions = set()
     for version in get_available_python_versions():
+        # N.B. a standard range won't include alpha versions.
         if requires_python.contains(version):
             versions.add(version)
 
@@ -33,7 +34,7 @@ def _get_major_version(version: str) -> int:
 
 
 def _parse_python_version_from_uv_output(version: str) -> str:
-    match = re.match(r"^[A-z]*-(\d+.\d+.\d+)+[+-].*$", version)
+    match = re.match(r"^[A-z]*-(\d+.\d+.\d+[a-z\d]*)+[+-].*$", version)
 
     if match:
         return match.group(1)

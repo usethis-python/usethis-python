@@ -111,6 +111,16 @@ filterwarnings = [ "error" ]
 source = [ "src" ]
 omit = [ "*/pytest-of-*/*" ]
 
+[tool.coverage.report]
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "assert_never(.*)",
+  "class .*\\bProtocol\\):",
+  "@(abc\\.)?abstractmethod",
+]
+
 [tool.uv]
 default-groups = [ "test", "dev" ]
 

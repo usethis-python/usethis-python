@@ -40,131 +40,81 @@ class TestAllHooksList:
 
 
 class TestDeptry:
-    def test_dependency_added(self, uv_init_dir: Path, vary_network_conn: None):
-        # Act
-        with change_cwd(uv_init_dir):
-            use_deptry()
+    class TestAdd:
+        def test_dependency_added(self, uv_init_dir: Path, vary_network_conn: None):
+            # Act
+            with change_cwd(uv_init_dir):
+                use_deptry()
+
+                # Assert
+                (dev_dep,) = get_deps_from_group("dev")
+            assert dev_dep == "deptry"
+
+        def test_stdout(
+            self,
+            uv_init_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+            vary_network_conn: None,
+        ):
+            # Act
+            with change_cwd(uv_init_dir):
+                use_deptry()
 
             # Assert
-            (dev_dep,) = get_deps_from_group("dev")
-        assert dev_dep == "deptry"
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding 'deptry' to the 'dev' dependency group.\n"
+                "☐ Call the 'deptry src' command to run deptry.\n"
+            )
 
-    def test_stdout(
-        self,
-        uv_init_dir: Path,
-        capfd: pytest.CaptureFixture[str],
-        vary_network_conn: None,
-    ):
-        # Act
-        with change_cwd(uv_init_dir):
-            use_deptry()
-
-        # Assert
-        out, _ = capfd.readouterr()
-        assert out == (
-            "✔ Adding 'deptry' to the 'dev' dependency group.\n"
-            "☐ Call the 'deptry src' command to run deptry.\n"
-        )
-
-    def test_run_deptry_fail(self, uv_init_dir: Path, vary_network_conn: None):
-        # Arrange
-        f = uv_init_dir / "bad.py"
-        f.write_text("import broken_dependency")
-
-        # Act
-        with change_cwd(uv_init_dir):
-            use_deptry()
-
-        # Assert
-        with pytest.raises(subprocess.CalledProcessError):
-            subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
-
-    def test_run_deptry_pass(self, uv_init_dir: Path, vary_network_conn: None):
-        # Arrange
-        f = uv_init_dir / "good.py"
-        f.write_text("import sys")
-
-        # Act
-        with change_cwd(uv_init_dir):
-            use_deptry()
-
-        # Assert
-        subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
-
-    def test_pre_commit_after(
-        self,
-        uv_init_repo_dir: Path,
-        capfd: pytest.CaptureFixture[str],
-        vary_network_conn: None,
-    ):
-        # Act
-        with change_cwd(uv_init_repo_dir):
-            use_deptry()
-            use_pre_commit()
-
-            # Assert
-            hook_names = get_hook_names()
-
-        # 1. File exists
-        assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
-
-        # 2. Hook is in the file
-        assert "deptry" in hook_names
-
-        # 3. Test file contents
-        assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
-            """\
-repos:
-  - repo: local
-    hooks:
-      - id: deptry
-        name: deptry
-        always_run: true
-        entry: uv run --frozen deptry src
-        language: system
-"""
-        )
-
-        # 4. Check messages
-        out, _ = capfd.readouterr()
-        assert out == (
-            "✔ Adding 'deptry' to the 'dev' dependency group.\n"
-            "☐ Call the 'deptry src' command to run deptry.\n"
-            "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
-            "✔ Writing '.pre-commit-config.yaml'.\n"
-            "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-            "✔ Ensuring pre-commit hooks are installed.\n"
-            "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
-        )
-
-    def test_pre_commit_first(
-        self,
-        uv_init_repo_dir: Path,
-        capfd: pytest.CaptureFixture[str],
-        vary_network_conn: None,
-    ):
-        """Basically this checks that the placeholders gets removed."""
-
-        with change_cwd(uv_init_repo_dir):
+        def test_run_deptry_fail(self, uv_init_dir: Path, vary_network_conn: None):
             # Arrange
-            use_pre_commit()
-            capfd.readouterr()
+            f = uv_init_dir / "bad.py"
+            f.write_text("import broken_dependency")
 
             # Act
-            use_deptry()
+            with change_cwd(uv_init_dir):
+                use_deptry()
 
             # Assert
-            hook_names = get_hook_names()
+            with pytest.raises(subprocess.CalledProcessError):
+                subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
 
-        # 1. File exists
-        assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+        def test_run_deptry_pass(self, uv_init_dir: Path, vary_network_conn: None):
+            # Arrange
+            f = uv_init_dir / "good.py"
+            f.write_text("import sys")
 
-        # 2. Hook is in the file
-        assert "deptry" in hook_names
+            # Act
+            with change_cwd(uv_init_dir):
+                use_deptry()
 
-        # 3. Test file contents
-        assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
-            """\
+            # Assert
+            subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
+
+        def test_pre_commit_after(
+            self,
+            uv_init_repo_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+            vary_network_conn: None,
+        ):
+            # Act
+            with change_cwd(uv_init_repo_dir):
+                use_deptry()
+                use_pre_commit()
+
+                # Assert
+                hook_names = get_hook_names()
+
+            # 1. File exists
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+
+            # 2. Hook is in the file
+            assert "deptry" in hook_names
+
+            # 3. Test file contents
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
+                """\
 repos:
   - repo: local
     hooks:
@@ -174,48 +124,130 @@ repos:
         entry: uv run --frozen deptry src
         language: system
 """
-        )
+            )
 
-        # 4. Check messages
-        out, _ = capfd.readouterr()
-        assert out == (
-            "✔ Adding 'deptry' to the 'dev' dependency group.\n"
-            "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-            "☐ Call the 'deptry src' command to run deptry.\n"
-        )
+            # 4. Check messages
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding 'deptry' to the 'dev' dependency group.\n"
+                "☐ Call the 'deptry src' command to run deptry.\n"
+                "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
+                "✔ Writing '.pre-commit-config.yaml'.\n"
+                "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
+                "✔ Ensuring pre-commit hooks are installed.\n"
+                "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
+            )
 
-    def test_placeholder_removed(
-        self,
-        uv_init_repo_dir: Path,
-        capfd: pytest.CaptureFixture[str],
-        vary_network_conn: None,
-    ):
-        # Arrange
-        (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
-            """\
+    class TestRemove:
+        def test_dep(self, uv_init_dir: Path, vary_network_conn: None):
+            with change_cwd(uv_init_dir):
+                # Arrange
+                add_deps_to_group(["deptry"], "dev")
+
+                # Act
+                use_deptry(remove=True)
+
+                # Assert
+                assert not get_deps_from_group("dev")
+
+    class TestPreCommitIntegration:
+        def test_pre_commit_first(
+            self,
+            uv_init_repo_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+            vary_network_conn: None,
+        ):
+            """Basically this checks that the placeholders gets removed."""
+
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_deptry()
+
+                # Assert
+                hook_names = get_hook_names()
+
+            # 1. File exists
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+
+            # 2. Hook is in the file
+            assert "deptry" in hook_names
+
+            # 3. Test file contents
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: deptry
+        name: deptry
+        always_run: true
+        entry: uv run --frozen deptry src
+        language: system
+"""
+            )
+
+            # 4. Check messages
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding 'deptry' to the 'dev' dependency group.\n"
+                "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
+                "☐ Call the 'deptry src' command to run deptry.\n"
+            )
+
+        def test_placeholder_removed(
+            self,
+            uv_init_repo_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+            vary_network_conn: None,
+        ):
+            # Arrange
+            (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
+                """\
 repos:
   - repo: local
     hooks:
       - id: placeholder
 """
-        )
+            )
 
-        # Act
-        with change_cwd(uv_init_repo_dir):
-            use_deptry()
+            # Act
+            with change_cwd(uv_init_repo_dir):
+                use_deptry()
 
-        # Assert
-        contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
-        assert "deptry" in contents
-        assert "placeholder" not in contents
-        out, err = capfd.readouterr()
-        assert not err
-        # Expecting not to get a specific message about removing the placeholder.
-        assert out == (
-            "✔ Adding 'deptry' to the 'dev' dependency group.\n"
-            "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-            "☐ Call the 'deptry src' command to run deptry.\n"
-        )
+            # Assert
+            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert "deptry" in contents
+            assert "placeholder" not in contents
+            out, err = capfd.readouterr()
+            assert not err
+            # Expecting not to get a specific message about removing the placeholder.
+            assert out == (
+                "✔ Adding 'deptry' to the 'dev' dependency group.\n"
+                "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
+                "☐ Call the 'deptry src' command to run deptry.\n"
+            )
+
+        def test_remove(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            with change_cwd(uv_init_repo_dir), usethis_config.set(quiet=True):
+                use_deptry()
+                use_pre_commit()
+                content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+                assert "deptry" in content
+
+            # Act
+            with change_cwd(uv_init_repo_dir):
+                use_deptry(remove=True)
+
+            # Assert
+            content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert "deptry" not in content
 
 
 class TestPreCommit:
@@ -825,5 +857,4 @@ dev = []
             )
 
 
-# TODO test use_deptry(remove=True
 # TODO test use_ruff with pre-commit integration aspect (both add and remove)

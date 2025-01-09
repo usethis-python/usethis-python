@@ -17,7 +17,7 @@ class TestGetSupportedMajorPythonVersions:
         (tmp_path / "pyproject.toml").write_text(
             """\
 [project]
-requires-python = ">=3.7"
+requires-python = ">=3.10,<3.12"
 """
         )
 
@@ -26,7 +26,7 @@ requires-python = ">=3.7"
             supported_major_python = get_supported_major_python_versions()
 
         # Assert
-        assert supported_major_python == [7, 8, 9, 10, 11, 12, 13]
+        assert supported_major_python == [10, 11]
 
     def test_upper_bound(self, tmp_path: Path):
         # Arrange

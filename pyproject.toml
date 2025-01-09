@@ -12,7 +12,7 @@ license = { file = "LICENSE" }
 authors = [
   { name = "Nathan McDougall", email = "nathan.j.mcdougall@gmail.com" },
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Environment :: Console",
@@ -20,6 +20,7 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Software Development",
@@ -109,6 +110,16 @@ filterwarnings = [ "error" ]
 [tool.coverage.run]
 source = [ "src" ]
 omit = [ "*/pytest-of-*/*" ]
+
+[tool.coverage.report]
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "assert_never(.*)",
+  "class .*\\bProtocol\\):",
+  "@(abc\\.)?abstractmethod",
+]
 
 [tool.uv]
 default-groups = [ "test", "dev" ]

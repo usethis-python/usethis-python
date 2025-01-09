@@ -1,3 +1,5 @@
+from typing import TypeAlias
+
 from pydantic import BaseModel
 
 
@@ -14,4 +16,4 @@ class InsertSuccessor(BaseOperation):
     pass
 
 
-type Instruction = InsertSuccessor | InsertParallel
+Instruction: TypeAlias = InsertSuccessor | InsertParallel

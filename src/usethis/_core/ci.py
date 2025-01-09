@@ -1,6 +1,6 @@
 from usethis._ci import (
     add_bitbucket_pre_commit_step,
-    add_bitbucket_pytest_steps,
+    update_bitbucket_pytest_steps,
 )
 from usethis._console import box_print, info_print
 from usethis._integrations.bitbucket.config import (
@@ -22,7 +22,7 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
             add_bitbucket_pre_commit_step()
 
         if use_pytest:
-            add_bitbucket_pytest_steps()
+            update_bitbucket_pytest_steps()
 
         else:
             info_print(

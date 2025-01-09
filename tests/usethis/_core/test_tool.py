@@ -456,7 +456,7 @@ pipelines:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing pre-commit step from 'bitbucket-pipelines.yml'.\n"
+                "✔ Removing 'Run pre-commit' from default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                 "✔ Ensuring pre-commit hooks are uninstalled.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
@@ -710,7 +710,7 @@ image: atlassian/default-image:3
 pipelines:
     default:
       - step:
-            name: Test - Python 3.12
+            name: Test on 3.12
             script:
               - uv run --python 3.12 pytest
 """
@@ -724,7 +724,7 @@ pipelines:
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
-                    "✔ Removing pytest steps from 'bitbucket-pipelines.yml'.\n"
+                    "✔ Removing 'Test on 3.12' from default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                     "✔ Removing pytest config from 'pyproject.toml'.\n"
                     "✔ Removing 'pytest' from the 'test' dependency group.\n"

@@ -20,6 +20,20 @@ def select_ruff_rules(rules: list[str]) -> None:
     append_config_list(["tool", "ruff", "lint", "select"], rules)
 
 
+def ignore_ruff_rules(rules: list[str]) -> None:
+    """Ignore ruff rules in the project."""
+    rules = sorted(set(rules) - set(get_ignored_ruff_rules()))
+
+    if not rules:
+        return
+
+    rules_str = ", ".join([f"'{rule}'" for rule in rules])
+    s = "" if len(rules) == 1 else "s"
+    tick_print(f"Ignoring ruff rule{s} {rules_str} in 'pyproject.toml'.")
+
+    append_config_list(["tool", "ruff", "lint", "ignore"], rules)
+
+
 def deselect_ruff_rules(rules: list[str]) -> None:
     """Ensure ruff rules are not selected in the project."""
 
@@ -40,6 +54,17 @@ def get_ruff_rules() -> list[str]:
 
     try:
         rules: list[str] = get_config_value(["tool", "ruff", "lint", "select"])
+    except KeyError:
+        rules = []
+
+    return rules
+
+
+def get_ignored_ruff_rules() -> list[str]:
+    """Get the ruff rules ignored in the project."""
+
+    try:
+        rules: list[str] = get_config_value(["tool", "ruff", "lint", "ignore"])
     except KeyError:
         rules = []
 

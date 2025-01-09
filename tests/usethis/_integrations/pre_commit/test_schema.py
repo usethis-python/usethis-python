@@ -33,4 +33,4 @@ class TestSchemaJSON:
 
     def test_target_python_version(self):
         # If this test fails, we should bump the version in the command in schema.py
-        assert Path(".python-version").read_text().startswith("3.12")
+        assert Path(".python-version").read_text().startswith("3.11")

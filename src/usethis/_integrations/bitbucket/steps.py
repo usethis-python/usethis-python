@@ -91,7 +91,6 @@ def add_step_in_default(step: Step) -> None:
         remove_step_from_default(placeholder)
 
 
-# TODO reduce the complexity of the below function and enable the ruff rule
 def _add_step_in_default_via_doc(
     step: Step, *, doc: BitbucketPipelinesYAMLDocument
 ) -> None:
@@ -164,19 +163,18 @@ def _add_step_in_default_via_doc(
             break
         prerequisites.add(step_name)
 
-    weld_result = usethis._pipeweld.func.add(
+    weld_result = usethis._pipeweld.func.Adder(
         pipeline=get_pipeweld_pipeline_from_default(doc.model),
         step=get_pipeweld_step(step),
         prerequisites=prerequisites,
-    )
+    ).add()
     for instruction in weld_result.instructions:
         apply_pipeweld_instruction_via_doc(
             instruction=instruction, new_step=step, doc=doc
         )
 
 
-# TODO refactor the below to reduce complexity and enable the ruff rules
-def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
+def remove_step_from_default(step: Step) -> None:
     """Remove a step from the default pipeline in the Bitbucket Pipelines configuration.
 
     If the default pipeline does not exist, or the step is not found, nothing happens.
@@ -203,62 +201,9 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
 
         new_items: list[StepItem | ParallelItem | StageItem] = []
         for item in items:
-            if isinstance(item, ParallelItem):
-                par = item.parallel.root
-
-                if isinstance(par, ParallelSteps):
-                    step_items = par.root
-                elif isinstance(par, ParallelExpanded):
-                    step_items = par.steps.root
-                else:
-                    assert_never(par)
-
-                new_step_items: list[StepItem] = []
-                for step_item in step_items:
-                    if _steps_are_equivalent(step_item.step, step):
-                        continue
-
-                    new_step_items.append(step_item)
-
-                if len(new_step_items) == 0:
-                    continue
-                elif len(new_step_items) == 1 and len(step_items) != 1:
-                    # Collapse the parallel step down to a single step, but only if
-                    # it wasn't already a single step, in which case we'll leave it
-                    # alone.
-                    new_items.append(new_step_items[0])
-                elif isinstance(par, ParallelSteps):
-                    new_items.append(
-                        ParallelItem(parallel=Parallel(ParallelSteps(new_step_items)))
-                    )
-                elif isinstance(par, ParallelExpanded):
-                    par.steps = ParallelSteps(new_step_items)
-                    new_items.append(ParallelItem(parallel=Parallel(par)))
-                else:
-                    assert_never(par)
-            elif isinstance(item, StageItem):
-                step1s = item.stage.steps
-
-                new_step1s = []
-                for step1 in step1s:
-                    if _steps_are_equivalent(step1tostep(step1), step):
-                        continue
-
-                    new_step1s.append(step1)
-
-                if len(new_step1s) == 0:
-                    continue
-
-                new_stage = item.stage.model_copy()
-                new_stage.steps = new_step1s
-                new_items.append(StageItem(stage=new_stage))
-            elif isinstance(item, StepItem):
-                if _steps_are_equivalent(item.step, step):
-                    continue
-
-                new_items.append(item)
-            else:
-                assert_never(item)
+            new_item = _insert_step(item, step=step)
+            if new_item is not None:
+                new_items.append(new_item)
         pipeline.root.root = new_items
 
         if len(new_items) == 0:
@@ -272,6 +217,68 @@ def remove_step_from_default(step: Step) -> None:  # noqa: PLR0912, PLR0915
         for cache in step.caches:
             if not is_cache_used(cache):
                 remove_cache(cache)
+
+
+@singledispatch
+def _insert_step(
+    item: StepItem | ParallelItem | StageItem, *, step: Step
+) -> StepItem | ParallelItem | StageItem | None:
+    raise NotImplementedError
+
+
+@_insert_step.register(ParallelItem)
+def _(item: ParallelItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+    par = item.parallel.root
+
+    if isinstance(par, ParallelSteps):
+        step_items = par.root
+    elif isinstance(par, ParallelExpanded):
+        step_items = par.steps.root
+    else:
+        assert_never(par)
+
+    new_step_items: list[StepItem] = []
+    for step_item in step_items:
+        if _steps_are_equivalent(step_item.step, step):
+            continue
+        new_step_items.append(step_item)
+
+    if len(new_step_items) == 0:
+        return None
+    elif len(new_step_items) == 1 and len(step_items) != 1:
+        return new_step_items[0]
+    elif isinstance(par, ParallelSteps):
+        return ParallelItem(parallel=Parallel(ParallelSteps(new_step_items)))
+    elif isinstance(par, ParallelExpanded):
+        par.steps = ParallelSteps(new_step_items)
+        return ParallelItem(parallel=Parallel(par))
+    else:
+        assert_never(par)
+
+
+@_insert_step.register(StageItem)
+def _(item: StageItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+    step1s = item.stage.steps
+
+    new_step1s = []
+    for step1 in step1s:
+        if _steps_are_equivalent(step1tostep(step1), step):
+            continue
+        new_step1s.append(step1)
+
+    if len(new_step1s) == 0:
+        return None
+
+    new_stage = item.stage.model_copy()
+    new_stage.steps = new_step1s
+    return StageItem(stage=new_stage)
+
+
+@_insert_step.register(StepItem)
+def _(item: StepItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+    if _steps_are_equivalent(item.step, step):
+        return None
+    return item
 
 
 def is_cache_used(cache: str) -> bool:

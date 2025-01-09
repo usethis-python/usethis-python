@@ -29,8 +29,7 @@ class DuplicatedHookNameError(ValueError):
     """Raised when a hook name is duplicated in a pre-commit configuration file."""
 
 
-# TODO refactor to avoid complexity and enable the below ruff rule
-def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
+def add_repo(repo: LocalRepo | UriRepo) -> None:
     """Add a pre-commit repo configuration to the pre-commit configuration file.
 
     This assumes the hook doesn't already exist in the configuration file.
@@ -77,30 +76,50 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:  # noqa: PLR0912
                 # Use the last existing hook
                 last_precedent = existing_hooks[-1]
 
-            # Insert the new hook after the last precedent repo
-            # Do this by iterating over the repos and hooks, and inserting the new hook
-            # after the last precedent
-            new_repos = []
-            for _repo in doc.model.repos:
-                hooks = _repo.hooks
-                if hooks is None:
-                    hooks = []
-
-                if [hook.id for hook in hooks] != [_PLACEHOLDER_ID]:
-                    new_repos.append(_repo)
-                for hook in hooks:
-                    if hook.id == last_precedent:
-                        tick_print(
-                            f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'."
-                        )
-                        new_repos.append(repo)
-            doc.model.repos = new_repos
+            doc.model.repos = insert_repo(
+                repo_to_insert=repo,
+                existing_repos=doc.model.repos,
+                predecessor=last_precedent,
+            )
 
         update_ruamel_yaml_map(
             doc.content,
             pre_commit_fancy_dump(doc.model, reference=doc.content),
             preserve_comments=True,
         )
+
+
+def insert_repo(
+    *,
+    repo_to_insert: LocalRepo | UriRepo | MetaRepo,
+    existing_repos: list[LocalRepo | UriRepo | MetaRepo],
+    predecessor: str,
+) -> list[LocalRepo | UriRepo | MetaRepo]:
+    # Insert the new hook after the last precedent repo
+    # Do this by iterating over the repos and hooks, and inserting the new hook
+    # after the last precedent
+
+    repos = []
+    for repo in existing_repos:
+        hooks = repo.hooks
+        if hooks is None:
+            hooks = []
+
+        # Don't include the placeholder from now on, since we're adding a repo
+        # which can be there instead.
+        if [hook.id for hook in hooks] != [_PLACEHOLDER_ID]:
+            repos.append(repo)
+
+        for hook in hooks:
+            if hook.id == predecessor:
+                if repo_to_insert.hooks is not None:
+                    for inserted_hook in repo_to_insert.hooks:
+                        tick_print(
+                            f"Adding hook '{inserted_hook.id}' to '.pre-commit-config.yaml'."
+                        )
+                repos.append(repo_to_insert)
+
+    return repos
 
 
 def add_placeholder_hook() -> None:

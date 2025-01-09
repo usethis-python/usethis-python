@@ -7,14 +7,17 @@ from usethis._ci import (
 )
 from usethis._console import box_print
 from usethis._integrations.pre_commit.core import (
-    # add_pre_commit_config_file,
     install_pre_commit_hooks,
     remove_pre_commit_config,
     uninstall_pre_commit_hooks,
 )
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_names
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
-from usethis._integrations.ruff.rules import deselect_ruff_rules, select_ruff_rules
+from usethis._integrations.ruff.rules import (
+    deselect_ruff_rules,
+    ignore_ruff_rules,
+    select_ruff_rules,
+)
 from usethis._integrations.uv.deps import add_deps_to_group, remove_deps_from_group
 from usethis._tool import (
     ALL_TOOLS,
@@ -157,11 +160,13 @@ def use_ruff(*, remove: bool = False) -> None:
     for _tool in ALL_TOOLS:
         if _tool.is_used():
             rules += _tool.get_associated_ruff_rules()
+    ignored_rules = ["SIM108"]
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev")
         tool.add_pyproject_configs()
         select_ruff_rules(rules)
+        ignore_ruff_rules(ignored_rules)
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
 

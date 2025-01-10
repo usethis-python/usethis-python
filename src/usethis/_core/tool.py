@@ -1,9 +1,9 @@
 from usethis._ci import (
     add_bitbucket_pre_commit_step,
-    add_bitbucket_pytest_steps,
     is_bitbucket_used,
     remove_bitbucket_pre_commit_step,
     remove_bitbucket_pytest_steps,
+    update_bitbucket_pytest_steps,
 )
 from usethis._console import box_print
 from usethis._integrations.pre_commit.core import (
@@ -121,7 +121,7 @@ def use_pytest(*, remove: bool = False) -> None:
         add_pytest_dir()
 
         if is_bitbucket_used():
-            add_bitbucket_pytest_steps()
+            update_bitbucket_pytest_steps()
 
         box_print(
             "Add test files to the '/tests' directory with the format 'test_*.py'."
@@ -148,6 +148,7 @@ def use_ruff(*, remove: bool = False) -> None:
         "E4",
         "E7",
         "E9",
+        "EM",
         "F",
         "FURB",
         "I",
@@ -160,7 +161,10 @@ def use_ruff(*, remove: bool = False) -> None:
     for _tool in ALL_TOOLS:
         if _tool.is_used():
             rules += _tool.get_associated_ruff_rules()
-    ignored_rules = ["SIM108"]
+    ignored_rules = [
+        "PLR2004",  # https://github.com/nathanjmcdougall/usethis-python/issues/105
+        "SIM108",  # https://github.com/nathanjmcdougall/usethis-python/issues/118
+    ]
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev")

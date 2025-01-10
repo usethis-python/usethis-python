@@ -456,7 +456,7 @@ pipelines:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing pre-commit step from 'bitbucket-pipelines.yml'.\n"
+                "✔ Removing 'Run pre-commit' from default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                 "✔ Ensuring pre-commit hooks are uninstalled.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
@@ -710,7 +710,7 @@ image: atlassian/default-image:3
 pipelines:
     default:
       - step:
-            name: Test - Python 3.12
+            name: Test on 3.12
             script:
               - uv run --python 3.12 pytest
 """
@@ -724,7 +724,7 @@ pipelines:
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
-                    "✔ Removing pytest steps from 'bitbucket-pipelines.yml'.\n"
+                    "✔ Removing 'Test on 3.12' from default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                     "✔ Removing pytest config from 'pyproject.toml'.\n"
                     "✔ Removing 'pytest' from the 'test' dependency group.\n"
@@ -783,10 +783,10 @@ class TestRuff:
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding 'uff' to the 'dev' dependency group.\n"
+                "✔ Adding 'ruff' to the 'dev' dependency group.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
-                "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', \n'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
-                "✔ Ignoring Ruff rule 'SIM108' in 'pyproject.toml'.\n"
+                "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
                 "☐ Call the 'ruff check --fix' command to run the ruff linter with autofixes.\n"
                 "☐ Call the 'ruff format' command to run the ruff formatter.\n"
             )

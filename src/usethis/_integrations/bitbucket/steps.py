@@ -155,7 +155,7 @@ def _add_step_in_default_via_doc(
     # See https://github.com/nathanjmcdougall/usethis-python/issues/149
     step_order = [
         "Run pre-commit",
-        *[f"Test - Python 3.{maj}" for maj in get_supported_major_python_versions()],
+        *[f"Test on 3.{maj}" for maj in get_supported_major_python_versions()],
     ]
 
     for step_name in step_order:
@@ -182,6 +182,14 @@ def remove_step_from_default(step: Step) -> None:
     if not (Path.cwd() / "bitbucket-pipelines.yml").exists():
         return
 
+    if step.name == _PLACEHOLDER_NAME:
+        pass  # We need to selectively choose to report at a higher level.
+        # It's not always notable that the placeholder is being removed.
+    else:
+        tick_print(
+            f"Removing '{step.name}' from default pipeline in 'bitbucket-pipelines.yml'."
+        )
+
     with edit_bitbucket_pipelines_yaml() as doc:
         config = doc.model
 
@@ -199,9 +207,11 @@ def remove_step_from_default(step: Step) -> None:
 
         items = pipeline.root.root
 
+        # Iterate over the items. Any item that contains the step is censored to remove
+        # references to the step. If the only thing in the item is the step, we get None
         new_items: list[StepItem | ParallelItem | StageItem] = []
         for item in items:
-            new_item = _insert_step(item, step=step)
+            new_item = _censor_step(item, step=step)
             if new_item is not None:
                 new_items.append(new_item)
         pipeline.root.root = new_items
@@ -220,13 +230,21 @@ def remove_step_from_default(step: Step) -> None:
 
 
 @singledispatch
-def _insert_step(
+def _censor_step(
     item: StepItem | ParallelItem | StageItem, *, step: Step
 ) -> StepItem | ParallelItem | StageItem | None:
+    """Censor a step from a pipeline item, with None if necessary."""
     raise NotImplementedError
 
 
-@_insert_step.register(ParallelItem)
+@_censor_step.register(StepItem)
+def _(item: StepItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+    if _steps_are_equivalent(item.step, step):
+        return None
+    return item
+
+
+@_censor_step.register(ParallelItem)
 def _(item: ParallelItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
     par = item.parallel.root
 
@@ -256,7 +274,7 @@ def _(item: ParallelItem, *, step: Step) -> StepItem | ParallelItem | StageItem 
         assert_never(par)
 
 
-@_insert_step.register(StageItem)
+@_censor_step.register(StageItem)
 def _(item: StageItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
     step1s = item.stage.steps
 
@@ -272,13 +290,6 @@ def _(item: StageItem, *, step: Step) -> StepItem | ParallelItem | StageItem | N
     new_stage = item.stage.model_copy()
     new_stage.steps = new_step1s
     return StageItem(stage=new_stage)
-
-
-@_insert_step.register(StepItem)
-def _(item: StepItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
-    if _steps_are_equivalent(item.step, step):
-        return None
-    return item
 
 
 def is_cache_used(cache: str) -> bool:

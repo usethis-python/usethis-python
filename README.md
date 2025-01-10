@@ -1,5 +1,11 @@
 # usethis
 
+[![PyPI Version](<https://img.shields.io/pypi/v/usethis.svg>)](<https://pypi.python.org/pypi/usethis>)
+![PyPI License](<https://img.shields.io/pypi/l/usethis.svg>)
+[![PyPI Supported Versions](<https://img.shields.io/pypi/pyversions/usethis.svg>)](<https://pypi.python.org/pypi/usethis>)
+[![uv](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json>)](<https://github.com/astral-sh/uv>)
+[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)
+
 Automate Python project setup and development tasks that are otherwise performed manually.
 
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html),
@@ -83,8 +89,6 @@ Supported arguments:
 - `--browser` to open the link in the browser automatically.
 
 ## Development
-
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 This project is at the early stages of development. If you are interested in contributing,
 please ensure you have a corresponsing GitHub Issue open.

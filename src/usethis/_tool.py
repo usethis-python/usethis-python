@@ -51,7 +51,7 @@ class Tool(Protocol):
         return []
 
     def get_associated_ruff_rules(self) -> list[str]:
-        """Get the ruff rule codes associated with the tool."""
+        """Get the Ruff rule codes associated with the tool."""
         return []
 
     def get_unique_dev_deps(self) -> list[str]:
@@ -280,7 +280,7 @@ class PytestTool(Tool):
 class RuffTool(Tool):
     @property
     def name(self) -> str:
-        return "ruff"
+        return "Ruff"
 
     @property
     def dev_deps(self) -> list[str]:

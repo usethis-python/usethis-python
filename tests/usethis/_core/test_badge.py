@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from usethis._core.badge import add_badge
+from usethis._core.badge import Badge, add_badge
 from usethis._test import change_cwd
 
 
@@ -16,8 +16,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
-                badge_name="license",
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)"
+                ),
             )
 
         # Assert
@@ -29,7 +30,7 @@ class TestAddBadge:
         )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Adding license badge to 'README.md'.\n"
+        assert out == "✔ Adding Licence badge to 'README.md'.\n"
 
     def test_only_newline(self, tmp_path: Path):
         # Arrange
@@ -41,8 +42,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
-                badge_name="license",
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)"
+                )
             )
 
         # Assert
@@ -63,8 +65,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)",
-                badge_name="pre-commit",
+                Badge(
+                    markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)",
+                )
             )
 
         # Assert
@@ -87,8 +90,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)",
-                badge_name="ruff",
+                Badge(
+                    markdown="[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)",
+                )
             )
 
         # Assert
@@ -111,8 +115,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="![Don't Know What This Is](<https://example.com>)",
-                badge_name="unknown",
+                Badge(
+                    markdown="![Don't Know What This Is](<https://example.com>)",
+                )
             )
 
         # Assert
@@ -135,8 +140,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
-                badge_name="license",
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
             )
 
         # Assert
@@ -150,7 +156,7 @@ class TestAddBadge:
         )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Adding license badge to 'README.md'.\n"
+        assert out == "✔ Adding Licence badge to 'README.md'.\n"
 
     def test_skip_header2(self, tmp_path: Path):
         # Arrange
@@ -162,8 +168,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
-                badge_name="license",
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
             )
 
         # Assert
@@ -187,8 +194,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
-                badge_name="license",
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
             )
 
         # Assert
@@ -213,8 +221,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)",
-                badge_name="pre-commit",
+                Badge(
+                    markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)",
+                )
             )
 
         # Assert
@@ -239,8 +248,9 @@ class TestAddBadge:
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
-                badge_name="license",
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
             )
 
         # Assert
@@ -266,8 +276,9 @@ Some text
         # Act
         with change_cwd(tmp_path):
             add_badge(
-                markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
-                badge_name="license",
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
             )
 
         # Assert
@@ -279,5 +290,53 @@ Some text
 ![Licence](<https://img.shields.io/badge/licence-mit-green>)
 
 Some text
+"""
+        )
+
+    def test_predecessor_based_on_name(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "README.md"
+        path.write_text("""\
+![Ruff](<https://example.com>)
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            add_badge(
+                Badge(
+                    markdown="![pre-commit](<https://example.com>)",
+                )
+            )
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+![Ruff](<https://example.com>)
+![pre-commit](<https://example.com>)
+"""
+        )
+
+    def test_recognized_gets_put_before_unknown(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "README.md"
+        path.write_text("""\
+![Don't Know What This Is](<https://example.com>)
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            add_badge(
+                Badge(
+                    markdown="![Ruff](<https://example.com>)",
+                )
+            )
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+![Ruff](<https://example.com>)
+![Don't Know What This Is](<https://example.com>)
 """
         )

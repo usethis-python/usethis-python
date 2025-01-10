@@ -171,11 +171,11 @@ def use_ruff(*, remove: bool = False) -> None:
             tool.add_pre_commit_repo_configs()
 
         box_print(
-            "Call the 'ruff check --fix' command to run the ruff linter with autofixes."
+            "Call the 'ruff check --fix' command to run the Ruff linter with autofixes."
         )
-        box_print("Call the 'ruff format' command to run the ruff formatter.")
+        box_print("Call the 'ruff format' command to run the Ruff formatter.")
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_configs()
-        tool.remove_pyproject_configs()  # N.B. this will remove the selected ruff rules
+        tool.remove_pyproject_configs()  # N.B. this will remove the selected Ruff rules
         remove_deps_from_group(tool.dev_deps, "dev")

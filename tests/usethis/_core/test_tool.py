@@ -661,7 +661,7 @@ select = ["PT"]
 
                 # Assert
                 out, _ = capfd.readouterr()
-                assert out == ("✔ Disabling ruff rule 'PT' in 'pyproject.toml'.\n")
+                assert out == ("✔ Disabling Ruff rule 'PT' in 'pyproject.toml'.\n")
 
         class TestPyproject:
             def test_removed(
@@ -783,10 +783,10 @@ class TestRuff:
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding 'ruff' to the 'dev' dependency group.\n"
-                "✔ Adding ruff config to 'pyproject.toml'.\n"
-                "✔ Enabling ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', \n'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
-                "✔ Ignoring ruff rule 'SIM108' in 'pyproject.toml'.\n"
+                "✔ Adding 'uff' to the 'dev' dependency group.\n"
+                "✔ Adding Ruff config to 'pyproject.toml'.\n"
+                "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FURB', 'I', 'PLE', \n'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Ignoring Ruff rule 'SIM108' in 'pyproject.toml'.\n"
                 "☐ Call the 'ruff check --fix' command to run the ruff linter with autofixes.\n"
                 "☐ Call the 'ruff format' command to run the ruff formatter.\n"
             )
@@ -915,8 +915,8 @@ dev = []
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing ruff-format config from '.pre-commit-config.yaml'.\n"
-                "✔ Removing ruff config from '.pre-commit-config.yaml'.\n"
-                "✔ Removing ruff config from 'pyproject.toml'.\n"
+                "✔ Removing 'ruff-format' config from '.pre-commit-config.yaml'.\n"
+                "✔ Removing Ruff config from '.pre-commit-config.yaml'.\n"
+                "✔ Removing Ruff config from 'pyproject.toml'.\n"
                 "✔ Removing 'ruff' from the 'dev' dependency group.\n"
             )

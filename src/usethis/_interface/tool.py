@@ -59,7 +59,7 @@ def pytest(
         _run_tool(use_pytest, remove=remove)
 
 
-@app.command(help="Use ruff: an extremely fast Python linter and code formatter.")
+@app.command(help="Use Ruff: an extremely fast Python linter and code formatter.")
 def ruff(
     remove: bool = remove_opt, offline: bool = offline_opt, quiet: bool = quiet_opt
 ) -> None:

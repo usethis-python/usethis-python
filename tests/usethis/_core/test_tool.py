@@ -576,7 +576,7 @@ foo = "bar"
             assert not err
             assert out == (
                 "✔ Removing pyproject-fmt config from 'pyproject.toml'.\n"
-                "✔ Removing pyproject-fmt config from '.pre-commit-config.yaml'.\n"
+                "✔ Removing hook 'pyproject-fmt' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing 'pyproject-fmt' from the 'dev' dependency group.\n"
             )
 
@@ -769,8 +769,8 @@ class TestRuff:
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
                 "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
-                "☐ Call the 'ruff check --fix' command to run the ruff linter with autofixes.\n"
-                "☐ Call the 'ruff format' command to run the ruff formatter.\n"
+                "☐ Call the 'ruff check --fix' command to run the Ruff linter with autofixes.\n"
+                "☐ Call the 'ruff format' command to run the Ruff formatter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -890,8 +890,8 @@ dev = []
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing 'ruff-format' config from '.pre-commit-config.yaml'.\n"
-                "✔ Removing Ruff config from '.pre-commit-config.yaml'.\n"
+                "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
+                "✔ Removing hook 'ruff' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing Ruff config from 'pyproject.toml'.\n"
                 "✔ Removing 'ruff' from the 'dev' dependency group.\n"
             )

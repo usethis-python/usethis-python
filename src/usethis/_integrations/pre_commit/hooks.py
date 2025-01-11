@@ -158,7 +158,7 @@ def remove_hook(name: str) -> None:
             for hook in repo.hooks:
                 if hook.id == name:
                     tick_print(
-                        f"Removing '{hook.id}' config from '.pre-commit-config.yaml'."
+                        f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'."
                     )
                     repo.hooks.remove(hook)
 

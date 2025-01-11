@@ -262,6 +262,19 @@ class PytestTool(Tool):
                     "omit": ["*/pytest-of-*/*"],
                 },
             ),
+            PyProjectConfig(
+                id_keys=["tool", "coverage", "report"],
+                main_contents={
+                    "exclude_also": [
+                        "if TYPE_CHECKING:",
+                        "raise AssertionError",
+                        "raise NotImplementedError",
+                        "assert_never(.*)",
+                        "class .*\\bProtocol\\):",
+                        "@(abc\\.)?abstractmethod",
+                    ]
+                },
+            ),
         ]
 
     def get_associated_ruff_rules(self) -> list[str]:

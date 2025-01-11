@@ -1,3 +1,7 @@
+<h1 align="center">
+  <img src="doc/logo.svg"><br>
+</h1>
+
 # usethis
 
 [![PyPI Version](<https://img.shields.io/pypi/v/usethis.svg>)](<https://pypi.python.org/pypi/usethis>)
@@ -51,7 +55,7 @@ Add a new tool to a Python project, including:
 
 Currently supported tools:
 
-- ruff
+- Ruff
 - pytest
 - deptry
 - pre-commit
@@ -64,6 +68,15 @@ Supported arguments:
 
 - `--remove` to remove the tool instead of adding it
 - `--offline` to disable network access and rely on caches
+
+### `usethis badge`
+
+Add badges to READEME.md.
+
+Currently supported badges:
+
+- Ruff
+- pre-commit
 
 ### `usethis ci`
 

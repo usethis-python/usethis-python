@@ -1,0 +1,123 @@
+import re
+from pathlib import Path
+from typing import Self
+
+from pydantic import BaseModel
+
+from usethis._console import tick_print
+
+
+class Badge(BaseModel):
+    markdown: str
+
+    @property
+    def name(self) -> str | None:
+        match = re.match(r"^\s*\[!\[(.*)\]\(.*\)\]\(.*\)\s*$", self.markdown)
+        if match:
+            return match.group(1)
+        match = re.match(r"^\s*\!\[(.*)\]\(.*\)\s*$", self.markdown)
+        if match:
+            return match.group(1)
+        return None
+
+    def equivalent_to(self, other: Self) -> bool:
+        return self.name == other.name
+
+
+RUFF_BADGE = Badge(
+    markdown="[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)"
+)
+PRE_COMMIT_BADGE = Badge(
+    markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)"
+)
+
+BADGE_ORDER = [
+    RUFF_BADGE,
+    PRE_COMMIT_BADGE,
+]
+
+
+def add_ruff_badge():
+    add_badge(RUFF_BADGE)
+
+
+def add_pre_commit_badge():
+    add_badge(PRE_COMMIT_BADGE)
+
+
+def add_badge(badge: Badge) -> None:
+    path = Path.cwd() / "README.md"
+
+    if not path.exists():
+        raise NotImplementedError
+
+    prerequisites: list[Badge] = []
+    for _b in BADGE_ORDER:
+        if badge.equivalent_to(_b):
+            break
+        prerequisites.append(_b)
+
+    content = path.read_text()
+
+    original_lines = content.splitlines()
+
+    have_added = False
+    lines: list[str] = []
+    for original_line in original_lines:
+        original_badge = Badge(markdown=original_line)
+
+        if original_badge.equivalent_to(badge):
+            # If the badge is already there, we don't need to do anything
+            return
+
+        original_line_is_prerequisite = any(
+            original_badge.equivalent_to(prerequisite) for prerequisite in prerequisites
+        )
+        if not have_added and (
+            not original_line_is_prerequisite
+            and not is_blank(original_line)
+            and not is_header(original_line)
+        ):
+            tick_print(f"Adding {badge.name} badge to 'README.md'.")
+            lines.append(badge.markdown)
+            have_added = True
+
+            # Protect the badge we've just added
+            if not is_blank(original_line) and not is_badge(original_line):
+                lines.append("")
+
+        lines.append(original_line)
+
+    # In case the badge needs to go at the bottom of the file
+    if not have_added:
+        # Add a blank line between headers and the badge
+        if original_lines and is_header(original_lines[-1]):
+            lines.append("")
+        tick_print(f"Adding {badge.name} badge to 'README.md'.")
+        lines.append(badge.markdown)
+
+    # If the first line is blank, we basically just want to replace it.
+    if is_blank(lines[0]):
+        del lines[0]
+
+    # Ensure final newline
+    if lines[-1] != "":
+        lines.append("")
+
+    path.write_text("\n".join(lines))
+
+
+def is_blank(line: str) -> bool:
+    return line.isspace() or not line
+
+
+def is_header(line: str) -> bool:
+    return line.strip().startswith("#")
+
+
+def is_badge(line: str) -> bool:
+    # A heuristic
+    return (
+        re.match(r"^\[!\[.*\]\(.*\)\]\(.*\)$", line) is not None
+        or re.match(r"^\!\[.*\]\(.*\)$", line) is not None
+    )

@@ -41,7 +41,8 @@ class TestAllHooksList:
 
 class TestDeptry:
     class TestAdd:
-        def test_dependency_added(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_dependency_added(self, uv_init_dir: Path):
             # Act
             with change_cwd(uv_init_dir):
                 use_deptry()
@@ -50,11 +51,11 @@ class TestDeptry:
                 (dev_dep,) = get_deps_from_group("dev")
             assert dev_dep == "deptry"
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_stdout(
             self,
             uv_init_dir: Path,
             capfd: pytest.CaptureFixture[str],
-            vary_network_conn: None,
         ):
             # Act
             with change_cwd(uv_init_dir):
@@ -67,7 +68,8 @@ class TestDeptry:
                 "☐ Call the 'deptry src' command to run deptry.\n"
             )
 
-        def test_run_deptry_fail(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_run_deptry_fail(self, uv_init_dir: Path):
             # Arrange
             f = uv_init_dir / "bad.py"
             f.write_text("import broken_dependency")
@@ -80,7 +82,8 @@ class TestDeptry:
             with pytest.raises(subprocess.CalledProcessError):
                 subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
 
-        def test_run_deptry_pass(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_run_deptry_pass(self, uv_init_dir: Path):
             # Arrange
             f = uv_init_dir / "good.py"
             f.write_text("import sys")
@@ -92,11 +95,9 @@ class TestDeptry:
             # Assert
             subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_after(
-            self,
-            uv_init_repo_dir: Path,
-            capfd: pytest.CaptureFixture[str],
-            vary_network_conn: None,
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
             with change_cwd(uv_init_repo_dir):
@@ -139,7 +140,8 @@ repos:
             )
 
     class TestRemove:
-        def test_dep(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_dep(self, uv_init_dir: Path):
             with change_cwd(uv_init_dir):
                 # Arrange
                 add_deps_to_group(["deptry"], "dev")
@@ -151,11 +153,9 @@ repos:
                 assert not get_deps_from_group("dev")
 
     class TestPreCommitIntegration:
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_first(
-            self,
-            uv_init_repo_dir: Path,
-            capfd: pytest.CaptureFixture[str],
-            vary_network_conn: None,
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             """Basically this checks that the placeholders gets removed."""
 
@@ -198,11 +198,9 @@ repos:
                 "☐ Call the 'deptry src' command to run deptry.\n"
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_placeholder_removed(
-            self,
-            uv_init_repo_dir: Path,
-            capfd: pytest.CaptureFixture[str],
-            vary_network_conn: None,
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Arrange
             (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
@@ -252,12 +250,8 @@ repos:
 
 class TestPreCommit:
     class TestUse:
-        def test_fresh(
-            self,
-            uv_init_repo_dir: Path,
-            capfd: pytest.CaptureFixture[str],
-            vary_network_conn: None,
-        ):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_fresh(self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
             with change_cwd(uv_init_repo_dir):
                 use_pre_commit()
@@ -293,7 +287,8 @@ repos:
 """
             )
 
-        def test_already_exists(self, uv_init_repo_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_already_exists(self, uv_init_repo_dir: Path):
             # Arrange
             (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
                 """\
@@ -319,7 +314,8 @@ repos:
 """
             )
 
-        def test_bad_commit(self, uv_init_repo_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_bad_commit(self, uv_init_repo_dir: Path):
             # Act
             with change_cwd(uv_init_repo_dir):
                 use_pre_commit()
@@ -339,7 +335,8 @@ repos:
                 )
 
     class TestRemove:
-        def test_config_file(self, uv_init_repo_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange
             (uv_init_repo_dir / ".pre-commit-config.yaml").touch()
 
@@ -350,7 +347,8 @@ repos:
             # Assert
             assert not (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
 
-        def test_dep(self, uv_init_repo_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_dep(self, uv_init_repo_dir: Path):
             with change_cwd(uv_init_repo_dir):
                 # Arrange
                 add_deps_to_group(["pre-commit"], "dev")
@@ -467,12 +465,8 @@ pipelines:
 class TestPyprojectFmt:
     class TestAdd:
         class TestPyproject:
-            def test_added(
-                self,
-                uv_init_dir: Path,
-                capfd: pytest.CaptureFixture[str],
-                vary_network_conn: None,
-            ):
+            @pytest.mark.usefixtures("_vary_network_conn")
+            def test_added(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
                 # Arrange
                 with change_cwd(uv_init_dir), usethis_config.set(quiet=True):
                     add_deps_to_group(["pyproject-fmt"], "dev")
@@ -498,12 +492,8 @@ keep_full_version = true
                 )
 
         class TestDeps:
-            def test_added(
-                self,
-                uv_init_dir: Path,
-                capfd: pytest.CaptureFixture[str],
-                vary_network_conn: None,
-            ):
+            @pytest.mark.usefixtures("_vary_network_conn")
+            def test_added(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
                 with change_cwd(uv_init_dir):
                     # Act
                     use_pyproject_fmt()
@@ -518,7 +508,8 @@ keep_full_version = true
                 )
 
     class TestRemove:
-        def test_config_file(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_config_file(self, uv_init_dir: Path):
             # Arrange
             (uv_init_dir / "pyproject.toml").write_text(
                 """\
@@ -535,11 +526,8 @@ foo = "bar"
             assert (uv_init_dir / "pyproject.toml").read_text() == ""
 
     class TestPreCommitIntegration:
-        def test_use_first(
-            self,
-            uv_init_repo_dir: Path,
-            vary_network_conn: None,
-        ):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_use_first(self, uv_init_repo_dir: Path):
             with change_cwd(uv_init_repo_dir):
                 # Arrange
                 use_pre_commit()
@@ -553,11 +541,8 @@ foo = "bar"
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
             assert "pyproject-fmt" in hook_names
 
-        def test_use_after(
-            self,
-            uv_init_repo_dir: Path,
-            vary_network_conn: None,
-        ):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_use_after(self, uv_init_repo_dir: Path):
             with change_cwd(uv_init_repo_dir):
                 # Arrange
                 use_pyproject_fmt()
@@ -571,11 +556,9 @@ foo = "bar"
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
             assert "pyproject-fmt" in hook_names
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove(
-            self,
-            uv_init_repo_dir: Path,
-            capfd: pytest.CaptureFixture[str],
-            vary_network_conn: None,
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             with change_cwd(uv_init_repo_dir):
                 # Arrange
@@ -593,14 +576,15 @@ foo = "bar"
             assert not err
             assert out == (
                 "✔ Removing pyproject-fmt config from 'pyproject.toml'.\n"
-                "✔ Removing pyproject-fmt config from '.pre-commit-config.yaml'.\n"
+                "✔ Removing hook 'pyproject-fmt' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing 'pyproject-fmt' from the 'dev' dependency group.\n"
             )
 
 
 class TestPytest:
     class TestAdd:
-        def test_dep(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_dep(self, uv_init_dir: Path):
             with change_cwd(uv_init_dir):
                 use_pytest()
 
@@ -610,7 +594,8 @@ class TestPytest:
                     "coverage",
                 } <= set(get_deps_from_group("test"))
 
-        def test_bitbucket_integration(self, uv_init_dir: Path, vary_network_conn):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_bitbucket_integration(self, uv_init_dir: Path):
             with change_cwd(uv_init_dir):
                 # Arrange
                 use_ci_bitbucket()
@@ -661,7 +646,7 @@ select = ["PT"]
 
                 # Assert
                 out, _ = capfd.readouterr()
-                assert out == ("✔ Disabling ruff rule 'PT' in 'pyproject.toml'.\n")
+                assert out == ("✔ Disabling Ruff rule 'PT' in 'pyproject.toml'.\n")
 
         class TestPyproject:
             def test_removed(
@@ -761,7 +746,8 @@ pipelines:
 
 class TestRuff:
     class TestAdd:
-        def test_dependency_added(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_dependency_added(self, uv_init_dir: Path):
             # Act
             with change_cwd(uv_init_dir):
                 use_ruff()
@@ -770,12 +756,8 @@ class TestRuff:
                 (dev_dep,) = get_deps_from_group("dev")
             assert dev_dep == "ruff"
 
-        def test_stdout(
-            self,
-            uv_init_dir: Path,
-            capfd: pytest.CaptureFixture[str],
-            vary_network_conn: None,
-        ):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
             with change_cwd(uv_init_dir):
                 use_ruff()
@@ -784,18 +766,16 @@ class TestRuff:
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding 'ruff' to the 'dev' dependency group.\n"
-                "✔ Adding ruff config to 'pyproject.toml'.\n"
-                "✔ Enabling ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
-                "✔ Ignoring ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
-                "☐ Call the 'ruff check --fix' command to run the ruff linter with autofixes.\n"
-                "☐ Call the 'ruff format' command to run the ruff formatter.\n"
+                "✔ Adding Ruff config to 'pyproject.toml'.\n"
+                "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
+                "☐ Call the 'ruff check --fix' command to run the Ruff linter with autofixes.\n"
+                "☐ Call the 'ruff format' command to run the Ruff formatter.\n"
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_first(
-            self,
-            uv_init_repo_dir: Path,
-            capfd: pytest.CaptureFixture[str],
-            vary_network_conn: None,
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
             with change_cwd(uv_init_repo_dir):
@@ -809,7 +789,8 @@ class TestRuff:
             assert "ruff" in hook_names
 
     class TestRemove:
-        def test_config_file(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_config_file(self, uv_init_dir: Path):
             # Arrange
             (uv_init_dir / "pyproject.toml").write_text(
                 """\
@@ -825,7 +806,8 @@ select = ["A", "B", "C"]
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == ""
 
-        def test_blank_slate(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_blank_slate(self, uv_init_dir: Path):
             # Arrange
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
@@ -836,7 +818,8 @@ select = ["A", "B", "C"]
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == contents
 
-        def test_roundtrip(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_roundtrip(self, uv_init_dir: Path):
             # Arrange
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
@@ -858,11 +841,8 @@ dev = []
             )
 
     class TestPrecommitIntegration:
-        def test_use_first(
-            self,
-            uv_init_repo_dir: Path,
-            vary_network_conn: None,
-        ):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_use_first(self, uv_init_repo_dir: Path):
             with change_cwd(uv_init_repo_dir):
                 # Arrange
                 use_ruff()
@@ -876,11 +856,8 @@ dev = []
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names
 
-        def test_use_after(
-            self,
-            uv_init_repo_dir: Path,
-            vary_network_conn: None,
-        ):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_use_after(self, uv_init_repo_dir: Path):
             with change_cwd(uv_init_repo_dir):
                 # Arrange
                 use_pre_commit()
@@ -894,11 +871,9 @@ dev = []
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove(
-            self,
-            uv_init_repo_dir: Path,
-            capfd: pytest.CaptureFixture[str],
-            vary_network_conn: None,
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             with change_cwd(uv_init_repo_dir):
                 # Arrange
@@ -915,8 +890,8 @@ dev = []
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing ruff-format config from '.pre-commit-config.yaml'.\n"
-                "✔ Removing ruff config from '.pre-commit-config.yaml'.\n"
-                "✔ Removing ruff config from 'pyproject.toml'.\n"
+                "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
+                "✔ Removing hook 'ruff' from '.pre-commit-config.yaml'.\n"
+                "✔ Removing Ruff config from 'pyproject.toml'.\n"
                 "✔ Removing 'ruff' from the 'dev' dependency group.\n"
             )

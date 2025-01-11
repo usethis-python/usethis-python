@@ -7,7 +7,7 @@ from usethis._integrations.pyproject.core import (
 
 
 def select_ruff_rules(rules: list[str]) -> None:
-    """Add ruff rules to the project."""
+    """Add Ruff rules to the project."""
     rules = sorted(set(rules) - set(get_ruff_rules()))
 
     if not rules:
@@ -15,13 +15,13 @@ def select_ruff_rules(rules: list[str]) -> None:
 
     rules_str = ", ".join([f"'{rule}'" for rule in rules])
     s = "" if len(rules) == 1 else "s"
-    tick_print(f"Enabling ruff rule{s} {rules_str} in 'pyproject.toml'.")
+    tick_print(f"Enabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
     append_config_list(["tool", "ruff", "lint", "select"], rules)
 
 
 def ignore_ruff_rules(rules: list[str]) -> None:
-    """Ignore ruff rules in the project."""
+    """Ignore Ruff rules in the project."""
     rules = sorted(set(rules) - set(get_ignored_ruff_rules()))
 
     if not rules:
@@ -29,13 +29,13 @@ def ignore_ruff_rules(rules: list[str]) -> None:
 
     rules_str = ", ".join([f"'{rule}'" for rule in rules])
     s = "" if len(rules) == 1 else "s"
-    tick_print(f"Ignoring ruff rule{s} {rules_str} in 'pyproject.toml'.")
+    tick_print(f"Ignoring Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
     append_config_list(["tool", "ruff", "lint", "ignore"], rules)
 
 
 def deselect_ruff_rules(rules: list[str]) -> None:
-    """Ensure ruff rules are not selected in the project."""
+    """Ensure Ruff rules are not selected in the project."""
 
     rules = list(set(rules) & set(get_ruff_rules()))
 
@@ -44,13 +44,13 @@ def deselect_ruff_rules(rules: list[str]) -> None:
 
     rules_str = ", ".join([f"'{rule}'" for rule in rules])
     s = "" if len(rules) == 1 else "s"
-    tick_print(f"Disabling ruff rule{s} {rules_str} in 'pyproject.toml'.")
+    tick_print(f"Disabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
     remove_from_config_list(["tool", "ruff", "lint", "select"], rules)
 
 
 def get_ruff_rules() -> list[str]:
-    """Get the ruff rules selected in the project."""
+    """Get the Ruff rules selected in the project."""
 
     try:
         rules: list[str] = get_config_value(["tool", "ruff", "lint", "select"])
@@ -61,7 +61,7 @@ def get_ruff_rules() -> list[str]:
 
 
 def get_ignored_ruff_rules() -> list[str]:
-    """Get the ruff rules ignored in the project."""
+    """Get the Ruff rules ignored in the project."""
 
     try:
         rules: list[str] = get_config_value(["tool", "ruff", "lint", "ignore"])

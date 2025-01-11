@@ -8,7 +8,8 @@ from usethis._test import change_cwd
 
 
 class TestDeptry:
-    def test_cli(self, uv_init_dir: Path, vary_network_conn: None):
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_cli(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
             if not usethis_config.offline:
                 call_subprocess(["usethis", "tool", "deptry"])
@@ -17,7 +18,8 @@ class TestDeptry:
 
 
 class TestPreCommit:
-    def test_cli_pass(self, uv_init_repo_dir: Path, vary_network_conn: None):
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_cli_pass(self, uv_init_repo_dir: Path):
         with change_cwd(uv_init_repo_dir):
             if not usethis_config.offline:
                 call_subprocess(["usethis", "tool", "pre-commit"])
@@ -26,7 +28,8 @@ class TestPreCommit:
 
             call_subprocess(["uv", "run", "pre-commit", "run", "--all-files"])
 
-    def test_cli_fail(self, uv_init_repo_dir: Path, vary_network_conn: None):
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_cli_fail(self, uv_init_repo_dir: Path):
         with change_cwd(uv_init_repo_dir):
             if not usethis_config.offline:
                 call_subprocess(["usethis", "tool", "pre-commit"])
@@ -44,7 +47,8 @@ class TestPreCommit:
 
 
 class TestRuff:
-    def test_cli(self, uv_init_dir: Path, vary_network_conn: None):
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_cli(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
             if not usethis_config.offline:
                 call_subprocess(["usethis", "tool", "ruff"])

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from usethis._integrations.uv.deps import (
     add_deps_to_group,
     get_dep_groups,
@@ -69,7 +71,8 @@ test=['pytest']
 
 
 class TestAddDepsToGroup:
-    def test_pyproject_changed(self, uv_init_dir: Path, vary_network_conn: None):
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_pyproject_changed(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
             # Act
             add_deps_to_group(["pytest"], "test")
@@ -79,7 +82,8 @@ class TestAddDepsToGroup:
 
 
 class TestRemoveDepsFromGroup:
-    def test_pyproject_changed(self, uv_init_dir: Path, vary_network_conn: None):
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_pyproject_changed(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
             # Arrange
             add_deps_to_group(["pytest"], "test")
@@ -96,7 +100,8 @@ class TestIsDepInAnyGroup:
         with change_cwd(uv_init_dir):
             assert not is_dep_in_any_group("pytest")
 
-    def test_in_group(self, uv_init_dir: Path, vary_network_conn: None):
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_in_group(self, uv_init_dir: Path):
         # Arrange
         with change_cwd(uv_init_dir):
             add_deps_to_group(["pytest"], "test")
@@ -107,7 +112,8 @@ class TestIsDepInAnyGroup:
         # Assert
         assert result
 
-    def test_not_in_group(self, uv_init_dir: Path, vary_network_conn: None):
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_not_in_group(self, uv_init_dir: Path):
         # Arrange
         with change_cwd(uv_init_dir):
             add_deps_to_group(["pytest"], "test")

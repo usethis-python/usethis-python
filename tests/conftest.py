@@ -51,7 +51,7 @@ class NetworkConn(Enum):
     ],
     scope="session",
 )
-def vary_network_conn(request: pytest.FixtureRequest) -> Generator[bool, None, None]:
+def _vary_network_conn(request: pytest.FixtureRequest) -> Generator[None, None, None]:
     """Fixture to vary the network connection; returns True if offline."""
     if request.param is NetworkConn.ONLINE and is_offline():
         pytest.skip("Network connection is offline")
@@ -59,5 +59,5 @@ def vary_network_conn(request: pytest.FixtureRequest) -> Generator[bool, None, N
     offline = request.param is NetworkConn.OFFLINE
 
     usethis_config.offline = offline
-    yield offline
+    yield
     usethis_config.offline = False

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from usethis._core.badge import Badge, add_badge
+from usethis._core.badge import Badge, add_badge, remove_badge
 from usethis._test import change_cwd
 
 
@@ -340,3 +340,162 @@ Some text
 ![Don't Know What This Is](<https://example.com>)
 """
         )
+
+    def test_already_exists_no_newline_added(self):
+        # Arrange
+        path = Path("README.md")
+        content = """![Ruff](<https://example.com>)"""
+        path.write_text(content)
+
+        # Act
+        with change_cwd(path.parent):
+            add_badge(Badge(markdown="![Ruff](<https://example.com>)"))
+
+        # Assert
+        assert path.read_text() == content
+
+
+class TestRemoveBadge:
+    def test_empty(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Arrange
+        path = tmp_path / "README.md"
+        path.touch()
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_badge(
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
+            )
+
+        # Assert
+        content = path.read_text()
+        assert not content
+        out, err = capfd.readouterr()
+        assert not err
+        assert not out
+
+    def test_single(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Arrange
+        path = tmp_path / "README.md"
+        path.write_text("""\
+![Licence](<https://img.shields.io/badge/licence-mit-green>)
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_badge(
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
+            )
+
+        # Assert
+        content = path.read_text()
+        assert content == "\n"
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "✔ Removing Licence badge from 'README.md'.\n"
+
+    def test_no_reademe_file(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "README.md"
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_badge(
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
+            )
+
+        # Assert
+        assert not path.exists()
+
+    def test_header_and_text(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "README.md"
+        path.write_text("""\
+# Header
+
+![Licence](<https://img.shields.io/badge/licence-mit-green>)
+                        
+And some text
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_badge(
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
+            )
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+# Header
+
+And some text
+"""
+        )
+
+    def test_multiple_badges(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "README.md"
+        path.write_text("""\
+![Ruff](<https://example.com>)
+![pre-commit](<https://example.com>)
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            remove_badge(
+                Badge(
+                    markdown="![Ruff](<https://example.com>)",
+                )
+            )
+
+        # Assert
+        assert (
+            path.read_text()
+            == """\
+![pre-commit](<https://example.com>)
+"""
+        )
+
+    def test_no_badges_but_header_and_text(self):
+        # Arrange
+        path = Path("README.md")
+        content = """\
+# Header
+
+And some text
+"""
+        path.write_text(content)
+
+        # Act
+        with change_cwd(path.parent):
+            remove_badge(
+                Badge(
+                    markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
+                )
+            )
+
+        # Assert
+        assert path.read_text() == content
+
+    def test_already_exists_no_newline_added(self):
+        # Arrange
+        path = Path("README.md")
+        content = """Nothing will be removed"""
+        path.write_text(content)
+
+        # Act
+        with change_cwd(path.parent):
+            remove_badge(Badge(markdown="![Ruff](<https://example.com>)"))
+
+        # Assert
+        assert path.read_text() == content

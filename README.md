@@ -68,6 +68,7 @@ Supported arguments:
 
 - `--remove` to remove the tool instead of adding it
 - `--offline` to disable network access and rely on caches
+- `--quiet` to suppress output
 
 ### `usethis badge`
 
@@ -77,6 +78,12 @@ Currently supported badges:
 
 - Ruff
 - pre-commit
+
+Supported arguments:
+
+- `--remove` to remove the badge instead of adding it
+- `--offline` to disable network access and rely on caches
+- `--quiet` to suppress output
 
 ### `usethis ci`
 
@@ -89,6 +96,12 @@ Currently supported platforms:
 Example:
 
 `usethis ci bitbucket`.
+
+Supported arguments:
+
+- `--remove` to remove the CI configuration instead of adding it
+- `--offline` to disable network access and rely on caches
+- `--quiet` to suppress output
 
 ### `usethis browse pypi`
 

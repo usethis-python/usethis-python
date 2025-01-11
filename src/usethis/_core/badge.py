@@ -45,6 +45,14 @@ def add_pre_commit_badge():
     add_badge(PRE_COMMIT_BADGE)
 
 
+def remove_ruff_badge():
+    remove_badge(RUFF_BADGE)
+
+
+def remove_pre_commit_badge():
+    remove_badge(PRE_COMMIT_BADGE)
+
+
 def add_badge(badge: Badge) -> None:
     path = Path.cwd() / "README.md"
 
@@ -95,16 +103,25 @@ def add_badge(badge: Badge) -> None:
             lines.append("")
         tick_print(f"Adding {badge.name} badge to 'README.md'.")
         lines.append(badge.markdown)
+        have_added = True
 
     # If the first line is blank, we basically just want to replace it.
     if is_blank(lines[0]):
         del lines[0]
 
-    # Ensure final newline
-    if lines[-1] != "":
-        lines.append("")
+    output = "\n".join(lines)
 
-    path.write_text("\n".join(lines))
+    # Ensure final newline
+    if have_added:
+        output = _ensure_final_newline(output)
+
+    path.write_text(output)
+
+
+def _ensure_final_newline(content: str) -> str:
+    if not content or content[-1] != "\n":
+        content += "\n"
+    return content
 
 
 def is_blank(line: str) -> bool:
@@ -121,3 +138,49 @@ def is_badge(line: str) -> bool:
         re.match(r"^\[!\[.*\]\(.*\)\]\(.*\)$", line) is not None
         or re.match(r"^\!\[.*\]\(.*\)$", line) is not None
     )
+
+
+def remove_badge(badge: Badge) -> None:
+    path = Path.cwd() / "README.md"
+
+    if not path.exists():
+        return
+
+    content = path.read_text()
+
+    original_lines = content.splitlines()
+    if content.endswith("\n"):
+        original_lines.append("")
+
+    lines: list[str] = []
+    have_removed = False
+    skip_blank = False
+    for idx, original_line in enumerate(original_lines):
+        if not skip_blank:
+            if Badge(markdown=original_line).equivalent_to(badge):
+                tick_print(f"Removing {badge.name} badge from 'README.md'.")
+                have_removed = True
+
+                # Merge consecutive blank lines around the badges,
+                # if there is only one left
+                if (
+                    idx - 1 >= 0
+                    and idx + 1 < len(original_lines)
+                    and is_blank(original_lines[idx - 1])
+                    and is_blank(original_lines[idx + 1])
+                ):
+                    skip_blank = True  # i.e. next iteration once we hit a blank
+
+                continue
+
+            lines.append(original_line)
+        else:
+            skip_blank = False
+
+    output = "\n".join(lines)
+
+    # Ensure final newline
+    if have_removed:
+        output = _ensure_final_newline(output)
+
+    path.write_text(output)

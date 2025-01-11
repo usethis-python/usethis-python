@@ -5,6 +5,7 @@ from typing import Self
 from pydantic import BaseModel
 
 from usethis._console import tick_print
+from usethis._core.readme import add_readme
 
 
 class Badge(BaseModel):
@@ -57,7 +58,7 @@ def add_badge(badge: Badge) -> None:
     path = Path.cwd() / "README.md"
 
     if not path.exists():
-        raise NotImplementedError
+        add_readme()
 
     prerequisites: list[Badge] = []
     for _b in BADGE_ORDER:
@@ -70,8 +71,17 @@ def add_badge(badge: Badge) -> None:
     original_lines = content.splitlines()
 
     have_added = False
+    have_encountered_badge = False
+    html_h1_count = 0
     lines: list[str] = []
     for original_line in original_lines:
+        if is_badge(original_line):
+            have_encountered_badge = True
+
+        html_h1_count += _count_h1_open_tags(original_line)
+        in_block = html_h1_count > 0
+        html_h1_count -= _count_h1_close_tags(original_line)
+
         original_badge = Badge(markdown=original_line)
 
         if original_badge.equivalent_to(badge):
@@ -83,10 +93,10 @@ def add_badge(badge: Badge) -> None:
         )
         if not have_added and (
             not original_line_is_prerequisite
-            and not is_blank(original_line)
+            and (not is_blank(original_line) or have_encountered_badge)
             and not is_header(original_line)
+            and not in_block
         ):
-            tick_print(f"Adding {badge.name} badge to 'README.md'.")
             lines.append(badge.markdown)
             have_added = True
 
@@ -101,9 +111,10 @@ def add_badge(badge: Badge) -> None:
         # Add a blank line between headers and the badge
         if original_lines and is_header(original_lines[-1]):
             lines.append("")
-        tick_print(f"Adding {badge.name} badge to 'README.md'.")
         lines.append(badge.markdown)
         have_added = True
+
+    tick_print(f"Adding {badge.name} badge to 'README.md'.")
 
     # If the first line is blank, we basically just want to replace it.
     if is_blank(lines[0]):
@@ -138,6 +149,17 @@ def is_badge(line: str) -> bool:
         re.match(r"^\[!\[.*\]\(.*\)\]\(.*\)$", line) is not None
         or re.match(r"^\!\[.*\]\(.*\)$", line) is not None
     )
+
+
+def _count_h1_open_tags(line: str) -> int:
+    h1_start_match = re.match(r"(<h1\s.*>)", line)
+    if h1_start_match is not None:
+        return len(h1_start_match.groups())
+    return 0
+
+
+def _count_h1_close_tags(line: str) -> int:
+    return line.count("</h1>")
 
 
 def remove_badge(badge: Badge) -> None:

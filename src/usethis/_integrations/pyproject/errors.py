@@ -17,6 +17,10 @@ class PyProjectTOMLProjectNameError(PyProjectTOMLError):
     """Raised when the 'project.name' key is missing or invalid in 'pyproject.toml'."""
 
 
+class PyProjectTOMLProjectDescriptionError(PyProjectTOMLError):
+    """Raised when the 'project.description' key is missing or invalid in 'pyproject.toml'."""
+
+
 class PyProjectTOMLProjectSectionError(PyProjectTOMLError):
     """Raised when the 'project' section is missing or invalid in 'pyproject.toml'."""
 

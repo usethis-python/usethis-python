@@ -341,18 +341,113 @@ Some text
 """
         )
 
-    def test_already_exists_no_newline_added(self):
+    def test_already_exists_no_newline_added(self, tmp_path: Path):
         # Arrange
-        path = Path("README.md")
+        path = tmp_path / Path("README.md")
         content = """![Ruff](<https://example.com>)"""
         path.write_text(content)
 
         # Act
-        with change_cwd(path.parent):
+        with change_cwd(tmp_path):
             add_badge(Badge(markdown="![Ruff](<https://example.com>)"))
 
         # Assert
         assert path.read_text() == content
+
+    def test_no_unnecessary_spaces(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "README.md"
+        path.write_text("""\
+# usethis
+
+[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)
+
+Automate Python project setup and development tasks that are otherwise performed manually.
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            add_badge(
+                Badge(
+                    markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)",
+                )
+            )
+
+        # Assert
+        content = path.read_text()
+        assert (
+            content
+            == """\
+# usethis
+
+[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)
+[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)
+
+Automate Python project setup and development tasks that are otherwise performed manually.
+"""
+        )
+
+    def test_already_exists_out_of_order(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # Arrange
+        path = tmp_path / "README.md"
+        content = """\
+[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)
+[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)
+"""
+        path.write_text(content)
+
+        # Act
+        with change_cwd(tmp_path):
+            add_badge(
+                Badge(
+                    markdown="[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)",
+                )
+            )
+
+        # Assert
+        assert path.read_text() == content
+        out, err = capfd.readouterr()
+        assert not err
+        assert not out
+
+    def test_skip_html_block(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "README.md"
+        path.write_text("""\
+<h1 align="center">
+  <img src="doc/logo.svg"><br>
+</h1>
+
+# usethis
+                        
+[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            add_badge(
+                Badge(
+                    markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)"
+                )
+            )
+
+        # Assert
+        content = path.read_text()
+        assert (
+            content
+            == """\
+<h1 align="center">
+  <img src="doc/logo.svg"><br>
+</h1>
+
+# usethis
+                        
+[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)
+[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)
+"""
+        )
 
 
 class TestRemoveBadge:
@@ -466,9 +561,9 @@ And some text
 """
         )
 
-    def test_no_badges_but_header_and_text(self):
+    def test_no_badges_but_header_and_text(self, tmp_path: Path):
         # Arrange
-        path = Path("README.md")
+        path = tmp_path / Path("README.md")
         content = """\
 # Header
 
@@ -477,7 +572,7 @@ And some text
         path.write_text(content)
 
         # Act
-        with change_cwd(path.parent):
+        with change_cwd(tmp_path):
             remove_badge(
                 Badge(
                     markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
@@ -487,14 +582,14 @@ And some text
         # Assert
         assert path.read_text() == content
 
-    def test_already_exists_no_newline_added(self):
+    def test_already_exists_no_newline_added(self, tmp_path: Path):
         # Arrange
-        path = Path("README.md")
+        path = tmp_path / Path("README.md")
         content = """Nothing will be removed"""
         path.write_text(content)
 
         # Act
-        with change_cwd(path.parent):
+        with change_cwd(tmp_path):
             remove_badge(Badge(markdown="![Ruff](<https://example.com>)"))
 
         # Assert

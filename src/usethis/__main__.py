@@ -1,5 +1,6 @@
 import typer
 
+import usethis._interface.badge
 import usethis._interface.browse
 import usethis._interface.ci
 import usethis._interface.show
@@ -11,10 +12,11 @@ app = typer.Typer(
         "performed manually."
     )
 )
-app.add_typer(usethis._interface.tool.app, name="tool")
+app.add_typer(usethis._interface.badge.app, name="badge")
 app.add_typer(usethis._interface.browse.app, name="browse")
 app.add_typer(usethis._interface.ci.app, name="ci")
 app.add_typer(usethis._interface.show.app, name="show")
+app.add_typer(usethis._interface.tool.app, name="tool")
 app(prog_name="usethis")
 
 __all__ = ["app"]

@@ -1,4 +1,4 @@
-from usethis._integrations.bitbucket.schema import Step, Step1, Step2
+from usethis._integrations.bitbucket.schema import Step, Step1
 
 
 def step1tostep(step1: Step1) -> Step:
@@ -14,12 +14,3 @@ def step1tostep(step1: Step1) -> Step:
 
     step = Step(**step2.model_dump())
     return step
-
-
-def steptostep1(step: Step) -> Step1:
-    """Demoting Step to a Step1.
-
-    See `step1tostep` for more information.
-    """
-    step1 = Step1(step=Step2(**step.model_dump()))
-    return step1

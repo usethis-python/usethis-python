@@ -164,7 +164,8 @@ class TestTool:
             ]
 
     class TestIsUsed:
-        def test_some_deps(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_some_deps(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
             with change_cwd(uv_init_dir):
@@ -176,7 +177,8 @@ class TestTool:
             # Assert
             assert result
 
-        def test_non_managed_deps(self, uv_init_dir: Path, vary_network_conn: None):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_non_managed_deps(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
             with change_cwd(uv_init_dir):

@@ -1,3 +1,5 @@
+import sys
+
 import typer
 
 import usethis._interface.badge
@@ -9,6 +11,11 @@ from usethis._config import quiet_opt, usethis_config
 from usethis._core.badge import add_pre_commit_badge, add_ruff_badge
 from usethis._core.readme import add_readme
 from usethis._tool import PreCommitTool, RuffTool
+
+try:
+    from usethis._version import __version__
+except ImportError:
+    __version__ = None
 
 app = typer.Typer(
     help=(
@@ -37,6 +44,14 @@ def readme(
 
             if PreCommitTool().is_used():
                 add_pre_commit_badge()
+
+
+@app.command(help="Display the version of usethis.")
+def version() -> None:
+    if __version__ is not None:
+        print(__version__)
+    else:
+        sys.exit(1)
 
 
 app(prog_name="usethis")

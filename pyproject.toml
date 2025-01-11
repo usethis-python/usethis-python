@@ -70,6 +70,9 @@ source = "vcs"
 "Releases" = "https://github.com/nathanjmcdougall/usethis-python/releases"
 "Source Archive" = "https://github.com/nathanjmcdougall/usethis-python/archive/{commit_hash}.zip"
 
+[tool.hatch.build.hooks.vcs]
+version-file = "src/usethis/_version.py"
+
 [tool.ruff]
 line-length = 88
 
@@ -144,6 +147,7 @@ layers = [
 ]
 containers = [ "usethis" ]
 exhaustive = true
+exhaustive_ignores = [ "_version" ]
 
 [[tool.importlinter.contracts]]
 name = "Integrations Modular Design"

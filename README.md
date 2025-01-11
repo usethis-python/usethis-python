@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="doc/logo.svg"><br>
+  <img src="https://raw.githubusercontent.com/nathanjmcdougall/usethis-python/refs/heads/main/doc/logo.svg"><br>
 </h1>
 
 # usethis

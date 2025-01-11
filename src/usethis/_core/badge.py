@@ -5,6 +5,7 @@ from typing import Self
 from pydantic import BaseModel
 
 from usethis._console import tick_print
+from usethis._core.readme import add_readme
 
 
 class Badge(BaseModel):
@@ -57,7 +58,7 @@ def add_badge(badge: Badge) -> None:
     path = Path.cwd() / "README.md"
 
     if not path.exists():
-        raise NotImplementedError
+        add_readme()
 
     prerequisites: list[Badge] = []
     for _b in BADGE_ORDER:

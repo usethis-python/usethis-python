@@ -1,10 +1,8 @@
 from pathlib import Path
 
 from usethis._console import box_print, tick_print
-from usethis._core.badge import add_pre_commit_badge, add_ruff_badge
 from usethis._integrations.pyproject.errors import PyProjectTOMLError
 from usethis._integrations.pyproject.name import get_description, get_name
-from usethis._tool import PreCommitTool, RuffTool
 
 
 def add_readme() -> None:
@@ -44,11 +42,4 @@ def add_readme() -> None:
 
     tick_print("Writing 'README.md'.")
     path.write_text(content)
-
-    if RuffTool().is_used():
-        add_ruff_badge()
-
-    if PreCommitTool().is_used():
-        add_pre_commit_badge()
-
     box_print("Populate 'README.md' to help users understand the project.")

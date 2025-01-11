@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import NoneType
-from typing import TypeAlias, TypeVar
+from typing import TypeAlias
 
 import ruamel.yaml
 from ruamel.yaml.comments import (
@@ -31,9 +31,6 @@ from ruamel.yaml.timestamp import TimeStamp
 from ruamel.yaml.util import load_yaml_guess_indent
 
 from usethis._integrations.yaml.errors import InvalidYAMLError
-
-T = TypeVar("T")
-
 
 YAMLLiteral: TypeAlias = (
     NoneType

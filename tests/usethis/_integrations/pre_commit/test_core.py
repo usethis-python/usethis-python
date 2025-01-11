@@ -57,12 +57,8 @@ class TestRemovePreCommitConfig:
 
 
 class TestInstallPreCommitHooks:
-    def test_message(
-        self,
-        uv_init_repo_dir: Path,
-        capfd: pytest.CaptureFixture[str],
-        vary_network_conn: None,
-    ):
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_message(self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         with change_cwd(uv_init_repo_dir):
             add_deps_to_group(["pre-commit"], "dev")
@@ -85,11 +81,11 @@ class TestInstallPreCommitHooks:
 
 
 class TestUninstallPreCommitHooks:
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_message_and_file(
         self,
         uv_init_repo_dir: Path,
         capfd: pytest.CaptureFixture[str],
-        vary_network_conn: None,
     ):
         # Arrange
         with change_cwd(uv_init_repo_dir):

@@ -27,20 +27,15 @@ this package brings a similar experience to the Python ecosystem as a CLI tool.
 
 First, it is strongly recommended you [install the `uv` package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process.
 
-If you are starting a new project, it is recommended to call `uv init --lib` to
-initialize the project directory.
-
-Then, you can install usethis for the project:
+Then, you can call usethis in isolation as follows:
 
 ```console
-# With uv
-$ uv add --dev usethis
-
-# With pip
-$ pip install usethis
+uvx usethis [command] [arguments]
 ```
 
-Alternatively, run in isolation, using `uvx` or `pipx`.
+It is not currently recommended to install and run usethis in the project virtual environment,
+since this can cause conflicts when trying to manage that environment (see [this issue](
+https://github.com/nathanjmcdougall/usethis-python/issues/169)).
 
 ## Interface
 

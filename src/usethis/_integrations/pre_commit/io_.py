@@ -8,7 +8,7 @@ from ruamel.yaml.comments import CommentedMap
 
 from usethis._console import tick_print
 from usethis._integrations.pre_commit.schema import JsonSchemaForPreCommitConfigYaml
-from usethis._integrations.yaml.io import YAMLLiteral, edit_yaml
+from usethis._integrations.yaml.io_ import YAMLLiteral, edit_yaml
 
 
 class PreCommitConfigYAMLConfigError(Exception):

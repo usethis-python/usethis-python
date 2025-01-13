@@ -10,21 +10,27 @@ repos:
       - id: pyproject-fmt
   - repo: local
     hooks:
-      - id: ruff-format
-        name: ruff-format
-        entry: uv run --frozen ruff format --force-exclude
-        types_or: [python, pyi, jupyter]
-        language: system
+      - id: ruff
+        name: ruff
+        types_or:
+          - python
+          - pyi
+          - jupyter
         always_run: true
+        entry: uv run --frozen ruff check --fix --force-exclude
+        language: system
         require_serial: true
   - repo: local
     hooks:
-      - id: ruff
-        name: ruff
-        entry: uv run --frozen ruff check --fix --force-exclude
-        types_or: [python, pyi, jupyter]
-        language: system
+      - id: ruff-format
+        name: ruff-format
+        types_or:
+          - python
+          - pyi
+          - jupyter
         always_run: true
+        entry: uv run --frozen ruff format --force-exclude
+        language: system
         require_serial: true
   - repo: local
     hooks:

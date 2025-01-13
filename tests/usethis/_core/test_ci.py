@@ -80,16 +80,13 @@ pipelines:
                 assert "pre-commit" in contents
                 out, err = capfd.readouterr()
                 assert not err
-                assert (
-                    out
-                    == (
-                        "✔ Writing 'bitbucket-pipelines.yml'.\n"
-                        "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                        "✔ Adding cache 'pre-commit' definition to 'bitbucket-pipelines.yml'.\n"
-                        "✔ Adding 'Run pre-commit' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-                        "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
-                        "☐ Run your pipeline via the Bitbucket website.\n"
-                    )
+                assert out == (
+                    "✔ Writing 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding cache 'pre-commit' definition to 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding 'Run pre-commit' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
+                    "☐ Run your pipeline via the Bitbucket website.\n"
                 )
 
             def test_not_mentioned_if_not_used(self, uv_init_dir: Path):

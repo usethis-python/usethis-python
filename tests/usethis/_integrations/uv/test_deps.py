@@ -94,6 +94,15 @@ class TestRemoveDepsFromGroup:
             # Assert
             assert "pytest" not in get_deps_from_group("test")
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_nothing_to_remove(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            # Act
+            remove_deps_from_group(["pytest"], "dev")
+
+            # Assert
+            assert "pytest" not in get_deps_from_group("dev")
+
 
 class TestIsDepInAnyGroup:
     def test_no_group(self, uv_init_dir: Path):

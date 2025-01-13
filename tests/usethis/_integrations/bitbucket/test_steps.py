@@ -4,7 +4,7 @@ import pytest
 
 from usethis._config import usethis_config
 from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
-from usethis._integrations.bitbucket.io import edit_bitbucket_pipelines_yaml
+from usethis._integrations.bitbucket.io_ import edit_bitbucket_pipelines_yaml
 from usethis._integrations.bitbucket.schema import (
     Parallel,
     ParallelExpanded,

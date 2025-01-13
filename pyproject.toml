@@ -50,7 +50,7 @@ dev = [
   "import-linter>=2.1",
   "pre-commit>=4.0.1",
   "pyright>=1.1.391",
-  "ruff>=0.7.1",
+  "ruff>=0.9.1",
 ]
 test = [
   "coverage[toml]>=7.6.3",
@@ -77,28 +77,8 @@ version-file = "src/usethis/_version.py"
 line-length = 88
 
 src = [ "src" ]
-lint.select = [
-  "A",
-  "C4",
-  "E4",
-  "E7",
-  "E9",
-  "EM",
-  "ERA",
-  "F",
-  "FIX002",
-  "FURB",
-  "I",
-  "INP",
-  "PLE",
-  "PLR",
-  "PT",
-  "RUF",
-  "SIM",
-  "UP",
-]
+lint.select = [ "A", "C4", "E4", "E7", "E9", "EM", "F", "FURB", "I", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
 lint.ignore = [ "PLR2004", "SIM108" ]
-lint.per-file-ignores."tests/**/*.py" = [ "INP", "S101" ]
 
 [tool.pyproject-fmt]
 keep_full_version = true

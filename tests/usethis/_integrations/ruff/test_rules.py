@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.io import PyProjectTOMLNotFoundError
+from usethis._integrations.pyproject.io_ import PyProjectTOMLNotFoundError
 from usethis._integrations.ruff.rules import (
     deselect_ruff_rules,
     get_ruff_rules,

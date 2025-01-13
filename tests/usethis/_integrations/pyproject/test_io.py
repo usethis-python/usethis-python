@@ -6,7 +6,7 @@ from usethis._integrations.pyproject.errors import (
     PyProjectTOMLDecodeError,
     PyProjectTOMLNotFoundError,
 )
-from usethis._integrations.pyproject.io import read_pyproject_dict
+from usethis._integrations.pyproject.io_ import read_pyproject_dict
 from usethis._test import change_cwd
 
 

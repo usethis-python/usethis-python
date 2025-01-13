@@ -5,7 +5,7 @@ from uuid import uuid4
 import usethis._pipeweld.containers
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
-from usethis._integrations.bitbucket.io import (
+from usethis._integrations.bitbucket.io_ import (
     BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
 )

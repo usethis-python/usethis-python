@@ -11,7 +11,7 @@ from usethis._integrations.pyproject.core import (
     remove_config_value,
     set_config_value,
 )
-from usethis._integrations.pyproject.io import PyProjectTOMLNotFoundError
+from usethis._integrations.pyproject.io_ import PyProjectTOMLNotFoundError
 from usethis._test import change_cwd
 
 

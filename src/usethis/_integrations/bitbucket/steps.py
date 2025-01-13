@@ -12,7 +12,7 @@ from usethis._integrations.bitbucket.anchor import ScriptItemAnchor, ScriptItemN
 from usethis._integrations.bitbucket.cache import _add_caches_via_doc, remove_cache
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
-from usethis._integrations.bitbucket.io import (
+from usethis._integrations.bitbucket.io_ import (
     BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
 )
@@ -101,8 +101,7 @@ def _add_step_in_default_via_doc(
         # It's not always notable that the placeholder is being added.
     else:
         tick_print(
-            f"Adding '{step.name}' to default pipeline in "
-            f"'bitbucket-pipelines.yml'."
+            f"Adding '{step.name}' to default pipeline in 'bitbucket-pipelines.yml'."
         )
 
     config = doc.model

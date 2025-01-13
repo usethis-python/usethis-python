@@ -5,7 +5,7 @@ from pydantic import TypeAdapter
 
 from usethis._config import usethis_config
 from usethis._console import tick_print
-from usethis._integrations.pyproject.io import read_pyproject_toml
+from usethis._integrations.pyproject.io_ import read_pyproject_toml
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 
@@ -64,12 +64,12 @@ def remove_deps_from_group(pypi_names: list[str], group: str) -> None:
     existing_group = get_deps_from_group(group)
 
     for dep in pypi_names:
-        if _strip_extras(dep) not in existing_group:
+        se_dep = _strip_extras(dep)
+        if se_dep not in existing_group:
             # Early exit; the tool is already not a dependency.
             continue
 
         tick_print(f"Removing '{dep}' from the '{group}' dependency group.")
-        se_dep = _strip_extras(dep)
         try:
             if not usethis_config.offline:
                 call_uv_subprocess(["remove", "--group", group, "--quiet", se_dep])

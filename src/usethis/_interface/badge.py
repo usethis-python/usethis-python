@@ -21,11 +21,11 @@ def ruff(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    if not remove:
-        with usethis_config.set(offline=offline, quiet=quiet):
+    with usethis_config.set(offline=offline, quiet=quiet):
+        if not remove:
             add_ruff_badge()
-    else:
-        remove_ruff_badge()
+        else:
+            remove_ruff_badge()
 
 
 @app.command(help="Add a badge for the pre-commit framework.")
@@ -34,8 +34,8 @@ def pre_commit(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    if not remove:
-        with usethis_config.set(offline=offline, quiet=quiet):
+    with usethis_config.set(offline=offline, quiet=quiet):
+        if not remove:
             add_pre_commit_badge()
-    else:
-        remove_pre_commit_badge()
+        else:
+            remove_pre_commit_badge()

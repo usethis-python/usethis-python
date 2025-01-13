@@ -788,6 +788,19 @@ class TestRuff:
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names
 
+        def test_creates_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(tmp_path):
+                use_ruff()
+
+            # Assert
+            assert (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out.startswith("✔ Writing 'pyproject.toml'.\n")
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_dir: Path):

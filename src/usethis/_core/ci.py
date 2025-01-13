@@ -7,10 +7,13 @@ from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
 )
+from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import PreCommitTool, PytestTool
 
 
 def use_ci_bitbucket(*, remove: bool = False) -> None:
+    ensure_pyproject_toml()
+
     if not remove:
         use_pre_commit = PreCommitTool().is_used()
         use_pytest = PytestTool().is_used()

@@ -235,12 +235,14 @@ pipelines:
                 # Assert
                 assert not (tmp_path / "bitbucket-pipelines.yml").exists()
 
-            def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            def test_message(
+                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            ):
                 # Arrange
-                (tmp_path / "bitbucket-pipelines.yml").touch()
+                (uv_init_dir / "bitbucket-pipelines.yml").touch()
 
                 # Act
-                with change_cwd(tmp_path):
+                with change_cwd(uv_init_dir):
                     use_ci_bitbucket(remove=True)
 
                 # Assert

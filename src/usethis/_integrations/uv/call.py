@@ -46,15 +46,12 @@ def _del_dotvenv() -> None:
     with contextlib.suppress(SubprocessFailedError):
         call_subprocess(["uv", "pip", "uninstall", "usethis"])
 
+    if not (Path.cwd() / ".venv").exists():
+        return
+
     for _f in (Path.cwd() / ".venv").iterdir():
         if _f.name != "Scripts":
-            if _f.is_dir():
-                shutil.rmtree(_f)
-            elif _f.is_file():
-                _f.unlink()
-            else:
-                msg = f"Unexpected file type: {_f}"
-                raise AssertionError(msg)
+            _del_path(_f)
         else:
             if not _f.is_dir():
                 msg = f"Expected a directory: {_f}"
@@ -62,10 +59,14 @@ def _del_dotvenv() -> None:
 
             for _f2 in _f.iterdir():
                 if _f2.name != "usethis.exe":
-                    if _f2.is_dir():
-                        shutil.rmtree(_f2)
-                    elif _f2.is_file():
-                        _f2.unlink()
-                    else:
-                        msg = f"Unexpected file type: {_f2}"
-                        raise AssertionError(msg)
+                    _del_path(_f2)
+
+
+def _del_path(path: Path) -> None:
+    if path.is_dir():
+        shutil.rmtree(path)
+    elif path.is_file():
+        path.unlink()
+    else:
+        msg = f"Unexpected file type: {path}"
+        raise AssertionError(msg)

@@ -20,7 +20,7 @@ def call_subprocess(args: list[str]) -> str:
         stderr = bmsg_stderr.decode()
         stdout = bmsg_stdout.decode()
 
-        msg = "Failed to run uv subprocess:"
+        msg = f"Failed to run subprocess: {' '.join(args)}"
         if stderr:
             msg += f"\n{stderr=}"
         if stdout:

@@ -19,6 +19,7 @@ from usethis._integrations.ruff.rules import (
     select_ruff_rules,
 )
 from usethis._integrations.uv.deps import add_deps_to_group, remove_deps_from_group
+from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import (
     ALL_TOOLS,
     DeptryTool,
@@ -31,6 +32,8 @@ from usethis._tool import (
 
 def use_deptry(*, remove: bool = False) -> None:
     tool = DeptryTool()
+
+    ensure_pyproject_toml()
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev")
@@ -46,6 +49,8 @@ def use_deptry(*, remove: bool = False) -> None:
 
 def use_pre_commit(*, remove: bool = False) -> None:
     tool = PreCommitTool()
+
+    ensure_pyproject_toml()
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev")
@@ -83,6 +88,8 @@ def use_pre_commit(*, remove: bool = False) -> None:
 def use_pyproject_fmt(*, remove: bool = False) -> None:
     tool = PyprojectFmtTool()
 
+    ensure_pyproject_toml()
+
     if not remove:
         is_pre_commit = PreCommitTool().is_used()
 
@@ -110,6 +117,8 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
 
 def use_pytest(*, remove: bool = False) -> None:
     tool = PytestTool()
+
+    ensure_pyproject_toml()
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "test")
@@ -141,6 +150,8 @@ def use_pytest(*, remove: bool = False) -> None:
 
 def use_ruff(*, remove: bool = False) -> None:
     tool = RuffTool()
+
+    ensure_pyproject_toml()
 
     rules = [
         "A",

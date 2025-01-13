@@ -9,6 +9,10 @@ class PyProjectTOMLNotFoundError(PyProjectTOMLError, FileNotFoundError):
     """Raised when a pyproject.toml file is not found."""
 
 
+class PyProjectTOMLInitError(PyProjectTOMLError):
+    """Raised when a pyproject.toml file cannot be created."""
+
+
 class PyProjectTOMLDecodeError(PyProjectTOMLError):
     """Raised when a pyproject.toml file cannot be decoded."""
 

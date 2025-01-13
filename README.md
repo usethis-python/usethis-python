@@ -13,6 +13,11 @@
 
 Automate Python project setup and development tasks that are otherwise performed manually.
 
+`usethis` knows about popular Python tools, workflows and frameworks, and knows how they
+interact. It can add and remove tools, configure them, and set up the project for you
+in a way that won't break your existing configuration and it will make the necessary
+adjustments to your project configuration files.
+
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html),
 this package brings a similar experience to the Python ecosystem as a CLI tool.
 

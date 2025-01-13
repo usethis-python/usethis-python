@@ -14,15 +14,17 @@ def call_uv_subprocess(args: list[str]) -> str:
     Raises:
         UVSubprocessFailedError: If the subprocess fails.
     """
+    args = ["uv", *args]
+
     try:
-        return call_subprocess(["uv", *args])
+        return call_subprocess(args)
     except SubprocessFailedError as err:
         # Perhaps there is a permissions error with the .venv folder? In which
         # case, we might be able to recover by deleting it.
         # Only applicable in Windows
         if sys.platform == "win32":
             with contextlib.suppress(PermissionError):
-                warn_print("Failed to run uv subprocess.")
+                warn_print(f"Failed to run uv subprocess: {' '.join(args)}")
                 warn_print(
                     "Deleting the .venv folder and running 'uv sync` to try and recover..."
                 )
@@ -30,7 +32,7 @@ def call_uv_subprocess(args: list[str]) -> str:
 
             try:
                 call_subprocess(["uv", "sync"])
-                return call_subprocess(["uv", *args])
+                return call_subprocess(args)
             except SubprocessFailedError as second_err:
                 msg = (
                     f"Initially: {err}\n"

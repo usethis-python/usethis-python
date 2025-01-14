@@ -13,10 +13,16 @@
 
 Automate Python project setup and development tasks that are otherwise performed manually.
 
-`usethis` knows about popular Python tools, workflows and frameworks, and knows how they
+usethis knows about popular Python tools, workflows and frameworks, and knows how they
 interact. It can add and remove tools, configure them, and set up the project for you
 in a way that won't break your existing configuration and it will make the necessary
 adjustments to your project configuration files.
+
+usethis gives detailed messages about what it is doing (and what you need to do next).
+
+- Output beginning with ✔ represents a task which usethis has automated.
+- Output beginning with ☐ represents a task which you need to perform manually.
+- Output beginning with ℹ gives hints and tips.
 
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html),
 this package brings a similar experience to the Python ecosystem as a CLI tool.
@@ -47,6 +53,48 @@ $ pip install usethis
 
 Alternatively, run in isolation, using `uvx` or `pipx`.
 
+## Example Usage
+
+To use Ruff on a fresh project, run:
+
+```console
+$ uvx usethis tool ruff
+✔ Writing 'pyproject.toml'.
+✔ Adding 'ruff' to the 'dev' dependency group.
+✔ Adding Ruff config to 'pyproject.toml'.
+✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
+✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
+☐ Call the 'ruff check --fix' command to run the Ruff linter with autofixes.
+☐ Call the 'ruff format' command to run the Ruff formatter.
+```
+
+To use pytest, run:
+
+```console
+$ uvx usethis tool pytest
+✔ Adding 'pytest' to the 'test' dependency group.
+✔ Adding 'pytest-cov' to the 'test' dependency group.
+✔ Adding 'coverage' to the 'test' dependency group.
+✔ Adding pytest config to 'pyproject.toml'.
+✔ Enabling Ruff rule 'PT' in 'pyproject.toml'.
+✔ Creating '/tests'.
+✔ Writing '/tests/conftest.py'.
+☐ Add test files to the '/tests' directory with the format 'test_*.py'.
+☐ Add test functions with the format 'test_*()'.
+☐ Call the 'pytest' command to run the tests.
+```
+
+To configure Bitbucket pipelines, run:
+
+```console
+$ uvx usethis ci bitbucket
+✔ Writing 'bitbucket-pipelines.yml'.
+✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.
+✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.
+✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
+☐ Run your pipeline via the Bitbucket website.
+```
+
 ## Interface
 
 ### `usethis tool`
@@ -64,6 +112,7 @@ Currently supported tools:
 - pytest
 - deptry
 - pre-commit
+- pyproject-fmt
 
 Example:
 

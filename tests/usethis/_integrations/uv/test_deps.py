@@ -81,6 +81,7 @@ class TestAddDepsToGroup:
             # Assert
             assert "pytest" in get_deps_from_group("test")
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_single_dep(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir):
             # Act
@@ -95,6 +96,7 @@ class TestAddDepsToGroup:
                 == "✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.\n"
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_multiple_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir):
             # Act
@@ -109,6 +111,7 @@ class TestAddDepsToGroup:
                 == "✔ Adding dependencies 'flake8', 'black' to the 'qa' group in 'pyproject.toml'.\n"
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_multi_but_one_already_exists(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
@@ -129,6 +132,7 @@ class TestAddDepsToGroup:
                 == "✔ Adding dependency 'black' to the 'test' group in 'pyproject.toml'.\n"
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_extras(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir):
             # Act
@@ -157,6 +161,7 @@ class TestRemoveDepsFromGroup:
             # Assert
             assert "pytest" not in get_deps_from_group("test")
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_single_dep(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir):
             # Arrange
@@ -175,6 +180,7 @@ class TestRemoveDepsFromGroup:
                 == "✔ Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'.\n"
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_multiple_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir):
             # Arrange
@@ -193,6 +199,7 @@ class TestRemoveDepsFromGroup:
                 == "✔ Removing dependencies 'flake8', 'black' from the 'qa' group in \n'pyproject.toml'.\n"
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_multi_but_only_not_exists(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
@@ -213,6 +220,7 @@ class TestRemoveDepsFromGroup:
                 == "✔ Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'.\n"
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_extras(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir):
             # Arrange

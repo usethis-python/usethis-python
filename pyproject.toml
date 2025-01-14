@@ -140,7 +140,7 @@ layers = [
   "_interface",
   "_core",
   "_tool | _ci",
-  "_integrations",
+  "_integrations | _modules",
   "_console",
   "_config",
   "errors | _subprocess",

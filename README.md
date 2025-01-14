@@ -20,9 +20,9 @@ adjustments to your project configuration files.
 
 usethis gives detailed messages about what it is doing (and what you need to do next).
 
-- Output beginning with ✔ represents a task which usethis has automated.
-- Output beginning with ☐ represents a task which you need to perform manually.
-- Output beginning with ℹ gives hints and tips.
+- Output beginning with `✔` represents a task which usethis has automated.
+- Output beginning with `☐` represents a task which you need to perform manually.
+- Output beginning with `ℹ` gives hints and tips.
 
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html),
 this package brings a similar experience to the Python ecosystem as a CLI tool.

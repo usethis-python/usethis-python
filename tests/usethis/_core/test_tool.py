@@ -64,7 +64,7 @@ class TestDeptry:
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding 'deptry' to the 'dev' dependency group.\n"
+                "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Call the 'deptry src' command to run deptry.\n"
             )
 
@@ -130,9 +130,9 @@ repos:
             # 4. Check messages
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding 'deptry' to the 'dev' dependency group.\n"
+                "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Call the 'deptry src' command to run deptry.\n"
-                "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
+                "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 "✔ Ensuring pre-commit hooks are installed.\n"
@@ -193,7 +193,7 @@ repos:
             # 4. Check messages
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding 'deptry' to the 'dev' dependency group.\n"
+                "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 "☐ Call the 'deptry src' command to run deptry.\n"
             )
@@ -224,7 +224,7 @@ repos:
             assert not err
             # Expecting not to get a specific message about removing the placeholder.
             assert out == (
-                "✔ Adding 'deptry' to the 'dev' dependency group.\n"
+                "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 "☐ Call the 'deptry src' command to run deptry.\n"
             )
@@ -263,7 +263,7 @@ class TestPreCommit:
             # Correct stdout
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
+                "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
                 "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
                 "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
@@ -380,10 +380,10 @@ repos:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Adding 'pre-commit' to the 'dev' dependency group.\n"
+                "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
                 "✔ Ensuring pre-commit hooks are uninstalled.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
-                "✔ Removing 'pre-commit' from the 'dev' dependency group.\n"
+                "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
             )
 
     class TestBitbucketCIIntegration:
@@ -458,7 +458,7 @@ pipelines:
                 "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                 "✔ Ensuring pre-commit hooks are uninstalled.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
-                "✔ Removing 'pre-commit' from the 'dev' dependency group.\n"
+                "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
             )
 
 
@@ -502,7 +502,7 @@ keep_full_version = true
                     assert get_deps_from_group("dev") == ["pyproject-fmt"]
                 out, _ = capfd.readouterr()
                 assert out == (
-                    "✔ Adding 'pyproject-fmt' to the 'dev' dependency group.\n"
+                    "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
                     "☐ Call the 'pyproject-fmt pyproject.toml' command to run pyproject-fmt.\n"
                 )
@@ -577,7 +577,7 @@ foo = "bar"
             assert out == (
                 "✔ Removing pyproject-fmt config from 'pyproject.toml'.\n"
                 "✔ Removing hook 'pyproject-fmt' from '.pre-commit-config.yaml'.\n"
-                "✔ Removing 'pyproject-fmt' from the 'dev' dependency group.\n"
+                "✔ Removing dependency 'pyproject-fmt' from the 'dev' group in 'pyproject.toml'.\n"
             )
 
 
@@ -712,9 +712,7 @@ pipelines:
                     "✔ Removing 'Test on 3.12' from default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                     "✔ Removing pytest config from 'pyproject.toml'.\n"
-                    "✔ Removing 'pytest' from the 'test' dependency group.\n"
-                    "✔ Removing 'pytest-cov' from the 'test' dependency group.\n"
-                    "✔ Removing 'coverage' from the 'test' dependency group.\n"
+                    "✔ Removing dependencies 'pytest', 'pytest-cov', 'coverage' from the 'test' \ngroup in 'pyproject.toml'.\n"
                     "✔ Removing '/tests'.\n"
                 )
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -765,7 +763,7 @@ class TestRuff:
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding 'ruff' to the 'dev' dependency group.\n"
+                "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
                 "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
@@ -906,5 +904,5 @@ dev = []
                 "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing hook 'ruff' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing Ruff config from 'pyproject.toml'.\n"
-                "✔ Removing 'ruff' from the 'dev' dependency group.\n"
+                "✔ Removing dependency 'ruff' from the 'dev' group in 'pyproject.toml'.\n"
             )

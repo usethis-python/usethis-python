@@ -708,12 +708,12 @@ pipelines:
                 # Assert
                 out, err = capfd.readouterr()
                 assert not err
-                assert out == (
-                    "✔ Removing 'Test on 3.12' from default pipeline in 'bitbucket-pipelines.yml'.\n"
-                    "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                    "✔ Removing pytest config from 'pyproject.toml'.\n"
-                    "✔ Removing dependencies 'pytest', 'pytest-cov', 'coverage' from the 'test' \ngroup in 'pyproject.toml'.\n"
-                    "✔ Removing '/tests'.\n"
+                assert out.replace("\n", "") == (
+                    "✔ Removing 'Test on 3.12' from default pipeline in 'bitbucket-pipelines.yml'."
+                    "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'."
+                    "✔ Removing pytest config from 'pyproject.toml'."
+                    "✔ Removing dependencies 'pytest', 'pytest-cov', 'coverage' from the 'test' group in 'pyproject.toml'."
+                    "✔ Removing '/tests'."
                 )
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
                 assert (

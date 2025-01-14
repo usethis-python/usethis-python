@@ -60,7 +60,7 @@ To use Ruff on a fresh project, run:
 ```console
 $ uvx usethis tool ruff
 ✔ Writing 'pyproject.toml'.
-✔ Adding 'ruff' to the 'dev' dependency group.
+✔ Adding dependency 'ruff' to the 'dev' dependency group.
 ✔ Adding Ruff config to 'pyproject.toml'.
 ✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
 ✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
@@ -72,9 +72,7 @@ To use pytest, run:
 
 ```console
 $ uvx usethis tool pytest
-✔ Adding 'pytest' to the 'test' dependency group.
-✔ Adding 'pytest-cov' to the 'test' dependency group.
-✔ Adding 'coverage' to the 'test' dependency group.
+✔ Adding dependencies 'pytest', 'pytest-cov', 'coverage' to the 'test' dependency group in 'pyproject.toml'.
 ✔ Adding pytest config to 'pyproject.toml'.
 ✔ Enabling Ruff rule 'PT' in 'pyproject.toml'.
 ✔ Creating '/tests'.

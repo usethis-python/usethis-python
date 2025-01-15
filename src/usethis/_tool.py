@@ -128,7 +128,6 @@ class Tool(Protocol):
 
     def add_pyproject_configs(self) -> None:
         """Add the tool's pyproject.toml configurations."""
-
         configs = self.get_pyproject_configs()
         if not configs:
             return
@@ -146,7 +145,6 @@ class Tool(Protocol):
 
     def remove_pyproject_configs(self) -> None:
         """Remove the tool's pyproject.toml configuration."""
-
         configs = self.get_pyproject_configs()
         if not configs:
             return

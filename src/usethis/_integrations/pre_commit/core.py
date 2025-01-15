@@ -22,7 +22,6 @@ def install_pre_commit_hooks() -> None:
     Note that this requires pre-commit to be installed. It also requires the user to be
     in a git repo.
     """
-
     tick_print("Ensuring pre-commit is installed to Git.")
     try:
         call_uv_subprocess(["run", "pre-commit", "install"])
@@ -46,7 +45,6 @@ def uninstall_pre_commit_hooks() -> None:
     Note that this requires pre-commit to be installed. It also requires the user to be
     in a git repo.
     """
-
     tick_print("Ensuring pre-commit hooks are uninstalled.")
     try:
         call_uv_subprocess(["run", "pre-commit", "uninstall"])

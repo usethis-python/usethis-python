@@ -74,7 +74,6 @@ def edit_yaml(
     guess_indent: bool = True,
 ) -> Generator[YAMLDocument, None, None]:
     """A context manager to modify a YAML file in-place, with managed read and write."""
-
     with yaml_path.open(mode="r") as f:
         # Can't preserve quotes so don't keep the content.
         # Yes, it' not very efficient to load the content twice.

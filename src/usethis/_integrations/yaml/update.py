@@ -26,7 +26,6 @@ def update_ruamel_yaml_map(
     Raises:
         TypeError: If the provided `cmap` is not a CommentedMap.
     """
-
     """Update the values of a ruamel.yaml map in-place using a diff-like algorithm."""
     if not isinstance(cmap, CommentedMap):
         msg = f"Expected CommentedMap, but got {type(cmap)}."
@@ -110,7 +109,6 @@ def lcs_list_update(original: list, new: list) -> None:
 
 def _shared_id_sequences(*seqs: list[Any]) -> list[list[int]]:
     """Map list elements to integers which are equal iff the objects are with __eq__."""
-
     # Don't use "in" because that would mean the elements must be hashable,
     # which we don't want to require. This means we have to loop over every element,
     # every time.

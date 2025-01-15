@@ -163,7 +163,6 @@ repos:
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             """Basically this checks that the placeholders gets removed."""
-
             with change_cwd(uv_init_repo_dir):
                 # Arrange
                 use_pre_commit()

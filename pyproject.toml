@@ -81,6 +81,7 @@ src = [ "src" ]
 lint.select = [
   "A",
   "C4",
+  "D",
   "E4",
   "E7",
   "E9",
@@ -98,8 +99,9 @@ lint.select = [
   "SIM",
   "UP",
 ]
-lint.ignore = [ "PLR2004", "SIM108" ]
-lint.per-file-ignores."tests/**/*.py" = [ "INP", "S101" ]
+lint.ignore = [ "D417", "PLR2004", "SIM108" ]
+lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S101" ]
+lint.pydocstyle.convention = "google"
 
 [tool.pyproject-fmt]
 keep_full_version = true

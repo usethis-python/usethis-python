@@ -712,7 +712,7 @@ pipelines:
       - step:
             name: Test on 3.12
             script:
-              - uv run --python 3.12 pytest -x
+              - uv run --python 3.12 pytest -x --junitxml=test-reports/report.xml
 """
                 )
 

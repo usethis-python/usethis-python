@@ -36,7 +36,6 @@ def ignore_ruff_rules(rules: list[str]) -> None:
 
 def deselect_ruff_rules(rules: list[str]) -> None:
     """Ensure Ruff rules are not selected in the project."""
-
     rules = list(set(rules) & set(get_ruff_rules()))
 
     if not rules:
@@ -51,7 +50,6 @@ def deselect_ruff_rules(rules: list[str]) -> None:
 
 def get_ruff_rules() -> list[str]:
     """Get the Ruff rules selected in the project."""
-
     try:
         rules: list[str] = get_config_value(["tool", "ruff", "lint", "select"])
     except KeyError:
@@ -62,7 +60,6 @@ def get_ruff_rules() -> list[str]:
 
 def get_ignored_ruff_rules() -> list[str]:
     """Get the Ruff rules ignored in the project."""
-
     try:
         rules: list[str] = get_config_value(["tool", "ruff", "lint", "ignore"])
     except KeyError:

@@ -34,7 +34,6 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
 
     This assumes the hook doesn't already exist in the configuration file.
     """
-
     with edit_pre_commit_config_yaml() as doc:
         if repo.hooks is None or len(repo.hooks) != 1:
             msg = "Currently, only repos with exactly one hook are supported."

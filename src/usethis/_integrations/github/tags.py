@@ -17,7 +17,6 @@ def get_github_latest_tag(owner: str, repo: str) -> str:
         GitHubTagError: If there's an issue fetching the tags from the GitHub API.
         NoTagsFoundError: If the repository has no tags.
     """
-
     # GitHub API URL for repository tags
     api_url = f"https://api.github.com/repos/{owner}/{repo}/tags"
 

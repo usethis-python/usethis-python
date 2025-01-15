@@ -1,3 +1,5 @@
+"""The Typer application for usethis."""
+
 import sys
 
 import typer

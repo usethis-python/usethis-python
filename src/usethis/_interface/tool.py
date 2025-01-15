@@ -10,6 +10,7 @@ from usethis._core.tool import (
     use_pre_commit,
     use_pyproject_fmt,
     use_pytest,
+    use_requirements_txt,
     use_ruff,
 )
 from usethis.errors import UsethisError
@@ -57,6 +58,17 @@ def pytest(
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet):
         _run_tool(use_pytest, remove=remove)
+
+
+@app.command(
+    name="requirements.txt",
+    help="Use a requirements.txt file exported from the uv lockfile.",
+)
+def requirements_txt(
+    remove: bool = remove_opt, offline: bool = offline_opt, quiet: bool = quiet_opt
+) -> None:
+    with usethis_config.set(offline=offline, quiet=quiet):
+        _run_tool(use_requirements_txt, remove=remove)
 
 
 @app.command(help="Use Ruff: an extremely fast Python linter and code formatter.")

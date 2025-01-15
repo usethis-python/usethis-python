@@ -16,6 +16,7 @@ from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 _HOOK_ORDER = [
     "validate-pyproject",
+    "uv-export",
     "pyproject-fmt",
     "ruff",  # ruff followed by ruff-format seems to be the recommended way by Astral
     "ruff-format",

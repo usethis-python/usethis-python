@@ -36,7 +36,7 @@ def edit_pre_commit_config_yaml() -> Generator[PreCommitConfigYAMLDocument, None
 
     if not path.exists():
         tick_print(f"Writing '{name}'.")
-        path.write_text("repos: []\n")
+        path.write_text("repos: []\n", encoding="utf-8")
         guess_indent = False
     else:
         guess_indent = True

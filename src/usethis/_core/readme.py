@@ -43,5 +43,5 @@ def add_readme() -> None:
         content = ""
 
     tick_print("Writing 'README.md'.")
-    path.write_text(content)
+    path.write_text(content, encoding="utf-8")
     box_print("Populate 'README.md' to help users understand the project.")

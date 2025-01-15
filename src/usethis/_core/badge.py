@@ -4,8 +4,11 @@ from typing import Self
 
 from pydantic import BaseModel
 
-from usethis._console import tick_print
+from usethis._console import err_print, tick_print
 from usethis._core.readme import add_readme
+from usethis._integrations.pyproject.errors import (
+    PyProjectTOMLError,
+)
 from usethis._integrations.pyproject.name import get_name
 
 
@@ -35,7 +38,14 @@ PRE_COMMIT_BADGE = Badge(
 
 
 def get_pypi_badge() -> Badge:
-    name = get_name()
+    try:
+        name = get_name()
+    except PyProjectTOMLError:
+        # Note; we don't want to create pyproject.toml because if it doesn't exist,
+        # the package is unlikely to be on PyPI. They could be using setup.py etc. but
+        # it's easier just to skip this badge in that case.
+        name = ""
+        err_print("Unable to determine PyPI package name from 'pyproject.toml'.")
     return Badge(
         markdown=f"[![PyPI Version](<https://img.shields.io/pypi/v/{name}.svg>)](<https://pypi.python.org/pypi/{name}>)"
     )

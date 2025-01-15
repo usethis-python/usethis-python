@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from usethis._console import tick_print
+from usethis._console import info_print, tick_print
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
@@ -23,9 +23,18 @@ def install_pre_commit_hooks() -> None:
     in a git repo.
     """
 
-    tick_print("Ensuring pre-commit hooks are installed.")
+    tick_print("Ensuring pre-commit is installed to Git.")
     try:
         call_uv_subprocess(["run", "pre-commit", "install"])
+    except UVSubprocessFailedError as err:
+        msg = f"Failed to install pre-commit in the Git repository:\n{err}"
+        raise PreCommitInstallationError(msg) from None
+    tick_print("Ensuring pre-commit hooks are installed.")
+    info_print(
+        "This may take a minute or so while the hooks are downloaded.", temporary=True
+    )
+    try:
+        call_uv_subprocess(["run", "pre-commit", "install-hooks"])
     except UVSubprocessFailedError as err:
         msg = f"Failed to install pre-commit hooks:\n{err}"
         raise PreCommitInstallationError(msg) from None

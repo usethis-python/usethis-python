@@ -19,11 +19,15 @@ def box_print(msg: str | Exception) -> None:
         console.print(f"☐ {msg}", style="red")
 
 
-def info_print(msg: str | Exception) -> None:
+def info_print(msg: str | Exception, temporary: bool = False) -> None:
     msg = str(msg)
 
     if not usethis_config.quiet:
-        console.print(f"ℹ {msg}", style="blue")  # noqa: RUF001
+        if temporary:
+            end = "\r"
+        else:
+            end = "\n"
+        console.print(f"ℹ {msg}", style="blue", end=end)  # noqa: RUF001
 
 
 def err_print(msg: str | Exception) -> None:

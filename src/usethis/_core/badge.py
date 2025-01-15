@@ -4,7 +4,7 @@ from typing import Self
 
 from pydantic import BaseModel
 
-from usethis._console import err_print, tick_print
+from usethis._console import tick_print
 from usethis._core.readme import add_readme
 from usethis._integrations.pyproject.errors import (
     PyProjectTOMLError,
@@ -42,10 +42,11 @@ def get_pypi_badge() -> Badge:
         name = get_name()
     except PyProjectTOMLError:
         # Note; we don't want to create pyproject.toml because if it doesn't exist,
-        # the package is unlikely to be on PyPI. They could be using setup.py etc. but
-        # it's easier just to skip this badge in that case.
-        name = ""
-        err_print("Unable to determine PyPI package name from 'pyproject.toml'.")
+        # the package is unlikely to be on PyPI. They could be using setup.py etc.
+        # So a second-best heuristic is the name of the current directory.
+        # Note that we need to filter out invalid characters
+        # https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
+        name = re.sub(r"[^a-zA-Z0-9._-]", "", Path.cwd().stem)
     return Badge(
         markdown=f"[![PyPI Version](<https://img.shields.io/pypi/v/{name}.svg>)](<https://pypi.python.org/pypi/{name}>)"
     )

@@ -38,7 +38,7 @@ def edit_bitbucket_pipelines_yaml() -> (
 
     if not path.exists():
         tick_print(f"Writing '{name}'.")
-        path.write_text("image: atlassian/default-image:3")
+        path.write_text("image: atlassian/default-image:3", encoding="utf-8")
         guess_indent = False
     else:
         guess_indent = _has_indentation(path)

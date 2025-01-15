@@ -6,6 +6,10 @@ from pydantic import BaseModel
 
 from usethis._console import tick_print
 from usethis._core.readme import add_readme
+from usethis._integrations.pyproject.errors import (
+    PyProjectTOMLError,
+)
+from usethis._integrations.pyproject.name import get_name
 
 
 class Badge(BaseModel):
@@ -32,10 +36,32 @@ PRE_COMMIT_BADGE = Badge(
     markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)"
 )
 
-BADGE_ORDER = [
-    RUFF_BADGE,
-    PRE_COMMIT_BADGE,
-]
+
+def get_pypi_badge() -> Badge:
+    try:
+        name = get_name()
+    except PyProjectTOMLError:
+        # Note; we don't want to create pyproject.toml because if it doesn't exist,
+        # the package is unlikely to be on PyPI. They could be using setup.py etc.
+        # So a second-best heuristic is the name of the current directory.
+        # Note that we need to filter out invalid characters
+        # https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
+        name = re.sub(r"[^a-zA-Z0-9._-]", "", Path.cwd().stem)
+    return Badge(
+        markdown=f"[![PyPI Version](<https://img.shields.io/pypi/v/{name}.svg>)](<https://pypi.python.org/pypi/{name}>)"
+    )
+
+
+def get_badge_order() -> list[Badge]:
+    return [
+        get_pypi_badge(),
+        RUFF_BADGE,
+        PRE_COMMIT_BADGE,
+    ]
+
+
+def add_pypi_badge():
+    add_badge(get_pypi_badge())
 
 
 def add_ruff_badge():
@@ -44,6 +70,10 @@ def add_ruff_badge():
 
 def add_pre_commit_badge():
     add_badge(PRE_COMMIT_BADGE)
+
+
+def remove_pypi_badge():
+    remove_badge(get_pypi_badge())
 
 
 def remove_ruff_badge():
@@ -61,12 +91,12 @@ def add_badge(badge: Badge) -> None:
         add_readme()
 
     prerequisites: list[Badge] = []
-    for _b in BADGE_ORDER:
+    for _b in get_badge_order():
         if badge.equivalent_to(_b):
             break
         prerequisites.append(_b)
 
-    content = path.read_text()
+    content = path.read_text(encoding="utf-8")
 
     original_lines = content.splitlines()
 
@@ -126,7 +156,7 @@ def add_badge(badge: Badge) -> None:
     if have_added:
         output = _ensure_final_newline(output)
 
-    path.write_text(output)
+    path.write_text(output, encoding="utf-8")
 
 
 def _ensure_final_newline(content: str) -> str:
@@ -168,7 +198,7 @@ def remove_badge(badge: Badge) -> None:
     if not path.exists():
         return
 
-    content = path.read_text()
+    content = path.read_text(encoding="utf-8")
 
     original_lines = content.splitlines()
     if content.endswith("\n"):
@@ -205,4 +235,4 @@ def remove_badge(badge: Badge) -> None:
     if have_removed:
         output = _ensure_final_newline(output)
 
-    path.write_text(output)
+    path.write_text(output, encoding="utf-8")

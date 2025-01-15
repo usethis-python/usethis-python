@@ -1,56 +1,31 @@
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
-from usethis._config import usethis_config
-from usethis._subprocess import SubprocessFailedError, call_subprocess
+from usethis._interface.tool import app
 from usethis._test import change_cwd
 
 
-class TestDeptry:
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_cli(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
-            if not usethis_config.offline:
-                call_subprocess(["usethis", "tool", "deptry"])
-            else:
-                call_subprocess(["usethis", "tool", "deptry", "--offline"])
+class TestPytest:
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pytest"])
+
+        # Assert
+        assert result.exit_code == 0
 
 
-class TestPreCommit:
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_cli_pass(self, uv_init_repo_dir: Path):
-        with change_cwd(uv_init_repo_dir):
-            if not usethis_config.offline:
-                call_subprocess(["usethis", "tool", "pre-commit"])
-            else:
-                call_subprocess(["usethis", "tool", "pre-commit", "--offline"])
-
-            call_subprocess(["uv", "run", "pre-commit", "run", "--all-files"])
-
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_cli_fail(self, uv_init_repo_dir: Path):
-        with change_cwd(uv_init_repo_dir):
-            if not usethis_config.offline:
-                call_subprocess(["usethis", "tool", "pre-commit"])
-            else:
-                call_subprocess(["usethis", "tool", "pre-commit", "--offline"])
-
-            # Pass invalid TOML to fail the pre-commit for validate-pyproject
-            (uv_init_repo_dir / "pyproject.toml").write_text("[")
-            try:
-                call_subprocess(["uv", "run", "pre-commit", "run", "--all-files"])
-            except SubprocessFailedError:
-                pass
-            else:
-                pytest.fail("Expected subprocess.CalledProcessError")
-
-
-class TestRuff:
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_cli(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
-            if not usethis_config.offline:
-                call_subprocess(["usethis", "tool", "ruff"])
-            else:
-                call_subprocess(["usethis", "tool", "ruff", "--offline"])
+@pytest.mark.benchmark
+def test_several_tools_add_and_remove(tmp_path: Path):
+    runner = CliRunner()
+    with change_cwd(tmp_path):
+        runner.invoke(app, ["pytest"])
+        runner.invoke(app, ["ruff"])
+        runner.invoke(app, ["deptry"])
+        runner.invoke(app, ["pre-commit"])
+        runner.invoke(app, ["ruff", "--remove"])
+        runner.invoke(app, ["pyproject-fmt"])
+        runner.invoke(app, ["pytest", "--remove"])

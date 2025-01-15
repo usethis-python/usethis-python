@@ -71,7 +71,11 @@ class TestInstallPreCommitHooks:
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert out == "✔ Ensuring pre-commit hooks are installed.\n"
+            assert out == (
+                "✔ Ensuring pre-commit is installed to Git.\n"
+                "✔ Ensuring pre-commit hooks are installed.\n"
+                "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
+            )
 
     def test_err(self, tmp_path: Path):
         # Act, Assert

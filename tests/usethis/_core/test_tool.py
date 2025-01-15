@@ -129,14 +129,19 @@ repos:
 
             # 4. Check messages
             out, _ = capfd.readouterr()
-            assert out == (
-                "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Call the 'deptry src' command to run deptry.\n"
-                "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
-                "✔ Writing '.pre-commit-config.yaml'.\n"
-                "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-                "✔ Ensuring pre-commit hooks are installed.\n"
-                "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
+            assert (
+                out
+                == (
+                    "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Call the 'deptry src' command to run deptry.\n"
+                    "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
+                    "✔ Writing '.pre-commit-config.yaml'.\n"
+                    "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
+                    "✔ Ensuring pre-commit is installed to Git.\n"
+                    "✔ Ensuring pre-commit hooks are installed.\n"
+                    "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
+                    "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
+                )
             )
 
     class TestRemove:
@@ -262,15 +267,20 @@ class TestPreCommit:
                 assert dev_dep == "pre-commit"
             # Correct stdout
             out, _ = capfd.readouterr()
-            assert out == (
-                "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
-                "✔ Writing '.pre-commit-config.yaml'.\n"
-                "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
-                "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
-                "☐ Replace it with your own hooks.\n"
-                "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
-                "✔ Ensuring pre-commit hooks are installed.\n"
-                "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
+            assert (
+                out
+                == (
+                    "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
+                    "✔ Writing '.pre-commit-config.yaml'.\n"
+                    "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
+                    "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
+                    "☐ Replace it with your own hooks.\n"
+                    "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
+                    "✔ Ensuring pre-commit is installed to Git.\n"
+                    "✔ Ensuring pre-commit hooks are installed.\n"
+                    "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
+                    "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
+                )
             )
             # Config file
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
@@ -288,14 +298,17 @@ repos:
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_already_exists(self, uv_init_repo_dir: Path):
+        def test_config_file_already_exists(self, uv_init_repo_dir: Path):
             # Arrange
             (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
                 """\
 repos:
-- repo: foo
-  hooks:
-  - id: bar
+  - repo: local
+    hooks:
+      - id: my hook
+        name: Its mine
+        entry: uv run python -c "print('hello world!')"
+        language: system
 """
             )
 
@@ -308,9 +321,12 @@ repos:
             assert contents == (
                 """\
 repos:
-- repo: foo
-  hooks:
-  - id: bar
+  - repo: local
+    hooks:
+      - id: my hook
+        name: Its mine
+        entry: uv run python -c "print('hello world!')"
+        language: system
 """
             )
 

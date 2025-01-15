@@ -280,14 +280,14 @@ pipelines:
               - uv
             script:
               - *install-uv
-              - uv run --python 3.12 pytest -x
+              - uv run --python 3.12 pytest -x --junitxml=test-reports/report.xml
       - step:
             name: Test on 3.13
             caches:
               - uv
             script:
               - *install-uv
-              - uv run --python 3.13 pytest -x
+              - uv run --python 3.13 pytest -x --junitxml=test-reports/report.xml
 """
         )
 

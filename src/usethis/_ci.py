@@ -46,7 +46,7 @@ def update_bitbucket_pytest_steps() -> None:
                 script=Script(
                     [
                         ScriptItemAnchor(name="install-uv"),
-                        f"uv run --python 3.{version} pytest -x",
+                        f"uv run --python 3.{version} pytest -x --junitxml=test-reports/report.xml",
                     ]
                 ),
             ),

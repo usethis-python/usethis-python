@@ -41,3 +41,7 @@ def _parse_python_version_from_uv_output(version: str) -> str:
     else:
         msg = f"Could not parse version from {version}"
         raise UVUnparsedPythonVersionError(msg)
+
+
+def python_pin(version: str) -> None:
+    call_uv_subprocess(["python", "pin", version])

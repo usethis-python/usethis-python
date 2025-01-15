@@ -157,7 +157,7 @@ name = "Integrations Modular Design"
 type = "layers"
 layers = [
   "bitbucket | github | pre_commit | pytest | ruff",
-  "uv | pydantic",
+  "uv | pydantic | sonarqube",
   "pyproject | yaml",
 ]
 containers = [ "usethis._integrations" ]

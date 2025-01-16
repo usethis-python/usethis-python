@@ -362,8 +362,8 @@ repos:
                 # Act
                 use_pre_commit()
 
-            # Assert
-            assert "uv-export" in get_hook_names()
+                # Assert
+                assert "uv-export" in get_hook_names()
 
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")

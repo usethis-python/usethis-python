@@ -61,6 +61,15 @@ def use_pre_commit(*, remove: bool = False) -> None:
         for _tool in ALL_TOOLS:
             if _tool.is_used():
                 _tool.add_pre_commit_repo_configs()
+
+        if PyprojectFmtTool().is_used():
+            # We will use pre-commit instead of the dev-dep.
+            remove_deps_from_group(PyprojectFmtTool().get_unique_dev_deps(), "dev")
+            use_pyproject_fmt()
+
+        if RequirementsTxtTool().is_used():
+            use_requirements_txt()
+
         if not get_hook_names():
             add_placeholder_hook()
 
@@ -87,6 +96,9 @@ def use_pre_commit(*, remove: bool = False) -> None:
         # dependencies yet
         if PyprojectFmtTool().is_used():
             use_pyproject_fmt()
+
+        if RequirementsTxtTool().is_used():
+            use_requirements_txt()
 
 
 def use_pyproject_fmt(*, remove: bool = False) -> None:
@@ -155,23 +167,26 @@ def use_pytest(*, remove: bool = False) -> None:
 def use_requirements_txt(*, remove: bool = False) -> None:
     tool = RequirementsTxtTool()
 
+    path = Path.cwd() / "requirements.txt"
+
     if not remove:
         is_pre_commit = PreCommitTool().is_used()
 
         if is_pre_commit:
             tool.add_pre_commit_repo_configs()
 
-        # N.B. this is where a task runner would come in handy, to reduce duplication.
-        tick_print("Writing 'requirements.txt'.")
-        call_uv_subprocess(
-            [
-                "export",
-                "--frozen",
-                "--no-dev",
-                "--output-file=requirements.txt",
-                "--quiet",
-            ]
-        )
+        if not path.exists():
+            # N.B. this is where a task runner would come in handy, to reduce duplication.
+            tick_print("Writing 'requirements.txt'.")
+            call_uv_subprocess(
+                [
+                    "export",
+                    "--frozen",
+                    "--no-dev",
+                    "--output-file=requirements.txt",
+                    "--quiet",
+                ]
+            )
 
         if not is_pre_commit:
             box_print(
@@ -188,7 +203,6 @@ def use_requirements_txt(*, remove: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_configs()
 
-        path = Path.cwd() / "requirements.txt"
         if path.exists() and path.is_file():
             tick_print("Removing 'requirements.txt'.")
             path.unlink()

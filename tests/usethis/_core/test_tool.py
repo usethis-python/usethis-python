@@ -10,12 +10,14 @@ from usethis._core.tool import (
     use_pre_commit,
     use_pyproject_fmt,
     use_pytest,
+    use_requirements_txt,
     use_ruff,
 )
 from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,
 )
+from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
     add_deps_to_group,
     get_deps_from_group,
@@ -65,7 +67,7 @@ class TestDeptry:
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Call the 'deptry src' command to run deptry.\n"
+                "☐ Run 'deptry src' to run deptry.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -134,14 +136,14 @@ repos:
                 out
                 == (
                     "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
-                    "☐ Call the 'deptry src' command to run deptry.\n"
+                    "☐ Run 'deptry src' to run deptry.\n"
                     "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
                     "✔ Writing '.pre-commit-config.yaml'.\n"
                     "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                     "✔ Ensuring pre-commit is installed to Git.\n"
                     "✔ Ensuring pre-commit hooks are installed.\n"
                     "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
-                    "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
+                    "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
                 )
             )
 
@@ -201,7 +203,7 @@ repos:
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-                "☐ Call the 'deptry src' command to run deptry.\n"
+                "☐ Run 'deptry src' to run deptry.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -232,7 +234,7 @@ repos:
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-                "☐ Call the 'deptry src' command to run deptry.\n"
+                "☐ Run 'deptry src' to run deptry.\n"
             )
 
         def test_remove(
@@ -280,7 +282,7 @@ class TestPreCommit:
                     "✔ Ensuring pre-commit is installed to Git.\n"
                     "✔ Ensuring pre-commit hooks are installed.\n"
                     "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
-                    "☐ Call the 'pre-commit run --all-files' command to run the hooks manually.\n"
+                    "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
                 )
             )
             # Config file
@@ -351,6 +353,18 @@ repos:
                     check=True,
                 )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_requirements_txt_used(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_requirements_txt()
+
+                # Act
+                use_pre_commit()
+
+                # Assert
+                assert "uv-export" in get_hook_names()
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_repo_dir: Path):
@@ -401,6 +415,27 @@ repos:
                 "✔ Ensuring pre-commit hooks are uninstalled.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
                 "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
+            )
+
+        def test_requirements_txt_used(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_pre_commit()
+                    use_requirements_txt()
+
+                # Act
+                use_pre_commit(remove=True)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                "✔ Removing '.pre-commit-config.yaml'.\n"
+                "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
             )
 
     class TestBitbucketCIIntegration:
@@ -505,7 +540,7 @@ keep_full_version = true
                 out, _ = capfd.readouterr()
                 assert out == (
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
-                    "☐ Call the 'pyproject-fmt pyproject.toml' command to run pyproject-fmt.\n"
+                    "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
         class TestDeps:
@@ -521,7 +556,7 @@ keep_full_version = true
                 assert out == (
                     "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
-                    "☐ Call the 'pyproject-fmt pyproject.toml' command to run pyproject-fmt.\n"
+                    "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
     class TestRemove:
@@ -805,8 +840,8 @@ class TestRuff:
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
                 "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
-                "☐ Call the 'ruff check --fix' command to run the Ruff linter with autofixes.\n"
-                "☐ Call the 'ruff format' command to run the Ruff formatter.\n"
+                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'ruff format' to run the Ruff formatter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -944,3 +979,150 @@ dev = []
                 "✔ Removing Ruff config from 'pyproject.toml'.\n"
                 "✔ Removing dependency 'ruff' from the 'dev' group in 'pyproject.toml'.\n"
             )
+
+
+class TestRequirementsTxt:
+    class TestAdd:
+        def test_start_from_nothing(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(tmp_path):
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'pyproject.toml'.\n"
+                "✔ Writing 'uv.lock'.\n"
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
+            )
+
+        def test_start_from_uv_init(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir):
+                use_requirements_txt()
+
+            # Assert
+            assert (uv_init_dir / "requirements.txt").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'uv.lock'.\n"
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
+            )
+
+        def test_start_from_uv_locked(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir):
+                # Arrange
+                call_uv_subprocess(["lock"])
+
+                # Act
+                use_requirements_txt()
+
+            # Assert
+            assert (uv_init_dir / "requirements.txt").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
+            )
+
+        def test_pre_commit(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_pre_commit()
+
+                # Act
+                use_requirements_txt()
+
+            # Assert
+            assert (uv_init_repo_dir / "requirements.txt").exists()
+            content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert content == (
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: uv-export
+        name: uv-export
+        files: ^uv\\.lock$
+        entry: uv export --frozen --no-dev --output-file=requirements.txt --quiet
+        language: system
+        pass_filenames: false
+        require_serial: true
+"""
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run the 'pre-commit run uv-export' to write 'requirements.txt'.\n"
+            )
+
+    class TestRemove:
+        def test_file_gone(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "requirements.txt").touch()
+
+            # Act
+            with change_cwd(tmp_path):
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "requirements.txt").exists()
+
+        def test_requirements_dir(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "requirements.txt").mkdir()
+
+            # Act
+            with change_cwd(tmp_path):
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+
+        def test_precommit_integration(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".pre-commit-config.yaml").write_text(
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: uv-export
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path):
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert (tmp_path / ".pre-commit-config.yaml").exists()
+            content = (tmp_path / ".pre-commit-config.yaml").read_text()
+            assert "uv-export" not in content
+
+        def test_roundtrip(self, tmp_path: Path):
+            with change_cwd(tmp_path):
+                # Arrange
+                use_requirements_txt()
+
+                # Act
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "requirements.txt").exists()

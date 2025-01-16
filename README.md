@@ -65,8 +65,8 @@ $ uvx usethis tool ruff
 ✔ Adding Ruff config to 'pyproject.toml'.
 ✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
 ✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
-☐ Call the 'ruff check --fix' command to run the Ruff linter with autofixes.
-☐ Call the 'ruff format' command to run the Ruff formatter.
+☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.
+☐ Run 'ruff format' to run the Ruff formatter.
 ```
 
 To use pytest, run:
@@ -80,7 +80,7 @@ $ uvx usethis tool pytest
 ✔ Writing '/tests/conftest.py'.
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.
-☐ Call the 'pytest' command to run the tests.
+☐ Run 'pytest' to run the tests.
 ```
 
 To configure Bitbucket pipelines, run:

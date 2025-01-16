@@ -7,7 +7,7 @@ from usethis._ci import (
     remove_bitbucket_pytest_steps,
     update_bitbucket_pytest_steps,
 )
-from usethis._console import box_print, info_print, tick_print
+from usethis._console import box_print, tick_print
 from usethis._integrations.pre_commit.core import (
     install_pre_commit_hooks,
     remove_pre_commit_config,
@@ -44,7 +44,7 @@ def use_deptry(*, remove: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
 
-        box_print("Call the 'deptry src' command to run deptry.")
+        box_print("Run 'deptry src' to run deptry.")
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_configs()
@@ -78,9 +78,7 @@ def use_pre_commit(*, remove: bool = False) -> None:
         if is_bitbucket_used():
             add_bitbucket_pre_commit_step()
 
-        box_print(
-            "Call the 'pre-commit run --all-files' command to run the hooks manually."
-        )
+        box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
     else:
         if is_bitbucket_used():
             remove_bitbucket_pre_commit_step()
@@ -117,12 +115,10 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         tool.add_pyproject_configs()
 
         if not is_pre_commit:
-            box_print(
-                "Call the 'pyproject-fmt pyproject.toml' command to run pyproject-fmt."
-            )
+            box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
         else:
             box_print(
-                "Call the 'pre-commit run pyproject-fmt --all-files' command to run pyproject-fmt."
+                "Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
             )
     else:
         tool.remove_pyproject_configs()
@@ -152,7 +148,7 @@ def use_pytest(*, remove: bool = False) -> None:
             "Add test files to the '/tests' directory with the format 'test_*.py'."
         )
         box_print("Add test functions with the format 'test_*()'.")
-        box_print("Call the 'pytest' command to run the tests.")
+        box_print("Run 'pytest' to run the tests.")
     else:
         if is_bitbucket_used():
             remove_bitbucket_pytest_steps()
@@ -167,6 +163,8 @@ def use_pytest(*, remove: bool = False) -> None:
 def use_requirements_txt(*, remove: bool = False) -> None:
     tool = RequirementsTxtTool()
 
+    ensure_pyproject_toml()
+
     path = Path.cwd() / "requirements.txt"
 
     if not remove:
@@ -177,6 +175,10 @@ def use_requirements_txt(*, remove: bool = False) -> None:
 
         if not path.exists():
             # N.B. this is where a task runner would come in handy, to reduce duplication.
+            if not (Path.cwd() / "uv.lock").exists():
+                tick_print("Writing 'uv.lock'.")
+                call_uv_subprocess(["lock"])
+
             tick_print("Writing 'requirements.txt'.")
             call_uv_subprocess(
                 [
@@ -184,21 +186,15 @@ def use_requirements_txt(*, remove: bool = False) -> None:
                     "--frozen",
                     "--no-dev",
                     "--output-file=requirements.txt",
-                    "--quiet",
                 ]
             )
 
         if not is_pre_commit:
             box_print(
-                "Call the 'uv export --frozen --no-dev --output-file=requirements.txt --quiet' command to manually export to 'requirements.txt'."
-            )
-            info_print(
-                "You can automate the export of requirements.txt with pre-commit. Try `usethis tool pre-commit`."
+                "Run 'uv export --no-dev --output-file=requirements.txt' to write 'requirements.txt'."
             )
         else:
-            box_print(
-                "Call the 'pre-commit run uv-export' command to manually export to 'requirements.txt'."
-            )
+            box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_configs()
@@ -245,10 +241,8 @@ def use_ruff(*, remove: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
 
-        box_print(
-            "Call the 'ruff check --fix' command to run the Ruff linter with autofixes."
-        )
-        box_print("Call the 'ruff format' command to run the Ruff formatter.")
+        box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")
+        box_print("Run 'ruff format' to run the Ruff formatter.")
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_configs()

@@ -572,7 +572,7 @@ foo = "bar"
             assert "pyproject-fmt" in hook_names
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_remove(
+        def test_remove_with_precommit(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             with change_cwd(uv_init_repo_dir):
@@ -592,6 +592,27 @@ foo = "bar"
             assert out == (
                 "✔ Removing pyproject-fmt config from 'pyproject.toml'.\n"
                 "✔ Removing hook 'pyproject-fmt' from '.pre-commit-config.yaml'.\n"
+            )
+            # N.B. we don't remove it as a dependency because it's not a dep when
+            # pre-commit is used.
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_remove_without_precommit(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_pyproject_fmt()
+
+                # Act
+                use_pyproject_fmt(remove=True)
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Removing pyproject-fmt config from 'pyproject.toml'.\n"
                 "✔ Removing dependency 'pyproject-fmt' from the 'dev' group in 'pyproject.toml'.\n"
             )
 

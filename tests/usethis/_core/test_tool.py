@@ -124,6 +124,7 @@ repos:
         always_run: true
         entry: uv run --frozen deptry src
         language: system
+        pass_filenames: false
 """
             )
 
@@ -191,6 +192,7 @@ repos:
         always_run: true
         entry: uv run --frozen deptry src
         language: system
+        pass_filenames: false
 """
             )
 

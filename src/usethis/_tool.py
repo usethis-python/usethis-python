@@ -181,6 +181,7 @@ class DeptryTool(Tool):
                         entry="uv run --frozen deptry src",
                         language=Language("system"),
                         always_run=True,
+                        pass_filenames=False,
                     )
                 ],
             )
@@ -342,7 +343,6 @@ class RuffTool(Tool):
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]
                         ),
                         always_run=True,
-                        pass_filenames=True,
                         require_serial=True,
                     ),
                 ],
@@ -359,7 +359,6 @@ class RuffTool(Tool):
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]
                         ),
                         always_run=True,
-                        pass_filenames=True,
                         require_serial=True,
                     ),
                 ],

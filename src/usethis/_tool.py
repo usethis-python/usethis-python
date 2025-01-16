@@ -288,6 +288,37 @@ class PytestTool(Tool):
         return [Path("tests/conftest.py")]
 
 
+class RequirementsTxtTool(Tool):
+    @property
+    def name(self) -> str:
+        return "requirements.txt"
+
+    @property
+    def dev_deps(self) -> list[str]:
+        return []
+
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+        return [
+            LocalRepo(
+                repo="local",
+                hooks=[
+                    HookDefinition(
+                        id="uv-export",
+                        name="uv-export",
+                        files="^uv\\.lock$",
+                        pass_filenames=False,
+                        entry="uv export --frozen --no-dev --output-file=requirements.txt --quiet",
+                        language=Language("system"),
+                        require_serial=True,
+                    )
+                ],
+            )
+        ]
+
+    def get_managed_files(self) -> list[Path]:
+        return [Path("requirements.txt")]
+
+
 class RuffTool(Tool):
     @property
     def name(self) -> str:
@@ -359,5 +390,6 @@ ALL_TOOLS: list[Tool] = [
     PreCommitTool(),
     PyprojectFmtTool(),
     PytestTool(),
+    RequirementsTxtTool(),
     RuffTool(),
 ]

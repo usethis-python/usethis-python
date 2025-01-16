@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from usethis._ci import (
     add_bitbucket_pre_commit_step,
     is_bitbucket_used,
@@ -5,7 +7,7 @@ from usethis._ci import (
     remove_bitbucket_pytest_steps,
     update_bitbucket_pytest_steps,
 )
-from usethis._console import box_print
+from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.pre_commit.core import (
     install_pre_commit_hooks,
     remove_pre_commit_config,
@@ -18,6 +20,7 @@ from usethis._integrations.ruff.rules import (
     ignore_ruff_rules,
     select_ruff_rules,
 )
+from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import add_deps_to_group, remove_deps_from_group
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import (
@@ -26,6 +29,7 @@ from usethis._tool import (
     PreCommitTool,
     PyprojectFmtTool,
     PytestTool,
+    RequirementsTxtTool,
     RuffTool,
 )
 
@@ -57,6 +61,15 @@ def use_pre_commit(*, remove: bool = False) -> None:
         for _tool in ALL_TOOLS:
             if _tool.is_used():
                 _tool.add_pre_commit_repo_configs()
+
+        if PyprojectFmtTool().is_used():
+            # We will use pre-commit instead of the dev-dep.
+            remove_deps_from_group(PyprojectFmtTool().get_unique_dev_deps(), "dev")
+            use_pyproject_fmt()
+
+        if RequirementsTxtTool().is_used():
+            use_requirements_txt()
+
         if not get_hook_names():
             add_placeholder_hook()
 
@@ -83,6 +96,9 @@ def use_pre_commit(*, remove: bool = False) -> None:
         # dependencies yet
         if PyprojectFmtTool().is_used():
             use_pyproject_fmt()
+
+        if RequirementsTxtTool().is_used():
+            use_requirements_txt()
 
 
 def use_pyproject_fmt(*, remove: bool = False) -> None:
@@ -146,6 +162,50 @@ def use_pytest(*, remove: bool = False) -> None:
         tool.remove_pyproject_configs()
         remove_deps_from_group(tool.dev_deps, "test")
         remove_pytest_dir()  # Last, since this is a manual step
+
+
+def use_requirements_txt(*, remove: bool = False) -> None:
+    tool = RequirementsTxtTool()
+
+    path = Path.cwd() / "requirements.txt"
+
+    if not remove:
+        is_pre_commit = PreCommitTool().is_used()
+
+        if is_pre_commit:
+            tool.add_pre_commit_repo_configs()
+
+        if not path.exists():
+            # N.B. this is where a task runner would come in handy, to reduce duplication.
+            tick_print("Writing 'requirements.txt'.")
+            call_uv_subprocess(
+                [
+                    "export",
+                    "--frozen",
+                    "--no-dev",
+                    "--output-file=requirements.txt",
+                    "--quiet",
+                ]
+            )
+
+        if not is_pre_commit:
+            box_print(
+                "Call the 'uv export --frozen --no-dev --output-file=requirements.txt --quiet' command to manually export to 'requirements.txt'."
+            )
+            info_print(
+                "You can automate the export of requirements.txt with pre-commit. Try `usethis tool pre-commit`."
+            )
+        else:
+            box_print(
+                "Call the 'pre-commit run uv-export' command to manually export to 'requirements.txt'."
+            )
+    else:
+        if PreCommitTool().is_used():
+            tool.remove_pre_commit_repo_configs()
+
+        if path.exists() and path.is_file():
+            tick_print("Removing 'requirements.txt'.")
+            path.unlink()
 
 
 def use_ruff(*, remove: bool = False) -> None:

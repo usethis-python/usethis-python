@@ -193,7 +193,7 @@ def use_requirements_txt(*, remove: bool = False) -> None:
                 "Call the 'uv export --frozen --no-dev --output-file=requirements.txt --quiet' command to manually export to 'requirements.txt'."
             )
             info_print(
-                "You can automate this process with pre-commit. Try `usethis tool pre-commit`."
+                "You can automate the export of requirements.txt with pre-commit. Try `usethis tool pre-commit`."
             )
         else:
             box_print(

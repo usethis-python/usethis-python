@@ -1,11 +1,12 @@
 import re
+import sys
 from pathlib import Path
 from typing import Self
 
 from pydantic import BaseModel
 
-from usethis._console import tick_print
-from usethis._core.readme import add_readme
+from usethis._console import err_print, tick_print, warn_print
+from usethis._core.readme import add_readme, get_readme_path
 from usethis._integrations.pyproject.errors import (
     PyProjectTOMLError,
 )
@@ -85,10 +86,13 @@ def remove_pre_commit_badge():
 
 
 def add_badge(badge: Badge) -> None:
-    path = Path.cwd() / "README.md"
+    add_readme()
 
-    if not path.exists():
-        add_readme()
+    try:
+        path = _get_markdown_readme_path()
+    except FileNotFoundError as err:
+        err_print(err)
+        sys.exit(1)
 
     prerequisites: list[Badge] = []
     for _b in get_badge_order():
@@ -159,6 +163,20 @@ def add_badge(badge: Badge) -> None:
     path.write_text(output, encoding="utf-8")
 
 
+def _get_markdown_readme_path() -> Path:
+    path = get_readme_path()
+
+    if path.name == "README.md":
+        pass
+    elif path.name == "README":
+        warn_print("Assuming 'README' file is Markdown.")
+    else:
+        msg = f"README file '{path.name}' is not Markdown based on its extension."
+        raise FileNotFoundError(msg)
+
+    return path
+
+
 def _ensure_final_newline(content: str) -> str:
     if not content or content[-1] != "\n":
         content += "\n"
@@ -195,8 +213,7 @@ def _count_h1_close_tags(line: str) -> int:
 def remove_badge(badge: Badge) -> None:
     path = Path.cwd() / "README.md"
 
-    if not path.exists():
-        return
+    path = _get_markdown_readme_path()
 
     content = path.read_text(encoding="utf-8")
 

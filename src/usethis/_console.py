@@ -35,3 +35,10 @@ def err_print(msg: str | Exception) -> None:
 
     if not usethis_config.quiet:
         console.print(f"✗ {msg}", style="red")
+
+
+def warn_print(msg: str | Exception) -> None:
+    msg = str(msg)
+
+    if not usethis_config.quiet:
+        console.print(f"⚠ {msg}", style="yellow")

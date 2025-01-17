@@ -107,11 +107,12 @@ Add a new tool to a Python project, including:
 
 Currently supported tools:
 
-- Ruff
-- pytest
-- deptry
-- pre-commit
-- pyproject-fmt
+- `usethis tool ruff`
+- `usethis tool pytest`
+- `usethis tool deptry`
+- `usethis tool pre-commit`
+- `usethis tool pyproject-fmt`
+- `usethis tool requirements.txt`
 
 Example:
 
@@ -129,8 +130,9 @@ Add badges to READEME.md.
 
 Currently supported badges:
 
-- Ruff
-- pre-commit
+- `usethis badge ruff`
+- `usethis badge pre-commit`
+- `usethis badge pypi`
 
 Supported arguments:
 
@@ -144,11 +146,7 @@ Add Continuous Integration pipelines to the project.
 
 Currently supported platforms:
 
-- Bitbucket
-
-Example:
-
-`usethis ci bitbucket`.
+- `usethis ci bitbcuket`
 
 Supported arguments:
 
@@ -156,7 +154,7 @@ Supported arguments:
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 
-### `usethis browse pypi`
+### `usethis browse pypi <package>`
 
 Dispaly or open the PyPI landing page associated with another project.
 

@@ -213,7 +213,11 @@ def _count_h1_close_tags(line: str) -> int:
 def remove_badge(badge: Badge) -> None:
     path = Path.cwd() / "README.md"
 
-    path = _get_markdown_readme_path()
+    try:
+        path = _get_markdown_readme_path()
+    except FileNotFoundError:
+        # If there's no README.md, there's nothing to remove
+        return
 
     content = path.read_text(encoding="utf-8")
 

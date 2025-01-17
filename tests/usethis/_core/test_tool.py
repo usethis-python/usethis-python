@@ -365,6 +365,21 @@ repos:
                 # Assert
                 assert "uv-export" in get_hook_names()
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pyproject_fmt_used(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_pyproject_fmt()
+
+                # Act
+                use_pre_commit()
+
+                # Assert
+                hook_names = get_hook_names()
+                dev_deps = get_deps_from_group("dev")
+            assert "pyproject-fmt" in hook_names
+            assert "pyproject-fmt" not in dev_deps
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_repo_dir: Path):
@@ -390,6 +405,7 @@ repos:
                 # Assert
                 assert not get_deps_from_group("dev")
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_stdout(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -417,6 +433,7 @@ repos:
                 "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_requirements_txt_used(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -436,6 +453,29 @@ repos:
                 "✔ Removing '.pre-commit-config.yaml'.\n"
                 "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pyproject_fmt_used(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_pre_commit()
+                    use_pyproject_fmt()
+
+                # Act
+                use_pre_commit(remove=True)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                "✔ Removing '.pre-commit-config.yaml'.\n"
+                "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
+                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
             )
 
     class TestBitbucketCIIntegration:

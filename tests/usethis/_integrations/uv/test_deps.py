@@ -10,6 +10,7 @@ from usethis._integrations.uv.deps import (
     is_dep_in_any_group,
     remove_deps_from_group,
 )
+from usethis._integrations.uv.errors import UVDepGroupError
 from usethis._test import change_cwd
 
 
@@ -140,12 +141,31 @@ class TestAddDepsToGroup:
 
             # Assert
             assert "pytest" in get_deps_from_group("test")
+            content = (uv_init_dir / "pyproject.toml").read_text()
+            assert "pytest[extra]" in content
             out, err = capfd.readouterr()
             assert not err
             assert (
                 out
                 == "✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.\n"
             )
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_empty_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        with change_cwd(uv_init_dir):
+            # Act
+            add_deps_to_group([], "test")
+
+            # Assert
+            assert not get_deps_from_group("test")
+            out, err = capfd.readouterr()
+            assert not err
+            assert not out
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_bad_dep_string(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        with change_cwd(uv_init_dir), pytest.raises(UVDepGroupError):
+            add_deps_to_group(["pytest[extra"], "test")
 
 
 class TestRemoveDepsFromGroup:

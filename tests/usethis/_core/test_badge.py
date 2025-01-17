@@ -449,6 +449,32 @@ Automate Python project setup and development tasks that are otherwise performed
 """
         )
 
+    def test_add_to_no_file_extension_readme(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "README"
+        path.write_text("""\
+# usethis
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            add_badge(
+                Badge(
+                    markdown="[![Ruff](<https://example.com>)](<https://example.com>)",
+                )
+            )
+
+        # Assert
+        assert not path.with_suffix(".md").exists()
+        assert (
+            path.read_text()
+            == """\
+# usethis
+
+[![Ruff](<https://example.com>)](<https://example.com>)
+"""
+        )
+
 
 class TestRemoveBadge:
     def test_empty(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):

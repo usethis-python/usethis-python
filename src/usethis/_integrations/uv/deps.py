@@ -37,51 +37,50 @@ def get_deps_from_group(group: str) -> list[str]:
         return []
 
 
-def add_deps_to_group(pypi_names: list[str], group: str) -> None:
+def add_deps_to_group(deps: list[str], group: str) -> None:
     """Add a package as a non-build dependency using PEP 735 dependency groups."""
     existing_group = get_deps_from_group(group)
 
-    deps = [dep for dep in pypi_names if _strip_extras(dep) not in existing_group]
+    _deps = [dep for dep in deps if _strip_extras(dep) not in existing_group]
 
-    if not deps:
+    if not _deps:
         return
 
-    deps_str = ", ".join([f"'{_strip_extras(dep)}'" for dep in deps])
-    ies = "y" if len(deps) == 1 else "ies"
+    deps_str = ", ".join([f"'{_strip_extras(dep)}'" for dep in _deps])
+    ies = "y" if len(_deps) == 1 else "ies"
     tick_print(
         f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
     )
 
-    for dep in deps:
+    for dep in _deps:
         try:
-            se_dep = _strip_extras(dep)
             if not usethis_config.offline:
-                call_uv_subprocess(["add", "--group", group, "--quiet", se_dep])
+                call_uv_subprocess(["add", "--group", group, "--quiet", dep])
             else:
                 call_uv_subprocess(
-                    ["add", "--group", group, "--quiet", "--offline", se_dep]
+                    ["add", "--group", group, "--quiet", "--offline", dep]
                 )
         except UVSubprocessFailedError as err:
             msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
             raise UVDepGroupError(msg) from None
 
 
-def remove_deps_from_group(pypi_names: list[str], group: str) -> None:
+def remove_deps_from_group(deps: list[str], group: str) -> None:
     """Remove the tool's development dependencies, if present."""
     existing_group = get_deps_from_group(group)
 
-    deps = [dep for dep in pypi_names if _strip_extras(dep) in existing_group]
+    _deps = [dep for dep in deps if _strip_extras(dep) in existing_group]
 
-    if not deps:
+    if not _deps:
         return
 
-    deps_str = ", ".join([f"'{_strip_extras(dep)}'" for dep in deps])
-    ies = "y" if len(deps) == 1 else "ies"
+    deps_str = ", ".join([f"'{_strip_extras(dep)}'" for dep in _deps])
+    ies = "y" if len(_deps) == 1 else "ies"
     tick_print(
         f"Removing dependenc{ies} {deps_str} from the '{group}' group in 'pyproject.toml'."
     )
 
-    for dep in deps:
+    for dep in _deps:
         try:
             se_dep = _strip_extras(dep)
             if not usethis_config.offline:

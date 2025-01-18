@@ -135,7 +135,7 @@ class Tool(Protocol):
         first_addition = True
         for config in configs:
             try:
-                set_config_value(config.id_keys, config.main_contents)
+                set_config_value(config.id_keys, config.value)
             except PyProjectTOMLValueAlreadySetError:
                 pass
             else:
@@ -223,7 +223,7 @@ class PyprojectFmtTool(Tool):
         return [
             PyProjectConfig(
                 id_keys=["tool", "pyproject-fmt"],
-                main_contents={"keep_full_version": True},
+                value={"keep_full_version": True},
             )
         ]
 
@@ -244,7 +244,7 @@ class PytestTool(Tool):
         return [
             PyProjectConfig(
                 id_keys=["tool", "pytest"],
-                main_contents={
+                value={
                     "ini_options": {
                         "testpaths": ["tests"],
                         "addopts": [
@@ -256,14 +256,14 @@ class PytestTool(Tool):
             ),
             PyProjectConfig(
                 id_keys=["tool", "coverage", "run"],
-                main_contents={
+                value={
                     "source": ["src"],
                     "omit": ["*/pytest-of-*/*"],
                 },
             ),
             PyProjectConfig(
                 id_keys=["tool", "coverage", "report"],
-                main_contents={
+                value={
                     "exclude_also": [
                         "if TYPE_CHECKING:",
                         "raise AssertionError",
@@ -369,7 +369,7 @@ class RuffTool(Tool):
         return [
             PyProjectConfig(
                 id_keys=["tool", "ruff"],
-                main_contents={
+                value={
                     "src": ["src"],
                     "line-length": 88,
                     "lint": {"select": []},

@@ -45,9 +45,7 @@ class MyTool(Tool):
         ]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
-        return [
-            PyProjectConfig(id_keys=["tool", self.name], main_contents={"key": "value"})
-        ]
+        return [PyProjectConfig(id_keys=["tool", self.name], value={"key": "value"})]
 
     def get_associated_ruff_rules(self) -> list[str]:
         return ["MYRULE"]
@@ -117,9 +115,7 @@ class TestTool:
         def test_specific(self):
             tool = MyTool()
             assert tool.get_pyproject_configs() == [
-                PyProjectConfig(
-                    id_keys=["tool", "my_tool"], main_contents={"key": "value"}
-                )
+                PyProjectConfig(id_keys=["tool", "my_tool"], value={"key": "value"})
             ]
 
     class TestGetAssociatedRuffRules:
@@ -545,3 +541,103 @@ repos:
                 # Assert
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
                 assert get_hook_names() == [_PLACEHOLDER_ID]
+
+    class TestAddPyprojectConfigs:
+        def test_no_config(self, tmp_path: Path):
+            # Arrange
+            class NoConfigTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "no_config_tool"
+
+                def get_pyproject_configs(self) -> list[PyProjectConfig]:
+                    return []
+
+            nc_tool = NoConfigTool()
+
+            # Act
+            with change_cwd(tmp_path):
+                nc_tool.add_pyproject_configs()
+
+                # Assert
+                assert not (tmp_path / "pyproject.toml").exists()
+
+        def test_empty(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            class ThisTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "mytool"
+
+                def get_pyproject_configs(self) -> list[PyProjectConfig]:
+                    return [
+                        PyProjectConfig(
+                            id_keys=["tool", "mytool"],
+                            value={"key": "value"},
+                        ),
+                    ]
+
+            (tmp_path / "pyproject.toml").write_text("")
+
+            # Act
+            with change_cwd(tmp_path):
+                ThisTool().add_pyproject_configs()
+
+            # Assert
+            assert (
+                (tmp_path / "pyproject.toml").read_text()
+                == """\
+[tool.mytool]
+key = "value"
+"""
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Adding mytool config to 'pyproject.toml'.\n"
+
+        def test_differing_sections(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/184
+
+            # Arrange
+            class ThisTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "mytool"
+
+                def get_pyproject_configs(self) -> list[PyProjectConfig]:
+                    return [
+                        PyProjectConfig(
+                            id_keys=["tool", "mytool", "name"],
+                            value="Modular Design",
+                        ),
+                        PyProjectConfig(
+                            id_keys=["tool", "mytool", "root_packages"],
+                            value=["example"],
+                        ),
+                    ]
+
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.mytool]
+name = "Modular Design"
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path):
+                ThisTool().add_pyproject_configs()
+
+            # Assert
+            assert (
+                (tmp_path / "pyproject.toml").read_text()
+                == """\
+[tool.mytool]
+name = "Modular Design"
+root_packages = ["example"]
+"""
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Adding mytool config to 'pyproject.toml'.\n"

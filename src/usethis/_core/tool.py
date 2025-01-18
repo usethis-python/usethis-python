@@ -81,6 +81,7 @@ def use_deptry(*, remove: bool = False) -> None:
 
 def use_pre_commit(*, remove: bool = False) -> None:
     tool = PreCommitTool()
+    pyproject_fmt_tool = PyprojectFmtTool()
 
     ensure_pyproject_toml()
 
@@ -90,7 +91,6 @@ def use_pre_commit(*, remove: bool = False) -> None:
             if _tool.is_used():
                 _tool.add_pre_commit_repo_configs()
 
-        pyproject_fmt_tool = PyprojectFmtTool()
         if pyproject_fmt_tool.is_used():
             # We will use pre-commit instead of the dev-dep.
             remove_deps_from_group(pyproject_fmt_tool.get_unique_dev_deps(), "dev")
@@ -122,7 +122,8 @@ def use_pre_commit(*, remove: bool = False) -> None:
 
         # Need to add a new way of running some hooks manually if they are not dev
         # dependencies yet - explain to the user.
-        if PyprojectFmtTool().is_used():
+        if pyproject_fmt_tool.is_used():
+            add_deps_to_group(pyproject_fmt_tool.dev_deps, "dev")
             _pyproject_fmt_instructions_basic()
 
         # Likewise, explain how to manually generate the requirements.txt file, since

@@ -74,6 +74,7 @@ def test_several_tools_add_and_remove(tmp_path: Path):
     runner = CliRunner()
     with change_cwd(tmp_path):
         runner.invoke(app, ["pytest"])
+        runner.invoke(app, ["coverage"])
         runner.invoke(app, ["ruff"])
         runner.invoke(app, ["deptry"])
         runner.invoke(app, ["pre-commit"])

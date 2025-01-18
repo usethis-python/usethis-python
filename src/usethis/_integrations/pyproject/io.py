@@ -1,4 +1,5 @@
 import tomllib
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +11,7 @@ from usethis._integrations.pyproject.errors import (
 )
 
 
+@cache
 def read_pyproject_toml() -> tomlkit.TOMLDocument:
     try:
         return tomlkit.parse((Path.cwd() / "pyproject.toml").read_text())
@@ -33,4 +35,5 @@ def read_pyproject_dict() -> dict[str, Any]:
 
 
 def write_pyproject_toml(toml_document: tomlkit.TOMLDocument) -> None:
+    read_pyproject_toml.cache_clear()
     (Path.cwd() / "pyproject.toml").write_text(tomlkit.dumps(toml_document))

@@ -161,6 +161,46 @@ class Tool(Protocol):
                     first_removal = False
 
 
+class CoverageTool(Tool):
+    @property
+    def name(self) -> str:
+        return "coverage"
+
+    @property
+    def dev_deps(self) -> list[str]:
+        return ["coverage[toml]"]
+
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+        return [
+            PyProjectConfig(
+                id_keys=["tool", "coverage", "run"],
+                main_contents={
+                    "source": ["src"],
+                    "omit": ["*/pytest-of-*/*"],
+                },
+            ),
+            PyProjectConfig(
+                id_keys=["tool", "coverage", "report"],
+                main_contents={
+                    "exclude_also": [
+                        "if TYPE_CHECKING:",
+                        "raise AssertionError",
+                        "raise NotImplementedError",
+                        "assert_never(.*)",
+                        "class .*\\bProtocol\\):",
+                        "@(abc\\.)?abstractmethod",
+                    ]
+                },
+            ),
+        ]
+
+    def get_pyproject_id_keys(self):
+        return [["tool", "coverage"]]
+
+    def get_managed_files(self):
+        return [Path(".coveragerc")]
+
+
 class DeptryTool(Tool):
     @property
     def name(self) -> str:
@@ -238,7 +278,7 @@ class PytestTool(Tool):
 
     @property
     def dev_deps(self) -> list[str]:
-        return ["pytest", "pytest-cov", "coverage[toml]"]
+        return ["pytest", "pytest-cov"]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
@@ -252,26 +292,6 @@ class PytestTool(Tool):
                         ],
                         "filterwarnings": ["error"],
                     }
-                },
-            ),
-            PyProjectConfig(
-                id_keys=["tool", "coverage", "run"],
-                main_contents={
-                    "source": ["src"],
-                    "omit": ["*/pytest-of-*/*"],
-                },
-            ),
-            PyProjectConfig(
-                id_keys=["tool", "coverage", "report"],
-                main_contents={
-                    "exclude_also": [
-                        "if TYPE_CHECKING:",
-                        "raise AssertionError",
-                        "raise NotImplementedError",
-                        "assert_never(.*)",
-                        "class .*\\bProtocol\\):",
-                        "@(abc\\.)?abstractmethod",
-                    ]
                 },
             ),
         ]
@@ -385,6 +405,7 @@ class RuffTool(Tool):
 
 
 ALL_TOOLS: list[Tool] = [
+    CoverageTool(),
     DeptryTool(),
     PreCommitTool(),
     PyprojectFmtTool(),

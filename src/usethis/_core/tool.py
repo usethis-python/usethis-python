@@ -25,6 +25,7 @@ from usethis._integrations.uv.deps import add_deps_to_group, remove_deps_from_gr
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import (
     ALL_TOOLS,
+    CoverageTool,
     DeptryTool,
     PreCommitTool,
     PyprojectFmtTool,
@@ -32,6 +33,25 @@ from usethis._tool import (
     RequirementsTxtTool,
     RuffTool,
 )
+
+
+def use_coverage(*, remove: bool = False) -> None:
+    tool = CoverageTool()
+
+    ensure_pyproject_toml()
+
+    if not remove:
+        add_deps_to_group(tool.dev_deps, "test")
+
+        tool.add_pyproject_configs()
+
+        if PytestTool().is_used():
+            box_print("Run 'pytest --cov' to run your tests with coverage.")
+        else:
+            box_print("Run 'coverage help' to see available coverage commands.")
+    else:
+        tool.remove_pyproject_configs()
+        remove_deps_from_group(tool.dev_deps, "test")
 
 
 def use_deptry(*, remove: bool = False) -> None:
@@ -137,6 +157,7 @@ def use_pytest(*, remove: bool = False) -> None:
         tool.add_pyproject_configs()
         if RuffTool().is_used():
             select_ruff_rules(tool.get_associated_ruff_rules())
+
         # deptry currently can't scan the tests folder for dev deps
         # https://github.com/fpgmaas/deptry/issues/302
         add_pytest_dir()
@@ -149,6 +170,9 @@ def use_pytest(*, remove: bool = False) -> None:
         )
         box_print("Add test functions with the format 'test_*()'.")
         box_print("Run 'pytest' to run the tests.")
+
+        if CoverageTool().is_used():
+            use_coverage()
     else:
         if is_bitbucket_used():
             remove_bitbucket_pytest_steps()
@@ -158,6 +182,9 @@ def use_pytest(*, remove: bool = False) -> None:
         tool.remove_pyproject_configs()
         remove_deps_from_group(tool.dev_deps, "test")
         remove_pytest_dir()  # Last, since this is a manual step
+
+        if CoverageTool().is_used():
+            use_coverage()
 
 
 def use_requirements_txt(*, remove: bool = False) -> None:

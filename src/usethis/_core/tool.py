@@ -46,12 +46,20 @@ def use_coverage(*, remove: bool = False) -> None:
         tool.add_pyproject_configs()
 
         if PytestTool().is_used():
-            box_print("Run 'pytest --cov' to run your tests with coverage.")
+            _coverage_instructions_pytest()
         else:
-            box_print("Run 'coverage help' to see available coverage commands.")
+            _coverage_instructions_basic()
     else:
         tool.remove_pyproject_configs()
         remove_deps_from_group(tool.dev_deps, "test")
+
+
+def _coverage_instructions_basic() -> None:
+    box_print("Run 'coverage help' to see available coverage commands.")
+
+
+def _coverage_instructions_pytest() -> None:
+    box_print("Run 'pytest --cov' to run your tests with coverage.")
 
 
 def use_deptry(*, remove: bool = False) -> None:
@@ -85,10 +93,10 @@ def use_pre_commit(*, remove: bool = False) -> None:
         if PyprojectFmtTool().is_used():
             # We will use pre-commit instead of the dev-dep.
             remove_deps_from_group(PyprojectFmtTool().get_unique_dev_deps(), "dev")
-            use_pyproject_fmt()
+            _pyproject_fmt_instructions_pre_commit()
 
         if RequirementsTxtTool().is_used():
-            use_requirements_txt()
+            _requirements_txt_instructions_pre_commit()
 
         if not get_hook_names():
             add_placeholder_hook()
@@ -111,12 +119,14 @@ def use_pre_commit(*, remove: bool = False) -> None:
         remove_deps_from_group(tool.dev_deps, "dev")
 
         # Need to add a new way of running some hooks manually if they are not dev
-        # dependencies yet
+        # dependencies yet - explain to the user.
         if PyprojectFmtTool().is_used():
-            use_pyproject_fmt()
+            _pyproject_fmt_instructions_basic()
 
+        # Likewise, explain how to manually generate the requirements.txt file, since
+        # they're not going to do it via pre-commit anymore.
         if RequirementsTxtTool().is_used():
-            use_requirements_txt()
+            _requirements_txt_instructions_basic()
 
 
 def use_pyproject_fmt(*, remove: bool = False) -> None:
@@ -135,16 +145,22 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         tool.add_pyproject_configs()
 
         if not is_pre_commit:
-            box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
+            _pyproject_fmt_instructions_basic()
         else:
-            box_print(
-                "Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
-            )
+            _pyproject_fmt_instructions_pre_commit()
     else:
         tool.remove_pyproject_configs()
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
+
+
+def _pyproject_fmt_instructions_basic() -> None:
+    box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
+
+
+def _pyproject_fmt_instructions_pre_commit() -> None:
+    box_print("Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt.")
 
 
 def use_pytest(*, remove: bool = False) -> None:
@@ -172,7 +188,7 @@ def use_pytest(*, remove: bool = False) -> None:
         box_print("Run 'pytest' to run the tests.")
 
         if CoverageTool().is_used():
-            use_coverage()
+            _coverage_instructions_pytest()
     else:
         if is_bitbucket_used():
             remove_bitbucket_pytest_steps()
@@ -184,7 +200,7 @@ def use_pytest(*, remove: bool = False) -> None:
         remove_pytest_dir()  # Last, since this is a manual step
 
         if CoverageTool().is_used():
-            use_coverage()
+            _coverage_instructions_basic()
 
 
 def use_requirements_txt(*, remove: bool = False) -> None:
@@ -217,11 +233,9 @@ def use_requirements_txt(*, remove: bool = False) -> None:
             )
 
         if not is_pre_commit:
-            box_print(
-                "Run 'uv export --no-dev --output-file=requirements.txt' to write 'requirements.txt'."
-            )
+            _requirements_txt_instructions_basic()
         else:
-            box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
+            _requirements_txt_instructions_pre_commit()
     else:
         if PreCommitTool().is_used():
             tool.remove_pre_commit_repo_configs()
@@ -229,6 +243,16 @@ def use_requirements_txt(*, remove: bool = False) -> None:
         if path.exists() and path.is_file():
             tick_print("Removing 'requirements.txt'.")
             path.unlink()
+
+
+def _requirements_txt_instructions_basic() -> None:
+    box_print(
+        "Run 'uv export --no-dev --output-file=requirements.txt' to write 'requirements.txt'."
+    )
+
+
+def _requirements_txt_instructions_pre_commit() -> None:
+    box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
 
 
 def use_ruff(*, remove: bool = False) -> None:

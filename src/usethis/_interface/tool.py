@@ -6,6 +6,7 @@ import typer
 from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._console import err_print
 from usethis._core.tool import (
+    use_coverage,
     use_deptry,
     use_pre_commit,
     use_pyproject_fmt,
@@ -20,6 +21,14 @@ app = typer.Typer(help="Add and configure development tools, e.g. linters.")
 remove_opt = typer.Option(
     False, "--remove", help="Remove the tool instead of adding it."
 )
+
+
+@app.command(help="Use the coverage code coverage measurement tool.")
+def coverage(
+    remove: bool = remove_opt, offline: bool = offline_opt, quiet: bool = quiet_opt
+) -> None:
+    with usethis_config.set(offline=offline, quiet=quiet):
+        _run_tool(use_coverage, remove=remove)
 
 
 @app.command(

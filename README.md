@@ -73,7 +73,7 @@ To use pytest, run:
 
 ```console
 $ uvx usethis tool pytest
-✔ Adding dependencies 'pytest', 'pytest-cov', 'coverage' to the 'test' dependency group in 'pyproject.toml'.
+✔ Adding dependencies 'pytest', 'pytest-cov' to the 'test' dependency group in 'pyproject.toml'.
 ✔ Adding pytest config to 'pyproject.toml'.
 ✔ Enabling Ruff rule 'PT' in 'pyproject.toml'.
 ✔ Creating '/tests'.

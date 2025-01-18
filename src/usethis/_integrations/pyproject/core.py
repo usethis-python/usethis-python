@@ -75,7 +75,6 @@ def set_config_value(
             parent[id_keys[-1]] = value
 
     write_pyproject_toml(pyproject)
-    read_pyproject_toml.cache_clear()
 
 
 def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None:

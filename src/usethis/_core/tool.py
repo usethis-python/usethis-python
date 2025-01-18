@@ -90,9 +90,11 @@ def use_pre_commit(*, remove: bool = False) -> None:
             if _tool.is_used():
                 _tool.add_pre_commit_repo_configs()
 
-        if PyprojectFmtTool().is_used():
+        pyproject_fmt_tool = PyprojectFmtTool()
+        if pyproject_fmt_tool.is_used():
             # We will use pre-commit instead of the dev-dep.
-            remove_deps_from_group(PyprojectFmtTool().get_unique_dev_deps(), "dev")
+            remove_deps_from_group(pyproject_fmt_tool.get_unique_dev_deps(), "dev")
+            pyproject_fmt_tool.add_pyproject_configs()
             _pyproject_fmt_instructions_pre_commit()
 
         if RequirementsTxtTool().is_used():

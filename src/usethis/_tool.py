@@ -42,6 +42,18 @@ class Tool(Protocol):
         """The tool's development dependencies."""
         return []
 
+    def get_extra_dev_deps(self) -> list[Dependency]:
+        """Additional development dependencies for the tool.
+
+        These won't be installed automatically - usually they are only needed for
+        integrations with other tools and will only be conditionally installed.
+
+        However, they will be used to determine if the tool is being used, so they
+        should be considered characteristic of the tool. It follows that they should be
+        removed when the tool is being removed.
+        """
+        return []
+
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         """Get the pre-commit repository configurations for the tool."""
         return []
@@ -70,15 +82,20 @@ class Tool(Protocol):
         2. Whether any of the tool's managed files are in the project.
         3. Whether any of the tool's managed pyproject.toml sections are present.
         """
-        is_any_deps = any(is_dep_in_any_group(dep) for dep in self.dev_deps)
-        is_any_files = any(
-            file.exists() and file.is_file() for file in self.get_managed_files()
-        )
-        is_any_pyproject = any(
-            do_id_keys_exist(id_keys) for id_keys in self.get_pyproject_id_keys()
-        )
+        for file in self.get_managed_files():
+            if file.exists() and file.is_file():
+                return True
+        for id_keys in self.get_pyproject_id_keys():
+            if do_id_keys_exist(id_keys):
+                return True
+        for dep in self.dev_deps:
+            if is_dep_in_any_group(dep):
+                return True
+        for extra_dep in self.get_extra_dev_deps():
+            if is_dep_in_any_group(extra_dep):
+                return True
 
-        return is_any_deps or is_any_files or is_any_pyproject
+        return False
 
     def add_pre_commit_repo_configs(self) -> None:
         """Add the tool's pre-commit configuration."""
@@ -272,10 +289,10 @@ class PytestTool(Tool):
 
     @property
     def dev_deps(self) -> list[Dependency]:
-        return [
-            Dependency(name="pytest"),
-            Dependency(name="pytest-cov"),
-        ]
+        return [Dependency(name="pytest")]
+
+    def get_extra_dev_deps(self) -> list[Dependency]:
+        return [Dependency(name="pytest-cov")]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [

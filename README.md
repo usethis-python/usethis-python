@@ -73,7 +73,7 @@ To use pytest, run:
 
 ```console
 $ uvx usethis tool pytest
-✔ Adding dependencies 'pytest', 'pytest-cov' to the 'test' dependency group in 'pyproject.toml'.
+✔ Adding dependency 'pytest' to the 'test' dependency group in 'pyproject.toml'.
 ✔ Adding pytest config to 'pyproject.toml'.
 ✔ Enabling Ruff rule 'PT' in 'pyproject.toml'.
 ✔ Creating '/tests'.
@@ -107,16 +107,13 @@ Add a new tool to a Python project, including:
 
 Currently supported tools:
 
-- `usethis tool ruff`
-- `usethis tool pytest`
+- `usethis tool coverage`
 - `usethis tool deptry`
 - `usethis tool pre-commit`
 - `usethis tool pyproject-fmt`
+- `usethis tool pytest`
 - `usethis tool requirements.txt`
-
-Example:
-
-`usethis tool ruff`
+- `usethis tool ruff`
 
 Supported arguments:
 

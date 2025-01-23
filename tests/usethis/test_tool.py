@@ -40,6 +40,9 @@ class MyTool(Tool):
             Dependency(name="flake8"),
         ]
 
+    def get_extra_dev_deps(self) -> list[Dependency]:
+        return [Dependency(name="pytest")]
+
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
             UriRepo(
@@ -216,6 +219,42 @@ class TestTool:
 
             # Act
             with change_cwd(uv_init_dir):
+                result = tool.is_used()
+
+            # Assert
+            assert not result
+
+        def test_extra_dev_deps(self, uv_init_dir: Path):
+            # Arrange
+            tool = MyTool()
+
+            with change_cwd(uv_init_dir):
+                add_deps_to_group(
+                    [
+                        Dependency(name="pytest"),
+                    ],
+                    "test",
+                )
+
+                # Act
+                result = tool.is_used()
+
+            # Assert
+            assert result
+
+        def test_not_extra_dev_deps(self, uv_init_dir: Path):
+            # Arrange
+            tool = MyTool()
+
+            with change_cwd(uv_init_dir):
+                add_deps_to_group(
+                    [
+                        Dependency(name="isort"),
+                    ],
+                    "test",
+                )
+
+                # Act
                 result = tool.is_used()
 
             # Assert

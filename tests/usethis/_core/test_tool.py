@@ -88,7 +88,7 @@ class TestCoverage:
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_pytest_used(
+        def test_pytest_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             with change_cwd(uv_init_dir):
@@ -106,7 +106,7 @@ class TestCoverage:
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
-                    "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
+                    "✔ Adding dependencies 'coverage', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
                     "✔ Adding coverage config to 'pyproject.toml'.\n"
                     "☐ Run 'pytest --cov' to run your tests with coverage.\n"
                 )
@@ -140,6 +140,27 @@ class TestCoverage:
                 "✔ Removing coverage config from 'pyproject.toml'.\n"
                 "✔ Removing dependency 'coverage' from the 'test' group in 'pyproject.toml'.\n"
             )
+
+        def test_pytest_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_pytest()
+                    use_coverage()
+
+                # Act
+                use_coverage(remove=True)
+
+                # Assert
+                assert get_deps_from_group("test") == [Dependency(name="pytest")]
+                out, err = capfd.readouterr()
+                assert not err
+                assert out == (
+                    "✔ Removing coverage config from 'pyproject.toml'.\n"
+                    "✔ Removing dependencies 'coverage', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
+                )
 
 
 class TestDeptry:
@@ -810,13 +831,14 @@ class TestPytest:
                 assert is_dep_satisfied_in(
                     Dependency(name="pytest"), in_=list(deps_from_test)
                 )
-                assert is_dep_satisfied_in(
+                # pytest-cov should only be added when we are using coverage
+                assert not is_dep_satisfied_in(
                     Dependency(name="pytest-cov"), in_=list(deps_from_test)
                 )
                 out, _ = capfd.readouterr()
                 assert out == (
                     "✔ Writing 'pyproject.toml'.\n"
-                    "✔ Adding dependencies 'pytest', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
+                    "✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.\n"
                     "✔ Adding pytest config to 'pyproject.toml'.\n"
                     "✔ Creating '/tests'.\n"
                     "✔ Writing '/tests/conftest.py'.\n"
@@ -838,7 +860,7 @@ class TestPytest:
             assert "pytest" in (uv_init_dir / "bitbucket-pipelines.yml").read_text()
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_coverage_notice(
+        def test_coverage_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             with change_cwd(uv_init_dir):
@@ -968,7 +990,7 @@ pipelines:
                     "✔ Removing 'Test on 3.12' from default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                     "✔ Removing pytest config from 'pyproject.toml'.\n"
-                    "✔ Removing dependencies 'pytest', 'pytest-cov' from the 'test' group in 'pyproject.toml'.\n"
+                    "✔ Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'.\n"
                     "✔ Removing '/tests'.\n"
                 ).replace("\n", "").replace(" ", "")
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -996,6 +1018,27 @@ pipelines:
               - echo 'Hello, world!'
 """
                 )
+
+        def test_coverage_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_coverage()
+                    use_pytest()
+
+                # Act
+                use_pytest(remove=True)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Removing pytest config from 'pyproject.toml'.\n"
+                "✔ Removing dependencies 'pytest', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
+                "✔ Removing '/tests'.\n"
+                "☐ Run 'coverage help' to see available coverage commands.\n"
+            )
 
 
 class TestRuff:

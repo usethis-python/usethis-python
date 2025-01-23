@@ -20,8 +20,10 @@ from usethis._integrations.pre_commit.hooks import (
 )
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
+    Dependency,
     add_deps_to_group,
     get_deps_from_group,
+    is_dep_satisfied_in,
 )
 from usethis._test import change_cwd
 from usethis._tool import ALL_TOOLS
@@ -53,7 +55,9 @@ class TestCoverage:
                 use_coverage()
 
                 # Assert
-                assert "coverage" in get_deps_from_group("test")
+                assert Dependency(
+                    name="coverage", extras=frozenset({"toml"})
+                ) in get_deps_from_group("test")
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
@@ -71,7 +75,9 @@ class TestCoverage:
                 use_coverage()
 
                 # Assert
-                assert "coverage" in get_deps_from_group("test")
+                assert Dependency(
+                    name="coverage", extras=frozenset({"toml"})
+                ) in get_deps_from_group("test")
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
@@ -94,7 +100,9 @@ class TestCoverage:
                 use_coverage()
 
                 # Assert
-                assert "coverage" in get_deps_from_group("test")
+                assert Dependency(
+                    name="coverage", extras=frozenset({"toml"})
+                ) in get_deps_from_group("test")
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
@@ -144,7 +152,7 @@ class TestDeptry:
 
                 # Assert
                 (dev_dep,) = get_deps_from_group("dev")
-            assert dev_dep == "deptry"
+            assert dev_dep == Dependency(name="deptry")
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_stdout(
@@ -245,7 +253,7 @@ repos:
         def test_dep(self, uv_init_dir: Path):
             with change_cwd(uv_init_dir):
                 # Arrange
-                add_deps_to_group(["deptry"], "dev")
+                add_deps_to_group([Dependency(name="deptry")], "dev")
 
                 # Act
                 use_deptry(remove=True)
@@ -360,7 +368,7 @@ class TestPreCommit:
                 # Assert
                 # Has dev dep
                 (dev_dep,) = get_deps_from_group("dev")
-                assert dev_dep == "pre-commit"
+                assert dev_dep == Dependency(name="pre-commit")
             # Correct stdout
             out, _ = capfd.readouterr()
             assert (
@@ -490,7 +498,7 @@ repos:
         def test_dep(self, uv_init_repo_dir: Path):
             with change_cwd(uv_init_repo_dir):
                 # Arrange
-                add_deps_to_group(["pre-commit"], "dev")
+                add_deps_to_group([Dependency(name="pre-commit")], "dev")
 
                 # Act
                 use_pre_commit(remove=True)
@@ -654,7 +662,7 @@ class TestPyprojectFmt:
             def test_added(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
                 # Arrange
                 with change_cwd(uv_init_dir), usethis_config.set(quiet=True):
-                    add_deps_to_group(["pyproject-fmt"], "dev")
+                    add_deps_to_group([Dependency(name="pyproject-fmt")], "dev")
                 content = (uv_init_dir / "pyproject.toml").read_text()
 
                 # Act
@@ -684,7 +692,9 @@ keep_full_version = true
                     use_pyproject_fmt()
 
                     # Assert
-                    assert get_deps_from_group("dev") == ["pyproject-fmt"]
+                    assert get_deps_from_group("dev") == [
+                        Dependency(name="pyproject-fmt")
+                    ]
                 out, _ = capfd.readouterr()
                 assert out == (
                     "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
@@ -796,10 +806,13 @@ class TestPytest:
                 use_pytest()
 
                 # Assert
-                assert {
-                    "pytest",
-                    "pytest-cov",
-                } <= set(get_deps_from_group("test"))
+                deps_from_test = get_deps_from_group("test")
+                assert is_dep_satisfied_in(
+                    Dependency(name="pytest"), in_=list(deps_from_test)
+                )
+                assert is_dep_satisfied_in(
+                    Dependency(name="pytest-cov"), in_=list(deps_from_test)
+                )
                 out, _ = capfd.readouterr()
                 assert out == (
                     "✔ Writing 'pyproject.toml'.\n"
@@ -918,7 +931,7 @@ select = ["PT"]
             def test_removed(self, uv_init_dir: Path):
                 with change_cwd(uv_init_dir):
                     # Arrange
-                    add_deps_to_group(["pytest"], "test")
+                    add_deps_to_group([Dependency(name="pytest")], "test")
 
                     # Act
                     use_pytest(remove=True)
@@ -995,7 +1008,7 @@ class TestRuff:
 
                 # Assert
                 (dev_dep,) = get_deps_from_group("dev")
-            assert dev_dep == "ruff"
+            assert dev_dep == Dependency(name="ruff")
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):

@@ -24,7 +24,7 @@ from usethis._integrations.pyproject.core import (
     remove_config_value,
     set_config_value,
 )
-from usethis._integrations.uv.deps import is_dep_in_any_group
+from usethis._integrations.uv.deps import Dependency, is_dep_in_any_group
 
 
 class Tool(Protocol):
@@ -38,8 +38,8 @@ class Tool(Protocol):
         """
 
     @property
-    def dev_deps(self) -> list[str]:
-        """The name of the tool's development dependencies."""
+    def dev_deps(self) -> list[Dependency]:
+        """The tool's development dependencies."""
         return []
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
@@ -53,10 +53,6 @@ class Tool(Protocol):
     def get_associated_ruff_rules(self) -> list[str]:
         """Get the Ruff rule codes associated with the tool."""
         return []
-
-    def get_unique_dev_deps(self) -> list[str]:
-        """Any development dependencies only used by this tool (not shared)."""
-        return self.dev_deps
 
     def get_managed_files(self) -> list[Path]:
         """Get (relative) paths to files managed by the tool."""
@@ -74,9 +70,7 @@ class Tool(Protocol):
         2. Whether any of the tool's managed files are in the project.
         3. Whether any of the tool's managed pyproject.toml sections are present.
         """
-        is_any_deps = any(
-            is_dep_in_any_group(dep) for dep in self.get_unique_dev_deps()
-        )
+        is_any_deps = any(is_dep_in_any_group(dep) for dep in self.dev_deps)
         is_any_files = any(
             file.exists() and file.is_file() for file in self.get_managed_files()
         )
@@ -167,8 +161,8 @@ class CoverageTool(Tool):
         return "coverage"
 
     @property
-    def dev_deps(self) -> list[str]:
-        return ["coverage[toml]"]
+    def dev_deps(self) -> list[Dependency]:
+        return [Dependency(name="coverage", extras=frozenset({"toml"}))]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
@@ -194,10 +188,10 @@ class CoverageTool(Tool):
             ),
         ]
 
-    def get_pyproject_id_keys(self):
+    def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "coverage"]]
 
-    def get_managed_files(self):
+    def get_managed_files(self) -> list[Path]:
         return [Path(".coveragerc")]
 
 
@@ -207,8 +201,8 @@ class DeptryTool(Tool):
         return "deptry"
 
     @property
-    def dev_deps(self) -> list[str]:
-        return ["deptry"]
+    def dev_deps(self) -> list[Dependency]:
+        return [Dependency(name="deptry")]
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -234,10 +228,10 @@ class PreCommitTool(Tool):
         return "pre-commit"
 
     @property
-    def dev_deps(self) -> list[str]:
-        return ["pre-commit"]
+    def dev_deps(self) -> list[Dependency]:
+        return [Dependency(name="pre-commit")]
 
-    def get_managed_files(self):
+    def get_managed_files(self) -> list[Path]:
         return [Path(".pre-commit-config.yaml")]
 
 
@@ -247,8 +241,8 @@ class PyprojectFmtTool(Tool):
         return "pyproject-fmt"
 
     @property
-    def dev_deps(self) -> list[str]:
-        return ["pyproject-fmt"]
+    def dev_deps(self) -> list[Dependency]:
+        return [Dependency(name="pyproject-fmt")]
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -267,7 +261,7 @@ class PyprojectFmtTool(Tool):
             )
         ]
 
-    def get_pyproject_id_keys(self):
+    def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "pyproject-fmt"]]
 
 
@@ -277,8 +271,11 @@ class PytestTool(Tool):
         return "pytest"
 
     @property
-    def dev_deps(self) -> list[str]:
-        return ["pytest", "pytest-cov"]
+    def dev_deps(self) -> list[Dependency]:
+        return [
+            Dependency(name="pytest"),
+            Dependency(name="pytest-cov"),
+        ]
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
@@ -299,13 +296,10 @@ class PytestTool(Tool):
     def get_associated_ruff_rules(self) -> list[str]:
         return ["PT"]
 
-    def get_unique_dev_deps(self):
-        return ["pytest", "pytest-cov"]
-
-    def get_pyproject_id_keys(self):
+    def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "pytest"]]
 
-    def get_managed_files(self):
+    def get_managed_files(self) -> list[Path]:
         return [Path("tests/conftest.py")]
 
 
@@ -315,7 +309,7 @@ class RequirementsTxtTool(Tool):
         return "requirements.txt"
 
     @property
-    def dev_deps(self) -> list[str]:
+    def dev_deps(self) -> list[Dependency]:
         return []
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
@@ -346,8 +340,8 @@ class RuffTool(Tool):
         return "Ruff"
 
     @property
-    def dev_deps(self) -> list[str]:
-        return ["ruff"]
+    def dev_deps(self) -> list[Dependency]:
+        return [Dependency(name="ruff")]
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -397,10 +391,10 @@ class RuffTool(Tool):
             )
         ]
 
-    def get_pyproject_id_keys(self):
+    def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "ruff"]]
 
-    def get_managed_files(self):
+    def get_managed_files(self) -> list[Path]:
         return [Path("ruff.toml"), Path(".ruff.toml")]
 
 

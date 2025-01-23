@@ -126,7 +126,7 @@ Supported arguments:
 
 ### `usethis badge`
 
-Add badges to READEME.md.
+Add badges to README.md.
 
 Currently supported badges:
 

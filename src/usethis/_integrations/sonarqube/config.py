@@ -32,7 +32,7 @@ def get_sonar_project_properties() -> str:
             id_keys=["tool", "usethis", "sonarqube", "project-key"]
         )
     except (FileNotFoundError, KeyError):
-        msg = "Could not find SonarQube project key at 'usethis.tool.sonarqube.project-key' in 'pyproject.toml'."
+        msg = "Could not find SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
         raise MissingProjectKeyError(msg)
     _validate_project_key(project_key)
 

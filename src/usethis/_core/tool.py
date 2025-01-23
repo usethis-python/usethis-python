@@ -21,7 +21,11 @@ from usethis._integrations.ruff.rules import (
     select_ruff_rules,
 )
 from usethis._integrations.uv.call import call_uv_subprocess
-from usethis._integrations.uv.deps import add_deps_to_group, remove_deps_from_group
+from usethis._integrations.uv.deps import (
+    Dependency,
+    add_deps_to_group,
+    remove_deps_from_group,
+)
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import (
     ALL_TOOLS,
@@ -41,7 +45,10 @@ def use_coverage(*, remove: bool = False) -> None:
     ensure_pyproject_toml()
 
     if not remove:
-        add_deps_to_group(tool.dev_deps, "test")
+        deps = tool.dev_deps
+        if PytestTool().is_used():
+            deps += [Dependency(name="pytest-cov")]
+        add_deps_to_group(deps, "test")
 
         tool.add_pyproject_configs()
 
@@ -51,7 +58,7 @@ def use_coverage(*, remove: bool = False) -> None:
             _coverage_instructions_basic()
     else:
         tool.remove_pyproject_configs()
-        remove_deps_from_group(tool.dev_deps, "test")
+        remove_deps_from_group([*tool.dev_deps, Dependency(name="pytest-cov")], "test")
 
 
 def _coverage_instructions_basic() -> None:
@@ -172,7 +179,11 @@ def use_pytest(*, remove: bool = False) -> None:
     ensure_pyproject_toml()
 
     if not remove:
-        add_deps_to_group(tool.dev_deps, "test")
+        deps = tool.dev_deps
+        if CoverageTool().is_used():
+            deps += [Dependency(name="pytest-cov")]
+        add_deps_to_group(deps, "test")
+
         tool.add_pyproject_configs()
         if RuffTool().is_used():
             select_ruff_rules(tool.get_associated_ruff_rules())
@@ -199,7 +210,8 @@ def use_pytest(*, remove: bool = False) -> None:
         if RuffTool().is_used():
             deselect_ruff_rules(tool.get_associated_ruff_rules())
         tool.remove_pyproject_configs()
-        remove_deps_from_group(tool.dev_deps, "test")
+        remove_deps_from_group([*tool.dev_deps, Dependency(name="pytest-cov")], "test")
+
         remove_pytest_dir()  # Last, since this is a manual step
 
         if CoverageTool().is_used():

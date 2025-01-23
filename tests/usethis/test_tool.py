@@ -6,7 +6,7 @@ from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_nam
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import set_config_value
-from usethis._integrations.uv.deps import add_deps_to_group
+from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
 from usethis._tool import Tool
 
@@ -33,8 +33,12 @@ class MyTool(Tool):
         return "my_tool"
 
     @property
-    def dev_deps(self) -> list[str]:
-        return [self.name, "black", "flake8"]
+    def dev_deps(self) -> list[Dependency]:
+        return [
+            Dependency(name=self.name),
+            Dependency(name="black"),
+            Dependency(name="flake8"),
+        ]
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -49,9 +53,6 @@ class MyTool(Tool):
 
     def get_associated_ruff_rules(self) -> list[str]:
         return ["MYRULE"]
-
-    def get_unique_dev_deps(self) -> list[str]:
-        return [self.name, "isort"]  # Obviously "isort" is not mytool's! For testing.
 
     def get_managed_files(self) -> list[Path]:
         return [Path("mytool-config.yaml")]
@@ -94,7 +95,11 @@ class TestTool:
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.dev_deps == ["my_tool", "black", "flake8"]
+            assert tool.dev_deps == [
+                Dependency(name="my_tool"),
+                Dependency(name="black"),
+                Dependency(name="flake8"),
+            ]
 
     class TestGetPreCommitRepoConfigs:
         def test_default(self):
@@ -127,15 +132,6 @@ class TestTool:
             tool = MyTool()
             assert tool.get_associated_ruff_rules() == ["MYRULE"]
 
-    class TestGetUniqueDevDeps:
-        def test_default(self):
-            tool = DefaultTool()
-            assert tool.get_unique_dev_deps() == []
-
-        def test_specific(self):
-            tool = MyTool()
-            assert tool.get_unique_dev_deps() == ["my_tool", "isort"]
-
     class TestGetManagedFiles:
         def test_default(self):
             tool = DefaultTool()
@@ -165,7 +161,12 @@ class TestTool:
             # Arrange
             tool = MyTool()
             with change_cwd(uv_init_dir):
-                add_deps_to_group(["isort"], "eggs")
+                add_deps_to_group(
+                    [
+                        Dependency(name="isort"),
+                    ],
+                    "eggs",
+                )
 
                 # Act
                 result = tool.is_used()
@@ -178,7 +179,12 @@ class TestTool:
             # Arrange
             tool = MyTool()
             with change_cwd(uv_init_dir):
-                add_deps_to_group(["black"], "eggs")
+                add_deps_to_group(
+                    [
+                        Dependency(name="black"),
+                    ],
+                    "eggs",
+                )
                 # Act
                 result = tool.is_used()
 

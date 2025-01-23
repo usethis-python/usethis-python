@@ -4,13 +4,14 @@ import pytest
 
 from usethis._config import usethis_config
 from usethis._integrations.uv.deps import (
+    Dependency,
     add_deps_to_group,
     get_dep_groups,
     get_deps_from_group,
     is_dep_in_any_group,
+    is_dep_satisfied_in,
     remove_deps_from_group,
 )
-from usethis._integrations.uv.errors import UVDepGroupError
 from usethis._test import change_cwd
 
 
@@ -45,7 +46,7 @@ test=['pytest']
 """)
 
         with change_cwd(tmp_path):
-            assert get_dep_groups() == {"test": ["pytest"]}
+            assert get_dep_groups() == {"test": [Dependency(name="pytest")]}
 
     def test_multiple_dev_deps(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text("""\
@@ -54,7 +55,13 @@ qa=["flake8", "black", "isort"]
 """)
 
         with change_cwd(tmp_path):
-            assert get_dep_groups() == {"qa": ["flake8", "black", "isort"]}
+            assert get_dep_groups() == {
+                "qa": [
+                    Dependency(name="flake8"),
+                    Dependency(name="black"),
+                    Dependency(name="isort"),
+                ]
+            }
 
     def test_multiple_groups(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text(
@@ -67,8 +74,14 @@ test=['pytest']
 
         with change_cwd(tmp_path):
             assert get_dep_groups() == {
-                "qa": ["flake8", "black", "isort"],
-                "test": ["pytest"],
+                "qa": [
+                    Dependency(name="flake8"),
+                    Dependency(name="black"),
+                    Dependency(name="isort"),
+                ],
+                "test": [
+                    Dependency(name="pytest"),
+                ],
             }
 
 
@@ -77,19 +90,21 @@ class TestAddDepsToGroup:
     def test_pyproject_changed(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
             # Act
-            add_deps_to_group(["pytest"], "test")
+            add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Assert
-            assert "pytest" in get_deps_from_group("test")
+            assert is_dep_satisfied_in(
+                Dependency(name="pytest"), in_=get_deps_from_group("test")
+            )
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_single_dep(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir):
             # Act
-            add_deps_to_group(["pytest"], "test")
+            add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Assert
-            assert get_deps_from_group("test") == ["pytest"]
+            assert get_deps_from_group("test") == [Dependency(name="pytest")]
             out, err = capfd.readouterr()
             assert not err
             assert (
@@ -101,10 +116,15 @@ class TestAddDepsToGroup:
     def test_multiple_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir):
             # Act
-            add_deps_to_group(["flake8", "black"], "qa")
+            add_deps_to_group(
+                [Dependency(name="flake8"), Dependency(name="black")], "qa"
+            )
 
             # Assert
-            assert set(get_deps_from_group("qa")) == {"flake8", "black"}
+            assert set(get_deps_from_group("qa")) == {
+                Dependency(name="flake8"),
+                Dependency(name="black"),
+            }
             out, err = capfd.readouterr()
             assert not err
             assert (
@@ -119,13 +139,18 @@ class TestAddDepsToGroup:
         with change_cwd(uv_init_dir):
             # Arrange
             with usethis_config.set(quiet=True):
-                add_deps_to_group(["pytest"], "test")
+                add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
-            add_deps_to_group(["pytest", "black"], "test")
+            add_deps_to_group(
+                [Dependency(name="pytest"), Dependency(name="black")], "test"
+            )
 
             # Assert
-            assert set(get_deps_from_group("test")) == {"pytest", "black"}
+            assert set(get_deps_from_group("test")) == {
+                Dependency(name="pytest"),
+                Dependency(name="black"),
+            }
             out, err = capfd.readouterr()
             assert not err
             assert (
@@ -137,10 +162,15 @@ class TestAddDepsToGroup:
     def test_extras(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir):
             # Act
-            add_deps_to_group(["pytest[extra]"], "test")
+            add_deps_to_group(
+                [Dependency(name="pytest", extras=frozenset({"extra"}))], "test"
+            )
 
             # Assert
-            assert "pytest" in get_deps_from_group("test")
+            assert is_dep_satisfied_in(
+                Dependency(name="pytest", extras=frozenset({"extra"})),
+                in_=get_deps_from_group("test"),
+            )
             content = (uv_init_dir / "pyproject.toml").read_text()
             assert "pytest[extra]" in content
             out, err = capfd.readouterr()
@@ -163,9 +193,54 @@ class TestAddDepsToGroup:
             assert not out
 
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_bad_dep_string(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir), pytest.raises(UVDepGroupError):
-            add_deps_to_group(["pytest[extra"], "test")
+    def test_extra_when_nonextra_already_present(self, uv_init_dir: Path):
+        # https://github.com/nathanjmcdougall/usethis-python/issues/227
+        with change_cwd(uv_init_dir):
+            # Arrange
+            add_deps_to_group([Dependency(name="coverage")], "test")
+
+            # Act
+            add_deps_to_group(
+                [Dependency(name="coverage", extras=frozenset({"toml"}))], "test"
+            )
+
+            # Assert
+            content = (uv_init_dir / "pyproject.toml").read_text()
+            assert "coverage[toml]" in content
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_extras_combining_together(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            # Arrange
+            add_deps_to_group(
+                [Dependency(name="coverage", extras=frozenset({"toml"}))], "test"
+            )
+
+            # Act
+            add_deps_to_group(
+                [Dependency(name="coverage", extras=frozenset({"extra"}))], "test"
+            )
+
+            # Assert
+            content = (uv_init_dir / "pyproject.toml").read_text()
+            assert "coverage[extra,toml]" in content
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_combine_extras_alphabetical(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            # Arrange
+            add_deps_to_group(
+                [Dependency(name="coverage", extras=frozenset({"extra"}))], "test"
+            )
+
+            # Act
+            add_deps_to_group(
+                [Dependency(name="coverage", extras=frozenset({"toml"}))], "test"
+            )
+
+            # Assert
+            content = (uv_init_dir / "pyproject.toml").read_text()
+            assert "coverage[extra,toml]" in content
 
 
 class TestRemoveDepsFromGroup:
@@ -173,10 +248,10 @@ class TestRemoveDepsFromGroup:
     def test_pyproject_changed(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
             # Arrange
-            add_deps_to_group(["pytest"], "test")
+            add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
-            remove_deps_from_group(["pytest"], "test")
+            remove_deps_from_group([Dependency(name="pytest")], "test")
 
             # Assert
             assert "pytest" not in get_deps_from_group("test")
@@ -186,10 +261,10 @@ class TestRemoveDepsFromGroup:
         with change_cwd(uv_init_dir):
             # Arrange
             with usethis_config.set(quiet=True):
-                add_deps_to_group(["pytest"], "test")
+                add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
-            remove_deps_from_group(["pytest"], "test")
+            remove_deps_from_group([Dependency(name="pytest")], "test")
 
             # Assert
             assert not get_deps_from_group("test")
@@ -205,10 +280,14 @@ class TestRemoveDepsFromGroup:
         with change_cwd(uv_init_dir):
             # Arrange
             with usethis_config.set(quiet=True):
-                add_deps_to_group(["flake8", "black"], "qa")
+                add_deps_to_group(
+                    [Dependency(name="flake8"), Dependency(name="black")], "qa"
+                )
 
             # Act
-            remove_deps_from_group(["flake8", "black"], "qa")
+            remove_deps_from_group(
+                [Dependency(name="flake8"), Dependency(name="black")], "qa"
+            )
 
             # Assert
             assert not get_deps_from_group("qa")
@@ -226,10 +305,12 @@ class TestRemoveDepsFromGroup:
         with change_cwd(uv_init_dir):
             # Arrange
             with usethis_config.set(quiet=True):
-                add_deps_to_group(["pytest"], "test")
+                add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
-            remove_deps_from_group(["pytest", "black"], "test")
+            remove_deps_from_group(
+                [Dependency(name="pytest"), Dependency(name="black")], "test"
+            )
 
             # Assert
             assert not get_deps_from_group("test")
@@ -245,10 +326,14 @@ class TestRemoveDepsFromGroup:
         with change_cwd(uv_init_dir):
             # Arrange
             with usethis_config.set(quiet=True):
-                add_deps_to_group(["pytest[extra]"], "test")
+                add_deps_to_group(
+                    [Dependency(name="pytest", extras=frozenset({"extra"}))], "test"
+                )
 
             # Act
-            remove_deps_from_group(["pytest[extra]"], "test")
+            remove_deps_from_group(
+                [Dependency(name="pytest", extras=frozenset({"extra"}))], "test"
+            )
 
             # Assert
             assert not get_deps_from_group("test")
@@ -263,16 +348,16 @@ class TestRemoveDepsFromGroup:
 class TestIsDepInAnyGroup:
     def test_no_group(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
-            assert not is_dep_in_any_group("pytest")
+            assert not is_dep_in_any_group(Dependency(name="pytest"))
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_in_group(self, uv_init_dir: Path):
         # Arrange
         with change_cwd(uv_init_dir):
-            add_deps_to_group(["pytest"], "test")
+            add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
-            result = is_dep_in_any_group("pytest")
+            result = is_dep_in_any_group(Dependency(name="pytest"))
 
         # Assert
         assert result
@@ -281,10 +366,67 @@ class TestIsDepInAnyGroup:
     def test_not_in_group(self, uv_init_dir: Path):
         # Arrange
         with change_cwd(uv_init_dir):
-            add_deps_to_group(["pytest"], "test")
+            add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
-            result = is_dep_in_any_group("black")
+            result = is_dep_in_any_group(Dependency(name="black"))
 
         # Assert
         assert not result
+
+
+class TestIsDepSatisfiedIn:
+    def test_empty(self):
+        # Arrange
+        dep = Dependency(name="pytest")
+        in_ = []
+
+        # Act
+        result = is_dep_satisfied_in(dep, in_=in_)
+
+        # Assert
+        assert not result
+
+    def test_same(self):
+        # Arrange
+        dep = Dependency(name="pytest")
+        in_ = [Dependency(name="pytest")]
+
+        # Act
+        result = is_dep_satisfied_in(dep, in_=in_)
+
+        # Assert
+        assert result
+
+    def test_same_name_superset_extra(self):
+        # Arrange
+        dep = Dependency(name="pytest", extras=frozenset({"extra"}))
+        in_ = [Dependency(name="pytest")]
+
+        # Act
+        result = is_dep_satisfied_in(dep, in_=in_)
+
+        # Assert
+        assert not result
+
+    def test_same_name_subset_extra(self):
+        # Arrange
+        dep = Dependency(name="pytest")
+        in_ = [Dependency(name="pytest", extras=frozenset({"extra"}))]
+
+        # Act
+        result = is_dep_satisfied_in(dep, in_=in_)
+
+        # Assert
+        assert result
+
+    def test_multiple(self):
+        # Arrange
+        dep = Dependency(name="pytest")
+        in_ = [Dependency(name="flake8"), Dependency(name="pytest")]
+
+        # Act
+        result = is_dep_satisfied_in(dep, in_=in_)
+
+        # Assert
+        assert result

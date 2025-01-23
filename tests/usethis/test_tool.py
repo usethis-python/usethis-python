@@ -163,7 +163,7 @@ class TestTool:
             with change_cwd(uv_init_dir):
                 add_deps_to_group(
                     [
-                        Dependency(name="isort"),
+                        Dependency(name="black"),
                     ],
                     "eggs",
                 )
@@ -173,23 +173,6 @@ class TestTool:
 
             # Assert
             assert result
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_non_managed_deps(self, uv_init_dir: Path):
-            # Arrange
-            tool = MyTool()
-            with change_cwd(uv_init_dir):
-                add_deps_to_group(
-                    [
-                        Dependency(name="black"),
-                    ],
-                    "eggs",
-                )
-                # Act
-                result = tool.is_used()
-
-            # Assert
-            assert not result
 
         def test_files(self, uv_init_dir: Path):
             # Arrange

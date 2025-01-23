@@ -9,7 +9,7 @@ from usethis._integrations.pre_commit.core import (
 )
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook
-from usethis._integrations.uv.deps import add_deps_to_group
+from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
 
 
@@ -61,7 +61,7 @@ class TestInstallPreCommitHooks:
     def test_message(self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         with change_cwd(uv_init_repo_dir):
-            add_deps_to_group(["pre-commit"], "dev")
+            add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()
 
@@ -93,7 +93,7 @@ class TestUninstallPreCommitHooks:
     ):
         # Arrange
         with change_cwd(uv_init_repo_dir):
-            add_deps_to_group(["pre-commit"], "dev")
+            add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()
 

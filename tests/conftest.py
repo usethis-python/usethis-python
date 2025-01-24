@@ -61,3 +61,8 @@ def _vary_network_conn(request: pytest.FixtureRequest) -> Generator[None, None, 
     usethis_config.offline = offline
     yield
     usethis_config.offline = False
+
+
+@pytest.fixture
+def usethis_dev_dir() -> Path:
+    return Path(__file__).parent.parent

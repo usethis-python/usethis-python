@@ -1,6 +1,6 @@
 from usethis._console import tick_print
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
-from usethis._integrations.bitbucket.io import (
+from usethis._integrations.bitbucket.io_ import (
     BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
 )
@@ -43,7 +43,7 @@ def _add_caches_via_doc(
     for name, cache in cache_by_name.items():
         if not _cache_exists(name, doc=doc):
             tick_print(
-                f"Adding cache '{name}' definition to " f"'bitbucket-pipelines.yml'."
+                f"Adding cache '{name}' definition to 'bitbucket-pipelines.yml'."
             )
             config.definitions.caches[name] = cache
 

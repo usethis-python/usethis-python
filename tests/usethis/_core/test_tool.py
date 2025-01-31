@@ -254,19 +254,16 @@ repos:
 
             # 4. Check messages
             out, _ = capfd.readouterr()
-            assert (
-                out
-                == (
-                    "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
-                    "☐ Run 'deptry src' to run deptry.\n"
-                    "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
-                    "✔ Writing '.pre-commit-config.yaml'.\n"
-                    "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-                    "✔ Ensuring pre-commit is installed to Git.\n"
-                    "✔ Ensuring pre-commit hooks are installed.\n"
-                    "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
-                    "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
-                )
+            assert out == (
+                "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Run 'deptry src' to run deptry.\n"
+                "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
+                "✔ Writing '.pre-commit-config.yaml'.\n"
+                "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
+                "✔ Ensuring pre-commit is installed to Git.\n"
+                "✔ Ensuring pre-commit hooks are installed.\n"
+                "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
+                "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
             )
 
     class TestRemove:
@@ -392,20 +389,17 @@ class TestPreCommit:
                 assert dev_dep == Dependency(name="pre-commit")
             # Correct stdout
             out, _ = capfd.readouterr()
-            assert (
-                out
-                == (
-                    "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
-                    "✔ Writing '.pre-commit-config.yaml'.\n"
-                    "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
-                    "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
-                    "☐ Replace it with your own hooks.\n"
-                    "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
-                    "✔ Ensuring pre-commit is installed to Git.\n"
-                    "✔ Ensuring pre-commit hooks are installed.\n"
-                    "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
-                    "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
-                )
+            assert out == (
+                "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
+                "✔ Writing '.pre-commit-config.yaml'.\n"
+                "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
+                "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
+                "☐ Replace it with your own hooks.\n"
+                "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
+                "✔ Ensuring pre-commit is installed to Git.\n"
+                "✔ Ensuring pre-commit hooks are installed.\n"
+                "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
+                "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
             )
             # Config file
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()

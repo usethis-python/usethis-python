@@ -1,8 +1,8 @@
 import contextlib
 from functools import reduce, singledispatch, singledispatchmethod
-from typing import assert_never
 
 from pydantic import BaseModel
+from typing_extensions import assert_never
 
 from usethis._pipeweld.containers import (
     DepGroup,

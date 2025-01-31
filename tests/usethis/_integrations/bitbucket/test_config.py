@@ -10,7 +10,7 @@ from usethis._integrations.bitbucket.steps import (
     Step,
     add_step_in_default,
 )
-from usethis._integrations.yaml.io import edit_yaml
+from usethis._integrations.yaml.io_ import edit_yaml
 from usethis._test import change_cwd
 
 

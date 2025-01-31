@@ -3,7 +3,7 @@ from pydantic import BaseModel, TypeAdapter
 
 from usethis._config import usethis_config
 from usethis._console import tick_print
-from usethis._integrations.pyproject.io import read_pyproject_toml
+from usethis._integrations.pyproject.io_ import read_pyproject_toml
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 

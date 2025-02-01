@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.bitbucket.io import (
+from usethis._integrations.bitbucket.io_ import (
     BitbucketPipelinesYAMLConfigError,
     edit_bitbucket_pipelines_yaml,
 )

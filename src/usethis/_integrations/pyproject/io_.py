@@ -1,9 +1,8 @@
-import tomllib
 from functools import cache
 from pathlib import Path
-from typing import Any
 
 import tomlkit
+from tomlkit.exceptions import TOMLKitError
 
 from usethis._integrations.pyproject.errors import (
     PyProjectTOMLDecodeError,
@@ -22,20 +21,9 @@ def read_pyproject_toml_from_path(path: Path) -> tomlkit.TOMLDocument:
     except FileNotFoundError:
         msg = "'pyproject.toml' not found in the current directory."
         raise PyProjectTOMLNotFoundError(msg)
-
-
-def read_pyproject_dict() -> dict[str, Any]:
-    try:
-        with Path("pyproject.toml").open("rb") as f:
-            try:
-                return tomllib.load(f)
-            except tomllib.TOMLDecodeError as err:
-                msg = f"Error decoding 'pyproject.toml': {err}"
-                raise PyProjectTOMLDecodeError(msg)
-
-    except FileNotFoundError:
-        msg = "'pyproject.toml' not found in the current directory."
-        raise PyProjectTOMLNotFoundError(msg)
+    except TOMLKitError as err:
+        msg = f"Failed to decode 'pyproject.toml': {err}"
+        raise PyProjectTOMLDecodeError(msg) from None
 
 
 def write_pyproject_toml(toml_document: tomlkit.TOMLDocument) -> None:

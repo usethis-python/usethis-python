@@ -25,7 +25,7 @@ from ruamel.yaml.scalarstring import (
 from ruamel.yaml.timestamp import TimeStamp
 
 from usethis._integrations.yaml.errors import InvalidYAMLError
-from usethis._integrations.yaml.io import edit_yaml
+from usethis._integrations.yaml.io_ import edit_yaml
 from usethis._test import change_cwd
 
 

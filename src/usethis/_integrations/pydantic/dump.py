@@ -99,7 +99,39 @@ def _(
     return d
 
 
-@fancy_model_dump.register(bool | int | float | str)
+# N.B. when Python 3.10 support is dropped, we can register unions of types, rather than
+# having these separate identical implementations for each type.
+@fancy_model_dump.register(bool)
+def _(
+    model: ModelLiteral,
+    *,
+    reference: ModelRepresentation | None = None,
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+) -> ModelLiteral:
+    return model
+
+
+@fancy_model_dump.register(int)
+def _(
+    model: ModelLiteral,
+    *,
+    reference: ModelRepresentation | None = None,
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+) -> ModelLiteral:
+    return model
+
+
+@fancy_model_dump.register(float)
+def _(
+    model: ModelLiteral,
+    *,
+    reference: ModelRepresentation | None = None,
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+) -> ModelLiteral:
+    return model
+
+
+@fancy_model_dump.register(str)
 def _(
     model: ModelLiteral,
     *,

@@ -1,9 +1,9 @@
 import re
 import sys
 from pathlib import Path
-from typing import Self
 
 from pydantic import BaseModel
+from typing_extensions import Self
 
 from usethis._console import err_print, tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path

@@ -1,4 +1,4 @@
-from usethis._integrations.pyproject.io import read_pyproject_toml_from_path
+from usethis._integrations.pyproject.io_ import read_pyproject_toml_from_path
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 

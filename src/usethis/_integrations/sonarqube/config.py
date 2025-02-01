@@ -68,7 +68,7 @@ sonar.python.version={python_version}
 sonar.sources=./src
 sonar.tests=./tests
 sonar.python.coverage.reportPaths={coverage_output}
-sonar.verbose={'true' if verbose else 'false'}
+sonar.verbose={"true" if verbose else "false"}
 """
     if exclusions:
         text += "sonar.exclusions=" + ", ".join(exclusions) + "\n"

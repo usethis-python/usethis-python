@@ -5,7 +5,7 @@ from ruamel.yaml.comments import (
     CommentedMap,
 )
 
-from usethis._integrations.yaml.io import YAMLLiteral
+from usethis._integrations.yaml.io_ import YAMLLiteral
 
 
 def update_ruamel_yaml_map(

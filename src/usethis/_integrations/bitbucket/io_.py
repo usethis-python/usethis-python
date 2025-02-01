@@ -8,7 +8,7 @@ from ruamel.yaml.comments import CommentedMap
 
 from usethis._console import tick_print
 from usethis._integrations.bitbucket.schema import PipelinesConfiguration
-from usethis._integrations.yaml.io import YAMLLiteral, edit_yaml
+from usethis._integrations.yaml.io_ import YAMLLiteral, edit_yaml
 
 
 class BitbucketPipelinesYAMLConfigError(Exception):
@@ -29,9 +29,9 @@ class BitbucketPipelinesYAMLDocument:
 
 
 @contextmanager
-def edit_bitbucket_pipelines_yaml() -> (
-    Generator[BitbucketPipelinesYAMLDocument, None, None]
-):
+def edit_bitbucket_pipelines_yaml() -> Generator[
+    BitbucketPipelinesYAMLDocument, None, None
+]:
     """A context manager to modify 'bitbucket-pipelines.yml' in-place."""
     name = "bitbucket-pipelines.yml"
     path = Path.cwd() / name

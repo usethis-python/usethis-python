@@ -8,7 +8,7 @@ from usethis._integrations.pyproject.errors import (
     PyProjectTOMLValueAlreadySetError,
     PyProjectTOMLValueMissingError,
 )
-from usethis._integrations.pyproject.io import (
+from usethis._integrations.pyproject.io_ import (
     read_pyproject_toml,
     write_pyproject_toml,
 )

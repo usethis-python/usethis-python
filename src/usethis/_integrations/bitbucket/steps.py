@@ -1,10 +1,10 @@
 from functools import singledispatch
 from pathlib import Path
-from typing import assert_never
 
 from ruamel.yaml.anchor import Anchor
 from ruamel.yaml.comments import CommentedSeq
 from ruamel.yaml.scalarstring import LiteralScalarString
+from typing_extensions import assert_never
 
 import usethis._pipeweld.func
 from usethis._console import box_print, tick_print
@@ -12,7 +12,7 @@ from usethis._integrations.bitbucket.anchor import ScriptItemAnchor, ScriptItemN
 from usethis._integrations.bitbucket.cache import _add_caches_via_doc, remove_cache
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
-from usethis._integrations.bitbucket.io import (
+from usethis._integrations.bitbucket.io_ import (
     BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
 )
@@ -101,8 +101,7 @@ def _add_step_in_default_via_doc(
         # It's not always notable that the placeholder is being added.
     else:
         tick_print(
-            f"Adding '{step.name}' to default pipeline in "
-            f"'bitbucket-pipelines.yml'."
+            f"Adding '{step.name}' to default pipeline in 'bitbucket-pipelines.yml'."
         )
 
     config = doc.model

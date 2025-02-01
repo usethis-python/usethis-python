@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pre_commit.io import (
+from usethis._integrations.pre_commit.io_ import (
     PreCommitConfigYAMLConfigError,
     edit_pre_commit_config_yaml,
 )

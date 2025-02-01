@@ -18,7 +18,7 @@ class TestReadPyprojectTOML:
 
         # Act
         with change_cwd(tmp_path):
-            result = read_pyproject_toml().values
+            result = read_pyproject_toml().value
 
         # Assert
         assert result == {}
@@ -30,7 +30,7 @@ class TestReadPyprojectTOML:
 
         # Act
         with change_cwd(tmp_path):
-            result = read_pyproject_toml().values
+            result = read_pyproject_toml().value
 
         # Assert
         assert result == {"name": "usethis"}
@@ -42,9 +42,9 @@ class TestReadPyprojectTOML:
 
         # Act, Assert
         with change_cwd(tmp_path), pytest.raises(PyProjectTOMLDecodeError):
-            read_pyproject_toml().values
+            read_pyproject_toml().value
 
     def test_missing(self, tmp_path: Path):
         # Act, Assert
         with change_cwd(tmp_path), pytest.raises(PyProjectTOMLNotFoundError):
-            read_pyproject_toml().values
+            read_pyproject_toml().value

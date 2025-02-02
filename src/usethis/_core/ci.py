@@ -39,12 +39,14 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
         if use_pre_commit:
             add_bitbucket_step_in_default(get_bitbucket_pre_commit_step())
         else:
+            # This order should match the canonical order in the function which add
+            # steps
+            if use_pyproject_fmt:
+                add_bitbucket_step_in_default(get_bitbucket_pyproject_fmt_step())
             if use_ruff:
                 add_bitbucket_step_in_default(get_bitbucket_ruff_step())
             if use_deptry:
                 add_bitbucket_step_in_default(get_bitbucket_deptry_step())
-            if use_pyproject_fmt:
-                add_bitbucket_step_in_default(get_bitbucket_pyproject_fmt_step())
 
         if use_pytest:
             update_bitbucket_pytest_steps()

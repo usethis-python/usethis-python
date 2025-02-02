@@ -59,7 +59,7 @@ for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
     script_item.yaml_set_anchor(value=name, always_dump=True)
 
 
-def add_step_in_default(step: Step) -> None:
+def add_bitbucket_step_in_default(step: Step) -> None:
     try:
         existing_steps = get_steps_in_default()
     except UnexpectedImportPipelineError:
@@ -88,7 +88,7 @@ def add_step_in_default(step: Step) -> None:
     placeholder = _get_placeholder_step()
     if not _steps_are_equivalent(placeholder, step):
         # Only remove the placeholder if it hasn't already been added.
-        remove_step_from_default(placeholder)
+        remove_bitbucket_step_from_default(placeholder)
 
 
 def _add_step_in_default_via_doc(
@@ -154,9 +154,12 @@ def _add_step_in_default_via_doc(
     # See https://github.com/nathanjmcdougall/usethis-python/issues/149
     step_order = [
         "Run pre-commit",
+        # For these tools, sync them with the pre-commit removal logic
+        "Run pyproject-fmt",
+        "Run Ruff",
+        "Run Deptry",
         *[f"Test on 3.{maj}" for maj in get_supported_major_python_versions()],
     ]
-
     for step_name in step_order:
         if step_name == step.name:
             break
@@ -173,7 +176,7 @@ def _add_step_in_default_via_doc(
         )
 
 
-def remove_step_from_default(step: Step) -> None:
+def remove_bitbucket_step_from_default(step: Step) -> None:
     """Remove a step from the default pipeline in the Bitbucket Pipelines configuration.
 
     If the default pipeline does not exist, or the step is not found, nothing happens.
@@ -402,7 +405,7 @@ def _(item: StageItem) -> list[Step]:
 
 
 def add_placeholder_step_in_default(report_placeholder: bool = True) -> None:
-    add_step_in_default(_get_placeholder_step())
+    add_bitbucket_step_in_default(_get_placeholder_step())
 
     if report_placeholder:
         tick_print(

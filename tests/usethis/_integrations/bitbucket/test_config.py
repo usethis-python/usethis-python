@@ -8,7 +8,7 @@ from usethis._integrations.bitbucket.config import (
 from usethis._integrations.bitbucket.schema import Model, Script
 from usethis._integrations.bitbucket.steps import (
     Step,
-    add_step_in_default,
+    add_bitbucket_step_in_default,
 )
 from usethis._integrations.yaml.io_ import edit_yaml
 from usethis._test import change_cwd
@@ -59,7 +59,7 @@ pipelines:
         # Act
         with change_cwd(uv_init_dir):
             add_bitbucket_pipeline_config()
-            add_step_in_default(
+            add_bitbucket_step_in_default(
                 Step(
                     name="Example step",
                     script=Script(

@@ -22,16 +22,16 @@ from usethis._integrations.bitbucket.steps import (
     Step,
     UnexpectedImportPipelineError,
     _add_step_caches_via_doc,
+    add_bitbucket_step_in_default,
     add_placeholder_step_in_default,
-    add_step_in_default,
     get_defined_script_items_via_doc,
     get_steps_in_pipeline_item,
-    remove_step_from_default,
+    remove_bitbucket_step_from_default,
 )
 from usethis._test import change_cwd
 
 
-class TestAddStepInDefault:
+class TestAddBitbucketStepInDefault:
     def test_contents(self, uv_init_dir: Path):
         # Arrange
 
@@ -47,7 +47,7 @@ pipelines:
 
         # Act
         with change_cwd(uv_init_dir):
-            add_step_in_default(
+            add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Why, hello!'"]),
@@ -85,7 +85,7 @@ pipelines: {}
 
         # Act
         with change_cwd(uv_init_dir):
-            add_step_in_default(
+            add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!'"]),
@@ -119,7 +119,7 @@ pipelines: {}
 
         # Act
         with change_cwd(uv_init_dir):
-            add_step_in_default(
+            add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
                     caches=["uv"],
@@ -159,12 +159,12 @@ pipelines:
         )
 
         with change_cwd(uv_init_dir):
-            add_step_in_default(step)
+            add_bitbucket_step_in_default(step)
 
             contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
 
             # Act
-            add_step_in_default(step)
+            add_bitbucket_step_in_default(step)
 
         # Assert
         assert contents == (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -194,8 +194,8 @@ pipelines:
 
         with change_cwd(uv_init_dir):
             # Act
-            add_step_in_default(step)
-            add_step_in_default(other_step)
+            add_bitbucket_step_in_default(step)
+            add_bitbucket_step_in_default(other_step)
 
             # Assert
             with edit_bitbucket_pipelines_yaml() as doc:
@@ -206,14 +206,14 @@ pipelines:
         # Act
         with change_cwd(uv_init_dir):
             # This step should be listed second
-            add_step_in_default(
+            add_bitbucket_step_in_default(
                 Step(
                     name="Test on 3.12",
                     script=Script(["echo 'Running #2'"]),
                 ),
             )
             # This one should come first
-            add_step_in_default(
+            add_bitbucket_step_in_default(
                 Step(
                     name="Run pre-commit",
                     script=Script(["echo 'Running #1'"]),
@@ -255,7 +255,7 @@ pipelines:
                 add_placeholder_step_in_default()
 
             # Act
-            add_step_in_default(
+            add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!'"]),
@@ -318,7 +318,7 @@ pipelines:
 
         # Act
         with change_cwd(uv_init_dir):
-            add_step_in_default(
+            add_bitbucket_step_in_default(
                 Step(
                     name="Farewell",
                     script=Script(
@@ -364,7 +364,7 @@ pipelines:
         assert not err
 
 
-class TestRemoveStepFromDefault:
+class TestRemoveBitbucketStepFromDefault:
     def test_remove_remove_one_step(self, tmp_path: Path):
         # Arrange
         (tmp_path / "bitbucket-pipelines.yml").write_text(
@@ -385,7 +385,7 @@ pipelines:
 
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!'"]),
@@ -410,7 +410,7 @@ pipelines:
     def test_no_file(self, tmp_path: Path):
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!'"]),
@@ -430,7 +430,7 @@ pipelines: {}
 
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!'"]),
@@ -449,7 +449,7 @@ image: atlassian/default-image:3
 
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!'"]),
@@ -472,7 +472,7 @@ pipelines:
 
         # Act, Assert
         with change_cwd(tmp_path), pytest.raises(UnexpectedImportPipelineError):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!'"]),
@@ -500,7 +500,7 @@ pipelines:
 
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!'"]),
@@ -543,7 +543,7 @@ pipelines:
 
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!"]),
@@ -586,7 +586,7 @@ pipelines:
 
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
                     script=Script(["echo 'Goodbye!'"]),
@@ -625,7 +625,7 @@ pipelines:
 
         # Act
         with change_cwd(uv_init_dir):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
                     script=Script(["echo 'Goodbye!'"]),
@@ -682,7 +682,7 @@ pipelines:
 
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
                     script=Script(["echo 'Hello, world!'"]),
@@ -727,7 +727,7 @@ pipelines:
 
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
                     script=Script(["echo 'Goodbye!'"]),
@@ -779,7 +779,7 @@ pipelines:
 
         # Act
         with change_cwd(tmp_path):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
                     script=Script(["echo 'Goodbye!'"]),
@@ -827,7 +827,7 @@ pipelines:
 
         # Act
         with change_cwd(uv_init_dir):
-            remove_step_from_default(
+            remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
                     script=Script(["echo 'Goodbye!'"]),

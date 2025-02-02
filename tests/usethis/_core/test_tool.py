@@ -266,6 +266,33 @@ repos:
                 "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_bitbucket_integration_no_pre_commit(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_ci_bitbucket()
+
+                # Act
+                use_deptry()
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "deptry" in contents
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_bitbucket_integration_with_pre_commit(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_ci_bitbucket()
+                use_pre_commit()
+
+                # Act
+                use_deptry()
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "deptry" not in contents
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_dep(self, uv_init_dir: Path):
@@ -278,6 +305,20 @@ repos:
 
                 # Assert
                 assert not get_deps_from_group("dev")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_bitbucket_integration(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_ci_bitbucket()
+                use_deptry()
+
+                # Act
+                use_deptry(remove=True)
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "deptry" not in contents
 
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -376,7 +417,7 @@ repos:
 
 
 class TestPreCommit:
-    class TestUse:
+    class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_fresh(self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
@@ -669,6 +710,43 @@ pipelines:
                 "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_remove_subsumed_tools(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_ci_bitbucket()
+                # other tools moved to pre-commit, which should be removed
+                use_deptry()
+                use_ruff()
+
+                # Act
+                use_pre_commit()
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "pre-commit" in contents
+            assert "deptry" not in contents
+            assert "ruff" not in contents
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_add_unsubsumed_tools(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_ci_bitbucket()
+                use_pre_commit()
+                # other tools moved from pre-commit, which should be added
+                use_deptry()
+                use_ruff()
+
+                # Act
+                use_pre_commit(remove=True)
+
+            # Assert
+            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            assert "pre-commit" not in contents
+            assert "deptry" in contents
+            assert "ruff" in contents
+
 
 class TestPyprojectFmt:
     class TestAdd:
@@ -717,6 +795,29 @@ keep_full_version = true
                     "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
+        def test_bitbucket_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir):
+                # Arrange
+                use_ci_bitbucket()
+                capfd.readouterr()
+
+                # Act
+                use_pyproject_fmt()
+
+            # Assert
+            assert (
+                "pyproject-fmt" in (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            )
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                "✔ Adding 'Run pyproject-fmt' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+            )
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_dir: Path):
@@ -734,6 +835,22 @@ foo = "bar"
 
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == ""
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_bitbucket_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir):
+                # Arrange
+                use_ci_bitbucket()
+                use_pyproject_fmt()
+
+                # Act
+                use_pyproject_fmt(remove=True)
+
+            # Assert
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            assert "pyproject-fmt" not in contents
 
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")

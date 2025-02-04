@@ -1,19 +1,23 @@
+import codecs
 import sys
-sys.stdout.reconfigure(encoding='utf-8')
 
 from rich.console import Console
 
 from usethis._config import usethis_config
+
+# Unicode support - but we need to be able to write bytes
+sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
 
 console = Console()
 
 
 def tick_print(msg: str | Exception) -> None:
     msg = str(msg)
-    
-    if not usethis_config.quiet:
-        console.print(f"{'✔'.encode('utf-8', 'ignore').decode('utf-8')} {msg}", style="green")
 
+    if not usethis_config.quiet:
+        console.print(
+            f"{'✔'.encode('utf-8', 'ignore').decode('utf-8')} {msg}", style="green"
+        )
 
 
 def box_print(msg: str | Exception) -> None:

@@ -18,6 +18,18 @@ class TestDeptry:
             else:
                 call_subprocess(["usethis", "tool", "deptry", "--offline"])
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_cli_frozen(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            call_subprocess(["usethis", "tool", "deptry", "--frozen"])
+            assert not (uv_init_dir / ".venv").exists()
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_cli_not_frozen(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            call_subprocess(["usethis", "tool", "deptry"])
+            assert (uv_init_dir / ".venv").exists()
+
 
 class TestPreCommit:
     @pytest.mark.usefixtures("_vary_network_conn")

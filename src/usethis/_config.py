@@ -10,6 +10,7 @@ class UsethisConfig(BaseModel):
 
     offline: bool
     quiet: bool
+    frozen: bool = False 
 
     @contextmanager
     def set(

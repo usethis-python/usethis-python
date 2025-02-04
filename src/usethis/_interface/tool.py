@@ -22,6 +22,10 @@ remove_opt = typer.Option(
     False, "--remove", help="Remove the tool instead of adding it."
 )
 
+frozen_opt = typer.Option(
+    False,"--frozen", help="Use the frozen dependencies."
+)
+
 
 @app.command(help="Use the coverage code coverage measurement tool.")
 def coverage(

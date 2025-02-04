@@ -10,10 +10,10 @@ def call_uv_subprocess(args: list[str]) -> str:
         UVSubprocessFailedError: If the subprocess fails.
     """
     read_pyproject_toml_from_path.cache_clear()
+    new_args = ["uv", *args]
+    if usethis_config.frozen:
+        new_args.append("--frozen")
     try:
-        if usethis_config.frozen:
-            args.append("--frozen")
-            return call_subprocess(["uv", *args], check=False)
-        return call_subprocess(["uv", *args])
+        return call_subprocess(new_args)
     except SubprocessFailedError as err:
         raise UVSubprocessFailedError(err) from None

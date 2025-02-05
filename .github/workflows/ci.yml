@@ -34,6 +34,7 @@ jobs:
           uv pip install --system --break-system-packages -r requirements.txt
 
       - name: Run pre-commit
+        if: matrix.pre-commit
         run: |
           uv run --frozen pre-commit run --all-files
 
@@ -53,12 +54,15 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
         resolution: ["highest"]
         codspeed: [false]
+        pre-commit: [false]
         include:
           - os: "ubuntu-latest"
             python-version: "3.10"
             resolution: "lowest-direct"
             codspeed: false
+            pre-commit: false
           - os: "ubuntu-latest"
             python-version: "3.13"
             resolution: "highest"
             codspeed: true
+            pre-commit: true

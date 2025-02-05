@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -204,7 +205,9 @@ class TestDeptry:
 
             # Assert
             with pytest.raises(subprocess.CalledProcessError):
-                subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
+                subprocess.run(
+                    ["uv", "run", "deptry", "."], cwd=uv_init_dir, check=True
+                )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_run_deptry_pass(self, uv_init_dir: Path):
@@ -217,7 +220,7 @@ class TestDeptry:
                 use_deptry()
 
             # Assert
-            subprocess.run(["deptry", "."], cwd=uv_init_dir, check=True)
+            subprocess.run(["uv", "run", "deptry", "."], cwd=uv_init_dir, check=True)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_after(
@@ -1239,6 +1242,10 @@ select = ["A", "B", "C"]
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == contents
 
+        @pytest.mark.skipif(
+            not os.getenv("CI"),
+            reason="https://github.com/nathanjmcdougall/usethis-python/issues/45",
+        )
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_roundtrip(self, uv_init_dir: Path):
             # Arrange
@@ -1292,6 +1299,10 @@ dev = []
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names
 
+        @pytest.mark.skipif(
+            not os.getenv("CI"),
+            reason="https://github.com/nathanjmcdougall/usethis-python/issues/45",
+        )
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]

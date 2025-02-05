@@ -2,7 +2,7 @@ from typing import Any
 
 import mergedeep
 from pydantic import TypeAdapter
-from tomlkit import TOMLDocument
+from tomlkit.toml_document import TOMLDocument
 
 from usethis._integrations.pyproject.errors import (
     PyProjectTOMLValueAlreadySetError,

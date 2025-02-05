@@ -119,6 +119,7 @@ Supported arguments:
 
 - `--remove` to remove the tool instead of adding it
 - `--offline` to disable network access and rely on caches
+- `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
 
 ### `usethis badge`

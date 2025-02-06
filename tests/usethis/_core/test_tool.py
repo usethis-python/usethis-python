@@ -323,6 +323,21 @@ repos:
             contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
             assert "deptry" not in contents
 
+        def test_use_deptry_removes_config(self, tmp_path: Path):
+            """Test that use_deptry removes the tool's config when removing."""
+            # Arrange
+            pyproject = tmp_path / "pyproject.toml"
+            pyproject.write_text("""[tool.deptry]
+ignore_missing = ["pytest"]
+""")
+
+            # Act
+            with change_cwd(tmp_path):
+                use_deptry(remove=True)
+
+            # Assert
+            assert "[tool.deptry]" not in pyproject.read_text()
+
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_first(
@@ -606,14 +621,14 @@ repos:
                 # Act
                 use_pre_commit(remove=True)
 
-            # Assert
-            out, _ = capfd.readouterr()
-            assert out == (
-                "✔ Ensuring pre-commit hooks are uninstalled.\n"
-                "✔ Removing '.pre-commit-config.yaml'.\n"
-                "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
-            )
+                # Assert
+                out, _ = capfd.readouterr()
+                assert out == (
+                    "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                    "✔ Removing '.pre-commit-config.yaml'.\n"
+                    "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
+                )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pyproject_fmt_used(
@@ -628,15 +643,15 @@ repos:
                 # Act
                 use_pre_commit(remove=True)
 
-            # Assert
-            out, _ = capfd.readouterr()
-            assert out == (
-                "✔ Ensuring pre-commit hooks are uninstalled.\n"
-                "✔ Removing '.pre-commit-config.yaml'.\n"
-                "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
-                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
-            )
+                # Assert
+                out, _ = capfd.readouterr()
+                assert out == (
+                    "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                    "✔ Removing '.pre-commit-config.yaml'.\n"
+                    "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
+                    "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+                )
 
     class TestBitbucketCIIntegration:
         def test_prexisting(self, uv_init_repo_dir: Path):

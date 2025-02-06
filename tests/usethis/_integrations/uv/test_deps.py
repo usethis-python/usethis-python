@@ -258,14 +258,14 @@ class TestAddDepsToGroup:
             assert "test" in default_groups
 
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_dev_group_registered(self, uv_init_dir: Path):
+    def test_dev_group_not_registered(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
             # Act
             add_deps_to_group([Dependency(name="black")], "dev")
 
             # Assert
             default_groups = get_config_value(["tool", "uv", "default-groups"])
-            assert "dev" in default_groups
+            assert "dev" not in default_groups
 
 
 class TestRemoveDepsFromGroup:

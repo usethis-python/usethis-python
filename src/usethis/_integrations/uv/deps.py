@@ -62,6 +62,11 @@ def register_default_group(group: str) -> None:
 
     This ensures that dependencies in the group will be installed by default.
     """
+    if group == "dev":
+        return
+
+    ensure_dev_group_is_defined()
+
     try:
         default_groups = get_config_value(["tool", "uv", "default-groups"])
         if not isinstance(default_groups, list):
@@ -76,13 +81,11 @@ def register_default_group(group: str) -> None:
         if (not default_groups or group != "dev") and "dev" not in default_groups:
             groups_to_add.append("dev")
 
-    ensure_dev_group()
-
     if groups_to_add:
         append_config_list(["tool", "uv", "default-groups"], groups_to_add)
 
 
-def ensure_dev_group() -> None:
+def ensure_dev_group_is_defined() -> None:
     # Ensure dev group exists in dependency-groups
     append_config_list(["dependency-groups", "dev"], [])
 

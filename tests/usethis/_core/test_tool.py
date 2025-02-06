@@ -339,6 +339,27 @@ ignore_missing = ["pytest"]
             # Assert
             assert "[tool.deptry]" not in pyproject.read_text()
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_roundtrip(self, uv_init_dir: Path):
+            # Arrange
+            contents = (uv_init_dir / "pyproject.toml").read_text()
+
+            # Act
+            with change_cwd(uv_init_dir):
+                use_deptry()
+                use_deptry(remove=True)
+
+            # Assert
+            assert (
+                (uv_init_dir / "pyproject.toml").read_text()
+                == contents
+                + """\
+
+[dependency-groups]
+dev = []
+"""
+            )
+
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_first(

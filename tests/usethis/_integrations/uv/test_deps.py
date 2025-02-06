@@ -264,8 +264,8 @@ class TestAddDepsToGroup:
             add_deps_to_group([Dependency(name="black")], "dev")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
-            assert "dev" not in default_groups
+            # Tool section shouldn't even exist in pyproject.toml
+            assert "tool" not in (uv_init_dir / "pyproject.toml").read_text()
 
 
 class TestRemoveDepsFromGroup:

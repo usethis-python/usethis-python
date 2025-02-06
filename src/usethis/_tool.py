@@ -173,12 +173,13 @@ class Tool(Protocol):
         first_removal = True
         for keys in keys_to_remove:
             try:
-                if first_removal:
-                    tick_print(f"Removing {self.name} config from 'pyproject.toml'.")
-                    first_removal = False
                 remove_config_value(keys)
             except PyProjectTOMLValueMissingError:
                 pass
+            else:
+                if first_removal:
+                    tick_print(f"Removing {self.name} config from 'pyproject.toml'.")
+                    first_removal = False
 
 
 class CoverageTool(Tool):

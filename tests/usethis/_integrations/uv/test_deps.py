@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
+from usethis._integrations.pyproject.core import get_config_value
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,
@@ -10,6 +11,7 @@ from usethis._integrations.uv.deps import (
     get_deps_from_group,
     is_dep_in_any_group,
     is_dep_satisfied_in,
+    register_default_group,
     remove_deps_from_group,
 )
 from usethis._test import change_cwd
@@ -242,6 +244,26 @@ class TestAddDepsToGroup:
             content = (uv_init_dir / "pyproject.toml").read_text()
             assert "coverage[extra,toml]" in content
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_registers_default_group(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            # Act
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert "test" in default_groups
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_dev_group_registered(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            # Act
+            add_deps_to_group([Dependency(name="black")], "dev")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert "dev" in default_groups
+
 
 class TestRemoveDepsFromGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -430,3 +452,50 @@ class TestIsDepSatisfiedIn:
 
         # Assert
         assert result
+
+
+class TestRegisterDefaultGroup:
+    def test_new_group_added(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = []
+""")
+
+        with change_cwd(tmp_path):
+            # Act
+            register_default_group("test")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert "test" in default_groups
+
+    def test_existing_group_not_duplicated(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["test"]
+""")
+
+        with change_cwd(tmp_path):
+            # Act
+            register_default_group("test")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert default_groups.count("test") == 1
+
+    def test_multiple_groups_preserved(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["test", "dev"]
+""")
+
+        with change_cwd(tmp_path):
+            # Act
+            register_default_group("docs")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert set(default_groups) == {"test", "dev", "docs"}

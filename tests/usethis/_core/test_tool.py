@@ -19,6 +19,7 @@ from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,
 )
+from usethis._integrations.pyproject.core import get_config_value
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -337,6 +338,27 @@ ignore_missing = ["pytest"]
 
             # Assert
             assert "[tool.deptry]" not in pyproject.read_text()
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_roundtrip(self, uv_init_dir: Path):
+            # Arrange
+            contents = (uv_init_dir / "pyproject.toml").read_text()
+
+            # Act
+            with change_cwd(uv_init_dir):
+                use_deptry()
+                use_deptry(remove=True)
+
+            # Assert
+            assert (
+                (uv_init_dir / "pyproject.toml").read_text()
+                == contents
+                + """\
+
+[dependency-groups]
+dev = []
+"""
+            )
 
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1012,6 +1034,25 @@ class TestPytest:
                 "☐ Run 'pytest' to run the tests.\n"
                 "☐ Run 'pytest --cov' to run your tests with coverage.\n"
             )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pytest_installed(self, tmp_path: Path):
+            with change_cwd(tmp_path):
+                # Act
+                use_pytest()
+
+                # Assert
+                # This will raise if pytest is not installed
+                call_uv_subprocess(["pip", "show", "pytest"])
+
+        def test_registers_test_group(self, tmp_path: Path):
+            with change_cwd(tmp_path):
+                # Act
+                use_pytest()
+
+                # Assert
+                default_groups = get_config_value(["tool", "uv", "default-groups"])
+                assert "test" in default_groups
 
     class TestRemove:
         class TestRuffIntegration:

@@ -54,3 +54,16 @@
   1. Use present tense ("Removing..." not "Removed...")
   2. Show messages as soon as possible, don't wait until after the operation
   3. Use a flag like `first_removal` to ensure messages are shown exactly once
+
+## Configuration Management
+
+- When modifying configuration files like `pyproject.toml`, always consider the impact on existing configurations:
+  1. Check if a configuration exists before modifying it
+  2. Don't overwrite existing configurations unless explicitly requested
+  3. Handle empty or invalid configurations gracefully
+  4. Use appropriate functions from `pyproject.core` to manage configuration values
+- Keep configuration behavior consistent and avoid special cases:
+  1. Document configuration behavior in docstrings
+  2. Add test cases to verify behavior
+  3. Handle edge cases like empty lists or missing configurations
+  4. Prefer simple, uniform behavior over complex special cases

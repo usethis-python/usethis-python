@@ -90,8 +90,8 @@ def use_deptry(*, remove: bool = False) -> None:
         box_print("Run 'deptry src' to run deptry.")
     else:
         tool.remove_pre_commit_repo_configs()
+        tool.remove_pyproject_configs()
         remove_bitbucket_step_from_default(get_bitbucket_deptry_step())
-
         remove_deps_from_group(tool.dev_deps, "dev")
 
 

@@ -8,7 +8,7 @@ from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import set_config_value
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
-from usethis._tool import Tool
+from usethis._tool import ALL_TOOLS, DeptryTool, Tool
 
 
 class DefaultTool(Tool):
@@ -669,3 +669,64 @@ root_packages = ["example"]
             out, err = capfd.readouterr()
             assert not err
             assert out == "✔ Adding mytool config to 'pyproject.toml'.\n"
+
+
+class TestDeptryTool:
+    """Tests for DeptryTool."""
+
+    def test_get_pyproject_id_keys(self):
+        """Test that get_pyproject_id_keys returns the correct keys."""
+        # Arrange
+        tool = DeptryTool()
+
+        # Act
+        result = tool.get_pyproject_id_keys()
+
+        # Assert
+        assert result == [["tool", "deptry"]]
+
+    def test_remove_pyproject_configs_removes_deptry_section(self, tmp_path: Path):
+        """Test that remove_pyproject_configs removes the deptry section."""
+        # Arrange
+        pyproject = tmp_path / "pyproject.toml"
+        pyproject.write_text("""[tool.deptry]
+ignore_missing = ["pytest"]
+""")
+
+        # Act
+        with change_cwd(tmp_path):
+            tool = DeptryTool()
+            tool.remove_pyproject_configs()
+
+        # Assert
+        assert "[tool.deptry]" not in pyproject.read_text()
+        assert "ignore_missing" not in pyproject.read_text()
+
+    def test_config_keys_are_subkeys_of_id_keys(self):
+        """Test that all config keys are subkeys of id keys."""
+        # Arrange
+        tool = DeptryTool()
+
+        # Act
+        id_keys = tool.get_pyproject_id_keys()
+        configs = tool.get_pyproject_configs()
+
+        # Assert
+        for config in configs:
+            # For each config, check if its keys are a subset of any id_keys
+            assert any(config.id_keys[: len(id_key)] == id_key for id_key in id_keys), (
+                f"Config keys {config.id_keys} not covered by ID keys {id_keys}"
+            )
+
+
+@pytest.mark.parametrize("tool", ALL_TOOLS)
+def test_all_tools_config_keys_are_subkeys_of_id_keys(tool: Tool):
+    """Test that all tools' config keys are subkeys of their ID keys."""
+    id_keys = tool.get_pyproject_id_keys()
+    configs = tool.get_pyproject_configs()
+
+    for config in configs:
+        # For each config, check if its keys are a subset of any id_keys
+        assert any(config.id_keys[: len(id_key)] == id_key for id_key in id_keys), (
+            f"Config keys {config.id_keys} not covered by ID keys in {tool.name}"
+        )

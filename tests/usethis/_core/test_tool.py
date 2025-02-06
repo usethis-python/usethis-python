@@ -1015,6 +1015,15 @@ class TestPytest:
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pytest_installed(self, tmp_path: Path):
+            with change_cwd(tmp_path):
+                # Arrange
+                use_pytest()
+
+                # Act, Assert
+                # This will raise if pytest is not installed
+                call_uv_subprocess(["pip", "show", "pytest"])
+
         def test_registers_test_group(self, tmp_path: Path):
             with change_cwd(tmp_path):
                 # Act

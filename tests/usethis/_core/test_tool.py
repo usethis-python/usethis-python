@@ -19,6 +19,7 @@ from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,
 )
+from usethis._integrations.pyproject.core import get_config_value
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -1012,6 +1013,16 @@ class TestPytest:
                 "☐ Run 'pytest' to run the tests.\n"
                 "☐ Run 'pytest --cov' to run your tests with coverage.\n"
             )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_registers_test_group(self, tmp_path: Path):
+            with change_cwd(tmp_path):
+                # Act
+                use_pytest()
+
+                # Assert
+                default_groups = get_config_value(["tool", "uv", "default-groups"])
+                assert "test" in default_groups
 
     class TestRemove:
         class TestRuffIntegration:

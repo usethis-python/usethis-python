@@ -7,7 +7,9 @@ from usethis._integrations.pyproject.core import (
     append_config_list,
     get_config_value,
 )
-from usethis._integrations.pyproject.io_ import read_pyproject_toml
+from usethis._integrations.pyproject.io_ import (
+    read_pyproject_toml,
+)
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 
@@ -67,8 +69,22 @@ def register_default_group(group: str) -> None:
     except KeyError:
         default_groups = []
 
+    groups_to_add = []
     if group not in default_groups:
-        append_config_list(["tool", "uv", "default-groups"], [group])
+        groups_to_add.append(group)
+        # Add "dev" if section is empty or if we're adding a new group and "dev" isn't present
+        if (not default_groups or group != "dev") and "dev" not in default_groups:
+            groups_to_add.append("dev")
+
+    ensure_dev_group()
+
+    if groups_to_add:
+        append_config_list(["tool", "uv", "default-groups"], groups_to_add)
+
+
+def ensure_dev_group() -> None:
+    # Ensure dev group exists in dependency-groups
+    append_config_list(["dependency-groups", "dev"], [])
 
 
 def add_deps_to_group(deps: list[Dependency], group: str) -> None:

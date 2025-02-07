@@ -42,13 +42,9 @@ class Tool(Protocol):
         with the tool; if not, make sure to override methods which access this property.
         """
 
-    def get_bitbucket_step(self) -> BitbucketStep | None:
-        """Get the Bitbucket pipeline step for this tool.
-
-        Returns:
-           A Bitbucket pipeline step configuration for CI/CD
-        """
-        return None
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        """Get the Bitbucket pipeline step associated with this tool."""
+        return []
 
     @property
     def dev_deps(self) -> list[Dependency]:
@@ -264,17 +260,19 @@ class DeptryTool(Tool):
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "deptry"]]
 
-    def get_bitbucket_step(self) -> BitbucketStep | None:
-        return BitbucketStep(
-            name="Run Deptry",
-            caches=["uv"],
-            script=BitbucketScript(
-                [
-                    BitbucketScriptItemAnchor(name="install-uv"),
-                    "uv run deptry src",
-                ]
-            ),
-        )
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name="Run Deptry",
+                caches=["uv"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run deptry src",
+                    ]
+                ),
+            )
+        ]
 
 
 class PreCommitTool(Tool):
@@ -289,17 +287,19 @@ class PreCommitTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path(".pre-commit-config.yaml")]
 
-    def get_bitbucket_step(self) -> BitbucketStep | None:
-        return BitbucketStep(
-            name="Run pre-commit",
-            caches=["uv", "pre-commit"],
-            script=BitbucketScript(
-                [
-                    BitbucketScriptItemAnchor(name="install-uv"),
-                    "uv run pre-commit run --all-files",
-                ]
-            ),
-        )
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name="Run pre-commit",
+                caches=["uv", "pre-commit"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run pre-commit run --all-files",
+                    ]
+                ),
+            )
+        ]
 
 
 class PyprojectFmtTool(Tool):
@@ -331,17 +331,19 @@ class PyprojectFmtTool(Tool):
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "pyproject-fmt"]]
 
-    def get_bitbucket_step(self) -> BitbucketStep | None:
-        return BitbucketStep(
-            name="Run pyproject-fmt",
-            caches=["uv"],
-            script=BitbucketScript(
-                [
-                    BitbucketScriptItemAnchor(name="install-uv"),
-                    "uv run pyproject-fmt pyproject.toml",
-                ]
-            ),
-        )
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name="Run pyproject-fmt",
+                caches=["uv"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run pyproject-fmt pyproject.toml",
+                    ]
+                ),
+            )
+        ]
 
 
 class PytestTool(Tool):
@@ -476,18 +478,20 @@ class RuffTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path("ruff.toml"), Path(".ruff.toml")]
 
-    def get_bitbucket_step(self) -> BitbucketStep | None:
-        return BitbucketStep(
-            name="Run Ruff",
-            caches=["uv"],
-            script=BitbucketScript(
-                [
-                    BitbucketScriptItemAnchor(name="install-uv"),
-                    "uv run ruff check --fix",
-                    "uv run ruff format",
-                ]
-            ),
-        )
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name="Run Ruff",
+                caches=["uv"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run ruff check --fix",
+                        "uv run ruff format",
+                    ]
+                ),
+            )
+        ]
 
 
 ALL_TOOLS: list[Tool] = [

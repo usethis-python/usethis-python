@@ -6,8 +6,8 @@ from usethis._ci import (
 )
 from usethis._console import box_print, tick_print
 from usethis._integrations.bitbucket.steps import (
-    add_bitbucket_step_in_default,
-    remove_bitbucket_step_from_default,
+    add_bitbucket_steps_in_default,
+    remove_bitbucket_steps_from_default,
 )
 from usethis._integrations.pre_commit.core import (
     install_pre_commit_hooks,
@@ -81,13 +81,13 @@ def use_deptry(*, remove: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
         elif is_bitbucket_used():
-            add_bitbucket_step_in_default(tool.get_bitbucket_step())
+            add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
 
         box_print("Run 'deptry src' to run deptry.")
     else:
         tool.remove_pre_commit_repo_configs()
         tool.remove_pyproject_configs()
-        remove_bitbucket_step_from_default(tool.get_bitbucket_step())
+        remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
         remove_deps_from_group(tool.dev_deps, "dev")
 
 
@@ -116,13 +116,13 @@ def use_pre_commit(*, remove: bool = False) -> None:
         install_pre_commit_hooks()
 
         if is_bitbucket_used():
-            add_bitbucket_step_in_default(tool.get_bitbucket_step())
+            add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
             _remove_bitbucket_linter_steps_from_default()
 
         box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
     else:
         if is_bitbucket_used():
-            remove_bitbucket_step_from_default(tool.get_bitbucket_step())
+            remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
             _add_bitbucket_linter_steps_to_default()
 
         # Need pre-commit to be installed so we can uninstall hooks
@@ -158,15 +158,15 @@ def _add_bitbucket_linter_steps_to_default() -> None:
         tools: list[Tool] = [PyprojectFmtTool(), DeptryTool(), RuffTool()]
         for tool in tools:
             if tool.is_used():
-                add_bitbucket_step_in_default(tool.get_bitbucket_step())
+                add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
 
 
 def _remove_bitbucket_linter_steps_from_default() -> None:
     # This order of removing tools should be synced with the order hard-coded
     # in the function which adds steps.
-    remove_bitbucket_step_from_default(PyprojectFmtTool().get_bitbucket_step())
-    remove_bitbucket_step_from_default(DeptryTool().get_bitbucket_step())
-    remove_bitbucket_step_from_default(RuffTool().get_bitbucket_step())
+    remove_bitbucket_steps_from_default(PyprojectFmtTool().get_bitbucket_steps())
+    remove_bitbucket_steps_from_default(DeptryTool().get_bitbucket_steps())
+    remove_bitbucket_steps_from_default(RuffTool().get_bitbucket_steps())
 
 
 def use_pyproject_fmt(*, remove: bool = False) -> None:
@@ -180,7 +180,7 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         if not is_pre_commit:
             add_deps_to_group(tool.dev_deps, "dev")
             if is_bitbucket_used():
-                add_bitbucket_step_in_default(tool.get_bitbucket_step())
+                add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
         else:
             tool.add_pre_commit_repo_configs()
 
@@ -191,7 +191,7 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         else:
             _pyproject_fmt_instructions_pre_commit()
     else:
-        remove_bitbucket_step_from_default(tool.get_bitbucket_step())
+        remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
         tool.remove_pyproject_configs()
         tool.remove_pre_commit_repo_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
@@ -338,12 +338,12 @@ def use_ruff(*, remove: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
         elif is_bitbucket_used():
-            add_bitbucket_step_in_default(tool.get_bitbucket_step())
+            add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
 
         box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")
         box_print("Run 'ruff format' to run the Ruff formatter.")
     else:
         tool.remove_pre_commit_repo_configs()
-        remove_bitbucket_step_from_default(tool.get_bitbucket_step())
+        remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
         tool.remove_pyproject_configs()
         remove_deps_from_group(tool.dev_deps, "dev")

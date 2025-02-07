@@ -4,7 +4,9 @@ from usethis._integrations.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
 )
-from usethis._integrations.bitbucket.steps import add_bitbucket_step_in_default
+from usethis._integrations.bitbucket.steps import (
+    add_bitbucket_steps_in_default,
+)
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import (
     DeptryTool,
@@ -31,16 +33,16 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
         add_bitbucket_pipeline_config(report_placeholder=not use_any_tool)
 
         if use_pre_commit:
-            add_bitbucket_step_in_default(PreCommitTool().get_bitbucket_step())
+            add_bitbucket_steps_in_default(PreCommitTool().get_bitbucket_steps())
         else:
             # This order should match the canonical order in the function which add
             # steps
             if use_pyproject_fmt:
-                add_bitbucket_step_in_default(PyprojectFmtTool().get_bitbucket_step())
+                add_bitbucket_steps_in_default(PyprojectFmtTool().get_bitbucket_steps())
             if use_ruff:
-                add_bitbucket_step_in_default(RuffTool().get_bitbucket_step())
+                add_bitbucket_steps_in_default(RuffTool().get_bitbucket_steps())
             if use_deptry:
-                add_bitbucket_step_in_default(DeptryTool().get_bitbucket_step())
+                add_bitbucket_steps_in_default(DeptryTool().get_bitbucket_steps())
 
         if use_pytest:
             update_bitbucket_pytest_steps()

@@ -191,6 +191,57 @@ class Tool(Protocol):
                     first_removal = False
 
 
+class CodespellTool(Tool):
+    @property
+    def name(self) -> str:
+        return "codespell"
+
+    @property
+    def dev_deps(self) -> list[Dependency]:
+        return [Dependency(name="codespell")]
+
+    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+        return [
+            PyProjectConfig(
+                id_keys=["tool", "codespell"],
+                value={
+                    "ignore-words-list": [],
+                },
+            ),
+        ]
+
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+        return [
+            UriRepo(
+                repo="https://github.com/codespell-project/codespell",
+                rev="v2.4.1",  # Manually bump this version when necessary
+                hooks=[
+                    HookDefinition(id="codespell", additional_dependencies=["tomli"])
+                ],
+            )
+        ]
+
+    def get_pyproject_id_keys(self) -> list[list[str]]:
+        return [["tool", "codespell"]]
+
+    def get_managed_files(self) -> list[Path]:
+        return [Path(".codespellrc")]
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name="Run Codespell",
+                caches=["uv"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run codespell",
+                    ]
+                ),
+            )
+        ]
+
+
 class CoverageTool(Tool):
     @property
     def name(self) -> str:
@@ -495,6 +546,7 @@ class RuffTool(Tool):
 
 
 ALL_TOOLS: list[Tool] = [
+    CodespellTool(),
     CoverageTool(),
     DeptryTool(),
     PreCommitTool(),

@@ -163,7 +163,8 @@ def _add_step_in_default_via_doc(
         "Run pyproject-fmt",
         "Run Ruff",
         "Run Deptry",
-        *[f"Test on 3.{maj}" for maj in get_supported_major_python_versions()],
+        "Run Codespell",
+        [f"Test on 3.{maj}" for maj in get_supported_major_python_versions()],
     ]
     for step_name in step_order:
         if step_name == step.name:

@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from usethis._console import info_print, tick_print
+from usethis._config import usethis_config
+from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
@@ -22,6 +23,9 @@ def install_pre_commit_hooks() -> None:
     Note that this requires pre-commit to be installed. It also requires the user to be
     in a git repo.
     """
+    if usethis_config.frozen:
+        box_print("Run 'uv run pre-commit install' to register pre-commit with git.")
+
     tick_print("Ensuring pre-commit is installed to Git.")
     try:
         call_uv_subprocess(["run", "pre-commit", "install"])
@@ -45,6 +49,12 @@ def uninstall_pre_commit_hooks() -> None:
     Note that this requires pre-commit to be installed. It also requires the user to be
     in a git repo.
     """
+    if usethis_config.frozen:
+        box_print(
+            "Run 'uv run pre-commit uninstall' to deregister pre-commit with git."
+        )
+        return
+
     tick_print("Ensuring pre-commit hooks are uninstalled.")
     try:
         call_uv_subprocess(["run", "pre-commit", "uninstall"])

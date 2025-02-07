@@ -225,10 +225,10 @@ class TestDeptry:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_after(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+            self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_env_dir):
                 use_deptry()
                 use_pre_commit()
 
@@ -236,13 +236,13 @@ class TestDeptry:
                 hook_names = get_hook_names()
 
             # 1. File exists
-            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+            assert (uv_env_dir / ".pre-commit-config.yaml").exists()
 
             # 2. Hook is in the file
             assert "deptry" in hook_names
 
             # 3. Test file contents
-            assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
+            assert (uv_env_dir / ".pre-commit-config.yaml").read_text() == (
                 """\
 repos:
   - repo: local
@@ -459,9 +459,9 @@ repos:
 class TestPreCommit:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_fresh(self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]):
+        def test_fresh(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_env_dir):
                 use_pre_commit()
 
                 # Assert
@@ -483,8 +483,8 @@ class TestPreCommit:
                 "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
             )
             # Config file
-            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
-            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert (uv_env_dir / ".pre-commit-config.yaml").exists()
+            contents = (uv_env_dir / ".pre-commit-config.yaml").read_text()
             assert contents == (
                 """\
 repos:
@@ -531,28 +531,28 @@ repos:
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_bad_commit(self, uv_init_repo_dir: Path):
+        def test_bad_commit(self, uv_env_dir: Path):
             # Act
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_env_dir):
                 use_pre_commit()
-            subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
+            subprocess.run(["git", "add", "."], cwd=uv_env_dir, check=True)
             subprocess.run(
-                ["git", "commit", "-m", "Good commit"], cwd=uv_init_repo_dir, check=True
+                ["git", "commit", "-m", "Good commit"], cwd=uv_env_dir, check=True
             )
 
             # Assert
-            (uv_init_repo_dir / "pyproject.toml").write_text("[")
-            subprocess.run(["git", "add", "."], cwd=uv_init_repo_dir, check=True)
+            (uv_env_dir / "pyproject.toml").write_text("[")
+            subprocess.run(["git", "add", "."], cwd=uv_env_dir, check=True)
             with pytest.raises(subprocess.CalledProcessError):
                 subprocess.run(
                     ["git", "commit", "-m", "Bad commit"],
-                    cwd=uv_init_repo_dir,
+                    cwd=uv_env_dir,
                     check=True,
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_requirements_txt_used(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+        def test_requirements_txt_used(self, uv_env_dir: Path):
+            with change_cwd(uv_env_dir):
                 # Arrange
                 use_requirements_txt()
 
@@ -603,11 +603,9 @@ repos:
                 assert not get_deps_from_group("dev")
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_stdout(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_stdout(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
-            (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
+            (uv_env_dir / ".pre-commit-config.yaml").write_text(
                 """\
 repos:
   - repo: local
@@ -617,7 +615,7 @@ repos:
             )
 
             # Act
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_env_dir):
                 use_pre_commit(remove=True)
 
             # Assert
@@ -632,9 +630,9 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_requirements_txt_used(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+            self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_env_dir):
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pre_commit()
@@ -654,9 +652,9 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pyproject_fmt_used(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+            self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_env_dir):
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pre_commit()
@@ -692,13 +690,12 @@ image: atlassian/default-image:3
             contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
             assert "pre-commit" in contents
 
-        def test_remove(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_remove(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
-            with change_cwd(uv_init_repo_dir), usethis_config.set(quiet=True):
+            with change_cwd(uv_env_dir):
                 use_pre_commit()
-            (uv_init_repo_dir / "bitbucket-pipelines.yml").write_text(
+            capfd.readouterr()
+            (uv_env_dir / "bitbucket-pipelines.yml").write_text(
                 """\
 image: atlassian/default-image:3
 pipelines:
@@ -711,11 +708,11 @@ pipelines:
             )
 
             # Act
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_env_dir):
                 use_pre_commit(remove=True)
 
             # Assert
-            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+            contents = (uv_env_dir / "bitbucket-pipelines.yml").read_text()
             assert (
                 contents
                 == """\
@@ -1409,7 +1406,7 @@ class TestRequirementsTxt:
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), usethis_config.set(frozen=False):
                 use_requirements_txt()
 
             # Assert
@@ -1425,7 +1422,7 @@ class TestRequirementsTxt:
         def test_start_from_uv_locked(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), usethis_config.set(frozen=False):
                 # Arrange
                 call_uv_subprocess(["lock"])
 
@@ -1444,10 +1441,10 @@ class TestRequirementsTxt:
         def test_pre_commit(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), usethis_config.set(frozen=False):
                 # Arrange
-                with usethis_config.set(quiet=True):
-                    use_pre_commit()
+                use_pre_commit()
+                capfd.readouterr()
 
                 # Act
                 use_requirements_txt()

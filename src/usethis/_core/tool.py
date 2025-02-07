@@ -103,9 +103,7 @@ def use_pre_commit(*, remove: bool = False) -> None:
 
     if not remove:
         add_deps_to_group(tool.dev_deps, "dev")
-        for _tool in ALL_TOOLS:
-            if _tool.is_used():
-                _tool.add_pre_commit_repo_configs()
+        _add_all_tools_pre_commit_configs()
 
         if pyproject_fmt_tool.is_used():
             # We will use pre-commit instead of the dev-dep.
@@ -135,6 +133,7 @@ def use_pre_commit(*, remove: bool = False) -> None:
         add_deps_to_group(tool.dev_deps, "dev")
 
         uninstall_pre_commit_hooks()
+
         remove_pre_commit_config()
         remove_deps_from_group(tool.dev_deps, "dev")
 
@@ -148,6 +147,12 @@ def use_pre_commit(*, remove: bool = False) -> None:
         # they're not going to do it via pre-commit anymore.
         if RequirementsTxtTool().is_used():
             _requirements_txt_instructions_basic()
+
+
+def _add_all_tools_pre_commit_configs():
+    for _tool in ALL_TOOLS:
+        if _tool.is_used():
+            _tool.add_pre_commit_repo_configs()
 
 
 def _add_bitbucket_linter_steps_to_default() -> None:

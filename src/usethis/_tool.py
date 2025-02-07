@@ -3,6 +3,11 @@ from pathlib import Path
 from typing import Protocol
 
 from usethis._console import tick_print
+from usethis._integrations.bitbucket.anchor import (
+    ScriptItemAnchor as BitbucketScriptItemAnchor,
+)
+from usethis._integrations.bitbucket.schema import Script as BitbucketScript
+from usethis._integrations.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.pre_commit.hooks import (
     add_repo,
     get_hook_names,
@@ -36,6 +41,10 @@ class Tool(Protocol):
         It is assumed that this name is also the name of the Python package associated
         with the tool; if not, make sure to override methods which access this property.
         """
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        """Get the Bitbucket pipeline step associated with this tool."""
+        return []
 
     @property
     def dev_deps(self) -> list[Dependency]:
@@ -251,6 +260,20 @@ class DeptryTool(Tool):
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "deptry"]]
 
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name="Run Deptry",
+                caches=["uv"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run deptry src",
+                    ]
+                ),
+            )
+        ]
+
 
 class PreCommitTool(Tool):
     @property
@@ -263,6 +286,20 @@ class PreCommitTool(Tool):
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".pre-commit-config.yaml")]
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name="Run pre-commit",
+                caches=["uv", "pre-commit"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run pre-commit run --all-files",
+                    ]
+                ),
+            )
+        ]
 
 
 class PyprojectFmtTool(Tool):
@@ -293,6 +330,20 @@ class PyprojectFmtTool(Tool):
 
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "pyproject-fmt"]]
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name="Run pyproject-fmt",
+                caches=["uv"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run pyproject-fmt pyproject.toml",
+                    ]
+                ),
+            )
+        ]
 
 
 class PytestTool(Tool):
@@ -426,6 +477,21 @@ class RuffTool(Tool):
 
     def get_managed_files(self) -> list[Path]:
         return [Path("ruff.toml"), Path(".ruff.toml")]
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name="Run Ruff",
+                caches=["uv"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run ruff check --fix",
+                        "uv run ruff format",
+                    ]
+                ),
+            )
+        ]
 
 
 ALL_TOOLS: list[Tool] = [

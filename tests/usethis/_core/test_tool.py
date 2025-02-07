@@ -1151,15 +1151,6 @@ pipelines:
                     use_pytest(remove=True)
 
                 # Assert
-                out, err = capfd.readouterr()
-                assert not err
-                assert out.replace("\n", "").replace(" ", "") == (
-                    "✔ Removing 'Test on 3.12' from default pipeline in 'bitbucket-pipelines.yml'.\n"
-                    "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                    "✔ Removing pytest config from 'pyproject.toml'.\n"
-                    "✔ Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'.\n"
-                    "✔ Removing '/tests'.\n"
-                ).replace("\n", "").replace(" ", "")
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
                 assert (
                     contents
@@ -1185,6 +1176,15 @@ pipelines:
               - echo 'Hello, world!'
 """
                 )
+                out, err = capfd.readouterr()
+                assert not err
+                assert out.replace("\n", "").replace(" ", "") == (
+                    "✔ Removing 'Test on 3.12' from default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
+                    "✔ Removing pytest config from 'pyproject.toml'.\n"
+                    "✔ Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'.\n"
+                    "✔ Removing '/tests'.\n"
+                ).replace("\n", "").replace(" ", "")
 
         def test_coverage_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]

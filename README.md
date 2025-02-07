@@ -108,6 +108,7 @@ Add a new tool to a Python project, including:
 
 Currently supported tools:
 
+- `usethis tool codespell`
 - `usethis tool coverage`
 - `usethis tool deptry`
 - `usethis tool pre-commit`

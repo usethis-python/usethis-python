@@ -9,6 +9,7 @@ from usethis._integrations.bitbucket.steps import (
 )
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import (
+    CodespellTool,
     DeptryTool,
     PreCommitTool,
     PyprojectFmtTool,
@@ -26,8 +27,14 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
         use_ruff = RuffTool().is_used()
         use_deptry = DeptryTool().is_used()
         use_pyproject_fmt = PyprojectFmtTool().is_used()
+        use_codespell = CodespellTool().is_used()
         use_any_tool = (
-            use_pre_commit or use_pytest or use_ruff or use_deptry or use_pyproject_fmt
+            use_pre_commit
+            or use_pytest
+            or use_ruff
+            or use_deptry
+            or use_pyproject_fmt
+            or use_codespell
         )
 
         add_bitbucket_pipeline_config(report_placeholder=not use_any_tool)
@@ -43,6 +50,8 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
                 add_bitbucket_steps_in_default(RuffTool().get_bitbucket_steps())
             if use_deptry:
                 add_bitbucket_steps_in_default(DeptryTool().get_bitbucket_steps())
+            if use_codespell:
+                add_bitbucket_steps_in_default(CodespellTool().get_bitbucket_steps())
 
         if use_pytest:
             update_bitbucket_pytest_steps()

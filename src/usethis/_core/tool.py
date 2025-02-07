@@ -31,6 +31,7 @@ from usethis._integrations.uv.deps import (
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import (
     ALL_TOOLS,
+    CodespellTool,
     CoverageTool,
     DeptryTool,
     PreCommitTool,
@@ -40,6 +41,44 @@ from usethis._tool import (
     RuffTool,
     Tool,
 )
+
+
+def use_codespell(*, remove: bool = False) -> None:
+    tool = CodespellTool()
+
+    ensure_pyproject_toml()
+
+    if not remove:
+        is_pre_commit = PreCommitTool().is_used()
+
+        if not is_pre_commit:
+            add_deps_to_group(tool.dev_deps, "dev")
+            if is_bitbucket_used():
+                add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
+        else:
+            tool.add_pre_commit_repo_configs()
+
+        tool.add_pyproject_configs()
+
+        if not is_pre_commit:
+            _codespell_instructions_basic()
+        else:
+            _codespell_instructions_pre_commit()
+    else:
+        remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
+        tool.remove_pyproject_configs()
+        tool.remove_pre_commit_repo_configs()
+        remove_deps_from_group(tool.dev_deps, "dev")
+
+
+def _codespell_instructions_basic() -> None:
+    box_print("Run 'codespell' to run the Codespell spellchecker.")
+
+
+def _codespell_instructions_pre_commit() -> None:
+    box_print(
+        "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
+    )
 
 
 def use_coverage(*, remove: bool = False) -> None:

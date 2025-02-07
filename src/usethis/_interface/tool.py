@@ -6,6 +6,7 @@ import typer
 from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._console import err_print
 from usethis._core.tool import (
+    use_codespell,
     use_coverage,
     use_deptry,
     use_pre_commit,
@@ -23,6 +24,17 @@ remove_opt = typer.Option(
 )
 
 frozen_opt = typer.Option(False, "--frozen", help="Use the frozen dependencies.")
+
+
+@app.command(help="Use the codespell spellchecker: detect common spelling mistakes.")
+def codespell(
+    remove: bool = remove_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    frozen: bool = frozen_opt,
+) -> None:
+    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+        _run_tool(use_codespell, remove=remove)
 
 
 @app.command(help="Use the coverage code coverage measurement tool.")

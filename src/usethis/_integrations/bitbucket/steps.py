@@ -164,7 +164,7 @@ def _add_step_in_default_via_doc(
         "Run Ruff",
         "Run Deptry",
         "Run Codespell",
-        [f"Test on 3.{maj}" for maj in get_supported_major_python_versions()],
+        *[f"Test on 3.{maj}" for maj in get_supported_major_python_versions()],
     ]
     for step_name in step_order:
         if step_name == step.name:

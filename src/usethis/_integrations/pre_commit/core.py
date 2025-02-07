@@ -25,6 +25,7 @@ def install_pre_commit_hooks() -> None:
     """
     if usethis_config.frozen:
         box_print("Run 'uv run pre-commit install' to register pre-commit with git.")
+        return
 
     tick_print("Ensuring pre-commit is installed to Git.")
     try:

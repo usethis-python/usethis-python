@@ -2,7 +2,8 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-from usethis._integrations.bitbucket.schema import Step
+from usethis._integrations.bitbucket.schema import Step,Script
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 
 from usethis._console import tick_print
 from usethis._integrations.pre_commit.hooks import (
@@ -247,6 +248,18 @@ class DeptryTool(Tool):
                 ],
             )
         ]
+    
+    def get_bitbucket_step(self) -> Step:
+        return Step(
+            name="Run Deptry",
+            caches=["uv"],
+            script=Script(
+                [
+                    ScriptItemAnchor(name="install-uv"),
+                    "uv run deptry src",
+                ]
+            ),
+        )
 
 
 class PreCommitTool(Tool):
@@ -260,6 +273,18 @@ class PreCommitTool(Tool):
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".pre-commit-config.yaml")]
+    
+    def get_bitbucket_step(self) -> Step:
+        return Step(
+            name="Run pre-commit",
+            caches=["uv", "pre-commit"],
+            script=Script(
+                [
+                    ScriptItemAnchor(name="install-uv"),
+                    "uv run pre-commit run --all-files",
+                ]
+            ),
+        )
 
 
 class PyprojectFmtTool(Tool):
@@ -287,21 +312,21 @@ class PyprojectFmtTool(Tool):
                 value={"keep_full_version": True},
             )
         ]
-    
-    def get_bitbucket_step(self) -> Step:
-        return Step(
-            name="Run pre-commit",
-            caches=["uv", "pre-commit"],
-            script=Script(
-                [
-                    ScriptItemAnchor(name="install-uv"),
-                    "uv run pre-commit run --all-files",
-                ]
-            ),
-        )
 
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "pyproject-fmt"]]
+    
+    def get_bitbucket_step(self) -> Step:
+        return Step(
+            name="Run pyproject-fmt",
+            caches=["uv"],
+            script=Script(
+                [
+                    ScriptItemAnchor(name="install-uv"),
+                    "uv run pyproject-fmt pyproject.toml",
+                ]
+            ),
+        )
 
 
 class PytestTool(Tool):
@@ -435,6 +460,19 @@ class RuffTool(Tool):
 
     def get_managed_files(self) -> list[Path]:
         return [Path("ruff.toml"), Path(".ruff.toml")]
+    
+    def get_bitbucket_step(self) -> Step:
+        return Step(
+            name="Run Ruff",
+            caches=["uv"],
+            script=Script(
+                [
+                    ScriptItemAnchor(name="install-uv"),
+                    "uv run ruff check --fix",
+                    "uv run ruff format",
+                ]
+            ),
+        )
 
 
 ALL_TOOLS: list[Tool] = [

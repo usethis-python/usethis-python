@@ -21,7 +21,9 @@ def usethis_installed_dir(
             usethis_dev_dir,
             copy_usethis_dev_dir,
             # The git repo is too big and we don't need it
-            ignore=shutil.ignore_patterns(".git"),
+            # Also ignore the virtual environment
+            ignore=shutil.ignore_patterns(".git", ".venv"),
+            symlinks=True,
         )
 
         with change_cwd(copy_usethis_dev_dir):
@@ -39,12 +41,12 @@ def usethis_installed_dir(
 
 
 class TestInstalledInOwnVenv:
-    def test_help(self, usethis_installed_dir):
+    def test_help(self, usethis_installed_dir: Path):
         with change_cwd(usethis_installed_dir):
             # Should run without error
             call_subprocess(["usethis", "--help"])
 
-    def test_add_pytest(self, usethis_installed_dir):
+    def test_add_pytest(self, usethis_installed_dir: Path):
         with change_cwd(usethis_installed_dir):
             # Should run without error
             call_subprocess(["usethis", "tool", "pytest"])

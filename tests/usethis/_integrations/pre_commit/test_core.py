@@ -58,9 +58,9 @@ class TestRemovePreCommitConfig:
 
 class TestInstallPreCommitHooks:
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_message(self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]):
+    def test_message(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
-        with change_cwd(uv_init_repo_dir):
+        with change_cwd(uv_env_dir):
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()
@@ -88,11 +88,11 @@ class TestUninstallPreCommitHooks:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_message_and_file(
         self,
-        uv_init_repo_dir: Path,
+        uv_env_dir: Path,
         capfd: pytest.CaptureFixture[str],
     ):
         # Arrange
-        with change_cwd(uv_init_repo_dir):
+        with change_cwd(uv_env_dir):
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()
@@ -106,7 +106,7 @@ class TestUninstallPreCommitHooks:
             assert out == "✔ Ensuring pre-commit hooks are uninstalled.\n"
 
         # Uninstalling the hooks shouldn't remove the config file
-        assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+        assert (uv_env_dir / ".pre-commit-config.yaml").exists()
 
     def test_err(self, tmp_path: Path):
         # Act, Assert

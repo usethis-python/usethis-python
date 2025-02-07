@@ -3,6 +3,10 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
+from usethis._integrations.pyproject.core import (
+    get_config_value,
+    remove_config_value,
+)
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,
@@ -10,6 +14,7 @@ from usethis._integrations.uv.deps import (
     get_deps_from_group,
     is_dep_in_any_group,
     is_dep_satisfied_in,
+    register_default_group,
     remove_deps_from_group,
 )
 from usethis._test import change_cwd
@@ -242,6 +247,26 @@ class TestAddDepsToGroup:
             content = (uv_init_dir / "pyproject.toml").read_text()
             assert "coverage[extra,toml]" in content
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_registers_default_group(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            # Act
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert "test" in default_groups
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_dev_group_not_registered(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            # Act
+            add_deps_to_group([Dependency(name="black")], "dev")
+
+            # Assert
+            # Tool section shouldn't even exist in pyproject.toml
+            assert "tool" not in (uv_init_dir / "pyproject.toml").read_text()
+
 
 class TestRemoveDepsFromGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -344,6 +369,27 @@ class TestRemoveDepsFromGroup:
                 == "✔ Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'.\n"
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_group_not_in_dependency_groups(
+        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        with change_cwd(uv_init_dir):
+            # Arrange
+            with usethis_config.set(quiet=True):
+                add_deps_to_group([Dependency(name="pytest")], "test")
+
+            # Remove the group from dependency-groups but keep it in default-groups
+            remove_config_value(["dependency-groups", "test"])
+
+            # Act
+            remove_deps_from_group([Dependency(name="pytest")], "test")
+
+            # Assert
+            assert not get_deps_from_group("test")
+            out, err = capfd.readouterr()
+            assert not err
+            assert not out
+
 
 class TestIsDepInAnyGroup:
     def test_no_group(self, uv_init_dir: Path):
@@ -430,3 +476,91 @@ class TestIsDepSatisfiedIn:
 
         # Assert
         assert result
+
+
+class TestRegisterDefaultGroup:
+    def test_section_not_exists_adds_dev(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("")
+
+        with change_cwd(tmp_path):
+            # Act
+            register_default_group("test")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert set(default_groups) == {"test", "dev"}
+
+    def test_empty_section_adds_dev(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+""")
+
+        with change_cwd(tmp_path):
+            # Act
+            register_default_group("test")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert set(default_groups) == {"test", "dev"}
+
+    def test_empty_default_groups_adds_dev(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = []
+""")
+
+        with change_cwd(tmp_path):
+            # Act
+            register_default_group("test")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert set(default_groups) == {"test", "dev"}
+
+    def test_existing_section_no_dev_added_if_no_other_groups(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["test"]
+""")
+
+        with change_cwd(tmp_path):
+            # Act
+            register_default_group("test")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert set(default_groups) == {"test"}
+
+    def test_existing_section_no_dev_added_if_dev_exists(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["test", "dev"]
+""")
+
+        with change_cwd(tmp_path):
+            # Act
+            register_default_group("docs")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert set(default_groups) == {"test", "dev", "docs"}
+
+    def test_existing_section_adds_dev_with_new_group(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["test"]
+""")
+
+        with change_cwd(tmp_path):
+            # Act
+            register_default_group("docs")
+
+            # Assert
+            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            assert set(default_groups) == {"test", "docs", "dev"}

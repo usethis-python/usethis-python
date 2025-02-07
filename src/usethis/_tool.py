@@ -70,7 +70,11 @@ class Tool(Protocol):
         return []
 
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
-        """Get the pyproject configurations for the tool."""
+        """Get the pyproject configurations for the tool.
+
+        All configuration keys returned by this method must be sub-keys of the
+        keys returned by get_pyproject_id_keys().
+        """
         return []
 
     def get_associated_ruff_rules(self) -> list[str]:
@@ -166,15 +170,21 @@ class Tool(Protocol):
                     first_addition = False
 
     def remove_pyproject_configs(self) -> None:
-        """Remove the tool's pyproject.toml configuration."""
-        configs = self.get_pyproject_configs()
-        if not configs:
-            return
+        """Remove all pyproject.toml configurations associated with this tool.
 
+        This includes any tool-specific sections in the pyproject.toml file.
+        If no configurations exist, this method has no effect.
+        """
+        # Collect all keys to remove
+        keys_to_remove = [
+            config.id_keys for config in self.get_pyproject_configs()
+        ] + self.get_pyproject_id_keys()
+
+        # Try to remove the first key to trigger the message
         first_removal = True
-        for config in configs:
+        for keys in keys_to_remove:
             try:
-                remove_config_value(config.id_keys)
+                remove_config_value(keys)
             except PyProjectTOMLValueMissingError:
                 pass
             else:
@@ -249,6 +259,9 @@ class DeptryTool(Tool):
             )
         ]
 
+    def get_pyproject_id_keys(self) -> list[list[str]]:
+        return [["tool", "deptry"]]
+      
     def get_bitbucket_step(self) -> Step:
         return Step(
             name="Run Deptry",

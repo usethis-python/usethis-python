@@ -3,7 +3,13 @@ from pydantic import BaseModel, TypeAdapter
 
 from usethis._config import usethis_config
 from usethis._console import tick_print
-from usethis._integrations.pyproject.io_ import read_pyproject_toml
+from usethis._integrations.pyproject.core import (
+    append_config_list,
+    get_config_value,
+)
+from usethis._integrations.pyproject.io_ import (
+    read_pyproject_toml,
+)
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 
@@ -51,6 +57,39 @@ def get_deps_from_group(group: str) -> list[Dependency]:
         return []
 
 
+def register_default_group(group: str) -> None:
+    """Register a group in the default-groups configuration if it's not already there.
+
+    This ensures that dependencies in the group will be installed by default.
+    """
+    if group == "dev":
+        return
+
+    ensure_dev_group_is_defined()
+
+    try:
+        default_groups = get_config_value(["tool", "uv", "default-groups"])
+        if not isinstance(default_groups, list):
+            default_groups = []
+    except KeyError:
+        default_groups = []
+
+    groups_to_add = []
+    if group not in default_groups:
+        groups_to_add.append(group)
+        # Add "dev" if section is empty or if we're adding a new group and "dev" isn't present
+        if (not default_groups or group != "dev") and "dev" not in default_groups:
+            groups_to_add.append("dev")
+
+    if groups_to_add:
+        append_config_list(["tool", "uv", "default-groups"], groups_to_add)
+
+
+def ensure_dev_group_is_defined() -> None:
+    # Ensure dev group exists in dependency-groups
+    append_config_list(["dependency-groups", "dev"], [])
+
+
 def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     """Add a package as a non-build dependency using PEP 735 dependency groups."""
     existing_group = get_deps_from_group(group)
@@ -67,6 +106,8 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     tick_print(
         f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
     )
+
+    register_default_group(group)  # Register the group before adding dependencies
 
     for dep in to_add_deps:
         try:

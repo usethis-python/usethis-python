@@ -2,6 +2,8 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
+from usethis._integrations.bitbucket.schema import Step
+
 from usethis._console import tick_print
 from usethis._integrations.pre_commit.hooks import (
     add_repo,
@@ -38,8 +40,12 @@ class Tool(Protocol):
         """
         
     @abstractmethod
-    def get_bitbucket_step(self) -> str:
-        """Get the Bitbucket pipeline step for this tool."""
+    def get_bitbucket_step(self) -> Step:
+        """Get the Bitbucket pipeline step for this tool.
+        
+        Returns:
+            Step: A Bitbucket pipeline step configuration for CI/CD.
+        """
 
     @property
     def dev_deps(self) -> list[Dependency]:
@@ -281,6 +287,18 @@ class PyprojectFmtTool(Tool):
                 value={"keep_full_version": True},
             )
         ]
+    
+    def get_bitbucket_step(self) -> Step:
+        return Step(
+            name="Run pre-commit",
+            caches=["uv", "pre-commit"],
+            script=Script(
+                [
+                    ScriptItemAnchor(name="install-uv"),
+                    "uv run pre-commit run --all-files",
+                ]
+            ),
+        )
 
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "pyproject-fmt"]]

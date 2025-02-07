@@ -4,7 +4,13 @@ import pytest
 
 from usethis._ci import update_bitbucket_pytest_steps
 from usethis._core.ci import use_ci_bitbucket
-from usethis._core.tool import use_deptry, use_pre_commit, use_pyproject_fmt, use_ruff
+from usethis._core.tool import (
+    use_codespell,
+    use_deptry,
+    use_pre_commit,
+    use_pyproject_fmt,
+    use_ruff,
+)
 from usethis._integrations.bitbucket.steps import get_steps_in_default
 from usethis._test import change_cwd
 
@@ -254,6 +260,46 @@ pipelines:
                     "✔ Adding 'Run Deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
                     "☐ Run your pipeline via the Bitbucket website.\n"
+                )
+
+        class TestCodespellIntegration:
+            def test_content(
+                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            ):
+                with change_cwd(uv_init_dir):
+                    # Arrange
+                    use_codespell()
+                    capfd.readouterr()
+
+                    # Act
+                    use_ci_bitbucket()
+
+                # Assert
+                contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+                assert "codespell" in contents
+                assert (
+                    contents
+                    == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Run Codespell
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - uv run codespell
+"""
                 )
 
         def test_lots_of_tools_no_precommit(

@@ -263,8 +263,8 @@ class DeptryTool(Tool):
 
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "deptry"]]
-      
-    def get_bitbucket_step(self) -> BitbucketStep:
+
+    def get_bitbucket_step(self) -> BitbucketStep | None:
         return BitbucketStep(
             name="Run Deptry",
             caches=["uv"],
@@ -289,7 +289,7 @@ class PreCommitTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path(".pre-commit-config.yaml")]
 
-    def get_bitbucket_step(self) -> BitbucketStep:
+    def get_bitbucket_step(self) -> BitbucketStep | None:
         return BitbucketStep(
             name="Run pre-commit",
             caches=["uv", "pre-commit"],
@@ -331,7 +331,7 @@ class PyprojectFmtTool(Tool):
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "pyproject-fmt"]]
 
-    def get_bitbucket_step(self) -> BitbucketStep:
+    def get_bitbucket_step(self) -> BitbucketStep | None:
         return BitbucketStep(
             name="Run pyproject-fmt",
             caches=["uv"],
@@ -476,7 +476,7 @@ class RuffTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path("ruff.toml"), Path(".ruff.toml")]
 
-    def get_bitbucket_step(self) -> BitbucketStep:
+    def get_bitbucket_step(self) -> BitbucketStep | None:
         return BitbucketStep(
             name="Run Ruff",
             caches=["uv"],

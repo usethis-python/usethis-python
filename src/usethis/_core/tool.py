@@ -1,12 +1,7 @@
 from pathlib import Path
 
 from usethis._ci import (
-    get_bitbucket_deptry_step,
-    get_bitbucket_pre_commit_step,
-    get_bitbucket_pyproject_fmt_step,
-    get_bitbucket_ruff_step,
     is_bitbucket_used,
-    remove_bitbucket_pytest_steps,
     update_bitbucket_pytest_steps,
 )
 from usethis._console import box_print, tick_print
@@ -42,6 +37,7 @@ from usethis._tool import (
     PytestTool,
     RequirementsTxtTool,
     RuffTool,
+    Tool,
 )
 
 
@@ -85,13 +81,13 @@ def use_deptry(*, remove: bool = False) -> None:
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
         elif is_bitbucket_used():
-            add_bitbucket_step_in_default(get_bitbucket_deptry_step())
+            add_bitbucket_step_in_default(tool.get_bitbucket_step())
 
         box_print("Run 'deptry src' to run deptry.")
     else:
         tool.remove_pre_commit_repo_configs()
         tool.remove_pyproject_configs()
-        remove_bitbucket_step_from_default(get_bitbucket_deptry_step())
+        remove_bitbucket_step_from_default(tool.get_bitbucket_step())
         remove_deps_from_group(tool.dev_deps, "dev")
 
 
@@ -120,13 +116,13 @@ def use_pre_commit(*, remove: bool = False) -> None:
         install_pre_commit_hooks()
 
         if is_bitbucket_used():
-            add_bitbucket_step_in_default(get_bitbucket_pre_commit_step())
+            add_bitbucket_step_in_default(tool.get_bitbucket_step())
             _remove_bitbucket_linter_steps_from_default()
 
         box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
     else:
         if is_bitbucket_used():
-            remove_bitbucket_step_from_default(get_bitbucket_pre_commit_step())
+            remove_bitbucket_step_from_default(tool.get_bitbucket_step())
             _add_bitbucket_linter_steps_to_default()
 
         # Need pre-commit to be installed so we can uninstall hooks
@@ -159,12 +155,10 @@ def _add_bitbucket_linter_steps_to_default() -> None:
     # This order of adding tools should be synced with the order hard-coded
     # in the function which adds steps.
     if is_bitbucket_used():
-        if PyprojectFmtTool().is_used():
-            add_bitbucket_step_in_default(get_bitbucket_pyproject_fmt_step())
-        if DeptryTool().is_used():
-            add_bitbucket_step_in_default(get_bitbucket_deptry_step())
-        if RuffTool().is_used():
-            add_bitbucket_step_in_default(get_bitbucket_ruff_step())
+        tools: list[Tool] = [PyprojectFmtTool(), DeptryTool(), RuffTool()]
+        for tool in tools:
+            if tool.is_used():
+                add_bitbucket_step_in_default(tool.get_bitbucket_step())
 
 
 def _remove_bitbucket_linter_steps_from_default() -> None:
@@ -243,7 +237,7 @@ def use_pytest(*, remove: bool = False) -> None:
             _coverage_instructions_pytest()
     else:
         if is_bitbucket_used():
-            remove_bitbucket_pytest_steps()
+            update_bitbucket_pytest_steps()
 
         if RuffTool().is_used():
             deselect_ruff_rules(tool.get_associated_ruff_rules())

@@ -2,10 +2,9 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-from usethis._integrations.bitbucket.schema import Step,Script
-from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
-
 from usethis._console import tick_print
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
+from usethis._integrations.bitbucket.schema import Script, Step
 from usethis._integrations.pre_commit.hooks import (
     add_repo,
     get_hook_names,
@@ -39,14 +38,15 @@ class Tool(Protocol):
         It is assumed that this name is also the name of the Python package associated
         with the tool; if not, make sure to override methods which access this property.
         """
-        
-    @abstractmethod
-    def get_bitbucket_step(self) -> Step:
+
+    def get_bitbucket_step(self) -> Step | None:
         """Get the Bitbucket pipeline step for this tool.
-        
+
         Returns:
-            Step: A Bitbucket pipeline step configuration for CI/CD.
+            Optional[Step]: A Bitbucket pipeline step configuration for CI/CD, or None if the tool
+            doesn't have a pipeline step.
         """
+        return None
 
     @property
     def dev_deps(self) -> list[Dependency]:
@@ -248,7 +248,7 @@ class DeptryTool(Tool):
                 ],
             )
         ]
-    
+
     def get_bitbucket_step(self) -> Step:
         return Step(
             name="Run Deptry",
@@ -273,7 +273,7 @@ class PreCommitTool(Tool):
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".pre-commit-config.yaml")]
-    
+
     def get_bitbucket_step(self) -> Step:
         return Step(
             name="Run pre-commit",
@@ -315,7 +315,7 @@ class PyprojectFmtTool(Tool):
 
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "pyproject-fmt"]]
-    
+
     def get_bitbucket_step(self) -> Step:
         return Step(
             name="Run pyproject-fmt",
@@ -460,7 +460,7 @@ class RuffTool(Tool):
 
     def get_managed_files(self) -> list[Path]:
         return [Path("ruff.toml"), Path(".ruff.toml")]
-    
+
     def get_bitbucket_step(self) -> Step:
         return Step(
             name="Run Ruff",

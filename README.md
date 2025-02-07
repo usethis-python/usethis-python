@@ -154,7 +154,7 @@ Supported arguments:
 
 ### `usethis browse pypi <package>`
 
-Dispaly or open the PyPI landing page associated with another project.
+Display or open the PyPI landing page associated with another project.
 
 Example:
 
@@ -167,7 +167,7 @@ Supported arguments:
 ## Development
 
 This project is at the early stages of development. If you are interested in contributing,
-please ensure you have a corresponsing GitHub Issue open.
+please ensure you have a corresponding GitHub Issue open.
 
 ## License
 

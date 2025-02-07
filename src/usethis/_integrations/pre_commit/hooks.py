@@ -58,7 +58,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
 
             doc.model.repos.append(repo)
         else:
-            # Get the precendents, i.e. hooks occuring before the new hook
+            # Get the precendents, i.e. hooks occurring before the new hook
             try:
                 hook_idx = _HOOK_ORDER.index(hook_name)
             except ValueError:
@@ -193,7 +193,7 @@ def extract_hook_names(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
         for hook in repo.hooks:
             hook_names.append(hook.id)
 
-    # Need to validate there are no duplciates
+    # Need to validate there are no duplicates
     for name, count in Counter(hook_names).items():
         if count > 1:
             msg = f"Hook name '{name}' is duplicated"

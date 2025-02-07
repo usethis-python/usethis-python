@@ -15,50 +15,45 @@ from usethis._tool import (
 )
 
 
-def _add_optional_bitbucket_steps(
-    use_pyproject_fmt: bool, use_ruff: bool, use_deptry: bool
-) -> None:
-    if use_pyproject_fmt:
-        step = PyprojectFmtTool().get_bitbucket_step()
-        if step:
-            add_bitbucket_step_in_default(step)
-    if use_ruff:
-        step = RuffTool().get_bitbucket_step()
-        if step:
-            add_bitbucket_step_in_default(step)
-    if use_deptry:
-        step = DeptryTool().get_bitbucket_step()
-        if step:
-            add_bitbucket_step_in_default(step)
-
-
 def use_ci_bitbucket(*, remove: bool = False) -> None:
     ensure_pyproject_toml()
-    if remove:
+
+    if not remove:
+        use_pre_commit = PreCommitTool().is_used()
+        use_pytest = PytestTool().is_used()
+        use_ruff = RuffTool().is_used()
+        use_deptry = DeptryTool().is_used()
+        use_pyproject_fmt = PyprojectFmtTool().is_used()
+        use_any_tool = (
+            use_pre_commit or use_pytest or use_ruff or use_deptry or use_pyproject_fmt
+        )
+
+        add_bitbucket_pipeline_config(report_placeholder=not use_any_tool)
+
+        if use_pre_commit:
+            pre_commit_tool = PreCommitTool()
+            add_bitbucket_step_in_default(pre_commit_tool.get_bitbucket_step())
+        else:
+            # This order should match the canonical order in the function which add
+            # steps
+            if use_pyproject_fmt:
+                pyproject_fmt_tool = PyprojectFmtTool()
+                add_bitbucket_step_in_default(pyproject_fmt_tool.get_bitbucket_step())
+            if use_ruff:
+                ruff_tool = RuffTool()
+                add_bitbucket_step_in_default(ruff_tool.get_bitbucket_step())
+            if use_deptry:
+                deptry_tool = DeptryTool()
+                add_bitbucket_step_in_default(deptry_tool.get_bitbucket_step())
+
+        if use_pytest:
+            update_bitbucket_pytest_steps()
+
+        else:
+            info_print(
+                "Consider `usethis tool pytest` to test your code for the pipeline."
+            )
+
+        box_print("Run your pipeline via the Bitbucket website.")
+    else:
         remove_bitbucket_pipeline_config()
-        return  # Early return to reduce branch depth
-
-    use_pre_commit = PreCommitTool().is_used()
-    use_pytest = PytestTool().is_used()
-    use_ruff = RuffTool().is_used()
-    use_deptry = DeptryTool().is_used()
-    use_pyproject_fmt = PyprojectFmtTool().is_used()
-    use_any_tool = (
-        use_pre_commit or use_pytest or use_ruff or use_deptry or use_pyproject_fmt
-    )
-
-    add_bitbucket_pipeline_config(report_placeholder=not use_any_tool)
-
-    if use_pre_commit:
-        step = PreCommitTool().get_bitbucket_step()
-        if step:
-            add_bitbucket_step_in_default(step)
-    else:
-        _add_optional_bitbucket_steps(use_pyproject_fmt, use_ruff, use_deptry)
-
-    if use_pytest:
-        update_bitbucket_pytest_steps()
-    else:
-        info_print("Consider `usethis tool pytest` to test your code for the pipeline.")
-
-    box_print("Run your pipeline via the Bitbucket website.")

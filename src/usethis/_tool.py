@@ -263,7 +263,7 @@ class DeptryTool(Tool):
 
     def get_pyproject_id_keys(self) -> list[list[str]]:
         return [["tool", "deptry"]]
-      
+
     def get_bitbucket_step(self) -> BitbucketStep:
         return BitbucketStep(
             name="Run Deptry",

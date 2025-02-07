@@ -15,59 +15,6 @@ def is_bitbucket_used() -> bool:
     return (Path.cwd() / "bitbucket-pipelines.yml").exists()
 
 
-def get_bitbucket_pre_commit_step() -> Step:
-    return Step(
-        name="Run pre-commit",
-        caches=["uv", "pre-commit"],
-        script=Script(
-            [
-                ScriptItemAnchor(name="install-uv"),
-                "uv run pre-commit run --all-files",
-            ]
-        ),
-    )
-
-
-def get_bitbucket_ruff_step() -> Step:
-    return Step(
-        name="Run Ruff",
-        caches=["uv"],
-        script=Script(
-            [
-                ScriptItemAnchor(name="install-uv"),
-                "uv run ruff check --fix",
-                "uv run ruff format",
-            ]
-        ),
-    )
-
-
-def get_bitbucket_deptry_step() -> Step:
-    return Step(
-        name="Run Deptry",
-        caches=["uv"],
-        script=Script(
-            [
-                ScriptItemAnchor(name="install-uv"),
-                "uv run deptry src",
-            ]
-        ),
-    )
-
-
-def get_bitbucket_pyproject_fmt_step() -> Step:
-    return Step(
-        name="Run pyproject-fmt",
-        caches=["uv"],
-        script=Script(
-            [
-                ScriptItemAnchor(name="install-uv"),
-                "uv run pyproject-fmt pyproject.toml",
-            ]
-        ),
-    )
-
-
 def update_bitbucket_pytest_steps() -> None:
     matrix = get_supported_major_python_versions()
     for version in matrix:

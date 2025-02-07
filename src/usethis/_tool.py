@@ -36,6 +36,10 @@ class Tool(Protocol):
         It is assumed that this name is also the name of the Python package associated
         with the tool; if not, make sure to override methods which access this property.
         """
+        
+    @abstractmethod
+    def get_bitbucket_step(self) -> str:
+        """Get the Bitbucket pipeline step for this tool."""
 
     @property
     def dev_deps(self) -> list[Dependency]:

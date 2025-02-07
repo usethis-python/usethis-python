@@ -3,7 +3,7 @@ repos:
     rev: v0.23
     hooks:
       - id: validate-pyproject
-        additional_dependencies: ['validate-pyproject-schema-store[all]']
+        additional_dependencies: ["validate-pyproject-schema-store[all]"]
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.5.0
     hooks:
@@ -51,3 +51,9 @@ repos:
         types_or: [python, pyi]
         always_run: true
         require_serial: true
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        additional_dependencies:
+          - tomli

@@ -273,7 +273,7 @@ hello: world
 
     class TestRoundTrip:
         @pytest.mark.skip(
-            "Not providing this guarentee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
+            "Not providing this guarantee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
         )
         def test_single_quote_preserved(self, tmp_path: Path):
             path = tmp_path / "x.yml"
@@ -297,7 +297,7 @@ x: 'hi'
             )
 
         @pytest.mark.skip(
-            "Not providing this guarentee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
+            "Not providing this guarantee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
         )
         def test_single_quoted_preserved(self, tmp_path: Path):
             path = tmp_path / "x.yml"

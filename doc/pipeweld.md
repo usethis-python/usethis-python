@@ -67,7 +67,7 @@ There are four cases:
 All components in case 1 can be left as-is.
 
 All components in case 2 can be moved to a new parallel subgraph placed in series
-before the exising one, or do-nothing if all the components are in case 2.
+before the existing one, or do-nothing if all the components are in case 2.
 
 All components in case 3 can be moved to a new parallel subgraph placed in series
 after the existing one, or do nothing if all the components are in case 3.
@@ -167,14 +167,14 @@ would choose to satisfy dependencies in this case and will backtrack to resolve 
 the condition that the configuration group is mandatory (basically, it will ignore this
 constraint).
 
-If it is merely optional for a step to be in the same configuraiton group as another set
+If it is merely optional for a step to be in the same configuration group as another set
 of steps, then this is basically a cosmetic decision which can determined after the
 new step has been inserted; should it form a configuration group with its predecessor,
 or successor, or both? Pipeweld will choose to form with both if possible, and with any
 existing group in precedence to creating a new group (including combining the
 predecessor and successor steps' groups into a single group, if they the two groups are
 of the same type). Any further tiebreaks will be broken by preferring to form a group
-with the predecessor rather than the sucessor.
+with the predecessor rather than the successor.
 
 There is also the possibility that the new step is inserted into the middle of an
 configuration group but is not compatible with that group's type. In that case,
@@ -213,7 +213,7 @@ since we never need to access step metadata. For now, string names of the steps 
 be sufficient.
 5. Should a solution be the modified pipeline representation or the instructions on how
 to modify the pipeline? We could also return both. Instructions on how to modify are
-likely to be more useful. There are four operations needed to represet modification
+likely to be more useful. There are four operations needed to represent modification
 when adding a step; "insert as successor" and "insert after in parallel",
 "insert after in series", and "split group". To remove a step requires two more;
 "remove" (a unary operation), and "combine groups". A list of these operations would
@@ -335,7 +335,7 @@ traceback = [
 ]
 ```
 
-### Example 6 (Mixed depency parallelism of steps)
+### Example 6 (Mixed dependency parallelism of steps)
 
 ```Python
 step = "C"
@@ -369,7 +369,7 @@ traceback = [
 ]
 ```
 
-### Example 7 (Multi-level heirarchy)
+### Example 7 (Multi-level hierarchy)
 
 ```Python
 step = "E"
@@ -390,7 +390,7 @@ traceback = [
 ]
 ```
 
-### Example 8 (Mixed depedency parallelism of series)
+### Example 8 (Mixed dependency parallelism of series)
 
 ```Python
 step = "E"
@@ -566,7 +566,7 @@ instructions = [
                              # post-requisite (so we don't want to insert parallel),
                              # and B is in an incompatible configuration group.
                              # (so we don't want to insert successor).
-    AddToGroup("B", "y"),    # The sucessor to B is in a compatible configuration group
+    AddToGroup("B", "y"),    # The successor to B is in a compatible configuration group
                              # and B only has one successor (C) so we can form a group.
                              # We need to check this when inserting series.
 ]

@@ -106,6 +106,9 @@ lint.ignore = [ "D417", "PLR2004", "SIM108" ]
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S101" ]
 lint.pydocstyle.convention = "google"
 
+[tool.codespell]
+ignore-words-list = [ "edn" ]
+
 [tool.pyproject-fmt]
 keep_full_version = true
 

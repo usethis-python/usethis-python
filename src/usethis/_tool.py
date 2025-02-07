@@ -194,7 +194,7 @@ class Tool(Protocol):
 class CodespellTool(Tool):
     @property
     def name(self) -> str:
-        return "codespell"
+        return "Codespell"
 
     @property
     def dev_deps(self) -> list[Dependency]:

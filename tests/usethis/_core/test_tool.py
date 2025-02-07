@@ -72,8 +72,57 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Adding codespell config to 'pyproject.toml'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
                 "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_bitbucket_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            with change_cwd(uv_init_dir):
+                use_ci_bitbucket()
+            capfd.readouterr()
+
+            # Act
+            with change_cwd(uv_init_dir):
+                use_codespell()
+
+            # Assert
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            assert "codespell" in contents
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
+                "✔ Adding 'Run Codespell' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pre_commit_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            with change_cwd(uv_init_dir):
+                use_pre_commit()
+            capfd.readouterr()
+
+            # Act
+            with change_cwd(uv_init_dir):
+                use_codespell()
+
+                # Assert
+                hook_names = get_hook_names()
+            assert "codespell" in hook_names
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker.\n"
             )
 
     class TestRemove:
@@ -97,7 +146,7 @@ foo = "bar"
             assert (uv_init_dir / "pyproject.toml").read_text() == ""
             out, err = capfd.readouterr()
             assert not err
-            assert out == ("✔ Removing codespell config from 'pyproject.toml'.\n")
+            assert out == ("✔ Removing Codespell config from 'pyproject.toml'.\n")
 
 
 class TestCoverage:

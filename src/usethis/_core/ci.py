@@ -31,20 +31,16 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
         add_bitbucket_pipeline_config(report_placeholder=not use_any_tool)
 
         if use_pre_commit:
-            pre_commit_tool = PreCommitTool()
-            add_bitbucket_step_in_default(pre_commit_tool.get_bitbucket_step())
+            add_bitbucket_step_in_default(PreCommitTool().get_bitbucket_step())
         else:
             # This order should match the canonical order in the function which add
             # steps
             if use_pyproject_fmt:
-                pyproject_fmt_tool = PyprojectFmtTool()
-                add_bitbucket_step_in_default(pyproject_fmt_tool.get_bitbucket_step())
+                add_bitbucket_step_in_default(PyprojectFmtTool().get_bitbucket_step())
             if use_ruff:
-                ruff_tool = RuffTool()
-                add_bitbucket_step_in_default(ruff_tool.get_bitbucket_step())
+                add_bitbucket_step_in_default(RuffTool().get_bitbucket_step())
             if use_deptry:
-                deptry_tool = DeptryTool()
-                add_bitbucket_step_in_default(deptry_tool.get_bitbucket_step())
+                add_bitbucket_step_in_default(DeptryTool().get_bitbucket_step())
 
         if use_pytest:
             update_bitbucket_pytest_steps()

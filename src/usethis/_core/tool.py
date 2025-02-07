@@ -2,6 +2,7 @@ from pathlib import Path
 
 from usethis._ci import (
     is_bitbucket_used,
+    remove_bitbucket_pytest_steps,
     update_bitbucket_pytest_steps,
 )
 from usethis._console import box_print, tick_print
@@ -237,7 +238,7 @@ def use_pytest(*, remove: bool = False) -> None:
             _coverage_instructions_pytest()
     else:
         if is_bitbucket_used():
-            update_bitbucket_pytest_steps()
+            remove_bitbucket_pytest_steps()
 
         if RuffTool().is_used():
             deselect_ruff_rules(tool.get_associated_ruff_rules())

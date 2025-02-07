@@ -81,6 +81,17 @@ class TestPytest:
         assert result.exit_code == 0
 
 
+class TestCodespell:
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["codespell"])
+
+        # Assert
+        assert result.exit_code == 0
+
+
 @pytest.mark.benchmark
 def test_several_tools_add_and_remove(tmp_path: Path):
     runner = CliRunner()

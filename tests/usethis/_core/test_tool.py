@@ -66,6 +66,7 @@ class TestCodespell:
                 """\
 [tool.codespell]
 ignore-words-list = []
+ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 """
             )
             out, err = capfd.readouterr()

@@ -711,9 +711,9 @@ repos:
 
         @pytest.mark.benchmark
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        def test_stdout(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
-            (uv_init_dir / ".pre-commit-config.yaml").write_text(
+            (uv_env_dir / ".pre-commit-config.yaml").write_text(
                 """\
 repos:
   - repo: local
@@ -723,7 +723,7 @@ repos:
             )
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_env_dir):
                 use_pre_commit(remove=True)
 
             # Assert

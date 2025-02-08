@@ -1,0 +1,29 @@
+site_name: usethis
+
+nav:
+  - Home: index.md
+
+theme:
+  name: material
+  logo: logo.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-6
+        name: Switch between light and dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: black
+      scheme: slate
+      toggle:
+        icon: material/brightness-6
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: black
+      scheme: default
+      toggle:
+        icon: material/brightness-6
+        name: Switch to dark mode
+
+plugins:
+  - search
+    

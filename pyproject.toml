@@ -64,6 +64,10 @@ test = [
   "pytest-emoji>=0.2.0",
   "pytest-md>=0.2.0",
 ]
+doc = [
+  "mkdocs>=1.6.1",
+  "mkdocs-material>=9.6.3",
+]
 
 [tool.hatch.version]
 source = "vcs"
@@ -134,7 +138,7 @@ exclude_also = [
 ]
 
 [tool.uv]
-default-groups = [ "test", "dev" ]
+default-groups = [ "test", "dev", "doc" ]
 
 [tool.importlinter]
 root_packages = [ "usethis" ]

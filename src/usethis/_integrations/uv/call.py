@@ -21,7 +21,7 @@ def call_uv_subprocess(args: list[str]) -> str:
         "tree",
         "run",
     }:
-        new_args = ["uv", "run", "--frozen", *args[1:]]
+        new_args = ["uv", args[0], "--frozen", *args[1:]]
     else:
         new_args = ["uv", *args]
 

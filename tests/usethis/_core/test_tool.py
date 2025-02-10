@@ -801,6 +801,31 @@ repos:
                     "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_codepsell_used(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_pre_commit()
+                    use_codespell()
+                    capfd.readouterr()
+
+                # Act
+                use_pre_commit(remove=True)
+
+                # Assert
+                out, err = capfd.readouterr()
+                assert not err
+                assert out == (
+                    "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
+                    "✔ Removing '.pre-commit-config.yaml'.\n"
+                    "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
+                    "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+                )
+
     class TestBitbucketCIIntegration:
         def test_prexisting(self, uv_init_repo_dir: Path):
             # Arrange

@@ -124,7 +124,8 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 "☐ Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker.\n"
             )
 
-        def test_runs(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_runs(self, uv_env_dir: Path):
             with change_cwd(uv_env_dir):
                 # Arrange
                 use_codespell()

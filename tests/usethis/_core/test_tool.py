@@ -115,8 +115,14 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 use_codespell()
 
                 # Assert
+                # Check dependencies - shouldn't have installed codespell
+                dev_deps = get_deps_from_group("dev")
+                assert all(dep.name != "codespell" for dep in dev_deps)
+
+                # Check hook names
                 hook_names = get_hook_names()
-            assert "codespell" in hook_names
+                assert "codespell" in hook_names
+            # Check output
             out, err = capfd.readouterr()
             assert not err
             assert out == (
@@ -676,9 +682,28 @@ repos:
 
                 # Assert
                 hook_names = get_hook_names()
+                assert "pyproject-fmt" in hook_names
+
                 dev_deps = get_deps_from_group("dev")
-            assert "pyproject-fmt" in hook_names
-            assert "pyproject-fmt" not in dev_deps
+                for dev_dep in dev_deps:
+                    assert dev_dep.name != "pyproject-fmt"
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_codespell_used(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir):
+                # Arrange
+                use_codespell()
+
+                # Act
+                use_pre_commit()
+
+                # Assert
+                hook_names = get_hook_names()
+                assert "codespell" in hook_names
+
+                dev_deps = get_deps_from_group("dev")
+                for dep in dev_deps:
+                    assert dep.name != "codespell"
 
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")

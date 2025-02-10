@@ -263,13 +263,10 @@ pipelines:
                 )
 
         class TestCodespellIntegration:
-            def test_content(
-                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-            ):
+            def test_content(self, uv_init_dir: Path):
                 with change_cwd(uv_init_dir):
                     # Arrange
                     use_codespell()
-                    capfd.readouterr()
 
                     # Act
                     use_ci_bitbucket()

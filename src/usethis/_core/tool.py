@@ -134,6 +134,7 @@ def use_deptry(*, remove: bool = False) -> None:
 def use_pre_commit(*, remove: bool = False) -> None:
     tool = PreCommitTool()
     pyproject_fmt_tool = PyprojectFmtTool()
+    codespell_tool = CodespellTool()
 
     ensure_pyproject_toml()
 
@@ -141,11 +142,15 @@ def use_pre_commit(*, remove: bool = False) -> None:
         add_deps_to_group(tool.dev_deps, "dev")
         _add_all_tools_pre_commit_configs()
 
+        # We will use pre-commit instead of project-installed dependencies:
         if pyproject_fmt_tool.is_used():
-            # We will use pre-commit instead of the dev-dep.
             remove_deps_from_group(pyproject_fmt_tool.dev_deps, "dev")
             pyproject_fmt_tool.add_pyproject_configs()
             _pyproject_fmt_instructions_pre_commit()
+        if codespell_tool.is_used():
+            remove_deps_from_group(codespell_tool.dev_deps, "dev")
+            codespell_tool.add_pyproject_configs()
+            _codespell_instructions_pre_commit()
 
         if RequirementsTxtTool().is_used():
             _requirements_txt_instructions_pre_commit()
@@ -178,6 +183,9 @@ def use_pre_commit(*, remove: bool = False) -> None:
         if pyproject_fmt_tool.is_used():
             add_deps_to_group(pyproject_fmt_tool.dev_deps, "dev")
             _pyproject_fmt_instructions_basic()
+        if codespell_tool.is_used():
+            add_deps_to_group(codespell_tool.dev_deps, "dev")
+            _codespell_instructions_basic()
 
         # Likewise, explain how to manually generate the requirements.txt file, since
         # they're not going to do it via pre-commit anymore.

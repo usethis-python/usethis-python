@@ -51,9 +51,7 @@ def uninstall_pre_commit_hooks() -> None:
     in a git repo.
     """
     if usethis_config.frozen:
-        box_print(
-            "Run 'uv run pre-commit uninstall' to deregister pre-commit with git."
-        )
+        box_print("Run 'uvx pre-commit uninstall' to deregister pre-commit with git.")
         return
 
     tick_print("Ensuring pre-commit hooks are uninstalled.")

@@ -12,16 +12,19 @@ def call_uv_subprocess(args: list[str]) -> str:
     """
     read_pyproject_toml_from_path.cache_clear()
     new_args = ["uv", *args]
-    if usethis_config.frozen and args[0] in {
-        "run",
-        "add",
-        "remove",
-        "sync",
-        "lock",
-        "export",
-        "tree",
-    }:
-        new_args.append("--frozen")
+    if usethis_config.frozen:
+        if args[0] in {
+            "add",
+            "remove",
+            "sync",
+            "lock",
+            "export",
+            "tree",
+        }:
+            new_args.append("--frozen")
+        elif args[0] == "run":
+            new_args = ["uv", "run", "--frozen", *args[1:]]
+
     try:
         return call_subprocess(new_args)
     except SubprocessFailedError as err:

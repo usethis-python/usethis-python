@@ -616,7 +616,7 @@ repos:
     hooks:
       - id: placeholder
         name: Placeholder - add your own hooks!
-        entry: uv run python -c "print('hello world!')"
+        entry: uvx python -c "print('hello world!')"
         language: system
 """
             )
@@ -631,7 +631,7 @@ repos:
     hooks:
       - id: my hook
         name: Its mine
-        entry: uv run python -c "print('hello world!')"
+        entry: uvx python -c "print('hello world!')"
         language: system
 """
             )
@@ -649,7 +649,7 @@ repos:
     hooks:
       - id: my hook
         name: Its mine
-        entry: uv run python -c "print('hello world!')"
+        entry: uvx python -c "print('hello world!')"
         language: system
 """
             )
@@ -760,16 +760,19 @@ repos:
 """
             )
 
-            # Act
             with change_cwd(uv_init_dir):
+                # Arrange contd....
+                # Add dependency
+                add_deps_to_group([Dependency(name="pre-commit")], "dev")
+                capfd.readouterr()
+
+                # Act
                 use_pre_commit(remove=True)
 
             # Assert
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Install the dependency 'pre-commit'.\n"
                 "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
                 "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"

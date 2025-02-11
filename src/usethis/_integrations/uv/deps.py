@@ -2,7 +2,7 @@ from packaging.requirements import Requirement
 from pydantic import BaseModel, TypeAdapter
 
 from usethis._config import usethis_config
-from usethis._console import tick_print
+from usethis._console import box_print, tick_print
 from usethis._integrations.pyproject.core import (
     append_config_list,
     get_config_value,
@@ -106,6 +106,9 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     tick_print(
         f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
     )
+
+    if usethis_config.frozen:
+        box_print(f"Install the dependenc{ies} {deps_str}.")
 
     register_default_group(group)  # Register the group before adding dependencies
 

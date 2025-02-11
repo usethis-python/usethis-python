@@ -24,7 +24,7 @@ def install_pre_commit_hooks() -> None:
     in a git repo.
     """
     if usethis_config.frozen:
-        box_print("Run 'uv run pre-commit install' to register pre-commit with git.")
+        box_print("Run 'pre-commit install' to register pre-commit with git.")
         return
 
     tick_print("Ensuring pre-commit is installed to Git.")
@@ -47,8 +47,7 @@ def install_pre_commit_hooks() -> None:
 def uninstall_pre_commit_hooks() -> None:
     """Uninstall pre-commit hooks.
 
-    Note that this requires pre-commit to be installed. It also requires the user to be
-    in a git repo.
+    Note that this requires the user to be in a git repo.
     """
     if usethis_config.frozen:
         box_print("Run 'uvx pre-commit uninstall' to deregister pre-commit with git.")
@@ -56,7 +55,7 @@ def uninstall_pre_commit_hooks() -> None:
 
     tick_print("Ensuring pre-commit hooks are uninstalled.")
     try:
-        call_uv_subprocess(["run", "pre-commit", "uninstall"])
+        call_uv_subprocess(["tool", "run", "pre-commit", "uninstall"])
     except UVSubprocessFailedError as err:
         msg = f"Failed to uninstall pre-commit hooks:\n{err}"
         raise PreCommitInstallationError(msg) from None

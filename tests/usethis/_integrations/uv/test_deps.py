@@ -115,6 +115,7 @@ class TestAddDepsToGroup:
             assert (
                 out
                 == "✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'pytest'.\n"
             )
 
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -135,6 +136,7 @@ class TestAddDepsToGroup:
             assert (
                 out
                 == "✔ Adding dependencies 'flake8', 'black' to the 'qa' group in 'pyproject.toml'.\n"
+                "☐ Install the dependencies 'flake8', 'black'.\n"
             )
 
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -161,6 +163,7 @@ class TestAddDepsToGroup:
             assert (
                 out
                 == "✔ Adding dependency 'black' to the 'test' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'black'.\n"
             )
 
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -183,6 +186,7 @@ class TestAddDepsToGroup:
             assert (
                 out
                 == "✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'pytest'.\n"
             )
 
     @pytest.mark.usefixtures("_vary_network_conn")

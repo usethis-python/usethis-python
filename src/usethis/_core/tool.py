@@ -5,6 +5,7 @@ from usethis._ci import (
     remove_bitbucket_pytest_steps,
     update_bitbucket_pytest_steps,
 )
+from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._integrations.bitbucket.steps import (
     add_bitbucket_steps_in_default,
@@ -170,9 +171,6 @@ def use_pre_commit(*, remove: bool = False) -> None:
             remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
             _add_bitbucket_linter_steps_to_default()
 
-        # Need pre-commit to be installed so we can uninstall hooks
-        add_deps_to_group(tool.dev_deps, "dev")
-
         uninstall_pre_commit_hooks()
 
         remove_pre_commit_config()
@@ -313,19 +311,20 @@ def use_requirements_txt(*, remove: bool = False) -> None:
 
         if not path.exists():
             # N.B. this is where a task runner would come in handy, to reduce duplication.
-            if not (Path.cwd() / "uv.lock").exists():
+            if not (Path.cwd() / "uv.lock").exists() and not usethis_config.frozen:
                 tick_print("Writing 'uv.lock'.")
                 call_uv_subprocess(["lock"])
 
-            tick_print("Writing 'requirements.txt'.")
-            call_uv_subprocess(
-                [
-                    "export",
-                    "--frozen",
-                    "--no-dev",
-                    "--output-file=requirements.txt",
-                ]
-            )
+            if not usethis_config.frozen:
+                tick_print("Writing 'requirements.txt'.")
+                call_uv_subprocess(
+                    [
+                        "export",
+                        "--frozen",
+                        "--no-dev",
+                        "--output-file=requirements.txt",
+                    ]
+                )
 
         if not is_pre_commit:
             _requirements_txt_instructions_basic()

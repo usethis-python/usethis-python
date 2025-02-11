@@ -95,6 +95,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             assert not err
             assert out == (
                 "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'codespell'.\n"
                 "✔ Adding 'Run Codespell' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding Codespell config to 'pyproject.toml'.\n"
                 "☐ Run 'codespell' to run the Codespell spellchecker.\n"
@@ -132,6 +133,8 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_runs(self, uv_env_dir: Path):
+            # An env is needed in which to run codespell
+
             with change_cwd(uv_env_dir):
                 # Arrange
                 use_codespell()
@@ -181,6 +184,7 @@ class TestCoverage:
                 assert not err
                 assert out == (
                     "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
+                    "☐ Install the dependency 'coverage'.\n"
                     "✔ Adding coverage config to 'pyproject.toml'.\n"
                     "☐ Run 'coverage help' to see available coverage commands.\n"
                 )
@@ -226,6 +230,7 @@ class TestCoverage:
                 assert not err
                 assert out == (
                     "✔ Adding dependencies 'coverage', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
+                    "☐ Install the dependencies 'coverage', 'pytest-cov'.\n"
                     "✔ Adding coverage config to 'pyproject.toml'.\n"
                     "☐ Run 'pytest --cov' to run your tests with coverage.\n"
                 )
@@ -308,6 +313,7 @@ class TestDeptry:
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'deptry'.\n"
                 "☐ Run 'deptry src' to run deptry.\n"
             )
 
@@ -342,10 +348,10 @@ class TestDeptry:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_after(
-            self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(uv_env_dir):
+            with change_cwd(uv_init_dir):
                 use_deptry()
                 use_pre_commit()
 
@@ -353,13 +359,13 @@ class TestDeptry:
                 hook_names = get_hook_names()
 
             # 1. File exists
-            assert (uv_env_dir / ".pre-commit-config.yaml").exists()
+            assert (uv_init_dir / ".pre-commit-config.yaml").exists()
 
             # 2. Hook is in the file
             assert "deptry" in hook_names
 
             # 3. Test file contents
-            assert (uv_env_dir / ".pre-commit-config.yaml").read_text() == (
+            assert (uv_init_dir / ".pre-commit-config.yaml").read_text() == (
                 """\
 repos:
   - repo: local
@@ -377,13 +383,13 @@ repos:
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'deptry'.\n"
                 "☐ Run 'deptry src' to run deptry.\n"
                 "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'pre-commit'.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-                "✔ Ensuring pre-commit is installed to Git.\n"
-                "✔ Ensuring pre-commit hooks are installed.\n"
-                "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
+                "☐ Run 'pre-commit install' to register pre-commit with git.\n"
                 "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
             )
 
@@ -519,6 +525,7 @@ repos:
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'deptry'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 "☐ Run 'deptry src' to run deptry.\n"
             )
@@ -550,6 +557,7 @@ repos:
             # Expecting not to get a specific message about removing the placeholder.
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'deptry'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 "☐ Run 'deptry src' to run deptry.\n"
             )
@@ -576,9 +584,9 @@ repos:
 class TestPreCommit:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_fresh(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
+        def test_fresh(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
-            with change_cwd(uv_env_dir):
+            with change_cwd(uv_init_dir):
                 use_pre_commit()
 
                 # Assert
@@ -589,19 +597,18 @@ class TestPreCommit:
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'pre-commit'.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
                 "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
                 "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
                 "☐ Replace it with your own hooks.\n"
                 "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
-                "✔ Ensuring pre-commit is installed to Git.\n"
-                "✔ Ensuring pre-commit hooks are installed.\n"
-                "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
+                "☐ Run 'pre-commit install' to register pre-commit with git.\n"
                 "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
             )
             # Config file
-            assert (uv_env_dir / ".pre-commit-config.yaml").exists()
-            contents = (uv_env_dir / ".pre-commit-config.yaml").read_text()
+            assert (uv_init_dir / ".pre-commit-config.yaml").exists()
+            contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
             assert contents == (
                 """\
 repos:
@@ -649,6 +656,8 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_bad_commit(self, uv_env_dir: Path):
+            # This needs a venv so that we can actually run pre-commit via git
+
             # Act
             with change_cwd(uv_env_dir):
                 use_pre_commit()
@@ -668,10 +677,11 @@ repos:
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_requirements_txt_used(self, uv_env_dir: Path):
-            with change_cwd(uv_env_dir):
+        def test_requirements_txt_used(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir):
                 # Arrange
-                use_requirements_txt()
+                with usethis_config.set(frozen=False):
+                    use_requirements_txt()
 
                 # Act
                 use_pre_commit()
@@ -739,9 +749,9 @@ repos:
                 assert not get_deps_from_group("dev")
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_stdout(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
+        def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
-            (uv_env_dir / ".pre-commit-config.yaml").write_text(
+            (uv_init_dir / ".pre-commit-config.yaml").write_text(
                 """\
 repos:
   - repo: local
@@ -751,7 +761,7 @@ repos:
             )
 
             # Act
-            with change_cwd(uv_env_dir):
+            with change_cwd(uv_init_dir):
                 use_pre_commit(remove=True)
 
             # Assert
@@ -759,20 +769,22 @@ repos:
             assert not err
             assert out == (
                 "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
-                "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                "☐ Install the dependency 'pre-commit'.\n"
+                "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
                 "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_requirements_txt_used(
-            self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_env_dir):
+            with change_cwd(uv_init_dir):
                 # Arrange
-                with usethis_config.set(quiet=True):
-                    use_pre_commit()
+                use_pre_commit()
+                with usethis_config.set(frozen=False):
                     use_requirements_txt()
+                capfd.readouterr()
 
                 # Act
                 use_pre_commit(remove=True)
@@ -780,7 +792,7 @@ repos:
                 # Assert
                 out, _ = capfd.readouterr()
                 assert out == (
-                    "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                    "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
                     "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
@@ -788,9 +800,9 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pyproject_fmt_used(
-            self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_env_dir):
+            with change_cwd(uv_init_dir):
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pre_commit()
@@ -802,10 +814,11 @@ repos:
                 # Assert
                 out, _ = capfd.readouterr()
                 assert out == (
-                    "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                    "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
                     "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Install the dependency 'pyproject-fmt'.\n"
                     "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
@@ -831,6 +844,7 @@ repos:
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
                     "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Install the dependency 'codespell'.\n"
                     "☐ Run 'codespell' to run the Codespell spellchecker.\n"
                 )
 
@@ -851,12 +865,12 @@ image: atlassian/default-image:3
             contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
             assert "pre-commit" in contents
 
-        def test_remove(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
+        def test_remove(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
-            with change_cwd(uv_env_dir):
+            with change_cwd(uv_init_dir):
                 use_pre_commit()
             capfd.readouterr()
-            (uv_env_dir / "bitbucket-pipelines.yml").write_text(
+            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
                 """\
 image: atlassian/default-image:3
 pipelines:
@@ -869,11 +883,11 @@ pipelines:
             )
 
             # Act
-            with change_cwd(uv_env_dir):
+            with change_cwd(uv_init_dir):
                 use_pre_commit(remove=True)
 
             # Assert
-            contents = (uv_env_dir / "bitbucket-pipelines.yml").read_text()
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
             assert (
                 contents
                 == """\
@@ -903,7 +917,7 @@ pipelines:
             assert out == (
                 "✔ Removing 'Run pre-commit' from default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                "✔ Ensuring pre-commit hooks are uninstalled.\n"
+                "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
                 "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
             )
@@ -989,6 +1003,7 @@ keep_full_version = true
                 out, _ = capfd.readouterr()
                 assert out == (
                     "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Install the dependency 'pyproject-fmt'.\n"
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
                     "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
@@ -1011,6 +1026,7 @@ keep_full_version = true
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'pyproject-fmt'.\n"
                 "✔ Adding 'Run pyproject-fmt' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
                 "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
@@ -1184,6 +1200,7 @@ class TestPytest:
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependencies 'pytest', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
+                "☐ Install the dependencies 'pytest', 'pytest-cov'.\n"
                 "✔ Adding pytest config to 'pyproject.toml'.\n"
                 "✔ Creating '/tests'.\n"
                 "✔ Writing '/tests/conftest.py'.\n"
@@ -1391,6 +1408,7 @@ class TestRuff:
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
                 "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"

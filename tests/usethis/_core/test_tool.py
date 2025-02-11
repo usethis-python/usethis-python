@@ -669,12 +669,15 @@ repos:
             # Assert
             (uv_env_dir / ".pre-commit-config.yaml").write_text("[")
             subprocess.run(["git", "add", "."], cwd=uv_env_dir, check=True)
-            with pytest.raises(subprocess.CalledProcessError):
-                subprocess.run(
-                    ["git", "commit", "-m", "Bad commit"],
-                    cwd=uv_env_dir,
-                    check=True,
-                )
+            result = subprocess.run(
+                ["git", "commit", "-m", "Bad commit"],
+                cwd=uv_env_dir,
+                capture_output=True,
+            )
+            assert not result.stdout
+            assert result.returncode != 0, (
+                f"stdout: {result.stdout}\nstderr: {result.stderr}\n"
+            )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_requirements_txt_used(self, uv_init_dir: Path):

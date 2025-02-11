@@ -13,10 +13,10 @@ def call_uv_subprocess(args: list[str]) -> str:
     read_pyproject_toml_from_path.cache_clear()
 
     if usethis_config.frozen and args[0] in {
+        # Note, not "lock", for which the --frozen flags has quite a different effect
         "add",
         "remove",
         "sync",
-        "lock",
         "export",
         "tree",
         "run",

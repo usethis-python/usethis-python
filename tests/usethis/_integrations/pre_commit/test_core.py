@@ -59,6 +59,8 @@ class TestRemovePreCommitConfig:
 class TestInstallPreCommitHooks:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_message(self, uv_env_dir: Path, capfd: pytest.CaptureFixture[str]):
+        # This is needed to check the standard (non-frozen) message
+
         # Arrange
         with change_cwd(uv_env_dir):
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
@@ -91,6 +93,8 @@ class TestUninstallPreCommitHooks:
         uv_env_dir: Path,
         capfd: pytest.CaptureFixture[str],
     ):
+        # This is needed to check the standard (non-frozen) message
+
         # Arrange
         with change_cwd(uv_env_dir):
             add_deps_to_group([Dependency(name="pre-commit")], "dev")

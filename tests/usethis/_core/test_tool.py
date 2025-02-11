@@ -389,7 +389,7 @@ repos:
                 "☐ Install the dependency 'pre-commit'.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-                "☐ Run 'pre-commit install' to register pre-commit with git.\n"
+                "☐ Run 'pre-commit install' to register pre-commit.\n"
                 "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
             )
 
@@ -603,7 +603,7 @@ class TestPreCommit:
                 "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
                 "☐ Replace it with your own hooks.\n"
                 "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
-                "☐ Run 'pre-commit install' to register pre-commit with git.\n"
+                "☐ Run 'pre-commit install' to register pre-commit.\n"
                 "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
             )
             # Config file
@@ -780,7 +780,7 @@ repos:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
+                "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
                 "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
             )
@@ -802,7 +802,7 @@ repos:
                 # Assert
                 out, _ = capfd.readouterr()
                 assert out == (
-                    "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
+                    "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
                     "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
@@ -824,7 +824,7 @@ repos:
                 # Assert
                 out, _ = capfd.readouterr()
                 assert out == (
-                    "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
+                    "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
                     "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
@@ -850,7 +850,7 @@ repos:
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
-                    "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
+                    "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
                     "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
@@ -927,7 +927,7 @@ pipelines:
             assert out == (
                 "✔ Removing 'Run pre-commit' from default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                "☐ Run 'uvx pre-commit uninstall' to deregister pre-commit with git.\n"
+                "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                 "✔ Removing '.pre-commit-config.yaml'.\n"
                 "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
             )

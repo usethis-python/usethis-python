@@ -667,7 +667,7 @@ repos:
             )
 
             # Assert
-            (uv_env_dir / "pyproject.toml").write_text("[")
+            (uv_env_dir / ".pre-commit-config.yaml").write_text("[")
             subprocess.run(["git", "add", "."], cwd=uv_env_dir, check=True)
             with pytest.raises(subprocess.CalledProcessError):
                 subprocess.run(

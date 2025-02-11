@@ -100,7 +100,7 @@ repos:
     hooks:
       - id: placeholder
         name: Placeholder - add your own hooks!
-        entry: uvx python -c "print('hello world!')"
+        entry: uv run --frozen python -c "print('hello world!')"
         language: system
 """
         )
@@ -124,7 +124,7 @@ repos:
     hooks:
       - id: placeholder
         name: Placeholder - add your own hooks!
-        entry: uvx python -c "print('hello world!')"
+        entry: uv run --frozen python -c "print('hello world!')"
         language: system
 """
         )
@@ -148,7 +148,7 @@ repos:
     hooks:
       - id: placeholder
         name: Placeholder - add your own hooks!
-        entry: uvx python -c "print('hello world!')"
+        entry: uv run --frozen python -c "print('hello world!')"
         language: system
 """
         )
@@ -289,7 +289,7 @@ repos:
     hooks:
       - id: placeholder
         name: Placeholder - add your own hooks!
-        entry: uvx python -c "print('hello world!')"
+        entry: uv run --frozen python -c "print('hello world!')"
         language: system
 """
         )

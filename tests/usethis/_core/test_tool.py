@@ -662,8 +662,12 @@ repos:
             with change_cwd(uv_env_dir):
                 use_pre_commit()
             subprocess.run(["git", "add", "."], cwd=uv_env_dir, check=True)
-            subprocess.run(
-                ["git", "commit", "-m", "Good commit"], cwd=uv_env_dir, check=True
+            result = subprocess.run(
+                ["git", "commit", "-m", "Good commit"], cwd=uv_env_dir
+            )
+            assert not result.stderr
+            assert result.returncode == 0, (
+                f"stdout: {result.stdout}\nstderr: {result.stderr}\n"
             )
 
             # Assert

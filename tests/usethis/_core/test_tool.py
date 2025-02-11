@@ -65,7 +65,6 @@ class TestCodespell:
             assert (uv_init_dir / "pyproject.toml").read_text() == content + "\n" + (
                 """\
 [tool.codespell]
-ignore-words-list = []
 ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 """
             )
@@ -130,6 +129,15 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 "✔ Adding Codespell config to 'pyproject.toml'.\n"
                 "☐ Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker.\n"
             )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_runs(self, uv_env_dir: Path):
+            with change_cwd(uv_env_dir):
+                # Arrange
+                use_codespell()
+
+                # Act, Assert (no errors)
+                call_uv_subprocess(["run", "codespell"])
 
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")

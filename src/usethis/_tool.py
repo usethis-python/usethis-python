@@ -205,7 +205,6 @@ class CodespellTool(Tool):
             PyProjectConfig(
                 id_keys=["tool", "codespell"],
                 value={
-                    "ignore-words-list": [],
                     "ignore-regex": [
                         "[A-Za-z0-9+/]{100,}"  # Ignore long base64 strings
                     ],

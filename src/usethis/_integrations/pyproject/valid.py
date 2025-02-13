@@ -1,4 +1,5 @@
 from collections.abc import Container
+from pathlib import Path
 
 from usethis._console import tick_print
 from usethis._integrations.pyproject.io_ import (
@@ -8,6 +9,9 @@ from usethis._integrations.pyproject.io_ import (
 
 
 def ensure_pyproject_validity():
+    if not (Path.cwd() / "pyproject.toml").exists():
+        return
+
     toml_document = read_pyproject_toml()
 
     # If project.version is missing and project.dynamic does not include "version",

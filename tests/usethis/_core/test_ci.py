@@ -541,6 +541,7 @@ pipelines:
             """\
 [project]
 requires-python = ">=3.12,<3.13"
+version = "0.1.0"
 """
         )
 

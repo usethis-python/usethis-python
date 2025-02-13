@@ -46,7 +46,7 @@ def set_config_value(
 
     try:
         # Index our way into each ID key.
-        # Eventually, we should land at a final dict, which si the one we are setting.
+        # Eventually, we should land at a final dict, which is the one we are setting.
         p, parent = pyproject, {}
         for key in id_keys:
             TypeAdapter(dict).validate_python(p)

@@ -1,9 +1,12 @@
+from pathlib import Path
+
 import pytest
 
 import usethis._integrations.uv.call
 from usethis._config import usethis_config
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
+from usethis._test import change_cwd
 
 
 class TestCallUVSubprocess:
@@ -39,3 +42,36 @@ class TestCallUVSubprocess:
             assert call_uv_subprocess(["run", "pre-commit", "install"]) == (
                 "uv run --frozen pre-commit install"
             )
+
+    def test_handle_missing_version(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # https://github.com/nathanjmcdougall/usethis-python/issues/299
+
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """\
+[project]
+name = "example"
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path):
+            call_uv_subprocess(["add", "ruff==0.9.0"])
+
+        # Assert
+        assert (
+            (tmp_path / "pyproject.toml").read_text()
+            == """\
+[project]
+name = "example"
+version = "0.1.0"
+dependencies = [
+    "ruff==0.9.0",
+]
+"""
+        )
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "✔ Set project version to '0.1.0' in 'pyproject.toml'.\n"

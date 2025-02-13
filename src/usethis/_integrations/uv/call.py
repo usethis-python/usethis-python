@@ -1,5 +1,6 @@
 from usethis._config import usethis_config
 from usethis._integrations.pyproject.io_ import read_pyproject_toml_from_path
+from usethis._integrations.pyproject.valid import ensure_pyproject_validity
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 
@@ -10,6 +11,8 @@ def call_uv_subprocess(args: list[str]) -> str:
     Raises:
         UVSubprocessFailedError: If the subprocess fails.
     """
+    ensure_pyproject_validity()
+
     read_pyproject_toml_from_path.cache_clear()
 
     if usethis_config.frozen and args[0] in {

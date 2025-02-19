@@ -1496,7 +1496,7 @@ select = ["A", "B", "C"]
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
                 use_ruff()
                 use_ruff(remove=True)
 

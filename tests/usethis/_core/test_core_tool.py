@@ -1508,7 +1508,6 @@ select = ["A", "B", "C"]
 
 [dependency-groups]
 dev = []
-
 """
             )
 

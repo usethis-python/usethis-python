@@ -7,6 +7,7 @@ from usethis._integrations.pyproject.core import (
     get_config_value,
     remove_config_value,
 )
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,
@@ -24,7 +25,7 @@ class TestGetDepGroups:
     def test_no_dev_section(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").touch()
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             assert get_dep_groups() == {}
 
     def test_empty_section(self, tmp_path: Path):
@@ -32,7 +33,7 @@ class TestGetDepGroups:
 [dependency-groups]
 """)
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             assert get_dep_groups() == {}
 
     def test_empty_group(self, tmp_path: Path):
@@ -41,7 +42,7 @@ class TestGetDepGroups:
 test=[]
 """)
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             assert get_dep_groups() == {"test": []}
 
     def test_single_dev_dep(self, tmp_path: Path):
@@ -50,7 +51,7 @@ test=[]
 test=['pytest']
 """)
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             assert get_dep_groups() == {"test": [Dependency(name="pytest")]}
 
     def test_multiple_dev_deps(self, tmp_path: Path):
@@ -59,7 +60,7 @@ test=['pytest']
 qa=["flake8", "black", "isort"]
 """)
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             assert get_dep_groups() == {
                 "qa": [
                     Dependency(name="flake8"),
@@ -77,7 +78,7 @@ test=['pytest']
 """
         )
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             assert get_dep_groups() == {
                 "qa": [
                     Dependency(name="flake8"),
@@ -487,7 +488,7 @@ class TestRegisterDefaultGroup:
         # Arrange
         (tmp_path / "pyproject.toml").write_text("")
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Act
             register_default_group("test")
 
@@ -501,7 +502,7 @@ class TestRegisterDefaultGroup:
 [tool.uv]
 """)
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Act
             register_default_group("test")
 
@@ -516,7 +517,7 @@ class TestRegisterDefaultGroup:
 default-groups = []
 """)
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Act
             register_default_group("test")
 
@@ -531,7 +532,7 @@ default-groups = []
 default-groups = ["test"]
 """)
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Act
             register_default_group("test")
 
@@ -546,7 +547,7 @@ default-groups = ["test"]
 default-groups = ["test", "dev"]
 """)
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Act
             register_default_group("docs")
 
@@ -561,7 +562,7 @@ default-groups = ["test", "dev"]
 default-groups = ["test"]
 """)
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Act
             register_default_group("docs")
 

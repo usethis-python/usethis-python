@@ -5,6 +5,7 @@ import typer
 from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._console import err_print, info_print
 from usethis._core.ci import use_ci_bitbucket
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis.errors import UsethisError
 
 app = typer.Typer(help="Add config for Continuous Integration (CI) pipelines.")
@@ -19,7 +20,10 @@ def bitbucket(
     quiet: bool = quiet_opt,
 ) -> None:
     try:
-        with usethis_config.set(offline=offline, quiet=quiet):
+        with (
+            usethis_config.set(offline=offline, quiet=quiet),
+            pyproject_toml_io_manager.open(),
+        ):
             use_ci_bitbucket(remove=remove)
     except UsethisError as err:
         err_print(err)

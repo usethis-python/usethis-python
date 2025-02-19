@@ -12,7 +12,7 @@ from usethis._test import change_cwd
 class TestCallUVSubprocess:
     def test_help_output_suppressed(self, capfd: pytest.CaptureFixture[str]):
         # Act
-        call_uv_subprocess(["help"])
+        call_uv_subprocess(["help"], change_toml=False)
 
         # Assert
         assert capfd.readouterr().out == ""
@@ -22,7 +22,7 @@ class TestCallUVSubprocess:
         # Act and Assert
         match = ".*error: unrecognized subcommand 'does-not-exist'.*"
         with pytest.raises(UVSubprocessFailedError, match=match):
-            call_uv_subprocess(["does-not-exist"])
+            call_uv_subprocess(["does-not-exist"], change_toml=False)
 
     def test_frozen_added_in_uv_run(self, monkeypatch: pytest.MonkeyPatch):
         # Mock the usethis._subprocess.call_subprocess function to check args passed
@@ -39,9 +39,9 @@ class TestCallUVSubprocess:
         with usethis_config.set(frozen=True):
             # Act, Assert
             # Check the args passed to call_subprocess
-            assert call_uv_subprocess(["run", "pre-commit", "install"]) == (
-                "uv run --frozen pre-commit install"
-            )
+            assert call_uv_subprocess(
+                ["run", "pre-commit", "install"], change_toml=False
+            ) == ("uv run --frozen pre-commit install")
 
     def test_handle_missing_version(
         self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
@@ -58,7 +58,7 @@ name = "example"
 
         # Act
         with change_cwd(tmp_path):
-            call_uv_subprocess(["add", "ruff==0.9.0"])
+            call_uv_subprocess(["add", "ruff==0.9.0"], change_toml=True)
 
         # Assert
         assert (
@@ -74,4 +74,4 @@ dependencies = [
         )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Set project version to '0.1.0' in 'pyproject.toml'.\n"
+        assert out == "✔ Setting project version to '0.1.0' in 'pyproject.toml'.\n"

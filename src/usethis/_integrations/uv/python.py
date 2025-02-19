@@ -2,15 +2,20 @@ import re
 
 from usethis._config import usethis_config
 from usethis._integrations.pyproject.requires_python import get_requires_python
+from usethis._integrations.python.version import extract_major_version
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVUnparsedPythonVersionError
 
 
 def get_available_python_versions() -> set[str]:
     if not usethis_config.offline:
-        output = call_uv_subprocess(["python", "list", "--all-versions"])
+        output = call_uv_subprocess(
+            ["python", "list", "--all-versions"], change_toml=False
+        )
     else:
-        output = call_uv_subprocess(["python", "list", "--all-versions", "--offline"])
+        output = call_uv_subprocess(
+            ["python", "list", "--all-versions", "--offline"], change_toml=False
+        )
 
     return {
         _parse_python_version_from_uv_output(version) for version in output.splitlines()
@@ -26,11 +31,7 @@ def get_supported_major_python_versions() -> list[int]:
         if requires_python.contains(version):
             versions.add(version)
 
-    return sorted({_get_major_version(version) for version in versions})
-
-
-def _get_major_version(version: str) -> int:
-    return int(version.split(".")[1])
+    return sorted({extract_major_version(version) for version in versions})
 
 
 def _parse_python_version_from_uv_output(version: str) -> str:
@@ -44,4 +45,4 @@ def _parse_python_version_from_uv_output(version: str) -> str:
 
 
 def python_pin(version: str) -> None:
-    call_uv_subprocess(["python", "pin", version])
+    call_uv_subprocess(["python", "pin", version], change_toml=False)

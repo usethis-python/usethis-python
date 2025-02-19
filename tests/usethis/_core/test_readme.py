@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._core.readme import add_readme
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis._test import change_cwd
 
 
@@ -11,7 +12,7 @@ class TestAddReadme:
         self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
     ):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             add_readme()
 
         # Assert
@@ -29,7 +30,7 @@ class TestAddReadme:
         (tmp_path / "README.rst").touch()
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             add_readme()
 
         # Assert
@@ -40,7 +41,7 @@ class TestAddReadme:
         (tmp_path / "README").mkdir()
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             add_readme()
 
         # Assert
@@ -64,7 +65,7 @@ class TestAddReadme:
         # We should automatically generate the TOML file.
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             add_readme()
 
         # Assert
@@ -76,7 +77,7 @@ class TestAddReadme:
         (tmp_path / "pyproject.toml").write_text("")
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             add_readme()
 
         # Assert
@@ -93,7 +94,7 @@ description = "A description"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             add_readme()
 
         # Assert
@@ -110,7 +111,7 @@ name = "A name"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             add_readme()
 
         # Assert
@@ -128,7 +129,7 @@ description = "A description"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             add_readme()
 
         # Assert

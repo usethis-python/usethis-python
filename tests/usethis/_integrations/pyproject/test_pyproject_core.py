@@ -11,13 +11,20 @@ from usethis._integrations.pyproject.core import (
     remove_config_value,
     set_config_value,
 )
-from usethis._integrations.pyproject.io_ import PyProjectTOMLNotFoundError
+from usethis._integrations.pyproject.io_ import (
+    PyProjectTOMLNotFoundError,
+    pyproject_toml_io_manager,
+)
 from usethis._test import change_cwd
 
 
 class TestGetConfigValue:
     def test_pyproject_does_not_exist(self, tmp_path: Path):
-        with change_cwd(tmp_path), pytest.raises(PyProjectTOMLNotFoundError):
+        with (
+            change_cwd(tmp_path),
+            pyproject_toml_io_manager.open(),
+            pytest.raises(PyProjectTOMLNotFoundError),
+        ):
             get_config_value(["tool", "usethis", "key"])
 
     def test_key_does_not_exist(self, tmp_path: Path):
@@ -30,7 +37,11 @@ key = "value"
         )
 
         # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(KeyError):
+        with (
+            change_cwd(tmp_path),
+            pyproject_toml_io_manager.open(),
+            pytest.raises(KeyError),
+        ):
             get_config_value(["tool", "usethis", "key2"])
 
     def test_single_key(self, tmp_path: Path):
@@ -43,7 +54,7 @@ key = "value"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             value = get_config_value(["tool", "usethis", "key"])
 
         # Assert
@@ -56,7 +67,7 @@ class TestSetConfigValue:
         (tmp_path / "pyproject.toml").touch()
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             set_config_value(["tool", "usethis", "key"], "value")
 
         # Assert
@@ -78,7 +89,7 @@ key = "value1"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             set_config_value(["tool", "usethis", "key"], "value2", exists_ok=True)
 
         # Assert
@@ -102,6 +113,7 @@ key = "value1"
         # Act
         with (
             change_cwd(tmp_path),
+            pyproject_toml_io_manager.open(),
             pytest.raises(
                 PyProjectTOMLValueAlreadySetError,
                 match=re.escape(
@@ -122,7 +134,7 @@ key2 = "value2"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             set_config_value(["tool", "usethis", "key1"], "value3", exists_ok=True)
 
         # Assert
@@ -142,11 +154,19 @@ class TestRemoveConfigValue:
         (tmp_path / "pyproject.toml").touch()
 
         # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(PyProjectTOMLValueMissingError):
+        with (
+            change_cwd(tmp_path),
+            pyproject_toml_io_manager.open(),
+            pytest.raises(PyProjectTOMLValueMissingError),
+        ):
             remove_config_value(["tool", "usethis", "key"])
 
     def test_missing_pyproject(self, tmp_path: Path):
-        with change_cwd(tmp_path), pytest.raises(PyProjectTOMLNotFoundError):
+        with (
+            change_cwd(tmp_path),
+            pyproject_toml_io_manager.open(),
+            pytest.raises(PyProjectTOMLNotFoundError),
+        ):
             remove_config_value(["tool", "usethis", "key"])
 
     def test_single_key(self, tmp_path: Path):
@@ -160,7 +180,7 @@ key = "value"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             remove_config_value(["tool", "usethis", "key"])
 
         # Assert
@@ -178,7 +198,7 @@ key2 = "value2"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             remove_config_value(["tool", "usethis", "key1"])
 
         # Assert
@@ -195,7 +215,7 @@ key2 = "value2"
         (tmp_path / "pyproject.toml").touch()
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             remove_config_value(["tool", "usethis", "key"], missing_ok=True)
 
         # Assert
@@ -208,7 +228,7 @@ class TestAppendConfigList:
         (tmp_path / "pyproject.toml").touch()
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             append_config_list(["tool", "usethis", "key"], ["value"])
 
         # Assert
@@ -230,7 +250,7 @@ key = ["value1"]
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             append_config_list(["tool", "usethis", "key"], ["value2"])
 
         # Assert

@@ -78,7 +78,7 @@ class TestPytest:
             result = runner.invoke(app, ["pytest"])
 
         # Assert
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
 
 class TestCodespell:
@@ -89,7 +89,7 @@ class TestCodespell:
             result = runner.invoke(app, ["codespell"])
 
         # Assert
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
 
 @pytest.mark.benchmark

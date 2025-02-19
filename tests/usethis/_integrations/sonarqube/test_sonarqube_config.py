@@ -4,6 +4,7 @@ from sysconfig import get_python_version
 import pytest
 
 from usethis._integrations.pyproject.core import set_config_value
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis._integrations.sonarqube.config import (
     _validate_project_key,
     get_sonar_project_properties,
@@ -70,7 +71,7 @@ sonar.verbose=false
     def test_different_python_version(self, tmp_path: Path):
         # If the python version is different, it should be updated.
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Arrange
             assert get_python_version()
             python_pin("3.10")
@@ -102,7 +103,7 @@ sonar.verbose=false
         )
 
     def test_no_pin_python(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Arrange
             ensure_pyproject_toml()
             set_config_value(
@@ -132,7 +133,7 @@ sonar.verbose=false
         )
 
     def test_different_project_key(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()
@@ -163,7 +164,7 @@ sonar.verbose=false
         )
 
     def test_set_verbose_true(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()
@@ -198,11 +199,15 @@ sonar.verbose=true
         )
 
     def test_missing_pyproject_toml_raises(self, tmp_path: Path):
-        with change_cwd(tmp_path), pytest.raises(MissingProjectKeyError):
+        with (
+            change_cwd(tmp_path),
+            pyproject_toml_io_manager.open(),
+            pytest.raises(MissingProjectKeyError),
+        ):
             get_sonar_project_properties()
 
     def test_missing_project_key_section_raises(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Arrange
             ensure_pyproject_toml()
 
@@ -211,7 +216,7 @@ sonar.verbose=true
                 get_sonar_project_properties()
 
     def test_patch_version_ignored(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Arrange
             python_pin("3.12.1")
             ensure_pyproject_toml()
@@ -242,7 +247,7 @@ sonar.verbose=false
         )
 
     def test_exclusions(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()
@@ -281,7 +286,7 @@ sonar.exclusions=**/Dockerfile, src/notebooks/**/*
         )
 
     def test_different_coverage_file_location(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()
@@ -312,7 +317,7 @@ sonar.verbose=false
         )
 
     def test_missing_coverage_file_location_error(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()

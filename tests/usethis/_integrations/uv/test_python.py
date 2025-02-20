@@ -1,11 +1,13 @@
 from pathlib import Path
-from sysconfig import get_python_version
 
 import pytest
 
 from usethis._integrations.pyproject.errors import PyProjectTOMLNotFoundError
 from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
-from usethis._integrations.python.version import extract_major_version
+from usethis._integrations.python.version import (
+    extract_major_version,
+    get_python_version,
+)
 from usethis._integrations.uv.python import (
     _parse_python_version_from_uv_output,
     get_supported_major_python_versions,

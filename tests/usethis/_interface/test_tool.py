@@ -60,6 +60,17 @@ class TestPreCommit:
                 pytest.fail("Expected subprocess.CalledProcessError")
 
 
+class TestRequirementsTxt:
+    def test_runs(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["requirements.txt"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+
 class TestRuff:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_cli(self, uv_init_dir: Path):

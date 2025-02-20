@@ -168,7 +168,7 @@ pipelines:
               - uv
             script:
               - *install-uv
-              - uv run --python 3.10 pytest -x --junitxml=test-reports/report.xml
+              - uv run --python 3.{version} pytest -x --junitxml=test-reports/report.xml
 """
         )
 

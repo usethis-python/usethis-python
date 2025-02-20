@@ -1,4 +1,3 @@
-import sys
 from typing import Protocol
 
 import typer
@@ -154,4 +153,4 @@ def _run_tool(caller: UseToolFunc, *, remove: bool):
         caller(remove=remove)
     except UsethisError as err:
         err_print(err)
-        sys.exit(1)
+        raise typer.Exit(code=1)

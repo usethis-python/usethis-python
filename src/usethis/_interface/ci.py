@@ -1,5 +1,3 @@
-import sys
-
 import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
@@ -30,4 +28,4 @@ def bitbucket(
 
         if "mapping values are not allowed here" in str(err):
             info_print("Hint: You may have incorrect indentation the YAML file.")
-        sys.exit(1)
+        raise typer.Exit(code=1)

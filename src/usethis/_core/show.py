@@ -1,4 +1,4 @@
-import sys
+import typer
 
 from usethis._config import usethis_config
 from usethis._console import err_print
@@ -21,4 +21,4 @@ def show_sonarqube_config() -> None:
         print(get_sonar_project_properties())
     except UsethisError as err:
         err_print(err)
-        sys.exit(1)
+        raise typer.Exit(code=1)

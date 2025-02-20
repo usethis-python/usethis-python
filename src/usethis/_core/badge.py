@@ -1,7 +1,7 @@
 import re
-import sys
 from pathlib import Path
 
+import typer
 from pydantic import BaseModel
 from typing_extensions import Self
 
@@ -92,7 +92,7 @@ def add_badge(badge: Badge) -> None:
         path = _get_markdown_readme_path()
     except FileNotFoundError as err:
         err_print(err)
-        sys.exit(1)
+        raise typer.Exit(code=1)
 
     prerequisites: list[Badge] = []
     for _b in get_badge_order():

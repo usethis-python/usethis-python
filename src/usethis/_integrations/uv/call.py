@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from usethis._config import usethis_config
-from usethis._console import info_print
 from usethis._integrations.pyproject.io_ import (
     pyproject_toml_io_manager,
     read_pyproject_toml_from_path,
@@ -48,9 +47,6 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
     try:
         output = call_subprocess(new_args)
     except SubprocessFailedError as err:
-        info_print("Reverting 'pyproject.toml' to its previous state due to error.")
-        if is_pyproject_toml and change_toml and pyproject_toml_io_manager._opener._set:
-            pyproject_toml_io_manager._opener.revert_write_file()
         raise UVSubprocessFailedError(err) from None
 
     if change_toml and pyproject_toml_io_manager._opener._set:

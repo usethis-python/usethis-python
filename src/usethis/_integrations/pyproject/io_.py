@@ -40,7 +40,6 @@ class PyprojectTOMLOpener:
     def __init__(self) -> None:
         self.path = Path.cwd() / "pyproject.toml"
         self.content = TOMLDocument()
-        self.most_recent_file_write = TOMLDocument()
         self.open = False
         self._set = False
 
@@ -62,17 +61,9 @@ class PyprojectTOMLOpener:
 
         self.content = toml_document
 
-    def refresh(self) -> None:
-        self.write_file()
-        self.read_file()
-
     def write_file(self) -> None:
         read_pyproject_toml_from_path.cache_clear()
         self.path.write_text(dumps(self.content))
-        self.most_recent_file_write = self.content
-
-    def revert_write_file(self) -> None:
-        self.content = self.most_recent_file_write
 
     def read_file(self) -> None:
         self.content = read_pyproject_toml_from_path(self.path)

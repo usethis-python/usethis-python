@@ -1,4 +1,3 @@
-import sys
 from typing import Protocol
 
 import typer
@@ -15,6 +14,7 @@ from usethis._core.tool import (
     use_requirements_txt,
     use_ruff,
 )
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis.errors import UsethisError
 
 app = typer.Typer(help="Add and configure development tools, e.g. linters.")
@@ -33,7 +33,10 @@ def codespell(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        pyproject_toml_io_manager.open(),
+    ):
         _run_tool(use_codespell, remove=remove)
 
 
@@ -57,7 +60,10 @@ def deptry(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        pyproject_toml_io_manager.open(),
+    ):
         _run_tool(use_deptry, remove=remove)
 
 
@@ -70,7 +76,10 @@ def pre_commit(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        pyproject_toml_io_manager.open(),
+    ):
         _run_tool(use_pre_commit, remove=remove)
 
 
@@ -83,7 +92,10 @@ def pyproject_fmt(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        pyproject_toml_io_manager.open(),
+    ):
         _run_tool(use_pyproject_fmt, remove=remove)
 
 
@@ -94,7 +106,10 @@ def pytest(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        pyproject_toml_io_manager.open(),
+    ):
         _run_tool(use_pytest, remove=remove)
 
 
@@ -108,7 +123,10 @@ def requirements_txt(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        pyproject_toml_io_manager.open(),
+    ):
         _run_tool(use_requirements_txt, remove=remove)
 
 
@@ -119,7 +137,10 @@ def ruff(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        pyproject_toml_io_manager.open(),
+    ):
         _run_tool(use_ruff, remove=remove)
 
 
@@ -132,4 +153,4 @@ def _run_tool(caller: UseToolFunc, *, remove: bool):
         caller(remove=remove)
     except UsethisError as err:
         err_print(err)
-        sys.exit(1)
+        raise typer.Exit(code=1)

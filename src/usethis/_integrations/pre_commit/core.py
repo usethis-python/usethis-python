@@ -29,7 +29,7 @@ def install_pre_commit_hooks() -> None:
 
     tick_print("Ensuring pre-commit is installed to Git.")
     try:
-        call_uv_subprocess(["run", "pre-commit", "install"])
+        call_uv_subprocess(["run", "pre-commit", "install"], change_toml=False)
     except UVSubprocessFailedError as err:
         msg = f"Failed to install pre-commit in the Git repository:\n{err}"
         raise PreCommitInstallationError(msg) from None
@@ -38,7 +38,7 @@ def install_pre_commit_hooks() -> None:
         "This may take a minute or so while the hooks are downloaded.", temporary=True
     )
     try:
-        call_uv_subprocess(["run", "pre-commit", "install-hooks"])
+        call_uv_subprocess(["run", "pre-commit", "install-hooks"], change_toml=False)
     except UVSubprocessFailedError as err:
         msg = f"Failed to install pre-commit hooks:\n{err}"
         raise PreCommitInstallationError(msg) from None
@@ -57,7 +57,10 @@ def uninstall_pre_commit_hooks() -> None:
 
     tick_print("Ensuring pre-commit hooks are uninstalled.")
     try:
-        call_uv_subprocess(["run", "--with", "pre-commit", "pre-commit", "uninstall"])
+        call_uv_subprocess(
+            ["run", "--with", "pre-commit", "pre-commit", "uninstall"],
+            change_toml=False,
+        )
     except UVSubprocessFailedError as err:
         msg = f"Failed to uninstall pre-commit hooks:\n{err}"
         raise PreCommitInstallationError(msg) from None

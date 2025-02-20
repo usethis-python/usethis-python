@@ -313,7 +313,7 @@ def use_requirements_txt(*, remove: bool = False) -> None:
             # N.B. this is where a task runner would come in handy, to reduce duplication.
             if not (Path.cwd() / "uv.lock").exists() and not usethis_config.frozen:
                 tick_print("Writing 'uv.lock'.")
-                call_uv_subprocess(["lock"])
+                call_uv_subprocess(["lock"], change_toml=False)
 
             if not usethis_config.frozen:
                 tick_print("Writing 'requirements.txt'.")
@@ -323,7 +323,8 @@ def use_requirements_txt(*, remove: bool = False) -> None:
                         "--frozen",
                         "--no-dev",
                         "--output-file=requirements.txt",
-                    ]
+                    ],
+                    change_toml=False,
                 )
 
         if not is_pre_commit:

@@ -16,8 +16,9 @@ def is_bitbucket_used() -> bool:
 
 
 def update_bitbucket_pytest_steps() -> None:
-    matrix = get_supported_major_python_versions()
-    for version in matrix:
+    versions = get_supported_major_python_versions()
+
+    for version in versions:
         add_bitbucket_step_in_default(
             Step(
                 name=f"Test on 3.{version}",
@@ -36,7 +37,7 @@ def update_bitbucket_pytest_steps() -> None:
             match = re.match(r"^Test on 3\.(\d+)$", step.name)
             if match:
                 version = int(match.group(1))
-                if version not in matrix:
+                if version not in versions:
                     remove_bitbucket_step_from_default(step)
 
 

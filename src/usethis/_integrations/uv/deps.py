@@ -115,10 +115,13 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     for dep in to_add_deps:
         try:
             if not usethis_config.offline:
-                call_uv_subprocess(["add", "--group", group, "--quiet", str(dep)])
+                call_uv_subprocess(
+                    ["add", "--group", group, "--quiet", str(dep)], change_toml=True
+                )
             else:
                 call_uv_subprocess(
-                    ["add", "--group", group, "--quiet", "--offline", str(dep)]
+                    ["add", "--group", group, "--quiet", "--offline", str(dep)],
+                    change_toml=True,
                 )
         except UVSubprocessFailedError as err:
             msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
@@ -152,10 +155,13 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
     for dep in _deps:
         try:
             if not usethis_config.offline:
-                call_uv_subprocess(["remove", "--group", group, "--quiet", str(dep)])
+                call_uv_subprocess(
+                    ["remove", "--group", group, "--quiet", str(dep)], change_toml=True
+                )
             else:
                 call_uv_subprocess(
-                    ["remove", "--group", group, "--quiet", "--offline", str(dep)]
+                    ["remove", "--group", group, "--quiet", "--offline", str(dep)],
+                    change_toml=True,
                 )
         except UVSubprocessFailedError as err:
             msg = (

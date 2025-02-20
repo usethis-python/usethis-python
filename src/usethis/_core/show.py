@@ -1,5 +1,6 @@
-import sys
+import typer
 
+from usethis._config import usethis_config
 from usethis._console import err_print
 from usethis._integrations.pyproject.name import get_name
 from usethis._integrations.sonarqube.config import get_sonar_project_properties
@@ -8,14 +9,16 @@ from usethis.errors import UsethisError
 
 
 def show_name() -> None:
-    ensure_pyproject_toml()
+    with usethis_config.set(quiet=True):
+        ensure_pyproject_toml()
     print(get_name())
 
 
 def show_sonarqube_config() -> None:
-    ensure_pyproject_toml()
+    with usethis_config.set(quiet=True):
+        ensure_pyproject_toml()
     try:
         print(get_sonar_project_properties())
     except UsethisError as err:
         err_print(err)
-        sys.exit(1)
+        raise typer.Exit(code=1)

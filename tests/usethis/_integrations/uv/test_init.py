@@ -46,6 +46,18 @@ class TestEnsurePyprojectTOML:
         assert (tmp_path / "hello.py").exists()
         assert (tmp_path / "hello.py").read_text() == "test"
 
+    def test_main_py_respected(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "main.py").write_text("test")
+
+        # Act
+        with change_cwd(tmp_path):
+            ensure_pyproject_toml()
+
+        # Assert
+        assert (tmp_path / "main.py").exists()
+        assert (tmp_path / "main.py").read_text() == "test"
+
     def test_no_hello_py_created(self, tmp_path: Path):
         # Act
         with change_cwd(tmp_path):
@@ -53,6 +65,14 @@ class TestEnsurePyprojectTOML:
 
         # Assert
         assert not (tmp_path / "hello.py").exists()
+
+    def test_no_main_py_created(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path):
+            ensure_pyproject_toml()
+
+        # Assert
+        assert not (tmp_path / "main.py").exists()
 
     def test_no_readme(self, tmp_path: Path):
         # Act

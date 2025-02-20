@@ -3,7 +3,11 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.pyproject.errors import PyProjectTOMLNotFoundError
-from usethis._integrations.pyproject.requires_python import MissingRequiresPythonError
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.python.version import (
+    extract_major_version,
+    get_python_version,
+)
 from usethis._integrations.uv.python import (
     _parse_python_version_from_uv_output,
     get_supported_major_python_versions,
@@ -22,7 +26,7 @@ requires-python = ">=3.10,<3.12"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             supported_major_python = get_supported_major_python_versions()
 
         # Assert
@@ -38,14 +42,18 @@ requires-python = ">=3.9,<3.12"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             supported_major_python = get_supported_major_python_versions()
 
         # Assert
         assert supported_major_python == [9, 10, 11]
 
     def test_no_pyproject(self, tmp_path: Path):
-        with change_cwd(tmp_path), pytest.raises(PyProjectTOMLNotFoundError):
+        with (
+            change_cwd(tmp_path),
+            pyproject_toml_io_manager.open(),
+            pytest.raises(PyProjectTOMLNotFoundError),
+        ):
             get_supported_major_python_versions()
 
     def test_no_requires_python(self, tmp_path: Path):
@@ -58,8 +66,14 @@ name = "foo"
         )
 
         # Act
-        with change_cwd(tmp_path), pytest.raises(MissingRequiresPythonError):
-            get_supported_major_python_versions()
+        with (
+            change_cwd(tmp_path),
+            pyproject_toml_io_manager.open(),
+        ):
+            versions = get_supported_major_python_versions()
+
+        # Assert
+        assert versions == [extract_major_version(get_python_version())]
 
 
 class TestParsePythonVersionFromUVOutput:

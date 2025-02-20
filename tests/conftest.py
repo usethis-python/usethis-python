@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.call import call_subprocess, call_uv_subprocess
 from usethis._test import change_cwd, is_offline
 
@@ -22,7 +23,8 @@ def _uv_init_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
                 "3.12",
                 "--vcs",
                 "none",
-            ]
+            ],
+            change_toml=True,
         )
 
     return tmp_path
@@ -35,7 +37,11 @@ def uv_init_dir(tmp_path: Path, _uv_init_dir: Path) -> Generator[Path, None, Non
             src=_uv_init_dir, dst=tmp_path, symlinks=True, dirs_exist_ok=True
         )
 
-    with usethis_config.set(frozen=True):
+    with (
+        change_cwd(tmp_path),
+        usethis_config.set(frozen=True),
+        pyproject_toml_io_manager.open(),
+    ):
         yield tmp_path
 
 
@@ -48,15 +54,29 @@ def uv_init_repo_dir(tmp_path: Path, _uv_init_dir: Path) -> Generator[Path, None
 
         call_subprocess(["git", "init"])
 
-    with usethis_config.set(frozen=True):
-        yield tmp_path
+        with (
+            change_cwd(tmp_path),
+            usethis_config.set(frozen=True),
+            pyproject_toml_io_manager.open(),
+        ):
+            yield tmp_path
 
 
 @pytest.fixture
 def uv_env_dir(uv_init_repo_dir: Path) -> Generator[Path, None, None]:
     """A directory with a git repo, as well as uv-unfrozen project; allow venv and lockfile."""
-    with change_cwd(uv_init_repo_dir), usethis_config.set(frozen=False):
+    with (
+        change_cwd(uv_init_repo_dir),
+        usethis_config.set(frozen=False),
+        pyproject_toml_io_manager.open(),
+    ):
         yield uv_init_repo_dir
+
+
+@pytest.fixture
+def bare_dir(tmp_path: Path) -> Generator[Path, None, None]:
+    with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        yield tmp_path
 
 
 class NetworkConn(Enum):

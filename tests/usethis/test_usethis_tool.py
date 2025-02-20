@@ -6,6 +6,7 @@ from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_nam
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import set_config_value
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
 from usethis._tool import ALL_TOOLS, DeptryTool, Tool
@@ -608,7 +609,7 @@ repos:
             (tmp_path / "pyproject.toml").write_text("")
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 ThisTool().add_pyproject_configs()
 
             # Assert
@@ -654,7 +655,7 @@ name = "Modular Design"
             )
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 ThisTool().add_pyproject_configs()
 
             # Assert
@@ -694,7 +695,7 @@ ignore_missing = ["pytest"]
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
             tool = DeptryTool()
             tool.remove_pyproject_configs()
 

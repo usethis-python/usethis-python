@@ -101,10 +101,9 @@ def _add_step_in_default_via_doc(
 ) -> None:
     _add_step_caches_via_doc(step, doc=doc)
 
-    if step.name == _PLACEHOLDER_NAME:
-        pass  # We need to selectively choose to report at a higher level.
+    if step.name != _PLACEHOLDER_NAME:
+        # We need to selectively choose to report at a higher level.
         # It's not always notable that the placeholder is being added.
-    else:
         tick_print(
             f"Adding '{step.name}' to default pipeline in 'bitbucket-pipelines.yml'."
         )
@@ -157,6 +156,7 @@ def _add_step_in_default_via_doc(
     # N.B. Currently, we are not accounting for parallelism, whereas all these steps
     # could be parallel potentially.
     # See https://github.com/nathanjmcdougall/usethis-python/issues/149
+    maj_versions = get_supported_major_python_versions()
     step_order = [
         "Run pre-commit",
         # For these tools, sync them with the pre-commit removal logic
@@ -164,7 +164,7 @@ def _add_step_in_default_via_doc(
         "Run Ruff",
         "Run Deptry",
         "Run Codespell",
-        *[f"Test on 3.{maj}" for maj in get_supported_major_python_versions()],
+        *[f"Test on 3.{maj_version}" for maj_version in maj_versions],
     ]
     for step_name in step_order:
         if step_name == step.name:

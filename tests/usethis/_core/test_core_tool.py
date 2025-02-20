@@ -21,6 +21,7 @@ from usethis._integrations.pre_commit.hooks import (
     get_hook_names,
 )
 from usethis._integrations.pyproject.core import get_config_value
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -54,11 +55,12 @@ class TestCodespell:
             # Arrange
             with change_cwd(uv_init_dir):
                 add_deps_to_group([Dependency(name="codespell")], "dev")
+
             content = (uv_init_dir / "pyproject.toml").read_text()
             capfd.readouterr()
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
                 use_codespell()
 
             # Assert
@@ -140,7 +142,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 use_codespell()
 
                 # Act, Assert (no errors)
-                call_uv_subprocess(["run", "codespell"])
+                call_uv_subprocess(["run", "codespell"], change_toml=False)
 
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -156,7 +158,7 @@ foo = "bar"
             )
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
                 use_codespell(remove=True)
 
             # Assert
@@ -193,7 +195,7 @@ class TestCoverage:
         def test_no_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 # Act
                 use_coverage()
 
@@ -456,7 +458,7 @@ ignore_missing = ["pytest"]
 """)
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 use_deptry(remove=True)
 
             # Assert
@@ -981,7 +983,7 @@ class TestPyprojectFmt:
                 content = (uv_init_dir / "pyproject.toml").read_text()
 
                 # Act
-                with change_cwd(uv_init_dir):
+                with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
                     use_pyproject_fmt()
 
                 # Assert
@@ -1054,7 +1056,7 @@ foo = "bar"
             )
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
                 use_pyproject_fmt(remove=True)
 
             # Assert
@@ -1157,7 +1159,7 @@ class TestPytest:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_no_pyproject(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 # Act
                 use_pytest()
 
@@ -1222,16 +1224,16 @@ class TestPytest:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pytest_installed(self, tmp_path: Path):
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 # Act
                 use_pytest()
 
                 # Assert
                 # This will raise if pytest is not installed
-                call_uv_subprocess(["pip", "show", "pytest"])
+                call_uv_subprocess(["pip", "show", "pytest"], change_toml=False)
 
         def test_registers_test_group(self, tmp_path: Path):
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 # Act
                 use_pytest()
 
@@ -1251,7 +1253,7 @@ select = ["E", "PT"]
                 )
 
                 # Act
-                with change_cwd(uv_init_dir):
+                with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
                     use_pytest(remove=True)
 
                 # Assert
@@ -1294,7 +1296,7 @@ select = ["PT"]
                 )
 
                 # Act
-                with change_cwd(uv_init_dir):
+                with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
                     use_pytest(remove=True)
 
                 # Assert
@@ -1445,7 +1447,7 @@ class TestRuff:
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 use_ruff()
 
             # Assert
@@ -1466,7 +1468,7 @@ select = ["A", "B", "C"]
             )
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
                 use_ruff(remove=True)
 
             # Assert
@@ -1494,7 +1496,7 @@ select = ["A", "B", "C"]
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
                 use_ruff()
                 use_ruff(remove=True)
 
@@ -1506,7 +1508,6 @@ select = ["A", "B", "C"]
 
 [dependency-groups]
 dev = []
-
 """
             )
 
@@ -1577,7 +1578,7 @@ class TestRequirementsTxt:
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 use_requirements_txt()
 
             # Assert
@@ -1613,7 +1614,7 @@ class TestRequirementsTxt:
         ):
             with change_cwd(uv_init_dir), usethis_config.set(frozen=False):
                 # Arrange
-                call_uv_subprocess(["lock"])
+                call_uv_subprocess(["lock"], change_toml=False)
 
                 # Act
                 use_requirements_txt()
@@ -1707,7 +1708,7 @@ repos:
             assert "uv-export" not in content
 
         def test_roundtrip(self, tmp_path: Path):
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 # Arrange
                 use_requirements_txt()
 

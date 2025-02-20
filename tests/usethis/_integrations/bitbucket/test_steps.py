@@ -25,6 +25,7 @@ from usethis._integrations.bitbucket.steps import (
     add_bitbucket_step_in_default,
     add_placeholder_step_in_default,
     get_defined_script_items_via_doc,
+    get_steps_in_default,
     get_steps_in_pipeline_item,
     remove_bitbucket_step_from_default,
 )
@@ -1128,3 +1129,102 @@ image: atlassian/default-image:3
                 ),
                 doc=doc,
             )
+
+
+class TestGetStepsInDefault:
+    def test_no_file(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path):
+            steps = get_steps_in_default()
+
+        # Assert
+        assert steps == []
+
+    def test_no_pipelines(self, tmp_path: Path):
+        # Arrange
+        content = """\
+image: atlassian/default-image:3
+"""
+        (tmp_path / "bitbucket-pipelines.yml").write_text(content)
+
+        # Act
+        with change_cwd(tmp_path):
+            steps = get_steps_in_default()
+
+        # Assert
+        assert steps == []
+
+    def test_no_default_pipeline(self, tmp_path: Path):
+        # Arrange
+        content = """\
+image: atlassian/default-image:3
+pipelines: {}
+"""
+        (tmp_path / "bitbucket-pipelines.yml").write_text(content)
+
+        # Act
+        with change_cwd(tmp_path):
+            steps = get_steps_in_default()
+
+        # Assert
+        assert steps == []
+
+    def test_other_pipelines_not_default(self, tmp_path: Path):
+        # Arrange
+        content = """\
+image: atlassian/default-image:3
+pipelines:
+    branches:
+        master:
+            - step:
+                  name: Greeting
+                  script:
+                    - echo 'Hello, world!'
+"""
+        (tmp_path / "bitbucket-pipelines.yml").write_text(content)
+
+        # Act
+        with change_cwd(tmp_path):
+            steps = get_steps_in_default()
+
+        # Assert
+        assert steps == []
+
+    def test_default_pipeline(self, tmp_path: Path):
+        # Arrange
+        content = """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Greeting
+            script:
+              - echo 'Hello, world!'
+"""
+        (tmp_path / "bitbucket-pipelines.yml").write_text(content)
+
+        # Act
+        with change_cwd(tmp_path):
+            steps = get_steps_in_default()
+
+        # Assert
+        assert steps == [
+            Step(
+                name="Greeting",
+                script=Script(["echo 'Hello, world!'"]),
+            )
+        ]
+
+    def test_import_pipeline(self, tmp_path: Path):
+        # Arrange
+        content = """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+        import: shared-pipeline:master:share-pipeline-1
+"""
+        (tmp_path / "bitbucket-pipelines.yml").write_text(content)
+
+        # Act, Assert
+        with change_cwd(tmp_path), pytest.raises(UnexpectedImportPipelineError):
+            get_steps_in_default()

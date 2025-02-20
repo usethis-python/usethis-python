@@ -35,7 +35,9 @@ def usethis_installed_dir(
 
         with change_cwd(uv_init_dir):
             # Install usethis in a virtual environment
-            call_uv_subprocess(["add", f"{copy_usethis_dev_dir.as_posix()}"])
+            call_uv_subprocess(
+                ["add", f"{copy_usethis_dev_dir.as_posix()}"], change_toml=True
+            )
 
         yield uv_init_dir
 

@@ -50,10 +50,10 @@ scripts.usethis = "usethis.__main__:app"
 dev = [
   "datamodel-code-generator[http]>=0.26.5",
   "deptry>=0.23.0",
-  "import-linter>=2.1",
+  "import-linter>=2.2",
   "pre-commit>=4.1.0",
-  "pyright>=1.1.393",
-  "ruff>=0.9.4",
+  "pyright>=1.1.394",
+  "ruff>=0.9.6",
 ]
 test = [
   "coverage[toml]>=7.6.10",
@@ -149,6 +149,7 @@ type = "layers"
 layers = [
   "_test",
   "__main__",
+  "_app",
   "_interface",
   "_core",
   "_tool | _ci",
@@ -163,12 +164,21 @@ exhaustive = true
 exhaustive_ignores = [ "_version" ]
 
 [[tool.importlinter.contracts]]
+name = "Interface Independence"
+type = "layers"
+layers = [
+  "badge | browse | ci | readme | show | tool | version",
+]
+containers = [ "usethis._interface" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
 name = "Integrations Modular Design"
 type = "layers"
 layers = [
   "bitbucket | github | pre_commit | pytest | ruff",
   "uv | pydantic | sonarqube",
-  "pyproject | yaml",
+  "pyproject | yaml | python",
 ]
 containers = [ "usethis._integrations" ]
 exhaustive = true

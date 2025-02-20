@@ -9,6 +9,7 @@ from usethis._core.badge import (
     remove_pypi_badge,
     remove_ruff_badge,
 )
+from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 
 app = typer.Typer(help="Add badges to the top of the README.md file.")
 
@@ -23,7 +24,10 @@ def pypi(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet),
+        pyproject_toml_io_manager.open(),
+    ):
         if not remove:
             add_pypi_badge()
         else:
@@ -36,7 +40,10 @@ def ruff(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet),
+        pyproject_toml_io_manager.open(),
+    ):
         if not remove:
             add_ruff_badge()
         else:
@@ -49,7 +56,10 @@ def pre_commit(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet),
+        pyproject_toml_io_manager.open(),
+    ):
         if not remove:
             add_pre_commit_badge()
         else:

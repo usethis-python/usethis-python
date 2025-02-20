@@ -1,6 +1,5 @@
 import re
 from pathlib import Path
-from sysconfig import get_python_version
 
 from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.schema import Script, Step
@@ -9,7 +8,6 @@ from usethis._integrations.bitbucket.steps import (
     get_steps_in_default,
     remove_bitbucket_step_from_default,
 )
-from usethis._integrations.python.version import extract_major_version
 from usethis._integrations.uv.python import get_supported_major_python_versions
 
 
@@ -18,10 +16,7 @@ def is_bitbucket_used() -> bool:
 
 
 def update_bitbucket_pytest_steps() -> None:
-    try:
-        versions = get_supported_major_python_versions()
-    except KeyError:
-        versions = [extract_major_version(get_python_version())]
+    versions = get_supported_major_python_versions()
 
     for version in versions:
         add_bitbucket_step_in_default(

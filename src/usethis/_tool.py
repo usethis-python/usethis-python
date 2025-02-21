@@ -95,7 +95,7 @@ class Tool(Protocol):
         """Get (relative) paths to files managed by the tool."""
         return []
 
-    def get_pyproject_id_keys(self) -> list[list[str]]:
+    def get_managed_pyproject_keys(self) -> list[list[str]]:
         """Get keys for any pyproject.toml sections only used by this tool (not shared)."""
         return []
 
@@ -118,7 +118,7 @@ class Tool(Protocol):
         for file in self.get_managed_files():
             if file.exists() and file.is_file():
                 return True
-        for id_keys in self.get_pyproject_id_keys():
+        for id_keys in self.get_managed_pyproject_keys():
             if do_id_keys_exist(id_keys):
                 return True
         for dep in self.get_dev_deps(unconditional=True):
@@ -208,7 +208,7 @@ class Tool(Protocol):
         # Collect all keys to remove
         keys_to_remove = [
             config.id_keys for config in self.get_pyproject_configs()
-        ] + self.get_pyproject_id_keys()
+        ] + self.get_managed_pyproject_keys()
 
         # Try to remove the first key to trigger the message
         first_removal = True
@@ -273,7 +273,7 @@ class CodespellTool(Tool):
             )
         ]
 
-    def get_pyproject_id_keys(self) -> list[list[str]]:
+    def get_managed_pyproject_keys(self) -> list[list[str]]:
         return [["tool", "codespell"]]
 
     def get_managed_files(self) -> list[Path]:
@@ -335,7 +335,7 @@ class CoverageTool(Tool):
             ),
         ]
 
-    def get_pyproject_id_keys(self) -> list[list[str]]:
+    def get_managed_pyproject_keys(self) -> list[list[str]]:
         return [["tool", "coverage"]]
 
     def get_managed_files(self) -> list[Path]:
@@ -372,7 +372,7 @@ class DeptryTool(Tool):
             )
         ]
 
-    def get_pyproject_id_keys(self) -> list[list[str]]:
+    def get_managed_pyproject_keys(self) -> list[list[str]]:
         return [["tool", "deptry"]]
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
@@ -453,7 +453,7 @@ class PyprojectFmtTool(Tool):
             )
         ]
 
-    def get_pyproject_id_keys(self) -> list[list[str]]:
+    def get_managed_pyproject_keys(self) -> list[list[str]]:
         return [["tool", "pyproject-fmt"]]
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
@@ -535,7 +535,7 @@ class PytestTool(Tool):
     def get_associated_ruff_rules(self) -> list[str]:
         return ["PT"]
 
-    def get_pyproject_id_keys(self) -> list[list[str]]:
+    def get_managed_pyproject_keys(self) -> list[list[str]]:
         return [["tool", "pytest"]]
 
     def get_managed_files(self) -> list[Path]:
@@ -639,7 +639,7 @@ class RuffTool(Tool):
             )
         ]
 
-    def get_pyproject_id_keys(self) -> list[list[str]]:
+    def get_managed_pyproject_keys(self) -> list[list[str]]:
         return [["tool", "ruff"]]
 
     def get_managed_files(self) -> list[Path]:

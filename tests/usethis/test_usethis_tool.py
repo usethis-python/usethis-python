@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._console import box_print
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.pyproject.config import PyProjectConfig
@@ -22,6 +23,9 @@ class DefaultTool(Tool):
     def name(self) -> str:
         return "default_tool"
 
+    def print_how_to_use(self) -> None:
+        box_print("How to use default_tool")
+
 
 class MyTool(Tool):
     """An example tool for testing purposes.
@@ -40,6 +44,9 @@ class MyTool(Tool):
             Dependency(name="black"),
             Dependency(name="flake8"),
         ]
+
+    def print_how_to_use(self) -> None:
+        box_print("How to use my_tool")
 
     def get_extra_dev_deps(self) -> list[Dependency]:
         return [Dependency(name="pytest")]
@@ -69,6 +76,9 @@ class TwoHooksTool(Tool):
     @property
     def name(self) -> str:
         return "two_hooks_tool"
+
+    def print_how_to_use(self) -> None:
+        box_print("How to use two_hooks_tool")
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -104,6 +114,19 @@ class TestTool:
                 Dependency(name="black"),
                 Dependency(name="flake8"),
             ]
+
+    class TestPrintHowToUse:
+        def test_default(self, capsys: pytest.CaptureFixture[str]):
+            tool = DefaultTool()
+            tool.print_how_to_use()
+            captured = capsys.readouterr()
+            assert captured.out == "☐ How to use default_tool\n"
+
+        def test_specific(self, capsys: pytest.CaptureFixture[str]):
+            tool = MyTool()
+            tool.print_how_to_use()
+            captured = capsys.readouterr()
+            assert captured.out == "☐ How to use my_tool\n"
 
     class TestGetPreCommitRepoConfigs:
         def test_default(self):
@@ -272,6 +295,9 @@ class TestTool:
                 def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
                     return []
 
+                def print_how_to_use(self) -> None:
+                    box_print("How to use no_repo_configs_tool")
+
             nrc_tool = NoRepoConfigsTool()
 
             # Act
@@ -287,6 +313,9 @@ class TestTool:
                 @property
                 def name(self) -> str:
                     return "multi_repo_tool"
+
+                def print_how_to_use(self) -> None:
+                    box_print("How to use multi_repo_tool")
 
                 def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
                     return [
@@ -529,6 +558,9 @@ repos:
                 def name(self) -> str:
                     return "two_repo_tool"
 
+                def print_how_to_use(self) -> None:
+                    box_print("How to use two_repo_tool")
+
                 def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
                     return [
                         UriRepo(
@@ -579,6 +611,9 @@ repos:
                 def name(self) -> str:
                     return "no_config_tool"
 
+                def print_how_to_use(self) -> None:
+                    box_print("How to use no_config_tool")
+
                 def get_pyproject_configs(self) -> list[PyProjectConfig]:
                     return []
 
@@ -597,6 +632,9 @@ repos:
                 @property
                 def name(self) -> str:
                     return "mytool"
+
+                def print_how_to_use(self) -> None:
+                    box_print("How to use this_tool")
 
                 def get_pyproject_configs(self) -> list[PyProjectConfig]:
                     return [
@@ -634,6 +672,9 @@ key = "value"
                 @property
                 def name(self) -> str:
                     return "mytool"
+
+                def print_how_to_use(self) -> None:
+                    box_print("How to use this_tool")
 
                 def get_pyproject_configs(self) -> list[PyProjectConfig]:
                     return [

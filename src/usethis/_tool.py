@@ -2,7 +2,7 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-from usethis._console import tick_print
+from usethis._console import box_print, tick_print
 from usethis._integrations.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -86,6 +86,14 @@ class Tool(Protocol):
     def get_pyproject_id_keys(self) -> list[list[str]]:
         """Get keys for any pyproject.toml sections only used by this tool (not shared)."""
         return []
+
+    @abstractmethod
+    def print_how_to_use(self) -> None:
+        """Print instructions for using the tool.
+
+        This method is called after a tool is added to the project.
+        """
+        pass
 
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project.
@@ -200,6 +208,14 @@ class CodespellTool(Tool):
     def dev_deps(self) -> list[Dependency]:
         return [Dependency(name="codespell")]
 
+    def print_how_to_use(self) -> None:
+        if PreCommitTool().is_used():
+            box_print(
+                "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
+            )
+        else:
+            box_print("Run 'codespell' to run the Codespell spellchecker.")
+
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
             PyProjectConfig(
@@ -253,6 +269,12 @@ class CoverageTool(Tool):
     def dev_deps(self) -> list[Dependency]:
         return [Dependency(name="coverage", extras=frozenset({"toml"}))]
 
+    def print_how_to_use(self) -> None:
+        if PytestTool().is_used():
+            box_print("Run 'pytest --cov' to run your tests with coverage.")
+        else:
+            box_print("Run 'coverage help' to see available coverage commands.")
+
     def get_pyproject_configs(self) -> list[PyProjectConfig]:
         return [
             PyProjectConfig(
@@ -292,6 +314,9 @@ class DeptryTool(Tool):
     @property
     def dev_deps(self) -> list[Dependency]:
         return [Dependency(name="deptry")]
+
+    def print_how_to_use(self) -> None:
+        box_print("Run 'deptry src' to run deptry.")
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -337,6 +362,9 @@ class PreCommitTool(Tool):
     def dev_deps(self) -> list[Dependency]:
         return [Dependency(name="pre-commit")]
 
+    def print_how_to_use(self) -> None:
+        box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
+
     def get_managed_files(self) -> list[Path]:
         return [Path(".pre-commit-config.yaml")]
 
@@ -363,6 +391,14 @@ class PyprojectFmtTool(Tool):
     @property
     def dev_deps(self) -> list[Dependency]:
         return [Dependency(name="pyproject-fmt")]
+
+    def print_how_to_use(self) -> None:
+        if PreCommitTool().is_used():
+            box_print(
+                "Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
+            )
+        else:
+            box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -408,6 +444,13 @@ class PytestTool(Tool):
     def dev_deps(self) -> list[Dependency]:
         return [Dependency(name="pytest")]
 
+    def print_how_to_use(self) -> None:
+        box_print(
+            "Add test files to the '/tests' directory with the format 'test_*.py'."
+        )
+        box_print("Add test functions with the format 'test_*()'.")
+        box_print("Run 'pytest' to run the tests.")
+
     def get_extra_dev_deps(self) -> list[Dependency]:
         return [Dependency(name="pytest-cov")]
 
@@ -446,6 +489,14 @@ class RequirementsTxtTool(Tool):
     def dev_deps(self) -> list[Dependency]:
         return []
 
+    def print_how_to_use(self) -> None:
+        if PreCommitTool().is_used():
+            box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
+        else:
+            box_print(
+                "Run 'uv export --no-dev --output-file=requirements.txt' to write 'requirements.txt'."
+            )
+
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
             LocalRepo(
@@ -476,6 +527,10 @@ class RuffTool(Tool):
     @property
     def dev_deps(self) -> list[Dependency]:
         return [Dependency(name="ruff")]
+
+    def print_how_to_use(self) -> None:
+        box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")
+        box_print("Run 'ruff format' to run the Ruff formatter.")
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [

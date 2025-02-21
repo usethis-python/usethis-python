@@ -21,6 +21,7 @@ from usethis._integrations.pre_commit.schema import (
     LocalRepo,
     UriRepo,
 )
+from usethis._integrations.project.layout import get_source_dir_str
 from usethis._integrations.pyproject.config import PyProjectConfig
 from usethis._integrations.pyproject.core import (
     PyProjectTOMLValueAlreadySetError,
@@ -280,7 +281,7 @@ class CoverageTool(Tool):
             PyProjectConfig(
                 id_keys=["tool", "coverage", "run"],
                 value={
-                    "source": ["src"],
+                    "source": [get_source_dir_str()],
                     "omit": ["*/pytest-of-*/*"],
                 },
             ),
@@ -316,9 +317,11 @@ class DeptryTool(Tool):
         return [Dependency(name="deptry")]
 
     def print_how_to_use(self) -> None:
-        box_print("Run 'deptry src' to run deptry.")
+        _dir = get_source_dir_str()
+        box_print(f"Run 'deptry {_dir}' to run deptry.")
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+        _dir = get_source_dir_str()
         return [
             LocalRepo(
                 repo="local",
@@ -326,7 +329,7 @@ class DeptryTool(Tool):
                     HookDefinition(
                         id="deptry",
                         name="deptry",
-                        entry="uv run --frozen deptry src",
+                        entry=f"uv run --frozen deptry {_dir}",
                         language=Language("system"),
                         always_run=True,
                         pass_filenames=False,
@@ -339,6 +342,7 @@ class DeptryTool(Tool):
         return [["tool", "deptry"]]
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        _dir = get_source_dir_str()
         return [
             BitbucketStep(
                 name="Run Deptry",
@@ -346,7 +350,7 @@ class DeptryTool(Tool):
                 script=BitbucketScript(
                     [
                         BitbucketScriptItemAnchor(name="install-uv"),
-                        "uv run deptry src",
+                        f"uv run deptry {_dir}",
                     ]
                 ),
             )
@@ -573,7 +577,6 @@ class RuffTool(Tool):
             PyProjectConfig(
                 id_keys=["tool", "ruff"],
                 value={
-                    "src": ["src"],
                     "line-length": 88,
                     "lint": {"select": []},
                 },

@@ -17,7 +17,6 @@ from usethis._integrations.pre_commit.core import (
     uninstall_pre_commit_hooks,
 )
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_names
-from usethis._integrations.pyproject.remove import remove_pyproject_toml
 from usethis._integrations.pyproject.valid import ensure_pyproject_validity
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.ruff.rules import (
@@ -67,6 +66,7 @@ def use_codespell(*, remove: bool = False) -> None:
         tool.remove_pyproject_configs()
         tool.remove_pre_commit_repo_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
+        tool.remove_managed_files()
 
 
 def use_coverage(*, remove: bool = False) -> None:
@@ -85,6 +85,7 @@ def use_coverage(*, remove: bool = False) -> None:
     else:
         tool.remove_pyproject_configs()
         remove_deps_from_group([*tool.dev_deps, Dependency(name="pytest-cov")], "test")
+        tool.remove_managed_files()
 
 
 def use_deptry(*, remove: bool = False) -> None:
@@ -105,6 +106,7 @@ def use_deptry(*, remove: bool = False) -> None:
         tool.remove_pyproject_configs()
         remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
         remove_deps_from_group(tool.dev_deps, "dev")
+        tool.remove_managed_files()
 
 
 def use_pre_commit(*, remove: bool = False) -> None:
@@ -164,6 +166,7 @@ def use_pre_commit(*, remove: bool = False) -> None:
         # they're not going to do it via pre-commit anymore.
         if RequirementsTxtTool().is_used():
             RequirementsTxtTool().print_how_to_use()
+        tool.remove_managed_files()
 
 
 def _add_all_tools_pre_commit_configs():
@@ -210,6 +213,7 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         tool.remove_pyproject_configs()
         tool.remove_pre_commit_repo_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
+        tool.remove_managed_files()
 
 
 def use_pyproject_toml(*, remove: bool = False) -> None:
@@ -222,7 +226,7 @@ def use_pyproject_toml(*, remove: bool = False) -> None:
         ensure_pyproject_validity()
         tool.print_how_to_use()
     else:
-        remove_pyproject_toml()
+        tool.remove_managed_files()
 
 
 def use_pytest(*, remove: bool = False) -> None:
@@ -264,6 +268,7 @@ def use_pytest(*, remove: bool = False) -> None:
 
         if CoverageTool().is_used():
             CoverageTool().print_how_to_use()
+        tool.remove_managed_files()
 
 
 def use_requirements_txt(*, remove: bool = False) -> None:
@@ -301,10 +306,7 @@ def use_requirements_txt(*, remove: bool = False) -> None:
 
     else:
         tool.remove_pre_commit_repo_configs()
-
-        if path.exists() and path.is_file():
-            tick_print("Removing 'requirements.txt'.")
-            path.unlink()
+        tool.remove_managed_files()
 
 
 def use_ruff(*, remove: bool = False) -> None:
@@ -352,3 +354,4 @@ def use_ruff(*, remove: bool = False) -> None:
         remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
         tool.remove_pyproject_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
+        tool.remove_managed_files()

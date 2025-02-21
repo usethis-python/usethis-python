@@ -30,6 +30,7 @@ from usethis._integrations.pyproject.core import (
     remove_config_value,
     set_config_value,
 )
+from usethis._integrations.pyproject.remove import remove_pyproject_toml
 from usethis._integrations.uv.deps import Dependency, is_dep_in_any_group
 
 
@@ -198,6 +199,17 @@ class Tool(Protocol):
                 if first_removal:
                     tick_print(f"Removing {self.name} config from 'pyproject.toml'.")
                     first_removal = False
+
+    def remove_managed_files(self) -> None:
+        """Remove all files managed by this tool.
+
+        This includes any tool-specific files in the project.
+        If no files exist, this method has no effect.
+        """
+        for file in self.get_managed_files():
+            if (Path.cwd() / file).exists() and (Path.cwd() / file).is_file():
+                tick_print(f"Removing '{file}'.")
+                file.unlink()
 
 
 class CodespellTool(Tool):
@@ -458,6 +470,10 @@ class PyprojectTOMLTool(Tool):
         return [
             Path("pyproject.toml"),
         ]
+
+    def remove_managed_files(self) -> None:
+        remove_pyproject_toml()
+        return super().remove_managed_files()
 
 
 class PytestTool(Tool):

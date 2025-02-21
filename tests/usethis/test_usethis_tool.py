@@ -39,8 +39,7 @@ class MyTool(Tool):
     def name(self) -> str:
         return "my_tool"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [
             Dependency(name=self.name),
             Dependency(name="black"),
@@ -107,11 +106,11 @@ class TestTool:
     class TestDevDeps:
         def test_default(self):
             tool = DefaultTool()
-            assert tool.dev_deps == []
+            assert tool.get_dev_deps() == []
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.dev_deps == [
+            assert tool.get_dev_deps() == [
                 Dependency(name="my_tool"),
                 Dependency(name="black"),
                 Dependency(name="flake8"),
@@ -863,7 +862,7 @@ class TestPyprojectTOMLTool:
             tool = PyprojectTOMLTool()
 
             # Act
-            result = tool.dev_deps
+            result = tool.get_dev_deps()
 
             # Assert
             assert result == []

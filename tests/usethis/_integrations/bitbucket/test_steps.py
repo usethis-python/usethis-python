@@ -364,6 +364,79 @@ pipelines:
         )
         assert not err
 
+    def test_add_script_item_to_existing_file_nonstandard_indentation(
+        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # https://github.com/nathanjmcdougall/usethis-python/issues/147#issuecomment-2594402448
+
+        # Arrange
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+  script_items:
+    - &install-uv |
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+      source $HOME/.local/bin/env
+      export UV_LINK_MODE=copy
+      uv --version
+pipelines:
+  default:
+  - step:
+      name: Greeting
+      script:
+        - *install-uv
+        - echo 'Hello, world!'
+"""
+        )
+
+        # Act
+        with change_cwd(uv_init_dir):
+            add_bitbucket_step_in_default(
+                Step(
+                    name="Farewell",
+                    script=Script(
+                        [
+                            ScriptItemAnchor(name="install-uv"),
+                            "echo 'Goodbye!'",
+                        ]
+                    ),
+                )
+            )
+
+        # Assert
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+  script_items:
+    - &install-uv |
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+      source $HOME/.local/bin/env
+      export UV_LINK_MODE=copy
+      uv --version
+pipelines:
+  default:
+  - step:
+      name: Greeting
+      script:
+        - *install-uv
+        - echo 'Hello, world!'
+  - step:
+      name: Farewell
+      script:
+        - *install-uv
+        - echo 'Goodbye!'
+"""
+        )
+        out, err = capfd.readouterr()
+        assert out == (
+            "✔ Adding 'Farewell' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+        )
+        assert not err
+
 
 class TestRemoveBitbucketStepFromDefault:
     def test_remove_remove_one_step(self, tmp_path: Path):

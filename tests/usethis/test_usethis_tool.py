@@ -714,6 +714,46 @@ root_packages = ["example"]
             assert not err
             assert out == "✔ Adding mytool config to 'pyproject.toml'.\n"
 
+    class TestRemoveManagedFiles:
+        def test_no_files(self, tmp_path: Path):
+            # Arrange
+            tool = DefaultTool()
+
+            # Act
+            with change_cwd(tmp_path):
+                tool.remove_managed_files()
+
+                # Assert
+                assert not (tmp_path / "mytool-config.yaml").exists()
+
+        def test_file(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            tool = MyTool()
+            (tmp_path / "mytool-config.yaml").write_text("")
+
+            # Act
+            with change_cwd(tmp_path):
+                tool.remove_managed_files()
+
+                # Assert
+                assert not (tmp_path / "mytool-config.yaml").exists()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Removing 'mytool-config.yaml'.\n"
+
+        def test_dir_not_removed(self, tmp_path: Path):
+            # Arrange
+            tool = MyTool()
+            (tmp_path / "mytool-config.yaml").mkdir()
+
+            # Act
+            with change_cwd(tmp_path):
+                tool.remove_managed_files()
+
+                # Assert
+                assert (tmp_path / "mytool-config.yaml").exists()
+
 
 class TestDeptryTool:
     """Tests for DeptryTool."""

@@ -12,7 +12,7 @@ from usethis._integrations.pyproject.core import set_config_value
 from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
-from usethis._tool import ALL_TOOLS, DeptryTool, Tool
+from usethis._tool import ALL_TOOLS, DeptryTool, PyprojectTOMLTool, Tool
 
 
 class DefaultTool(Tool):
@@ -793,3 +793,37 @@ class TestPyprojectTOMLTool:
 
                 # Assert
                 assert result.status_code == 200
+
+        def test_some_output(self, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            tool = PyprojectTOMLTool()
+
+            # Act
+            tool.print_how_to_use()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out
+
+    class TestName:
+        def test_value(self):
+            # Arrange
+            tool = PyprojectTOMLTool()
+
+            # Act
+            result = tool.name
+
+            # Assert
+            assert result == "pyproject.toml"
+
+    class TestDevDeps:
+        def test_none(self):
+            # Arrange
+            tool = PyprojectTOMLTool()
+
+            # Act
+            result = tool.dev_deps
+
+            # Assert
+            assert result == []

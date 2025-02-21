@@ -40,17 +40,17 @@ class MyTool(Tool):
         return "my_tool"
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [
+        deps = [
             Dependency(name=self.name),
             Dependency(name="black"),
             Dependency(name="flake8"),
         ]
+        if unconditional:
+            deps.append(Dependency(name="pytest"))
+        return deps
 
     def print_how_to_use(self) -> None:
         box_print("How to use my_tool")
-
-    def get_extra_dev_deps(self) -> list[Dependency]:
-        return [Dependency(name="pytest")]
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -249,7 +249,25 @@ class TestTool:
             # Assert
             assert not result
 
-        def test_extra_dev_deps(self, uv_init_dir: Path):
+        def test_dev_deps(self, uv_init_dir: Path):
+            # Arrange
+            tool = MyTool()
+
+            with change_cwd(uv_init_dir):
+                add_deps_to_group(
+                    [
+                        Dependency(name="black"),
+                    ],
+                    "dev",
+                )
+
+                # Act
+                result = tool.is_used()
+
+            # Assert
+            assert result
+
+        def test_test_deps(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
 

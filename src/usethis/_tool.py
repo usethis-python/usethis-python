@@ -124,6 +124,9 @@ class Tool(Protocol):
         for dep in self.get_dev_deps(unconditional=True):
             if is_dep_in_any_group(dep):
                 return True
+        for dep in self.get_test_deps(unconditional=True):
+            if is_dep_in_any_group(dep):
+                return True
 
         return False
 

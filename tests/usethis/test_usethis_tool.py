@@ -69,7 +69,7 @@ class MyTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path("mytool-config.yaml")]
 
-    def get_pyproject_id_keys(self) -> list[list[str]]:
+    def get_managed_pyproject_keys(self) -> list[list[str]]:
         return [["tool", self.name], ["project", "classifiers"]]
 
 
@@ -171,14 +171,14 @@ class TestTool:
                 Path("mytool-config.yaml"),
             ]
 
-    class TestGetPyprojectIdKeys:
+    class TestManagedPyprojectKeys:
         def test_default(self):
             tool = DefaultTool()
-            assert tool.get_pyproject_id_keys() == []
+            assert tool.get_managed_pyproject_keys() == []
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.get_pyproject_id_keys() == [
+            assert tool.get_managed_pyproject_keys() == [
                 ["tool", "my_tool"],
                 ["project", "classifiers"],
             ]
@@ -781,7 +781,7 @@ class TestDeptryTool:
         tool = DeptryTool()
 
         # Act
-        result = tool.get_pyproject_id_keys()
+        result = tool.get_managed_pyproject_keys()
 
         # Assert
         assert result == [["tool", "deptry"]]
@@ -809,7 +809,7 @@ ignore_missing = ["pytest"]
         tool = DeptryTool()
 
         # Act
-        id_keys = tool.get_pyproject_id_keys()
+        id_keys = tool.get_managed_pyproject_keys()
         configs = tool.get_pyproject_configs()
 
         # Assert
@@ -823,7 +823,7 @@ ignore_missing = ["pytest"]
 @pytest.mark.parametrize("tool", ALL_TOOLS)
 def test_all_tools_config_keys_are_subkeys_of_id_keys(tool: Tool):
     """Test that all tools' config keys are subkeys of their ID keys."""
-    id_keys = tool.get_pyproject_id_keys()
+    id_keys = tool.get_managed_pyproject_keys()
     configs = tool.get_pyproject_configs()
 
     for config in configs:

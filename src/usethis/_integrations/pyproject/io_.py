@@ -73,8 +73,7 @@ class PyprojectTOMLOpener:
         return self
 
     def __exit__(self, exc_type: None, exc_value: None, traceback: None) -> None:
-        if self.open:
-            self.write_file()
+        self.write_file()
         self._set = False
 
 

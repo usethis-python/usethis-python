@@ -8,5 +8,6 @@ def remove_pyproject_toml() -> None:
     path = Path.cwd() / "pyproject.toml"
     if path.exists() and path.is_file():
         tick_print("Removing 'pyproject.toml' file")
-        pyproject_toml_io_manager._opener.open = False
+        pyproject_toml_io_manager._opener.write_file()
+        pyproject_toml_io_manager._opener._set = False
         path.unlink()

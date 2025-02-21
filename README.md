@@ -38,10 +38,8 @@ this package brings a similar experience to the Python ecosystem as a CLI tool.
 
 ## Getting Started
 
-First, it is strongly recommended you [install the `uv` package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process.
-
-If you are starting a new project, it is recommended to call `uv init --lib` to
-initialize the project directory.
+First, it is strongly recommended you [install the `uv` package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process. If you're already using `uv`, make sure you're using at least
+version v0.5.29 (run `uv version` to check, and `uv self update` to upgrade).
 
 Then, you can install usethis for the project:
 

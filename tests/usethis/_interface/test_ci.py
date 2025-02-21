@@ -1,8 +1,13 @@
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from usethis._app import app as main_app
+from usethis._integrations.python.version import (
+    extract_major_version,
+    get_python_version,
+)
 from usethis._interface.ci import app
 from usethis._interface.tool import ALL_TOOL_COMMANDS
 from usethis._test import change_cwd
@@ -39,6 +44,9 @@ class TestBitbucket:
         assert not (tmp_path / "bitbucket-pipelines.yml").exists()
 
     def test_maximal_config(self, tmp_path: Path):
+        if extract_major_version(get_python_version()) != 10:
+            pytest.skip("This test is only for Python 3.10")
+
         runner = CliRunner()
         with change_cwd(tmp_path):
             # Arrange

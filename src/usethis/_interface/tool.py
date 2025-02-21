@@ -41,7 +41,7 @@ def codespell(
         _run_tool(use_codespell, remove=remove)
 
 
-@app.command(help="Use the coverage code coverage measurement tool.")
+@app.command(help="Use coverage: a code coverage measurement tool.")
 def coverage(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
@@ -101,7 +101,7 @@ def pyproject_fmt(
 
 
 @app.command(
-    name="pyproject.toml", help="Use the pyproject.toml file to configure the project."
+    name="pyproject.toml", help="Use a pyproject.toml file to configure the project."
 )
 def pyproject_toml(
     remove: bool = remove_opt,

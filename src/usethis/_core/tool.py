@@ -6,7 +6,7 @@ from usethis._ci import (
     update_bitbucket_pytest_steps,
 )
 from usethis._config import usethis_config
-from usethis._console import box_print, tick_print
+from usethis._console import tick_print
 from usethis._integrations.bitbucket.steps import (
     add_bitbucket_steps_in_default,
     remove_bitbucket_steps_from_default,
@@ -50,9 +50,7 @@ def use_codespell(*, remove: bool = False) -> None:
     ensure_pyproject_toml()
 
     if not remove:
-        is_pre_commit = PreCommitTool().is_used()
-
-        if not is_pre_commit:
+        if not PreCommitTool().is_used():
             add_deps_to_group(tool.dev_deps, "dev")
             if is_bitbucket_used():
                 add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
@@ -60,26 +58,12 @@ def use_codespell(*, remove: bool = False) -> None:
             tool.add_pre_commit_repo_configs()
 
         tool.add_pyproject_configs()
-
-        if not is_pre_commit:
-            _codespell_instructions_basic()
-        else:
-            _codespell_instructions_pre_commit()
+        tool.print_how_to_use()
     else:
         remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
         tool.remove_pyproject_configs()
         tool.remove_pre_commit_repo_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
-
-
-def _codespell_instructions_basic() -> None:
-    box_print("Run 'codespell' to run the Codespell spellchecker.")
-
-
-def _codespell_instructions_pre_commit() -> None:
-    box_print(
-        "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
-    )
 
 
 def use_coverage(*, remove: bool = False) -> None:
@@ -94,22 +78,10 @@ def use_coverage(*, remove: bool = False) -> None:
         add_deps_to_group(deps, "test")
 
         tool.add_pyproject_configs()
-
-        if PytestTool().is_used():
-            _coverage_instructions_pytest()
-        else:
-            _coverage_instructions_basic()
+        tool.print_how_to_use()
     else:
         tool.remove_pyproject_configs()
         remove_deps_from_group([*tool.dev_deps, Dependency(name="pytest-cov")], "test")
-
-
-def _coverage_instructions_basic() -> None:
-    box_print("Run 'coverage help' to see available coverage commands.")
-
-
-def _coverage_instructions_pytest() -> None:
-    box_print("Run 'pytest --cov' to run your tests with coverage.")
 
 
 def use_deptry(*, remove: bool = False) -> None:
@@ -124,7 +96,7 @@ def use_deptry(*, remove: bool = False) -> None:
         elif is_bitbucket_used():
             add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
 
-        box_print("Run 'deptry src' to run deptry.")
+        tool.print_how_to_use()
     else:
         tool.remove_pre_commit_repo_configs()
         tool.remove_pyproject_configs()
@@ -147,14 +119,14 @@ def use_pre_commit(*, remove: bool = False) -> None:
         if pyproject_fmt_tool.is_used():
             remove_deps_from_group(pyproject_fmt_tool.dev_deps, "dev")
             pyproject_fmt_tool.add_pyproject_configs()
-            _pyproject_fmt_instructions_pre_commit()
+            PyprojectFmtTool().print_how_to_use()
         if codespell_tool.is_used():
             remove_deps_from_group(codespell_tool.dev_deps, "dev")
             codespell_tool.add_pyproject_configs()
-            _codespell_instructions_pre_commit()
+            CodespellTool().print_how_to_use()
 
         if RequirementsTxtTool().is_used():
-            _requirements_txt_instructions_pre_commit()
+            RequirementsTxtTool().print_how_to_use()
 
         if not get_hook_names():
             add_placeholder_hook()
@@ -165,7 +137,7 @@ def use_pre_commit(*, remove: bool = False) -> None:
             add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
             _remove_bitbucket_linter_steps_from_default()
 
-        box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
+        tool.print_how_to_use()
     else:
         if is_bitbucket_used():
             remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
@@ -180,15 +152,15 @@ def use_pre_commit(*, remove: bool = False) -> None:
         # dependencies yet - explain to the user.
         if pyproject_fmt_tool.is_used():
             add_deps_to_group(pyproject_fmt_tool.dev_deps, "dev")
-            _pyproject_fmt_instructions_basic()
+            PyprojectFmtTool().print_how_to_use()
         if codespell_tool.is_used():
             add_deps_to_group(codespell_tool.dev_deps, "dev")
-            _codespell_instructions_basic()
+            CodespellTool().print_how_to_use()
 
         # Likewise, explain how to manually generate the requirements.txt file, since
         # they're not going to do it via pre-commit anymore.
         if RequirementsTxtTool().is_used():
-            _requirements_txt_instructions_basic()
+            RequirementsTxtTool().print_how_to_use()
 
 
 def _add_all_tools_pre_commit_configs():
@@ -221,9 +193,7 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
     ensure_pyproject_toml()
 
     if not remove:
-        is_pre_commit = PreCommitTool().is_used()
-
-        if not is_pre_commit:
+        if not PreCommitTool().is_used():
             add_deps_to_group(tool.dev_deps, "dev")
             if is_bitbucket_used():
                 add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
@@ -231,24 +201,12 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
             tool.add_pre_commit_repo_configs()
 
         tool.add_pyproject_configs()
-
-        if not is_pre_commit:
-            _pyproject_fmt_instructions_basic()
-        else:
-            _pyproject_fmt_instructions_pre_commit()
+        tool.print_how_to_use()
     else:
         remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
         tool.remove_pyproject_configs()
         tool.remove_pre_commit_repo_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
-
-
-def _pyproject_fmt_instructions_basic() -> None:
-    box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
-
-
-def _pyproject_fmt_instructions_pre_commit() -> None:
-    box_print("Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt.")
 
 
 def use_pytest(*, remove: bool = False) -> None:
@@ -273,14 +231,10 @@ def use_pytest(*, remove: bool = False) -> None:
         if is_bitbucket_used():
             update_bitbucket_pytest_steps()
 
-        box_print(
-            "Add test files to the '/tests' directory with the format 'test_*.py'."
-        )
-        box_print("Add test functions with the format 'test_*()'.")
-        box_print("Run 'pytest' to run the tests.")
+        tool.print_how_to_use()
 
         if CoverageTool().is_used():
-            _coverage_instructions_pytest()
+            CoverageTool().print_how_to_use()
     else:
         if is_bitbucket_used():
             remove_bitbucket_pytest_steps()
@@ -293,7 +247,7 @@ def use_pytest(*, remove: bool = False) -> None:
         remove_pytest_dir()  # Last, since this is a manual step
 
         if CoverageTool().is_used():
-            _coverage_instructions_basic()
+            CoverageTool().print_how_to_use()
 
 
 def use_requirements_txt(*, remove: bool = False) -> None:
@@ -327,26 +281,14 @@ def use_requirements_txt(*, remove: bool = False) -> None:
                     change_toml=False,
                 )
 
-        if not is_pre_commit:
-            _requirements_txt_instructions_basic()
-        else:
-            _requirements_txt_instructions_pre_commit()
+        tool.print_how_to_use()
+
     else:
         tool.remove_pre_commit_repo_configs()
 
         if path.exists() and path.is_file():
             tick_print("Removing 'requirements.txt'.")
             path.unlink()
-
-
-def _requirements_txt_instructions_basic() -> None:
-    box_print(
-        "Run 'uv export --no-dev --output-file=requirements.txt' to write 'requirements.txt'."
-    )
-
-
-def _requirements_txt_instructions_pre_commit() -> None:
-    box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
 
 
 def use_ruff(*, remove: bool = False) -> None:
@@ -388,8 +330,7 @@ def use_ruff(*, remove: bool = False) -> None:
         elif is_bitbucket_used():
             add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
 
-        box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")
-        box_print("Run 'ruff format' to run the Ruff formatter.")
+        tool.print_how_to_use()
     else:
         tool.remove_pre_commit_repo_configs()
         remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())

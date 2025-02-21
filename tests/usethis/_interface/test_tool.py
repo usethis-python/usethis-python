@@ -9,6 +9,17 @@ from usethis._subprocess import SubprocessFailedError, call_subprocess
 from usethis._test import change_cwd
 
 
+class TestCodespell:
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["codespell"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+
 class TestDeptry:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_cli(self, uv_init_dir: Path):
@@ -29,6 +40,26 @@ class TestDeptry:
         with change_cwd(uv_init_dir):
             call_subprocess(["usethis", "tool", "deptry"])
             assert (uv_init_dir / ".venv").exists()
+
+
+class TestPyprojectTOML:
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pyproject.toml"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_remove(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pyproject.toml", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
 
 
 class TestPreCommit:
@@ -87,17 +118,6 @@ class TestPytest:
         runner = CliRunner()
         with change_cwd(tmp_path):
             result = runner.invoke(app, ["pytest"])
-
-        # Assert
-        assert result.exit_code == 0, result.output
-
-
-class TestCodespell:
-    def test_add(self, tmp_path: Path):
-        # Act
-        runner = CliRunner()
-        with change_cwd(tmp_path):
-            result = runner.invoke(app, ["codespell"])
 
         # Assert
         assert result.exit_code == 0, result.output

@@ -17,6 +17,8 @@ from usethis._integrations.pre_commit.core import (
     uninstall_pre_commit_hooks,
 )
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_names
+from usethis._integrations.pyproject.remove import remove_pyproject_toml
+from usethis._integrations.pyproject.valid import ensure_pyproject_validity
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.ruff.rules import (
     deselect_ruff_rules,
@@ -37,6 +39,7 @@ from usethis._tool import (
     DeptryTool,
     PreCommitTool,
     PyprojectFmtTool,
+    PyprojectTOMLTool,
     PytestTool,
     RequirementsTxtTool,
     RuffTool,
@@ -207,6 +210,19 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         tool.remove_pyproject_configs()
         tool.remove_pre_commit_repo_configs()
         remove_deps_from_group(tool.dev_deps, "dev")
+
+
+def use_pyproject_toml(*, remove: bool = False) -> None:
+    tool = PyprojectTOMLTool()
+
+    ensure_pyproject_toml()
+
+    if not remove:
+        ensure_pyproject_toml()
+        ensure_pyproject_validity()
+        tool.print_how_to_use()
+    else:
+        remove_pyproject_toml()
 
 
 def use_pytest(*, remove: bool = False) -> None:

@@ -2,7 +2,7 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
-from usethis._console import box_print, tick_print
+from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -436,6 +436,27 @@ class PyprojectFmtTool(Tool):
                     ]
                 ),
             )
+        ]
+
+
+class PyprojectTOMLTool(Tool):
+    @property
+    def name(self) -> str:
+        return "pyproject.toml"
+
+    @property
+    def dev_deps(self) -> list[Dependency]:
+        return []
+
+    def print_how_to_use(self) -> None:
+        box_print("Populate 'pyproject.toml' with the project configuration.")
+        info_print(
+            "Learn more at https://packaging.python.org/en/latest/guides/writing-pyproject-toml/"
+        )
+
+    def get_managed_files(self) -> list[Path]:
+        return [
+            Path("pyproject.toml"),
         ]
 
 

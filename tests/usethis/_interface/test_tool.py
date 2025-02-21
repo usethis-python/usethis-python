@@ -4,9 +4,10 @@ import pytest
 from typer.testing import CliRunner
 
 from usethis._config import usethis_config
-from usethis._interface.tool import app
+from usethis._interface.tool import ALL_TOOL_COMMANDS, app
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 from usethis._test import change_cwd
+from usethis._tool import ALL_TOOLS
 
 
 class TestCodespell:
@@ -135,3 +136,13 @@ def test_several_tools_add_and_remove(tmp_path: Path):
         runner.invoke(app, ["ruff", "--remove"])
         runner.invoke(app, ["pyproject-fmt"])
         runner.invoke(app, ["pytest", "--remove"])
+
+
+def test_tool_matches_command():
+    assert {tool.name.lower() for tool in ALL_TOOLS} == set(ALL_TOOL_COMMANDS)
+
+
+def test_app_commands_match_list():
+    commands = app.registered_commands
+    names = [command.name for command in commands]
+    assert set(names) == set(ALL_TOOL_COMMANDS)

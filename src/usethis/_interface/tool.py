@@ -27,7 +27,10 @@ remove_opt = typer.Option(
 frozen_opt = typer.Option(False, "--frozen", help="Use the frozen dependencies.")
 
 
-@app.command(help="Use the codespell spellchecker: detect common spelling mistakes.")
+@app.command(
+    name="codespell",
+    help="Use the codespell spellchecker: detect common spelling mistakes.",
+)
 def codespell(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
@@ -41,7 +44,7 @@ def codespell(
         _run_tool(use_codespell, remove=remove)
 
 
-@app.command(help="Use coverage: a code coverage measurement tool.")
+@app.command(name="coverage", help="Use coverage: a code coverage measurement tool.")
 def coverage(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
@@ -53,7 +56,8 @@ def coverage(
 
 
 @app.command(
-    help="Use the deptry linter: avoid missing or superfluous dependency declarations."
+    name="deptry",
+    help="Use the deptry linter: avoid missing or superfluous dependency declarations.",
 )
 def deptry(
     remove: bool = remove_opt,
@@ -69,7 +73,8 @@ def deptry(
 
 
 @app.command(
-    help="Use the pre-commit framework to manage and maintain pre-commit hooks."
+    name="pre-commit",
+    help="Use the pre-commit framework to manage and maintain pre-commit hooks.",
 )
 def pre_commit(
     remove: bool = remove_opt,
@@ -85,7 +90,8 @@ def pre_commit(
 
 
 @app.command(
-    help="Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files."
+    name="pyproject-fmt",
+    help="Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files.",
 )
 def pyproject_fmt(
     remove: bool = remove_opt,
@@ -116,7 +122,7 @@ def pyproject_toml(
         _run_tool(use_pyproject_toml, remove=remove)
 
 
-@app.command(help="Use the pytest testing framework.")
+@app.command(name="pytest", help="Use the pytest testing framework.")
 def pytest(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
@@ -147,7 +153,9 @@ def requirements_txt(
         _run_tool(use_requirements_txt, remove=remove)
 
 
-@app.command(help="Use Ruff: an extremely fast Python linter and code formatter.")
+@app.command(
+    name="ruff", help="Use Ruff: an extremely fast Python linter and code formatter."
+)
 def ruff(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
@@ -171,3 +179,16 @@ def _run_tool(caller: UseToolFunc, *, remove: bool):
     except UsethisError as err:
         err_print(err)
         raise typer.Exit(code=1)
+
+
+ALL_TOOL_COMMANDS: list[str] = [
+    "codespell",
+    "coverage",
+    "deptry",
+    "pre-commit",
+    "pyproject.toml",
+    "pyproject-fmt",
+    "pytest",
+    "requirements.txt",
+    "ruff",
+]

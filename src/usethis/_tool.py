@@ -666,6 +666,7 @@ ALL_TOOLS: list[Tool] = [
     CoverageTool(),
     DeptryTool(),
     PreCommitTool(),
+    PyprojectTOMLTool(),
     PyprojectFmtTool(),
     PytestTool(),
     RequirementsTxtTool(),

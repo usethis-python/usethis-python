@@ -31,7 +31,12 @@ from usethis._integrations.pyproject.core import (
     set_config_value,
 )
 from usethis._integrations.pyproject.remove import remove_pyproject_toml
-from usethis._integrations.uv.deps import Dependency, is_dep_in_any_group
+from usethis._integrations.uv.deps import (
+    Dependency,
+    add_deps_to_group,
+    is_dep_in_any_group,
+    remove_deps_from_group,
+)
 
 
 class Tool(Protocol):
@@ -48,20 +53,25 @@ class Tool(Protocol):
         """Get the Bitbucket pipeline step associated with this tool."""
         return []
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
-        """The tool's development dependencies."""
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """The tool's development dependencies.
+
+        These should all be considered characteristic of this particular tool.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
         return []
 
-    def get_extra_dev_deps(self) -> list[Dependency]:
-        """Additional development dependencies for the tool.
+    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """The tool's test dependencies.
 
-        These won't be installed automatically - usually they are only needed for
-        integrations with other tools and will only be conditionally installed.
+        These should all be considered characteristic of this particular tool.
 
-        However, they will be used to determine if the tool is being used, so they
-        should be considered characteristic of the tool. It follows that they should be
-        removed when the tool is being removed.
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
         """
         return []
 
@@ -111,14 +121,26 @@ class Tool(Protocol):
         for id_keys in self.get_pyproject_id_keys():
             if do_id_keys_exist(id_keys):
                 return True
-        for dep in self.dev_deps:
+        for dep in self.get_dev_deps(unconditional=True):
             if is_dep_in_any_group(dep):
                 return True
-        for extra_dep in self.get_extra_dev_deps():
-            if is_dep_in_any_group(extra_dep):
+        for dep in self.get_test_deps(unconditional=True):
+            if is_dep_in_any_group(dep):
                 return True
 
         return False
+
+    def add_dev_deps(self) -> None:
+        add_deps_to_group(self.get_dev_deps(), "dev")
+
+    def remove_dev_deps(self) -> None:
+        remove_deps_from_group(self.get_dev_deps(unconditional=True), "dev")
+
+    def add_test_deps(self) -> None:
+        add_deps_to_group(self.get_test_deps(), "test")
+
+    def remove_test_deps(self) -> None:
+        remove_deps_from_group(self.get_test_deps(unconditional=True), "test")
 
     def add_pre_commit_repo_configs(self) -> None:
         """Add the tool's pre-commit configuration."""
@@ -217,8 +239,7 @@ class CodespellTool(Tool):
     def name(self) -> str:
         return "Codespell"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="codespell")]
 
     def print_how_to_use(self) -> None:
@@ -278,9 +299,11 @@ class CoverageTool(Tool):
     def name(self) -> str:
         return "coverage"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
-        return [Dependency(name="coverage", extras=frozenset({"toml"}))]
+    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
+        if unconditional or PytestTool().is_used():
+            deps += [Dependency(name="pytest-cov")]
+        return deps
 
     def print_how_to_use(self) -> None:
         if PytestTool().is_used():
@@ -324,8 +347,7 @@ class DeptryTool(Tool):
     def name(self) -> str:
         return "deptry"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="deptry")]
 
     def print_how_to_use(self) -> None:
@@ -374,8 +396,7 @@ class PreCommitTool(Tool):
     def name(self) -> str:
         return "pre-commit"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pre-commit")]
 
     def print_how_to_use(self) -> None:
@@ -404,8 +425,7 @@ class PyprojectFmtTool(Tool):
     def name(self) -> str:
         return "pyproject-fmt"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pyproject-fmt")]
 
     def print_how_to_use(self) -> None:
@@ -456,8 +476,7 @@ class PyprojectTOMLTool(Tool):
     def name(self) -> str:
         return "pyproject.toml"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return []
 
     def print_how_to_use(self) -> None:
@@ -481,9 +500,11 @@ class PytestTool(Tool):
     def name(self) -> str:
         return "pytest"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
-        return [Dependency(name="pytest")]
+    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        deps = [Dependency(name="pytest")]
+        if unconditional or CoverageTool().is_used():
+            deps += [Dependency(name="pytest-cov")]
+        return deps
 
     def print_how_to_use(self) -> None:
         box_print(
@@ -526,8 +547,7 @@ class RequirementsTxtTool(Tool):
     def name(self) -> str:
         return "requirements.txt"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return []
 
     def print_how_to_use(self) -> None:
@@ -565,8 +585,7 @@ class RuffTool(Tool):
     def name(self) -> str:
         return "Ruff"
 
-    @property
-    def dev_deps(self) -> list[Dependency]:
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ruff")]
 
     def print_how_to_use(self) -> None:

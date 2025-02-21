@@ -10,6 +10,7 @@ from usethis._core.tool import (
     use_deptry,
     use_pre_commit,
     use_pyproject_fmt,
+    use_pyproject_toml,
     use_pytest,
     use_requirements_txt,
     use_ruff,
@@ -97,6 +98,22 @@ def pyproject_fmt(
         pyproject_toml_io_manager.open(),
     ):
         _run_tool(use_pyproject_fmt, remove=remove)
+
+
+@app.command(
+    name="pyproject.toml", help="Use the pyproject.toml file to configure the project."
+)
+def pyproject_toml(
+    remove: bool = remove_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    frozen: bool = frozen_opt,
+) -> None:
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        pyproject_toml_io_manager.open(),
+    ):
+        _run_tool(use_pyproject_toml, remove=remove)
 
 
 @app.command(help="Use the pytest testing framework.")

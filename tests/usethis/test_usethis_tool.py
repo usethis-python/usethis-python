@@ -1,7 +1,9 @@
 from pathlib import Path
 
 import pytest
+import requests
 
+from usethis._config import usethis_config
 from usethis._console import box_print
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
@@ -772,3 +774,22 @@ def test_all_tools_config_keys_are_subkeys_of_id_keys(tool: Tool):
         assert any(config.id_keys[: len(id_key)] == id_key for id_key in id_keys), (
             f"Config keys {config.id_keys} not covered by ID keys in {tool.name}"
         )
+
+
+class TestPyprojectTOMLTool:
+    class TestPrintHowToUse:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_link_isnt_dead(self):
+            """A regression test."""
+
+            # Arrange
+            url = (
+                "https://packaging.python.org/en/latest/guides/writing-pyproject-toml/"
+            )
+
+            if not usethis_config.offline:
+                # Act
+                result = requests.head(url)
+
+                # Assert
+                assert result.status_code == 200

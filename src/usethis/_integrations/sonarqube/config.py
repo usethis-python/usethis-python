@@ -3,6 +3,7 @@ from pathlib import Path
 
 from pydantic import TypeAdapter
 
+from usethis._integrations.project.layout import get_source_dir_str
 from usethis._integrations.pyproject.core import get_config_value
 from usethis._integrations.python.version import get_python_version
 from usethis._integrations.sonarqube.errors import (
@@ -61,11 +62,17 @@ def get_sonar_project_properties() -> str:
         raise CoverageReportConfigNotFoundError(msg)
 
     # No file, so construct the contents
+    source_dir_str = get_source_dir_str()
+    if source_dir_str == ".":
+        sources = "./"
+    else:
+        sources = f"./{source_dir_str}"
+
     text = f"""\
 sonar.projectKey={project_key}
 sonar.language=py
 sonar.python.version={python_version}
-sonar.sources=./src
+sonar.sources={sources}
 sonar.tests=./tests
 sonar.python.coverage.reportPaths={coverage_output}
 sonar.verbose={"true" if verbose else "false"}

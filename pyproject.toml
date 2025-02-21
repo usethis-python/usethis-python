@@ -84,7 +84,6 @@ version-file = "src/usethis/_version.py"
 [tool.ruff]
 line-length = 88
 
-src = [ "src" ]
 lint.select = [
   "A",
   "C4",
@@ -178,7 +177,7 @@ type = "layers"
 layers = [
   "bitbucket | github | pre_commit | pytest | ruff",
   "uv | pydantic | sonarqube",
-  "pyproject | yaml | python",
+  "project | pyproject | yaml | python",
 ]
 containers = [ "usethis._integrations" ]
 exhaustive = true

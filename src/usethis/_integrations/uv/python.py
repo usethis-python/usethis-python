@@ -1,6 +1,5 @@
 import re
 
-from usethis._config import usethis_config
 from usethis._integrations.pyproject_toml.requires_python import (
     MissingRequiresPythonError,
     get_requires_python,
@@ -14,14 +13,7 @@ from usethis._integrations.uv.errors import UVUnparsedPythonVersionError
 
 
 def get_available_python_versions() -> set[str]:
-    if not usethis_config.offline:
-        output = call_uv_subprocess(
-            ["python", "list", "--all-versions"], change_toml=False
-        )
-    else:
-        output = call_uv_subprocess(
-            ["python", "list", "--all-versions", "--offline"], change_toml=False
-        )
+    output = call_uv_subprocess(["python", "list", "--all-versions"], change_toml=False)
 
     return {
         _parse_python_version_from_uv_output(version) for version in output.splitlines()

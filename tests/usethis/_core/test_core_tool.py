@@ -341,12 +341,12 @@ class TestDeptry:
             f = uv_init_dir / "good.py"
             f.write_text("import sys")
 
-            # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), usethis_config.set(frozen=False):
+                # Act
                 use_deptry()
 
-            # Assert
-            subprocess.run(["uv", "run", "deptry", "."], cwd=uv_init_dir, check=True)
+                # Assert
+                call_uv_subprocess(["run", "deptry", "."], change_toml=False)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_after(

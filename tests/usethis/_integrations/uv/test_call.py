@@ -36,7 +36,7 @@ class TestCallUVSubprocess:
             usethis._integrations.uv.call, "call_subprocess", mock_call_subprocess
         )
 
-        with usethis_config.set(frozen=True):
+        with usethis_config.set(frozen=True, offline=False):
             # Act, Assert
             # Check the args passed to call_subprocess
             assert call_uv_subprocess(

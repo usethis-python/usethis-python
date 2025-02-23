@@ -44,6 +44,9 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
     else:
         new_args = ["uv", *args]
 
+    if usethis_config.offline:
+        new_args = [*new_args[:2], "--offline", *new_args[2:]]
+
     try:
         output = call_subprocess(new_args)
     except SubprocessFailedError as err:

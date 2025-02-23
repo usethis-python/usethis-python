@@ -4,6 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from usethis._app import app as main_app
+from usethis._config import usethis_config
 from usethis._integrations.python.version import (
     extract_major_version,
     get_python_version,
@@ -43,6 +44,7 @@ class TestBitbucket:
         assert result.exit_code == 0, result.output
         assert not (tmp_path / "bitbucket-pipelines.yml").exists()
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_maximal_config(self, tmp_path: Path):
         if extract_major_version(get_python_version()) != 10:
             pytest.skip("This test is only for Python 3.10")
@@ -51,7 +53,10 @@ class TestBitbucket:
         with change_cwd(tmp_path):
             # Arrange
             for tool_command in ALL_TOOL_COMMANDS:
-                runner.invoke(main_app, ["tool", tool_command])
+                if not usethis_config.offline:
+                    runner.invoke(main_app, ["tool", tool_command])
+                else:
+                    runner.invoke(main_app, ["tool", tool_command, "--offline"])
 
             # Act
             runner.invoke(app)  # The CI menu only has 1 command (bitbucket

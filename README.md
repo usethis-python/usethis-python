@@ -111,6 +111,7 @@ Currently supported tools:
 - `usethis tool deptry`
 - `usethis tool pre-commit`
 - `usethis tool pyproject-fmt`
+- `usethis tool pyproject.toml`
 - `usethis tool pytest`
 - `usethis tool requirements.txt`
 - `usethis tool ruff`

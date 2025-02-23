@@ -4,15 +4,15 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.pyproject_toml.core import (
-    PyProjectTOMLValueAlreadySetError,
-    PyProjectTOMLValueMissingError,
+    PyprojectTOMLValueAlreadySetError,
+    PyprojectTOMLValueMissingError,
     append_config_list,
     get_config_value,
     remove_config_value,
     set_config_value,
 )
 from usethis._integrations.pyproject_toml.io_ import (
-    PyProjectTOMLNotFoundError,
+    PyprojectTOMLNotFoundError,
     pyproject_toml_io_manager,
 )
 from usethis._test import change_cwd
@@ -23,7 +23,7 @@ class TestGetConfigValue:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_config_value(["tool", "usethis", "key"])
 
@@ -115,7 +115,7 @@ key = "value1"
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
             pytest.raises(
-                PyProjectTOMLValueAlreadySetError,
+                PyprojectTOMLValueAlreadySetError,
                 match=re.escape(
                     "Configuration value 'tool.usethis.key' is already set."
                 ),
@@ -157,7 +157,7 @@ class TestRemoveConfigValue:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLValueMissingError),
+            pytest.raises(PyprojectTOMLValueMissingError),
         ):
             remove_config_value(["tool", "usethis", "key"])
 
@@ -165,7 +165,7 @@ class TestRemoveConfigValue:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             remove_config_value(["tool", "usethis", "key"])
 

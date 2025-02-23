@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import TypeAdapter, ValidationError
 
-from usethis._integrations.pyproject_toml.errors import PyProjectTOMLProjectSectionError
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLProjectSectionError
 from usethis._integrations.pyproject_toml.io_ import read_pyproject_toml
 
 
@@ -13,9 +13,9 @@ def get_project_dict() -> dict[str, Any]:
         project = TypeAdapter(dict).validate_python(pyproject["project"])
     except KeyError:
         msg = "The 'project' section is missing from 'pyproject.toml'."
-        raise PyProjectTOMLProjectSectionError(msg)
+        raise PyprojectTOMLProjectSectionError(msg)
     except ValidationError as err:
         msg = f"The 'project' section in 'pyproject.toml' is not a valid map: {err}"
-        raise PyProjectTOMLProjectSectionError(msg)
+        raise PyprojectTOMLProjectSectionError(msg)
 
     return project

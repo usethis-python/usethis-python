@@ -7,7 +7,7 @@ from usethis._config import usethis_config
 from usethis._console import box_print
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
-from usethis._integrations.pyproject_toml.config import PyProjectConfig
+from usethis._integrations.pyproject_toml.config import PyprojectConfig
 from usethis._integrations.pyproject_toml.core import set_config_value
 from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
@@ -60,8 +60,8 @@ class MyTool(Tool):
             )
         ]
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
-        return [PyProjectConfig(id_keys=["tool", self.name], value={"key": "value"})]
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
+        return [PyprojectConfig(id_keys=["tool", self.name], value={"key": "value"})]
 
     def get_associated_ruff_rules(self) -> list[str]:
         return ["MYRULE"]
@@ -148,7 +148,7 @@ class TestTool:
         def test_specific(self):
             tool = MyTool()
             assert tool.get_pyproject_configs() == [
-                PyProjectConfig(id_keys=["tool", "my_tool"], value={"key": "value"})
+                PyprojectConfig(id_keys=["tool", "my_tool"], value={"key": "value"})
             ]
 
     class TestGetAssociatedRuffRules:
@@ -633,7 +633,7 @@ repos:
                 def print_how_to_use(self) -> None:
                     box_print("How to use no_config_tool")
 
-                def get_pyproject_configs(self) -> list[PyProjectConfig]:
+                def get_pyproject_configs(self) -> list[PyprojectConfig]:
                     return []
 
             nc_tool = NoConfigTool()
@@ -655,9 +655,9 @@ repos:
                 def print_how_to_use(self) -> None:
                     box_print("How to use this_tool")
 
-                def get_pyproject_configs(self) -> list[PyProjectConfig]:
+                def get_pyproject_configs(self) -> list[PyprojectConfig]:
                     return [
-                        PyProjectConfig(
+                        PyprojectConfig(
                             id_keys=["tool", "mytool"],
                             value={"key": "value"},
                         ),
@@ -695,13 +695,13 @@ key = "value"
                 def print_how_to_use(self) -> None:
                     box_print("How to use this_tool")
 
-                def get_pyproject_configs(self) -> list[PyProjectConfig]:
+                def get_pyproject_configs(self) -> list[PyprojectConfig]:
                     return [
-                        PyProjectConfig(
+                        PyprojectConfig(
                             id_keys=["tool", "mytool", "name"],
                             value="Modular Design",
                         ),
-                        PyProjectConfig(
+                        PyprojectConfig(
                             id_keys=["tool", "mytool", "root_packages"],
                             value=["example"],
                         ),

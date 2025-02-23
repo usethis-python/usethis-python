@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.pyproject_toml.errors import (
-    PyProjectTOMLProjectNameError,
-    PyProjectTOMLProjectSectionError,
+    PyprojectTOMLProjectNameError,
+    PyprojectTOMLProjectSectionError,
 )
 from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.pyproject_toml.name import get_name
@@ -47,7 +47,7 @@ class TestGetName:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLProjectSectionError),
+            pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_name()
 
@@ -60,7 +60,7 @@ class TestGetName:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLProjectNameError),
+            pytest.raises(PyprojectTOMLProjectNameError),
         ):
             get_name()
 
@@ -78,6 +78,6 @@ class TestGetName:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLProjectNameError),
+            pytest.raises(PyprojectTOMLProjectNameError),
         ):
             get_name()

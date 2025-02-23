@@ -5,13 +5,15 @@ from pydantic import TypeAdapter
 from tomlkit.toml_document import TOMLDocument
 
 from usethis._integrations.pyproject_toml.errors import (
-    PyProjectTOMLValueAlreadySetError,
-    PyProjectTOMLValueMissingError,
+    PyprojectTOMLValueAlreadySetError,
+    PyprojectTOMLValueMissingError,
 )
 from usethis._integrations.pyproject_toml.io_ import (
     read_pyproject_toml,
     write_pyproject_toml,
 )
+from usethis._integrations.toml.core import remove_toml_value
+from usethis._integrations.toml.errors import TOMLValueMissingError
 
 
 def get_config_value(id_keys: list[str]) -> Any:
@@ -67,7 +69,7 @@ def set_config_value(
         if not exists_ok:
             # The configuration is already present, which is not allowed.
             msg = f"Configuration value '{'.'.join(id_keys)}' is already set."
-            raise PyProjectTOMLValueAlreadySetError(msg)
+            raise PyprojectTOMLValueAlreadySetError(msg)
         else:
             # The configuration is already present, but we're allowed to overwrite it.
             TypeAdapter(dict).validate_python(parent)
@@ -78,51 +80,15 @@ def set_config_value(
 
 
 def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None:
-    if not id_keys:
-        msg = "At least one ID key must be provided."
-        raise ValueError(msg)
-
     pyproject = read_pyproject_toml()
 
-    # Exit early if the configuration is not present.
     try:
-        p = pyproject
-        for key in id_keys:
-            TypeAdapter(dict).validate_python(p)
-            assert isinstance(p, dict)
-            p = p[key]
-    except KeyError:
+        pyproject = remove_toml_value(toml_document=pyproject, id_keys=id_keys)
+    except TOMLValueMissingError as err:
         if not missing_ok:
-            # The configuration is not present, which is not allowed.
-            msg = f"Configuration value '{'.'.join(id_keys)}' is missing."
-            raise PyProjectTOMLValueMissingError(msg)
-        else:
-            # The configuration is not present, but that's okay; nothing left to do.
-            return
-
-    # Remove the configuration.
-    p = pyproject
-    for key in id_keys[:-1]:
-        TypeAdapter(dict).validate_python(p)
-        assert isinstance(p, dict)
-        p = p[key]
-    assert isinstance(p, dict)
-    del p[id_keys[-1]]
-
-    # Cleanup: any empty sections should be removed.
-    for idx in range(len(id_keys) - 1):
-        p, parent = pyproject, {}
-        TypeAdapter(dict).validate_python(p)
-        for key in id_keys[: idx + 1]:
-            p, parent = p[key], p
-            TypeAdapter(dict).validate_python(p)
-            TypeAdapter(dict).validate_python(parent)
-            assert isinstance(p, dict)
-            assert isinstance(parent, dict)
-        assert isinstance(p, dict)
-        if not p:
-            del parent[id_keys[idx]]
-
+            raise PyprojectTOMLValueMissingError(err)
+        # Otherwise, no changes are needed so skip the write step.
+        return
     write_pyproject_toml(pyproject)
 
 

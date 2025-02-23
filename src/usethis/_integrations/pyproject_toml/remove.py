@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from usethis._console import tick_print
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 
 
 def remove_pyproject_toml() -> None:

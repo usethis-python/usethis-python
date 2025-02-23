@@ -4,11 +4,11 @@ import mergedeep
 from pydantic import TypeAdapter
 from tomlkit.toml_document import TOMLDocument
 
-from usethis._integrations.pyproject.errors import (
+from usethis._integrations.pyproject_toml.errors import (
     PyProjectTOMLValueAlreadySetError,
     PyProjectTOMLValueMissingError,
 )
-from usethis._integrations.pyproject.io_ import (
+from usethis._integrations.pyproject_toml.io_ import (
     read_pyproject_toml,
     write_pyproject_toml,
 )

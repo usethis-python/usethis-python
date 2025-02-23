@@ -8,7 +8,7 @@ from usethis._ci import (
     update_bitbucket_pytest_steps,
 )
 from usethis._integrations.bitbucket.config import add_bitbucket_pipeline_config
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.python.version import (
     extract_major_version,
     get_python_version,

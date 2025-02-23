@@ -3,11 +3,11 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
-from usethis._integrations.pyproject.core import (
+from usethis._integrations.pyproject_toml.core import (
     get_config_value,
     remove_config_value,
 )
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,

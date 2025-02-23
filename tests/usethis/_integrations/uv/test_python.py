@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.errors import PyProjectTOMLNotFoundError
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.errors import PyProjectTOMLNotFoundError
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.python.version import (
     extract_major_version,
     get_python_version,

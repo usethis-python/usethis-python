@@ -2,12 +2,12 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.errors import (
+from usethis._integrations.pyproject_toml.errors import (
     PyProjectTOMLProjectNameError,
     PyProjectTOMLProjectSectionError,
 )
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
-from usethis._integrations.pyproject.name import get_name
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.name import get_name
 from usethis._test import change_cwd
 
 

@@ -3,11 +3,11 @@ from pydantic import BaseModel, TypeAdapter
 
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
-from usethis._integrations.pyproject.core import (
+from usethis._integrations.pyproject_toml.core import (
     append_config_list,
     get_config_value,
 )
-from usethis._integrations.pyproject.io_ import (
+from usethis._integrations.pyproject_toml.io_ import (
     read_pyproject_toml,
 )
 from usethis._integrations.uv.call import call_uv_subprocess

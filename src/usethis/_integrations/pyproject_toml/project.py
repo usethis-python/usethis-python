@@ -2,8 +2,8 @@ from typing import Any
 
 from pydantic import TypeAdapter, ValidationError
 
-from usethis._integrations.pyproject.errors import PyProjectTOMLProjectSectionError
-from usethis._integrations.pyproject.io_ import read_pyproject_toml
+from usethis._integrations.pyproject_toml.errors import PyProjectTOMLProjectSectionError
+from usethis._integrations.pyproject_toml.io_ import read_pyproject_toml
 
 
 def get_project_dict() -> dict[str, Any]:

@@ -1,11 +1,11 @@
 from pathlib import Path
 
 from usethis._config import usethis_config
-from usethis._integrations.pyproject.io_ import (
+from usethis._integrations.pyproject_toml.io_ import (
     pyproject_toml_io_manager,
     read_pyproject_toml_from_path,
 )
-from usethis._integrations.pyproject.valid import ensure_pyproject_validity
+from usethis._integrations.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 

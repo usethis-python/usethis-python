@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.core import (
+from usethis._integrations.pyproject_toml.core import (
     PyProjectTOMLValueAlreadySetError,
     PyProjectTOMLValueMissingError,
     append_config_list,
@@ -11,7 +11,7 @@ from usethis._integrations.pyproject.core import (
     remove_config_value,
     set_config_value,
 )
-from usethis._integrations.pyproject.io_ import (
+from usethis._integrations.pyproject_toml.io_ import (
     PyProjectTOMLNotFoundError,
     pyproject_toml_io_manager,
 )

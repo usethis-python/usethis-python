@@ -2,7 +2,7 @@ import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._core.show import show_name, show_sonarqube_config
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 
 app = typer.Typer(help="Show information about the current project.")
 

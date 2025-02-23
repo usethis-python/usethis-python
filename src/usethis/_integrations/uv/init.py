@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from usethis._console import tick_print
-from usethis._integrations.pyproject.errors import PyProjectTOMLInitError
+from usethis._integrations.pyproject_toml.errors import PyProjectTOMLInitError
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 

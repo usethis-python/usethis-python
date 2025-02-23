@@ -1,7 +1,7 @@
 import re
 
 from usethis._config import usethis_config
-from usethis._integrations.pyproject.requires_python import (
+from usethis._integrations.pyproject_toml.requires_python import (
     MissingRequiresPythonError,
     get_requires_python,
 )

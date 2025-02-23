@@ -6,7 +6,7 @@ from tomlkit.exceptions import TOMLKitError
 from tomlkit.toml_document import TOMLDocument
 from typing_extensions import Self
 
-from usethis._integrations.pyproject.errors import (
+from usethis._integrations.pyproject_toml.errors import (
     PyProjectTOMLDecodeError,
     PyProjectTOMLNotFoundError,
 )

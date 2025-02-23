@@ -1,5 +1,5 @@
 from usethis._console import tick_print
-from usethis._integrations.pyproject.core import (
+from usethis._integrations.pyproject_toml.core import (
     append_config_list,
     get_config_value,
     remove_from_config_list,

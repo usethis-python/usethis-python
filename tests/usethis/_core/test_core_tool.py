@@ -20,8 +20,8 @@ from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,
 )
-from usethis._integrations.pyproject.core import get_config_value
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.core import get_config_value
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
     Dependency,

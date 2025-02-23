@@ -7,9 +7,9 @@ from usethis._config import usethis_config
 from usethis._console import box_print
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
-from usethis._integrations.pyproject.config import PyProjectConfig
-from usethis._integrations.pyproject.core import set_config_value
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.config import PyProjectConfig
+from usethis._integrations.pyproject_toml.core import set_config_value
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
 from usethis._tool import ALL_TOOLS, DeptryTool, PyprojectTOMLTool, Tool

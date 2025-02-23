@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.call import call_subprocess, call_uv_subprocess
 from usethis._test import change_cwd, is_offline
 

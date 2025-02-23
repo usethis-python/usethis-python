@@ -7,10 +7,10 @@ from typing_extensions import Self
 
 from usethis._console import err_print, tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path
-from usethis._integrations.pyproject.errors import (
+from usethis._integrations.pyproject_toml.errors import (
     PyProjectTOMLError,
 )
-from usethis._integrations.pyproject.name import get_name
+from usethis._integrations.pyproject_toml.name import get_name
 
 
 class Badge(BaseModel):

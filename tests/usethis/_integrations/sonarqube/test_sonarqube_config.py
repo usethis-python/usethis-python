@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.core import set_config_value
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.core import set_config_value
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.python.version import get_python_version
 from usethis._integrations.sonarqube.config import (
     _validate_project_key,

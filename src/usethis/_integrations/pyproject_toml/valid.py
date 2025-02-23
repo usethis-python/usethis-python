@@ -4,7 +4,7 @@ from tomlkit import TOMLDocument
 from tomlkit.items import Array, Table
 
 from usethis._console import tick_print
-from usethis._integrations.pyproject.io_ import (
+from usethis._integrations.pyproject_toml.io_ import (
     read_pyproject_toml,
     write_pyproject_toml,
 )

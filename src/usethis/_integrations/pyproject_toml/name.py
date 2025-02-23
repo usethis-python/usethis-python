@@ -1,10 +1,10 @@
 from pydantic import TypeAdapter, ValidationError
 
-from usethis._integrations.pyproject.errors import (
+from usethis._integrations.pyproject_toml.errors import (
     PyProjectTOMLProjectDescriptionError,
     PyProjectTOMLProjectNameError,
 )
-from usethis._integrations.pyproject.project import get_project_dict
+from usethis._integrations.pyproject_toml.project import get_project_dict
 
 
 def get_name() -> str:

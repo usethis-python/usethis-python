@@ -3,7 +3,7 @@ import typer
 from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._console import err_print, info_print
 from usethis._core.ci import use_ci_bitbucket
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis.errors import UsethisError
 
 app = typer.Typer(help="Add config for Continuous Integration (CI) pipelines.")

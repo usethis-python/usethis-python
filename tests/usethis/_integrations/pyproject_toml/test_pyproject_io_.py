@@ -3,11 +3,11 @@ from pathlib import Path
 import pytest
 from tomlkit import TOMLDocument
 
-from usethis._integrations.pyproject.errors import (
+from usethis._integrations.pyproject_toml.errors import (
     PyProjectTOMLDecodeError,
     PyProjectTOMLNotFoundError,
 )
-from usethis._integrations.pyproject.io_ import (
+from usethis._integrations.pyproject_toml.io_ import (
     PyprojectTOMLIOManager,
     PyprojectTOMLOpener,
     UnexpectedPyprojectTOMLOpenError,

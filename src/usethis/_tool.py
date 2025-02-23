@@ -22,15 +22,15 @@ from usethis._integrations.pre_commit.schema import (
     UriRepo,
 )
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.pyproject.config import PyProjectConfig
-from usethis._integrations.pyproject.core import (
+from usethis._integrations.pyproject_toml.config import PyProjectConfig
+from usethis._integrations.pyproject_toml.core import (
     PyProjectTOMLValueAlreadySetError,
     PyProjectTOMLValueMissingError,
     do_id_keys_exist,
     remove_config_value,
     set_config_value,
 )
-from usethis._integrations.pyproject.remove import remove_pyproject_toml
+from usethis._integrations.pyproject_toml.remove import remove_pyproject_toml
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,

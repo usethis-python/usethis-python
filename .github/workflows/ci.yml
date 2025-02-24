@@ -23,15 +23,9 @@ jobs:
         with:
           version: "latest"
 
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
-        with:
-          python-version: ${{ matrix.python-version }}
-        
-      - name: Setup dependencies
+      - name: Set up environment
         run: |
-          uv export --resolution ${{ matrix.resolution }} > requirements.txt 
-          uv pip install --system --break-system-packages -r requirements.txt
+          uv sync --python {{ matrix.python-version }}
 
       - name: Run pre-commit
         if: matrix.pre-commit

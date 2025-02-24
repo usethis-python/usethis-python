@@ -25,7 +25,8 @@ jobs:
 
       - name: Set up environment
         run: |
-          uv sync --python ${{ matrix.python-version }} --resolution ${{ matrix.resolution }}
+          uv python pin ${{ matrix.python-version }}
+          uv sync --resolution ${{ matrix.resolution }}
 
       - name: Run pre-commit
         if: matrix.pre-commit

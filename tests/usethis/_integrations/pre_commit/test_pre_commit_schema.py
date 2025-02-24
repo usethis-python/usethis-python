@@ -33,7 +33,7 @@ class TestSchemaJSON:
         assert local_schema_json == online_schema_json.replace("\r\n", "\n\n")
 
     @pytest.mark.skipif(
-        os.getenv("CI"),
+        bool(os.getenv("CI")),
         reason=".python-version re-pinned in CI for test matrix",
     )
     def test_target_python_version(self):

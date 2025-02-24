@@ -35,6 +35,7 @@ jobs:
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
         with:
+          custom-pytest: uv run pytest
           custom-arguments: --cov --junitxml=junit.xml -o junit_family=legacy
 
       - name: Run benchmarks
@@ -42,7 +43,7 @@ jobs:
         if: matrix.codspeed
         with:
           token: ${{ secrets.CODSPEED_TOKEN }}
-          run: pytest --codspeed
+          run: uv run pytest --codspeed
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1

@@ -1,4 +1,8 @@
-from usethis._integrations.toml.errors import TOMLError, TOMLValueMissingError
+from usethis._integrations.toml.errors import (
+    TOMLError,
+    TOMLValueAlreadySetError,
+    TOMLValueMissingError,
+)
 
 
 class PyprojectTOMLError(TOMLError):
@@ -29,7 +33,7 @@ class PyprojectTOMLProjectSectionError(PyprojectTOMLError):
     """Raised when the 'project' section is missing or invalid in 'pyproject.toml'."""
 
 
-class PyprojectTOMLValueAlreadySetError(PyprojectTOMLError):
+class PyprojectTOMLValueAlreadySetError(PyprojectTOMLError, TOMLValueAlreadySetError):
     """Raised when a value is unexpectedly already set in the 'pyproject.toml' file."""
 
 

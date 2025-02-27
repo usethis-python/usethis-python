@@ -12,8 +12,11 @@ from usethis._integrations.pyproject_toml.io_ import (
     read_pyproject_toml,
     write_pyproject_toml,
 )
-from usethis._integrations.toml.core import remove_toml_value
-from usethis._integrations.toml.errors import TOMLValueMissingError
+from usethis._integrations.toml.core import remove_toml_value, set_toml_value
+from usethis._integrations.toml.errors import (
+    TOMLValueAlreadySetError,
+    TOMLValueMissingError,
+)
 
 
 def get_config_value(id_keys: list[str]) -> Any:
@@ -35,51 +38,21 @@ def get_config_value(id_keys: list[str]) -> Any:
 def set_config_value(
     id_keys: list[str], value: Any, *, exists_ok: bool = False
 ) -> None:
-    """Set a value in the pyproject.toml configuration file.
-
-    Raises:
-        ConfigValueAlreadySetError: If the configuration value is already set.
-    """
-    if not id_keys:
-        msg = "At least one ID key must be provided."
-        raise ValueError(msg)
-
+    """Set a value in the pyproject.toml configuration file."""
     pyproject = read_pyproject_toml()
 
     try:
-        # Index our way into each ID key.
-        # Eventually, we should land at a final dict, which is the one we are setting.
-        p, parent = pyproject, {}
-        for key in id_keys:
-            TypeAdapter(dict).validate_python(p)
-            assert isinstance(p, dict)
-            p, parent = p[key], p
-    except KeyError:
-        # The old configuration should be kept for all ID keys except the
-        # final/deepest one which shouldn't exist anyway since we checked as much,
-        # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
-        # with [tool.deptry]; they should coexist. So under the "tool" key, we need
-        # to merge the two dicts.
-        contents = value
-        for key in reversed(id_keys):
-            contents = {key: contents}
-        pyproject = mergedeep.merge(pyproject, contents)
-        assert isinstance(pyproject, TOMLDocument)
-    else:
-        if not exists_ok:
-            # The configuration is already present, which is not allowed.
-            msg = f"Configuration value '{'.'.join(id_keys)}' is already set."
-            raise PyprojectTOMLValueAlreadySetError(msg)
-        else:
-            # The configuration is already present, but we're allowed to overwrite it.
-            TypeAdapter(dict).validate_python(parent)
-            assert isinstance(parent, dict)
-            parent[id_keys[-1]] = value
+        pyproject = set_toml_value(
+            toml_document=pyproject, id_keys=id_keys, value=value, exists_ok=exists_ok
+        )
+    except TOMLValueAlreadySetError as err:
+        raise PyprojectTOMLValueAlreadySetError(err)
 
     write_pyproject_toml(pyproject)
 
 
 def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None:
+    """Remove a value from the pyproject.toml configuration file."""
     pyproject = read_pyproject_toml()
 
     try:

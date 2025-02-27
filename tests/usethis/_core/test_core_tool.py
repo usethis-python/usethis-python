@@ -1232,6 +1232,7 @@ class TestPytest:
                 # This will raise if pytest is not installed
                 call_uv_subprocess(["pip", "show", "pytest"], change_toml=False)
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_registers_test_group(self, tmp_path: Path):
             with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 # Act

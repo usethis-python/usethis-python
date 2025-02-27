@@ -1,4 +1,3 @@
-from functools import cache
 from pathlib import Path
 
 from tomlkit.api import dumps, parse
@@ -18,18 +17,6 @@ def read_pyproject_toml() -> TOMLDocument:
 
 def write_pyproject_toml(toml_document: TOMLDocument) -> None:
     return pyproject_toml_io_manager._opener.write(toml_document)
-
-
-@cache
-def read_pyproject_toml_from_path(path: Path) -> TOMLDocument:
-    try:
-        return parse(path.read_text())
-    except FileNotFoundError:
-        msg = "'pyproject.toml' not found in the current directory."
-        raise PyprojectTOMLNotFoundError(msg)
-    except TOMLKitError as err:
-        msg = f"Failed to decode 'pyproject.toml': {err}"
-        raise PyprojectTOMLDecodeError(msg) from None
 
 
 class UnexpectedPyprojectTOMLReadError(Exception):
@@ -62,11 +49,17 @@ class PyprojectTOMLOpener:
         self.content = toml_document
 
     def write_file(self) -> None:
-        read_pyproject_toml_from_path.cache_clear()
         self.path.write_text(dumps(self.content))
 
     def read_file(self) -> None:
-        self.content = read_pyproject_toml_from_path(self.path)
+        try:
+            self.content = parse(self.path.read_text())
+        except FileNotFoundError:
+            msg = "'pyproject.toml' not found in the current directory."
+            raise PyprojectTOMLNotFoundError(msg)
+        except TOMLKitError as err:
+            msg = f"Failed to decode 'pyproject.toml': {err}"
+            raise PyprojectTOMLDecodeError(msg) from None
 
     def __enter__(self) -> Self:
         self._set = True

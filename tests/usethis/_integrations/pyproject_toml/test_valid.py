@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
-from usethis._integrations.pyproject.valid import ensure_pyproject_validity
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._test import change_cwd
 
 

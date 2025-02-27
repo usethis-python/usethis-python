@@ -3,11 +3,11 @@ from pathlib import Path
 import pytest
 from tomlkit import TOMLDocument
 
-from usethis._integrations.pyproject.errors import (
-    PyProjectTOMLDecodeError,
-    PyProjectTOMLNotFoundError,
+from usethis._integrations.pyproject_toml.errors import (
+    PyprojectTOMLDecodeError,
+    PyprojectTOMLNotFoundError,
 )
-from usethis._integrations.pyproject.io_ import (
+from usethis._integrations.pyproject_toml.io_ import (
     PyprojectTOMLIOManager,
     PyprojectTOMLOpener,
     UnexpectedPyprojectTOMLOpenError,
@@ -211,7 +211,7 @@ class TestReadPyprojectTOML:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLDecodeError),
+            pytest.raises(PyprojectTOMLDecodeError),
         ):
             read_pyproject_toml().value
 
@@ -220,7 +220,7 @@ class TestReadPyprojectTOML:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             read_pyproject_toml().value
 

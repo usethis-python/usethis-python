@@ -17,7 +17,7 @@ from usethis._integrations.pre_commit.core import (
     uninstall_pre_commit_hooks,
 )
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_names
-from usethis._integrations.pyproject.valid import ensure_pyproject_validity
+from usethis._integrations.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.ruff.rules import (
     deselect_ruff_rules,

@@ -3,11 +3,11 @@ from pydantic import BaseModel, TypeAdapter
 
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
-from usethis._integrations.pyproject.core import (
-    append_config_list,
-    get_config_value,
+from usethis._integrations.pyproject_toml.core import (
+    extend_pyproject_list,
+    get_pyproject_value,
 )
-from usethis._integrations.pyproject.io_ import (
+from usethis._integrations.pyproject_toml.io_ import (
     read_pyproject_toml,
 )
 from usethis._integrations.uv.call import call_uv_subprocess
@@ -68,7 +68,7 @@ def register_default_group(group: str) -> None:
     ensure_dev_group_is_defined()
 
     try:
-        default_groups = get_config_value(["tool", "uv", "default-groups"])
+        default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
         if not isinstance(default_groups, list):
             default_groups = []
     except KeyError:
@@ -82,12 +82,12 @@ def register_default_group(group: str) -> None:
             groups_to_add.append("dev")
 
     if groups_to_add:
-        append_config_list(["tool", "uv", "default-groups"], groups_to_add)
+        extend_pyproject_list(["tool", "uv", "default-groups"], groups_to_add)
 
 
 def ensure_dev_group_is_defined() -> None:
     # Ensure dev group exists in dependency-groups
-    append_config_list(["dependency-groups", "dev"], [])
+    extend_pyproject_list(["dependency-groups", "dev"], [])
 
 
 def add_deps_to_group(deps: list[Dependency], group: str) -> None:
@@ -114,15 +114,10 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
 
     for dep in to_add_deps:
         try:
-            if not usethis_config.offline:
-                call_uv_subprocess(
-                    ["add", "--group", group, "--quiet", str(dep)], change_toml=True
-                )
-            else:
-                call_uv_subprocess(
-                    ["add", "--group", group, "--quiet", "--offline", str(dep)],
-                    change_toml=True,
-                )
+            call_uv_subprocess(
+                ["add", "--group", group, "--quiet", str(dep)],
+                change_toml=True,
+            )
         except UVSubprocessFailedError as err:
             msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
             raise UVDepGroupError(msg) from None
@@ -154,15 +149,9 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
 
     for dep in _deps:
         try:
-            if not usethis_config.offline:
-                call_uv_subprocess(
-                    ["remove", "--group", group, "--quiet", str(dep)], change_toml=True
-                )
-            else:
-                call_uv_subprocess(
-                    ["remove", "--group", group, "--quiet", "--offline", str(dep)],
-                    change_toml=True,
-                )
+            call_uv_subprocess(
+                ["remove", "--group", group, "--quiet", str(dep)], change_toml=True
+            )
         except UVSubprocessFailedError as err:
             msg = (
                 f"Failed to remove '{dep}' from the '{group}' dependency group:\n{err}"

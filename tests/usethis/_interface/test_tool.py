@@ -4,6 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from usethis._config import usethis_config
+from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._interface.tool import ALL_TOOL_COMMANDS, app
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 from usethis._test import change_cwd
@@ -11,11 +12,15 @@ from usethis._tool import ALL_TOOLS
 
 
 class TestCodespell:
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_add(self, tmp_path: Path):
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["codespell"])
+            if not usethis_config.offline:
+                result = runner.invoke(app, ["codespell"])
+            else:
+                result = runner.invoke(app, ["codespell", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -39,7 +44,10 @@ class TestDeptry:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_cli_not_frozen(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
-            call_subprocess(["usethis", "tool", "deptry"])
+            if not usethis_config.offline:
+                call_subprocess(["usethis", "tool", "deptry"])
+            else:
+                call_subprocess(["usethis", "tool", "deptry", "--offline"])
             assert (uv_init_dir / ".venv").exists()
 
 
@@ -72,7 +80,9 @@ class TestPreCommit:
             else:
                 call_subprocess(["usethis", "tool", "pre-commit", "--offline"])
 
-            call_subprocess(["uv", "run", "pre-commit", "run", "--all-files"])
+            call_uv_subprocess(
+                ["run", "pre-commit", "run", "--all-files"], change_toml=False
+            )
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_cli_fail(self, uv_init_repo_dir: Path):
@@ -114,11 +124,15 @@ class TestRuff:
 
 
 class TestPytest:
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_add(self, tmp_path: Path):
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pytest"])
+            if not usethis_config.offline:
+                result = runner.invoke(app, ["pytest"])
+            else:
+                result = runner.invoke(app, ["pytest", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output

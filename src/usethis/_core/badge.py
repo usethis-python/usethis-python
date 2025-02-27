@@ -7,10 +7,10 @@ from typing_extensions import Self
 
 from usethis._console import err_print, tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path
-from usethis._integrations.pyproject.errors import (
-    PyProjectTOMLError,
+from usethis._integrations.pyproject_toml.errors import (
+    PyprojectTOMLError,
 )
-from usethis._integrations.pyproject.name import get_name
+from usethis._integrations.pyproject_toml.name import get_name
 
 
 class Badge(BaseModel):
@@ -41,7 +41,7 @@ PRE_COMMIT_BADGE = Badge(
 def get_pypi_badge() -> Badge:
     try:
         name = get_name()
-    except PyProjectTOMLError:
+    except PyprojectTOMLError:
         # Note; we don't want to create pyproject.toml because if it doesn't exist,
         # the package is unlikely to be on PyPI. They could be using setup.py etc.
         # So a second-best heuristic is the name of the current directory.

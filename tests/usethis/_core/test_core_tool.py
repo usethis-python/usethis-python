@@ -20,8 +20,8 @@ from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,
 )
-from usethis._integrations.pyproject.core import get_config_value
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.core import get_pyproject_value
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -341,12 +341,12 @@ class TestDeptry:
             f = uv_init_dir / "good.py"
             f.write_text("import sys")
 
-            # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), usethis_config.set(frozen=False):
+                # Act
                 use_deptry()
 
-            # Assert
-            subprocess.run(["uv", "run", "deptry", "."], cwd=uv_init_dir, check=True)
+                # Assert
+                call_uv_subprocess(["run", "deptry", "."], change_toml=False)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_after(
@@ -1232,13 +1232,14 @@ class TestPytest:
                 # This will raise if pytest is not installed
                 call_uv_subprocess(["pip", "show", "pytest"], change_toml=False)
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_registers_test_group(self, tmp_path: Path):
             with change_cwd(tmp_path), pyproject_toml_io_manager.open():
                 # Act
                 use_pytest()
 
                 # Assert
-                default_groups = get_config_value(["tool", "uv", "default-groups"])
+                default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
                 assert "test" in default_groups
 
     class TestRemove:

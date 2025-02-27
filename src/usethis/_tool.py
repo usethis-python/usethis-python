@@ -22,15 +22,15 @@ from usethis._integrations.pre_commit.schema import (
     UriRepo,
 )
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.pyproject.config import PyProjectConfig
-from usethis._integrations.pyproject.core import (
-    PyProjectTOMLValueAlreadySetError,
-    PyProjectTOMLValueMissingError,
-    do_id_keys_exist,
-    remove_config_value,
-    set_config_value,
+from usethis._integrations.pyproject_toml.config import PyprojectConfig
+from usethis._integrations.pyproject_toml.core import (
+    PyprojectTOMLValueAlreadySetError,
+    PyprojectTOMLValueMissingError,
+    do_pyproject_id_keys_exist,
+    remove_pyproject_value,
+    set_pyproject_value,
 )
-from usethis._integrations.pyproject.remove import remove_pyproject_toml
+from usethis._integrations.pyproject_toml.remove import remove_pyproject_toml
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,
@@ -79,7 +79,7 @@ class Tool(Protocol):
         """Get the pre-commit repository configurations for the tool."""
         return []
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         """Get the pyproject configurations for the tool.
 
         All configuration keys returned by this method must be sub-keys of the
@@ -119,7 +119,7 @@ class Tool(Protocol):
             if file.exists() and file.is_file():
                 return True
         for id_keys in self.get_managed_pyproject_keys():
-            if do_id_keys_exist(id_keys):
+            if do_pyproject_id_keys_exist(id_keys):
                 return True
         for dep in self.get_dev_deps(unconditional=True):
             if is_dep_in_any_group(dep):
@@ -191,8 +191,8 @@ class Tool(Protocol):
         first_addition = True
         for config in configs:
             try:
-                set_config_value(config.id_keys, config.value)
-            except PyProjectTOMLValueAlreadySetError:
+                set_pyproject_value(config.id_keys, config.value)
+            except PyprojectTOMLValueAlreadySetError:
                 pass
             else:
                 if first_addition:
@@ -214,8 +214,8 @@ class Tool(Protocol):
         first_removal = True
         for keys in keys_to_remove:
             try:
-                remove_config_value(keys)
-            except PyProjectTOMLValueMissingError:
+                remove_pyproject_value(keys)
+            except PyprojectTOMLValueMissingError:
                 pass
             else:
                 if first_removal:
@@ -250,9 +250,9 @@ class CodespellTool(Tool):
         else:
             box_print("Run 'codespell' to run the Codespell spellchecker.")
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "codespell"],
                 value={
                     "ignore-regex": [
@@ -311,16 +311,16 @@ class CoverageTool(Tool):
         else:
             box_print("Run 'coverage help' to see available coverage commands.")
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "coverage", "run"],
                 value={
                     "source": [get_source_dir_str()],
                     "omit": ["*/pytest-of-*/*"],
                 },
             ),
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "coverage", "report"],
                 value={
                     "exclude_also": [
@@ -445,9 +445,9 @@ class PyprojectFmtTool(Tool):
             )
         ]
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "pyproject-fmt"],
                 value={"keep_full_version": True},
             )
@@ -516,9 +516,9 @@ class PytestTool(Tool):
     def get_extra_dev_deps(self) -> list[Dependency]:
         return [Dependency(name="pytest-cov")]
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "pytest"],
                 value={
                     "ini_options": {
@@ -628,9 +628,9 @@ class RuffTool(Tool):
             ),
         ]
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "ruff"],
                 value={
                     "line-length": 88,

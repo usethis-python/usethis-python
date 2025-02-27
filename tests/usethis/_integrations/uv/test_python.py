@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.errors import PyProjectTOMLNotFoundError
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLNotFoundError
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.python.version import (
     extract_major_version,
     get_python_version,
@@ -52,7 +52,7 @@ requires-python = ">=3.9,<3.12"
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_supported_major_python_versions()
 

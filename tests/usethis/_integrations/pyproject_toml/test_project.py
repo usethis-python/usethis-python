@@ -2,12 +2,12 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.errors import (
-    PyProjectTOMLNotFoundError,
-    PyProjectTOMLProjectSectionError,
+from usethis._integrations.pyproject_toml.errors import (
+    PyprojectTOMLNotFoundError,
+    PyprojectTOMLProjectSectionError,
 )
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
-from usethis._integrations.pyproject.project import get_project_dict
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.project import get_project_dict
 from usethis._test import change_cwd
 
 
@@ -16,7 +16,7 @@ class TestGetProjectDict:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_project_dict()
 
@@ -28,7 +28,7 @@ class TestGetProjectDict:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLProjectSectionError),
+            pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
 
@@ -40,7 +40,7 @@ class TestGetProjectDict:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLProjectSectionError),
+            pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
 
@@ -52,7 +52,7 @@ class TestGetProjectDict:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLProjectSectionError),
+            pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
 

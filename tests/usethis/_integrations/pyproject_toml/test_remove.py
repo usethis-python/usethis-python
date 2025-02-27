@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.remove import remove_pyproject_toml
+from usethis._integrations.pyproject_toml.remove import remove_pyproject_toml
 from usethis._test import change_cwd
 
 

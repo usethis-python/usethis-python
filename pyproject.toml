@@ -177,7 +177,8 @@ type = "layers"
 layers = [
   "bitbucket | github | pre_commit | pytest | ruff",
   "uv | pydantic | sonarqube",
-  "project | pyproject | yaml | python",
+  "pyproject_toml",
+  "project | toml | yaml | python",
 ]
 containers = [ "usethis._integrations" ]
 exhaustive = true

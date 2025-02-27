@@ -1,10 +1,10 @@
 from pathlib import Path
 
 from usethis._config import usethis_config
-from usethis._integrations.pyproject.io_ import (
+from usethis._integrations.pyproject_toml.io_ import (
     pyproject_toml_io_manager,
 )
-from usethis._integrations.pyproject.valid import ensure_pyproject_validity
+from usethis._integrations.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 
@@ -40,6 +40,9 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         new_args = ["uv", args[0], "--frozen", *args[1:]]
     else:
         new_args = ["uv", *args]
+
+    if usethis_config.offline:
+        new_args = [*new_args[:2], "--offline", *new_args[2:]]
 
     try:
         output = call_subprocess(new_args)

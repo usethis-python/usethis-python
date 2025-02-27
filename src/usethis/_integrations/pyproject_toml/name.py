@@ -1,10 +1,10 @@
 from pydantic import TypeAdapter, ValidationError
 
-from usethis._integrations.pyproject.errors import (
-    PyProjectTOMLProjectDescriptionError,
-    PyProjectTOMLProjectNameError,
+from usethis._integrations.pyproject_toml.errors import (
+    PyprojectTOMLProjectDescriptionError,
+    PyprojectTOMLProjectNameError,
 )
-from usethis._integrations.pyproject.project import get_project_dict
+from usethis._integrations.pyproject_toml.project import get_project_dict
 
 
 def get_name() -> str:
@@ -14,12 +14,12 @@ def get_name() -> str:
         name = TypeAdapter(str).validate_python(project_dict["name"])
     except KeyError:
         msg = "The 'project.name' value is missing from 'pyproject.toml'."
-        raise PyProjectTOMLProjectNameError(msg)
+        raise PyprojectTOMLProjectNameError(msg)
     except ValidationError as err:
         msg = (
             f"The 'project.name' value in 'pyproject.toml' is not a valid string: {err}"
         )
-        raise PyProjectTOMLProjectNameError(msg)
+        raise PyprojectTOMLProjectNameError(msg)
 
     return name
 
@@ -31,9 +31,9 @@ def get_description() -> str:
         description = TypeAdapter(str).validate_python(project_dict["description"])
     except KeyError:
         msg = "The 'project.description' value is missing from 'pyproject.toml'."
-        raise PyProjectTOMLProjectDescriptionError(msg)
+        raise PyprojectTOMLProjectDescriptionError(msg)
     except ValidationError as err:
         msg = f"The 'project.description' value in 'pyproject.toml' is not a valid string: {err}"
-        raise PyProjectTOMLProjectDescriptionError(msg)
+        raise PyprojectTOMLProjectDescriptionError(msg)
 
     return description

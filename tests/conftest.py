@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.call import call_subprocess, call_uv_subprocess
 from usethis._test import change_cwd, is_offline
 
@@ -91,12 +91,19 @@ class NetworkConn(Enum):
     ],
     scope="session",
 )
-def _vary_network_conn(request: pytest.FixtureRequest) -> Generator[None, None, None]:
-    """Fixture to vary the network connection; returns True if offline."""
+def _online_status(request: pytest.FixtureRequest) -> NetworkConn:
+    assert isinstance(request.param, NetworkConn)
+
     if request.param is NetworkConn.ONLINE and is_offline():
         pytest.skip("Network connection is offline")
 
-    offline = request.param is NetworkConn.OFFLINE
+    return request.param
+
+
+@pytest.fixture(scope="session")
+def _vary_network_conn(_online_status: NetworkConn) -> Generator[None, None, None]:
+    """Fixture to vary the network connection; returns True if offline."""
+    offline = _online_status is NetworkConn.OFFLINE
 
     usethis_config.offline = offline
     yield

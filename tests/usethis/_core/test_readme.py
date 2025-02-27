@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._core.readme import add_readme
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._test import change_cwd
 
 

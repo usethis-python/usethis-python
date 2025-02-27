@@ -36,13 +36,14 @@ class TestCallUVSubprocess:
             usethis._integrations.uv.call, "call_subprocess", mock_call_subprocess
         )
 
-        with usethis_config.set(frozen=True):
+        with usethis_config.set(frozen=True, offline=False):
             # Act, Assert
             # Check the args passed to call_subprocess
             assert call_uv_subprocess(
                 ["run", "pre-commit", "install"], change_toml=False
             ) == ("uv run --frozen pre-commit install")
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_handle_missing_version(
         self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
     ):

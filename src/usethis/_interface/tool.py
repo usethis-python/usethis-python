@@ -15,7 +15,7 @@ from usethis._core.tool import (
     use_requirements_txt,
     use_ruff,
 )
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis.errors import UsethisError
 
 app = typer.Typer(help="Add and configure development tools, e.g. linters.")

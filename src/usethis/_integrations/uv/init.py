@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from usethis._console import tick_print
-from usethis._integrations.pyproject.errors import PyProjectTOMLInitError
-from usethis._integrations.uv.call import call_uv_subprocess
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLInitError
+from usethis._integrations.uv import call
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 
 
@@ -13,7 +13,7 @@ def ensure_pyproject_toml() -> None:
 
     tick_print("Writing 'pyproject.toml'.")
     try:
-        call_uv_subprocess(
+        call.call_uv_subprocess(
             [
                 "init",
                 "--bare",
@@ -24,4 +24,4 @@ def ensure_pyproject_toml() -> None:
         )
     except UVSubprocessFailedError as err:
         msg = f"Failed to create a pyproject.toml file:\n{err}"
-        raise PyProjectTOMLInitError(msg) from None
+        raise PyprojectTOMLInitError(msg) from None

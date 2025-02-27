@@ -3,29 +3,29 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.core import (
-    PyProjectTOMLValueAlreadySetError,
-    PyProjectTOMLValueMissingError,
-    append_config_list,
-    get_config_value,
-    remove_config_value,
-    set_config_value,
+from usethis._integrations.pyproject_toml.core import (
+    PyprojectTOMLValueAlreadySetError,
+    PyprojectTOMLValueMissingError,
+    extend_pyproject_list,
+    get_pyproject_value,
+    remove_pyproject_value,
+    set_pyproject_value,
 )
-from usethis._integrations.pyproject.io_ import (
-    PyProjectTOMLNotFoundError,
+from usethis._integrations.pyproject_toml.io_ import (
+    PyprojectTOMLNotFoundError,
     pyproject_toml_io_manager,
 )
 from usethis._test import change_cwd
 
 
-class TestGetConfigValue:
+class TestGetPyprojectValue:
     def test_pyproject_does_not_exist(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
-            get_config_value(["tool", "usethis", "key"])
+            get_pyproject_value(["tool", "usethis", "key"])
 
     def test_key_does_not_exist(self, tmp_path: Path):
         # Arrange
@@ -42,7 +42,7 @@ key = "value"
             pyproject_toml_io_manager.open(),
             pytest.raises(KeyError),
         ):
-            get_config_value(["tool", "usethis", "key2"])
+            get_pyproject_value(["tool", "usethis", "key2"])
 
     def test_single_key(self, tmp_path: Path):
         # Arrange
@@ -55,20 +55,20 @@ key = "value"
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            value = get_config_value(["tool", "usethis", "key"])
+            value = get_pyproject_value(["tool", "usethis", "key"])
 
         # Assert
         assert value == "value"
 
 
-class TestSetConfigValue:
+class TestSetPyprojectValue:
     def test_empty(self, tmp_path: Path):
         # Arrange
         (tmp_path / "pyproject.toml").touch()
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            set_config_value(["tool", "usethis", "key"], "value")
+            set_pyproject_value(["tool", "usethis", "key"], "value")
 
         # Assert
         assert (
@@ -90,7 +90,7 @@ key = "value1"
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            set_config_value(["tool", "usethis", "key"], "value2", exists_ok=True)
+            set_pyproject_value(["tool", "usethis", "key"], "value2", exists_ok=True)
 
         # Assert
         assert (
@@ -115,13 +115,13 @@ key = "value1"
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
             pytest.raises(
-                PyProjectTOMLValueAlreadySetError,
+                PyprojectTOMLValueAlreadySetError,
                 match=re.escape(
                     "Configuration value 'tool.usethis.key' is already set."
                 ),
             ),
         ):
-            set_config_value(["tool", "usethis", "key"], "value2", exists_ok=False)
+            set_pyproject_value(["tool", "usethis", "key"], "value2", exists_ok=False)
 
     def test_update_mixed_nested(self, tmp_path: Path):
         # Arrange
@@ -135,7 +135,7 @@ key2 = "value2"
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            set_config_value(["tool", "usethis", "key1"], "value3", exists_ok=True)
+            set_pyproject_value(["tool", "usethis", "key1"], "value3", exists_ok=True)
 
         # Assert
         assert (
@@ -148,7 +148,7 @@ key2 = "value2"
         )
 
 
-class TestRemoveConfigValue:
+class TestRemovePyprojectValue:
     def test_already_missing(self, tmp_path: Path):
         # Arrange
         (tmp_path / "pyproject.toml").touch()
@@ -157,17 +157,17 @@ class TestRemoveConfigValue:
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLValueMissingError),
+            pytest.raises(PyprojectTOMLValueMissingError),
         ):
-            remove_config_value(["tool", "usethis", "key"])
+            remove_pyproject_value(["tool", "usethis", "key"])
 
     def test_missing_pyproject(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
             pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
-            remove_config_value(["tool", "usethis", "key"])
+            remove_pyproject_value(["tool", "usethis", "key"])
 
     def test_single_key(self, tmp_path: Path):
         """This checks the empty section cleanup."""
@@ -181,7 +181,7 @@ key = "value"
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            remove_config_value(["tool", "usethis", "key"])
+            remove_pyproject_value(["tool", "usethis", "key"])
 
         # Assert
         assert (tmp_path / "pyproject.toml").read_text() == ""
@@ -199,7 +199,7 @@ key2 = "value2"
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            remove_config_value(["tool", "usethis", "key1"])
+            remove_pyproject_value(["tool", "usethis", "key1"])
 
         # Assert
         assert (
@@ -216,20 +216,20 @@ key2 = "value2"
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            remove_config_value(["tool", "usethis", "key"], missing_ok=True)
+            remove_pyproject_value(["tool", "usethis", "key"], missing_ok=True)
 
         # Assert
         assert (tmp_path / "pyproject.toml").read_text() == ""
 
 
-class TestAppendConfigList:
+class TestExtendPyprojectList:
     def test_empty(self, tmp_path: Path):
         # Arrange
         (tmp_path / "pyproject.toml").touch()
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            append_config_list(["tool", "usethis", "key"], ["value"])
+            extend_pyproject_list(["tool", "usethis", "key"], ["value"])
 
         # Assert
         assert (
@@ -251,7 +251,7 @@ key = ["value1"]
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            append_config_list(["tool", "usethis", "key"], ["value2"])
+            extend_pyproject_list(["tool", "usethis", "key"], ["value2"])
 
         # Assert
         assert (

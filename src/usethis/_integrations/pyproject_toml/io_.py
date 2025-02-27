@@ -5,9 +5,9 @@ from tomlkit.exceptions import TOMLKitError
 from tomlkit.toml_document import TOMLDocument
 from typing_extensions import Self
 
-from usethis._integrations.pyproject.errors import (
-    PyProjectTOMLDecodeError,
-    PyProjectTOMLNotFoundError,
+from usethis._integrations.pyproject_toml.errors import (
+    PyprojectTOMLDecodeError,
+    PyprojectTOMLNotFoundError,
 )
 
 
@@ -56,10 +56,10 @@ class PyprojectTOMLOpener:
             self.content = parse(self.path.read_text())
         except FileNotFoundError:
             msg = "'pyproject.toml' not found in the current directory."
-            raise PyProjectTOMLNotFoundError(msg)
+            raise PyprojectTOMLNotFoundError(msg)
         except TOMLKitError as err:
             msg = f"Failed to decode 'pyproject.toml': {err}"
-            raise PyProjectTOMLDecodeError(msg) from None
+            raise PyprojectTOMLDecodeError(msg) from None
 
     def __enter__(self) -> Self:
         self._set = True

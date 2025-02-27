@@ -1,57 +1,55 @@
+import copy
 from typing import Any
 
 import mergedeep
 from pydantic import TypeAdapter
-from tomlkit.toml_document import TOMLDocument
+from tomlkit import TOMLDocument
 
-from usethis._integrations.pyproject.errors import (
-    PyProjectTOMLValueAlreadySetError,
-    PyProjectTOMLValueMissingError,
-)
-from usethis._integrations.pyproject.io_ import (
-    read_pyproject_toml,
-    write_pyproject_toml,
+from usethis._integrations.toml.errors import (
+    TOMLValueAlreadySetError,
+    TOMLValueMissingError,
 )
 
 
-def get_config_value(id_keys: list[str]) -> Any:
+def get_toml_value(
+    *,
+    toml_document: TOMLDocument,
+    id_keys: list[str],
+) -> Any:
     if not id_keys:
         msg = "At least one ID key must be provided."
         raise ValueError(msg)
 
-    pyproject = read_pyproject_toml()
-
-    p = pyproject
+    d = toml_document
     for key in id_keys:
-        TypeAdapter(dict).validate_python(p)
-        assert isinstance(p, dict)
-        p = p[key]
+        TypeAdapter(dict).validate_python(d)
+        assert isinstance(d, dict)
+        d = d[key]
 
-    return p
+    return d
 
 
-def set_config_value(
-    id_keys: list[str], value: Any, *, exists_ok: bool = False
-) -> None:
-    """Set a value in the pyproject.toml configuration file.
-
-    Raises:
-        ConfigValueAlreadySetError: If the configuration value is already set.
-    """
+def set_toml_value(
+    *,
+    toml_document: TOMLDocument,
+    id_keys: list[str],
+    value: Any,
+    exists_ok: bool = False,
+) -> TOMLDocument:
     if not id_keys:
         msg = "At least one ID key must be provided."
         raise ValueError(msg)
 
-    pyproject = read_pyproject_toml()
+    toml_document = copy.copy(toml_document)
 
     try:
         # Index our way into each ID key.
         # Eventually, we should land at a final dict, which is the one we are setting.
-        p, parent = pyproject, {}
+        d, parent = toml_document, {}
         for key in id_keys:
-            TypeAdapter(dict).validate_python(p)
-            assert isinstance(p, dict)
-            p, parent = p[key], p
+            TypeAdapter(dict).validate_python(d)
+            assert isinstance(d, dict)
+            d, parent = d[key], d
     except KeyError:
         # The old configuration should be kept for all ID keys except the
         # final/deepest one which shouldn't exist anyway since we checked as much,
@@ -61,118 +59,123 @@ def set_config_value(
         contents = value
         for key in reversed(id_keys):
             contents = {key: contents}
-        pyproject = mergedeep.merge(pyproject, contents)
-        assert isinstance(pyproject, TOMLDocument)
+        toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
+        assert isinstance(toml_document, TOMLDocument)
     else:
         if not exists_ok:
             # The configuration is already present, which is not allowed.
             msg = f"Configuration value '{'.'.join(id_keys)}' is already set."
-            raise PyProjectTOMLValueAlreadySetError(msg)
+            raise TOMLValueAlreadySetError(msg)
         else:
             # The configuration is already present, but we're allowed to overwrite it.
             TypeAdapter(dict).validate_python(parent)
             assert isinstance(parent, dict)
             parent[id_keys[-1]] = value
 
-    write_pyproject_toml(pyproject)
+    return toml_document
 
 
-def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None:
+def remove_toml_value(
+    *,
+    toml_document: TOMLDocument,
+    id_keys: list[str],
+) -> TOMLDocument:
     if not id_keys:
         msg = "At least one ID key must be provided."
         raise ValueError(msg)
 
-    pyproject = read_pyproject_toml()
+    toml_document = copy.copy(toml_document)
 
     # Exit early if the configuration is not present.
     try:
-        p = pyproject
+        d = toml_document
         for key in id_keys:
-            TypeAdapter(dict).validate_python(p)
-            assert isinstance(p, dict)
-            p = p[key]
+            TypeAdapter(dict).validate_python(d)
+            assert isinstance(d, dict)
+            d = d[key]
     except KeyError:
-        if not missing_ok:
-            # The configuration is not present, which is not allowed.
-            msg = f"Configuration value '{'.'.join(id_keys)}' is missing."
-            raise PyProjectTOMLValueMissingError(msg)
-        else:
-            # The configuration is not present, but that's okay; nothing left to do.
-            return
+        msg = f"Configuration value '{'.'.join(id_keys)}' is missing."
+        raise TOMLValueMissingError(msg)
 
     # Remove the configuration.
-    p = pyproject
+    d = toml_document
     for key in id_keys[:-1]:
-        TypeAdapter(dict).validate_python(p)
-        assert isinstance(p, dict)
-        p = p[key]
-    assert isinstance(p, dict)
-    del p[id_keys[-1]]
+        TypeAdapter(dict).validate_python(d)
+        assert isinstance(d, dict)
+        d = d[key]
+    assert isinstance(d, dict)
+    del d[id_keys[-1]]
 
     # Cleanup: any empty sections should be removed.
     for idx in range(len(id_keys) - 1):
-        p, parent = pyproject, {}
-        TypeAdapter(dict).validate_python(p)
+        d, parent = toml_document, {}
+        TypeAdapter(dict).validate_python(d)
         for key in id_keys[: idx + 1]:
-            p, parent = p[key], p
-            TypeAdapter(dict).validate_python(p)
+            d, parent = d[key], d
+            TypeAdapter(dict).validate_python(d)
             TypeAdapter(dict).validate_python(parent)
-            assert isinstance(p, dict)
+            assert isinstance(d, dict)
             assert isinstance(parent, dict)
-        assert isinstance(p, dict)
-        if not p:
+        assert isinstance(d, dict)
+        if not d:
             del parent[id_keys[idx]]
 
-    write_pyproject_toml(pyproject)
+    return toml_document
 
 
-def append_config_list(
+def extend_toml_list(
+    *,
+    toml_document: TOMLDocument,
     id_keys: list[str],
     values: list[Any],
-) -> None:
-    """Append values to a list in the pyproject.toml configuration file."""
+) -> TOMLDocument:
     if not id_keys:
         msg = "At least one ID key must be provided."
         raise ValueError(msg)
 
-    pyproject = read_pyproject_toml()
+    toml_document = copy.copy(toml_document)
 
     try:
-        p = pyproject
+        d = toml_document
         for key in id_keys[:-1]:
-            TypeAdapter(dict).validate_python(p)
-            assert isinstance(p, dict)
-            p = p[key]
-        p_parent = p
+            TypeAdapter(dict).validate_python(d)
+            assert isinstance(d, dict)
+            d = d[key]
+        p_parent = d
         TypeAdapter(dict).validate_python(p_parent)
         assert isinstance(p_parent, dict)
-        p = p_parent[id_keys[-1]]
+        d = p_parent[id_keys[-1]]
     except KeyError:
         contents = values
         for key in reversed(id_keys):
             contents = {key: contents}
         assert isinstance(contents, dict)
-        pyproject = mergedeep.merge(pyproject, contents)
+        pyproject = mergedeep.merge(toml_document, contents)
         assert isinstance(pyproject, TOMLDocument)
     else:
         TypeAdapter(dict).validate_python(p_parent)
-        TypeAdapter(list).validate_python(p)
+        TypeAdapter(list).validate_python(d)
         assert isinstance(p_parent, dict)
-        assert isinstance(p, list)
-        p_parent[id_keys[-1]] = p + values
+        assert isinstance(d, list)
+        p_parent[id_keys[-1]] = d + values
 
-    write_pyproject_toml(pyproject)
+    return toml_document
 
 
-def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
+def remove_from_toml_list(
+    *,
+    toml_document: TOMLDocument,
+    id_keys: list[str],
+    values: list[Any],
+) -> TOMLDocument:
     if not id_keys:
         msg = "At least one ID key must be provided."
         raise ValueError(msg)
 
-    pyproject = read_pyproject_toml()
+    toml_document = copy.copy(toml_document)
 
     try:
-        p = pyproject
+        p = toml_document
         for key in id_keys[:-1]:
             TypeAdapter(dict).validate_python(p)
             assert isinstance(p, dict)
@@ -183,8 +186,8 @@ def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
         assert isinstance(p_parent, dict)
         p = p_parent[id_keys[-1]]
     except KeyError:
-        # The configuration is not present.
-        return
+        # The configuration is not present - return unmodified
+        return toml_document
 
     TypeAdapter(dict).validate_python(p_parent)
     TypeAdapter(list).validate_python(p)
@@ -194,17 +197,19 @@ def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
     new_values = [value for value in p if value not in values]
     p_parent[id_keys[-1]] = new_values
 
-    write_pyproject_toml(pyproject)
+    return toml_document
 
 
-def do_id_keys_exist(id_keys: list[str]) -> bool:
-    pyproject = read_pyproject_toml()
-
+def do_toml_id_keys_exist(
+    toml_document: TOMLDocument,
+    id_keys: list[str],
+) -> bool:
     try:
+        container = toml_document
         for key in id_keys:
-            TypeAdapter(dict).validate_python(pyproject)
-            assert isinstance(pyproject, dict)
-            pyproject = pyproject[key]
+            TypeAdapter(dict).validate_python(container)
+            assert isinstance(container, dict)
+            container = container[key]
     except KeyError:
         return False
 

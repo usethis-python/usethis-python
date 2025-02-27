@@ -4,8 +4,8 @@ import pytest
 
 from usethis._config import usethis_config
 from usethis._integrations.pyproject_toml.core import (
-    get_config_value,
-    remove_config_value,
+    get_pyproject_value,
+    remove_pyproject_value,
 )
 from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.deps import (
@@ -259,7 +259,7 @@ class TestAddDepsToGroup:
             add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert "test" in default_groups
 
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -384,7 +384,7 @@ class TestRemoveDepsFromGroup:
                 add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Remove the group from dependency-groups but keep it in default-groups
-            remove_config_value(["dependency-groups", "test"])
+            remove_pyproject_value(["dependency-groups", "test"])
 
             # Act
             remove_deps_from_group([Dependency(name="pytest")], "test")
@@ -493,7 +493,7 @@ class TestRegisterDefaultGroup:
             register_default_group("test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "dev"}
 
     def test_empty_section_adds_dev(self, tmp_path: Path):
@@ -507,7 +507,7 @@ class TestRegisterDefaultGroup:
             register_default_group("test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "dev"}
 
     def test_empty_default_groups_adds_dev(self, tmp_path: Path):
@@ -522,7 +522,7 @@ default-groups = []
             register_default_group("test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "dev"}
 
     def test_existing_section_no_dev_added_if_no_other_groups(self, tmp_path: Path):
@@ -537,7 +537,7 @@ default-groups = ["test"]
             register_default_group("test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test"}
 
     def test_existing_section_no_dev_added_if_dev_exists(self, tmp_path: Path):
@@ -552,7 +552,7 @@ default-groups = ["test", "dev"]
             register_default_group("docs")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "dev", "docs"}
 
     def test_existing_section_adds_dev_with_new_group(self, tmp_path: Path):
@@ -567,5 +567,5 @@ default-groups = ["test"]
             register_default_group("docs")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "docs", "dev"}

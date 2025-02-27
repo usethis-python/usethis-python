@@ -26,9 +26,9 @@ from usethis._integrations.pyproject_toml.config import PyprojectConfig
 from usethis._integrations.pyproject_toml.core import (
     PyprojectTOMLValueAlreadySetError,
     PyprojectTOMLValueMissingError,
-    do_pyproject_toml_id_keys_exist,
-    remove_config_value,
-    set_config_value,
+    do_pyproject_id_keys_exist,
+    remove_pyproject_value,
+    set_pyproject_value,
 )
 from usethis._integrations.pyproject_toml.remove import remove_pyproject_toml
 from usethis._integrations.uv.deps import (
@@ -119,7 +119,7 @@ class Tool(Protocol):
             if file.exists() and file.is_file():
                 return True
         for id_keys in self.get_managed_pyproject_keys():
-            if do_pyproject_toml_id_keys_exist(id_keys):
+            if do_pyproject_id_keys_exist(id_keys):
                 return True
         for dep in self.get_dev_deps(unconditional=True):
             if is_dep_in_any_group(dep):
@@ -191,7 +191,7 @@ class Tool(Protocol):
         first_addition = True
         for config in configs:
             try:
-                set_config_value(config.id_keys, config.value)
+                set_pyproject_value(config.id_keys, config.value)
             except PyprojectTOMLValueAlreadySetError:
                 pass
             else:
@@ -214,7 +214,7 @@ class Tool(Protocol):
         first_removal = True
         for keys in keys_to_remove:
             try:
-                remove_config_value(keys)
+                remove_pyproject_value(keys)
             except PyprojectTOMLValueMissingError:
                 pass
             else:

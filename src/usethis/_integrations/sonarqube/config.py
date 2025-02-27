@@ -4,7 +4,7 @@ from pathlib import Path
 from pydantic import TypeAdapter
 
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.pyproject_toml.core import get_config_value
+from usethis._integrations.pyproject_toml.core import get_pyproject_value
 from usethis._integrations.python.version import get_python_version
 from usethis._integrations.sonarqube.errors import (
     CoverageReportConfigNotFoundError,
@@ -29,7 +29,7 @@ def get_sonar_project_properties() -> str:
         python_version = get_python_version()
 
     try:
-        project_key = get_config_value(
+        project_key = get_pyproject_value(
             id_keys=["tool", "usethis", "sonarqube", "project-key"]
         )
     except (FileNotFoundError, KeyError):
@@ -38,13 +38,15 @@ def get_sonar_project_properties() -> str:
     _validate_project_key(project_key)
 
     try:
-        verbose = get_config_value(id_keys=["tool", "usethis", "sonarqube", "verbose"])
+        verbose = get_pyproject_value(
+            id_keys=["tool", "usethis", "sonarqube", "verbose"]
+        )
     except (FileNotFoundError, KeyError):
         verbose = False
     verbose = TypeAdapter(bool).validate_python(verbose)
 
     try:
-        exclusions = get_config_value(
+        exclusions = get_pyproject_value(
             id_keys=["tool", "usethis", "sonarqube", "exclusions"]
         )
     except (FileNotFoundError, KeyError):
@@ -54,7 +56,7 @@ def get_sonar_project_properties() -> str:
         TypeAdapter(str).validate_python(exclusion)
 
     try:
-        coverage_output = get_config_value(
+        coverage_output = get_pyproject_value(
             id_keys=["tool", "coverage", "xml", "output"]
         )
     except (FileNotFoundError, KeyError):

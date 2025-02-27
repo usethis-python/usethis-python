@@ -22,7 +22,7 @@ from usethis._integrations.toml.errors import (
 )
 
 
-def get_config_value(id_keys: list[str]) -> Any:
+def get_pyproject_value(id_keys: list[str]) -> Any:
     if not id_keys:
         msg = "At least one ID key must be provided."
         raise ValueError(msg)
@@ -32,7 +32,7 @@ def get_config_value(id_keys: list[str]) -> Any:
     return get_toml_value(toml_document=pyproject, id_keys=id_keys)
 
 
-def set_config_value(
+def set_pyproject_value(
     id_keys: list[str], value: Any, *, exists_ok: bool = False
 ) -> None:
     """Set a value in the pyproject.toml configuration file."""
@@ -48,7 +48,11 @@ def set_config_value(
     write_pyproject_toml(pyproject)
 
 
-def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None:
+def remove_pyproject_value(
+    id_keys: list[str],
+    *,
+    missing_ok: bool = False,
+) -> None:
     """Remove a value from the pyproject.toml configuration file."""
     pyproject = read_pyproject_toml()
 
@@ -62,7 +66,7 @@ def remove_config_value(id_keys: list[str], *, missing_ok: bool = False) -> None
     write_pyproject_toml(pyproject)
 
 
-def extend_config_list(
+def extend_pyproject_list(
     id_keys: list[str],
     values: list[Any],
 ) -> None:
@@ -78,7 +82,7 @@ def extend_config_list(
     write_pyproject_toml(pyproject)
 
 
-def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
+def remove_from_pyproject_list(id_keys: list[str], values: list[str]) -> None:
     pyproject = read_pyproject_toml()
 
     pyproject = remove_from_toml_list(
@@ -90,7 +94,7 @@ def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
     write_pyproject_toml(pyproject)
 
 
-def do_pyproject_toml_id_keys_exist(id_keys: list[str]) -> bool:
+def do_pyproject_id_keys_exist(id_keys: list[str]) -> bool:
     pyproject = read_pyproject_toml()
 
     return do_toml_id_keys_exist(

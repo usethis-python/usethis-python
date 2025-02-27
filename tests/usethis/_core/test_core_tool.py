@@ -20,7 +20,7 @@ from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_names,
 )
-from usethis._integrations.pyproject_toml.core import get_config_value
+from usethis._integrations.pyproject_toml.core import get_pyproject_value
 from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
@@ -1239,7 +1239,7 @@ class TestPytest:
                 use_pytest()
 
                 # Assert
-                default_groups = get_config_value(["tool", "uv", "default-groups"])
+                default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
                 assert "test" in default_groups
 
     class TestRemove:

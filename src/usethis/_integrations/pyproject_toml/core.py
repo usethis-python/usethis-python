@@ -23,10 +23,6 @@ from usethis._integrations.toml.errors import (
 
 
 def get_pyproject_value(id_keys: list[str]) -> Any:
-    if not id_keys:
-        msg = "At least one ID key must be provided."
-        raise ValueError(msg)
-
     pyproject = read_pyproject_toml()
 
     return get_toml_value(toml_document=pyproject, id_keys=id_keys)

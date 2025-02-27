@@ -194,3 +194,19 @@ def remove_from_toml_list(
     p_parent[id_keys[-1]] = new_values
 
     return toml_document
+
+
+def do_toml_id_keys_exist(
+    toml_document: TOMLDocument,
+    id_keys: list[str],
+) -> bool:
+    try:
+        container = toml_document
+        for key in id_keys:
+            TypeAdapter(dict).validate_python(container)
+            assert isinstance(container, dict)
+            container = container[key]
+    except KeyError:
+        return False
+
+    return True

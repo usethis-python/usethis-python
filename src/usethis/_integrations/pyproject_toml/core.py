@@ -1,7 +1,5 @@
 from typing import Any
 
-from pydantic import TypeAdapter
-
 from usethis._integrations.pyproject_toml.errors import (
     PyprojectTOMLValueAlreadySetError,
     PyprojectTOMLValueMissingError,
@@ -11,6 +9,7 @@ from usethis._integrations.pyproject_toml.io_ import (
     write_pyproject_toml,
 )
 from usethis._integrations.toml.core import (
+    do_toml_id_keys_exist,
     extend_toml_list,
     get_toml_value,
     remove_from_toml_list,
@@ -94,12 +93,7 @@ def remove_from_config_list(id_keys: list[str], values: list[str]) -> None:
 def do_pyproject_toml_id_keys_exist(id_keys: list[str]) -> bool:
     pyproject = read_pyproject_toml()
 
-    try:
-        for key in id_keys:
-            TypeAdapter(dict).validate_python(pyproject)
-            assert isinstance(pyproject, dict)
-            pyproject = pyproject[key]
-    except KeyError:
-        return False
-
-    return True
+    return do_toml_id_keys_exist(
+        toml_document=pyproject,
+        id_keys=id_keys,
+    )

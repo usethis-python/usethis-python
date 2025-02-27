@@ -4,7 +4,7 @@ from pydantic import BaseModel, TypeAdapter
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._integrations.pyproject_toml.core import (
-    append_config_list,
+    extend_config_list,
     get_config_value,
 )
 from usethis._integrations.pyproject_toml.io_ import (
@@ -82,12 +82,12 @@ def register_default_group(group: str) -> None:
             groups_to_add.append("dev")
 
     if groups_to_add:
-        append_config_list(["tool", "uv", "default-groups"], groups_to_add)
+        extend_config_list(["tool", "uv", "default-groups"], groups_to_add)
 
 
 def ensure_dev_group_is_defined() -> None:
     # Ensure dev group exists in dependency-groups
-    append_config_list(["dependency-groups", "dev"], [])
+    extend_config_list(["dependency-groups", "dev"], [])
 
 
 def add_deps_to_group(deps: list[Dependency], group: str) -> None:

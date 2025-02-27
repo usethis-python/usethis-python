@@ -11,6 +11,20 @@ from usethis._integrations.toml.errors import (
 )
 
 
+def get_toml_value(
+    *,
+    toml_document: TOMLDocument,
+    id_keys: list[str],
+) -> Any:
+    d = toml_document
+    for key in id_keys:
+        TypeAdapter(dict).validate_python(d)
+        assert isinstance(d, dict)
+        d = d[key]
+
+    return d
+
+
 def set_toml_value(
     *,
     toml_document: TOMLDocument,
@@ -101,5 +115,82 @@ def remove_toml_value(
         assert isinstance(d, dict)
         if not d:
             del parent[id_keys[idx]]
+
+    return toml_document
+
+
+def extend_toml_list(
+    *,
+    toml_document: TOMLDocument,
+    id_keys: list[str],
+    values: list[Any],
+) -> TOMLDocument:
+    if not id_keys:
+        msg = "At least one ID key must be provided."
+        raise ValueError(msg)
+
+    toml_document = copy.copy(toml_document)
+
+    try:
+        d = toml_document
+        for key in id_keys[:-1]:
+            TypeAdapter(dict).validate_python(d)
+            assert isinstance(d, dict)
+            d = d[key]
+        p_parent = d
+        TypeAdapter(dict).validate_python(p_parent)
+        assert isinstance(p_parent, dict)
+        d = p_parent[id_keys[-1]]
+    except KeyError:
+        contents = values
+        for key in reversed(id_keys):
+            contents = {key: contents}
+        assert isinstance(contents, dict)
+        pyproject = mergedeep.merge(toml_document, contents)
+        assert isinstance(pyproject, TOMLDocument)
+    else:
+        TypeAdapter(dict).validate_python(p_parent)
+        TypeAdapter(list).validate_python(d)
+        assert isinstance(p_parent, dict)
+        assert isinstance(d, list)
+        p_parent[id_keys[-1]] = d + values
+
+    return toml_document
+
+
+def remove_from_toml_list(
+    *,
+    toml_document: TOMLDocument,
+    id_keys: list[str],
+    values: list[Any],
+) -> TOMLDocument:
+    if not id_keys:
+        msg = "At least one ID key must be provided."
+        raise ValueError(msg)
+
+    toml_document = copy.copy(toml_document)
+
+    try:
+        p = toml_document
+        for key in id_keys[:-1]:
+            TypeAdapter(dict).validate_python(p)
+            assert isinstance(p, dict)
+            p = p[key]
+
+        p_parent = p
+        TypeAdapter(dict).validate_python(p_parent)
+        assert isinstance(p_parent, dict)
+        p = p_parent[id_keys[-1]]
+    except KeyError:
+        # The configuration is not present - return unmodified
+        return toml_document
+
+    TypeAdapter(dict).validate_python(p_parent)
+    TypeAdapter(list).validate_python(p)
+    assert isinstance(p_parent, dict)
+    assert isinstance(p, list)
+
+    new_values = [value for value in p if value not in values]
+    p_parent[id_keys[-1]] = new_values
 
     return toml_document

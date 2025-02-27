@@ -1,6 +1,6 @@
 from usethis._console import tick_print
 from usethis._integrations.pyproject_toml.core import (
-    append_config_list,
+    extend_config_list,
     get_config_value,
     remove_from_config_list,
 )
@@ -17,7 +17,7 @@ def select_ruff_rules(rules: list[str]) -> None:
     s = "" if len(rules) == 1 else "s"
     tick_print(f"Enabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
-    append_config_list(["tool", "ruff", "lint", "select"], rules)
+    extend_config_list(["tool", "ruff", "lint", "select"], rules)
 
 
 def ignore_ruff_rules(rules: list[str]) -> None:
@@ -31,7 +31,7 @@ def ignore_ruff_rules(rules: list[str]) -> None:
     s = "" if len(rules) == 1 else "s"
     tick_print(f"Ignoring Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
-    append_config_list(["tool", "ruff", "lint", "ignore"], rules)
+    extend_config_list(["tool", "ruff", "lint", "ignore"], rules)
 
 
 def deselect_ruff_rules(rules: list[str]) -> None:

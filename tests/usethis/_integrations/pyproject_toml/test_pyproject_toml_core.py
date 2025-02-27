@@ -6,7 +6,7 @@ import pytest
 from usethis._integrations.pyproject_toml.core import (
     PyprojectTOMLValueAlreadySetError,
     PyprojectTOMLValueMissingError,
-    append_config_list,
+    extend_config_list,
     get_config_value,
     remove_config_value,
     set_config_value,
@@ -229,7 +229,7 @@ class TestAppendConfigList:
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            append_config_list(["tool", "usethis", "key"], ["value"])
+            extend_config_list(["tool", "usethis", "key"], ["value"])
 
         # Assert
         assert (
@@ -251,7 +251,7 @@ key = ["value1"]
 
         # Act
         with change_cwd(tmp_path), pyproject_toml_io_manager.open():
-            append_config_list(["tool", "usethis", "key"], ["value2"])
+            extend_config_list(["tool", "usethis", "key"], ["value2"])
 
         # Assert
         assert (

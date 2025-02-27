@@ -26,7 +26,7 @@ from usethis._integrations.pyproject_toml.config import PyprojectConfig
 from usethis._integrations.pyproject_toml.core import (
     PyprojectTOMLValueAlreadySetError,
     PyprojectTOMLValueMissingError,
-    do_id_keys_exist,
+    do_pyproject_toml_id_keys_exist,
     remove_config_value,
     set_config_value,
 )
@@ -119,7 +119,7 @@ class Tool(Protocol):
             if file.exists() and file.is_file():
                 return True
         for id_keys in self.get_managed_pyproject_keys():
-            if do_id_keys_exist(id_keys):
+            if do_pyproject_toml_id_keys_exist(id_keys):
                 return True
         for dep in self.get_dev_deps(unconditional=True):
             if is_dep_in_any_group(dep):

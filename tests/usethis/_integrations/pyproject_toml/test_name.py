@@ -136,3 +136,21 @@ class TestGetDescription:
             pytest.raises(PyprojectTOMLProjectDescriptionError),
         ):
             get_description()
+
+    def test_invalid_string(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "pyproject.toml"
+        path.write_text(
+            """\
+            [project]
+            description = 42
+            """
+        )
+
+        # Act, Assert
+        with (
+            change_cwd(tmp_path),
+            pyproject_toml_io_manager.open(),
+            pytest.raises(PyprojectTOMLProjectDescriptionError),
+        ):
+            get_description()

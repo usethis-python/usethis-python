@@ -31,7 +31,7 @@ this package brings a similar experience to the Python ecosystem as a CLI tool.
 
 ## Highlights
 
-- First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, and `pre-commit`.
+- First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, `pre-commit`, and many more.
 - Automatically add and remove tools: declare, install, and configure in one step.
 - Powerful knowledge of how different tools interact and sensible defaults.
 - Get started on a new Python project or a new workflow in seconds.

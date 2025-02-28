@@ -43,6 +43,7 @@ class TestCallUVSubprocess:
                 ["run", "pre-commit", "install"], change_toml=False
             ) == ("uv run --frozen pre-commit install")
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_handle_missing_version(
         self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
     ):

@@ -16,6 +16,10 @@ def get_toml_value(
     toml_document: TOMLDocument,
     id_keys: list[str],
 ) -> Any:
+    if not id_keys:
+        msg = "At least one ID key must be provided."
+        raise ValueError(msg)
+
     d = toml_document
     for key in id_keys:
         TypeAdapter(dict).validate_python(d)

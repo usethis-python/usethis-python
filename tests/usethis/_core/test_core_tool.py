@@ -193,7 +193,11 @@ class TestCoverage:
         def test_no_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(subprocess_verbose=True),
+            ):
                 # Act
                 use_coverage()
 

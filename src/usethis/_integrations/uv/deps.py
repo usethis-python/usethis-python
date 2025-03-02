@@ -115,7 +115,7 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     for dep in to_add_deps:
         try:
             call_uv_subprocess(
-                ["add", "--group", group, "--quiet", str(dep)],
+                ["add", "--group", group, str(dep)],
                 change_toml=True,
             )
         except UVSubprocessFailedError as err:
@@ -150,9 +150,7 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
 
     for dep in _deps:
         try:
-            call_uv_subprocess(
-                ["remove", "--group", group, "--quiet", str(dep)], change_toml=True
-            )
+            call_uv_subprocess(["remove", "--group", group, str(dep)], change_toml=True)
         except UVSubprocessFailedError as err:
             msg = (
                 f"Failed to remove '{dep}' from the '{group}' dependency group:\n{err}"

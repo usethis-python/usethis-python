@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.pyproject_toml.errors import PyprojectTOMLNotFoundError
-from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import (
     extract_major_version,
     get_python_version,
@@ -26,7 +26,7 @@ requires-python = ">=3.10,<3.12"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             supported_major_python = get_supported_major_python_versions()
 
         # Assert
@@ -42,7 +42,7 @@ requires-python = ">=3.9,<3.12"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             supported_major_python = get_supported_major_python_versions()
 
         # Assert
@@ -51,7 +51,7 @@ requires-python = ">=3.9,<3.12"
     def test_no_pyproject(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_supported_major_python_versions()
@@ -68,7 +68,7 @@ name = "foo"
         # Act
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
         ):
             versions = get_supported_major_python_versions()
 

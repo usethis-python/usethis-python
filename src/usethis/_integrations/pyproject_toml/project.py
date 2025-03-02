@@ -3,11 +3,11 @@ from typing import Any
 from pydantic import TypeAdapter, ValidationError
 
 from usethis._integrations.pyproject_toml.errors import PyprojectTOMLProjectSectionError
-from usethis._integrations.pyproject_toml.io_ import read_pyproject_toml
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 
 
 def get_project_dict() -> dict[str, Any]:
-    pyproject = read_pyproject_toml().value
+    pyproject = PyprojectTOMLManager().get().value
 
     try:
         project = TypeAdapter(dict).validate_python(pyproject["project"])

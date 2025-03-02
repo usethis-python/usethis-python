@@ -1,7 +1,7 @@
 from packaging.specifiers import SpecifierSet
 from pydantic import TypeAdapter
 
-from usethis._integrations.pyproject_toml.io_ import read_pyproject_toml
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 
 
 class MissingRequiresPythonError(Exception):
@@ -9,7 +9,7 @@ class MissingRequiresPythonError(Exception):
 
 
 def get_requires_python() -> SpecifierSet:
-    pyproject = read_pyproject_toml()
+    pyproject = PyprojectTOMLManager().get()
 
     try:
         requires_python = TypeAdapter(str).validate_python(

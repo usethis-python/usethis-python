@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._core.badge import Badge, add_badge, remove_badge
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 
 
@@ -14,7 +15,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)"
@@ -40,7 +41,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)"
@@ -63,7 +64,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)",
@@ -88,7 +89,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)",
@@ -113,7 +114,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Don't Know What This Is](<https://example.com>)",
@@ -138,7 +139,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
@@ -166,7 +167,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
@@ -192,7 +193,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
@@ -219,7 +220,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)",
@@ -246,7 +247,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
@@ -274,7 +275,7 @@ Some text
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Licence](<https://img.shields.io/badge/licence-mit-green>)",
@@ -301,7 +302,7 @@ Some text
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![pre-commit](<https://example.com>)",
@@ -325,7 +326,7 @@ Some text
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Ruff](<https://example.com>)",
@@ -348,7 +349,7 @@ Some text
         path.write_text(content)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(Badge(markdown="![Ruff](<https://example.com>)"))
 
         # Assert
@@ -366,7 +367,7 @@ Automate Python project setup and development tasks that are otherwise performed
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)",
@@ -399,7 +400,7 @@ Automate Python project setup and development tasks that are otherwise performed
         path.write_text(content)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)",
@@ -426,7 +427,7 @@ Automate Python project setup and development tasks that are otherwise performed
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)"
@@ -457,7 +458,7 @@ Automate Python project setup and development tasks that are otherwise performed
 """)
 
         # Act
-        with change_cwd(bare_dir):
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="[![Ruff](<https://example.com>)](<https://example.com>)",

@@ -7,9 +7,7 @@ from usethis._integrations.pyproject_toml.core import (
     extend_pyproject_list,
     get_pyproject_value,
 )
-from usethis._integrations.pyproject_toml.io_ import (
-    read_pyproject_toml,
-)
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 
@@ -27,7 +25,7 @@ class Dependency(BaseModel):
 
 
 def get_dep_groups() -> dict[str, list[Dependency]]:
-    pyproject = read_pyproject_toml()
+    pyproject = PyprojectTOMLManager().get()
     try:
         dep_groups_section = pyproject["dependency-groups"]
     except KeyError:

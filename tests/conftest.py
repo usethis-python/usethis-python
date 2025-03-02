@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
-from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.call import call_subprocess, call_uv_subprocess
 from usethis._test import change_cwd, is_offline
 
@@ -40,7 +39,6 @@ def uv_init_dir(tmp_path: Path, _uv_init_dir: Path) -> Generator[Path, None, Non
     with (
         change_cwd(tmp_path),
         usethis_config.set(frozen=True),
-        pyproject_toml_io_manager.open(),
     ):
         yield tmp_path
 
@@ -57,7 +55,6 @@ def uv_init_repo_dir(tmp_path: Path, _uv_init_dir: Path) -> Generator[Path, None
         with (
             change_cwd(tmp_path),
             usethis_config.set(frozen=True),
-            pyproject_toml_io_manager.open(),
         ):
             yield tmp_path
 
@@ -68,14 +65,13 @@ def uv_env_dir(uv_init_repo_dir: Path) -> Generator[Path, None, None]:
     with (
         change_cwd(uv_init_repo_dir),
         usethis_config.set(frozen=False),
-        pyproject_toml_io_manager.open(),
     ):
         yield uv_init_repo_dir
 
 
 @pytest.fixture
 def bare_dir(tmp_path: Path) -> Generator[Path, None, None]:
-    with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+    with change_cwd(tmp_path):
         yield tmp_path
 
 

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._test import change_cwd
 
@@ -21,7 +21,7 @@ class TestEnsurePyprojectValidity:
         (path / "pyproject.toml").write_text("")
 
         # Act
-        with change_cwd(path), pyproject_toml_io_manager.open():
+        with change_cwd(path), PyprojectTOMLManager():
             ensure_pyproject_validity()
 
         # Assert
@@ -44,7 +44,7 @@ name = "fun_project"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             ensure_pyproject_validity()
 
         # Assert
@@ -69,7 +69,7 @@ version = "0.1.0"
         )
 
         # Act
-        with change_cwd(path), pyproject_toml_io_manager.open():
+        with change_cwd(path), PyprojectTOMLManager():
             ensure_pyproject_validity()
 
         # Assert
@@ -94,7 +94,7 @@ something_else = "cool"
         )
 
         # Act
-        with change_cwd(path), pyproject_toml_io_manager.open():
+        with change_cwd(path), PyprojectTOMLManager():
             ensure_pyproject_validity()
 
         # Assert
@@ -121,7 +121,7 @@ project = 1
         # Act
         with (
             change_cwd(path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
         ):
             ensure_pyproject_validity()
 
@@ -145,7 +145,7 @@ dynamic = [ "version" ]
         )
 
         # Act
-        with change_cwd(path), pyproject_toml_io_manager.open():
+        with change_cwd(path), PyprojectTOMLManager():
             ensure_pyproject_validity()
 
         # Assert
@@ -170,7 +170,7 @@ dynamic = 1
         )
 
         # Act
-        with change_cwd(path), pyproject_toml_io_manager.open():
+        with change_cwd(path), PyprojectTOMLManager():
             ensure_pyproject_validity()
 
         # Assert
@@ -191,7 +191,7 @@ version = "0.1.0"
         (path / "pyproject.toml").write_text("")
 
         # Act
-        with change_cwd(path), pyproject_toml_io_manager.open():
+        with change_cwd(path), PyprojectTOMLManager():
             ensure_pyproject_validity()
 
         # Assert
@@ -216,7 +216,7 @@ version = "0.2.0"
         )
 
         # Act
-        with change_cwd(path), pyproject_toml_io_manager.open():
+        with change_cwd(path), PyprojectTOMLManager():
             ensure_pyproject_validity()
 
         # Assert

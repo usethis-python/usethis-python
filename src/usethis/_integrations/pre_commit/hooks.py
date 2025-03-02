@@ -137,7 +137,7 @@ def _get_placeholder_repo_config() -> LocalRepo:
             HookDefinition(
                 id=_PLACEHOLDER_ID,
                 name="Placeholder - add your own hooks!",
-                entry="""uv run --frozen python -c "print('hello world!')\"""",
+                entry="""uv run --isolated --frozen python -c "print('hello world!')\"""",
                 language=Language("system"),
             )
         ],

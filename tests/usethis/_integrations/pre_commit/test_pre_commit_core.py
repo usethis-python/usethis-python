@@ -9,6 +9,7 @@ from usethis._integrations.pre_commit.core import (
 )
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
 
@@ -62,7 +63,7 @@ class TestInstallPreCommitHooks:
         # This is needed to check the standard (non-frozen) message
 
         # Arrange
-        with change_cwd(uv_env_dir):
+        with change_cwd(uv_env_dir), PyprojectTOMLManager():
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()
@@ -96,7 +97,7 @@ class TestUninstallPreCommitHooks:
         # This is needed to check the standard (non-frozen) message
 
         # Arrange
-        with change_cwd(uv_env_dir):
+        with change_cwd(uv_env_dir), PyprojectTOMLManager():
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()

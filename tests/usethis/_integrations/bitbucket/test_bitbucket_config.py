@@ -10,13 +10,14 @@ from usethis._integrations.bitbucket.steps import (
     Step,
     add_bitbucket_step_in_default,
 )
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.yaml.io_ import edit_yaml
 from usethis._test import change_cwd
 
 
 class TestAddBitbucketPipelineConfig:
     def test_blank_slate(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_pipeline_config()
 
         assert (uv_init_dir / "bitbucket-pipelines.yml").exists()
@@ -57,7 +58,7 @@ pipelines:
 
     def test_satisfies_schema(self, uv_init_dir: Path):
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_pipeline_config()
             add_bitbucket_step_in_default(
                 Step(

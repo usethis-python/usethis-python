@@ -189,7 +189,6 @@ class TestCoverage:
                     "☐ Run 'coverage help' to see available coverage commands.\n"
                 )
 
-        @pytest.mark.skip(reason="For debugging")
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_no_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]

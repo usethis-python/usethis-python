@@ -103,7 +103,8 @@ def _vary_network_conn(_online_status: NetworkConn) -> Generator[None, None, Non
 
     usethis_config.offline = offline
     yield
-    usethis_config.offline = False
+    if offline:
+        usethis_config.offline = False
 
 
 @pytest.fixture

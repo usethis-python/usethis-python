@@ -10,9 +10,19 @@ from usethis._integrations.python.version import (
 )
 from usethis._integrations.uv.python import (
     _parse_python_version_from_uv_output,
+    get_available_python_versions,
     get_supported_major_python_versions,
 )
 from usethis._test import change_cwd
+
+
+class TestGetAvailablePythonVersions:
+    def test_nonempty(self):
+        # Act
+        results = get_available_python_versions()
+
+        # Assert
+        assert results
 
 
 class TestGetSupportedMajorPythonVersions:

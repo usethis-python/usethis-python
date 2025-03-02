@@ -47,7 +47,7 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
 
     if usethis_config.subprocess_verbose:
         new_args = [*new_args[:2], "--verbose", *new_args[2:]]
-    else:
+    elif args[:2] != ["python", "list"]:
         new_args = [*new_args[:2], "--quiet", *new_args[2:]]
 
     try:

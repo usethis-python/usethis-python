@@ -24,6 +24,7 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         if PyprojectTOMLManager().is_locked():
             ensure_pyproject_validity()
             PyprojectTOMLManager().write_file()
+            PyprojectTOMLManager()._content = None
         else:
             with PyprojectTOMLManager():
                 ensure_pyproject_validity()

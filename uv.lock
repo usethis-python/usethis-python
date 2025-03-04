@@ -1,12 +1,6 @@
 version = 1
 revision = 1
 requires-python = ">=3.10"
-resolution-markers = [
-    "python_full_version >= '3.12' and python_full_version < '4.0'",
-    "python_full_version == '3.11.*'",
-    "python_full_version < '3.11'",
-    "python_full_version >= '4.0'",
-]
 
 [[package]]
 name = "annotated-types"
@@ -48,6 +42,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/7d/6b/d52e42361e1aa00709585ecc30b3f9684b3ab62530771402248b1b1d6240/babel-2.17.0.tar.gz", hash = "sha256:0c54cffb19f690cdcc52a3b50bcbf71e07a808d1c80d549f2459b9d2cf0afb9d", size = 9951852 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/b8/3fe70c75fe32afc4bb507f75563d39bc5642255d1d94f1f23604725780bf/babel-2.17.0-py3-none-any.whl", hash = "sha256:4d0b53093fdfb4b21c92b5213dba5a1b23885afa8383709427046b21c366e5f2", size = 10182537 },
+]
+
+[[package]]
+name = "backrefs"
+version = "5.8"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6c/46/caba1eb32fa5784428ab401a5487f73db4104590ecd939ed9daaf18b47e0/backrefs-5.8.tar.gz", hash = "sha256:2cab642a205ce966af3dd4b38ee36009b31fa9502a35fd61d59ccc116e40a6bd", size = 6773994 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bf/cb/d019ab87fe70e0fe3946196d50d6a4428623dc0c38a6669c8cae0320fbf3/backrefs-5.8-py310-none-any.whl", hash = "sha256:c67f6638a34a5b8730812f5101376f9d41dc38c43f1fdc35cb54700f6ed4465d", size = 380337 },
+    { url = "https://files.pythonhosted.org/packages/a9/86/abd17f50ee21b2248075cb6924c6e7f9d23b4925ca64ec660e869c2633f1/backrefs-5.8-py311-none-any.whl", hash = "sha256:2e1c15e4af0e12e45c8701bd5da0902d326b2e200cafcd25e49d9f06d44bb61b", size = 392142 },
+    { url = "https://files.pythonhosted.org/packages/b3/04/7b415bd75c8ab3268cc138c76fa648c19495fcc7d155508a0e62f3f82308/backrefs-5.8-py312-none-any.whl", hash = "sha256:bbef7169a33811080d67cdf1538c8289f76f0942ff971222a16034da88a73486", size = 398021 },
+    { url = "https://files.pythonhosted.org/packages/04/b8/60dcfb90eb03a06e883a92abbc2ab95c71f0d8c9dd0af76ab1d5ce0b1402/backrefs-5.8-py313-none-any.whl", hash = "sha256:e3a63b073867dbefd0536425f43db618578528e3896fb77be7141328642a1585", size = 399915 },
+    { url = "https://files.pythonhosted.org/packages/0c/37/fb6973edeb700f6e3d6ff222400602ab1830446c25c7b4676d8de93e65b8/backrefs-5.8-py39-none-any.whl", hash = "sha256:a66851e4533fb5b371aa0628e1fee1af05135616b86140c9d787a2ffdf4b8fdc", size = 380336 },
 ]
 
 [[package]]
@@ -243,61 +250,62 @@ wheels = [
 
 [[package]]
 name = "coverage"
-version = "7.6.10"
+version = "7.6.12"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/84/ba/ac14d281f80aab516275012e8875991bb06203957aa1e19950139238d658/coverage-7.6.10.tar.gz", hash = "sha256:7fb105327c8f8f0682e29843e2ff96af9dcbe5bab8eeb4b398c6a33a16d80a23", size = 803868 }
+sdist = { url = "https://files.pythonhosted.org/packages/0c/d6/2b53ab3ee99f2262e6f0b8369a43f6d66658eab45510331c0b3d5c8c4272/coverage-7.6.12.tar.gz", hash = "sha256:48cfc4641d95d34766ad41d9573cc0f22a48aa88d22657a1fe01dca0dbae4de2", size = 805941 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/12/2a2a923edf4ddabdffed7ad6da50d96a5c126dae7b80a33df7310e329a1e/coverage-7.6.10-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:5c912978f7fbf47ef99cec50c4401340436d200d41d714c7a4766f377c5b7b78", size = 207982 },
-    { url = "https://files.pythonhosted.org/packages/ca/49/6985dbca9c7be3f3cb62a2e6e492a0c88b65bf40579e16c71ae9c33c6b23/coverage-7.6.10-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a01ec4af7dfeb96ff0078ad9a48810bb0cc8abcb0115180c6013a6b26237626c", size = 208414 },
-    { url = "https://files.pythonhosted.org/packages/35/93/287e8f1d1ed2646f4e0b2605d14616c9a8a2697d0d1b453815eb5c6cebdb/coverage-7.6.10-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a3b204c11e2b2d883946fe1d97f89403aa1811df28ce0447439178cc7463448a", size = 236860 },
-    { url = "https://files.pythonhosted.org/packages/de/e1/cfdb5627a03567a10031acc629b75d45a4ca1616e54f7133ca1fa366050a/coverage-7.6.10-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:32ee6d8491fcfc82652a37109f69dee9a830e9379166cb73c16d8dc5c2915165", size = 234758 },
-    { url = "https://files.pythonhosted.org/packages/6d/85/fc0de2bcda3f97c2ee9fe8568f7d48f7279e91068958e5b2cc19e0e5f600/coverage-7.6.10-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:675cefc4c06e3b4c876b85bfb7c59c5e2218167bbd4da5075cbe3b5790a28988", size = 235920 },
-    { url = "https://files.pythonhosted.org/packages/79/73/ef4ea0105531506a6f4cf4ba571a214b14a884630b567ed65b3d9c1975e1/coverage-7.6.10-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:f4f620668dbc6f5e909a0946a877310fb3d57aea8198bde792aae369ee1c23b5", size = 234986 },
-    { url = "https://files.pythonhosted.org/packages/c6/4d/75afcfe4432e2ad0405c6f27adeb109ff8976c5e636af8604f94f29fa3fc/coverage-7.6.10-cp310-cp310-musllinux_1_2_i686.whl", hash = "sha256:4eea95ef275de7abaef630c9b2c002ffbc01918b726a39f5a4353916ec72d2f3", size = 233446 },
-    { url = "https://files.pythonhosted.org/packages/86/5b/efee56a89c16171288cafff022e8af44f8f94075c2d8da563c3935212871/coverage-7.6.10-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:e2f0280519e42b0a17550072861e0bc8a80a0870de260f9796157d3fca2733c5", size = 234566 },
-    { url = "https://files.pythonhosted.org/packages/f2/db/67770cceb4a64d3198bf2aa49946f411b85ec6b0a9b489e61c8467a4253b/coverage-7.6.10-cp310-cp310-win32.whl", hash = "sha256:bc67deb76bc3717f22e765ab3e07ee9c7a5e26b9019ca19a3b063d9f4b874244", size = 210675 },
-    { url = "https://files.pythonhosted.org/packages/8d/27/e8bfc43f5345ec2c27bc8a1fa77cdc5ce9dcf954445e11f14bb70b889d14/coverage-7.6.10-cp310-cp310-win_amd64.whl", hash = "sha256:0f460286cb94036455e703c66988851d970fdfd8acc2a1122ab7f4f904e4029e", size = 211518 },
-    { url = "https://files.pythonhosted.org/packages/85/d2/5e175fcf6766cf7501a8541d81778fd2f52f4870100e791f5327fd23270b/coverage-7.6.10-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:ea3c8f04b3e4af80e17bab607c386a830ffc2fb88a5484e1df756478cf70d1d3", size = 208088 },
-    { url = "https://files.pythonhosted.org/packages/4b/6f/06db4dc8fca33c13b673986e20e466fd936235a6ec1f0045c3853ac1b593/coverage-7.6.10-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:507a20fc863cae1d5720797761b42d2d87a04b3e5aeb682ef3b7332e90598f43", size = 208536 },
-    { url = "https://files.pythonhosted.org/packages/0d/62/c6a0cf80318c1c1af376d52df444da3608eafc913b82c84a4600d8349472/coverage-7.6.10-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d37a84878285b903c0fe21ac8794c6dab58150e9359f1aaebbeddd6412d53132", size = 240474 },
-    { url = "https://files.pythonhosted.org/packages/a3/59/750adafc2e57786d2e8739a46b680d4fb0fbc2d57fbcb161290a9f1ecf23/coverage-7.6.10-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:a534738b47b0de1995f85f582d983d94031dffb48ab86c95bdf88dc62212142f", size = 237880 },
-    { url = "https://files.pythonhosted.org/packages/2c/f8/ef009b3b98e9f7033c19deb40d629354aab1d8b2d7f9cfec284dbedf5096/coverage-7.6.10-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:0d7a2bf79378d8fb8afaa994f91bfd8215134f8631d27eba3e0e2c13546ce994", size = 239750 },
-    { url = "https://files.pythonhosted.org/packages/a6/e2/6622f3b70f5f5b59f705e680dae6db64421af05a5d1e389afd24dae62e5b/coverage-7.6.10-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:6713ba4b4ebc330f3def51df1d5d38fad60b66720948112f114968feb52d3f99", size = 238642 },
-    { url = "https://files.pythonhosted.org/packages/2d/10/57ac3f191a3c95c67844099514ff44e6e19b2915cd1c22269fb27f9b17b6/coverage-7.6.10-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:ab32947f481f7e8c763fa2c92fd9f44eeb143e7610c4ca9ecd6a36adab4081bd", size = 237266 },
-    { url = "https://files.pythonhosted.org/packages/ee/2d/7016f4ad9d553cabcb7333ed78ff9d27248ec4eba8dd21fa488254dff894/coverage-7.6.10-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:7bbd8c8f1b115b892e34ba66a097b915d3871db7ce0e6b9901f462ff3a975377", size = 238045 },
-    { url = "https://files.pythonhosted.org/packages/a7/fe/45af5c82389a71e0cae4546413266d2195c3744849669b0bab4b5f2c75da/coverage-7.6.10-cp311-cp311-win32.whl", hash = "sha256:299e91b274c5c9cdb64cbdf1b3e4a8fe538a7a86acdd08fae52301b28ba297f8", size = 210647 },
-    { url = "https://files.pythonhosted.org/packages/db/11/3f8e803a43b79bc534c6a506674da9d614e990e37118b4506faf70d46ed6/coverage-7.6.10-cp311-cp311-win_amd64.whl", hash = "sha256:489a01f94aa581dbd961f306e37d75d4ba16104bbfa2b0edb21d29b73be83609", size = 211508 },
-    { url = "https://files.pythonhosted.org/packages/86/77/19d09ea06f92fdf0487499283b1b7af06bc422ea94534c8fe3a4cd023641/coverage-7.6.10-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:27c6e64726b307782fa5cbe531e7647aee385a29b2107cd87ba7c0105a5d3853", size = 208281 },
-    { url = "https://files.pythonhosted.org/packages/b6/67/5479b9f2f99fcfb49c0d5cf61912a5255ef80b6e80a3cddba39c38146cf4/coverage-7.6.10-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:c56e097019e72c373bae32d946ecf9858fda841e48d82df7e81c63ac25554078", size = 208514 },
-    { url = "https://files.pythonhosted.org/packages/15/d1/febf59030ce1c83b7331c3546d7317e5120c5966471727aa7ac157729c4b/coverage-7.6.10-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c7827a5bc7bdb197b9e066cdf650b2887597ad124dd99777332776f7b7c7d0d0", size = 241537 },
-    { url = "https://files.pythonhosted.org/packages/4b/7e/5ac4c90192130e7cf8b63153fe620c8bfd9068f89a6d9b5f26f1550f7a26/coverage-7.6.10-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:204a8238afe787323a8b47d8be4df89772d5c1e4651b9ffa808552bdf20e1d50", size = 238572 },
-    { url = "https://files.pythonhosted.org/packages/dc/03/0334a79b26ecf59958f2fe9dd1f5ab3e2f88db876f5071933de39af09647/coverage-7.6.10-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e67926f51821b8e9deb6426ff3164870976fe414d033ad90ea75e7ed0c2e5022", size = 240639 },
-    { url = "https://files.pythonhosted.org/packages/d7/45/8a707f23c202208d7b286d78ad6233f50dcf929319b664b6cc18a03c1aae/coverage-7.6.10-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:e78b270eadb5702938c3dbe9367f878249b5ef9a2fcc5360ac7bff694310d17b", size = 240072 },
-    { url = "https://files.pythonhosted.org/packages/66/02/603ce0ac2d02bc7b393279ef618940b4a0535b0868ee791140bda9ecfa40/coverage-7.6.10-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:714f942b9c15c3a7a5fe6876ce30af831c2ad4ce902410b7466b662358c852c0", size = 238386 },
-    { url = "https://files.pythonhosted.org/packages/04/62/4e6887e9be060f5d18f1dd58c2838b2d9646faf353232dec4e2d4b1c8644/coverage-7.6.10-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:abb02e2f5a3187b2ac4cd46b8ced85a0858230b577ccb2c62c81482ca7d18852", size = 240054 },
-    { url = "https://files.pythonhosted.org/packages/5c/74/83ae4151c170d8bd071924f212add22a0e62a7fe2b149edf016aeecad17c/coverage-7.6.10-cp312-cp312-win32.whl", hash = "sha256:55b201b97286cf61f5e76063f9e2a1d8d2972fc2fcfd2c1272530172fd28c359", size = 210904 },
-    { url = "https://files.pythonhosted.org/packages/c3/54/de0893186a221478f5880283119fc40483bc460b27c4c71d1b8bba3474b9/coverage-7.6.10-cp312-cp312-win_amd64.whl", hash = "sha256:e4ae5ac5e0d1e4edfc9b4b57b4cbecd5bc266a6915c500f358817a8496739247", size = 211692 },
-    { url = "https://files.pythonhosted.org/packages/25/6d/31883d78865529257bf847df5789e2ae80e99de8a460c3453dbfbe0db069/coverage-7.6.10-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:05fca8ba6a87aabdd2d30d0b6c838b50510b56cdcfc604d40760dae7153b73d9", size = 208308 },
-    { url = "https://files.pythonhosted.org/packages/70/22/3f2b129cc08de00c83b0ad6252e034320946abfc3e4235c009e57cfeee05/coverage-7.6.10-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:9e80eba8801c386f72e0712a0453431259c45c3249f0009aff537a517b52942b", size = 208565 },
-    { url = "https://files.pythonhosted.org/packages/97/0a/d89bc2d1cc61d3a8dfe9e9d75217b2be85f6c73ebf1b9e3c2f4e797f4531/coverage-7.6.10-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a372c89c939d57abe09e08c0578c1d212e7a678135d53aa16eec4430adc5e690", size = 241083 },
-    { url = "https://files.pythonhosted.org/packages/4c/81/6d64b88a00c7a7aaed3a657b8eaa0931f37a6395fcef61e53ff742b49c97/coverage-7.6.10-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ec22b5e7fe7a0fa8509181c4aac1db48f3dd4d3a566131b313d1efc102892c18", size = 238235 },
-    { url = "https://files.pythonhosted.org/packages/9a/0b/7797d4193f5adb4b837207ed87fecf5fc38f7cc612b369a8e8e12d9fa114/coverage-7.6.10-cp313-cp313-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:26bcf5c4df41cad1b19c84af71c22cbc9ea9a547fc973f1f2cc9a290002c8b3c", size = 240220 },
-    { url = "https://files.pythonhosted.org/packages/65/4d/6f83ca1bddcf8e51bf8ff71572f39a1c73c34cf50e752a952c34f24d0a60/coverage-7.6.10-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:4e4630c26b6084c9b3cb53b15bd488f30ceb50b73c35c5ad7871b869cb7365fd", size = 239847 },
-    { url = "https://files.pythonhosted.org/packages/30/9d/2470df6aa146aff4c65fee0f87f58d2164a67533c771c9cc12ffcdb865d5/coverage-7.6.10-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:2396e8116db77789f819d2bc8a7e200232b7a282c66e0ae2d2cd84581a89757e", size = 237922 },
-    { url = "https://files.pythonhosted.org/packages/08/dd/723fef5d901e6a89f2507094db66c091449c8ba03272861eaefa773ad95c/coverage-7.6.10-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:79109c70cc0882e4d2d002fe69a24aa504dec0cc17169b3c7f41a1d341a73694", size = 239783 },
-    { url = "https://files.pythonhosted.org/packages/3d/f7/64d3298b2baf261cb35466000628706ce20a82d42faf9b771af447cd2b76/coverage-7.6.10-cp313-cp313-win32.whl", hash = "sha256:9e1747bab246d6ff2c4f28b4d186b205adced9f7bd9dc362051cc37c4a0c7bd6", size = 210965 },
-    { url = "https://files.pythonhosted.org/packages/d5/58/ec43499a7fc681212fe7742fe90b2bc361cdb72e3181ace1604247a5b24d/coverage-7.6.10-cp313-cp313-win_amd64.whl", hash = "sha256:254f1a3b1eef5f7ed23ef265eaa89c65c8c5b6b257327c149db1ca9d4a35f25e", size = 211719 },
-    { url = "https://files.pythonhosted.org/packages/ab/c9/f2857a135bcff4330c1e90e7d03446b036b2363d4ad37eb5e3a47bbac8a6/coverage-7.6.10-cp313-cp313t-macosx_10_13_x86_64.whl", hash = "sha256:2ccf240eb719789cedbb9fd1338055de2761088202a9a0b73032857e53f612fe", size = 209050 },
-    { url = "https://files.pythonhosted.org/packages/aa/b3/f840e5bd777d8433caa9e4a1eb20503495709f697341ac1a8ee6a3c906ad/coverage-7.6.10-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:0c807ca74d5a5e64427c8805de15b9ca140bba13572d6d74e262f46f50b13273", size = 209321 },
-    { url = "https://files.pythonhosted.org/packages/85/7d/125a5362180fcc1c03d91850fc020f3831d5cda09319522bcfa6b2b70be7/coverage-7.6.10-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2bcfa46d7709b5a7ffe089075799b902020b62e7ee56ebaed2f4bdac04c508d8", size = 252039 },
-    { url = "https://files.pythonhosted.org/packages/a9/9c/4358bf3c74baf1f9bddd2baf3756b54c07f2cfd2535f0a47f1e7757e54b3/coverage-7.6.10-cp313-cp313t-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4e0de1e902669dccbf80b0415fb6b43d27edca2fbd48c74da378923b05316098", size = 247758 },
-    { url = "https://files.pythonhosted.org/packages/cf/c7/de3eb6fc5263b26fab5cda3de7a0f80e317597a4bad4781859f72885f300/coverage-7.6.10-cp313-cp313t-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3f7b444c42bbc533aaae6b5a2166fd1a797cdb5eb58ee51a92bee1eb94a1e1cb", size = 250119 },
-    { url = "https://files.pythonhosted.org/packages/3e/e6/43de91f8ba2ec9140c6a4af1102141712949903dc732cf739167cfa7a3bc/coverage-7.6.10-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:b330368cb99ef72fcd2dc3ed260adf67b31499584dc8a20225e85bfe6f6cfed0", size = 249597 },
-    { url = "https://files.pythonhosted.org/packages/08/40/61158b5499aa2adf9e37bc6d0117e8f6788625b283d51e7e0c53cf340530/coverage-7.6.10-cp313-cp313t-musllinux_1_2_i686.whl", hash = "sha256:9a7cfb50515f87f7ed30bc882f68812fd98bc2852957df69f3003d22a2aa0abf", size = 247473 },
-    { url = "https://files.pythonhosted.org/packages/50/69/b3f2416725621e9f112e74e8470793d5b5995f146f596f133678a633b77e/coverage-7.6.10-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:6f93531882a5f68c28090f901b1d135de61b56331bba82028489bc51bdd818d2", size = 248737 },
-    { url = "https://files.pythonhosted.org/packages/3c/6e/fe899fb937657db6df31cc3e61c6968cb56d36d7326361847440a430152e/coverage-7.6.10-cp313-cp313t-win32.whl", hash = "sha256:89d76815a26197c858f53c7f6a656686ec392b25991f9e409bcef020cd532312", size = 211611 },
-    { url = "https://files.pythonhosted.org/packages/1c/55/52f5e66142a9d7bc93a15192eba7a78513d2abf6b3558d77b4ca32f5f424/coverage-7.6.10-cp313-cp313t-win_amd64.whl", hash = "sha256:54a5f0f43950a36312155dae55c505a76cd7f2b12d26abeebbe7a0b36dbc868d", size = 212781 },
-    { url = "https://files.pythonhosted.org/packages/a1/70/de81bfec9ed38a64fc44a77c7665e20ca507fc3265597c28b0d989e4082e/coverage-7.6.10-pp39.pp310-none-any.whl", hash = "sha256:fd34e7b3405f0cc7ab03d54a334c17a9e802897580d964bd8c2001f4b9fd488f", size = 200223 },
+    { url = "https://files.pythonhosted.org/packages/ba/67/81dc41ec8f548c365d04a29f1afd492d3176b372c33e47fa2a45a01dc13a/coverage-7.6.12-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:704c8c8c6ce6569286ae9622e534b4f5b9759b6f2cd643f1c1a61f666d534fe8", size = 208345 },
+    { url = "https://files.pythonhosted.org/packages/33/43/17f71676016c8829bde69e24c852fef6bd9ed39f774a245d9ec98f689fa0/coverage-7.6.12-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:ad7525bf0241e5502168ae9c643a2f6c219fa0a283001cee4cf23a9b7da75879", size = 208775 },
+    { url = "https://files.pythonhosted.org/packages/86/25/c6ff0775f8960e8c0840845b723eed978d22a3cd9babd2b996e4a7c502c6/coverage-7.6.12-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:06097c7abfa611c91edb9e6920264e5be1d6ceb374efb4986f38b09eed4cb2fe", size = 237925 },
+    { url = "https://files.pythonhosted.org/packages/b0/3d/5f5bd37046243cb9d15fff2c69e498c2f4fe4f9b42a96018d4579ed3506f/coverage-7.6.12-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:220fa6c0ad7d9caef57f2c8771918324563ef0d8272c94974717c3909664e674", size = 235835 },
+    { url = "https://files.pythonhosted.org/packages/b5/f1/9e6b75531fe33490b910d251b0bf709142e73a40e4e38a3899e6986fe088/coverage-7.6.12-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3688b99604a24492bcfe1c106278c45586eb819bf66a654d8a9a1433022fb2eb", size = 236966 },
+    { url = "https://files.pythonhosted.org/packages/4f/bc/aef5a98f9133851bd1aacf130e754063719345d2fb776a117d5a8d516971/coverage-7.6.12-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:d1a987778b9c71da2fc8948e6f2656da6ef68f59298b7e9786849634c35d2c3c", size = 236080 },
+    { url = "https://files.pythonhosted.org/packages/eb/d0/56b4ab77f9b12aea4d4c11dc11cdcaa7c29130b837eb610639cf3400c9c3/coverage-7.6.12-cp310-cp310-musllinux_1_2_i686.whl", hash = "sha256:cec6b9ce3bd2b7853d4a4563801292bfee40b030c05a3d29555fd2a8ee9bd68c", size = 234393 },
+    { url = "https://files.pythonhosted.org/packages/0d/77/28ef95c5d23fe3dd191a0b7d89c82fea2c2d904aef9315daf7c890e96557/coverage-7.6.12-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:ace9048de91293e467b44bce0f0381345078389814ff6e18dbac8fdbf896360e", size = 235536 },
+    { url = "https://files.pythonhosted.org/packages/29/62/18791d3632ee3ff3f95bc8599115707d05229c72db9539f208bb878a3d88/coverage-7.6.12-cp310-cp310-win32.whl", hash = "sha256:ea31689f05043d520113e0552f039603c4dd71fa4c287b64cb3606140c66f425", size = 211063 },
+    { url = "https://files.pythonhosted.org/packages/fc/57/b3878006cedfd573c963e5c751b8587154eb10a61cc0f47a84f85c88a355/coverage-7.6.12-cp310-cp310-win_amd64.whl", hash = "sha256:676f92141e3c5492d2a1596d52287d0d963df21bf5e55c8b03075a60e1ddf8aa", size = 211955 },
+    { url = "https://files.pythonhosted.org/packages/64/2d/da78abbfff98468c91fd63a73cccdfa0e99051676ded8dd36123e3a2d4d5/coverage-7.6.12-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:e18aafdfb3e9ec0d261c942d35bd7c28d031c5855dadb491d2723ba54f4c3015", size = 208464 },
+    { url = "https://files.pythonhosted.org/packages/31/f2/c269f46c470bdabe83a69e860c80a82e5e76840e9f4bbd7f38f8cebbee2f/coverage-7.6.12-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:66fe626fd7aa5982cdebad23e49e78ef7dbb3e3c2a5960a2b53632f1f703ea45", size = 208893 },
+    { url = "https://files.pythonhosted.org/packages/47/63/5682bf14d2ce20819998a49c0deadb81e608a59eed64d6bc2191bc8046b9/coverage-7.6.12-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0ef01d70198431719af0b1f5dcbefc557d44a190e749004042927b2a3fed0702", size = 241545 },
+    { url = "https://files.pythonhosted.org/packages/6a/b6/6b6631f1172d437e11067e1c2edfdb7238b65dff965a12bce3b6d1bf2be2/coverage-7.6.12-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:07e92ae5a289a4bc4c0aae710c0948d3c7892e20fd3588224ebe242039573bf0", size = 239230 },
+    { url = "https://files.pythonhosted.org/packages/c7/01/9cd06cbb1be53e837e16f1b4309f6357e2dfcbdab0dd7cd3b1a50589e4e1/coverage-7.6.12-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e695df2c58ce526eeab11a2e915448d3eb76f75dffe338ea613c1201b33bab2f", size = 241013 },
+    { url = "https://files.pythonhosted.org/packages/4b/26/56afefc03c30871326e3d99709a70d327ac1f33da383cba108c79bd71563/coverage-7.6.12-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:d74c08e9aaef995f8c4ef6d202dbd219c318450fe2a76da624f2ebb9c8ec5d9f", size = 239750 },
+    { url = "https://files.pythonhosted.org/packages/dd/ea/88a1ff951ed288f56aa561558ebe380107cf9132facd0b50bced63ba7238/coverage-7.6.12-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:e995b3b76ccedc27fe4f477b349b7d64597e53a43fc2961db9d3fbace085d69d", size = 238462 },
+    { url = "https://files.pythonhosted.org/packages/6e/d4/1d9404566f553728889409eff82151d515fbb46dc92cbd13b5337fa0de8c/coverage-7.6.12-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:b1f097878d74fe51e1ddd1be62d8e3682748875b461232cf4b52ddc6e6db0bba", size = 239307 },
+    { url = "https://files.pythonhosted.org/packages/12/c1/e453d3b794cde1e232ee8ac1d194fde8e2ba329c18bbf1b93f6f5eef606b/coverage-7.6.12-cp311-cp311-win32.whl", hash = "sha256:1f7ffa05da41754e20512202c866d0ebfc440bba3b0ed15133070e20bf5aeb5f", size = 211117 },
+    { url = "https://files.pythonhosted.org/packages/d5/db/829185120c1686fa297294f8fcd23e0422f71070bf85ef1cc1a72ecb2930/coverage-7.6.12-cp311-cp311-win_amd64.whl", hash = "sha256:e216c5c45f89ef8971373fd1c5d8d1164b81f7f5f06bbf23c37e7908d19e8558", size = 212019 },
+    { url = "https://files.pythonhosted.org/packages/e2/7f/4af2ed1d06ce6bee7eafc03b2ef748b14132b0bdae04388e451e4b2c529b/coverage-7.6.12-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:b172f8e030e8ef247b3104902cc671e20df80163b60a203653150d2fc204d1ad", size = 208645 },
+    { url = "https://files.pythonhosted.org/packages/dc/60/d19df912989117caa95123524d26fc973f56dc14aecdec5ccd7d0084e131/coverage-7.6.12-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:641dfe0ab73deb7069fb972d4d9725bf11c239c309ce694dd50b1473c0f641c3", size = 208898 },
+    { url = "https://files.pythonhosted.org/packages/bd/10/fecabcf438ba676f706bf90186ccf6ff9f6158cc494286965c76e58742fa/coverage-7.6.12-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0e549f54ac5f301e8e04c569dfdb907f7be71b06b88b5063ce9d6953d2d58574", size = 242987 },
+    { url = "https://files.pythonhosted.org/packages/4c/53/4e208440389e8ea936f5f2b0762dcd4cb03281a7722def8e2bf9dc9c3d68/coverage-7.6.12-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:959244a17184515f8c52dcb65fb662808767c0bd233c1d8a166e7cf74c9ea985", size = 239881 },
+    { url = "https://files.pythonhosted.org/packages/c4/47/2ba744af8d2f0caa1f17e7746147e34dfc5f811fb65fc153153722d58835/coverage-7.6.12-cp312-cp312-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bda1c5f347550c359f841d6614fb8ca42ae5cb0b74d39f8a1e204815ebe25750", size = 242142 },
+    { url = "https://files.pythonhosted.org/packages/e9/90/df726af8ee74d92ee7e3bf113bf101ea4315d71508952bd21abc3fae471e/coverage-7.6.12-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:1ceeb90c3eda1f2d8c4c578c14167dbd8c674ecd7d38e45647543f19839dd6ea", size = 241437 },
+    { url = "https://files.pythonhosted.org/packages/f6/af/995263fd04ae5f9cf12521150295bf03b6ba940d0aea97953bb4a6db3e2b/coverage-7.6.12-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:0f16f44025c06792e0fb09571ae454bcc7a3ec75eeb3c36b025eccf501b1a4c3", size = 239724 },
+    { url = "https://files.pythonhosted.org/packages/1c/8e/5bb04f0318805e190984c6ce106b4c3968a9562a400180e549855d8211bd/coverage-7.6.12-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:b076e625396e787448d27a411aefff867db2bffac8ed04e8f7056b07024eed5a", size = 241329 },
+    { url = "https://files.pythonhosted.org/packages/9e/9d/fa04d9e6c3f6459f4e0b231925277cfc33d72dfab7fa19c312c03e59da99/coverage-7.6.12-cp312-cp312-win32.whl", hash = "sha256:00b2086892cf06c7c2d74983c9595dc511acca00665480b3ddff749ec4fb2a95", size = 211289 },
+    { url = "https://files.pythonhosted.org/packages/53/40/53c7ffe3c0c3fff4d708bc99e65f3d78c129110d6629736faf2dbd60ad57/coverage-7.6.12-cp312-cp312-win_amd64.whl", hash = "sha256:7ae6eabf519bc7871ce117fb18bf14e0e343eeb96c377667e3e5dd12095e0288", size = 212079 },
+    { url = "https://files.pythonhosted.org/packages/76/89/1adf3e634753c0de3dad2f02aac1e73dba58bc5a3a914ac94a25b2ef418f/coverage-7.6.12-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:488c27b3db0ebee97a830e6b5a3ea930c4a6e2c07f27a5e67e1b3532e76b9ef1", size = 208673 },
+    { url = "https://files.pythonhosted.org/packages/ce/64/92a4e239d64d798535c5b45baac6b891c205a8a2e7c9cc8590ad386693dc/coverage-7.6.12-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:5d1095bbee1851269f79fd8e0c9b5544e4c00c0c24965e66d8cba2eb5bb535fd", size = 208945 },
+    { url = "https://files.pythonhosted.org/packages/b4/d0/4596a3ef3bca20a94539c9b1e10fd250225d1dec57ea78b0867a1cf9742e/coverage-7.6.12-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0533adc29adf6a69c1baa88c3d7dbcaadcffa21afbed3ca7a225a440e4744bf9", size = 242484 },
+    { url = "https://files.pythonhosted.org/packages/1c/ef/6fd0d344695af6718a38d0861408af48a709327335486a7ad7e85936dc6e/coverage-7.6.12-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:53c56358d470fa507a2b6e67a68fd002364d23c83741dbc4c2e0680d80ca227e", size = 239525 },
+    { url = "https://files.pythonhosted.org/packages/0c/4b/373be2be7dd42f2bcd6964059fd8fa307d265a29d2b9bcf1d044bcc156ed/coverage-7.6.12-cp313-cp313-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:64cbb1a3027c79ca6310bf101014614f6e6e18c226474606cf725238cf5bc2d4", size = 241545 },
+    { url = "https://files.pythonhosted.org/packages/a6/7d/0e83cc2673a7790650851ee92f72a343827ecaaea07960587c8f442b5cd3/coverage-7.6.12-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:79cac3390bfa9836bb795be377395f28410811c9066bc4eefd8015258a7578c6", size = 241179 },
+    { url = "https://files.pythonhosted.org/packages/ff/8c/566ea92ce2bb7627b0900124e24a99f9244b6c8c92d09ff9f7633eb7c3c8/coverage-7.6.12-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:9b148068e881faa26d878ff63e79650e208e95cf1c22bd3f77c3ca7b1d9821a3", size = 239288 },
+    { url = "https://files.pythonhosted.org/packages/7d/e4/869a138e50b622f796782d642c15fb5f25a5870c6d0059a663667a201638/coverage-7.6.12-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:8bec2ac5da793c2685ce5319ca9bcf4eee683b8a1679051f8e6ec04c4f2fd7dc", size = 241032 },
+    { url = "https://files.pythonhosted.org/packages/ae/28/a52ff5d62a9f9e9fe9c4f17759b98632edd3a3489fce70154c7d66054dd3/coverage-7.6.12-cp313-cp313-win32.whl", hash = "sha256:200e10beb6ddd7c3ded322a4186313d5ca9e63e33d8fab4faa67ef46d3460af3", size = 211315 },
+    { url = "https://files.pythonhosted.org/packages/bc/17/ab849b7429a639f9722fa5628364c28d675c7ff37ebc3268fe9840dda13c/coverage-7.6.12-cp313-cp313-win_amd64.whl", hash = "sha256:2b996819ced9f7dbb812c701485d58f261bef08f9b85304d41219b1496b591ef", size = 212099 },
+    { url = "https://files.pythonhosted.org/packages/d2/1c/b9965bf23e171d98505eb5eb4fb4d05c44efd256f2e0f19ad1ba8c3f54b0/coverage-7.6.12-cp313-cp313t-macosx_10_13_x86_64.whl", hash = "sha256:299cf973a7abff87a30609879c10df0b3bfc33d021e1adabc29138a48888841e", size = 209511 },
+    { url = "https://files.pythonhosted.org/packages/57/b3/119c201d3b692d5e17784fee876a9a78e1b3051327de2709392962877ca8/coverage-7.6.12-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:4b467a8c56974bf06e543e69ad803c6865249d7a5ccf6980457ed2bc50312703", size = 209729 },
+    { url = "https://files.pythonhosted.org/packages/52/4e/a7feb5a56b266304bc59f872ea07b728e14d5a64f1ad3a2cc01a3259c965/coverage-7.6.12-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2458f275944db8129f95d91aee32c828a408481ecde3b30af31d552c2ce284a0", size = 253988 },
+    { url = "https://files.pythonhosted.org/packages/65/19/069fec4d6908d0dae98126aa7ad08ce5130a6decc8509da7740d36e8e8d2/coverage-7.6.12-cp313-cp313t-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0a9d8be07fb0832636a0f72b80d2a652fe665e80e720301fb22b191c3434d924", size = 249697 },
+    { url = "https://files.pythonhosted.org/packages/1c/da/5b19f09ba39df7c55f77820736bf17bbe2416bbf5216a3100ac019e15839/coverage-7.6.12-cp313-cp313t-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:14d47376a4f445e9743f6c83291e60adb1b127607a3618e3185bbc8091f0467b", size = 252033 },
+    { url = "https://files.pythonhosted.org/packages/1e/89/4c2750df7f80a7872267f7c5fe497c69d45f688f7b3afe1297e52e33f791/coverage-7.6.12-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:b95574d06aa9d2bd6e5cc35a5bbe35696342c96760b69dc4287dbd5abd4ad51d", size = 251535 },
+    { url = "https://files.pythonhosted.org/packages/78/3b/6d3ae3c1cc05f1b0460c51e6f6dcf567598cbd7c6121e5ad06643974703c/coverage-7.6.12-cp313-cp313t-musllinux_1_2_i686.whl", hash = "sha256:ecea0c38c9079570163d663c0433a9af4094a60aafdca491c6a3d248c7432827", size = 249192 },
+    { url = "https://files.pythonhosted.org/packages/6e/8e/c14a79f535ce41af7d436bbad0d3d90c43d9e38ec409b4770c894031422e/coverage-7.6.12-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:2251fabcfee0a55a8578a9d29cecfee5f2de02f11530e7d5c5a05859aa85aee9", size = 250627 },
+    { url = "https://files.pythonhosted.org/packages/cb/79/b7cee656cfb17a7f2c1b9c3cee03dd5d8000ca299ad4038ba64b61a9b044/coverage-7.6.12-cp313-cp313t-win32.whl", hash = "sha256:eb5507795caabd9b2ae3f1adc95f67b1104971c22c624bb354232d65c4fc90b3", size = 212033 },
+    { url = "https://files.pythonhosted.org/packages/b6/c3/f7aaa3813f1fa9a4228175a7bd368199659d392897e184435a3b66408dd3/coverage-7.6.12-cp313-cp313t-win_amd64.whl", hash = "sha256:f60a297c3987c6c02ffb29effc70eadcbb412fe76947d394a1091a3615948e2f", size = 213240 },
+    { url = "https://files.pythonhosted.org/packages/7a/7f/05818c62c7afe75df11e0233bd670948d68b36cdbf2a339a095bc02624a8/coverage-7.6.12-pp39.pp310-none-any.whl", hash = "sha256:7e39e845c4d764208e7b8f6a21c541ade741e2c41afabdfa1caa28687a3c98cf", size = 200558 },
+    { url = "https://files.pythonhosted.org/packages/fb/b2/f655700e1024dec98b10ebaafd0cedbc25e40e4abe62a3c8e2ceef4f8f0a/coverage-7.6.12-py3-none-any.whl", hash = "sha256:eb8668cfbc279a536c633137deeb9435d2962caec279c3f8cf8b91fff6ff8953", size = 200552 },
 ]
 
 [package.optional-dependencies]
@@ -307,7 +315,7 @@ toml = [
 
 [[package]]
 name = "datamodel-code-generator"
-version = "0.26.5"
+version = "0.28.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "argcomplete" },
@@ -317,13 +325,13 @@ dependencies = [
     { name = "isort" },
     { name = "jinja2" },
     { name = "packaging" },
-    { name = "pydantic", extra = ["email"], marker = "python_full_version < '4.0'" },
+    { name = "pydantic" },
     { name = "pyyaml" },
-    { name = "toml", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/63/e4/53153452235a387112df40f67aaf24072d4b5e33aa7bb385004f4c4baf38/datamodel_code_generator-0.26.5.tar.gz", hash = "sha256:c4a94a7dbf7972129882732d9bcee44c9ae090f57c82edd58d237b9d48c40dd0", size = 92586 }
+sdist = { url = "https://files.pythonhosted.org/packages/25/5f/74fac9f7262e7763eaf56bbcd64c31f712f68135f2c758bc02d15876c543/datamodel_code_generator-0.28.2.tar.gz", hash = "sha256:5f16fe4d6acee79c1366f9ee68016eeec544fc0a2fec25ce47d35f7b7767e0fe", size = 435017 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/d8/ead3e857d4048947fe92a731d6b1f257dcb267cc8b8918d3b72598c9b728/datamodel_code_generator-0.26.5-py3-none-any.whl", hash = "sha256:e32f986b9914a2b45093947043aa0192d704650be93151f78acf5c95676601ce", size = 114982 },
+    { url = "https://files.pythonhosted.org/packages/78/a0/5ce4d9495355507dfb6093192d1762f745c3e824be6377fc3df8539f06dc/datamodel_code_generator-0.28.2-py3-none-any.whl", hash = "sha256:a2c425386c3f836c618ae276be57e460df323ac78f911b1b12d927ddffd70e73", size = 115645 },
 ]
 
 [package.optional-dependencies]
@@ -368,28 +376,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/0d/dd/1bec4c5ddb504ca60fc29472f3d27e8d4da1257a854e1d96742f15c1d02d/distlib-0.3.9.tar.gz", hash = "sha256:a60f20dea646b8a33f3e7772f74dc0b2d0772d2837ee1342a00645c81edf9403", size = 613923 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/91/a1/cf2472db20f7ce4a6be1253a81cfdf85ad9c7885ffbed7047fb72c24cf87/distlib-0.3.9-py2.py3-none-any.whl", hash = "sha256:47f8c22fd27c27e25a65601af709b38e4f0a45ea4fc2e710f65755fa8caaaf87", size = 468973 },
-]
-
-[[package]]
-name = "dnspython"
-version = "2.7.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b5/4a/263763cb2ba3816dd94b08ad3a33d5fdae34ecb856678773cc40a3605829/dnspython-2.7.0.tar.gz", hash = "sha256:ce9c432eda0dc91cf618a5cedf1a4e142651196bbcd2c80e89ed5a907e5cfaf1", size = 345197 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/68/1b/e0a87d256e40e8c888847551b20a017a6b98139178505dc7ffb96f04e954/dnspython-2.7.0-py3-none-any.whl", hash = "sha256:b4c34b7d10b51bcc3a5071e7b8dee77939f1e878477eeecc965e9835f63c6c86", size = 313632 },
-]
-
-[[package]]
-name = "email-validator"
-version = "2.2.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "dnspython", marker = "python_full_version < '4.0'" },
-    { name = "idna", marker = "python_full_version < '4.0'" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/48/ce/13508a1ec3f8bb981ae4ca79ea40384becc868bfae97fd1c942bb3a001b1/email_validator-2.2.0.tar.gz", hash = "sha256:cb690f344c617a714f22e66ae771445a1ceb46821152df8e165c5f9a364582b7", size = 48967 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d7/ee/bf0adb559ad3c786f12bcbc9296b3f5675f529199bef03e2df281fa1fadb/email_validator-2.2.0-py3-none-any.whl", hash = "sha256:561977c2d73ce3611850a06fa56b414621e0c8faa9d66f2611407d87465da631", size = 33521 },
 ]
 
 [[package]]
@@ -457,79 +443,87 @@ wheels = [
 
 [[package]]
 name = "grimp"
-version = "3.5"
+version = "3.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/df/bd/4f919930f4b9c89a6d6905e4e8e4f11aa2489e385064501ff191c7b7d9cb/grimp-3.5.tar.gz", hash = "sha256:dc9560aed1d82222b361fe5f312a775b15a96b9237670f3a9fb20f44d30d5762", size = 833830 }
+sdist = { url = "https://files.pythonhosted.org/packages/49/b0/8a7eddc694da4581e686cd6df297a2acfaa51a2c9f88535a843fbd5686f9/grimp-3.6.tar.gz", hash = "sha256:d595598edaa9b621082ec57be0d83957b0bdfa45dd5149e6fb0b01a848d4285c", size = 832532 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/6b/d0323289dd9300313bf0555a59659c69e723434b0b3b49c115ab30bd7585/grimp-3.5-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:73538d288752ea7b10fdfd05406a1c1507531b5763ad97994cd1646283112d93", size = 352477 },
-    { url = "https://files.pythonhosted.org/packages/ba/dd/c975bb50f01ae581887d5c84aa371fd211d0a6643598a66fa459a8fc5c0d/grimp-3.5-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:8c2f4a16626b6de9f5ea6e87e685e5810be7712461ef29260c67b5b868f64ae5", size = 343436 },
-    { url = "https://files.pythonhosted.org/packages/66/10/e830b26e1001d9eb66d68e02ad786f40940d72026da957569e15887fb46a/grimp-3.5-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b5d495c9d527535872d78dfbc0f74f2650ad6b13e12f7d8b11da9d91ebaf2bda", size = 400339 },
-    { url = "https://files.pythonhosted.org/packages/97/a9/8bb8a78c4d60305360b067ee7330a4bc98b987c9e63959da00fb15b0d04c/grimp-3.5-cp310-cp310-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:b2ea1402221bf00dee7ae5357ef549151b1ad213a892cfe734b7156413d99a38", size = 406324 },
-    { url = "https://files.pythonhosted.org/packages/20/b9/74145048d39295f680594ff62c8d5125e47282e589843e31d96b0106269b/grimp-3.5-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:8a71a6c4e411adfeb6b8ba0fc5eff60505bf758aea9e4c7169a6fce5a57833cf", size = 416975 },
-    { url = "https://files.pythonhosted.org/packages/f9/e3/1577e3411490c8a2ea22dfe1166cc3f26fcd3fa0567c8140a45ac2ed9de2/grimp-3.5-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:60e92da02c72eebb9f1aaecd48c3b9fd234de6a6427da6b2232918cb88b409c0", size = 437136 },
-    { url = "https://files.pythonhosted.org/packages/dd/4f/00f6db52c34a63763a2be0d524ec3fa21432a287a91d53b3bd2576b2064e/grimp-3.5-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:5f9db004a253329f480a3ec0b0929558a6427f2db0610900b57fded591f6e3be", size = 445704 },
-    { url = "https://files.pythonhosted.org/packages/ab/b1/25415841c96daef43a4879c6fce01f94d7fd6226d5920888ac171fb4a71f/grimp-3.5-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:7fa6188b077339f030973b6cb3e1947175c45f6f9a472162435a5f80afd21805", size = 393393 },
-    { url = "https://files.pythonhosted.org/packages/84/cb/1d3bfdf994127ca6a439e266e25fe16ba6b4b8067cdb1320fa1f1313055a/grimp-3.5-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:3140ec48aaa43e124a735878fdf527cad7fa65230c2b69abc8124a22afb755bc", size = 573741 },
-    { url = "https://files.pythonhosted.org/packages/e7/87/456bbef29269482b3a374cf5cfd171de590d27e60d3f7fa8c06786f096b9/grimp-3.5-cp310-cp310-musllinux_1_2_armv7l.whl", hash = "sha256:7e6f9af573b59bb0dd07e182482277922889329672cb418a0e8617de3aaf4922", size = 665452 },
-    { url = "https://files.pythonhosted.org/packages/19/bc/de80f40aab6b40c32a751b637ac71a8e5c236be5b5262654e70791de7c1b/grimp-3.5-cp310-cp310-musllinux_1_2_i686.whl", hash = "sha256:374ad436ffdd29ffd6ae4b2a345783aad08f0d674b1ee01b55b824420b6f8e85", size = 589998 },
-    { url = "https://files.pythonhosted.org/packages/ca/ab/335344695e70ca1ee3ede3c9e3dec51dfbfb135c094c2040e368a9673671/grimp-3.5-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:b10e7d4f67bae4326275b63aa1987652f6d673264fd8e2eb6804d64e0bfc4fa2", size = 561441 },
-    { url = "https://files.pythonhosted.org/packages/4f/66/cb6f24e7fb43a77f6f100ab9aec88ab0b1a8b1cfd32ba2fd0d99602b6474/grimp-3.5-cp310-none-win32.whl", hash = "sha256:077a0e5fe97a95183e9302615dd10b69f4b378efb9158504a57b7e71871259a3", size = 223867 },
-    { url = "https://files.pythonhosted.org/packages/d9/91/3a69a336c2b3b795e195fb8799a31cdec241859e89e94b5c854a34953567/grimp-3.5-cp310-none-win_amd64.whl", hash = "sha256:80a04c1559bfe45a8cb49caf160391e180cf24db9af443f34ed01e5ededba025", size = 237197 },
-    { url = "https://files.pythonhosted.org/packages/78/f5/cef05699ed75a8b7cbf5686a5b1b60af4f6f22aa16ee966ce6d72a03604b/grimp-3.5-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:3d2130cbdbcd01ae65ebe39520f8a38e5f4ed445a4989eb1c8c0796759ddc5c6", size = 352527 },
-    { url = "https://files.pythonhosted.org/packages/44/0a/a16179c6a98b732dcd3dfc397635211041e6669539d9516520de0174b1dc/grimp-3.5-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:b2f9fdafc36dcf3ae80f7da2696bc7cbd1ef73ddd0f043446d63facc474cb2ab", size = 343271 },
-    { url = "https://files.pythonhosted.org/packages/28/3e/8443ce7eb20c36f109000b91f4d45e4cdf036aab845057902f7603aaf674/grimp-3.5-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2320207ad620ed383533f3178783b5d82a9f100dbc9d7fc1c50e40275dc9a002", size = 400312 },
-    { url = "https://files.pythonhosted.org/packages/48/0c/83df98d37b942bb5fe54d097d2302b8312d8d5b8e7cc9a42dfebd46a7d10/grimp-3.5-cp311-cp311-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:24b83512a3195c4f927e3968b0c61db9c6d5758f748bf6d3fec197f0b61309e8", size = 406246 },
-    { url = "https://files.pythonhosted.org/packages/45/75/7bd0c94404d5aa3cb58ccb62d393bc309f7f841c83717e42ba99b35b30e3/grimp-3.5-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e6abffdfe3b70723fe6a61f3c3e2c5c415a18d06387929bf4b223aa050c618d3", size = 417008 },
-    { url = "https://files.pythonhosted.org/packages/d3/c3/f0afb8d9bb88a7ab2fec3561fc7e2c9c71cf229ab900b089241f8f8cfdd0/grimp-3.5-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:2ba4988e1c96415d02f49b4677e1a219c048c2cbb358c812c99b303310f4adaa", size = 437144 },
-    { url = "https://files.pythonhosted.org/packages/34/41/6616ceeda32272fcf659c1d62d1059ecb172430b8f63ca810e407e15ab4c/grimp-3.5-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:d3d11d7ed0b0313cb378a5d138f4644189ffc77fb358d60d21d54c3d32f0a5a5", size = 445248 },
-    { url = "https://files.pythonhosted.org/packages/ad/e9/11db7823c46aa7fc5af4cadaf50db1617fdeafc866f93c2bdf720c14c4e0/grimp-3.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b175fb636e7d2d1e6feb79ad09794740b03458eb838c341e51112beee8ae5f6e", size = 393348 },
-    { url = "https://files.pythonhosted.org/packages/e2/d1/e1aa71d456953c08048aaea9aaf4091aa50a47fc43abdc6d714a1251bf97/grimp-3.5-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:a93990401856d4ba7620faa123d1949059b2b5c169b6ef1bdf4d1f8df316c0a1", size = 573591 },
-    { url = "https://files.pythonhosted.org/packages/5d/b9/b4b57c19e50969f57f137ca67b3758348d6ceb575feac9a7cf1dbe6a5443/grimp-3.5-cp311-cp311-musllinux_1_2_armv7l.whl", hash = "sha256:f8676bc2e0ecdc61376aba038b8ebd3380630a78f1c44426b393dd616eb3899b", size = 665563 },
-    { url = "https://files.pythonhosted.org/packages/23/c7/522a372331e2f82ce86a1b9ee14d059db34414fbb42175d49e7d7add8275/grimp-3.5-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:e270c5342302aabf97ad4e810101fcfc38c5f9360cbdd5b6f653ce43f29bf1bf", size = 589963 },
-    { url = "https://files.pythonhosted.org/packages/f4/39/ef290ebc04fcbec73c46c9650a4b60f3396bb77ad1df5f90142c59864d4e/grimp-3.5-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:e6682704bd7c3a2f9098747b524038f15df4d1456aded3265596fb2360fca872", size = 561326 },
-    { url = "https://files.pythonhosted.org/packages/41/cb/86e1d9fb3ebefda925d9d3ef05d1f19c286b436bed80b4c3661881bb5b00/grimp-3.5-cp311-none-win32.whl", hash = "sha256:7aa32379f91494d1f1779a3e469ebf5d3e515c8c978bb5d585f6a87c297f45a1", size = 223965 },
-    { url = "https://files.pythonhosted.org/packages/c7/49/1c2672d5d8590df8fd94c7348afa2bc73ff06d38162646a6dabb867d0fac/grimp-3.5-cp311-none-win_amd64.whl", hash = "sha256:bbcd2468a2609a8c662429ed34357ff50efb194c00c1c88a6336c92d662439ad", size = 237229 },
-    { url = "https://files.pythonhosted.org/packages/5c/2d/3cdbde81fc35da435f71c1ac1756d54546340aeb73bd2435062f5d56fa96/grimp-3.5-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:e09db10a7395b3930ebe95eee2ac440c5ee24ce77b6171e807a8aacb4625cca2", size = 351992 },
-    { url = "https://files.pythonhosted.org/packages/3b/1a/075518b888a9e0695f80f481563c62ed62cdc4a3bb5c3fc060392f63bee6/grimp-3.5-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:977c6b220671d7332657be13c51e4f6f38c76d911680f844806a5346142910fc", size = 343036 },
-    { url = "https://files.pythonhosted.org/packages/7e/64/700b9a9434b3e419e8f2faba1d527cd04398b341e4c6f471fd61849de5ea/grimp-3.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4f4e2159c3c75b62f9ea59a539ac93f89b9ced38811b453d3b78be62c8395b01", size = 399805 },
-    { url = "https://files.pythonhosted.org/packages/d9/da/391129fdca413bed18409d0594445b9c2b839b1265d8c207c82134bcfc7e/grimp-3.5-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:8d7bb3f2178b3a8115eca5f6ea5f766a283b8a7ede84fbbdda2a40b7d28624cb", size = 405536 },
-    { url = "https://files.pythonhosted.org/packages/95/63/f2c4d5796bde917f9ec37d8f1b555416a4f24af99899d4bb4131efa6d92a/grimp-3.5-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f4e023c883a83fa8ca1a613b1e8b39834545818971a8d94977bcd4b491537cde", size = 416903 },
-    { url = "https://files.pythonhosted.org/packages/a5/4f/17e7c07872370b92560b189cc83714e358ba58a72fb4b4272b0977f32233/grimp-3.5-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:ce7440c8498fa5b47acfffce7fe42d6c63be94dbe2fff7f524522fa7e422e0eb", size = 437612 },
-    { url = "https://files.pythonhosted.org/packages/ac/54/3319304f1f1050b8093314e875fcf73150323beb18cbf918c4ef6a8ef89b/grimp-3.5-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b0724f60d7cccf2c94616f0282ba8eec85a1956b59b8d22274409a60539fc462", size = 444189 },
-    { url = "https://files.pythonhosted.org/packages/67/7a/fde60dfb1995e8b6a2f26ac280ca5ad3cdeec2d363172c12450850dc93ba/grimp-3.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a486e985fa4d4fb9dc6ebb094ed17a293809ff5cf6532bba26a5ae064d350539", size = 393776 },
-    { url = "https://files.pythonhosted.org/packages/91/67/3cbb66ace2a4a253bfda3dbbcffc3b044e470d009a87cd75a7ed729d91f3/grimp-3.5-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:8a98f06d58b0cb7b8bfe5846d8ab07adb36c313dd3c7298836ddd3df98a8344a", size = 573678 },
-    { url = "https://files.pythonhosted.org/packages/8c/a0/deaeb03bbfac9e5503c270447724c10852679809cb26e57b3e4baaf60cf5/grimp-3.5-cp312-cp312-musllinux_1_2_armv7l.whl", hash = "sha256:13924943d6e5a0f0150c8f2a05d87042f03510b633b198ac3dd5c4274d36f28c", size = 664438 },
-    { url = "https://files.pythonhosted.org/packages/67/bf/6de7ec680daa963d215dc3bd71831c22e15e488ed7b835e65b36b8424aaf/grimp-3.5-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:8194ac4c54fac7641bfcef332aaec1af590e97b2aa8993e47a7c51ff84220f44", size = 589491 },
-    { url = "https://files.pythonhosted.org/packages/73/a2/03ffdf03f2ab642bfe296eff94f51a6a8e3b04d4b5c7567a7b3c9261313c/grimp-3.5-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:3f83b85aad278dfcaf2bf27b9cfa6dd6533dd96ecc510ba3bc0141344686857f", size = 560996 },
-    { url = "https://files.pythonhosted.org/packages/13/52/fb9ad8e26710d7eb0afccf083087810d8cbd0f4eb3863f0641c8b251c046/grimp-3.5-cp312-none-win32.whl", hash = "sha256:f88307f0e50883ab73cc59164a5a9396e8e1c8b68b8e2edef68d478b91d81000", size = 222988 },
-    { url = "https://files.pythonhosted.org/packages/2e/85/4058a766fc2b53b4b1318944c46bc9405fc7dea7ebb2eca377896f3fbfd5/grimp-3.5-cp312-none-win_amd64.whl", hash = "sha256:6fa422c150597f8e6ad51c4fe2b271747057abe638acca5eebb2162e536065ed", size = 236195 },
-    { url = "https://files.pythonhosted.org/packages/31/02/33f4b4bc6d22b5ff7672ce5c67464f4dcee6e86cf3a072cdc9b1d46e5178/grimp-3.5-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:448dba63f938d0e13e6121559749816e3b2644202c912cc308e7608c6034737a", size = 351545 },
-    { url = "https://files.pythonhosted.org/packages/78/e0/44bd64767763160ea0862ad756b88dfd375060b5636aaeb79c10861f09ae/grimp-3.5-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:17113aba41269d0ee91512c96eeb850c7c668440c6a8e0bfc94d17762184b293", size = 342780 },
-    { url = "https://files.pythonhosted.org/packages/55/e6/b0fc52ab1ee04c80f1709eaa2e99468a8981d0a23dcbc7c2c6e781da22cc/grimp-3.5-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e6a55614945c319d1dc692c3e43f3a02b80c116a1298e593f5f887b97e6c983a", size = 399300 },
-    { url = "https://files.pythonhosted.org/packages/dc/b9/aa6365859c96881d02f6ad6ab8aa38eaced5887f3cc431165ed9ee7b35ea/grimp-3.5-cp313-cp313-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:aba7ce7839b72efb4c6d06404d2b2a3026e28dd89816f4e546b3cd6626cbeeb1", size = 405288 },
-    { url = "https://files.pythonhosted.org/packages/7d/f8/32446714ed0f23a1b8067f9f627c55f7c186d3477baa5c6e6312c95060ab/grimp-3.5-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:eaedfba320a70d87b14acb25a685c8629586b943129c71ffd02b47d9531c11ce", size = 416565 },
-    { url = "https://files.pythonhosted.org/packages/93/3c/185a0292111350823fdd7d61481157295d90260e248888ab274a00f84456/grimp-3.5-cp313-cp313-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:60a9afd3dd00ad1d301a07f97e26bc9ecdc3d2db39ab6ac46c315a7dea0a96cb", size = 437249 },
-    { url = "https://files.pythonhosted.org/packages/1a/21/55ede2511dc111e9ca90d23e479e263e0845dc7e389515587f9575c5b139/grimp-3.5-cp313-cp313-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:11c66039c0475e5c9fc6a086264f11870181ae79f603caa5dffa1411ddad636b", size = 443560 },
-    { url = "https://files.pythonhosted.org/packages/12/e1/79f6a4212d46ae6db6281c5b179990d2dd53c72eed7587592c0968f0d3f0/grimp-3.5-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bff39a0061790f074f86a7841cd8e6064aa7b2208cb1ee5c3f2e685dead2b66e", size = 393185 },
-    { url = "https://files.pythonhosted.org/packages/46/62/1a7f8b54d73f3ef6595dd8bfa10686321c04b562fbb997e9d46f95fe7b96/grimp-3.5-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:cf7f5367c4a87b8e9f08c09e7401d2d73f21cb65d6142445819f9df0d6ab3f6b", size = 573292 },
-    { url = "https://files.pythonhosted.org/packages/24/1d/b90853a0b7eb7aa08073dafd896551d26a416e922a68eb1cab35319593c7/grimp-3.5-cp313-cp313-musllinux_1_2_armv7l.whl", hash = "sha256:edee4b087f007dab8b65461caf6a1b67b2f9480cceb5f6aceea87008d8f283c4", size = 664226 },
-    { url = "https://files.pythonhosted.org/packages/6b/7b/ce6cf6ba2da6305725692ea2a7a4080da60ac075d23353fc07cae7adb5b7/grimp-3.5-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:6af125013ad2a56c18f2f53a3fcabbfbe96c70374abecd6f14b82dc444726ebe", size = 589077 },
-    { url = "https://files.pythonhosted.org/packages/ad/29/03156310a1bf278e8dd46e2e02311bad1d1551b1555d245e28008c318086/grimp-3.5-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:24aabae0183ca5fd5a710257ff37120b55d8e6d6d4cbb2c08481552832e5c901", size = 560463 },
-    { url = "https://files.pythonhosted.org/packages/1e/29/300daf9b6a7f3f979a379cda69e04374912031fd85f3b6f0e03d9b637263/grimp-3.5-cp313-none-win32.whl", hash = "sha256:506091bfd600dd7ad427586998ef5e54a2098485148a1499bd9af5943d2fb0b7", size = 222673 },
-    { url = "https://files.pythonhosted.org/packages/e5/8c/15834d919407c1ab11590367e03ac9d1c162d518a0f54f2970e315e0d623/grimp-3.5-cp313-none-win_amd64.whl", hash = "sha256:099388df82d922ddc589f362f1a523ab053c8dee5d29a6b622b2cddf481c6a2f", size = 236037 },
-    { url = "https://files.pythonhosted.org/packages/a4/08/f83b5f34ed2ef3dc165dbd48d65a1998ba16ee55d44b3a5535dd85e2a1cf/grimp-3.5-pp310-pypy310_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:952c0ea0c652c3aea99411921e1a43b015c4ef96466a8b0d78b8d15c820228ca", size = 400699 },
-    { url = "https://files.pythonhosted.org/packages/e8/5b/3ab129590dad22ddbd6315e1196663af88dda6ba443ec47d686c8c728807/grimp-3.5-pp310-pypy310_pp73-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:33da59560da889ad41018f0c93f58833018922a1fff7ae44bcf20a0644bda9fc", size = 405973 },
-    { url = "https://files.pythonhosted.org/packages/9a/70/87cee9b5177c9c4ecf51b14dbdc2bfde7f38fb28d0bdf3e43a23fe8a275f/grimp-3.5-pp310-pypy310_pp73-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f8ee28ff91df8e6c8ce2ea4334bb487ebd7adeef94f6d0170314cb3e0179e272", size = 419004 },
-    { url = "https://files.pythonhosted.org/packages/fa/08/1c00ffa880b6c27a985653f0f3e67ead67fdea8dd9fc3b02dd7b4b8bd38e/grimp-3.5-pp310-pypy310_pp73-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4dca05a5beb2346630968127612ebd7771084890297d4de25cde24ac937dc11b", size = 438270 },
-    { url = "https://files.pythonhosted.org/packages/73/56/d89e90812fd26ae354080d44e6a981128ab13c03941473753a61ed791af8/grimp-3.5-pp310-pypy310_pp73-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:bb6feb9667349fba87d85d210a85480e43dc96a65b6229baf3a0439ebf44613f", size = 448687 },
-    { url = "https://files.pythonhosted.org/packages/cd/f7/e590dec79bde8b901976e6834a4f34fc0b8c01776b0a3883c88a60b25545/grimp-3.5-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2b35460a314a720d1a332222621dc9a8b412d9c56bc19866019d6c6451cc09dc", size = 394873 },
-    { url = "https://files.pythonhosted.org/packages/77/d9/5d657a9e51b1642cbd0b3d5a849ccfdca5e8425a16aa90b091a0788a4abe/grimp-3.5-pp310-pypy310_pp73-musllinux_1_2_aarch64.whl", hash = "sha256:03350ec0378d984d6d8ff09fa607ecdeca59d8ee4636a029f1a7475e8a9cd74a", size = 574559 },
-    { url = "https://files.pythonhosted.org/packages/22/8a/318d926a02591947362755dfc1b692f7330dc3e8e00e155639be42c263d3/grimp-3.5-pp310-pypy310_pp73-musllinux_1_2_armv7l.whl", hash = "sha256:d9ef6c6c8d1d64eabb555a7ecf4ec3dce91d0ade54b3724a03169a298a65f2f7", size = 666412 },
-    { url = "https://files.pythonhosted.org/packages/a9/71/db58869deb88f5a22f57bef07078a8b282f73d2894186e2fc43ecfddbf39/grimp-3.5-pp310-pypy310_pp73-musllinux_1_2_i686.whl", hash = "sha256:813ec51de74800043c543ab2979dd7b383aeb6b5cd52adf092ef7fa69c6c2b2f", size = 591136 },
-    { url = "https://files.pythonhosted.org/packages/a4/83/b555170978c5215538dde599ad67b3b029caadf74f675c6d26dbd2b78128/grimp-3.5-pp310-pypy310_pp73-musllinux_1_2_x86_64.whl", hash = "sha256:1966b0059b38b5aeca9da3fb3c036590d783d7330eb9e1300b2779f7e6d41650", size = 563059 },
+    { url = "https://files.pythonhosted.org/packages/21/1d/d6534046fd7196182f61639e70002c4c2ef6c9ccb69e7016a9abe4bdd873/grimp-3.6-cp310-cp310-macosx_10_12_x86_64.whl", hash = "sha256:1e246f5bccb58427e26da55275c9b47eb2fc5b7eddd9afcbf3f6df81ac16741a", size = 436401 },
+    { url = "https://files.pythonhosted.org/packages/f1/eb/988e573398fbb96b2e6a711d7377adc78918b452052bfbdf65ea537395e8/grimp-3.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:49d9107c364b73ebd35be29585c7c2aae00e052fc0450e7c56fd5fd349a712a3", size = 423059 },
+    { url = "https://files.pythonhosted.org/packages/88/9a/445e152dce0dbd875df3aa2d77305fd0d70b9f7447109e04eb488681e74d/grimp-3.6-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f8688dfa30d95fab0eb681bae3652b4694506a8e9a58292262a0e0e5c979c9f6", size = 467335 },
+    { url = "https://files.pythonhosted.org/packages/7b/0b/a73a3edb5174b036b2dfdff6938fb6ae59348aa8951c1533df18d48f2f42/grimp-3.6-cp310-cp310-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:4759cddcb893d83756ce309abd2a24801c544d65867f231ba7d7e44427adc0be", size = 473648 },
+    { url = "https://files.pythonhosted.org/packages/75/d4/2827947bdb5b166c9adbe72925db7f238a51af606aa35b0898b296920ad1/grimp-3.6-cp310-cp310-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f4d03d779c4e97581598450c0188a0b95c918a0c2d7d1ec5948d9a4aca9c5554", size = 507788 },
+    { url = "https://files.pythonhosted.org/packages/f1/3c/015d6f6054f4943d94496e7866392472c3e126d17e6279c5416f561c74d7/grimp-3.6-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:d403f5c513c04aebac6ce5755998e881282c1c9216734892b3e7d7b8240b9b00", size = 549475 },
+    { url = "https://files.pythonhosted.org/packages/31/df/b1f0ebb50677a792f6b6d7c8d5984f1054d0d79bd3998bfda72b9f51dc5d/grimp-3.6-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:88e809db73dab321beb020cc9623d59d67307d09e01c2a586977d1cdbb2bda93", size = 544791 },
+    { url = "https://files.pythonhosted.org/packages/4a/83/ee1e0ff0c87507d70e4e8cef8149f1d65acfe0f2697b2b46222ae5e69aeb/grimp-3.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:37f56dbe368340dac6cfbea86eb005a99c67646eb78af6fc3d07cff2242b4a00", size = 475222 },
+    { url = "https://files.pythonhosted.org/packages/b0/57/e4c0e589c103c85cad9c3dc850532057471012cc98c4ce3dbfea732f2f68/grimp-3.6-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:ec83b17f06a98ab9ce6b7b11fe3aa75b3fefedd60a0f6025510fec4c764bd4fd", size = 633611 },
+    { url = "https://files.pythonhosted.org/packages/cd/57/e3b90cc6ec5d74fcf96e4feeb6b3be6a922a26f0c32f6ed2fedba57d8e7c/grimp-3.6-cp310-cp310-musllinux_1_2_armv7l.whl", hash = "sha256:672c9132e9bbddd8c24454ad712043a170688e1921c8bc0a39721eb1e321d5ca", size = 726815 },
+    { url = "https://files.pythonhosted.org/packages/f6/0d/bd9511c6f796eab03d5dfabff3d6c5472a355950bd5443ce3e9a46d9b890/grimp-3.6-cp310-cp310-musllinux_1_2_i686.whl", hash = "sha256:19e0479e456cc87a231c06e19cda2cede0a564cde47ad0e68294c47630edc159", size = 665798 },
+    { url = "https://files.pythonhosted.org/packages/09/4a/93506becf2104382425cb756c0e6d7249b6438f11cecbcb28161d3dd1224/grimp-3.6-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:2ceeb1213af31442429a5939bfe8b94584ed7481a8fc4821e474795717b5b41e", size = 637403 },
+    { url = "https://files.pythonhosted.org/packages/21/1e/8a8b7d3c8acc076ab2a22c447ab0b338dee0eb3e14c721320a3ab14db54f/grimp-3.6-cp310-cp310-win32.whl", hash = "sha256:d7ac30c47df525f87d8d36dd7076f596e44c5fb7b8357a5f218ed3b6202394d2", size = 286324 },
+    { url = "https://files.pythonhosted.org/packages/5e/3c/00ccb87bf62519340750f2e951eadf9c1d7e7b7eafc249cfd3235f55b7a8/grimp-3.6-cp310-cp310-win_amd64.whl", hash = "sha256:8c3bc645dd31ceb66d9601d01782e2a2b063825d56827efbf0e5fdbe90892bf0", size = 305106 },
+    { url = "https://files.pythonhosted.org/packages/f1/1e/d4ebf7957f346d484c12577e2d2fd8ec9883f48859a34d8287e1366e74b0/grimp-3.6-cp311-cp311-macosx_10_12_x86_64.whl", hash = "sha256:fc2acf7b8f220e2cb9c625ec8c1b59fb1e4e1f238dd648ce4de6dd54bf205aac", size = 436548 },
+    { url = "https://files.pythonhosted.org/packages/90/bb/475eb07ac488f227e48aed56a909e66a9c6c4c1c97138397cfd56863070b/grimp-3.6-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e0d7196814ac10db24c61bc93bf7c54f03444927c77d565b26a3de7dcae05129", size = 423064 },
+    { url = "https://files.pythonhosted.org/packages/c1/43/7aefd6bd84c537ea0bc8c95365fff5518a76bd99d8a85144448884ddc28d/grimp-3.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9e07548c4c2699cfe97b6bbf5a69c6fdab623d87a03fdf657437fd9d013cc8dc", size = 467305 },
+    { url = "https://files.pythonhosted.org/packages/68/d4/e713063611f9ba005eab31ae14861847c769039227138762dd2a129e9595/grimp-3.6-cp311-cp311-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:506d19afd891d33a7292eff30762c79962686bce7aa531b482430eb0153599b3", size = 473938 },
+    { url = "https://files.pythonhosted.org/packages/45/cc/16e9014990a1495afebeb427976fadb7809024b2a4d1c4bfef5f07f3fd3f/grimp-3.6-cp311-cp311-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:5c1eaabbb3df44a7b90d2199124ef18c6013f8073b5938d8550abbaa0d289b3e", size = 508212 },
+    { url = "https://files.pythonhosted.org/packages/95/0d/a5e795bd4262324506b53c6ae792e4774801fa6c718177c6a8fc04ebeaa9/grimp-3.6-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:87ccf13d209a1498c288abdfcaf4d3c1372f24b98669dc271535bba811bd154b", size = 549962 },
+    { url = "https://files.pythonhosted.org/packages/b2/02/c49d582efabef9158177d076c6ab475cacb2a3fe43451063f2fb16c3b72a/grimp-3.6-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:8288aa1571aca0c0cb36522cfed9876bb953a7b3b6ae3b10d576fdac7a80a6cd", size = 543975 },
+    { url = "https://files.pythonhosted.org/packages/59/1c/c0253faa7aa217c1bd776d613207ede5df5178bd8457673f7f1e48aa1991/grimp-3.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a075c6f1bb4ca671aed4882592040802aace8aa074833b84582a1c9cd491f003", size = 474453 },
+    { url = "https://files.pythonhosted.org/packages/f7/0b/33a69841fcf9e8811c3fac9afb92b97fa8cdd8653140dcb54216ec60516d/grimp-3.6-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:a2bd1a53f206f2cdd41897842dbce9a1a2d903851f3b413b3efc5df0ba7390ac", size = 633366 },
+    { url = "https://files.pythonhosted.org/packages/48/e9/f403897ed99ef13a8394f444b829e206e63e2c71cc75ad34b2b97ee3e3ed/grimp-3.6-cp311-cp311-musllinux_1_2_armv7l.whl", hash = "sha256:c5f0963b545805b6a46d20fd7ec0b708b9543f8496cbcb64f4f0a42cbc685e55", size = 726842 },
+    { url = "https://files.pythonhosted.org/packages/c8/aa/ba39b7275d14d5b45007117993ede35f231a44257262107f8d7ff6c25b12/grimp-3.6-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:7e674ee4029f03cf7a97b0c43197c7eda99662606d38ac840b451a220fe089f9", size = 666000 },
+    { url = "https://files.pythonhosted.org/packages/91/f6/db779925d5617ff7cce9832e6f76cc363dd7f97a2df1bcb8fd8999ea68db/grimp-3.6-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:4bf9e0ee12adfb551c4e2f515dc3ded7f909351e66f73d1ed0fbc0300dd547f8", size = 637638 },
+    { url = "https://files.pythonhosted.org/packages/78/9a/75fb13d43a9df5027d07c5d2dc3272c21dfb3a9cd6cbc8f8e21ddf981aee/grimp-3.6-cp311-cp311-win32.whl", hash = "sha256:a579e7e28267ca0914c176c91cd63b9898ed9cc437919d075e8ab8b65dad6c88", size = 286260 },
+    { url = "https://files.pythonhosted.org/packages/a6/eb/0db518be1948ebdbcc8e1bcf7869790d9081c7d56b3466366cd9d9eafff0/grimp-3.6-cp311-cp311-win_amd64.whl", hash = "sha256:8edf40896733778b11d173c2782737ccfbc5547e4c61ca676a4eeda20abb185c", size = 305112 },
+    { url = "https://files.pythonhosted.org/packages/84/56/77b441406fde7796543eb00be6bd6b7ae8b72b8940415e3040da9c7d0230/grimp-3.6-cp312-cp312-macosx_10_12_x86_64.whl", hash = "sha256:c2d00a0f53e252502a0b9afe91ddc41c7d1a6738ca2808f65eaf1dbd1bec8674", size = 434650 },
+    { url = "https://files.pythonhosted.org/packages/e7/2b/991b577f7ba88602171ab1bcc953800b46ddbbc44f36b37c0d6a6ed053bc/grimp-3.6-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:f595e56d27ab8316157c189b9de52e59be66d92c80940d230ffc7ecd64bec008", size = 419800 },
+    { url = "https://files.pythonhosted.org/packages/89/5b/621b4390ae4d35c13b9f162c2080260826ca1d00806fa192310605e8bb0d/grimp-3.6-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c402c7d3f026328fce2bcf514fb9e4342e65873031d0cd1c6fdcd331cc980538", size = 466622 },
+    { url = "https://files.pythonhosted.org/packages/33/b9/44a4eb1e8009ddc2812dd46605fba21bcd0bec7be242a1bbad14ef6a51f2/grimp-3.6-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:282f94b6791438aa18aca1b8030b5f5513c6b65393d2e418e7784fe7bc05fdc8", size = 474440 },
+    { url = "https://files.pythonhosted.org/packages/9d/68/140c34e674e30c92754f6e24529f21ee90784e7a74957b4efabebcb54b9c/grimp-3.6-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:8ef29ce93adc52f985054f137310b73a73d6c5029df65d873f95648e6e91e039", size = 507782 },
+    { url = "https://files.pythonhosted.org/packages/56/68/31e0baacb930e8418bf18340882042eac59367950620822eb3c0e9b8bdf8/grimp-3.6-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:9307fa9d7b872987aacd88c848054bc645b75143f91f4e75719f0adc20cd7417", size = 547808 },
+    { url = "https://files.pythonhosted.org/packages/b8/75/7723f2fad3408e44705b8204bf552cfc489a5d7e9d1b4fd391fd8cebcf85/grimp-3.6-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:0ca224941cd5b2aa4afc4f9e231e3c73c05b5995a12d39540a8f5d4be49b31b1", size = 541833 },
+    { url = "https://files.pythonhosted.org/packages/d6/49/0e5c739f66e4fff6a58d7625baff7341166f68ae45fc30404f3c02621d0a/grimp-3.6-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:da4b5b5b0a07c0604a02b3911263532dfeffd25d71f224c65e8e882c357064bf", size = 474903 },
+    { url = "https://files.pythonhosted.org/packages/e9/33/a57a75c178a6e003d509773feb524c8708130090a052e75041b642689d5c/grimp-3.6-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:a93850c061b236a4a93860f670af762a77812990a2b2bc38754745d2e1dd00b7", size = 634042 },
+    { url = "https://files.pythonhosted.org/packages/33/f8/d0bde0a5a23c8a6d8fd90addb9151632aac73230e3ff927ecceaa05d6762/grimp-3.6-cp312-cp312-musllinux_1_2_armv7l.whl", hash = "sha256:203502ec566aab1295e0835367ca876527635cc6a63d794c3f9acd4936f484ea", size = 724683 },
+    { url = "https://files.pythonhosted.org/packages/14/a2/f88db0f1d9d71dd48fb6249738cce2372c30b12181f7e6b50a7f49b56421/grimp-3.6-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:18f3dbd367d5fbcd77e13c93feaf6c9a7dc182779574744ed360bd0e87710aa5", size = 663690 },
+    { url = "https://files.pythonhosted.org/packages/a6/cf/5cd5a17dbae36a404bad912ad6faa49ce55f1fd5e00047680dfa91049f18/grimp-3.6-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:0c8fa563bd2c05f6f8578c4aca39a8a08ccc96f642278f0e21737cc3dde6f6c0", size = 636172 },
+    { url = "https://files.pythonhosted.org/packages/5f/fa/2f83a7ffdc6d7866b9dbc9fd205f600f6f8e2ba1a8b72c34f675586bc103/grimp-3.6-cp312-cp312-win32.whl", hash = "sha256:aab3612d38a34c04d7f2c6ad7838ce28b701546257820213336469d2254b7c3c", size = 286392 },
+    { url = "https://files.pythonhosted.org/packages/c6/8a/3d421fcc0135166f697d13bce474c1599ffc1d0a42c8d5256e10a3a21f8d/grimp-3.6-cp312-cp312-win_amd64.whl", hash = "sha256:411bac5394b2ad69f1d0d8989f90f60b4008c127bedee05c4aeb6e45b90a3bd3", size = 305373 },
+    { url = "https://files.pythonhosted.org/packages/ca/35/e1d90daaa303a82abd41c28064c9a8994fcc7bbf45491a63ce93e7e244e8/grimp-3.6-cp313-cp313-macosx_10_12_x86_64.whl", hash = "sha256:091c3cacc45d6897cba0b9ab612e229bb89c1da0f8cf282deb1a114dd9e07f01", size = 433895 },
+    { url = "https://files.pythonhosted.org/packages/cc/c2/f0719108f3c1640351a8c13d8464957e8c290ca2a1489eead70a34d40ec3/grimp-3.6-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:1e66a08aa19e41ff35736fdb88c23aa2c6f0dcc0792914981ee37bb7e6b584c7", size = 419261 },
+    { url = "https://files.pythonhosted.org/packages/9f/e0/3ec37348a404d8ae47ba9c5fdfbe9232c38a24b7e250504e8cd59603c4d4/grimp-3.6-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9571ea3e6eb25a8f77e69c43e63a3b070448df29411de6605e0e989a7db14e44", size = 466195 },
+    { url = "https://files.pythonhosted.org/packages/db/21/2717692271c20b514a8b23a3bff7ce3a87465235f2176a3dbaf484c3fde0/grimp-3.6-cp313-cp313-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:018b65f26f3d05ecd11ad0441938fa5c96466ff89c88429115a7ae43b25346de", size = 473902 },
+    { url = "https://files.pythonhosted.org/packages/68/34/3f45d6ff373f3ab9403a5d0bf16d6c6f9a7f2517a98edeb15e72ca630d0f/grimp-3.6-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:f77c45abb0a77a9cef1b29e40c2f6efbeb18bcd51a6c3fb82f657bde02c4808a", size = 507083 },
+    { url = "https://files.pythonhosted.org/packages/1c/7e/d8bd17551f1d031f45a03d43e1f30d4888396e0a0b62dcf970fa5e8fefda/grimp-3.6-cp313-cp313-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:7be1e225cbcbda0568cade568dd8087d48d7a0ef1479051b2fe07760286b3b84", size = 546677 },
+    { url = "https://files.pythonhosted.org/packages/99/d5/29bdcadf9a15b857a7c244b5265f383f8af935374d051a67093ea44cfb7c/grimp-3.6-cp313-cp313-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:a4bfa64dd0f3b4ecd450df042b0ae89c73d934e5647a183dd4363ae2e81fb1f6", size = 540834 },
+    { url = "https://files.pythonhosted.org/packages/15/90/03286a6e7887a74f64a5bd5506cf650d4b57262642f252cb1a745784cd01/grimp-3.6-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:14ab758e9b7a2b7c39f74c3cc018df97fb3f44b351c18bf692a06d79e13dff2b", size = 474564 },
+    { url = "https://files.pythonhosted.org/packages/10/c5/2490e58d946468bbbd4a433a4cbe35006dae6e4a96d2ccd41d3ef2b8fecb/grimp-3.6-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:0d85fec7fc884de1573c3f229d02251cb1614eaf378c00d6cbccf038713e0e84", size = 633667 },
+    { url = "https://files.pythonhosted.org/packages/a2/6c/8163d09a0b92dad952c4490a836a6f4ae7832a4007c411e4423673e6f1d1/grimp-3.6-cp313-cp313-musllinux_1_2_armv7l.whl", hash = "sha256:38873ccc3f6a4a1572d3b48e5ea02ac81ab58f281f5d6702c5c9459f930228d7", size = 724763 },
+    { url = "https://files.pythonhosted.org/packages/2a/e1/b0b75d061b95f098b0c9053ce48c948f4294d043fa6e3058c04466dc05de/grimp-3.6-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:989f053a733c1fa64a7133157571e0e759c34444570d0a82a54870a2d09504e3", size = 663577 },
+    { url = "https://files.pythonhosted.org/packages/cf/5a/204e48953815409671b9143f7b8f932b9a5b0e6c3129dd05947670ceb553/grimp-3.6-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:3c10ad22e26b9eaed40a1191b4012ebb6c0b92ec90b66987dcba2032ae643b40", size = 636106 },
+    { url = "https://files.pythonhosted.org/packages/2b/d7/aa3748d036ad397c3054c177e29915e1064cebd186730c31219d4f8b5d2b/grimp-3.6-cp313-cp313-win32.whl", hash = "sha256:26152c918d4a43f6210383bff04c2a33c659920fa45848ed401047fe1c0500a5", size = 285691 },
+    { url = "https://files.pythonhosted.org/packages/84/98/6bde75dd7cd1fca7074fc315fd80062948ef1ed71b5116e6f888c74f942c/grimp-3.6-cp313-cp313-win_amd64.whl", hash = "sha256:fca1f80d29f0d1f588f389f0d310d71e76649716a6a026d27cc352c0d5d694ab", size = 305196 },
+    { url = "https://files.pythonhosted.org/packages/34/18/f8277a5afb49543e4c75f4145b84632f8c4b300e203896e94725dddcf996/grimp-3.6-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6bf754e061459c8f5da34e992cdee5bab957e5819db251ad990e67075218dc85", size = 464951 },
+    { url = "https://files.pythonhosted.org/packages/b2/57/1eef29b479cafa1a6e29b8c1547fec104fc9194d2d4a64fb20d10ee0071c/grimp-3.6-cp313-cp313t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:d076f103b18e11a22ebe843c1c8f9496e27f05c47e0279cf4abac0aa4ea93f75", size = 472561 },
+    { url = "https://files.pythonhosted.org/packages/b5/ca/fac09ca4ab128cc3ca0b22d75d0500c6d33c2a16231f06b1e0842c282762/grimp-3.6-cp313-cp313t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:9d0f07d01dca41a65623a560e38b938bb5feb20100bf4a8b799126ad09173183", size = 546408 },
+    { url = "https://files.pythonhosted.org/packages/27/d8/3c3dbbc9396caba9e5c4a7787f16583366be353695dcf86f631490703a59/grimp-3.6-cp313-cp313t-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:31416ac6eb3a6a46311b6e0ecccaa19f42135b9d354fe50d00155fd2875f0674", size = 540498 },
+    { url = "https://files.pythonhosted.org/packages/a1/f1/ef05ff9c2e2be67b3455c358a672a9665df409924595b598223ca57e49cf/grimp-3.6-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:812954e258e08c1e77dc592066a3bff4af04032e2a4792b3282e2e7501aa5b0d", size = 631502 },
+    { url = "https://files.pythonhosted.org/packages/45/21/27401b78859ccf13b6c1da3f04223b629ad3c846dde8e62a444568910666/grimp-3.6-cp313-cp313t-musllinux_1_2_armv7l.whl", hash = "sha256:ae04e1927a1349dd8e178f1caa1a269b0e3b921b15b2cf1aa536922eccc0f073", size = 723871 },
+    { url = "https://files.pythonhosted.org/packages/1a/ef/c5d2539d094ede4b9b74f21010f37e976c27b15d9f7627a42c29d40a8904/grimp-3.6-cp313-cp313t-musllinux_1_2_i686.whl", hash = "sha256:21176e668886517d4c43dbd164684ddfe25e052e5724e1089041b236b18acbe3", size = 661757 },
+    { url = "https://files.pythonhosted.org/packages/05/88/99ebe12e7d4c364494657dd209f49a93efeed12a92162f2f763df689402b/grimp-3.6-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:fedd0b9b3f0ea94f8a7d40244afccec0f6fb03f9ead2f448868e0895ce15af1b", size = 636399 },
+    { url = "https://files.pythonhosted.org/packages/bd/de/7bcc58e5f13ad2f2c3eed99f6d033665234fd2b5a14f3fcf3cc3cca435dc/grimp-3.6-pp310-pypy310_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:84302ba4855e27e20d702cbe398dbe31411b47c887772cf29af0ac4c2375d2f5", size = 468261 },
+    { url = "https://files.pythonhosted.org/packages/a4/83/357a44809012fc7d3a3cefcca4dafdb6d9d6835216a86937b0830ec7235e/grimp-3.6-pp310-pypy310_pp73-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:1ae54246be37230c1db4847ccfb38006874886d5f9c3f0d17e24cfa6ba8a9c16", size = 474926 },
+    { url = "https://files.pythonhosted.org/packages/22/df/2ea504784fe9fc98945007b7fd2b1daa4ccd4c3d565bff6316feefc7be6a/grimp-3.6-pp310-pypy310_pp73-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:d770b1a1a0484c6d6f12a95f179fa0127d91759a6110eecc74c98f3b868b2d27", size = 509000 },
+    { url = "https://files.pythonhosted.org/packages/a0/0d/bfcfc334ffe48f4e2a305a363c0a265239a6c66f017e167b6d96976b1075/grimp-3.6-pp310-pypy310_pp73-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:c8d7333795ee5d5b0b6b21869f28a88c0e6fbd2ad56dfdb060790b2eb2d213ed", size = 548615 },
+    { url = "https://files.pythonhosted.org/packages/55/06/905c3467129a1550445578ddd958c7fd8bac4338cd318aa85b315e5fb499/grimp-3.6-pp310-pypy310_pp73-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:40413affa2613a42e8ef2f4907ab0e2a9b6b0c13c339d7874e39e778bd096692", size = 544693 },
+    { url = "https://files.pythonhosted.org/packages/b0/a8/be1449f1d3a8cabd3821eee4cb09659fb16dc8ce73e8a23652ee780cd573/grimp-3.6-pp310-pypy310_pp73-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b76fbeeacf7f31f06f7917c7e6faab86dfc413bd6ff2ca3c977f175e2e9c7748", size = 476580 },
+    { url = "https://files.pythonhosted.org/packages/6c/0b/31eabb12b1d413bfe7d2cb0742166e9d95254c5d04baf4ce0420f84e099b/grimp-3.6-pp310-pypy310_pp73-musllinux_1_2_aarch64.whl", hash = "sha256:13449414ec283d4722d241de5a5a7b70cefaa08cea594487afd9c6541f96f4ec", size = 634841 },
+    { url = "https://files.pythonhosted.org/packages/5e/12/2ba46f94eb1852fa42a6e0aedbaabc3c08071f684428086e3f45fccba92e/grimp-3.6-pp310-pypy310_pp73-musllinux_1_2_armv7l.whl", hash = "sha256:81c277ca6525889641225530eb12f4163b21d580df4d7d7cdae08517725052a3", size = 726937 },
+    { url = "https://files.pythonhosted.org/packages/96/af/49e2d12ed27d38681be6cabb6ace0875aabd44abf2f205d5a6cebdf61a66/grimp-3.6-pp310-pypy310_pp73-musllinux_1_2_i686.whl", hash = "sha256:67b54b0dffaeaa341693f7167fa0392037f6dd695bc15b72d3a086ae4b03b2f9", size = 664588 },
+    { url = "https://files.pythonhosted.org/packages/25/2b/c4b8cca83a30758989920117e799ac21c4a3119697316193a1951ae4655f/grimp-3.6-pp310-pypy310_pp73-musllinux_1_2_x86_64.whl", hash = "sha256:6dda97122d1b2e8c00f65ee00571013ed99db551735cc2055bac01a5caca403b", size = 638280 },
 ]
 
 [[package]]
@@ -571,11 +565,11 @@ wheels = [
 
 [[package]]
 name = "identify"
-version = "2.6.6"
+version = "2.6.8"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/82/bf/c68c46601bacd4c6fb4dd751a42b6e7087240eaabc6487f2ef7a48e0e8fc/identify-2.6.6.tar.gz", hash = "sha256:7bec12768ed44ea4761efb47806f0a41f86e7c0a5fdf5950d4648c90eca7e251", size = 99217 }
+sdist = { url = "https://files.pythonhosted.org/packages/f9/fa/5eb460539e6f5252a7c5a931b53426e49258cde17e3d50685031c300a8fd/identify-2.6.8.tar.gz", hash = "sha256:61491417ea2c0c5c670484fd8abbb34de34cdae1e5f39a73ee65e48e4bb663fc", size = 99249 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/74/a1/68a395c17eeefb04917034bd0a1bfa765e7654fa150cca473d669aa3afb5/identify-2.6.6-py2.py3-none-any.whl", hash = "sha256:cbd1810bce79f8b671ecb20f53ee0ae8e86ae84b557de31d89709dc2a48ba881", size = 99083 },
+    { url = "https://files.pythonhosted.org/packages/78/8c/4bfcab2d8286473b8d83ea742716f4b79290172e75f91142bc1534b05b9a/identify-2.6.8-py2.py3-none-any.whl", hash = "sha256:83657f0f766a3c8d0eaea16d4ef42494b39b34629a4b3192a9d020d349b3e255", size = 99109 },
 ]
 
 [[package]]
@@ -622,11 +616,11 @@ wheels = [
 
 [[package]]
 name = "isort"
-version = "5.13.2"
+version = "6.0.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/87/f9/c1eb8635a24e87ade2efce21e3ce8cd6b8630bb685ddc9cdaca1349b2eb5/isort-5.13.2.tar.gz", hash = "sha256:48fdfcb9face5d58a4f6dde2e72a1fb8dcaf8ab26f95ab49fab84c2ddefb0109", size = 175303 }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/21/1e2a441f74a653a144224d7d21afe8f4169e6c7c20bb13aec3a2dc3815e0/isort-6.0.1.tar.gz", hash = "sha256:1cb5df28dfbc742e490c5e41bad6da41b805b0a8be7bc93cd0fb2a8a890ac450", size = 821955 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d1/b3/8def84f539e7d2289a02f0524b944b15d7c75dab7628bedf1c4f0992029c/isort-5.13.2-py3-none-any.whl", hash = "sha256:8ca5e72a8d85860d5a3fa69b8745237f2939afe12dbf656afbcb47fe72d947a6", size = 92310 },
+    { url = "https://files.pythonhosted.org/packages/c1/11/114d0a5f4dabbdcedc1125dee0888514c3c3b16d3e9facad87ed96fad97c/isort-6.0.1-py3-none-any.whl", hash = "sha256:2dc5d7f65c9678d94c88dfc29161a320eec67328bc97aad576874cb4be1e9615", size = 94186 },
 ]
 
 [[package]]
@@ -778,10 +772,11 @@ wheels = [
 
 [[package]]
 name = "mkdocs-material"
-version = "9.6.3"
+version = "9.6.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "babel" },
+    { name = "backrefs" },
     { name = "colorama" },
     { name = "jinja2" },
     { name = "markdown" },
@@ -790,12 +785,11 @@ dependencies = [
     { name = "paginate" },
     { name = "pygments" },
     { name = "pymdown-extensions" },
-    { name = "regex" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0f/1e/65b4fda4debf5e337b2ad4e692423dba4f5c77f49c4dee170c47a7dbac25/mkdocs_material-9.6.3.tar.gz", hash = "sha256:c87f7d1c39ce6326da5e10e232aed51bae46252e646755900f4b0fc9192fa832", size = 3942608 }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/d7/93e19c9587e5f4ed25647890555d58cf484a4d412be7037dc17b9c9179d9/mkdocs_material-9.6.7.tar.gz", hash = "sha256:3e2c1fceb9410056c2d91f334a00cdea3215c28750e00c691c1e46b2a33309b4", size = 3947458 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/11/a4/e0da0bc6a7dbfda6a786427f82a0caa4dd1f163249a5a5e5dccbb50c5f1e/mkdocs_material-9.6.3-py3-none-any.whl", hash = "sha256:1125622067e26940806701219303b27c0933e04533560725d97ec26fd16a39cf", size = 8688709 },
+    { url = "https://files.pythonhosted.org/packages/aa/d3/12f22de41bdd9e576ddc459b38c651d68edfb840b32acaa1f46ae36845e3/mkdocs_material-9.6.7-py3-none-any.whl", hash = "sha256:8a159e45e80fcaadd9fbeef62cbf928569b93df954d4dc5ba76d46820caf7b47", size = 8696755 },
 ]
 
 [[package]]
@@ -909,11 +903,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/f4/3c/8cc1cc84deffa6e25d2d0c688ebb80635dfdbf1dbea3e30c541c8cf4d860/pydantic-2.10.6-py3-none-any.whl", hash = "sha256:427d664bf0b8a2b34ff5dd0f5a18df00591adcee7198fbd71981054cef37b584", size = 431696 },
 ]
 
-[package.optional-dependencies]
-email = [
-    { name = "email-validator", marker = "python_full_version < '4.0'" },
-]
-
 [[package]]
 name = "pydantic-core"
 version = "2.27.2"
@@ -1013,20 +1002,20 @@ wheels = [
 
 [[package]]
 name = "pyright"
-version = "1.1.394"
+version = "1.1.396"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nodeenv" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b1/e4/79f4d8a342eed6790fdebdb500e95062f319ee3d7d75ae27304ff995ae8c/pyright-1.1.394.tar.gz", hash = "sha256:56f2a3ab88c5214a451eb71d8f2792b7700434f841ea219119ade7f42ca93608", size = 3809348 }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/73/f20cb1dea1bdc1774e7f860fb69dc0718c7d8dea854a345faec845eb086a/pyright-1.1.396.tar.gz", hash = "sha256:142901f5908f5a0895be3d3befcc18bedcdb8cc1798deecaec86ef7233a29b03", size = 3814400 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/4c/50c74e3d589517a9712a61a26143b587dba6285434a17aebf2ce6b82d2c3/pyright-1.1.394-py3-none-any.whl", hash = "sha256:5f74cce0a795a295fb768759bbeeec62561215dea657edcaab48a932b031ddbb", size = 5679540 },
+    { url = "https://files.pythonhosted.org/packages/80/be/ecb7cfb42d242b7ee764b52e6ff4782beeec00e3b943a3ec832b281f9da6/pyright-1.1.396-py3-none-any.whl", hash = "sha256:c635e473095b9138c471abccca22b9fedbe63858e0b40d4fc4b67da041891844", size = 5689355 },
 ]
 
 [[package]]
 name = "pytest"
-version = "8.3.4"
+version = "8.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -1036,9 +1025,9 @@ dependencies = [
     { name = "pluggy" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/05/35/30e0d83068951d90a01852cb1cef56e5d8a09d20c7f511634cc2f7e0372a/pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761", size = 1445919 }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/3c/c9d525a414d506893f0cd8a8d0de7706446213181570cdbd766691164e40/pytest-8.3.5.tar.gz", hash = "sha256:f4efe70cc14e511565ac476b57c279e12a855b11f48f212af1080ef2263d3845", size = 1450891 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/11/92/76a1c94d3afee238333bc0a42b82935dd8f9cf8ce9e336ff87ee14d9e1cf/pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6", size = 343083 },
+    { url = "https://files.pythonhosted.org/packages/30/3d/64ad57c803f1fa1e963a7946b6e0fea4a70df53c1a7fed304586539c2bac/pytest-8.3.5-py3-none-any.whl", hash = "sha256:c69214aa47deac29fad6c2a4f590b9c4a9fdb16a403176fe154b79c0b4d4d820", size = 343634 },
 ]
 
 [[package]]
@@ -1169,75 +1158,6 @@ wheels = [
 ]
 
 [[package]]
-name = "regex"
-version = "2024.11.6"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8e/5f/bd69653fbfb76cf8604468d3b4ec4c403197144c7bfe0e6a5fc9e02a07cb/regex-2024.11.6.tar.gz", hash = "sha256:7ab159b063c52a0333c884e4679f8d7a85112ee3078fe3d9004b2dd875585519", size = 399494 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/95/3c/4651f6b130c6842a8f3df82461a8950f923925db8b6961063e82744bddcc/regex-2024.11.6-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:ff590880083d60acc0433f9c3f713c51f7ac6ebb9adf889c79a261ecf541aa91", size = 482674 },
-    { url = "https://files.pythonhosted.org/packages/15/51/9f35d12da8434b489c7b7bffc205c474a0a9432a889457026e9bc06a297a/regex-2024.11.6-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:658f90550f38270639e83ce492f27d2c8d2cd63805c65a13a14d36ca126753f0", size = 287684 },
-    { url = "https://files.pythonhosted.org/packages/bd/18/b731f5510d1b8fb63c6b6d3484bfa9a59b84cc578ac8b5172970e05ae07c/regex-2024.11.6-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:164d8b7b3b4bcb2068b97428060b2a53be050085ef94eca7f240e7947f1b080e", size = 284589 },
-    { url = "https://files.pythonhosted.org/packages/78/a2/6dd36e16341ab95e4c6073426561b9bfdeb1a9c9b63ab1b579c2e96cb105/regex-2024.11.6-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d3660c82f209655a06b587d55e723f0b813d3a7db2e32e5e7dc64ac2a9e86fde", size = 782511 },
-    { url = "https://files.pythonhosted.org/packages/1b/2b/323e72d5d2fd8de0d9baa443e1ed70363ed7e7b2fb526f5950c5cb99c364/regex-2024.11.6-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:d22326fcdef5e08c154280b71163ced384b428343ae16a5ab2b3354aed12436e", size = 821149 },
-    { url = "https://files.pythonhosted.org/packages/90/30/63373b9ea468fbef8a907fd273e5c329b8c9535fee36fc8dba5fecac475d/regex-2024.11.6-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:f1ac758ef6aebfc8943560194e9fd0fa18bcb34d89fd8bd2af18183afd8da3a2", size = 809707 },
-    { url = "https://files.pythonhosted.org/packages/f2/98/26d3830875b53071f1f0ae6d547f1d98e964dd29ad35cbf94439120bb67a/regex-2024.11.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:997d6a487ff00807ba810e0f8332c18b4eb8d29463cfb7c820dc4b6e7562d0cf", size = 781702 },
-    { url = "https://files.pythonhosted.org/packages/87/55/eb2a068334274db86208ab9d5599ffa63631b9f0f67ed70ea7c82a69bbc8/regex-2024.11.6-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:02a02d2bb04fec86ad61f3ea7f49c015a0681bf76abb9857f945d26159d2968c", size = 771976 },
-    { url = "https://files.pythonhosted.org/packages/74/c0/be707bcfe98254d8f9d2cff55d216e946f4ea48ad2fd8cf1428f8c5332ba/regex-2024.11.6-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:f02f93b92358ee3f78660e43b4b0091229260c5d5c408d17d60bf26b6c900e86", size = 697397 },
-    { url = "https://files.pythonhosted.org/packages/49/dc/bb45572ceb49e0f6509f7596e4ba7031f6819ecb26bc7610979af5a77f45/regex-2024.11.6-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:06eb1be98df10e81ebaded73fcd51989dcf534e3c753466e4b60c4697a003b67", size = 768726 },
-    { url = "https://files.pythonhosted.org/packages/5a/db/f43fd75dc4c0c2d96d0881967897926942e935d700863666f3c844a72ce6/regex-2024.11.6-cp310-cp310-musllinux_1_2_i686.whl", hash = "sha256:040df6fe1a5504eb0f04f048e6d09cd7c7110fef851d7c567a6b6e09942feb7d", size = 775098 },
-    { url = "https://files.pythonhosted.org/packages/99/d7/f94154db29ab5a89d69ff893159b19ada89e76b915c1293e98603d39838c/regex-2024.11.6-cp310-cp310-musllinux_1_2_ppc64le.whl", hash = "sha256:fdabbfc59f2c6edba2a6622c647b716e34e8e3867e0ab975412c5c2f79b82da2", size = 839325 },
-    { url = "https://files.pythonhosted.org/packages/f7/17/3cbfab1f23356fbbf07708220ab438a7efa1e0f34195bf857433f79f1788/regex-2024.11.6-cp310-cp310-musllinux_1_2_s390x.whl", hash = "sha256:8447d2d39b5abe381419319f942de20b7ecd60ce86f16a23b0698f22e1b70008", size = 843277 },
-    { url = "https://files.pythonhosted.org/packages/7e/f2/48b393b51900456155de3ad001900f94298965e1cad1c772b87f9cfea011/regex-2024.11.6-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:da8f5fc57d1933de22a9e23eec290a0d8a5927a5370d24bda9a6abe50683fe62", size = 773197 },
-    { url = "https://files.pythonhosted.org/packages/45/3f/ef9589aba93e084cd3f8471fded352826dcae8489b650d0b9b27bc5bba8a/regex-2024.11.6-cp310-cp310-win32.whl", hash = "sha256:b489578720afb782f6ccf2840920f3a32e31ba28a4b162e13900c3e6bd3f930e", size = 261714 },
-    { url = "https://files.pythonhosted.org/packages/42/7e/5f1b92c8468290c465fd50c5318da64319133231415a8aa6ea5ab995a815/regex-2024.11.6-cp310-cp310-win_amd64.whl", hash = "sha256:5071b2093e793357c9d8b2929dfc13ac5f0a6c650559503bb81189d0a3814519", size = 274042 },
-    { url = "https://files.pythonhosted.org/packages/58/58/7e4d9493a66c88a7da6d205768119f51af0f684fe7be7bac8328e217a52c/regex-2024.11.6-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:5478c6962ad548b54a591778e93cd7c456a7a29f8eca9c49e4f9a806dcc5d638", size = 482669 },
-    { url = "https://files.pythonhosted.org/packages/34/4c/8f8e631fcdc2ff978609eaeef1d6994bf2f028b59d9ac67640ed051f1218/regex-2024.11.6-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:2c89a8cc122b25ce6945f0423dc1352cb9593c68abd19223eebbd4e56612c5b7", size = 287684 },
-    { url = "https://files.pythonhosted.org/packages/c5/1b/f0e4d13e6adf866ce9b069e191f303a30ab1277e037037a365c3aad5cc9c/regex-2024.11.6-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:94d87b689cdd831934fa3ce16cc15cd65748e6d689f5d2b8f4f4df2065c9fa20", size = 284589 },
-    { url = "https://files.pythonhosted.org/packages/25/4d/ab21047f446693887f25510887e6820b93f791992994f6498b0318904d4a/regex-2024.11.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1062b39a0a2b75a9c694f7a08e7183a80c63c0d62b301418ffd9c35f55aaa114", size = 792121 },
-    { url = "https://files.pythonhosted.org/packages/45/ee/c867e15cd894985cb32b731d89576c41a4642a57850c162490ea34b78c3b/regex-2024.11.6-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:167ed4852351d8a750da48712c3930b031f6efdaa0f22fa1933716bfcd6bf4a3", size = 831275 },
-    { url = "https://files.pythonhosted.org/packages/b3/12/b0f480726cf1c60f6536fa5e1c95275a77624f3ac8fdccf79e6727499e28/regex-2024.11.6-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:2d548dafee61f06ebdb584080621f3e0c23fff312f0de1afc776e2a2ba99a74f", size = 818257 },
-    { url = "https://files.pythonhosted.org/packages/bf/ce/0d0e61429f603bac433910d99ef1a02ce45a8967ffbe3cbee48599e62d88/regex-2024.11.6-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f2a19f302cd1ce5dd01a9099aaa19cae6173306d1302a43b627f62e21cf18ac0", size = 792727 },
-    { url = "https://files.pythonhosted.org/packages/e4/c1/243c83c53d4a419c1556f43777ccb552bccdf79d08fda3980e4e77dd9137/regex-2024.11.6-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:bec9931dfb61ddd8ef2ebc05646293812cb6b16b60cf7c9511a832b6f1854b55", size = 780667 },
-    { url = "https://files.pythonhosted.org/packages/c5/f4/75eb0dd4ce4b37f04928987f1d22547ddaf6c4bae697623c1b05da67a8aa/regex-2024.11.6-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:9714398225f299aa85267fd222f7142fcb5c769e73d7733344efc46f2ef5cf89", size = 776963 },
-    { url = "https://files.pythonhosted.org/packages/16/5d/95c568574e630e141a69ff8a254c2f188b4398e813c40d49228c9bbd9875/regex-2024.11.6-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:202eb32e89f60fc147a41e55cb086db2a3f8cb82f9a9a88440dcfc5d37faae8d", size = 784700 },
-    { url = "https://files.pythonhosted.org/packages/8e/b5/f8495c7917f15cc6fee1e7f395e324ec3e00ab3c665a7dc9d27562fd5290/regex-2024.11.6-cp311-cp311-musllinux_1_2_ppc64le.whl", hash = "sha256:4181b814e56078e9b00427ca358ec44333765f5ca1b45597ec7446d3a1ef6e34", size = 848592 },
-    { url = "https://files.pythonhosted.org/packages/1c/80/6dd7118e8cb212c3c60b191b932dc57db93fb2e36fb9e0e92f72a5909af9/regex-2024.11.6-cp311-cp311-musllinux_1_2_s390x.whl", hash = "sha256:068376da5a7e4da51968ce4c122a7cd31afaaec4fccc7856c92f63876e57b51d", size = 852929 },
-    { url = "https://files.pythonhosted.org/packages/11/9b/5a05d2040297d2d254baf95eeeb6df83554e5e1df03bc1a6687fc4ba1f66/regex-2024.11.6-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:ac10f2c4184420d881a3475fb2c6f4d95d53a8d50209a2500723d831036f7c45", size = 781213 },
-    { url = "https://files.pythonhosted.org/packages/26/b7/b14e2440156ab39e0177506c08c18accaf2b8932e39fb092074de733d868/regex-2024.11.6-cp311-cp311-win32.whl", hash = "sha256:c36f9b6f5f8649bb251a5f3f66564438977b7ef8386a52460ae77e6070d309d9", size = 261734 },
-    { url = "https://files.pythonhosted.org/packages/80/32/763a6cc01d21fb3819227a1cc3f60fd251c13c37c27a73b8ff4315433a8e/regex-2024.11.6-cp311-cp311-win_amd64.whl", hash = "sha256:02e28184be537f0e75c1f9b2f8847dc51e08e6e171c6bde130b2687e0c33cf60", size = 274052 },
-    { url = "https://files.pythonhosted.org/packages/ba/30/9a87ce8336b172cc232a0db89a3af97929d06c11ceaa19d97d84fa90a8f8/regex-2024.11.6-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:52fb28f528778f184f870b7cf8f225f5eef0a8f6e3778529bdd40c7b3920796a", size = 483781 },
-    { url = "https://files.pythonhosted.org/packages/01/e8/00008ad4ff4be8b1844786ba6636035f7ef926db5686e4c0f98093612add/regex-2024.11.6-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:fdd6028445d2460f33136c55eeb1f601ab06d74cb3347132e1c24250187500d9", size = 288455 },
-    { url = "https://files.pythonhosted.org/packages/60/85/cebcc0aff603ea0a201667b203f13ba75d9fc8668fab917ac5b2de3967bc/regex-2024.11.6-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:805e6b60c54bf766b251e94526ebad60b7de0c70f70a4e6210ee2891acb70bf2", size = 284759 },
-    { url = "https://files.pythonhosted.org/packages/94/2b/701a4b0585cb05472a4da28ee28fdfe155f3638f5e1ec92306d924e5faf0/regex-2024.11.6-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b85c2530be953a890eaffde05485238f07029600e8f098cdf1848d414a8b45e4", size = 794976 },
-    { url = "https://files.pythonhosted.org/packages/4b/bf/fa87e563bf5fee75db8915f7352e1887b1249126a1be4813837f5dbec965/regex-2024.11.6-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:bb26437975da7dc36b7efad18aa9dd4ea569d2357ae6b783bf1118dabd9ea577", size = 833077 },
-    { url = "https://files.pythonhosted.org/packages/a1/56/7295e6bad94b047f4d0834e4779491b81216583c00c288252ef625c01d23/regex-2024.11.6-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:abfa5080c374a76a251ba60683242bc17eeb2c9818d0d30117b4486be10c59d3", size = 823160 },
-    { url = "https://files.pythonhosted.org/packages/fb/13/e3b075031a738c9598c51cfbc4c7879e26729c53aa9cca59211c44235314/regex-2024.11.6-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:70b7fa6606c2881c1db9479b0eaa11ed5dfa11c8d60a474ff0e095099f39d98e", size = 796896 },
-    { url = "https://files.pythonhosted.org/packages/24/56/0b3f1b66d592be6efec23a795b37732682520b47c53da5a32c33ed7d84e3/regex-2024.11.6-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0c32f75920cf99fe6b6c539c399a4a128452eaf1af27f39bce8909c9a3fd8cbe", size = 783997 },
-    { url = "https://files.pythonhosted.org/packages/f9/a1/eb378dada8b91c0e4c5f08ffb56f25fcae47bf52ad18f9b2f33b83e6d498/regex-2024.11.6-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:982e6d21414e78e1f51cf595d7f321dcd14de1f2881c5dc6a6e23bbbbd68435e", size = 781725 },
-    { url = "https://files.pythonhosted.org/packages/83/f2/033e7dec0cfd6dda93390089864732a3409246ffe8b042e9554afa9bff4e/regex-2024.11.6-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:a7c2155f790e2fb448faed6dd241386719802296ec588a8b9051c1f5c481bc29", size = 789481 },
-    { url = "https://files.pythonhosted.org/packages/83/23/15d4552ea28990a74e7696780c438aadd73a20318c47e527b47a4a5a596d/regex-2024.11.6-cp312-cp312-musllinux_1_2_ppc64le.whl", hash = "sha256:149f5008d286636e48cd0b1dd65018548944e495b0265b45e1bffecce1ef7f39", size = 852896 },
-    { url = "https://files.pythonhosted.org/packages/e3/39/ed4416bc90deedbfdada2568b2cb0bc1fdb98efe11f5378d9892b2a88f8f/regex-2024.11.6-cp312-cp312-musllinux_1_2_s390x.whl", hash = "sha256:e5364a4502efca094731680e80009632ad6624084aff9a23ce8c8c6820de3e51", size = 860138 },
-    { url = "https://files.pythonhosted.org/packages/93/2d/dd56bb76bd8e95bbce684326302f287455b56242a4f9c61f1bc76e28360e/regex-2024.11.6-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:0a86e7eeca091c09e021db8eb72d54751e527fa47b8d5787caf96d9831bd02ad", size = 787692 },
-    { url = "https://files.pythonhosted.org/packages/0b/55/31877a249ab7a5156758246b9c59539abbeba22461b7d8adc9e8475ff73e/regex-2024.11.6-cp312-cp312-win32.whl", hash = "sha256:32f9a4c643baad4efa81d549c2aadefaeba12249b2adc5af541759237eee1c54", size = 262135 },
-    { url = "https://files.pythonhosted.org/packages/38/ec/ad2d7de49a600cdb8dd78434a1aeffe28b9d6fc42eb36afab4a27ad23384/regex-2024.11.6-cp312-cp312-win_amd64.whl", hash = "sha256:a93c194e2df18f7d264092dc8539b8ffb86b45b899ab976aa15d48214138e81b", size = 273567 },
-    { url = "https://files.pythonhosted.org/packages/90/73/bcb0e36614601016552fa9344544a3a2ae1809dc1401b100eab02e772e1f/regex-2024.11.6-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:a6ba92c0bcdf96cbf43a12c717eae4bc98325ca3730f6b130ffa2e3c3c723d84", size = 483525 },
-    { url = "https://files.pythonhosted.org/packages/0f/3f/f1a082a46b31e25291d830b369b6b0c5576a6f7fb89d3053a354c24b8a83/regex-2024.11.6-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:525eab0b789891ac3be914d36893bdf972d483fe66551f79d3e27146191a37d4", size = 288324 },
-    { url = "https://files.pythonhosted.org/packages/09/c9/4e68181a4a652fb3ef5099e077faf4fd2a694ea6e0f806a7737aff9e758a/regex-2024.11.6-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:086a27a0b4ca227941700e0b31425e7a28ef1ae8e5e05a33826e17e47fbfdba0", size = 284617 },
-    { url = "https://files.pythonhosted.org/packages/fc/fd/37868b75eaf63843165f1d2122ca6cb94bfc0271e4428cf58c0616786dce/regex-2024.11.6-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bde01f35767c4a7899b7eb6e823b125a64de314a8ee9791367c9a34d56af18d0", size = 795023 },
-    { url = "https://files.pythonhosted.org/packages/c4/7c/d4cd9c528502a3dedb5c13c146e7a7a539a3853dc20209c8e75d9ba9d1b2/regex-2024.11.6-cp313-cp313-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:b583904576650166b3d920d2bcce13971f6f9e9a396c673187f49811b2769dc7", size = 833072 },
-    { url = "https://files.pythonhosted.org/packages/4f/db/46f563a08f969159c5a0f0e722260568425363bea43bb7ae370becb66a67/regex-2024.11.6-cp313-cp313-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:1c4de13f06a0d54fa0d5ab1b7138bfa0d883220965a29616e3ea61b35d5f5fc7", size = 823130 },
-    { url = "https://files.pythonhosted.org/packages/db/60/1eeca2074f5b87df394fccaa432ae3fc06c9c9bfa97c5051aed70e6e00c2/regex-2024.11.6-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3cde6e9f2580eb1665965ce9bf17ff4952f34f5b126beb509fee8f4e994f143c", size = 796857 },
-    { url = "https://files.pythonhosted.org/packages/10/db/ac718a08fcee981554d2f7bb8402f1faa7e868c1345c16ab1ebec54b0d7b/regex-2024.11.6-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:0d7f453dca13f40a02b79636a339c5b62b670141e63efd511d3f8f73fba162b3", size = 784006 },
-    { url = "https://files.pythonhosted.org/packages/c2/41/7da3fe70216cea93144bf12da2b87367590bcf07db97604edeea55dac9ad/regex-2024.11.6-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:59dfe1ed21aea057a65c6b586afd2a945de04fc7db3de0a6e3ed5397ad491b07", size = 781650 },
-    { url = "https://files.pythonhosted.org/packages/a7/d5/880921ee4eec393a4752e6ab9f0fe28009435417c3102fc413f3fe81c4e5/regex-2024.11.6-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:b97c1e0bd37c5cd7902e65f410779d39eeda155800b65fc4d04cc432efa9bc6e", size = 789545 },
-    { url = "https://files.pythonhosted.org/packages/dc/96/53770115e507081122beca8899ab7f5ae28ae790bfcc82b5e38976df6a77/regex-2024.11.6-cp313-cp313-musllinux_1_2_ppc64le.whl", hash = "sha256:f9d1e379028e0fc2ae3654bac3cbbef81bf3fd571272a42d56c24007979bafb6", size = 853045 },
-    { url = "https://files.pythonhosted.org/packages/31/d3/1372add5251cc2d44b451bd94f43b2ec78e15a6e82bff6a290ef9fd8f00a/regex-2024.11.6-cp313-cp313-musllinux_1_2_s390x.whl", hash = "sha256:13291b39131e2d002a7940fb176e120bec5145f3aeb7621be6534e46251912c4", size = 860182 },
-    { url = "https://files.pythonhosted.org/packages/ed/e3/c446a64984ea9f69982ba1a69d4658d5014bc7a0ea468a07e1a1265db6e2/regex-2024.11.6-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:4f51f88c126370dcec4908576c5a627220da6c09d0bff31cfa89f2523843316d", size = 787733 },
-    { url = "https://files.pythonhosted.org/packages/2b/f1/e40c8373e3480e4f29f2692bd21b3e05f296d3afebc7e5dcf21b9756ca1c/regex-2024.11.6-cp313-cp313-win32.whl", hash = "sha256:63b13cfd72e9601125027202cad74995ab26921d8cd935c25f09c630436348ff", size = 262122 },
-    { url = "https://files.pythonhosted.org/packages/45/94/bc295babb3062a731f52621cdc992d123111282e291abaf23faa413443ea/regex-2024.11.6-cp313-cp313-win_amd64.whl", hash = "sha256:2b3361af3198667e99927da8b84c1b010752fa4b1115ee30beaa332cabc3ef1a", size = 273545 },
-]
-
-[[package]]
 name = "requests"
 version = "2.32.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1337,27 +1257,27 @@ wheels = [
 
 [[package]]
 name = "ruff"
-version = "0.9.6"
+version = "0.9.9"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/2a/e1/e265aba384343dd8ddd3083f5e33536cd17e1566c41453a5517b5dd443be/ruff-0.9.6.tar.gz", hash = "sha256:81761592f72b620ec8fa1068a6fd00e98a5ebee342a3642efd84454f3031dca9", size = 3639454 }
+sdist = { url = "https://files.pythonhosted.org/packages/6f/c3/418441a8170e8d53d05c0b9dad69760dbc7b8a12c10dbe6db1e1205d2377/ruff-0.9.9.tar.gz", hash = "sha256:0062ed13f22173e85f8f7056f9a24016e692efeea8704d1a5e8011b8aa850933", size = 3717448 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/76/e3/3d2c022e687e18cf5d93d6bfa2722d46afc64eaa438c7fbbdd603b3597be/ruff-0.9.6-py3-none-linux_armv6l.whl", hash = "sha256:2f218f356dd2d995839f1941322ff021c72a492c470f0b26a34f844c29cdf5ba", size = 11714128 },
-    { url = "https://files.pythonhosted.org/packages/e1/22/aff073b70f95c052e5c58153cba735748c9e70107a77d03420d7850710a0/ruff-0.9.6-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:b908ff4df65dad7b251c9968a2e4560836d8f5487c2f0cc238321ed951ea0504", size = 11682539 },
-    { url = "https://files.pythonhosted.org/packages/75/a7/f5b7390afd98a7918582a3d256cd3e78ba0a26165a467c1820084587cbf9/ruff-0.9.6-py3-none-macosx_11_0_arm64.whl", hash = "sha256:b109c0ad2ececf42e75fa99dc4043ff72a357436bb171900714a9ea581ddef83", size = 11132512 },
-    { url = "https://files.pythonhosted.org/packages/a6/e3/45de13ef65047fea2e33f7e573d848206e15c715e5cd56095589a7733d04/ruff-0.9.6-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1de4367cca3dac99bcbd15c161404e849bb0bfd543664db39232648dc00112dc", size = 11929275 },
-    { url = "https://files.pythonhosted.org/packages/7d/f2/23d04cd6c43b2e641ab961ade8d0b5edb212ecebd112506188c91f2a6e6c/ruff-0.9.6-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:ac3ee4d7c2c92ddfdaedf0bf31b2b176fa7aa8950efc454628d477394d35638b", size = 11466502 },
-    { url = "https://files.pythonhosted.org/packages/b5/6f/3a8cf166f2d7f1627dd2201e6cbc4cb81f8b7d58099348f0c1ff7b733792/ruff-0.9.6-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:5dc1edd1775270e6aa2386119aea692039781429f0be1e0949ea5884e011aa8e", size = 12676364 },
-    { url = "https://files.pythonhosted.org/packages/f5/c4/db52e2189983c70114ff2b7e3997e48c8318af44fe83e1ce9517570a50c6/ruff-0.9.6-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:4a091729086dffa4bd070aa5dab7e39cc6b9d62eb2bef8f3d91172d30d599666", size = 13335518 },
-    { url = "https://files.pythonhosted.org/packages/66/44/545f8a4d136830f08f4d24324e7db957c5374bf3a3f7a6c0bc7be4623a37/ruff-0.9.6-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:d1bbc6808bf7b15796cef0815e1dfb796fbd383e7dbd4334709642649625e7c5", size = 12823287 },
-    { url = "https://files.pythonhosted.org/packages/c5/26/8208ef9ee7431032c143649a9967c3ae1aae4257d95e6f8519f07309aa66/ruff-0.9.6-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:589d1d9f25b5754ff230dce914a174a7c951a85a4e9270613a2b74231fdac2f5", size = 14592374 },
-    { url = "https://files.pythonhosted.org/packages/31/70/e917781e55ff39c5b5208bda384fd397ffd76605e68544d71a7e40944945/ruff-0.9.6-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dc61dd5131742e21103fbbdcad683a8813be0e3c204472d520d9a5021ca8b217", size = 12500173 },
-    { url = "https://files.pythonhosted.org/packages/84/f5/e4ddee07660f5a9622a9c2b639afd8f3104988dc4f6ba0b73ffacffa9a8c/ruff-0.9.6-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:5e2d9126161d0357e5c8f30b0bd6168d2c3872372f14481136d13de9937f79b6", size = 11906555 },
-    { url = "https://files.pythonhosted.org/packages/f1/2b/6ff2fe383667075eef8656b9892e73dd9b119b5e3add51298628b87f6429/ruff-0.9.6-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:68660eab1a8e65babb5229a1f97b46e3120923757a68b5413d8561f8a85d4897", size = 11538958 },
-    { url = "https://files.pythonhosted.org/packages/3c/db/98e59e90de45d1eb46649151c10a062d5707b5b7f76f64eb1e29edf6ebb1/ruff-0.9.6-py3-none-musllinux_1_2_i686.whl", hash = "sha256:c4cae6c4cc7b9b4017c71114115db0445b00a16de3bcde0946273e8392856f08", size = 12117247 },
-    { url = "https://files.pythonhosted.org/packages/ec/bc/54e38f6d219013a9204a5a2015c09e7a8c36cedcd50a4b01ac69a550b9d9/ruff-0.9.6-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:19f505b643228b417c1111a2a536424ddde0db4ef9023b9e04a46ed8a1cb4656", size = 12554647 },
-    { url = "https://files.pythonhosted.org/packages/a5/7d/7b461ab0e2404293c0627125bb70ac642c2e8d55bf590f6fce85f508f1b2/ruff-0.9.6-py3-none-win32.whl", hash = "sha256:194d8402bceef1b31164909540a597e0d913c0e4952015a5b40e28c146121b5d", size = 9949214 },
-    { url = "https://files.pythonhosted.org/packages/ee/30/c3cee10f915ed75a5c29c1e57311282d1a15855551a64795c1b2bbe5cf37/ruff-0.9.6-py3-none-win_amd64.whl", hash = "sha256:03482d5c09d90d4ee3f40d97578423698ad895c87314c4de39ed2af945633caa", size = 10999914 },
-    { url = "https://files.pythonhosted.org/packages/e8/a8/d71f44b93e3aa86ae232af1f2126ca7b95c0f515ec135462b3e1f351441c/ruff-0.9.6-py3-none-win_arm64.whl", hash = "sha256:0e2bb706a2be7ddfea4a4af918562fdc1bcb16df255e5fa595bbd800ce322a5a", size = 10177499 },
+    { url = "https://files.pythonhosted.org/packages/bc/c3/2c4afa9ba467555d074b146d9aed0633a56ccdb900839fb008295d037b89/ruff-0.9.9-py3-none-linux_armv6l.whl", hash = "sha256:628abb5ea10345e53dff55b167595a159d3e174d6720bf19761f5e467e68d367", size = 10027252 },
+    { url = "https://files.pythonhosted.org/packages/33/d1/439e58487cf9eac26378332e25e7d5ade4b800ce1eec7dc2cfc9b0d7ca96/ruff-0.9.9-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:b6cd1428e834b35d7493354723543b28cc11dc14d1ce19b685f6e68e07c05ec7", size = 10840721 },
+    { url = "https://files.pythonhosted.org/packages/50/44/fead822c38281ba0122f1b76b460488a175a9bd48b130650a6fb6dbcbcf9/ruff-0.9.9-py3-none-macosx_11_0_arm64.whl", hash = "sha256:5ee162652869120ad260670706f3cd36cd3f32b0c651f02b6da142652c54941d", size = 10161439 },
+    { url = "https://files.pythonhosted.org/packages/11/ae/d404a2ab8e61ddf6342e09cc6b7f7846cce6b243e45c2007dbe0ca928a5d/ruff-0.9.9-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3aa0f6b75082c9be1ec5a1db78c6d4b02e2375c3068438241dc19c7c306cc61a", size = 10336264 },
+    { url = "https://files.pythonhosted.org/packages/6a/4e/7c268aa7d84cd709fb6f046b8972313142cffb40dfff1d2515c5e6288d54/ruff-0.9.9-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:584cc66e89fb5f80f84b05133dd677a17cdd86901d6479712c96597a3f28e7fe", size = 9908774 },
+    { url = "https://files.pythonhosted.org/packages/cc/26/c618a878367ef1b76270fd027ca93692657d3f6122b84ba48911ef5f2edc/ruff-0.9.9-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:abf3369325761a35aba75cd5c55ba1b5eb17d772f12ab168fbfac54be85cf18c", size = 11428127 },
+    { url = "https://files.pythonhosted.org/packages/d7/9a/c5588a93d9bfed29f565baf193fe802fa676a0c837938137ea6cf0576d8c/ruff-0.9.9-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:3403a53a32a90ce929aa2f758542aca9234befa133e29f4933dcef28a24317be", size = 12133187 },
+    { url = "https://files.pythonhosted.org/packages/3e/ff/e7980a7704a60905ed7e156a8d73f604c846d9bd87deda9cabfa6cba073a/ruff-0.9.9-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:18454e7fa4e4d72cffe28a37cf6a73cb2594f81ec9f4eca31a0aaa9ccdfb1590", size = 11602937 },
+    { url = "https://files.pythonhosted.org/packages/24/78/3690444ad9e3cab5c11abe56554c35f005b51d1d118b429765249095269f/ruff-0.9.9-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:0fadfe2c88724c9617339f62319ed40dcdadadf2888d5afb88bf3adee7b35bfb", size = 13771698 },
+    { url = "https://files.pythonhosted.org/packages/6e/bf/e477c2faf86abe3988e0b5fd22a7f3520e820b2ee335131aca2e16120038/ruff-0.9.9-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6df104d08c442a1aabcfd254279b8cc1e2cbf41a605aa3e26610ba1ec4acf0b0", size = 11249026 },
+    { url = "https://files.pythonhosted.org/packages/f7/82/cdaffd59e5a8cb5b14c408c73d7a555a577cf6645faaf83e52fe99521715/ruff-0.9.9-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:d7c62939daf5b2a15af48abbd23bea1efdd38c312d6e7c4cedf5a24e03207e17", size = 10220432 },
+    { url = "https://files.pythonhosted.org/packages/fe/a4/2507d0026225efa5d4412b6e294dfe54725a78652a5c7e29e6bd0fc492f3/ruff-0.9.9-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:9494ba82a37a4b81b6a798076e4a3251c13243fc37967e998efe4cce58c8a8d1", size = 9874602 },
+    { url = "https://files.pythonhosted.org/packages/d5/be/f3aab1813846b476c4bcffe052d232244979c3cd99d751c17afb530ca8e4/ruff-0.9.9-py3-none-musllinux_1_2_i686.whl", hash = "sha256:4efd7a96ed6d36ef011ae798bf794c5501a514be369296c672dab7921087fa57", size = 10851212 },
+    { url = "https://files.pythonhosted.org/packages/8b/45/8e5fd559bea0d2f57c4e12bf197a2fade2fac465aa518284f157dfbca92b/ruff-0.9.9-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:ab90a7944c5a1296f3ecb08d1cbf8c2da34c7e68114b1271a431a3ad30cb660e", size = 11327490 },
+    { url = "https://files.pythonhosted.org/packages/42/55/e6c90f13880aeef327746052907e7e930681f26a164fe130ddac28b08269/ruff-0.9.9-py3-none-win32.whl", hash = "sha256:6b4c376d929c25ecd6d87e182a230fa4377b8e5125a4ff52d506ee8c087153c1", size = 10227912 },
+    { url = "https://files.pythonhosted.org/packages/35/b2/da925693cb82a1208aa34966c0f36cb222baca94e729dd22a587bc22d0f3/ruff-0.9.9-py3-none-win_amd64.whl", hash = "sha256:837982ea24091d4c1700ddb2f63b7070e5baec508e43b01de013dc7eff974ff1", size = 11355632 },
+    { url = "https://files.pythonhosted.org/packages/31/d8/de873d1c1b020d668d8ec9855d390764cb90cf8f6486c0983da52be8b7b7/ruff-0.9.9-py3-none-win_arm64.whl", hash = "sha256:3ac78f127517209fe6d96ab00f3ba97cafe38718b23b1db3e96d8b2d39e37ddf", size = 10435860 },
 ]
 
 [[package]]
@@ -1394,15 +1314,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/87/a6771e1546d97e7e041b6ae58d80074f81b7d5121207425c964ddf5cfdbd/sniffio-1.3.1.tar.gz", hash = "sha256:f4324edc670a0f49750a81b895f35c3adb843cca46f0530f79fc1babb23789dc", size = 20372 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e9/44/75a9c9421471a6c4805dbf2356f7c181a29c1879239abab1ea2cc8f38b40/sniffio-1.3.1-py3-none-any.whl", hash = "sha256:2f6da418d1f1e0fddd844478f41680e794e6051915791a034ff65e5f100525a2", size = 10235 },
-]
-
-[[package]]
-name = "toml"
-version = "0.10.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/be/ba/1f744cdc819428fc6b5084ec34d9b30660f6f9daaf70eead706e3203ec3c/toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f", size = 22253 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/44/6f/7120676b6d73228c96e17f1f794d8ab046fc910d781c8d151120c3f1569e/toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b", size = 16588 },
 ]
 
 [[package]]
@@ -1455,7 +1366,7 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.15.1"
+version = "0.15.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -1463,18 +1374,18 @@ dependencies = [
     { name = "shellingham" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cb/ce/dca7b219718afd37a0068f4f2530a727c2b74a8b6e8e0c0080a4c0de4fcd/typer-0.15.1.tar.gz", hash = "sha256:a0588c0a7fa68a1978a069818657778f86abe6ff5ea6abf472f940a08bfe4f0a", size = 99789 }
+sdist = { url = "https://files.pythonhosted.org/packages/8b/6f/3991f0f1c7fcb2df31aef28e0594d8d54b05393a0e4e34c65e475c2a5d41/typer-0.15.2.tar.gz", hash = "sha256:ab2fab47533a813c49fe1f16b1a370fd5819099c00b119e0633df65f22144ba5", size = 100711 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d0/cc/0a838ba5ca64dc832aa43f727bd586309846b0ffb2ce52422543e6075e8a/typer-0.15.1-py3-none-any.whl", hash = "sha256:7994fb7b8155b64d3402518560648446072864beefd44aa2dc36972a5972e847", size = 44908 },
+    { url = "https://files.pythonhosted.org/packages/7f/fc/5b29fea8cee020515ca82cc68e3b8e1e34bb19a3535ad854cac9257b414c/typer-0.15.2-py3-none-any.whl", hash = "sha256:46a499c6107d645a9c13f7ee46c5d5096cae6f5fc57dd11eccbbb9ae3e44ddfc", size = 45061 },
 ]
 
 [[package]]
 name = "types-setuptools"
-version = "75.8.0.20250110"
+version = "75.8.2.20250301"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f7/42/5713e90d4f9683f2301d900f33e4fc2405ad8ac224dda30f6cb7f4cd215b/types_setuptools-75.8.0.20250110.tar.gz", hash = "sha256:96f7ec8bbd6e0a54ea180d66ad68ad7a1d7954e7281a710ea2de75e355545271", size = 48185 }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/02/5f476d1a4f2bb23ba47c3aac6246cae1159d430937171e58860a9f1f47f8/types_setuptools-75.8.2.20250301.tar.gz", hash = "sha256:c900bceebfffc92a4abc3cfd4b3c39ead1a2298a73dae37e6bc09da7baf797a0", size = 48468 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cf/a3/dbfd106751b11c728cec21cc62cbfe7ff7391b935c4b6e8f0bdc2e6fd541/types_setuptools-75.8.0.20250110-py3-none-any.whl", hash = "sha256:a9f12980bbf9bcdc23ecd80755789085bad6bfce4060c2275bc2b4ca9f2bc480", size = 71521 },
+    { url = "https://files.pythonhosted.org/packages/f3/d8/aba63d60951fbec2917a9d2c8673605a57fdbfc9134268802988c99c7a4c/types_setuptools-75.8.2.20250301-py3-none-any.whl", hash = "sha256:3cc3e751db9e84eddf1e6d4f8c46bef2c77e6c25b0cd096f729ffa57d3d6a83a", size = 71841 },
 ]
 
 [[package]]
@@ -1571,16 +1482,16 @@ test = [
 
 [[package]]
 name = "virtualenv"
-version = "20.29.1"
+version = "20.29.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "distlib" },
     { name = "filelock" },
     { name = "platformdirs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a7/ca/f23dcb02e161a9bba141b1c08aa50e8da6ea25e6d780528f1d385a3efe25/virtualenv-20.29.1.tar.gz", hash = "sha256:b8b8970138d32fb606192cb97f6cd4bb644fa486be9308fb9b63f81091b5dc35", size = 7658028 }
+sdist = { url = "https://files.pythonhosted.org/packages/f1/88/dacc875dd54a8acadb4bcbfd4e3e86df8be75527116c91d8f9784f5e9cab/virtualenv-20.29.2.tar.gz", hash = "sha256:fdaabebf6d03b5ba83ae0a02cfe96f48a716f4fae556461d180825866f75b728", size = 4320272 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/89/9b/599bcfc7064fbe5740919e78c5df18e5dceb0887e676256a1061bb5ae232/virtualenv-20.29.1-py3-none-any.whl", hash = "sha256:4e4cb403c0b0da39e13b46b1b2476e505cb0046b25f242bee80f62bf990b2779", size = 4282379 },
+    { url = "https://files.pythonhosted.org/packages/93/fa/849483d56773ae29740ae70043ad88e068f98a6401aa819b5d6bee604683/virtualenv-20.29.2-py3-none-any.whl", hash = "sha256:febddfc3d1ea571bdb1dc0f98d7b45d24def7428214d4fb73cc486c9568cce6a", size = 4301478 },
 ]
 
 [[package]]

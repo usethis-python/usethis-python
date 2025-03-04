@@ -15,3 +15,23 @@ class TestReadme:
 
         # Assert
         assert result.exit_code == 0, result.output
+        # Check no badges have been added
+        assert "ruff" not in (tmp_path / "README.md").read_text()
+        assert "pre-commit" not in (tmp_path / "README.md").read_text()
+
+    def test_badges(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "ruff.toml").touch()
+        (tmp_path / ".pre-commit-config.yaml").touch()
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["readme", "--badges"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (tmp_path / "README.md").exists()
+        # and check the badges get created
+        assert "ruff" in (tmp_path / "README.md").read_text()
+        assert "pre-commit" in (tmp_path / "README.md").read_text()

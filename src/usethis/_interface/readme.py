@@ -3,7 +3,11 @@ from __future__ import annotations
 import typer
 
 from usethis._config import quiet_opt, usethis_config
-from usethis._core.badge import add_pre_commit_badge, add_ruff_badge
+from usethis._core.badge import (
+    add_badge,
+    get_pre_commit_badge,
+    get_ruff_badge,
+)
 from usethis._core.readme import add_readme
 from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool import PreCommitTool, RuffTool
@@ -18,7 +22,7 @@ def readme(
 
         if badges:
             if RuffTool().is_used():
-                add_ruff_badge()
+                add_badge(get_ruff_badge())
 
             if PreCommitTool().is_used():
-                add_pre_commit_badge()
+                add_badge(get_pre_commit_badge())

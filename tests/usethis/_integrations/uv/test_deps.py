@@ -2,6 +2,10 @@ from pathlib import Path
 
 import pytest
 
+import usethis
+import usethis._integrations
+import usethis._integrations.uv
+import usethis._integrations.uv.deps
 from usethis._config import usethis_config
 from usethis._integrations.pyproject_toml.core import (
     get_pyproject_value,
@@ -18,6 +22,7 @@ from usethis._integrations.uv.deps import (
     register_default_group,
     remove_deps_from_group,
 )
+from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 from usethis._test import change_cwd
 
 
@@ -272,6 +277,30 @@ class TestAddDepsToGroup:
             # Tool section shouldn't even exist in pyproject.toml
             assert "tool" not in (uv_init_dir / "pyproject.toml").read_text()
 
+    def test_uv_subprocess_error(
+        self,
+        uv_init_dir: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        def mock_call_uv_subprocess(*_, **__):
+            raise UVSubprocessFailedError
+
+        monkeypatch.setattr(
+            usethis._integrations.uv.deps, "call_uv_subprocess", mock_call_uv_subprocess
+        )
+
+        with (
+            change_cwd(uv_init_dir),
+            PyprojectTOMLManager(),
+            pytest.raises(
+                UVDepGroupError,
+                match="Failed to add 'pytest' to the 'test' dependency group",
+            ),
+        ):
+            # Act
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
 
 class TestRemoveDepsFromGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -394,6 +423,35 @@ class TestRemoveDepsFromGroup:
             out, err = capfd.readouterr()
             assert not err
             assert not out
+
+    def test_uv_subprocess_error(
+        self,
+        uv_init_dir: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        with (
+            change_cwd(uv_init_dir),
+            PyprojectTOMLManager(),
+        ):
+            # Arrange
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
+            def mock_call_uv_subprocess(*_, **__):
+                raise UVSubprocessFailedError
+
+            monkeypatch.setattr(
+                usethis._integrations.uv.deps,
+                "call_uv_subprocess",
+                mock_call_uv_subprocess,
+            )
+
+            # Act
+            with pytest.raises(
+                UVDepGroupError,
+                match="Failed to remove 'pytest' from the 'test' dependency group",
+            ):
+                remove_deps_from_group([Dependency(name="pytest")], "test")
 
 
 class TestIsDepInAnyGroup:

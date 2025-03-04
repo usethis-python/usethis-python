@@ -198,11 +198,7 @@ class TestCoverage:
             # Set python version
             (tmp_path / ".python-version").write_text(get_python_version())
 
-            with (
-                change_cwd(tmp_path),
-                PyprojectTOMLManager(),
-                usethis_config.set(subprocess_verbose=True),
-            ):
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 # Act
                 use_coverage()
 

@@ -103,6 +103,7 @@ lint.select = [
   "PT",
   "RUF",
   "SIM",
+  "TC",
   "UP",
 ]
 lint.ignore = [ "D417", "PLR2004", "SIM108" ]

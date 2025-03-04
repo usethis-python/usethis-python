@@ -51,7 +51,10 @@ def coverage(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        PyprojectTOMLManager(),
+    ):
         _run_tool(use_coverage, remove=remove)
 
 

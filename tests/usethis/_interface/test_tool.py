@@ -26,6 +26,16 @@ class TestCodespell:
         assert result.exit_code == 0, result.output
 
 
+class TestCoverage:
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_cli(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            if not usethis_config.offline:
+                call_subprocess(["usethis", "tool", "coverage"])
+            else:
+                call_subprocess(["usethis", "tool", "coverage", "--offline"])
+
+
 class TestDeptry:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_cli(self, uv_init_dir: Path):

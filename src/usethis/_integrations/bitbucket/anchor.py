@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, TypeAlias
+from typing import Literal, TypeAlias
 
 from pydantic import BaseModel
 
-if TYPE_CHECKING:
-    # N.B. at the point where we support more than one script item, we should create a
-    # canonical sort order for them and enforce it when we add them to the pipeline.
-    ScriptItemName: TypeAlias = Literal["install-uv"]
+# N.B. at the point where we support more than one script item, we should create a
+# canonical sort order for them and enforce it when we add them to the pipeline.
+ScriptItemName: TypeAlias = Literal["install-uv"]
 
 
 class ScriptItemAnchor(BaseModel):

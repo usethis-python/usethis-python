@@ -1,7 +1,7 @@
 from functools import singledispatch
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from ruamel.yaml.anchor import Anchor
 from ruamel.yaml.comments import CommentedSeq
 from ruamel.yaml.scalarstring import LiteralScalarString
 from typing_extensions import assert_never
@@ -38,6 +38,9 @@ from usethis._integrations.bitbucket.schema import (
 from usethis._integrations.bitbucket.schema_utils import step1tostep
 from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
+
+if TYPE_CHECKING:
+    from ruamel.yaml.anchor import Anchor
 
 _CACHE_LOOKUP = {
     "uv": CachePath("~/.cache/uv"),

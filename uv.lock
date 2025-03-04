@@ -1459,21 +1459,21 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "datamodel-code-generator", extras = ["http"], specifier = ">=0.26.5" },
+    { name = "datamodel-code-generator", extras = ["http"], specifier = ">=0.28.2" },
     { name = "deptry", specifier = ">=0.23.0" },
     { name = "import-linter", specifier = ">=2.2" },
     { name = "pre-commit", specifier = ">=4.1.0" },
-    { name = "pyright", specifier = ">=1.1.394" },
-    { name = "ruff", specifier = ">=0.9.6" },
+    { name = "pyright", specifier = ">=1.1.396" },
+    { name = "ruff", specifier = ">=0.9.9" },
 ]
 doc = [
     { name = "mkdocs", specifier = ">=1.6.1" },
-    { name = "mkdocs-material", specifier = ">=9.6.3" },
+    { name = "mkdocs-material", specifier = ">=9.6.7" },
 ]
 test = [
-    { name = "coverage", extras = ["toml"], specifier = ">=7.6.10" },
+    { name = "coverage", extras = ["toml"], specifier = ">=7.6.12" },
     { name = "gitpython", specifier = ">=3.1.44" },
-    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-codspeed", specifier = ">=3.2.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
     { name = "pytest-emoji", specifier = ">=0.2.0" },

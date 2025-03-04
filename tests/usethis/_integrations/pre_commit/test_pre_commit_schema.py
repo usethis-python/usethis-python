@@ -29,7 +29,7 @@ class TestSchemaJSON:
             online_schema_json = requests.get(
                 "https://json.schemastore.org/pre-commit-config.json"
             ).text
-        except ConnectionError as err:
+        except requests.exceptions.ConnectionError as err:
             if os.getenv("CI"):
                 pytest.skip(
                     "Failed to fetch JSON schema (connection issues); skipping test"

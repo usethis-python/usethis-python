@@ -22,6 +22,7 @@ from usethis._integrations.pre_commit.hooks import (
 )
 from usethis._integrations.pyproject_toml.core import get_pyproject_value
 from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.python.version import get_python_version
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -193,6 +194,10 @@ class TestCoverage:
         def test_no_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
+            # Arrange
+            # Set python version
+            (tmp_path / ".python-version").write_text(get_python_version())
+
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),

@@ -44,19 +44,19 @@ def get_pypi_badge() -> Badge:
         # https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
         name = re.sub(r"[^a-zA-Z0-9._-]", "", Path.cwd().stem)
     return Badge(
-        markdown=f"[![PyPI Version](<https://img.shields.io/pypi/v/{name}.svg>)](<https://pypi.python.org/pypi/{name}>)"
+        markdown=f"[![PyPI Version](https://img.shields.io/pypi/v/{name}.svg)](<https://pypi.python.org/pypi/{name})"
     )
 
 
 def get_ruff_badge() -> Badge:
     return Badge(
-        markdown="[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)"
+        markdown="[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)"
     )
 
 
 def get_pre_commit_badge() -> Badge:
     return Badge(
-        markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)"
+        markdown="[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)"
     )
 
 

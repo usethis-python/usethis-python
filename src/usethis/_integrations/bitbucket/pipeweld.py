@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from functools import singledispatch
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from typing_extensions import assert_never
@@ -7,7 +10,6 @@ import usethis._pipeweld.containers
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
 from usethis._integrations.bitbucket.io_ import (
-    BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
 )
 from usethis._integrations.bitbucket.schema import (
@@ -18,14 +20,21 @@ from usethis._integrations.bitbucket.schema import (
     ParallelSteps,
     Pipeline,
     Pipelines,
-    PipelinesConfiguration,
     StageItem,
-    Step,
     StepItem,
 )
 from usethis._integrations.bitbucket.schema_utils import step1tostep
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
 from usethis._pipeweld.ops import Instruction
+
+if TYPE_CHECKING:
+    from usethis._integrations.bitbucket.io_ import (
+        BitbucketPipelinesYAMLDocument,
+    )
+    from usethis._integrations.bitbucket.schema import (
+        PipelinesConfiguration,
+        Step,
+    )
 
 
 def get_pipeweld_step(step: Step) -> str:

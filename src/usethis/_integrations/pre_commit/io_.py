@@ -1,14 +1,22 @@
-from collections.abc import Generator
+from __future__ import annotations
+
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
-from ruamel.yaml.comments import CommentedMap
 
 from usethis._console import tick_print
 from usethis._integrations.pre_commit.schema import JsonSchemaForPreCommitConfigYaml
-from usethis._integrations.yaml.io_ import YAMLLiteral, edit_yaml
+from usethis._integrations.yaml.io_ import edit_yaml
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from ruamel.yaml.comments import CommentedMap
+
+    from usethis._integrations.yaml.io_ import YAMLLiteral
 
 
 class PreCommitConfigYAMLConfigError(Exception):

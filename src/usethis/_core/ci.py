@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from usethis._ci import update_bitbucket_pytest_steps
 from usethis._console import box_print, info_print
 from usethis._integrations.bitbucket.config import (

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from packaging.specifiers import SpecifierSet
 from pydantic import TypeAdapter
 

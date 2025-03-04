@@ -1,9 +1,14 @@
-from pydantic import BaseModel
+from __future__ import annotations
 
-from usethis._integrations.pre_commit.schema import (
-    JsonSchemaForPreCommitConfigYaml,
-)
-from usethis._integrations.pydantic.dump import ModelRepresentation, fancy_model_dump
+from typing import TYPE_CHECKING
+
+from usethis._integrations.pydantic.dump import fancy_model_dump
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
+
+    from usethis._integrations.pre_commit.schema import JsonSchemaForPreCommitConfigYaml
+    from usethis._integrations.pydantic.dump import ModelRepresentation
 
 ORDER_BY_CLS: dict[type[BaseModel], list[str]] = {}
 

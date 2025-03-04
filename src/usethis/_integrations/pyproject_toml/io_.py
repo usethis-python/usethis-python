@@ -1,15 +1,21 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING
 
 from tomlkit.api import dumps, parse
 from tomlkit.exceptions import TOMLKitError
-from tomlkit.toml_document import TOMLDocument
-from typing_extensions import Self
 
 from usethis._integrations.pyproject_toml.errors import (
     PyprojectTOMLDecodeError,
     PyprojectTOMLNotFoundError,
 )
+
+if TYPE_CHECKING:
+    from typing import ClassVar
+
+    from tomlkit.toml_document import TOMLDocument
+    from typing_extensions import Self
 
 
 class UnexpectedPyprojectTOMLOpenError(Exception):

@@ -1,16 +1,21 @@
+from __future__ import annotations
+
 from functools import singledispatch
 from itertools import zip_longest
-from typing import TypeAlias
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, RootModel
 
-ModelLiteral: TypeAlias = bool | int | float | str
-ModelRepresentation: TypeAlias = (
-    ModelLiteral
-    | dict[str, "ModelRepresentation"]
-    | list["ModelRepresentation"]
-    | BaseModel
-)
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
+    ModelLiteral: TypeAlias = bool | int | float | str
+    ModelRepresentation: TypeAlias = (
+        ModelLiteral
+        | dict[str, "ModelRepresentation"]
+        | list["ModelRepresentation"]
+        | BaseModel
+    )
 
 
 class _FillValue:

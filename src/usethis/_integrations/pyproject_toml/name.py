@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pydantic import TypeAdapter, ValidationError
 
 from usethis._integrations.pyproject_toml.errors import (

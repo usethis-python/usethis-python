@@ -108,6 +108,7 @@ lint.select = [
 ]
 lint.ignore = [ "D417", "PLR2004", "SIM108" ]
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S101" ]
+lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
 lint.pydocstyle.convention = "google"
 
 [tool.codespell]

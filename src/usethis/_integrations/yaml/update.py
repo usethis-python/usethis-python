@@ -1,11 +1,16 @@
+from __future__ import annotations
+
 from difflib import SequenceMatcher
-from typing import Any
+from typing import TYPE_CHECKING
 
 from ruamel.yaml.comments import (
     CommentedMap,
 )
 
-from usethis._integrations.yaml.io_ import YAMLLiteral
+if TYPE_CHECKING:
+    from typing import Any
+
+    from usethis._integrations.yaml.io_ import YAMLLiteral
 
 
 def update_ruamel_yaml_map(

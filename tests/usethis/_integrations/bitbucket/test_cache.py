@@ -3,13 +3,12 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.bitbucket.cache import (
-    Cache,
     add_caches,
     get_cache_by_name,
     remove_cache,
 )
 from usethis._integrations.bitbucket.config import add_bitbucket_pipeline_config
-from usethis._integrations.bitbucket.schema import CachePath
+from usethis._integrations.bitbucket.schema import Cache, CachePath
 from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 

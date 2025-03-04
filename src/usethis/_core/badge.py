@@ -1,16 +1,19 @@
+from __future__ import annotations
+
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import typer
 from pydantic import BaseModel
-from typing_extensions import Self
 
 from usethis._console import err_print, tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path
-from usethis._integrations.pyproject_toml.errors import (
-    PyprojectTOMLError,
-)
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLError
 from usethis._integrations.pyproject_toml.name import get_name
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class Badge(BaseModel):

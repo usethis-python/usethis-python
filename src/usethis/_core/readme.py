@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from usethis._console import box_print, tick_print

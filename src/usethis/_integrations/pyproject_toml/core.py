@@ -1,4 +1,6 @@
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from usethis._integrations.pyproject_toml.errors import (
     PyprojectTOMLValueAlreadySetError,
@@ -17,6 +19,9 @@ from usethis._integrations.toml.errors import (
     TOMLValueAlreadySetError,
     TOMLValueMissingError,
 )
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 def get_pyproject_value(id_keys: list[str]) -> Any:

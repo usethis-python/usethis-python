@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from usethis._integrations.bitbucket.schema import Step, Step1
 
 

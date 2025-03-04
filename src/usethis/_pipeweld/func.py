@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import contextlib
 from functools import reduce, singledispatch, singledispatchmethod
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 from typing_extensions import assert_never
@@ -12,8 +15,11 @@ from usethis._pipeweld.containers import (
     parallel,
     series,
 )
-from usethis._pipeweld.ops import InsertParallel, InsertSuccessor, Instruction
+from usethis._pipeweld.ops import InsertParallel, InsertSuccessor
 from usethis._pipeweld.result import WeldResult
+
+if TYPE_CHECKING:
+    from usethis._pipeweld.ops import Instruction
 
 
 class Partition(BaseModel):

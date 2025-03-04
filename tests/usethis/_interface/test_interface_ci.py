@@ -5,10 +5,6 @@ from typer.testing import CliRunner
 
 from usethis._app import app as main_app
 from usethis._config import usethis_config
-from usethis._integrations.python.version import (
-    extract_major_version,
-    get_python_version,
-)
 from usethis._interface.ci import app
 from usethis._interface.tool import ALL_TOOL_COMMANDS
 from usethis._test import change_cwd
@@ -46,11 +42,13 @@ class TestBitbucket:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_maximal_config(self, tmp_path: Path):
-        if extract_major_version(get_python_version()) != 10:
-            pytest.skip("This test is only for Python 3.10")
-
         runner = CliRunner()
         with change_cwd(tmp_path):
+            # Pin the Python version
+            (tmp_path / ".python-version").write_text(
+                "3.13"  # Bump to latest version of Python
+            )
+
             # Arrange
             for tool_command in ALL_TOOL_COMMANDS:
                 if not usethis_config.offline:

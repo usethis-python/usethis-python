@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from packaging.requirements import Requirement
 from pydantic import BaseModel, TypeAdapter
 
@@ -7,9 +9,7 @@ from usethis._integrations.pyproject_toml.core import (
     extend_pyproject_list,
     get_pyproject_value,
 )
-from usethis._integrations.pyproject_toml.io_ import (
-    read_pyproject_toml,
-)
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 
@@ -27,7 +27,7 @@ class Dependency(BaseModel):
 
 
 def get_dep_groups() -> dict[str, list[Dependency]]:
-    pyproject = read_pyproject_toml()
+    pyproject = PyprojectTOMLManager().get()
     try:
         dep_groups_section = pyproject["dependency-groups"]
     except KeyError:
@@ -115,11 +115,12 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     for dep in to_add_deps:
         try:
             call_uv_subprocess(
-                ["add", "--group", group, "--quiet", str(dep)],
+                ["add", "--group", group, str(dep)],
                 change_toml=True,
             )
         except UVSubprocessFailedError as err:
             msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
+            msg += (Path.cwd() / "pyproject.toml").read_text()
             raise UVDepGroupError(msg) from None
 
 
@@ -149,9 +150,7 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
 
     for dep in _deps:
         try:
-            call_uv_subprocess(
-                ["remove", "--group", group, "--quiet", str(dep)], change_toml=True
-            )
+            call_uv_subprocess(["remove", "--group", group, str(dep)], change_toml=True)
         except UVSubprocessFailedError as err:
             msg = (
                 f"Failed to remove '{dep}' from the '{group}' dependency group:\n{err}"

@@ -6,7 +6,7 @@ from usethis._integrations.pyproject_toml.errors import (
     PyprojectTOMLNotFoundError,
     PyprojectTOMLProjectSectionError,
 )
-from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pyproject_toml.project import get_project_dict
 from usethis._test import change_cwd
 
@@ -15,7 +15,7 @@ class TestGetProjectDict:
     def test_no_file(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_project_dict()
@@ -27,7 +27,7 @@ class TestGetProjectDict:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
@@ -39,7 +39,7 @@ class TestGetProjectDict:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
@@ -51,7 +51,7 @@ class TestGetProjectDict:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
@@ -63,7 +63,7 @@ class TestGetProjectDict:
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             project = get_project_dict()
 
         # Assert

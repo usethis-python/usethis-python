@@ -29,6 +29,7 @@ from usethis._integrations.bitbucket.steps import (
     get_steps_in_pipeline_item,
     remove_bitbucket_step_from_default,
 )
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 
 
@@ -47,7 +48,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
@@ -85,7 +86,7 @@ pipelines: {}
         )
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
@@ -119,7 +120,7 @@ pipelines: {}
         )
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
@@ -159,7 +160,7 @@ pipelines:
             ),
         )
 
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_step_in_default(step)
 
             contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -193,7 +194,7 @@ pipelines:
             ),
         )
 
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Act
             add_bitbucket_step_in_default(step)
             add_bitbucket_step_in_default(other_step)
@@ -205,7 +206,7 @@ pipelines:
 
     def test_order(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # This step should be listed second
             add_bitbucket_step_in_default(
                 Step(
@@ -250,7 +251,7 @@ pipelines:
     def test_placeholder_removed(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_placeholder_step_in_default()
@@ -318,7 +319,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Farewell",
@@ -625,7 +626,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
@@ -827,7 +828,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
@@ -966,7 +967,7 @@ pipelines:
 
     def test_contents(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_placeholder_step_in_default()
 
         # Assert

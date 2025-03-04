@@ -4,10 +4,7 @@ from usethis._integrations.pyproject_toml.errors import (
     PyprojectTOMLValueAlreadySetError,
     PyprojectTOMLValueMissingError,
 )
-from usethis._integrations.pyproject_toml.io_ import (
-    read_pyproject_toml,
-    write_pyproject_toml,
-)
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.toml.core import (
     do_toml_id_keys_exist,
     extend_toml_list,
@@ -23,7 +20,7 @@ from usethis._integrations.toml.errors import (
 
 
 def get_pyproject_value(id_keys: list[str]) -> Any:
-    pyproject = read_pyproject_toml()
+    pyproject = PyprojectTOMLManager().get()
 
     return get_toml_value(toml_document=pyproject, id_keys=id_keys)
 
@@ -32,7 +29,7 @@ def set_pyproject_value(
     id_keys: list[str], value: Any, *, exists_ok: bool = False
 ) -> None:
     """Set a value in the pyproject.toml configuration file."""
-    pyproject = read_pyproject_toml()
+    pyproject = PyprojectTOMLManager().get()
 
     try:
         pyproject = set_toml_value(
@@ -41,7 +38,7 @@ def set_pyproject_value(
     except TOMLValueAlreadySetError as err:
         raise PyprojectTOMLValueAlreadySetError(err)
 
-    write_pyproject_toml(pyproject)
+    PyprojectTOMLManager().commit(pyproject)
 
 
 def remove_pyproject_value(
@@ -50,7 +47,7 @@ def remove_pyproject_value(
     missing_ok: bool = False,
 ) -> None:
     """Remove a value from the pyproject.toml configuration file."""
-    pyproject = read_pyproject_toml()
+    pyproject = PyprojectTOMLManager().get()
 
     try:
         pyproject = remove_toml_value(toml_document=pyproject, id_keys=id_keys)
@@ -59,7 +56,7 @@ def remove_pyproject_value(
             raise PyprojectTOMLValueMissingError(err)
         # Otherwise, no changes are needed so skip the write step.
         return
-    write_pyproject_toml(pyproject)
+    PyprojectTOMLManager().commit(pyproject)
 
 
 def extend_pyproject_list(
@@ -67,7 +64,7 @@ def extend_pyproject_list(
     values: list[Any],
 ) -> None:
     """Append values to a list in the pyproject.toml configuration file."""
-    pyproject = read_pyproject_toml()
+    pyproject = PyprojectTOMLManager().get()
 
     pyproject = extend_toml_list(
         toml_document=pyproject,
@@ -75,11 +72,11 @@ def extend_pyproject_list(
         values=values,
     )
 
-    write_pyproject_toml(pyproject)
+    PyprojectTOMLManager().commit(pyproject)
 
 
 def remove_from_pyproject_list(id_keys: list[str], values: list[str]) -> None:
-    pyproject = read_pyproject_toml()
+    pyproject = PyprojectTOMLManager().get()
 
     pyproject = remove_from_toml_list(
         toml_document=pyproject,
@@ -87,11 +84,11 @@ def remove_from_pyproject_list(id_keys: list[str], values: list[str]) -> None:
         values=values,
     )
 
-    write_pyproject_toml(pyproject)
+    PyprojectTOMLManager().commit(pyproject)
 
 
 def do_pyproject_id_keys_exist(id_keys: list[str]) -> bool:
-    pyproject = read_pyproject_toml()
+    pyproject = PyprojectTOMLManager().get()
 
     return do_toml_id_keys_exist(
         toml_document=pyproject,

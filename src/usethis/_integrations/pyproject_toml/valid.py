@@ -4,17 +4,14 @@ from tomlkit import TOMLDocument
 from tomlkit.items import Array, Table
 
 from usethis._console import tick_print
-from usethis._integrations.pyproject_toml.io_ import (
-    read_pyproject_toml,
-    write_pyproject_toml,
-)
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 
 
 def ensure_pyproject_validity():
     if not (Path.cwd() / "pyproject.toml").exists():
         return
 
-    toml_document = read_pyproject_toml()
+    toml_document = PyprojectTOMLManager().get()
 
     try:
         project = _ensure_project_section(toml_document)
@@ -24,7 +21,7 @@ def ensure_pyproject_validity():
         # Give up - the file is badly formatted. Let uv give a better error message.
         return
 
-    write_pyproject_toml(toml_document)
+    PyprojectTOMLManager().commit(toml_document)
 
 
 def _ensure_project_section(toml_document: TOMLDocument) -> Table:

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -22,9 +23,16 @@ class TestSchemaJSON:
             pytest.skip("Cannot fetch JSON schema when offline")
 
         local_schema_json = (Path(__file__).parent / "schema.json").read_text()
-        online_schema_json = requests.get(
-            "https://api.bitbucket.org/schemas/pipelines-configuration"
-        ).text
+        try:
+            online_schema_json = requests.get(
+                "https://api.bitbucket.org/schemas/pipelines-configuration"
+            ).text
+        except ConnectionError as err:
+            if os.getenv("CI"):
+                pytest.skip(
+                    "Failed to fetch JSON schema (connection issues); skipping test"
+                )
+            raise err
 
         # Compare the JSON
         # TIP: go into debug mode to copy-and-paste into updated schema.json

@@ -1,5 +1,7 @@
 """Utilities for Python version information."""
 
+from __future__ import annotations
+
 from sysconfig import get_python_version as _get_python_version
 
 

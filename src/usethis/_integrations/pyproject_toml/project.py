@@ -1,9 +1,16 @@
-from typing import Any
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from pydantic import TypeAdapter, ValidationError
 
-from usethis._integrations.pyproject_toml.errors import PyprojectTOMLProjectSectionError
+from usethis._integrations.pyproject_toml.errors import (
+    PyprojectTOMLProjectSectionError,
+)
 from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 def get_project_dict() -> dict[str, Any]:

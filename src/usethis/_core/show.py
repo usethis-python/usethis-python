@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typer
 
 from usethis._config import usethis_config

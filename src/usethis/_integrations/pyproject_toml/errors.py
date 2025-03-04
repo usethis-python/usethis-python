@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from usethis._integrations.toml.errors import (
     TOMLError,
     TOMLValueAlreadySetError,

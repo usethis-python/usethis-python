@@ -1,8 +1,13 @@
-from collections.abc import Generator
+from __future__ import annotations
+
 from contextlib import contextmanager
+from typing import TYPE_CHECKING
 
 import typer
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 class UsethisConfig(BaseModel):

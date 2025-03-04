@@ -1,10 +1,15 @@
-from pathlib import Path
+from __future__ import annotations
 
-from tomlkit import TOMLDocument
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from tomlkit.items import Array, Table
 
 from usethis._console import tick_print
 from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+
+if TYPE_CHECKING:
+    from tomlkit import TOMLDocument
 
 
 def ensure_pyproject_validity():

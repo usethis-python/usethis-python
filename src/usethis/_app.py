@@ -1,5 +1,7 @@
 """The Typer application for usethis."""
 
+from __future__ import annotations
+
 import typer
 
 import usethis._interface.badge

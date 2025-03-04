@@ -92,7 +92,7 @@ def add_badge(badge: Badge) -> None:
         path = _get_markdown_readme_path()
     except FileNotFoundError as err:
         err_print(err)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     prerequisites: list[Badge] = []
     for _b in get_badge_order():

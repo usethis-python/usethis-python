@@ -1,4 +1,6 @@
-from typing import TYPE_CHECKING, TypeAlias
+from __future__ import annotations
+
+from typing import TypeAlias
 
 from pydantic import BaseModel
 
@@ -16,5 +18,4 @@ class InsertSuccessor(BaseOperation):
     pass
 
 
-if TYPE_CHECKING:
-    Instruction: TypeAlias = InsertSuccessor | InsertParallel
+Instruction: TypeAlias = InsertSuccessor | InsertParallel

@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from usethis._integrations.yaml.io_ import CommentedMap, CommentedSeq, edit_yaml
+from ruamel.yaml.comments import CommentedMap, CommentedSeq
+
+from usethis._integrations.yaml.io_ import edit_yaml
 from usethis._integrations.yaml.update import lcs_list_update, update_ruamel_yaml_map
 
 

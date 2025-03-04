@@ -4,7 +4,9 @@ from typing import Any
 import pytest
 
 import usethis._integrations.uv.call
+from usethis._integrations.pyproject_toml.core import do_pyproject_id_keys_exist
 from usethis._integrations.pyproject_toml.errors import PyprojectTOMLInitError
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._test import change_cwd
@@ -116,3 +118,12 @@ class TestEnsurePyprojectTOML:
         # Act
         with change_cwd(tmp_path), pytest.raises(PyprojectTOMLInitError):
             ensure_pyproject_toml()
+
+    def test_build_backend(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            # Act
+            ensure_pyproject_toml()
+
+            # Assert
+            with PyprojectTOMLManager():
+                assert do_pyproject_id_keys_exist(id_keys=["build-system"])

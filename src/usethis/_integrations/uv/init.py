@@ -21,6 +21,8 @@ def ensure_pyproject_toml() -> None:
                 "--bare",
                 "--vcs=none",
                 "--author-from=auto",
+                "--build-backend",  # https://github.com/nathanjmcdougall/usethis-python/issues/347
+                "hatch",  # until https://github.com/astral-sh/uv/issues/3957
             ],
             change_toml=True,
         )

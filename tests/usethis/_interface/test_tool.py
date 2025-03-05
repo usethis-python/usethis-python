@@ -154,10 +154,10 @@ def test_several_tools_add_and_remove(tmp_path: Path):
     # The rationale for using src layout is to avoid writing
     # hatch config unnecessarily slowing down I/O
     tmp_path = tmp_path / "benchmark"  # To get a fixed project name
-    tmp_path.mkdir()
-    (tmp_path / "src").mkdir()
-    (tmp_path / "src" / "benchmark").mkdir()
-    (tmp_path / "src" / "benchmark" / "__init__.py").touch()
+    tmp_path.mkdir(exist_ok=True)
+    (tmp_path / "src").mkdir(exist_ok=True)
+    (tmp_path / "src" / "benchmark").mkdir(exist_ok=True)
+    (tmp_path / "src" / "benchmark" / "__init__.py").touch(exist_ok=True)
 
     # Act
     runner = CliRunner()

@@ -15,6 +15,7 @@ from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,
+    get_default_groups,
     get_dep_groups,
     get_deps_from_group,
     is_dep_in_any_group,
@@ -290,16 +291,18 @@ class TestAddDepsToGroup:
             usethis._integrations.uv.deps, "call_uv_subprocess", mock_call_uv_subprocess
         )
 
-        with (
-            change_cwd(uv_init_dir),
-            PyprojectTOMLManager(),
-            pytest.raises(
+        # Act, Assert
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with pytest.raises(
                 UVDepGroupError,
                 match="Failed to add 'pytest' to the 'test' dependency group",
-            ),
-        ):
-            # Act
-            add_deps_to_group([Dependency(name="pytest")], "test")
+            ):
+                add_deps_to_group([Dependency(name="pytest")], "test")
+
+            # Assert contd
+            # We want to check that registration hasn't taken place
+            default_groups = get_default_groups()
+            assert "test" not in default_groups
 
 
 class TestRemoveDepsFromGroup:
@@ -627,3 +630,45 @@ default-groups = ["test"]
             # Assert
             default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "docs", "dev"}
+
+    def test_dev_not_added_if_missing(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["test"]
+""")
+
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Act
+            register_default_group("test")
+
+            # Assert
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
+            assert set(default_groups) == {"test"}
+
+
+class TestGetDefaultGroups:
+    def test_empty_pyproject_toml(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").touch()
+
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Act
+            result = get_default_groups()
+
+            # Assert
+            assert result == []
+
+    def test_invalid_default_groups(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = "not a list"
+""")
+
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Act
+            result = get_default_groups()
+
+            # Assert
+            assert result == []

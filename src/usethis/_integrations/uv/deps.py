@@ -65,10 +65,31 @@ def register_default_group(group: str) -> None:
     This ensures that dependencies in the group will be installed by default.
     """
     if group == "dev":
+        # Note, if the "dev" group is missing already then then we'll respect the
+        # user's choice since they presumably would have added it themselves. So, we
+        # won't register in that case.
         return
 
-    ensure_dev_group_is_defined()
+    default_groups = get_default_groups()
 
+    # Choose which groups we want to add
+    groups_to_add = []
+    if group not in default_groups:
+        groups_to_add.append(group)
+        # Add "dev" if section is empty or if we're adding a new group and "dev" isn't present
+        if (not default_groups or group != "dev") and "dev" not in default_groups:
+            ensure_dev_group_is_defined()
+            groups_to_add.append("dev")
+
+    if groups_to_add:
+        add_default_groups(groups=groups_to_add)
+
+
+def add_default_groups(groups: list[str]) -> None:
+    extend_pyproject_list(["tool", "uv", "default-groups"], groups)
+
+
+def get_default_groups() -> list[str]:
     try:
         default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
         if not isinstance(default_groups, list):
@@ -76,15 +97,7 @@ def register_default_group(group: str) -> None:
     except KeyError:
         default_groups = []
 
-    groups_to_add = []
-    if group not in default_groups:
-        groups_to_add.append(group)
-        # Add "dev" if section is empty or if we're adding a new group and "dev" isn't present
-        if (not default_groups or group != "dev") and "dev" not in default_groups:
-            groups_to_add.append("dev")
-
-    if groups_to_add:
-        extend_pyproject_list(["tool", "uv", "default-groups"], groups_to_add)
+    return default_groups
 
 
 def ensure_dev_group_is_defined() -> None:
@@ -112,8 +125,6 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     if usethis_config.frozen:
         box_print(f"Install the dependenc{ies} {deps_str}.")
 
-    register_default_group(group)  # Register the group before adding dependencies
-
     for dep in to_add_deps:
         try:
             call_uv_subprocess(
@@ -124,6 +135,9 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
             msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
             msg += (Path.cwd() / "pyproject.toml").read_text()
             raise UVDepGroupError(msg) from None
+
+    # Register the group - don't do this before adding the deps in case that step fails
+    register_default_group(group)
 
 
 def is_dep_satisfied_in(dep: Dependency, *, in_: list[Dependency]) -> bool:

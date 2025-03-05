@@ -10,6 +10,7 @@ from usethis._integrations.pyproject_toml.project import get_project_dict
 
 
 def get_name() -> str:
+    """Get the project name from pyproject.toml."""
     project_dict = get_project_dict()
 
     try:

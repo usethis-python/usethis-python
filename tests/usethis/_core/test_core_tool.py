@@ -1704,7 +1704,7 @@ repos:
             (tmp_path / "requirements.txt").touch()
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 use_requirements_txt(remove=True)
 
             # Assert
@@ -1715,7 +1715,7 @@ repos:
             (tmp_path / "requirements.txt").mkdir()
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 use_requirements_txt(remove=True)
 
             # Assert
@@ -1733,7 +1733,7 @@ repos:
             )
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 use_requirements_txt(remove=True)
 
             # Assert

@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._integrations.pyproject_toml.io_ import (
     PyprojectTOMLManager,
-    PyprojectTOMLNotFoundError,
 )
 from usethis._integrations.ruff.rules import (
     deselect_ruff_rules,

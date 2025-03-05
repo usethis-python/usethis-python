@@ -11,9 +11,9 @@ from usethis._integrations.pyproject_toml.core import (
     remove_pyproject_value,
     set_pyproject_value,
 )
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._integrations.pyproject_toml.io_ import (
     PyprojectTOMLManager,
-    PyprojectTOMLNotFoundError,
 )
 from usethis._test import change_cwd
 

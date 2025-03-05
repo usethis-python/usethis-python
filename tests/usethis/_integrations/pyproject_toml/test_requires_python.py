@@ -3,10 +3,8 @@ from pathlib import Path
 import pytest
 from packaging.specifiers import SpecifierSet
 
-from usethis._integrations.pyproject_toml.io_ import (
-    PyprojectTOMLManager,
-    PyprojectTOMLNotFoundError,
-)
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLNotFoundError
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pyproject_toml.requires_python import get_requires_python
 from usethis._test import change_cwd
 

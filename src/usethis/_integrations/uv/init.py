@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from usethis._console import tick_print
+from usethis._integrations.pyproject_toml.core import set_pyproject_value
 from usethis._integrations.pyproject_toml.errors import PyprojectTOMLInitError
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv import call
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 
@@ -29,3 +31,11 @@ def ensure_pyproject_toml() -> None:
     except UVSubprocessFailedError as err:
         msg = f"Failed to create a pyproject.toml file:\n{err}"
         raise PyprojectTOMLInitError(msg) from None
+
+    if not ((Path.cwd() / "src").exists() and (Path.cwd() / "src").is_dir()):
+        # hatch needs to know where to find the package
+        set_pyproject_value(
+            id_keys=["tool", "hatch", "build", "targets", "wheel"],
+            value={"packages": ["."]},
+        )
+        PyprojectTOMLManager().write_file()

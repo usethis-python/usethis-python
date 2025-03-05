@@ -645,3 +645,30 @@ default-groups = ["test"]
             # Assert
             default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test"}
+
+
+class TestGetDefaultGroups:
+    def test_empty_pyproject_toml(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").touch()
+
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Act
+            result = get_default_groups()
+
+            # Assert
+            assert result == []
+
+    def test_invalid_default_groups(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = "not a list"
+""")
+
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Act
+            result = get_default_groups()
+
+            # Assert
+            assert result == []

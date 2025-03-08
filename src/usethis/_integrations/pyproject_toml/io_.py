@@ -3,6 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import tomlkit.api
+from tomlkit import TOMLDocument
+
 from usethis._integrations.pyproject_toml.errors import (
     PyprojectTOMLDecodeError,
     PyprojectTOMLNotFoundError,
@@ -43,6 +46,16 @@ class PyprojectTOMLManager(TOMLFileManager):
             raise UnexpectedPyprojectTOMLIOError(err) from None
         except TOMLDecodeError as err:
             raise PyprojectTOMLDecodeError(err) from None
+
+    def _dump_content(self) -> str:
+        if self._content is None:
+            msg = "Content is None, cannot dump."
+            raise ValueError(msg)
+
+        return tomlkit.api.dumps(self._content)
+
+    def _parse_content(self, content: str) -> TOMLDocument:
+        return tomlkit.api.parse(content)
 
     def _validate_lock(self) -> None:
         try:

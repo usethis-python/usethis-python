@@ -56,7 +56,7 @@ class TOMLFileManager(UsethisFileManager):
 
     @_content.setter
     def _content(self, value: TOMLDocument | None) -> None:
-        self._content_by_path[self._path] = value  # TODO find a way to use super
+        self._content_by_path[self._path] = value
 
     def _validate_lock(self) -> None:
         try:

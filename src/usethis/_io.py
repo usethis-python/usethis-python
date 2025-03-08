@@ -2,19 +2,17 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING
-
-from tomlkit.api import dumps, parse
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
     from types import TracebackType
-    from typing import Any, ClassVar, TypeAlias
+    from typing import Any, ClassVar
 
     from typing_extensions import Self
 
-    Document: TypeAlias = Any
+DocumentT = TypeVar("DocumentT")
 
 
 class UnexpectedFileOpenError(UsethisError):
@@ -25,9 +23,17 @@ class UnexpectedFileIOError(UsethisError, IOError):
     """Raised when an unexpected attempt is made to read or write the pyproject.toml file."""
 
 
-# TODO can we do variadic class for Document?
-class UsethisFileManager:  # TODO mention deferred write logic. What is this approach called?
-    _content_by_path: ClassVar[dict[Path, Document | None]] = {}
+class UsethisFileManager(Generic[DocumentT]):
+    """Manages file access with deferred writes using a context manager.
+
+    This class implements the Command Pattern, encapsulating file operations. It defers
+    writing changes to the file until the context is exited, ensuring that file I/O
+    operations are performed efficiently and only when necessary.
+    """
+
+    # https://github.com/python/mypy/issues/5144
+    # The Any in this expression should be identified with DocumentT
+    _content_by_path: ClassVar[dict[Path, Any | None]] = {}
 
     @property
     @abstractmethod
@@ -66,7 +72,8 @@ class UsethisFileManager:  # TODO mention deferred write logic. What is this app
         self.write_file()
         self.unlock()
 
-    def get(self) -> Document:
+    def get(self) -> DocumentT:
+        """Retrieve the document, reading from disk if necessary."""
         self._validate_lock()
 
         if self._content is None:
@@ -75,21 +82,23 @@ class UsethisFileManager:  # TODO mention deferred write logic. What is this app
 
         return self._content
 
-    def commit(self, document: Document) -> None:
+    def commit(self, document: DocumentT) -> None:
+        """Store the given document in memory for deferred writing."""
         self._validate_lock()
-
         self._content = document
 
     def write_file(self) -> None:
+        """Write the stored document to disk if there are changes."""
         self._validate_lock()
 
         if self._content is None:
             # No changes made, nothing to write.
             return
 
-        self._path.write_text(dumps(self._content))
+        self._path.write_text(self._dump_content())
 
     def read_file(self) -> None:
+        """Read the document from disk and store it in memory."""
         self._validate_lock()
 
         if self._content is not None:
@@ -99,17 +108,27 @@ class UsethisFileManager:  # TODO mention deferred write logic. What is this app
             )
             raise UnexpectedFileIOError(msg)
         try:
-            self._content = parse(self._path.read_text())
+            self._content = self._parse_content(self._path.read_text())
         except FileNotFoundError:
             msg = f"'{self.name}' not found in the current directory at '{self._path}'"
             raise FileNotFoundError(msg) from None
 
+    @abstractmethod
+    def _dump_content(self) -> str:
+        """Return the content of the document as a string."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def _parse_content(self, content: str) -> DocumentT:
+        """Parse the content of the document."""
+        raise NotImplementedError
+
     @property
-    def _content(self) -> Document | None:
-        return self._content_by_path[self._path]
+    def _content(self) -> DocumentT | None:
+        return self._content_by_path.get(self._path)
 
     @_content.setter
-    def _content(self, value: Document | None) -> None:
+    def _content(self, value: DocumentT | None) -> None:
         self._content_by_path[self._path] = value
 
     def _validate_lock(self) -> None:

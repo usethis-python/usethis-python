@@ -628,7 +628,7 @@ repos:
     hooks:
       - id: placeholder
         name: Placeholder - add your own hooks!
-        entry: uv run --frozen --offline python -c "print('hello world!')"
+        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
 """
             )
@@ -820,7 +820,7 @@ repos:
                     "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
-                    "☐ Run 'uv export --no-dev -o=requirements.txt' to write \n'requirements.txt'.\n"
+                    "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1611,7 +1611,7 @@ class TestRequirementsTxt:
                 "✔ Writing 'pyproject.toml'.\n"
                 "✔ Writing 'uv.lock'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write \n'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         def test_start_from_uv_init(
@@ -1632,7 +1632,7 @@ class TestRequirementsTxt:
             assert out == (
                 "✔ Writing 'uv.lock'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write \n'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         def test_start_from_uv_locked(
@@ -1655,7 +1655,7 @@ class TestRequirementsTxt:
             assert not err
             assert out == (
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write \n'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")

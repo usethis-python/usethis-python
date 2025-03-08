@@ -643,7 +643,7 @@ repos:
     hooks:
       - id: my hook
         name: Its mine
-        entry: uv run --frozen --offline python -c "print('hello world!')"
+        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
 """
             )
@@ -661,7 +661,7 @@ repos:
     hooks:
       - id: my hook
         name: Its mine
-        entry: uv run --isolated --frozen python -c "print('hello world!')"
+        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
 """
             )

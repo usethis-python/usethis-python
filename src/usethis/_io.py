@@ -9,6 +9,7 @@ from tomlkit.api import dumps, parse
 from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
+    from types import TracebackType
     from typing import Any, ClassVar, TypeAlias
 
     from typing_extensions import Self
@@ -52,7 +53,12 @@ class UsethisFileManager:  # TODO mention deferred write logic. What is this app
         self.lock()
         return self
 
-    def __exit__(self, exc_type: None, exc_value: None, traceback: None) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         if not self.is_locked():
             # This could happen if we decide to delete the file.
             return

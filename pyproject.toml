@@ -107,7 +107,7 @@ lint.select = [
   "TC",
   "UP",
 ]
-lint.ignore = [ "D417", "PLR2004", "SIM108" ]
+lint.ignore = [ "D417", "FIX002", "PLR2004", "SIM108" ] # TODO
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S101" ]
 lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
 lint.pydocstyle.convention = "google"
@@ -157,7 +157,7 @@ layers = [
   "_tool | _ci",
   "_integrations",
   "_console",
-  "_config",
+  "_config | _io",
   "errors | _subprocess",
   "_pipeweld",
 ]

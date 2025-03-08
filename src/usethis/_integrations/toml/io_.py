@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import tomlkit.api
 from tomlkit.exceptions import TOMLKitError
 
 from usethis._integrations.toml.errors import (
@@ -43,6 +44,16 @@ class TOMLFileManager(UsethisFileManager):
         except TOMLKitError as err:
             msg = f"Failed to decode '{self.name}': {err}"
             raise TOMLDecodeError(msg) from None
+
+    def _dump_content(self) -> str:
+        if self._content is None:
+            msg = "Content is None, cannot dump."
+            raise ValueError(msg)
+
+        return tomlkit.api.dumps(self._content)
+
+    def _parse_content(self, content: str) -> TOMLDocument:
+        return tomlkit.api.parse(content)
 
     def get(self) -> TOMLDocument:
         return super().get()

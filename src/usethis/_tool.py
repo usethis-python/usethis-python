@@ -365,7 +365,7 @@ class DeptryTool(Tool):
                     HookDefinition(
                         id="deptry",
                         name="deptry",
-                        entry=f"uv run --frozen deptry {_dir}",
+                        entry=f"uv run --frozen --offline deptry {_dir}",
                         language=Language("system"),
                         always_run=True,
                         pass_filenames=False,
@@ -557,7 +557,7 @@ class RequirementsTxtTool(Tool):
             box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
         else:
             box_print(
-                "Run 'uv export --no-dev --output-file=requirements.txt' to write 'requirements.txt'."
+                "Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'."
             )
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
@@ -570,7 +570,7 @@ class RequirementsTxtTool(Tool):
                         name="uv-export",
                         files="^uv\\.lock$",
                         pass_filenames=False,
-                        entry="uv export --frozen --no-dev --output-file=requirements.txt --quiet",
+                        entry="uv export --frozen --offline --quiet --no-dev -o=requirements.txt",
                         language=Language("system"),
                         require_serial=True,
                     )
@@ -602,7 +602,7 @@ class RuffTool(Tool):
                     HookDefinition(
                         id="ruff-format",
                         name="ruff-format",
-                        entry="uv run --frozen ruff format --force-exclude",
+                        entry="uv run --frozen --offline ruff format --force-exclude",
                         language=Language("system"),
                         types_or=FileTypes(
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]
@@ -618,7 +618,7 @@ class RuffTool(Tool):
                     HookDefinition(
                         id="ruff",
                         name="ruff",
-                        entry="uv run --frozen ruff check --fix --force-exclude",
+                        entry="uv run --frozen --offline ruff check --fix --force-exclude",
                         language=Language("system"),
                         types_or=FileTypes(
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]

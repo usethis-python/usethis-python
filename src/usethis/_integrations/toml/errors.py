@@ -27,9 +27,5 @@ class UnexpectedTOMLOpenError(TOMLError):
     """Raised when the TOML file is unexpectedly opened."""
 
 
-class UnexpectedTOMLCloseError(TOMLError):
-    """Raised when the TOML file is unexpectedly closed."""
-
-
 class UnexpectedTOMLIOError(TOMLError):
     """Raised when an unexpected attempt is made to read or write the TOML file."""

@@ -1,11 +1,18 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from usethis._console import tick_print
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.io_ import (
-    BitbucketPipelinesYAMLDocument,
     edit_bitbucket_pipelines_yaml,
 )
-from usethis._integrations.bitbucket.schema import Cache, Definitions
+from usethis._integrations.bitbucket.schema import Definitions
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
+
+if TYPE_CHECKING:
+    from usethis._integrations.bitbucket.io_ import BitbucketPipelinesYAMLDocument
+    from usethis._integrations.bitbucket.schema import Cache
 
 
 def get_cache_by_name() -> dict[str, Cache]:

@@ -1,16 +1,19 @@
+from __future__ import annotations
+
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import typer
 from pydantic import BaseModel
-from typing_extensions import Self
 
 from usethis._console import err_print, tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path
-from usethis._integrations.pyproject_toml.errors import (
-    PyprojectTOMLError,
-)
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLError
 from usethis._integrations.pyproject_toml.name import get_name
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class Badge(BaseModel):
@@ -30,14 +33,6 @@ class Badge(BaseModel):
         return self.name == other.name
 
 
-RUFF_BADGE = Badge(
-    markdown="[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)"
-)
-PRE_COMMIT_BADGE = Badge(
-    markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)"
-)
-
-
 def get_pypi_badge() -> Badge:
     try:
         name = get_name()
@@ -49,40 +44,28 @@ def get_pypi_badge() -> Badge:
         # https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
         name = re.sub(r"[^a-zA-Z0-9._-]", "", Path.cwd().stem)
     return Badge(
-        markdown=f"[![PyPI Version](<https://img.shields.io/pypi/v/{name}.svg>)](<https://pypi.python.org/pypi/{name}>)"
+        markdown=f"[![PyPI Version](https://img.shields.io/pypi/v/{name}.svg)](<https://pypi.python.org/pypi/{name})"
+    )
+
+
+def get_ruff_badge() -> Badge:
+    return Badge(
+        markdown="[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)"
+    )
+
+
+def get_pre_commit_badge() -> Badge:
+    return Badge(
+        markdown="[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)"
     )
 
 
 def get_badge_order() -> list[Badge]:
     return [
         get_pypi_badge(),
-        RUFF_BADGE,
-        PRE_COMMIT_BADGE,
+        get_ruff_badge(),
+        get_pre_commit_badge(),
     ]
-
-
-def add_pypi_badge():
-    add_badge(get_pypi_badge())
-
-
-def add_ruff_badge():
-    add_badge(RUFF_BADGE)
-
-
-def add_pre_commit_badge():
-    add_badge(PRE_COMMIT_BADGE)
-
-
-def remove_pypi_badge():
-    remove_badge(get_pypi_badge())
-
-
-def remove_ruff_badge():
-    remove_badge(RUFF_BADGE)
-
-
-def remove_pre_commit_badge():
-    remove_badge(PRE_COMMIT_BADGE)
 
 
 def add_badge(badge: Badge) -> None:
@@ -92,7 +75,7 @@ def add_badge(badge: Badge) -> None:
         path = _get_markdown_readme_path()
     except FileNotFoundError as err:
         err_print(err)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     prerequisites: list[Badge] = []
     for _b in get_badge_order():

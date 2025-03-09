@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import requests
 
 from usethis._integrations.github.errors import GitHubTagError, NoGitHubTagsFoundError
@@ -26,7 +28,7 @@ def get_github_latest_tag(owner: str, repo: str) -> str:
         response.raise_for_status()  # Raise an error for HTTP issues
     except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError) as err:
         msg = f"Failed to fetch tags from GitHub API: {err}"
-        raise GitHubTagError(msg)
+        raise GitHubTagError(msg) from None
 
     tags = response.json()
 

@@ -3,10 +3,8 @@ from pathlib import Path
 import pytest
 from packaging.specifiers import SpecifierSet
 
-from usethis._integrations.pyproject_toml.io_ import (
-    PyprojectTOMLNotFoundError,
-    pyproject_toml_io_manager,
-)
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLNotFoundError
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pyproject_toml.requires_python import get_requires_python
 from usethis._test import change_cwd
 
@@ -22,7 +20,7 @@ requires-python = ">=3.7"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             requires_python = get_requires_python()
 
         # Assert
@@ -31,7 +29,7 @@ requires-python = ">=3.7"
     def test_no_pyproject(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_requires_python()

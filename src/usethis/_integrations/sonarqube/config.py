@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from pathlib import Path
 
@@ -34,7 +36,7 @@ def get_sonar_project_properties() -> str:
         )
     except (FileNotFoundError, KeyError):
         msg = "Could not find SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
-        raise MissingProjectKeyError(msg)
+        raise MissingProjectKeyError(msg) from None
     _validate_project_key(project_key)
 
     try:
@@ -61,7 +63,7 @@ def get_sonar_project_properties() -> str:
         )
     except (FileNotFoundError, KeyError):
         msg = "XML coverage report file path not found at 'tool.coverage.xml.output' in 'pyproject.toml'."
-        raise CoverageReportConfigNotFoundError(msg)
+        raise CoverageReportConfigNotFoundError(msg) from None
 
     # No file, so construct the contents
     source_dir_str = get_source_dir_str()

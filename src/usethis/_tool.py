@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
@@ -363,7 +365,7 @@ class DeptryTool(Tool):
                     HookDefinition(
                         id="deptry",
                         name="deptry",
-                        entry=f"uv run --frozen deptry {_dir}",
+                        entry=f"uv run --frozen --offline deptry {_dir}",
                         language=Language("system"),
                         always_run=True,
                         pass_filenames=False,
@@ -520,13 +522,24 @@ class PytestTool(Tool):
         return [
             PyprojectConfig(
                 id_keys=["tool", "pytest"],
+                # Much of what follows is recommended here (sp-repo-review):
+                # https://learn.scientific-python.org/development/guides/pytest/#configuring-pytest
                 value={
                     "ini_options": {
                         "testpaths": ["tests"],
                         "addopts": [
                             "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
+                            "-ra",  # summary report of all results (sp-repo-review)
+                            "--showlocals",  # print locals in tracebacks (sp-repo-review)
+                            "--strict-markers",  # fail on unknown markers (sp-repo-review)
+                            "--strict-config",  # fail on unknown config (sp-repo-review)
                         ],
-                        "filterwarnings": ["error"],
+                        "filterwarnings": [
+                            "error"
+                        ],  # fail on warnings (sp-repo-review)
+                        "xfail_strict": True,  # fail on tests marked xfail (sp-repo-review)
+                        "log_cli_level": "INFO",  # include all >=INFO level log messages (sp-repo-review)
+                        "minversion": "7",  # minimum pytest version (sp-repo-review)
                     }
                 },
             ),
@@ -555,7 +568,7 @@ class RequirementsTxtTool(Tool):
             box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
         else:
             box_print(
-                "Run 'uv export --no-dev --output-file=requirements.txt' to write 'requirements.txt'."
+                "Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'."
             )
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
@@ -568,7 +581,7 @@ class RequirementsTxtTool(Tool):
                         name="uv-export",
                         files="^uv\\.lock$",
                         pass_filenames=False,
-                        entry="uv export --frozen --no-dev --output-file=requirements.txt --quiet",
+                        entry="uv export --frozen --offline --quiet --no-dev -o=requirements.txt",
                         language=Language("system"),
                         require_serial=True,
                     )
@@ -600,7 +613,7 @@ class RuffTool(Tool):
                     HookDefinition(
                         id="ruff-format",
                         name="ruff-format",
-                        entry="uv run --frozen ruff format --force-exclude",
+                        entry="uv run --frozen --offline ruff format --force-exclude",
                         language=Language("system"),
                         types_or=FileTypes(
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]
@@ -616,7 +629,7 @@ class RuffTool(Tool):
                     HookDefinition(
                         id="ruff",
                         name="ruff",
-                        entry="uv run --frozen ruff check --fix --force-exclude",
+                        entry="uv run --frozen --offline ruff check --fix --force-exclude",
                         language=Language("system"),
                         types_or=FileTypes(
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]

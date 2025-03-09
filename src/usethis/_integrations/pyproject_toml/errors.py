@@ -1,7 +1,12 @@
+from __future__ import annotations
+
 from usethis._integrations.toml.errors import (
     TOMLError,
+    TOMLNotFoundError,
     TOMLValueAlreadySetError,
     TOMLValueMissingError,
+    UnexpectedTOMLIOError,
+    UnexpectedTOMLOpenError,
 )
 
 
@@ -9,7 +14,7 @@ class PyprojectTOMLError(TOMLError):
     """Raised when aspects of 'pyproject.toml' are missing, invalid, or unexpected."""
 
 
-class PyprojectTOMLNotFoundError(PyprojectTOMLError, FileNotFoundError):
+class PyprojectTOMLNotFoundError(PyprojectTOMLError, TOMLNotFoundError):
     """Raised when a pyproject.toml file is not found."""
 
 
@@ -19,6 +24,14 @@ class PyprojectTOMLInitError(PyprojectTOMLError):
 
 class PyprojectTOMLDecodeError(PyprojectTOMLError):
     """Raised when a pyproject.toml file cannot be decoded."""
+
+
+class UnexpectedPyprojectTOMLOpenError(PyprojectTOMLError, UnexpectedTOMLOpenError):
+    """Raised when the pyproject.toml file is unexpectedly opened."""
+
+
+class UnexpectedPyprojectTOMLIOError(PyprojectTOMLError, UnexpectedTOMLIOError):
+    """Raised when an unexpected attempt is made to read or write the pyproject.toml file."""
 
 
 class PyprojectTOMLProjectNameError(PyprojectTOMLError):

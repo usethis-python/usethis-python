@@ -9,7 +9,7 @@ from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_nam
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.pyproject_toml.config import PyprojectConfig
 from usethis._integrations.pyproject_toml.core import set_pyproject_value
-from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
 from usethis._tool import ALL_TOOLS, DeptryTool, PyprojectTOMLTool, Tool
@@ -188,7 +188,7 @@ class TestTool:
         def test_some_deps(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 add_deps_to_group(
                     [
                         Dependency(name="black"),
@@ -217,7 +217,7 @@ class TestTool:
         def test_dir(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 Path("mytool-config.yaml").mkdir()
 
                 # Act
@@ -229,7 +229,7 @@ class TestTool:
         def test_pyproject(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 set_pyproject_value(["tool", "my_tool", "key"], "value")
 
                 # Act
@@ -243,7 +243,7 @@ class TestTool:
             tool = MyTool()
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 result = tool.is_used()
 
             # Assert
@@ -253,7 +253,7 @@ class TestTool:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 add_deps_to_group(
                     [
                         Dependency(name="black"),
@@ -271,7 +271,7 @@ class TestTool:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 add_deps_to_group(
                     [
                         Dependency(name="pytest"),
@@ -289,7 +289,7 @@ class TestTool:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 add_deps_to_group(
                     [
                         Dependency(name="isort"),
@@ -666,7 +666,7 @@ repos:
             (tmp_path / "pyproject.toml").write_text("")
 
             # Act
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 ThisTool().add_pyproject_configs()
 
             # Assert
@@ -715,7 +715,7 @@ name = "Modular Design"
             )
 
             # Act
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 ThisTool().add_pyproject_configs()
 
             # Assert
@@ -795,7 +795,7 @@ ignore_missing = ["pytest"]
 """)
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             tool = DeptryTool()
             tool.remove_pyproject_configs()
 

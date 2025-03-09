@@ -11,9 +11,9 @@ from usethis._integrations.pyproject_toml.core import (
     remove_pyproject_value,
     set_pyproject_value,
 )
+from usethis._integrations.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._integrations.pyproject_toml.io_ import (
-    PyprojectTOMLNotFoundError,
-    pyproject_toml_io_manager,
+    PyprojectTOMLManager,
 )
 from usethis._test import change_cwd
 
@@ -22,7 +22,7 @@ class TestGetPyprojectValue:
     def test_pyproject_does_not_exist(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_pyproject_value(["tool", "usethis", "key"])
@@ -39,7 +39,7 @@ key = "value"
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(KeyError),
         ):
             get_pyproject_value(["tool", "usethis", "key2"])
@@ -54,7 +54,7 @@ key = "value"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             value = get_pyproject_value(["tool", "usethis", "key"])
 
         # Assert
@@ -67,7 +67,7 @@ class TestSetPyprojectValue:
         (tmp_path / "pyproject.toml").touch()
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             set_pyproject_value(["tool", "usethis", "key"], "value")
 
         # Assert
@@ -89,7 +89,7 @@ key = "value1"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             set_pyproject_value(["tool", "usethis", "key"], "value2", exists_ok=True)
 
         # Assert
@@ -113,7 +113,7 @@ key = "value1"
         # Act
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(
                 PyprojectTOMLValueAlreadySetError,
                 match=re.escape(
@@ -134,7 +134,7 @@ key2 = "value2"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             set_pyproject_value(["tool", "usethis", "key1"], "value3", exists_ok=True)
 
         # Assert
@@ -156,7 +156,7 @@ class TestRemovePyprojectValue:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(PyprojectTOMLValueMissingError),
         ):
             remove_pyproject_value(["tool", "usethis", "key"])
@@ -164,7 +164,7 @@ class TestRemovePyprojectValue:
     def test_missing_pyproject(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(PyprojectTOMLNotFoundError),
         ):
             remove_pyproject_value(["tool", "usethis", "key"])
@@ -180,7 +180,7 @@ key = "value"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             remove_pyproject_value(["tool", "usethis", "key"])
 
         # Assert
@@ -198,7 +198,7 @@ key2 = "value2"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             remove_pyproject_value(["tool", "usethis", "key1"])
 
         # Assert
@@ -215,7 +215,7 @@ key2 = "value2"
         (tmp_path / "pyproject.toml").touch()
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             remove_pyproject_value(["tool", "usethis", "key"], missing_ok=True)
 
         # Assert
@@ -228,7 +228,7 @@ class TestExtendPyprojectList:
         (tmp_path / "pyproject.toml").touch()
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             extend_pyproject_list(["tool", "usethis", "key"], ["value"])
 
         # Assert
@@ -250,7 +250,7 @@ key = ["value1"]
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             extend_pyproject_list(["tool", "usethis", "key"], ["value2"])
 
         # Assert

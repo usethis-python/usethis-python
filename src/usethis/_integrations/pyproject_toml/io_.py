@@ -1,98 +1,51 @@
-from pathlib import Path
+from __future__ import annotations
 
-from tomlkit.api import dumps, parse
-from tomlkit.exceptions import TOMLKitError
-from tomlkit.toml_document import TOMLDocument
-from typing_extensions import Self
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from usethis._integrations.pyproject_toml.errors import (
     PyprojectTOMLDecodeError,
     PyprojectTOMLNotFoundError,
+    UnexpectedPyprojectTOMLIOError,
+    UnexpectedPyprojectTOMLOpenError,
 )
+from usethis._integrations.toml.errors import (
+    TOMLDecodeError,
+    TOMLNotFoundError,
+    UnexpectedTOMLIOError,
+    UnexpectedTOMLOpenError,
+)
+from usethis._integrations.toml.io_ import TOMLFileManager
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
-def read_pyproject_toml() -> TOMLDocument:
-    return pyproject_toml_io_manager._opener.read()
+class PyprojectTOMLManager(TOMLFileManager):
+    """Manages the pyproject.toml file."""
 
+    @property
+    def relative_path(self) -> Path:
+        return Path("pyproject.toml")
 
-def write_pyproject_toml(toml_document: TOMLDocument) -> None:
-    return pyproject_toml_io_manager._opener.write(toml_document)
-
-
-class UnexpectedPyprojectTOMLReadError(Exception):
-    """Raised when the pyproject.toml is read unexpectedly."""
-
-
-class PyprojectTOMLOpener:
-    def __init__(self) -> None:
-        self.path = Path.cwd() / "pyproject.toml"
-        self.content = TOMLDocument()
-        self.open = False
-        self._set = False
-
-    def read(self) -> TOMLDocument:
-        if not self._set:
-            msg = """The pyproject.toml opener has not been set yet."""
-            raise UnexpectedPyprojectTOMLOpenError(msg)
-
-        if not self.open:
-            self.read_file()
-            self.open = True
-
-        return self.content
-
-    def write(self, toml_document: TOMLDocument) -> None:
-        if not self._set:
-            msg = """The pyproject.toml opener has not been set yet."""
-            raise UnexpectedPyprojectTOMLOpenError(msg)
-
-        self.content = toml_document
-
-    def write_file(self) -> None:
-        self.path.write_text(dumps(self.content))
+    def __enter__(self) -> Self:
+        try:
+            return super().__enter__()
+        except UnexpectedTOMLOpenError as err:
+            raise UnexpectedPyprojectTOMLOpenError(err) from None
 
     def read_file(self) -> None:
         try:
-            self.content = parse(self.path.read_text())
-        except FileNotFoundError:
-            msg = "'pyproject.toml' not found in the current directory."
-            raise PyprojectTOMLNotFoundError(msg)
-        except TOMLKitError as err:
-            msg = f"Failed to decode 'pyproject.toml': {err}"
-            raise PyprojectTOMLDecodeError(msg) from None
+            super().read_file()
+        except TOMLNotFoundError as err:
+            raise PyprojectTOMLNotFoundError(err) from None
+        except UnexpectedTOMLIOError as err:
+            raise UnexpectedPyprojectTOMLIOError(err) from None
+        except TOMLDecodeError as err:
+            raise PyprojectTOMLDecodeError(err) from None
 
-    def __enter__(self) -> Self:
-        self._set = True
-        return self
-
-    def __exit__(self, exc_type: None, exc_value: None, traceback: None) -> None:
-        self.write_file()
-        self._set = False
-
-
-class UnexpectedPyprojectTOMLOpenError(Exception):
-    """Raised when the pyproject.toml opener is accessed unexpectedly."""
-
-
-class PyprojectTOMLIOManager:
-    def __init__(self) -> None:
-        self._opener = PyprojectTOMLOpener()
-        self._set = False
-
-    @property
-    def opener(self) -> PyprojectTOMLOpener:
-        if not self._opener._set:
-            self._set = False
-
-        if not self._set:
-            msg = """The pyproject.toml opener has not been set to open yet."""
-            raise UnexpectedPyprojectTOMLOpenError(msg)
-
-        return self._opener
-
-    def open(self) -> PyprojectTOMLOpener:
-        self._opener = PyprojectTOMLOpener()
-        return self._opener
-
-
-pyproject_toml_io_manager = PyprojectTOMLIOManager()
+    def _validate_lock(self) -> None:
+        try:
+            super()._validate_lock()
+        except UnexpectedTOMLIOError as err:
+            raise UnexpectedPyprojectTOMLIOError(err) from None

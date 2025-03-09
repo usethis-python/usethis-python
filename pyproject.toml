@@ -48,17 +48,17 @@ scripts.usethis = "usethis.__main__:app"
 
 [dependency-groups]
 dev = [
-  "datamodel-code-generator[http]>=0.26.5",
+  "datamodel-code-generator[http]>=0.28.2",
   "deptry>=0.23.0",
   "import-linter>=2.2",
   "pre-commit>=4.1.0",
-  "pyright>=1.1.394",
-  "ruff>=0.9.6",
+  "pyright>=1.1.396",
+  "ruff>=0.9.9",
 ]
 test = [
-  "coverage[toml]>=7.6.10",
+  "coverage[toml]>=7.6.12",
   "gitpython>=3.1.44",
-  "pytest>=8.3.4",
+  "pytest>=8.3.5",
   "pytest-codspeed>=3.2.0",
   "pytest-cov>=6.0.0",
   "pytest-emoji>=0.2.0",
@@ -66,7 +66,7 @@ test = [
 ]
 doc = [
   "mkdocs>=1.6.1",
-  "mkdocs-material>=9.6.3",
+  "mkdocs-material>=9.6.7",
 ]
 
 [tool.hatch.version]
@@ -86,6 +86,7 @@ line-length = 88
 
 lint.select = [
   "A",
+  "B",
   "C4",
   "D",
   "E4",
@@ -103,10 +104,12 @@ lint.select = [
   "PT",
   "RUF",
   "SIM",
+  "TC",
   "UP",
 ]
 lint.ignore = [ "D417", "PLR2004", "SIM108" ]
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S101" ]
+lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
 lint.pydocstyle.convention = "google"
 
 [tool.codespell]
@@ -119,8 +122,15 @@ keep_full_version = true
 testpaths = [ "tests" ]
 addopts = [
   "--import-mode=importlib",
+  "-ra",
+  "--showlocals",
+  "--strict-config",
+  "--strict-markers",
 ]
 filterwarnings = [ "error" ]
+xfail_strict = true
+log_cli_level = "INFO"
+minversion = "7"
 
 [tool.coverage.run]
 source = [ "src" ]
@@ -154,7 +164,7 @@ layers = [
   "_tool | _ci",
   "_integrations",
   "_console",
-  "_config",
+  "_config | _io",
   "errors | _subprocess",
   "_pipeweld",
 ]

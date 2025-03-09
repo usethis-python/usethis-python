@@ -1,9 +1,7 @@
 from pathlib import Path
 
 from usethis._console import tick_print
-from usethis._integrations.bitbucket.steps import (
-    add_placeholder_step_in_default,
-)
+from usethis._integrations.bitbucket.steps import add_placeholder_step_in_default
 
 
 def add_bitbucket_pipeline_config(report_placeholder: bool = True) -> None:

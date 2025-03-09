@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 
 from usethis._integrations.pyproject_toml.requires_python import (

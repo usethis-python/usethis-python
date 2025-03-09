@@ -1,59 +1,62 @@
-from collections.abc import Generator
+from __future__ import annotations
+
 from contextlib import contextmanager
 from dataclasses import dataclass
-from pathlib import Path
-from types import NoneType
-from typing import TypeAlias
+from typing import TYPE_CHECKING
 
 import ruamel.yaml
-from ruamel.yaml.comments import (
-    CommentedMap,
-    CommentedOrderedMap,
-    CommentedSeq,
-    CommentedSet,
-    TaggedScalar,
-)
 from ruamel.yaml.error import YAMLError
-from ruamel.yaml.scalarbool import ScalarBoolean
-from ruamel.yaml.scalarfloat import ScalarFloat
-from ruamel.yaml.scalarint import (
-    BinaryInt,
-    HexCapsInt,
-    HexInt,
-    OctalInt,
-    ScalarInt,
-)
-from ruamel.yaml.scalarstring import (
-    FoldedScalarString,
-    LiteralScalarString,
-)
-from ruamel.yaml.timestamp import TimeStamp
 from ruamel.yaml.util import load_yaml_guess_indent
 
 from usethis._integrations.yaml.errors import InvalidYAMLError
 
-YAMLLiteral: TypeAlias = (
-    NoneType
-    | bool
-    | float
-    | int
-    | str
-    | BinaryInt
-    | FoldedScalarString
-    | HexInt
-    | HexCapsInt
-    | LiteralScalarString
-    | OctalInt
-    | ScalarBoolean
-    | ScalarFloat
-    | ScalarInt
-    | TaggedScalar
-    | TimeStamp
-    | CommentedSeq
-    | CommentedSet
-    | CommentedOrderedMap
-    | CommentedMap
-)
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from pathlib import Path
+    from types import NoneType
+    from typing import TypeAlias
+
+    from ruamel.yaml.comments import (
+        CommentedMap,
+        CommentedOrderedMap,
+        CommentedSeq,
+        CommentedSet,
+        TaggedScalar,
+    )
+    from ruamel.yaml.scalarbool import ScalarBoolean
+    from ruamel.yaml.scalarfloat import ScalarFloat
+    from ruamel.yaml.scalarint import (
+        BinaryInt,
+        HexCapsInt,
+        HexInt,
+        OctalInt,
+        ScalarInt,
+    )
+    from ruamel.yaml.scalarstring import FoldedScalarString, LiteralScalarString
+    from ruamel.yaml.timestamp import TimeStamp
+
+    YAMLLiteral: TypeAlias = (
+        NoneType
+        | bool
+        | float
+        | int
+        | str
+        | BinaryInt
+        | FoldedScalarString
+        | HexInt
+        | HexCapsInt
+        | LiteralScalarString
+        | OctalInt
+        | ScalarBoolean
+        | ScalarFloat
+        | ScalarInt
+        | TaggedScalar
+        | TimeStamp
+        | CommentedSeq
+        | CommentedSet
+        | CommentedOrderedMap
+        | CommentedMap
+    )
 
 
 @dataclass

@@ -21,7 +21,8 @@ from usethis._integrations.pre_commit.hooks import (
     get_hook_names,
 )
 from usethis._integrations.pyproject_toml.core import get_pyproject_value
-from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.python.version import get_python_version
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -53,14 +54,14 @@ class TestCodespell:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 add_deps_to_group([Dependency(name="codespell")], "dev")
 
             content = (uv_init_dir / "pyproject.toml").read_text()
             capfd.readouterr()
 
             # Act
-            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_codespell()
 
             # Assert
@@ -81,13 +82,12 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         def test_bitbucket_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            # Arrange
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                # Arrange
                 use_ci_bitbucket()
-            capfd.readouterr()
+                capfd.readouterr()
 
-            # Act
-            with change_cwd(uv_init_dir):
+                # Act
                 use_codespell()
 
             # Assert
@@ -107,13 +107,12 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         def test_pre_commit_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            # Arrange
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                # Arrange
                 use_pre_commit()
-            capfd.readouterr()
+                capfd.readouterr()
 
-            # Act
-            with change_cwd(uv_init_dir):
+                # Act
                 use_codespell()
 
                 # Assert
@@ -137,7 +136,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         def test_runs(self, uv_env_dir: Path):
             # An env is needed in which to run codespell
 
-            with change_cwd(uv_env_dir):
+            with change_cwd(uv_env_dir), PyprojectTOMLManager():
                 # Arrange
                 use_codespell()
 
@@ -158,7 +157,7 @@ foo = "bar"
             )
 
             # Act
-            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_codespell(remove=True)
 
             # Assert
@@ -174,7 +173,7 @@ class TestCoverage:
         def test_from_nothing(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Act
                 use_coverage()
 
@@ -195,7 +194,11 @@ class TestCoverage:
         def test_no_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            # Arrange
+            # Set python version
+            (tmp_path / ".python-version").write_text(get_python_version())
+
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 # Act
                 use_coverage()
 
@@ -216,7 +219,7 @@ class TestCoverage:
         def test_pytest_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pytest()
@@ -239,7 +242,7 @@ class TestCoverage:
 
     class TestRemove:
         def test_unused(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Act
                 use_coverage(remove=True)
 
@@ -250,7 +253,7 @@ class TestCoverage:
                 assert not err
 
         def test_roundtrip(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_coverage()
@@ -270,7 +273,7 @@ class TestCoverage:
         def test_pytest_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pytest()
@@ -294,7 +297,7 @@ class TestDeptry:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_dependency_added(self, uv_init_dir: Path):
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_deptry()
 
                 # Assert
@@ -308,7 +311,7 @@ class TestDeptry:
             capfd: pytest.CaptureFixture[str],
         ):
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_deptry()
 
             # Assert
@@ -326,7 +329,7 @@ class TestDeptry:
             f.write_text("import broken_dependency")
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_deptry()
 
             # Assert
@@ -341,7 +344,11 @@ class TestDeptry:
             f = uv_init_dir / "good.py"
             f.write_text("import sys")
 
-            with change_cwd(uv_init_dir), usethis_config.set(frozen=False):
+            with (
+                change_cwd(uv_init_dir),
+                PyprojectTOMLManager(),
+                usethis_config.set(frozen=False),
+            ):
                 # Act
                 use_deptry()
 
@@ -353,7 +360,7 @@ class TestDeptry:
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_deptry()
                 use_pre_commit()
 
@@ -375,7 +382,7 @@ repos:
       - id: deptry
         name: deptry
         always_run: true
-        entry: uv run --frozen deptry src
+        entry: uv run --frozen --offline deptry src
         language: system
         pass_filenames: false
 """
@@ -397,7 +404,7 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_bitbucket_integration_no_pre_commit(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_ci_bitbucket()
 
@@ -410,7 +417,7 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_bitbucket_integration_with_pre_commit(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_ci_bitbucket()
                 use_pre_commit()
@@ -425,7 +432,7 @@ repos:
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_dep(self, uv_init_dir: Path):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 add_deps_to_group([Dependency(name="deptry")], "dev")
 
@@ -437,7 +444,7 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_bitbucket_integration(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_ci_bitbucket()
                 use_deptry()
@@ -458,7 +465,7 @@ ignore_missing = ["pytest"]
 """)
 
             # Act
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 use_deptry(remove=True)
 
             # Assert
@@ -470,7 +477,7 @@ ignore_missing = ["pytest"]
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_deptry()
                 use_deptry(remove=True)
 
@@ -491,7 +498,7 @@ dev = []
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             """Basically this checks that the placeholders gets removed."""
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_pre_commit()
                 capfd.readouterr()
@@ -517,7 +524,7 @@ repos:
       - id: deptry
         name: deptry
         always_run: true
-        entry: uv run --frozen deptry src
+        entry: uv run --frozen --offline deptry src
         language: system
         pass_filenames: false
 """
@@ -547,7 +554,7 @@ repos:
             )
 
             # Act
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 use_deptry()
 
             # Assert
@@ -567,15 +574,18 @@ repos:
         def test_remove(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            # Arrange
-            with change_cwd(uv_init_repo_dir), usethis_config.set(quiet=True):
+            with (
+                change_cwd(uv_init_repo_dir),
+                PyprojectTOMLManager(),
+                usethis_config.set(quiet=True),
+            ):
+                # Arrange
                 use_deptry()
                 use_pre_commit()
                 content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
                 assert "deptry" in content
 
-            # Act
-            with change_cwd(uv_init_repo_dir):
+                # Act
                 use_deptry(remove=True)
 
             # Assert
@@ -588,7 +598,7 @@ class TestPreCommit:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_fresh(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_pre_commit()
 
                 # Assert
@@ -618,7 +628,7 @@ repos:
     hooks:
       - id: placeholder
         name: Placeholder - add your own hooks!
-        entry: uv run --frozen python -c "print('hello world!')"
+        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
 """
             )
@@ -633,13 +643,13 @@ repos:
     hooks:
       - id: my hook
         name: Its mine
-        entry: uv run --frozen python -c "print('hello world!')"
+        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
 """
             )
 
             # Act
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 use_pre_commit()
 
             # Assert
@@ -651,7 +661,7 @@ repos:
     hooks:
       - id: my hook
         name: Its mine
-        entry: uv run --frozen python -c "print('hello world!')"
+        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
 """
             )
@@ -660,8 +670,11 @@ repos:
         def test_bad_commit(self, uv_env_dir: Path):
             # This needs a venv so that we can actually run pre-commit via git
 
+            # Arrange
+            (uv_env_dir / ".gitignore").write_text(".venv/\n")
+
             # Act
-            with change_cwd(uv_env_dir):
+            with change_cwd(uv_env_dir), PyprojectTOMLManager():
                 use_pre_commit()
             subprocess.run(["git", "add", "."], cwd=uv_env_dir, check=True)
             result = subprocess.run(
@@ -687,7 +700,7 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_requirements_txt_used(self, uv_init_dir: Path):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(frozen=False):
                     use_requirements_txt()
@@ -700,7 +713,7 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pyproject_fmt_used(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_pyproject_fmt()
 
@@ -717,7 +730,7 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_codespell_used(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_codespell()
 
@@ -739,7 +752,7 @@ repos:
             (uv_init_repo_dir / ".pre-commit-config.yaml").touch()
 
             # Act
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 use_pre_commit(remove=True)
 
             # Assert
@@ -747,7 +760,7 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_dep(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 add_deps_to_group([Dependency(name="pre-commit")], "dev")
 
@@ -769,7 +782,7 @@ repos:
 """
             )
 
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange contd....
                 # Add dependency
                 add_deps_to_group([Dependency(name="pre-commit")], "dev")
@@ -791,7 +804,7 @@ repos:
         def test_requirements_txt_used(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 use_pre_commit()
                 with usethis_config.set(frozen=False):
@@ -807,14 +820,14 @@ repos:
                     "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
-                    "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
+                    "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pyproject_fmt_used(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pre_commit()
@@ -838,7 +851,7 @@ repos:
         def test_codepsell_used(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pre_commit()
@@ -869,7 +882,7 @@ image: atlassian/default-image:3
 """
             )
 
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Act
                 use_pre_commit()
 
@@ -879,7 +892,7 @@ image: atlassian/default-image:3
 
         def test_remove(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_pre_commit()
             capfd.readouterr()
             (uv_init_dir / "bitbucket-pipelines.yml").write_text(
@@ -895,7 +908,7 @@ pipelines:
             )
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_pre_commit(remove=True)
 
             # Assert
@@ -936,7 +949,7 @@ pipelines:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove_subsumed_tools(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_ci_bitbucket()
                 # other tools moved to pre-commit, which should be removed
@@ -954,7 +967,7 @@ pipelines:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_add_unsubsumed_tools(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_ci_bitbucket()
                 use_pre_commit()
@@ -978,12 +991,16 @@ class TestPyprojectFmt:
             @pytest.mark.usefixtures("_vary_network_conn")
             def test_added(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
                 # Arrange
-                with change_cwd(uv_init_dir), usethis_config.set(quiet=True):
+                with (
+                    change_cwd(uv_init_dir),
+                    PyprojectTOMLManager(),
+                    usethis_config.set(quiet=True),
+                ):
                     add_deps_to_group([Dependency(name="pyproject-fmt")], "dev")
                 content = (uv_init_dir / "pyproject.toml").read_text()
 
                 # Act
-                with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
+                with change_cwd(uv_init_dir), PyprojectTOMLManager():
                     use_pyproject_fmt()
 
                 # Assert
@@ -1004,7 +1021,7 @@ keep_full_version = true
         class TestDeps:
             @pytest.mark.usefixtures("_vary_network_conn")
             def test_added(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-                with change_cwd(uv_init_dir):
+                with change_cwd(uv_init_dir), PyprojectTOMLManager():
                     # Act
                     use_pyproject_fmt()
 
@@ -1023,7 +1040,7 @@ keep_full_version = true
         def test_bitbucket_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 use_ci_bitbucket()
                 capfd.readouterr()
@@ -1056,7 +1073,7 @@ foo = "bar"
             )
 
             # Act
-            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_pyproject_fmt(remove=True)
 
             # Assert
@@ -1066,7 +1083,7 @@ foo = "bar"
         def test_bitbucket_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 use_ci_bitbucket()
                 use_pyproject_fmt()
@@ -1081,7 +1098,7 @@ foo = "bar"
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_pre_commit()
 
@@ -1096,7 +1113,7 @@ foo = "bar"
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_after(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_pyproject_fmt()
 
@@ -1113,7 +1130,7 @@ foo = "bar"
         def test_remove_with_precommit(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pyproject_fmt()
@@ -1138,7 +1155,7 @@ foo = "bar"
         def test_remove_without_precommit(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pyproject_fmt()
@@ -1159,7 +1176,7 @@ class TestPytest:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_no_pyproject(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 # Act
                 use_pytest()
 
@@ -1184,9 +1201,22 @@ class TestPytest:
                     "☐ Run 'pytest' to run the tests.\n"
                 )
 
+            assert (tmp_path / "pyproject.toml").exists()
+            content = (tmp_path / "pyproject.toml").read_text()
+            assert content.__contains__(
+                """\
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib", "-ra", "--showlocals", "--strict-markers", "--strict-config"]
+filterwarnings = ["error"]
+xfail_strict = true
+log_cli_level = "INFO"
+minversion = "7\""""
+            )
+
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_bitbucket_integration(self, uv_init_dir: Path):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 use_ci_bitbucket()
 
@@ -1200,7 +1230,7 @@ class TestPytest:
         def test_coverage_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_coverage()
@@ -1224,7 +1254,7 @@ class TestPytest:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pytest_installed(self, tmp_path: Path):
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 # Act
                 use_pytest()
 
@@ -1234,7 +1264,7 @@ class TestPytest:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_registers_test_group(self, tmp_path: Path):
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 # Act
                 use_pytest()
 
@@ -1254,7 +1284,7 @@ select = ["E", "PT"]
                 )
 
                 # Act
-                with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
+                with change_cwd(uv_init_dir), PyprojectTOMLManager():
                     use_pytest(remove=True)
 
                 # Assert
@@ -1277,7 +1307,7 @@ select = ["PT"]
                 )
 
                 # Act
-                with change_cwd(uv_init_dir):
+                with change_cwd(uv_init_dir), PyprojectTOMLManager():
                     use_pytest(remove=True)
 
                 # Assert
@@ -1297,7 +1327,7 @@ select = ["PT"]
                 )
 
                 # Act
-                with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
+                with change_cwd(uv_init_dir), PyprojectTOMLManager():
                     use_pytest(remove=True)
 
                 # Assert
@@ -1309,7 +1339,7 @@ select = ["PT"]
 
         class TestDependencies:
             def test_removed(self, uv_init_dir: Path):
-                with change_cwd(uv_init_dir):
+                with change_cwd(uv_init_dir), PyprojectTOMLManager():
                     # Arrange
                     add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -1322,7 +1352,11 @@ select = ["PT"]
         class TestBitbucketIntegration:
             def test_remove(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
                 # Arrange
-                with change_cwd(uv_init_dir), usethis_config.set(quiet=True):
+                with (
+                    change_cwd(uv_init_dir),
+                    PyprojectTOMLManager(),
+                    usethis_config.set(quiet=True),
+                ):
                     use_pytest()
 
                 (uv_init_dir / "bitbucket-pipelines.yml").write_text(
@@ -1338,7 +1372,7 @@ pipelines:
                 )
 
                 # Act
-                with change_cwd(uv_init_dir):
+                with change_cwd(uv_init_dir), PyprojectTOMLManager():
                     use_pytest(remove=True)
 
                 # Assert
@@ -1380,7 +1414,7 @@ pipelines:
         def test_coverage_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_coverage()
@@ -1404,7 +1438,7 @@ class TestRuff:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_dependency_added(self, uv_init_dir: Path):
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_ruff()
 
                 # Assert
@@ -1414,7 +1448,7 @@ class TestRuff:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_ruff()
 
             # Assert
@@ -1434,7 +1468,7 @@ class TestRuff:
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 use_ruff()
                 use_pre_commit()
 
@@ -1448,7 +1482,7 @@ class TestRuff:
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 use_ruff()
 
             # Assert
@@ -1469,7 +1503,7 @@ select = ["A", "B", "C"]
             )
 
             # Act
-            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_ruff(remove=True)
 
             # Assert
@@ -1481,7 +1515,7 @@ select = ["A", "B", "C"]
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_ruff(remove=True)
 
             # Assert
@@ -1497,7 +1531,7 @@ select = ["A", "B", "C"]
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
             # Act
-            with change_cwd(uv_init_dir), pyproject_toml_io_manager.open():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 use_ruff()
                 use_ruff(remove=True)
 
@@ -1515,7 +1549,7 @@ dev = []
     class TestPrecommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_ruff()
 
@@ -1530,7 +1564,7 @@ dev = []
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_after(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 use_pre_commit()
 
@@ -1551,7 +1585,7 @@ dev = []
         def test_remove(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_repo_dir):
+            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_ruff()
@@ -1579,7 +1613,7 @@ class TestRequirementsTxt:
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 use_requirements_txt()
 
             # Assert
@@ -1590,14 +1624,18 @@ class TestRequirementsTxt:
                 "✔ Writing 'pyproject.toml'.\n"
                 "✔ Writing 'uv.lock'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         def test_start_from_uv_init(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(uv_init_dir), usethis_config.set(frozen=False):
+            with (
+                change_cwd(uv_init_dir),
+                PyprojectTOMLManager(),
+                usethis_config.set(frozen=False),
+            ):
                 use_requirements_txt()
 
             # Assert
@@ -1607,13 +1645,17 @@ class TestRequirementsTxt:
             assert out == (
                 "✔ Writing 'uv.lock'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         def test_start_from_uv_locked(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir), usethis_config.set(frozen=False):
+            with (
+                change_cwd(uv_init_dir),
+                PyprojectTOMLManager(),
+                usethis_config.set(frozen=False),
+            ):
                 # Arrange
                 call_uv_subprocess(["lock"], change_toml=False)
 
@@ -1626,13 +1668,18 @@ class TestRequirementsTxt:
             assert not err
             assert out == (
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev --output-file=requirements.txt' to write \n'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_repo_dir), usethis_config.set(frozen=False):
+            with (
+                change_cwd(uv_init_repo_dir),
+                PyprojectTOMLManager(),
+                usethis_config.set(frozen=False),
+            ):
                 # Arrange
                 use_pre_commit()
                 capfd.readouterr()
@@ -1651,7 +1698,7 @@ repos:
       - id: uv-export
         name: uv-export
         files: ^uv\\.lock$
-        entry: uv export --frozen --no-dev --output-file=requirements.txt --quiet
+        entry: uv export --frozen --offline --quiet --no-dev -o=requirements.txt
         language: system
         pass_filenames: false
         require_serial: true
@@ -1671,7 +1718,7 @@ repos:
             (tmp_path / "requirements.txt").touch()
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 use_requirements_txt(remove=True)
 
             # Assert
@@ -1682,7 +1729,7 @@ repos:
             (tmp_path / "requirements.txt").mkdir()
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 use_requirements_txt(remove=True)
 
             # Assert
@@ -1700,7 +1747,7 @@ repos:
             )
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 use_requirements_txt(remove=True)
 
             # Assert
@@ -1709,7 +1756,7 @@ repos:
             assert "uv-export" not in content
 
         def test_roundtrip(self, tmp_path: Path):
-            with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 # Arrange
                 use_requirements_txt()
 

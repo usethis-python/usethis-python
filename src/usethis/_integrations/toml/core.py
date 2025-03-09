@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import copy
-from typing import Any
+from typing import TYPE_CHECKING
 
 import mergedeep
 from pydantic import TypeAdapter
@@ -9,6 +11,9 @@ from usethis._integrations.toml.errors import (
     TOMLValueAlreadySetError,
     TOMLValueMissingError,
 )
+
+if TYPE_CHECKING:
+    from typing import Any
 
 
 def get_toml_value(
@@ -95,7 +100,7 @@ def remove_toml_value(
             d = d[key]
     except KeyError:
         msg = f"Configuration value '{'.'.join(id_keys)}' is missing."
-        raise TOMLValueMissingError(msg)
+        raise TOMLValueMissingError(msg) from None
 
     # Remove the configuration.
     d = toml_document

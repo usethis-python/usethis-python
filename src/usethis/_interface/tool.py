@@ -15,7 +15,7 @@ from usethis._core.tool import (
     use_requirements_txt,
     use_ruff,
 )
-from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis.errors import UsethisError
 
 app = typer.Typer(help="Add and configure development tools, e.g. linters.")
@@ -39,7 +39,7 @@ def codespell(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        pyproject_toml_io_manager.open(),
+        PyprojectTOMLManager(),
     ):
         _run_tool(use_codespell, remove=remove)
 
@@ -51,7 +51,10 @@ def coverage(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    with usethis_config.set(offline=offline, quiet=quiet, frozen=frozen):
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        PyprojectTOMLManager(),
+    ):
         _run_tool(use_coverage, remove=remove)
 
 
@@ -67,7 +70,7 @@ def deptry(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        pyproject_toml_io_manager.open(),
+        PyprojectTOMLManager(),
     ):
         _run_tool(use_deptry, remove=remove)
 
@@ -84,7 +87,7 @@ def pre_commit(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        pyproject_toml_io_manager.open(),
+        PyprojectTOMLManager(),
     ):
         _run_tool(use_pre_commit, remove=remove)
 
@@ -101,7 +104,7 @@ def pyproject_fmt(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        pyproject_toml_io_manager.open(),
+        PyprojectTOMLManager(),
     ):
         _run_tool(use_pyproject_fmt, remove=remove)
 
@@ -117,7 +120,7 @@ def pyproject_toml(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        pyproject_toml_io_manager.open(),
+        PyprojectTOMLManager(),
     ):
         _run_tool(use_pyproject_toml, remove=remove)
 
@@ -131,7 +134,7 @@ def pytest(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        pyproject_toml_io_manager.open(),
+        PyprojectTOMLManager(),
     ):
         _run_tool(use_pytest, remove=remove)
 
@@ -148,7 +151,7 @@ def requirements_txt(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        pyproject_toml_io_manager.open(),
+        PyprojectTOMLManager(),
     ):
         _run_tool(use_requirements_txt, remove=remove)
 
@@ -164,7 +167,7 @@ def ruff(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        pyproject_toml_io_manager.open(),
+        PyprojectTOMLManager(),
     ):
         _run_tool(use_ruff, remove=remove)
 
@@ -178,7 +181,7 @@ def _run_tool(caller: UseToolFunc, *, remove: bool):
         caller(remove=remove)
     except UsethisError as err:
         err_print(err)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
 
 ALL_TOOL_COMMANDS: list[str] = [

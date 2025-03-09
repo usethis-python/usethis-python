@@ -26,6 +26,16 @@ class TestCodespell:
         assert result.exit_code == 0, result.output
 
 
+class TestCoverage:
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_cli(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            if not usethis_config.offline:
+                call_subprocess(["usethis", "tool", "coverage"])
+            else:
+                call_subprocess(["usethis", "tool", "coverage", "--offline"])
+
+
 class TestDeptry:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_cli(self, uv_init_dir: Path):
@@ -140,6 +150,16 @@ class TestPytest:
 
 @pytest.mark.benchmark
 def test_several_tools_add_and_remove(tmp_path: Path):
+    # Arrange
+    # The rationale for using src layout is to avoid writing
+    # hatch config unnecessarily slowing down I/O
+    tmp_path = tmp_path / "benchmark"  # To get a fixed project name
+    tmp_path.mkdir(exist_ok=True)
+    (tmp_path / "src").mkdir(exist_ok=True)
+    (tmp_path / "src" / "benchmark").mkdir(exist_ok=True)
+    (tmp_path / "src" / "benchmark" / "__init__.py").touch(exist_ok=True)
+
+    # Act
     runner = CliRunner()
     with change_cwd(tmp_path):
         runner.invoke(app, ["pytest"])

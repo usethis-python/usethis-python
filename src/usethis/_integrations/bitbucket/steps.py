@@ -1,21 +1,20 @@
+from __future__ import annotations
+
 from functools import singledispatch
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from ruamel.yaml.anchor import Anchor
 from ruamel.yaml.comments import CommentedSeq
 from ruamel.yaml.scalarstring import LiteralScalarString
 from typing_extensions import assert_never
 
 import usethis._pipeweld.func
 from usethis._console import box_print, tick_print
-from usethis._integrations.bitbucket.anchor import ScriptItemAnchor, ScriptItemName
+from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.bitbucket.cache import _add_caches_via_doc, remove_cache
 from usethis._integrations.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.bitbucket.errors import UnexpectedImportPipelineError
-from usethis._integrations.bitbucket.io_ import (
-    BitbucketPipelinesYAMLDocument,
-    edit_bitbucket_pipelines_yaml,
-)
+from usethis._integrations.bitbucket.io_ import edit_bitbucket_pipelines_yaml
 from usethis._integrations.bitbucket.pipeweld import (
     apply_pipeweld_instruction_via_doc,
     get_pipeweld_pipeline_from_default,
@@ -29,7 +28,6 @@ from usethis._integrations.bitbucket.schema import (
     ParallelExpanded,
     ParallelItem,
     ParallelSteps,
-    Pipeline,
     Script,
     StageItem,
     Step,
@@ -38,6 +36,13 @@ from usethis._integrations.bitbucket.schema import (
 from usethis._integrations.bitbucket.schema_utils import step1tostep
 from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._integrations.yaml.update import update_ruamel_yaml_map
+
+if TYPE_CHECKING:
+    from ruamel.yaml.anchor import Anchor
+
+    from usethis._integrations.bitbucket.anchor import ScriptItemName
+    from usethis._integrations.bitbucket.io_ import BitbucketPipelinesYAMLDocument
+    from usethis._integrations.bitbucket.schema import Pipeline
 
 _CACHE_LOOKUP = {
     "uv": CachePath("~/.cache/uv"),

@@ -5,10 +5,6 @@ from typer.testing import CliRunner
 
 from usethis._app import app as main_app
 from usethis._config import usethis_config
-from usethis._integrations.python.version import (
-    extract_major_version,
-    get_python_version,
-)
 from usethis._interface.ci import app
 from usethis._interface.tool import ALL_TOOL_COMMANDS
 from usethis._test import change_cwd
@@ -46,11 +42,13 @@ class TestBitbucket:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_maximal_config(self, tmp_path: Path):
-        if extract_major_version(get_python_version()) != 10:
-            pytest.skip("This test is only for Python 3.10")
-
         runner = CliRunner()
         with change_cwd(tmp_path):
+            # Pin the Python version
+            (tmp_path / ".python-version").write_text(
+                "3.13"  # Bump to latest version of Python
+            )
+
             # Arrange
             for tool_command in ALL_TOOL_COMMANDS:
                 if not usethis_config.offline:
@@ -67,3 +65,26 @@ class TestBitbucket:
             Path(__file__).parent / "maximal_bitbucket_pipelines.yml"
         ).read_text()
         assert (tmp_path / "bitbucket-pipelines.yml").read_text() == expected_yml
+
+    def test_incorrect_indentation(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "bitbucket-pipelines.yml").write_text("""\
+- path: / 
+    backend: 
+      serviceName: <service_name> 
+      servicePort: <port> 
+""")
+        # Use something like pre-commit so we try and modify the file
+        (tmp_path / ".pre-commit-config.yaml").touch()
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app)
+
+        # Assert
+        assert result.exit_code == 1, result.output
+        assert "mapping values are not allowed here" in result.output
+        assert (
+            "Hint: You may have incorrect indentation the YAML file." in result.output
+        )

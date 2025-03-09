@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from usethis._integrations.bitbucket.schema import (
     PipelinesConfiguration,
@@ -6,7 +8,12 @@ from usethis._integrations.bitbucket.schema import (
     Step2,
     StepBase,
 )
-from usethis._integrations.pydantic.dump import ModelRepresentation, fancy_model_dump
+from usethis._integrations.pydantic.dump import fancy_model_dump
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
+
+    from usethis._integrations.pydantic.dump import ModelRepresentation
 
 ORDER_BY_CLS: dict[type[BaseModel], list[str]] = {
     PipelinesConfiguration: ["image", "clone", "definitions"],

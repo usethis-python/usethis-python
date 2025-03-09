@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.pyproject_toml.core import set_pyproject_value
-from usethis._integrations.pyproject_toml.io_ import pyproject_toml_io_manager
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import get_python_version
 from usethis._integrations.sonarqube.config import (
     _validate_project_key,
@@ -39,7 +39,7 @@ class TestGetSonarProjectProperties:
         # If the file does not exist, we should construct based on information in
         # the repo.
 
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             set_pyproject_value(
                 id_keys=["tool", "usethis", "sonarqube", "project-key"],
@@ -71,7 +71,7 @@ sonar.verbose=false
     def test_different_python_version(self, tmp_path: Path):
         # If the python version is different, it should be updated.
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             assert get_python_version()
             python_pin("3.10")
@@ -103,7 +103,7 @@ sonar.verbose=false
         )
 
     def test_no_pin_python(self, tmp_path: Path):
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             ensure_pyproject_toml()
             set_pyproject_value(
@@ -133,7 +133,7 @@ sonar.verbose=false
         )
 
     def test_different_project_key(self, tmp_path: Path):
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()
@@ -164,7 +164,7 @@ sonar.verbose=false
         )
 
     def test_set_verbose_true(self, tmp_path: Path):
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()
@@ -201,13 +201,13 @@ sonar.verbose=true
     def test_missing_pyproject_toml_raises(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
             pytest.raises(MissingProjectKeyError),
         ):
             get_sonar_project_properties()
 
     def test_missing_project_key_section_raises(self, tmp_path: Path):
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             ensure_pyproject_toml()
 
@@ -216,7 +216,7 @@ sonar.verbose=true
                 get_sonar_project_properties()
 
     def test_patch_version_ignored(self, tmp_path: Path):
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             python_pin("3.12.1")
             ensure_pyproject_toml()
@@ -247,7 +247,7 @@ sonar.verbose=false
         )
 
     def test_exclusions(self, tmp_path: Path):
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()
@@ -286,7 +286,7 @@ sonar.exclusions=**/Dockerfile, src/notebooks/**/*
         )
 
     def test_different_coverage_file_location(self, tmp_path: Path):
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()
@@ -317,7 +317,7 @@ sonar.verbose=false
         )
 
     def test_missing_coverage_file_location_error(self, tmp_path: Path):
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             python_pin("3.12")
             ensure_pyproject_toml()

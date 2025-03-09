@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from usethis._ci import (
     is_bitbucket_used,
@@ -16,7 +19,10 @@ from usethis._integrations.pre_commit.core import (
     remove_pre_commit_config,
     uninstall_pre_commit_hooks,
 )
-from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_names
+from usethis._integrations.pre_commit.hooks import (
+    add_placeholder_hook,
+    get_hook_names,
+)
 from usethis._integrations.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.ruff.rules import (
@@ -37,8 +43,10 @@ from usethis._tool import (
     PytestTool,
     RequirementsTxtTool,
     RuffTool,
-    Tool,
 )
+
+if TYPE_CHECKING:
+    from usethis._tool import Tool
 
 
 def use_codespell(*, remove: bool = False) -> None:

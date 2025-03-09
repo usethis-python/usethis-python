@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typer
 
 from usethis._config import usethis_config
@@ -21,4 +23,4 @@ def show_sonarqube_config() -> None:
         print(get_sonar_project_properties())
     except UsethisError as err:
         err_print(err)
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None

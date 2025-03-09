@@ -7,8 +7,8 @@ from usethis._ci import (
     remove_bitbucket_pytest_steps,
     update_bitbucket_pytest_steps,
 )
-from usethis._integrations.bitbucket.config import add_bitbucket_pipeline_config
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.ci.bitbucket.config import add_bitbucket_pipeline_config
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import (
     extract_major_version,
     get_python_version,

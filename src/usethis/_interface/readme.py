@@ -9,7 +9,7 @@ from usethis._core.badge import (
     get_ruff_badge,
 )
 from usethis._core.readme import add_readme
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool import PreCommitTool, RuffTool
 
 

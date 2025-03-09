@@ -3,9 +3,9 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from usethis._integrations.bitbucket.anchor import ScriptItemAnchor
-from usethis._integrations.bitbucket.schema import Script, Step
-from usethis._integrations.bitbucket.steps import (
+from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
+from usethis._integrations.ci.bitbucket.schema import Script, Step
+from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_step_in_default,
     get_steps_in_default,
     remove_bitbucket_step_from_default,

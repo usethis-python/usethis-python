@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from usethis._console import box_print, tick_print
-from usethis._integrations.pyproject_toml.errors import PyprojectTOMLError
-from usethis._integrations.pyproject_toml.name import get_description, get_name
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLError
+from usethis._integrations.file.pyproject_toml.name import get_description, get_name
 from usethis._integrations.uv.init import ensure_pyproject_toml
 
 

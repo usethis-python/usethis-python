@@ -1201,6 +1201,19 @@ class TestPytest:
                     "☐ Run 'pytest' to run the tests.\n"
                 )
 
+            assert (tmp_path / "pyproject.toml").exists()
+            content = (tmp_path / "pyproject.toml").read_text()
+            assert content.__contains__(
+                """\
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib", "-ra", "--showlocals", "--strict-markers", "--strict-config"]
+filterwarnings = ["error"]
+xfail_strict = true
+log_cli_level = "INFO"
+minversion = "7\""""
+            )
+
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_bitbucket_integration(self, uv_init_dir: Path):
             with change_cwd(uv_init_dir), PyprojectTOMLManager():

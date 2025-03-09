@@ -522,13 +522,24 @@ class PytestTool(Tool):
         return [
             PyprojectConfig(
                 id_keys=["tool", "pytest"],
+                # Much of what follows is recommended here (sp-repo-review):
+                # https://learn.scientific-python.org/development/guides/pytest/#configuring-pytest
                 value={
                     "ini_options": {
                         "testpaths": ["tests"],
                         "addopts": [
                             "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
+                            "-ra",  # summary report of all results (sp-repo-review)
+                            "--showlocals",  # print locals in tracebacks (sp-repo-review)
+                            "--strict-markers",  # fail on unknown markers (sp-repo-review)
+                            "--strict-config",  # fail on unknown config (sp-repo-review)
                         ],
-                        "filterwarnings": ["error"],
+                        "filterwarnings": [
+                            "error"
+                        ],  # fail on warnings (sp-repo-review)
+                        "xfail_strict": True,  # fail on tests marked xfail (sp-repo-review)
+                        "log_cli_level": "INFO",  # include all >=INFO level log messages (sp-repo-review)
+                        "minversion": "7",  # minimum pytest version (sp-repo-review)
                     }
                 },
             ),

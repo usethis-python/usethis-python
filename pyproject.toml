@@ -163,7 +163,7 @@ layers = [
   "_core",
   "_tool | _ci",
   "_integrations",
-  "_console",
+  "_console | _config_file",
   "_config | _io",
   "errors | _subprocess",
   "_pipeweld",

@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
+from typing_extensions import assert_never
+
+from usethis._config_file import ConfigSpec
 from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -32,6 +35,7 @@ from usethis._integrations.pyproject_toml.core import (
     remove_pyproject_value,
     set_pyproject_value,
 )
+from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pyproject_toml.remove import remove_pyproject_toml
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -39,6 +43,9 @@ from usethis._integrations.uv.deps import (
     is_dep_in_any_group,
     remove_deps_from_group,
 )
+
+if TYPE_CHECKING:
+    from usethis._io import UsethisFileManager
 
 
 class Tool(Protocol):
@@ -76,6 +83,13 @@ class Tool(Protocol):
                            whether they are relevant to the current project.
         """
         return []
+
+    def get_config_spec(self) -> ConfigSpec:
+        """Get the configuration specification for this tool.
+
+        This includes the file managers and resolution methodology.
+        """
+        raise NotImplementedError
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         """Get the pre-commit repository configurations for the tool."""
@@ -184,6 +198,46 @@ class Tool(Protocol):
                 if hook.id in get_hook_names():
                     remove_hook(hook.id)
 
+    def get_active_config_file_managers(self) -> set[UsethisFileManager]:
+        """Get relative paths to all active configuration files."""
+        resolution = self.get_config_spec().resolution
+        if resolution == "first":
+            for file_manager in self.get_config_spec().file_managers:
+                if file_manager.path.exists() and file_manager.path.is_file():
+                    return {file_manager}
+            return {self.get_config_spec().file_managers[0]}
+        else:
+            assert_never(resolution)
+
+    def add_configs(self) -> None:
+        """Add the tool's configuration sections.
+
+        Note, this does not require knowledge of the config file resolution methodology,
+        since all files are added regardless of whether they are in use.
+        """
+        for file_manager in self.get_active_config_file_managers():
+            if file_manager.relative_path == Path("pyproject.toml"):
+                self.add_pyproject_configs()
+                continue
+
+            msg = f"Support for adding '{self.name}' configs to '{file_manager.relative_path}' is not implemented."
+            raise NotImplementedError(msg)
+
+    def remove_configs(self) -> None:
+        """Remove the tool's configuration sections.
+
+        Note, this does not require knowledge of the config file resolution methodology,
+        since all files are removed regardless of whether they are in use.
+        """
+        for file_manager in self.get_config_spec().file_managers:
+            relative_path = file_manager.relative_path
+            if relative_path == Path("pyproject.toml"):
+                self.remove_pyproject_configs()
+                continue
+
+            msg = f"Support for removing '{self.name}' configs from '{relative_path}' is not implemented."
+            raise NotImplementedError(msg)
+
     def add_pyproject_configs(self) -> None:
         """Add the tool's pyproject.toml configurations."""
         configs = self.get_pyproject_configs()
@@ -243,6 +297,9 @@ class CodespellTool(Tool):
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="codespell")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(file_managers=[PyprojectTOMLManager()], resolution="first")
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
@@ -307,6 +364,9 @@ class CoverageTool(Tool):
             deps += [Dependency(name="pytest-cov")]
         return deps
 
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(file_managers=[PyprojectTOMLManager()], resolution="first")
+
     def print_how_to_use(self) -> None:
         if PytestTool().is_used():
             box_print("Run 'pytest --cov' to run your tests with coverage.")
@@ -351,6 +411,9 @@ class DeptryTool(Tool):
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="deptry")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(file_managers=[PyprojectTOMLManager()], resolution="first")
 
     def print_how_to_use(self) -> None:
         _dir = get_source_dir_str()
@@ -401,6 +464,9 @@ class PreCommitTool(Tool):
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pre-commit")]
 
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(file_managers=[], resolution="first")
+
     def print_how_to_use(self) -> None:
         box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
 
@@ -429,6 +495,9 @@ class PyprojectFmtTool(Tool):
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pyproject-fmt")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(file_managers=[PyprojectTOMLManager()], resolution="first")
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
@@ -481,6 +550,9 @@ class PyprojectTOMLTool(Tool):
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return []
 
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(file_managers=[], resolution="first")
+
     def print_how_to_use(self) -> None:
         box_print("Populate 'pyproject.toml' with the project configuration.")
         info_print(
@@ -507,6 +579,9 @@ class PytestTool(Tool):
         if unconditional or CoverageTool().is_used():
             deps += [Dependency(name="pytest-cov")]
         return deps
+
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(file_managers=[PyprojectTOMLManager()], resolution="first")
 
     def print_how_to_use(self) -> None:
         box_print(
@@ -563,6 +638,9 @@ class RequirementsTxtTool(Tool):
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return []
 
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(file_managers=[], resolution="first")
+
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
             box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
@@ -600,6 +678,9 @@ class RuffTool(Tool):
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ruff")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(file_managers=[PyprojectTOMLManager()], resolution="first")
 
     def print_how_to_use(self) -> None:
         box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")

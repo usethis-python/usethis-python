@@ -122,8 +122,15 @@ keep_full_version = true
 testpaths = [ "tests" ]
 addopts = [
   "--import-mode=importlib",
+  "-ra",
+  "--showlocals",
+  "--strict-config",
+  "--strict-markers",
 ]
 filterwarnings = [ "error" ]
+xfail_strict = true
+log_cli_level = "INFO"
+minversion = "7"
 
 [tool.coverage.run]
 source = [ "src" ]

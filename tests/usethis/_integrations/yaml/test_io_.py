@@ -272,8 +272,8 @@ hello: world
                 assert type(content) is TimeStamp
 
     class TestRoundTrip:
-        @pytest.mark.skip(
-            "Not providing this guarantee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
+        @pytest.mark.xfail(
+            reason="Not providing this guarantee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
         )
         def test_single_quote_preserved(self, tmp_path: Path):
             path = tmp_path / "x.yml"
@@ -296,8 +296,8 @@ x: 'hi'
 """
             )
 
-        @pytest.mark.skip(
-            "Not providing this guarantee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
+        @pytest.mark.xfail(
+            reason="Not providing this guarantee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
         )
         def test_single_quoted_preserved(self, tmp_path: Path):
             path = tmp_path / "x.yml"

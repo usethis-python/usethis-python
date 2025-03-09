@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
 from usethis._integrations.uv.call import call_subprocess, call_uv_subprocess
 from usethis._test import change_cwd, is_offline
 
@@ -40,7 +39,6 @@ def uv_init_dir(tmp_path: Path, _uv_init_dir: Path) -> Generator[Path, None, Non
     with (
         change_cwd(tmp_path),
         usethis_config.set(frozen=True),
-        pyproject_toml_io_manager.open(),
     ):
         yield tmp_path
 
@@ -57,7 +55,6 @@ def uv_init_repo_dir(tmp_path: Path, _uv_init_dir: Path) -> Generator[Path, None
         with (
             change_cwd(tmp_path),
             usethis_config.set(frozen=True),
-            pyproject_toml_io_manager.open(),
         ):
             yield tmp_path
 
@@ -68,14 +65,13 @@ def uv_env_dir(uv_init_repo_dir: Path) -> Generator[Path, None, None]:
     with (
         change_cwd(uv_init_repo_dir),
         usethis_config.set(frozen=False),
-        pyproject_toml_io_manager.open(),
     ):
         yield uv_init_repo_dir
 
 
 @pytest.fixture
 def bare_dir(tmp_path: Path) -> Generator[Path, None, None]:
-    with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+    with change_cwd(tmp_path):
         yield tmp_path
 
 
@@ -91,16 +87,24 @@ class NetworkConn(Enum):
     ],
     scope="session",
 )
-def _vary_network_conn(request: pytest.FixtureRequest) -> Generator[None, None, None]:
-    """Fixture to vary the network connection; returns True if offline."""
+def _online_status(request: pytest.FixtureRequest) -> NetworkConn:
+    assert isinstance(request.param, NetworkConn)
+
     if request.param is NetworkConn.ONLINE and is_offline():
         pytest.skip("Network connection is offline")
 
-    offline = request.param is NetworkConn.OFFLINE
+    return request.param
+
+
+@pytest.fixture(scope="session")
+def _vary_network_conn(_online_status: NetworkConn) -> Generator[None, None, None]:
+    """Fixture to vary the network connection; returns True if offline."""
+    offline = _online_status is NetworkConn.OFFLINE
 
     usethis_config.offline = offline
     yield
-    usethis_config.offline = False
+    if offline:
+        usethis_config.offline = False
 
 
 @pytest.fixture

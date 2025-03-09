@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from usethis._console import tick_print
-from usethis._integrations.pyproject.core import (
-    append_config_list,
-    get_config_value,
-    remove_from_config_list,
+from usethis._integrations.file.pyproject_toml.core import (
+    extend_pyproject_list,
+    get_pyproject_value,
+    remove_from_pyproject_list,
 )
 
 
@@ -17,7 +19,7 @@ def select_ruff_rules(rules: list[str]) -> None:
     s = "" if len(rules) == 1 else "s"
     tick_print(f"Enabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
-    append_config_list(["tool", "ruff", "lint", "select"], rules)
+    extend_pyproject_list(["tool", "ruff", "lint", "select"], rules)
 
 
 def ignore_ruff_rules(rules: list[str]) -> None:
@@ -31,7 +33,7 @@ def ignore_ruff_rules(rules: list[str]) -> None:
     s = "" if len(rules) == 1 else "s"
     tick_print(f"Ignoring Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
-    append_config_list(["tool", "ruff", "lint", "ignore"], rules)
+    extend_pyproject_list(["tool", "ruff", "lint", "ignore"], rules)
 
 
 def deselect_ruff_rules(rules: list[str]) -> None:
@@ -45,13 +47,13 @@ def deselect_ruff_rules(rules: list[str]) -> None:
     s = "" if len(rules) == 1 else "s"
     tick_print(f"Disabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
-    remove_from_config_list(["tool", "ruff", "lint", "select"], rules)
+    remove_from_pyproject_list(["tool", "ruff", "lint", "select"], rules)
 
 
 def get_ruff_rules() -> list[str]:
     """Get the Ruff rules selected in the project."""
     try:
-        rules: list[str] = get_config_value(["tool", "ruff", "lint", "select"])
+        rules: list[str] = get_pyproject_value(["tool", "ruff", "lint", "select"])
     except KeyError:
         rules = []
 
@@ -61,7 +63,7 @@ def get_ruff_rules() -> list[str]:
 def get_ignored_ruff_rules() -> list[str]:
     """Get the Ruff rules ignored in the project."""
     try:
-        rules: list[str] = get_config_value(["tool", "ruff", "lint", "ignore"])
+        rules: list[str] = get_pyproject_value(["tool", "ruff", "lint", "ignore"])
     except KeyError:
         rules = []
 

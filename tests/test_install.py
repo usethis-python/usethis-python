@@ -5,6 +5,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._subprocess import call_subprocess
 from usethis._test import change_cwd
@@ -48,7 +49,11 @@ class TestInstalledInOwnVenv:
             # Should run without error
             call_subprocess(["usethis", "--help"])
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_add_pytest(self, usethis_installed_dir: Path):
         with change_cwd(usethis_installed_dir):
             # Should run without error
-            call_subprocess(["usethis", "tool", "pytest"])
+            if not usethis_config.offline:
+                call_subprocess(["usethis", "tool", "pytest"])
+            else:
+                call_subprocess(["usethis", "tool", "pytest", "--offline"])

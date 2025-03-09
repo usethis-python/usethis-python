@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.io_ import (
-    PyProjectTOMLNotFoundError,
-    pyproject_toml_io_manager,
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
+from usethis._integrations.file.pyproject_toml.io_ import (
+    PyprojectTOMLManager,
 )
 from usethis._integrations.ruff.rules import (
     deselect_ruff_rules,
@@ -19,8 +19,8 @@ class TestSelectRuffRules:
         # Act
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            PyprojectTOMLManager(),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             select_ruff_rules(["A", "B", "C"])
 
@@ -29,7 +29,7 @@ class TestSelectRuffRules:
         (tmp_path / "pyproject.toml").write_text("")
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             select_ruff_rules(["A", "B", "C"])
 
         # Assert
@@ -42,7 +42,7 @@ class TestSelectRuffRules:
 
         # Act
         new_rules = ["A", "B", "C"]
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             select_ruff_rules(new_rules)
 
             # Assert
@@ -59,7 +59,7 @@ select = ["A", "B"]
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             select_ruff_rules(["C", "D"])
 
             # Assert
@@ -76,7 +76,7 @@ select = ["D", "B", "A"]
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             select_ruff_rules(["E", "C", "A"])
 
             # Assert
@@ -88,8 +88,8 @@ class TestDeselectRuffRules:
         # Act
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            PyprojectTOMLManager(),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             deselect_ruff_rules(["A", "B", "C"])
 
@@ -98,7 +98,7 @@ class TestDeselectRuffRules:
         (tmp_path / "pyproject.toml").write_text("")
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             deselect_ruff_rules(["A", "B", "C"])
 
             # Assert
@@ -114,7 +114,7 @@ select = ["A"]
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             deselect_ruff_rules(["A"])
 
             # Assert
@@ -130,7 +130,7 @@ select = ["A", "B", "C"]
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             deselect_ruff_rules(["A", "C"])
 
             # Assert

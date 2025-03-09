@@ -1,18 +1,25 @@
+from __future__ import annotations
+
 from collections import Counter
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from usethis._console import box_print, tick_print
+from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._integrations.pre_commit.dump import pre_commit_fancy_dump
 from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
-    JsonSchemaForPreCommitConfigYaml,
     Language,
     LocalRepo,
     MetaRepo,
-    UriRepo,
 )
-from usethis._integrations.yaml.update import update_ruamel_yaml_map
+
+if TYPE_CHECKING:
+    from usethis._integrations.pre_commit.schema import (
+        JsonSchemaForPreCommitConfigYaml,
+        UriRepo,
+    )
 
 _HOOK_ORDER = [
     "validate-pyproject",
@@ -64,7 +71,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
                 hook_idx = _HOOK_ORDER.index(hook_name)
             except ValueError:
                 msg = f"Hook '{hook_name}' not recognized"
-                raise NotImplementedError(msg)
+                raise NotImplementedError(msg) from None
             precedents = _HOOK_ORDER[:hook_idx]
 
             # Find the last of the precedents in the existing hooks
@@ -137,7 +144,7 @@ def _get_placeholder_repo_config() -> LocalRepo:
             HookDefinition(
                 id=_PLACEHOLDER_ID,
                 name="Placeholder - add your own hooks!",
-                entry="""uv run --frozen python -c "print('hello world!')\"""",
+                entry="""uv run --isolated --frozen --offline python -c "print('hello world!')\"""",
                 language=Language("system"),
             )
         ],

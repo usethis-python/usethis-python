@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 from usethis._ci import update_bitbucket_pytest_steps
 from usethis._console import box_print, info_print
-from usethis._integrations.bitbucket.config import (
+from usethis._integrations.ci.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
 )
-from usethis._integrations.bitbucket.steps import (
+from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_steps_in_default,
 )
 from usethis._integrations.uv.init import ensure_pyproject_toml

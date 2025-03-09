@@ -1,13 +1,24 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from pathlib import Path
 from typing import Protocol
 
 from usethis._console import box_print, info_print, tick_print
-from usethis._integrations.bitbucket.anchor import (
+from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
-from usethis._integrations.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.bitbucket.schema import Step as BitbucketStep
+from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
+from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
+from usethis._integrations.file.pyproject_toml.config import PyprojectConfig
+from usethis._integrations.file.pyproject_toml.core import (
+    PyprojectTOMLValueAlreadySetError,
+    PyprojectTOMLValueMissingError,
+    do_pyproject_id_keys_exist,
+    remove_pyproject_value,
+    set_pyproject_value,
+)
+from usethis._integrations.file.pyproject_toml.remove import remove_pyproject_toml
 from usethis._integrations.pre_commit.hooks import (
     add_repo,
     get_hook_names,
@@ -22,15 +33,6 @@ from usethis._integrations.pre_commit.schema import (
     UriRepo,
 )
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.pyproject.config import PyProjectConfig
-from usethis._integrations.pyproject.core import (
-    PyProjectTOMLValueAlreadySetError,
-    PyProjectTOMLValueMissingError,
-    do_id_keys_exist,
-    remove_config_value,
-    set_config_value,
-)
-from usethis._integrations.pyproject.remove import remove_pyproject_toml
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,
@@ -79,7 +81,7 @@ class Tool(Protocol):
         """Get the pre-commit repository configurations for the tool."""
         return []
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         """Get the pyproject configurations for the tool.
 
         All configuration keys returned by this method must be sub-keys of the
@@ -119,7 +121,7 @@ class Tool(Protocol):
             if file.exists() and file.is_file():
                 return True
         for id_keys in self.get_managed_pyproject_keys():
-            if do_id_keys_exist(id_keys):
+            if do_pyproject_id_keys_exist(id_keys):
                 return True
         for dep in self.get_dev_deps(unconditional=True):
             if is_dep_in_any_group(dep):
@@ -191,8 +193,8 @@ class Tool(Protocol):
         first_addition = True
         for config in configs:
             try:
-                set_config_value(config.id_keys, config.value)
-            except PyProjectTOMLValueAlreadySetError:
+                set_pyproject_value(config.id_keys, config.value)
+            except PyprojectTOMLValueAlreadySetError:
                 pass
             else:
                 if first_addition:
@@ -214,8 +216,8 @@ class Tool(Protocol):
         first_removal = True
         for keys in keys_to_remove:
             try:
-                remove_config_value(keys)
-            except PyProjectTOMLValueMissingError:
+                remove_pyproject_value(keys)
+            except PyprojectTOMLValueMissingError:
                 pass
             else:
                 if first_removal:
@@ -250,9 +252,9 @@ class CodespellTool(Tool):
         else:
             box_print("Run 'codespell' to run the Codespell spellchecker.")
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "codespell"],
                 value={
                     "ignore-regex": [
@@ -311,16 +313,16 @@ class CoverageTool(Tool):
         else:
             box_print("Run 'coverage help' to see available coverage commands.")
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "coverage", "run"],
                 value={
                     "source": [get_source_dir_str()],
                     "omit": ["*/pytest-of-*/*"],
                 },
             ),
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "coverage", "report"],
                 value={
                     "exclude_also": [
@@ -363,7 +365,7 @@ class DeptryTool(Tool):
                     HookDefinition(
                         id="deptry",
                         name="deptry",
-                        entry=f"uv run --frozen deptry {_dir}",
+                        entry=f"uv run --frozen --offline deptry {_dir}",
                         language=Language("system"),
                         always_run=True,
                         pass_filenames=False,
@@ -445,9 +447,9 @@ class PyprojectFmtTool(Tool):
             )
         ]
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "pyproject-fmt"],
                 value={"keep_full_version": True},
             )
@@ -516,17 +518,28 @@ class PytestTool(Tool):
     def get_extra_dev_deps(self) -> list[Dependency]:
         return [Dependency(name="pytest-cov")]
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "pytest"],
+                # Much of what follows is recommended here (sp-repo-review):
+                # https://learn.scientific-python.org/development/guides/pytest/#configuring-pytest
                 value={
                     "ini_options": {
                         "testpaths": ["tests"],
                         "addopts": [
                             "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
+                            "-ra",  # summary report of all results (sp-repo-review)
+                            "--showlocals",  # print locals in tracebacks (sp-repo-review)
+                            "--strict-markers",  # fail on unknown markers (sp-repo-review)
+                            "--strict-config",  # fail on unknown config (sp-repo-review)
                         ],
-                        "filterwarnings": ["error"],
+                        "filterwarnings": [
+                            "error"
+                        ],  # fail on warnings (sp-repo-review)
+                        "xfail_strict": True,  # fail on tests marked xfail (sp-repo-review)
+                        "log_cli_level": "INFO",  # include all >=INFO level log messages (sp-repo-review)
+                        "minversion": "7",  # minimum pytest version (sp-repo-review)
                     }
                 },
             ),
@@ -555,7 +568,7 @@ class RequirementsTxtTool(Tool):
             box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
         else:
             box_print(
-                "Run 'uv export --no-dev --output-file=requirements.txt' to write 'requirements.txt'."
+                "Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'."
             )
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
@@ -568,7 +581,7 @@ class RequirementsTxtTool(Tool):
                         name="uv-export",
                         files="^uv\\.lock$",
                         pass_filenames=False,
-                        entry="uv export --frozen --no-dev --output-file=requirements.txt --quiet",
+                        entry="uv export --frozen --offline --quiet --no-dev -o=requirements.txt",
                         language=Language("system"),
                         require_serial=True,
                     )
@@ -600,7 +613,7 @@ class RuffTool(Tool):
                     HookDefinition(
                         id="ruff-format",
                         name="ruff-format",
-                        entry="uv run --frozen ruff format --force-exclude",
+                        entry="uv run --frozen --offline ruff format --force-exclude",
                         language=Language("system"),
                         types_or=FileTypes(
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]
@@ -616,7 +629,7 @@ class RuffTool(Tool):
                     HookDefinition(
                         id="ruff",
                         name="ruff",
-                        entry="uv run --frozen ruff check --fix --force-exclude",
+                        entry="uv run --frozen --offline ruff check --fix --force-exclude",
                         language=Language("system"),
                         types_or=FileTypes(
                             [FileType("python"), FileType("pyi"), FileType("jupyter")]
@@ -628,9 +641,9 @@ class RuffTool(Tool):
             ),
         ]
 
-    def get_pyproject_configs(self) -> list[PyProjectConfig]:
+    def get_pyproject_configs(self) -> list[PyprojectConfig]:
         return [
-            PyProjectConfig(
+            PyprojectConfig(
                 id_keys=["tool", "ruff"],
                 value={
                     "line-length": 88,

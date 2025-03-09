@@ -4,11 +4,11 @@
 
 # usethis
 
-[![PyPI Version](<https://img.shields.io/pypi/v/usethis.svg>)](<https://pypi.python.org/pypi/usethis>)
-![PyPI License](<https://img.shields.io/pypi/l/usethis.svg>)
-[![PyPI Supported Versions](<https://img.shields.io/pypi/pyversions/usethis.svg>)](<https://pypi.python.org/pypi/usethis>)
-[![uv](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json>)](<https://github.com/astral-sh/uv>)
-[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)
+[![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
+![PyPI License](https://img.shields.io/pypi/l/usethis.svg)
+[![PyPI Supported Versions](https://img.shields.io/pypi/pyversions/usethis.svg)](https://pypi.python.org/pypi/usethis)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv>)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff>)
 [![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/nathanjmcdougall/usethis-python)
 [![codecov](https://codecov.io/gh/nathanjmcdougall/usethis-python/graph/badge.svg?token=MU1AZS0KHV)](https://codecov.io/gh/nathanjmcdougall/usethis-python)
 [![GitHub Actions Status](https://github.com/nathanjmcdougall/usethis-python/workflows/CI/badge.svg)](https://github.com/nathanjmcdougall/usethis-python/actions)
@@ -31,7 +31,7 @@ this package brings a similar experience to the Python ecosystem as a CLI tool.
 
 ## Highlights
 
-- First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, and `pre-commit`.
+- First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, `pre-commit`, and many more.
 - Automatically add and remove tools: declare, install, and configure in one step.
 - Powerful knowledge of how different tools interact and sensible defaults.
 - Get started on a new Python project or a new workflow in seconds.

@@ -2,15 +2,20 @@ from pathlib import Path
 
 import pytest
 
+import usethis
+import usethis._integrations
+import usethis._integrations.uv
+import usethis._integrations.uv.deps
 from usethis._config import usethis_config
-from usethis._integrations.pyproject.core import (
-    get_config_value,
-    remove_config_value,
+from usethis._integrations.file.pyproject_toml.core import (
+    get_pyproject_value,
+    remove_pyproject_value,
 )
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,
+    get_default_groups,
     get_dep_groups,
     get_deps_from_group,
     is_dep_in_any_group,
@@ -18,6 +23,7 @@ from usethis._integrations.uv.deps import (
     register_default_group,
     remove_deps_from_group,
 )
+from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 from usethis._test import change_cwd
 
 
@@ -25,7 +31,7 @@ class TestGetDepGroups:
     def test_no_dev_section(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").touch()
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             assert get_dep_groups() == {}
 
     def test_empty_section(self, tmp_path: Path):
@@ -33,7 +39,7 @@ class TestGetDepGroups:
 [dependency-groups]
 """)
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             assert get_dep_groups() == {}
 
     def test_empty_group(self, tmp_path: Path):
@@ -42,7 +48,7 @@ class TestGetDepGroups:
 test=[]
 """)
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             assert get_dep_groups() == {"test": []}
 
     def test_single_dev_dep(self, tmp_path: Path):
@@ -51,7 +57,7 @@ test=[]
 test=['pytest']
 """)
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             assert get_dep_groups() == {"test": [Dependency(name="pytest")]}
 
     def test_multiple_dev_deps(self, tmp_path: Path):
@@ -60,7 +66,7 @@ test=['pytest']
 qa=["flake8", "black", "isort"]
 """)
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             assert get_dep_groups() == {
                 "qa": [
                     Dependency(name="flake8"),
@@ -78,7 +84,7 @@ test=['pytest']
 """
         )
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             assert get_dep_groups() == {
                 "qa": [
                     Dependency(name="flake8"),
@@ -94,7 +100,7 @@ test=['pytest']
 class TestAddDepsToGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_pyproject_changed(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Act
             add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -105,7 +111,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_single_dep(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Act
             add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -121,7 +127,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_multiple_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Act
             add_deps_to_group(
                 [Dependency(name="flake8"), Dependency(name="black")], "qa"
@@ -144,7 +150,7 @@ class TestAddDepsToGroup:
     def test_multi_but_one_already_exists(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group([Dependency(name="pytest")], "test")
@@ -169,7 +175,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_extras(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Act
             add_deps_to_group(
                 [Dependency(name="pytest", extras=frozenset({"extra"}))], "test"
@@ -192,7 +198,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_empty_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Act
             add_deps_to_group([], "test")
 
@@ -205,7 +211,7 @@ class TestAddDepsToGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_extra_when_nonextra_already_present(self, uv_init_dir: Path):
         # https://github.com/nathanjmcdougall/usethis-python/issues/227
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             add_deps_to_group([Dependency(name="coverage")], "test")
 
@@ -220,7 +226,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_extras_combining_together(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             add_deps_to_group(
                 [Dependency(name="coverage", extras=frozenset({"toml"}))], "test"
@@ -237,7 +243,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_combine_extras_alphabetical(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             add_deps_to_group(
                 [Dependency(name="coverage", extras=frozenset({"extra"}))], "test"
@@ -254,17 +260,17 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_registers_default_group(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Act
             add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert "test" in default_groups
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_dev_group_not_registered(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Act
             add_deps_to_group([Dependency(name="black")], "dev")
 
@@ -272,11 +278,37 @@ class TestAddDepsToGroup:
             # Tool section shouldn't even exist in pyproject.toml
             assert "tool" not in (uv_init_dir / "pyproject.toml").read_text()
 
+    def test_uv_subprocess_error(
+        self,
+        uv_init_dir: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        def mock_call_uv_subprocess(*_, **__):
+            raise UVSubprocessFailedError
+
+        monkeypatch.setattr(
+            usethis._integrations.uv.deps, "call_uv_subprocess", mock_call_uv_subprocess
+        )
+
+        # Act, Assert
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with pytest.raises(
+                UVDepGroupError,
+                match="Failed to add 'pytest' to the 'test' dependency group",
+            ):
+                add_deps_to_group([Dependency(name="pytest")], "test")
+
+            # Assert contd
+            # We want to check that registration hasn't taken place
+            default_groups = get_default_groups()
+            assert "test" not in default_groups
+
 
 class TestRemoveDepsFromGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_pyproject_changed(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -288,7 +320,7 @@ class TestRemoveDepsFromGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_single_dep(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group([Dependency(name="pytest")], "test")
@@ -307,7 +339,7 @@ class TestRemoveDepsFromGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_multiple_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group(
@@ -332,7 +364,7 @@ class TestRemoveDepsFromGroup:
     def test_multi_but_only_not_exists(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group([Dependency(name="pytest")], "test")
@@ -353,7 +385,7 @@ class TestRemoveDepsFromGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_extras(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group(
@@ -378,13 +410,13 @@ class TestRemoveDepsFromGroup:
     def test_group_not_in_dependency_groups(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Remove the group from dependency-groups but keep it in default-groups
-            remove_config_value(["dependency-groups", "test"])
+            remove_pyproject_value(["dependency-groups", "test"])
 
             # Act
             remove_deps_from_group([Dependency(name="pytest")], "test")
@@ -395,16 +427,45 @@ class TestRemoveDepsFromGroup:
             assert not err
             assert not out
 
+    def test_uv_subprocess_error(
+        self,
+        uv_init_dir: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        with (
+            change_cwd(uv_init_dir),
+            PyprojectTOMLManager(),
+        ):
+            # Arrange
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
+            def mock_call_uv_subprocess(*_, **__):
+                raise UVSubprocessFailedError
+
+            monkeypatch.setattr(
+                usethis._integrations.uv.deps,
+                "call_uv_subprocess",
+                mock_call_uv_subprocess,
+            )
+
+            # Act
+            with pytest.raises(
+                UVDepGroupError,
+                match="Failed to remove 'pytest' from the 'test' dependency group",
+            ):
+                remove_deps_from_group([Dependency(name="pytest")], "test")
+
 
 class TestIsDepInAnyGroup:
     def test_no_group(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             assert not is_dep_in_any_group(Dependency(name="pytest"))
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_in_group(self, uv_init_dir: Path):
         # Arrange
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
@@ -416,7 +477,7 @@ class TestIsDepInAnyGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_not_in_group(self, uv_init_dir: Path):
         # Arrange
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
@@ -488,12 +549,12 @@ class TestRegisterDefaultGroup:
         # Arrange
         (tmp_path / "pyproject.toml").write_text("")
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Act
             register_default_group("test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "dev"}
 
     def test_empty_section_adds_dev(self, tmp_path: Path):
@@ -502,12 +563,12 @@ class TestRegisterDefaultGroup:
 [tool.uv]
 """)
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Act
             register_default_group("test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "dev"}
 
     def test_empty_default_groups_adds_dev(self, tmp_path: Path):
@@ -517,12 +578,12 @@ class TestRegisterDefaultGroup:
 default-groups = []
 """)
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Act
             register_default_group("test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "dev"}
 
     def test_existing_section_no_dev_added_if_no_other_groups(self, tmp_path: Path):
@@ -532,12 +593,12 @@ default-groups = []
 default-groups = ["test"]
 """)
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Act
             register_default_group("test")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test"}
 
     def test_existing_section_no_dev_added_if_dev_exists(self, tmp_path: Path):
@@ -547,12 +608,12 @@ default-groups = ["test"]
 default-groups = ["test", "dev"]
 """)
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Act
             register_default_group("docs")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "dev", "docs"}
 
     def test_existing_section_adds_dev_with_new_group(self, tmp_path: Path):
@@ -562,10 +623,52 @@ default-groups = ["test", "dev"]
 default-groups = ["test"]
 """)
 
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Act
             register_default_group("docs")
 
             # Assert
-            default_groups = get_config_value(["tool", "uv", "default-groups"])
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
             assert set(default_groups) == {"test", "docs", "dev"}
+
+    def test_dev_not_added_if_missing(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["test"]
+""")
+
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Act
+            register_default_group("test")
+
+            # Assert
+            default_groups = get_pyproject_value(["tool", "uv", "default-groups"])
+            assert set(default_groups) == {"test"}
+
+
+class TestGetDefaultGroups:
+    def test_empty_pyproject_toml(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").touch()
+
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Act
+            result = get_default_groups()
+
+            # Assert
+            assert result == []
+
+    def test_invalid_default_groups(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = "not a list"
+""")
+
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Act
+            result = get_default_groups()
+
+            # Assert
+            assert result == []

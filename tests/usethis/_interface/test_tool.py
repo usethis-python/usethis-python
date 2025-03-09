@@ -4,6 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from usethis._config import usethis_config
+from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._interface.tool import ALL_TOOL_COMMANDS, app
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 from usethis._test import change_cwd
@@ -11,14 +12,28 @@ from usethis._tool import ALL_TOOLS
 
 
 class TestCodespell:
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_add(self, tmp_path: Path):
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["codespell"])
+            if not usethis_config.offline:
+                result = runner.invoke(app, ["codespell"])
+            else:
+                result = runner.invoke(app, ["codespell", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
+
+
+class TestCoverage:
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_cli(self, uv_init_dir: Path):
+        with change_cwd(uv_init_dir):
+            if not usethis_config.offline:
+                call_subprocess(["usethis", "tool", "coverage"])
+            else:
+                call_subprocess(["usethis", "tool", "coverage", "--offline"])
 
 
 class TestDeptry:
@@ -39,7 +54,10 @@ class TestDeptry:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_cli_not_frozen(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir):
-            call_subprocess(["usethis", "tool", "deptry"])
+            if not usethis_config.offline:
+                call_subprocess(["usethis", "tool", "deptry"])
+            else:
+                call_subprocess(["usethis", "tool", "deptry", "--offline"])
             assert (uv_init_dir / ".venv").exists()
 
 
@@ -72,7 +90,9 @@ class TestPreCommit:
             else:
                 call_subprocess(["usethis", "tool", "pre-commit", "--offline"])
 
-            call_subprocess(["uv", "run", "pre-commit", "run", "--all-files"])
+            call_uv_subprocess(
+                ["run", "pre-commit", "run", "--all-files"], change_toml=False
+            )
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_cli_fail(self, uv_init_repo_dir: Path):
@@ -114,11 +134,15 @@ class TestRuff:
 
 
 class TestPytest:
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_add(self, tmp_path: Path):
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pytest"])
+            if not usethis_config.offline:
+                result = runner.invoke(app, ["pytest"])
+            else:
+                result = runner.invoke(app, ["pytest", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -126,6 +150,16 @@ class TestPytest:
 
 @pytest.mark.benchmark
 def test_several_tools_add_and_remove(tmp_path: Path):
+    # Arrange
+    # The rationale for using src layout is to avoid writing
+    # hatch config unnecessarily slowing down I/O
+    tmp_path = tmp_path / "benchmark"  # To get a fixed project name
+    tmp_path.mkdir(exist_ok=True)
+    (tmp_path / "src").mkdir(exist_ok=True)
+    (tmp_path / "src" / "benchmark").mkdir(exist_ok=True)
+    (tmp_path / "src" / "benchmark" / "__init__.py").touch(exist_ok=True)
+
+    # Act
     runner = CliRunner()
     with change_cwd(tmp_path):
         runner.invoke(app, ["pytest"])

@@ -2,17 +2,27 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.pyproject.errors import PyProjectTOMLNotFoundError
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import (
     extract_major_version,
     get_python_version,
 )
 from usethis._integrations.uv.python import (
     _parse_python_version_from_uv_output,
+    get_available_python_versions,
     get_supported_major_python_versions,
 )
 from usethis._test import change_cwd
+
+
+class TestGetAvailablePythonVersions:
+    def test_nonempty(self):
+        # Act
+        results = get_available_python_versions()
+
+        # Assert
+        assert results
 
 
 class TestGetSupportedMajorPythonVersions:
@@ -26,7 +36,7 @@ requires-python = ">=3.10,<3.12"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             supported_major_python = get_supported_major_python_versions()
 
         # Assert
@@ -42,7 +52,7 @@ requires-python = ">=3.9,<3.12"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             supported_major_python = get_supported_major_python_versions()
 
         # Assert
@@ -51,8 +61,8 @@ requires-python = ">=3.9,<3.12"
     def test_no_pyproject(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
-            pytest.raises(PyProjectTOMLNotFoundError),
+            PyprojectTOMLManager(),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_supported_major_python_versions()
 
@@ -68,7 +78,7 @@ name = "foo"
         # Act
         with (
             change_cwd(tmp_path),
-            pyproject_toml_io_manager.open(),
+            PyprojectTOMLManager(),
         ):
             versions = get_supported_major_python_versions()
 

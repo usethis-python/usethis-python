@@ -7,8 +7,8 @@ from usethis._ci import (
     remove_bitbucket_pytest_steps,
     update_bitbucket_pytest_steps,
 )
-from usethis._integrations.bitbucket.config import add_bitbucket_pipeline_config
-from usethis._integrations.pyproject.io_ import pyproject_toml_io_manager
+from usethis._integrations.ci.bitbucket.config import add_bitbucket_pipeline_config
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import (
     extract_major_version,
     get_python_version,
@@ -30,7 +30,7 @@ class TestIsBitbucketUsed:
 class TestUpdateBitbucketPytestSteps:
     def test_no_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             update_bitbucket_pytest_steps()
 
         # Assert
@@ -106,7 +106,7 @@ version = "0.1.0"
         )
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             update_bitbucket_pytest_steps()
 
         # Assert
@@ -140,7 +140,7 @@ version = "0.1.0"
         )
 
         # Act
-        with change_cwd(tmp_path), pyproject_toml_io_manager.open():
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             update_bitbucket_pytest_steps()
 
         # Assert
@@ -184,12 +184,12 @@ class TestRemoveBitbucketPytestSteps:
 
     def test_dont_touch_if_no_pytest_steps(self, uv_init_dir: Path):
         # Arrange
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_pipeline_config()
         contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             remove_bitbucket_pytest_steps()
 
         # Assert
@@ -211,7 +211,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             remove_bitbucket_pytest_steps()
 
         # Assert

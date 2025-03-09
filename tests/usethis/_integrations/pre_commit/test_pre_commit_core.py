@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.core import (
     install_pre_commit_hooks,
     remove_pre_commit_config,
@@ -62,7 +63,7 @@ class TestInstallPreCommitHooks:
         # This is needed to check the standard (non-frozen) message
 
         # Arrange
-        with change_cwd(uv_env_dir):
+        with change_cwd(uv_env_dir), PyprojectTOMLManager():
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()
@@ -96,7 +97,7 @@ class TestUninstallPreCommitHooks:
         # This is needed to check the standard (non-frozen) message
 
         # Arrange
-        with change_cwd(uv_env_dir):
+        with change_cwd(uv_env_dir), PyprojectTOMLManager():
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()

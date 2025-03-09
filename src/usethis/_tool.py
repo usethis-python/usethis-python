@@ -5,11 +5,20 @@ from pathlib import Path
 from typing import Protocol
 
 from usethis._console import box_print, info_print, tick_print
-from usethis._integrations.bitbucket.anchor import (
+from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
-from usethis._integrations.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.bitbucket.schema import Step as BitbucketStep
+from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
+from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
+from usethis._integrations.file.pyproject_toml.config import PyprojectConfig
+from usethis._integrations.file.pyproject_toml.core import (
+    PyprojectTOMLValueAlreadySetError,
+    PyprojectTOMLValueMissingError,
+    do_pyproject_id_keys_exist,
+    remove_pyproject_value,
+    set_pyproject_value,
+)
+from usethis._integrations.file.pyproject_toml.remove import remove_pyproject_toml
 from usethis._integrations.pre_commit.hooks import (
     add_repo,
     get_hook_names,
@@ -24,15 +33,6 @@ from usethis._integrations.pre_commit.schema import (
     UriRepo,
 )
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.pyproject_toml.config import PyprojectConfig
-from usethis._integrations.pyproject_toml.core import (
-    PyprojectTOMLValueAlreadySetError,
-    PyprojectTOMLValueMissingError,
-    do_pyproject_id_keys_exist,
-    remove_pyproject_value,
-    set_pyproject_value,
-)
-from usethis._integrations.pyproject_toml.remove import remove_pyproject_toml
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,

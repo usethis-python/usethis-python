@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from usethis._console import box_print, tick_print
+from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._integrations.pre_commit.dump import pre_commit_fancy_dump
 from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
@@ -13,7 +14,6 @@ from usethis._integrations.pre_commit.schema import (
     LocalRepo,
     MetaRepo,
 )
-from usethis._integrations.yaml.update import update_ruamel_yaml_map
 
 if TYPE_CHECKING:
     from usethis._integrations.pre_commit.schema import (

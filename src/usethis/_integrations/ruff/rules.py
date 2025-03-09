@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from usethis._console import tick_print
-from usethis._integrations.pyproject_toml.core import (
+from usethis._integrations.file.pyproject_toml.core import (
     extend_pyproject_list,
     get_pyproject_value,
     remove_from_pyproject_list,

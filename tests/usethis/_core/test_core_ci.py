@@ -10,8 +10,8 @@ from usethis._core.tool import (
     use_pyproject_fmt,
     use_ruff,
 )
-from usethis._integrations.bitbucket.steps import get_steps_in_default
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.ci.bitbucket.steps import get_steps_in_default
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 
 

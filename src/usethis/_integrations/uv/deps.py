@@ -7,11 +7,11 @@ from pydantic import BaseModel, TypeAdapter
 
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
-from usethis._integrations.pyproject_toml.core import (
+from usethis._integrations.file.pyproject_toml.core import (
     extend_pyproject_list,
     get_pyproject_value,
 )
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 

@@ -1,4 +1,15 @@
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: debug-statements
+      - id: name-tests-test
+        args: ["--pytest-test-first"]
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:

@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from usethis._config import usethis_config
-from usethis._integrations.pyproject_toml.io_ import (
+from usethis._integrations.file.pyproject_toml.io_ import (
     PyprojectTOMLManager,
 )
-from usethis._integrations.pyproject_toml.valid import ensure_pyproject_validity
+from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 

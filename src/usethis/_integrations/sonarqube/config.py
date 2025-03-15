@@ -5,8 +5,8 @@ from pathlib import Path
 
 from pydantic import TypeAdapter
 
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import get_python_version
 from usethis._integrations.sonarqube.errors import (
     CoverageReportConfigNotFoundError,

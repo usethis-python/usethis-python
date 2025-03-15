@@ -9,8 +9,8 @@ from pydantic import BaseModel
 
 from usethis._console import err_print, tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path
-from usethis._integrations.pyproject_toml.errors import PyprojectTOMLError
-from usethis._integrations.pyproject_toml.name import get_name
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLError
+from usethis._integrations.file.pyproject_toml.name import get_name
 
 if TYPE_CHECKING:
     from typing_extensions import Self

@@ -7,7 +7,7 @@ import usethis._integrations
 import usethis._integrations.uv
 import usethis._integrations.uv.deps
 from usethis._config import usethis_config
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,

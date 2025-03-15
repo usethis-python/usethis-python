@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from usethis._console import tick_print
-from usethis._integrations.pyproject_toml.errors import PyprojectTOMLInitError
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLInitError
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv import call
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 

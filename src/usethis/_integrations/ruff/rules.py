@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from usethis._console import tick_print
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 
 
 def select_ruff_rules(rules: list[str]) -> None:

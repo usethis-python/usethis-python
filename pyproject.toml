@@ -185,10 +185,28 @@ exhaustive = true
 name = "Integrations Modular Design"
 type = "layers"
 layers = [
-  "bitbucket | github | pre_commit | pytest | ruff",
-  "uv | pydantic | sonarqube",
-  "pyproject_toml",
-  "project | toml | yaml | python",
+  "ci | pre_commit",
+  "uv | pytest | ruff | pydantic | sonarqube",
+  "project | file | python",
 ]
 containers = [ "usethis._integrations" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "File Integrations Modular Design"
+type = "layers"
+layers = [
+  "pyproject_toml",
+  "toml | yaml",
+]
+containers = [ "usethis._integrations.file" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "CI Integrations Modular Design"
+type = "layers"
+layers = [
+  "bitbucket | github",
+]
+containers = [ "usethis._integrations.ci" ]
 exhaustive = true

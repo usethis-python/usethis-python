@@ -4,8 +4,8 @@ from typing import Any
 import pytest
 
 import usethis._integrations.uv.call
-from usethis._integrations.pyproject_toml.errors import PyprojectTOMLInitError
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLInitError
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._test import change_cwd

@@ -8,7 +8,7 @@ from usethis._core.badge import (
     get_ruff_badge,
     remove_badge,
 )
-from usethis._integrations.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 
 app = typer.Typer(help="Add badges to the top of the README.md file.")
 

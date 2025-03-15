@@ -64,7 +64,7 @@ class ConfigEntry(BaseModel):
     """A configuration entry in a config file associated with a tool.
 
     Attributes:
-        id_keys: A sequentially nested sequence of keys giving a single configuration
+        keys: A sequentially nested sequence of keys giving a single configuration
                  item.
         value: The default value to be placed at the under the key sequence. By default,
                no configuration will be added.

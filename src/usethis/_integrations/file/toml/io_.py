@@ -95,14 +95,14 @@ class TOMLFileManager(KeyValueFileManager):
         return True
 
     def __getitem__(self, item: list[str]) -> Any:
-        id_keys = item
+        keys = item
 
-        if not id_keys:
+        if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
 
         d = self.get()
-        for key in id_keys:
+        for key in keys:
             TypeAdapter(dict).validate_python(d)
             assert isinstance(d, dict)
             d = d[key]

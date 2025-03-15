@@ -176,15 +176,11 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
         raise NotImplementedError
 
     @abstractmethod
-    def extend_list(
-        self, *, keys: list[str], values: list[Any]
-    ) -> None:  # TODO id_keys naming vs keys
+    def extend_list(self, *, keys: list[str], values: list[Any]) -> None:
         """Extend a list in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def remove_from_list(
-        self, *, keys: list[str], values: list[Any]
-    ) -> None:  # TODO id_keys naming vs keys
+    def remove_from_list(self, *, keys: list[str], values: list[Any]) -> None:
         """Remove values from a list in the configuration file."""
         raise NotImplementedError

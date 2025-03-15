@@ -128,4 +128,4 @@ class TestEnsurePyprojectTOML:
             ensure_pyproject_toml()
 
             # Assert
-            assert PyprojectTOMLManager().do_keys_exist(["build-system"])
+            assert ["build-system"] in PyprojectTOMLManager()

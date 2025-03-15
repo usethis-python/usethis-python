@@ -187,7 +187,7 @@ class Tool(Protocol):
 
             for path, entry in config_item.root.items():
                 file_manager = config_spec.file_manager_by_relative_path[path]
-                if file_manager.do_keys_exist(entry.keys):
+                if entry.keys in file_manager:
                     return True
 
         return False
@@ -332,7 +332,7 @@ class Tool(Protocol):
                 new_file_managers = [
                     file_manager
                     for file_manager in file_managers
-                    if file_manager.do_keys_exist(shared_keys)
+                    if shared_keys in file_manager
                 ]
                 if not new_file_managers:
                     break

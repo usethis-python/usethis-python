@@ -82,7 +82,7 @@ class TOMLFileManager(KeyValueFileManager):
         except UnexpectedFileIOError as err:
             raise UnexpectedTOMLIOError(err) from None
 
-    def do_keys_exist(self, keys: list[str]) -> bool:
+    def __contains__(self, keys: list[str]) -> bool:
         try:
             container = self.get()
             for key in keys:

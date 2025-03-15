@@ -153,14 +153,12 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
     """A manager for files which store (at least some) values in key-value mappings."""
 
     @abstractmethod
-    def do_keys_exist(
-        self, keys: list[str]
-    ) -> bool:  # TODO this should be __contains__ or similar
-        """Check if the given ID keys exist in the configuration file."""
+    def __contains__(self, keys: list[str]) -> bool:
+        """Check if a key exists in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def __getitem__(self, item: list[str]) -> Any:
+    def __getitem__(self, keys: list[str]) -> Any:
         raise NotImplementedError
 
     @abstractmethod

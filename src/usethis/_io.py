@@ -147,3 +147,44 @@ class UsethisFileManager(Generic[DocumentT]):
 
     def unlock(self) -> None:
         self._content_by_path.pop(self.path, None)
+
+
+class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
+    """A manager for files which store (at least some) values in key-value mappings."""
+
+    @abstractmethod
+    def do_keys_exist(
+        self, keys: list[str]
+    ) -> bool:  # TODO this should be __contains__ or similar
+        """Check if the given ID keys exist in the configuration file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def __getitem__(self, item: list[str]) -> Any:
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_value(  # TODO naming. Could this be __setitem__ , but how to handle the exists_ok cases?
+        self, *, keys: list[str], value: Any, exists_ok: bool = False
+    ) -> None:
+        """Set a value in the configuration file."""
+        raise NotImplementedError
+
+    @abstractmethod  # TODO naming. Could this be __delitem__ , but how to handle the missing_ok cases?
+    def remove_value(self, *, keys: list[str], missing_ok: bool = False) -> None:
+        """Remove a value from the configuration file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def extend_list(
+        self, *, keys: list[str], values: list[Any]
+    ) -> None:  # TODO id_keys naming vs keys
+        """Extend a list in the configuration file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def remove_from_list(
+        self, *, keys: list[str], values: list[Any]
+    ) -> None:  # TODO id_keys naming vs keys
+        """Remove values from a list in the configuration file."""
+        raise NotImplementedError

@@ -65,16 +65,14 @@ class ConfigEntry(BaseModel):
     """A configuration entry in a config file associated with a tool.
 
     Attributes:
-        keys: A sequentially nested sequence of keys giving a single configuration
-                 item.
+        keys: A sequentially nested sequence of keys giving a single configuration item.
         value: The default value to be placed at the under the key sequence. By default,
-               no configuration will be added.
+               no configuration will be added, which is most appropriate for high-level
+               configuration sections like [tool.usethis].
 
     """
 
-    # TODO docstring is out of date
-
-    keys: list[str]  # TODO update docstring
+    keys: list[str]
     value: Any | InstanceOf[_NoConfigValue] = (
         _NoConfigValue()
     )  # TODO if using _NoConfigValue should add a message to the user telling them to add the config.

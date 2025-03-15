@@ -40,20 +40,21 @@ class ConfigSpec(BaseModel):
     """Specification of configuration files for a tool.
 
     Attributes:
-        file_manager_by_path: File managers that handle the configuration files, indexed
-                              by the relative path to the file.
+        file_manager_by_relative_path: File managers that handle the configuration
+                                       files, indexed by the relative path to the file.
+                                       The order of the keys matters, as it determines
+                                       the resolution order; the earlier occurring keys
+                                       take precedence over later ones.
         resolution: The resolution strategy for the configuration files.
                     - "first": Using the order in file_managers, the first file found to
                       exist is used. All subsequent files are ignored. If no files are
                       found, the first file in the list is used.
-        entries: List of key-value configurations associated with the tool.
+        config_items: A list of configuration items that can be managed by the tool.
     """
 
-    file_manager_by_relative_path: dict[
-        Path, InstanceOf[KeyValueFileManager]
-    ]  # TODO N.B. the order of keys matters.
+    file_manager_by_relative_path: dict[Path, InstanceOf[KeyValueFileManager]]
     resolution: Literal["first"]
-    config_items: list[ConfigItem]  # TODO update docstring
+    config_items: list[ConfigItem]
 
 
 class _NoConfigValue:

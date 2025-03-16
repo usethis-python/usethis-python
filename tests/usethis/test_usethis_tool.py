@@ -10,7 +10,14 @@ from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_nam
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
-from usethis._tool import ConfigEntry, ConfigItem, ConfigSpec, PyprojectTOMLTool, Tool
+from usethis._tool import (
+    ConfigEntry,
+    ConfigItem,
+    ConfigSpec,
+    DeptryTool,
+    PyprojectTOMLTool,
+    Tool,
+)
 
 
 class DefaultTool(Tool):
@@ -628,112 +635,130 @@ repos:
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
                 assert get_hook_names() == [_PLACEHOLDER_ID]
 
-    # TODO need to refactor these tests
-    #     class TestAddPyprojectConfigs:
-    #         def test_no_config(self, tmp_path: Path):
-    #             # Arrange
-    #             class NoConfigTool(Tool):
-    #                 @property
-    #                 def name(self) -> str:
-    #                     return "no_config_tool"
+    class TestAddConfigs:
+        def test_no_config(self, tmp_path: Path):
+            # Arrange
+            class NoConfigTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "no_config_tool"
 
-    #                 def print_how_to_use(self) -> None:
-    #                     box_print("How to use no_config_tool")
+                def print_how_to_use(self) -> None:
+                    box_print("How to use no_config_tool")
 
-    #             nc_tool = NoConfigTool()
+            nc_tool = NoConfigTool()
 
-    #             # Act
-    #             with change_cwd(tmp_path):
-    #                 nc_tool.add_pyproject_configs()
+            # Act
+            with change_cwd(tmp_path):
+                nc_tool.add_configs()
 
-    #                 # Assert
-    #                 assert not (tmp_path / "pyproject.toml").exists()
+                # Assert
+                assert not (tmp_path / "pyproject.toml").exists()
 
-    #         def test_empty(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
-    #             # Arrange
-    #             class ThisTool(Tool):
-    #                 @property
-    #                 def name(self) -> str:
-    #                     return "mytool"
+        def test_empty(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            class ThisTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "mytool"
 
-    #                 def print_how_to_use(self) -> None:
-    #                     box_print("How to use this_tool")
+                def print_how_to_use(self) -> None:
+                    box_print("How to use this_tool")
 
-    #                 def get_pyproject_configs(self) -> list[PyprojectConfig]:
-    #                     return [
-    #                         PyprojectConfig(
-    #                             id_keys=["tool", "mytool"],
-    #                             value={"key": "value"},
-    #                         ),
-    #                     ]
+                def get_config_spec(self) -> ConfigSpec:
+                    return ConfigSpec(
+                        file_manager_by_relative_path={
+                            Path("pyproject.toml"): PyprojectTOMLManager(),
+                        },
+                        resolution="first",
+                        config_items=[
+                            ConfigItem(
+                                root={
+                                    Path("pyproject.toml"): ConfigEntry(
+                                        keys=["tool", self.name],
+                                        value={"key": "value"},
+                                    )
+                                }
+                            )
+                        ],
+                    )
 
-    #             (tmp_path / "pyproject.toml").write_text("")
+            (tmp_path / "pyproject.toml").write_text("")
 
-    #             # Act
-    #             with change_cwd(tmp_path), PyprojectTOMLManager():
-    #                 ThisTool().add_pyproject_configs()
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                ThisTool().add_configs()
 
-    #             # Assert
-    #             assert (
-    #                 (tmp_path / "pyproject.toml").read_text()
-    #                 == """\
-    # [tool.mytool]
-    # key = "value"
-    # """
-    #             )
-    #             out, err = capfd.readouterr()
-    #             assert not err
-    #             assert out == "✔ Adding mytool config to 'pyproject.toml'.\n"
+            # Assert
+            assert (
+                (tmp_path / "pyproject.toml").read_text()
+                == """\
+[tool.mytool]
+key = "value"
+"""
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Adding mytool config to 'pyproject.toml'.\n"
 
-    #         def test_differing_sections(
-    #             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
-    #         ):
-    #             # https://github.com/nathanjmcdougall/usethis-python/issues/184
+        def test_differing_sections(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/184
 
-    #             # Arrange
-    #             class ThisTool(Tool):
-    #                 @property
-    #                 def name(self) -> str:
-    #                     return "mytool"
+            # Arrange
+            class ThisTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "mytool"
 
-    #                 def print_how_to_use(self) -> None:
-    #                     box_print("How to use this_tool")
+                def print_how_to_use(self) -> None:
+                    box_print("How to use this_tool")
 
-    #                 def get_pyproject_configs(self) -> list[PyprojectConfig]:
-    #                     return [
-    #                         PyprojectConfig(
-    #                             id_keys=["tool", "mytool", "name"],
-    #                             value="Modular Design",
-    #                         ),
-    #                         PyprojectConfig(
-    #                             id_keys=["tool", "mytool", "root_packages"],
-    #                             value=["example"],
-    #                         ),
-    #                     ]
+                def get_config_spec(self) -> ConfigSpec:
+                    return ConfigSpec(
+                        file_manager_by_relative_path={
+                            Path("pyproject.toml"): PyprojectTOMLManager(),
+                        },
+                        resolution="first",
+                        config_items=[
+                            ConfigItem(
+                                root={
+                                    Path("pyproject.toml"): ConfigEntry(
+                                        keys=["tool", self.name],
+                                        value={
+                                            "name": "Modular Design",
+                                            "root_packages": ["example"],
+                                        },
+                                    )
+                                }
+                            )
+                        ],
+                    )
 
-    #             (tmp_path / "pyproject.toml").write_text(
-    #                 """\
-    # [tool.mytool]
-    # name = "Modular Design"
-    # """
-    #             )
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.mytool]
+name = "Modular Design"
+"""
+            )
 
-    #             # Act
-    #             with change_cwd(tmp_path), PyprojectTOMLManager():
-    #                 ThisTool().add_pyproject_configs()
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                ThisTool().add_configs()
 
-    #             # Assert
-    #             assert (
-    #                 (tmp_path / "pyproject.toml").read_text()
-    #                 == """\
-    # [tool.mytool]
-    # name = "Modular Design"
-    # root_packages = ["example"]
-    # """
-    #             )
-    #             out, err = capfd.readouterr()
-    #             assert not err
-    #             assert out == "✔ Adding mytool config to 'pyproject.toml'.\n"
+            # Assert
+            assert (
+                (tmp_path / "pyproject.toml").read_text()
+                == """\
+[tool.mytool]
+name = "Modular Design"
+root_packages = ["example"]
+"""
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Adding mytool config to 'pyproject.toml'.\n"
 
     class TestRemoveManagedFiles:
         def test_no_files(self, tmp_path: Path):
@@ -779,66 +804,37 @@ repos:
 class TestDeptryTool:
     """Tests for DeptryTool."""
 
-    # TODO need to refactor these tests
-    # def test_get_pyproject_id_keys(self):
-    #     """Test that get_pyproject_id_keys returns the correct keys."""
-    #     # Arrange
-    #     tool = DeptryTool()
+    def test_get_pyproject_id_keys(self):
+        """Test that get_pyproject_id_keys returns the correct keys."""
+        # Arrange
+        tool = DeptryTool()
 
-    #     # Act
-    #     result = tool.get_managed_pyproject_keys()
+        # Act
+        result = tool.get_config_spec()
 
-    #     # Assert
-    #     assert result == [["tool", "deptry"]]
+        # Assert
+        (config_item,) = result.config_items
+        config_item: ConfigItem
+        assert config_item.root[Path("pyproject.toml")] == ConfigEntry(
+            keys=["tool", "deptry"]
+        )
 
+    def test_remove_pyproject_configs_removes_deptry_section(self, tmp_path: Path):
+        """Test that remove_pyproject_configs removes the deptry section."""
+        # Arrange
+        pyproject = tmp_path / "pyproject.toml"
+        pyproject.write_text("""[tool.deptry]
+ignore_missing = ["pytest"]
+""")
 
-#     def test_remove_pyproject_configs_removes_deptry_section(self, tmp_path: Path):
-#         """Test that remove_pyproject_configs removes the deptry section."""
-#         # Arrange
-#         pyproject = tmp_path / "pyproject.toml"
-#         pyproject.write_text("""[tool.deptry]
-# ignore_missing = ["pytest"]
-# """)
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            tool = DeptryTool()
+            tool.remove_configs()
 
-#         # Act
-#         with change_cwd(tmp_path), PyprojectTOMLManager():
-#             tool = DeptryTool()
-#             tool.remove_pyproject_configs()
-
-#         # Assert
-#         assert "[tool.deptry]" not in pyproject.read_text()
-#         assert "ignore_missing" not in pyproject.read_text()
-
-# TODO I'm not sure this test is coherent anymore. Try and understand this.
-# def test_config_keys_are_subkeys_of_id_keys(self):
-#     """Test that all config keys are subkeys of id keys."""
-#     # Arrange
-#     tool = DeptryTool()
-
-#     # Act
-#     id_keys = tool.get_managed_pyproject_keys()
-#     configs = tool.get_pyproject_configs()
-
-#     # Assert
-
-#     for config in configs:
-#         # For each config, check if its keys are a subset of any id_keys
-#         assert any(config.id_keys[: len(id_key)] == id_key for id_key in id_keys), (
-#             f"Config keys {config.id_keys} not covered by ID keys {id_keys}"
-#         )
-
-# TODO I'm not sure this test is coherent anymore. Try and understand this.
-# @pytest.mark.parametrize("tool", ALL_TOOLS)
-# def test_all_tools_config_keys_are_subkeys_of_id_keys(tool: Tool):
-#     """Test that all tools' config keys are subkeys of their ID keys."""
-#     id_keys = tool.get_managed_pyproject_keys()
-#     configs = tool.get_pyproject_configs()
-
-#     for config in configs:
-#         # For each config, check if its keys are a subset of any id_keys
-#         assert any(config.id_keys[: len(id_key)] == id_key for id_key in id_keys), (
-#             f"Config keys {config.id_keys} not covered by ID keys in {tool.name}"
-#         )
+        # Assert
+        assert "[tool.deptry]" not in pyproject.read_text()
+        assert "ignore_missing" not in pyproject.read_text()
 
 
 class TestPyprojectTOMLTool:

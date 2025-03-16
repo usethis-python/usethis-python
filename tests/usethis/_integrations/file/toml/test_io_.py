@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._integrations.file.toml.errors import TOMLValueAlreadySetError
 from usethis._integrations.file.toml.io_ import TOMLFileManager
 from usethis._test import change_cwd
 
@@ -76,6 +77,43 @@ class TestTOMLFileManager:
                 # Assert
                 assert manager._content != original
 
+        def test_root_level_already_set_raise(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                manager[["a"]] = "b"
+
+                # Act, Assert
+                with pytest.raises(
+                    TOMLValueAlreadySetError,
+                    match="Configuration value is at root level is already set.",
+                ):
+                    manager.set_value(keys=[], value={"a": "c"}, exists_ok=False)
+
+        def test_root_level_already_set_no_raise(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                manager[["a"]] = "b"
+
+                # Act
+                manager.set_value(keys=[], value={"a": "c"}, exists_ok=True)
+
+                # Assert
+                assert manager._content == {"a": "c"}
+
     class TestDel:
         def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange
@@ -111,6 +149,24 @@ class TestTOMLFileManager:
 
                 # Assert
                 assert manager._content != original
+
+        def test_removing_root_level(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                manager[["a"]] = "b"
+
+                # Act
+                del manager[[]]
+
+                # Assert
+                assert not manager._content
 
     class TestExtendList:
         def test_inplace_modifications(self, tmp_path: Path) -> None:

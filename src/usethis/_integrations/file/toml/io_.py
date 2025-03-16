@@ -202,29 +202,26 @@ class TOMLFileManager(KeyValueFileManager):
             assert isinstance(d, dict)
             d = d[key]
         assert isinstance(d, dict)
-        if keys:
+        if not keys:
+            # i.e. the case where we're deleting the root of the document.
+            for key in list(d.keys()):
+                del d[key]
+        else:
             del d[keys[-1]]
 
-        # Cleanup: any empty sections should be removed.
-        for idx in range(len(keys) - 1):
-            d, parent = toml_document, {}
-            if not keys:
-                TypeAdapter(dict).validate_python(d)
+            # Cleanup: any empty sections should be removed.
+            for idx in range(len(keys) - 1):
+                d, parent = toml_document, {}
+
+                for key in keys[: idx + 1]:
+                    d, parent = d[key], d
+                    TypeAdapter(dict).validate_python(d)
+                    TypeAdapter(dict).validate_python(parent)
+                    assert isinstance(d, dict)
+                    assert isinstance(parent, dict)
                 assert isinstance(d, dict)
-            for key in keys[: idx + 1]:
-                d, parent = d[key], d
-                TypeAdapter(dict).validate_python(d)
-                TypeAdapter(dict).validate_python(parent)
-                assert isinstance(d, dict)
-                assert isinstance(parent, dict)
-            assert isinstance(d, dict)
-            if not d:
-                if parent:
+                if not d:
                     del parent[keys[idx]]
-                else:
-                    # i.e. the case where we're deleting the root of the document,
-                    # leaving nothing.
-                    toml_document.update({})
 
         self.commit(toml_document)
 

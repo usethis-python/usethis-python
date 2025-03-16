@@ -980,6 +980,22 @@ select = ["A", "B"]
 
             assert rules == ["A", "B", "C", "D"]
 
+        def test_no_rules(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["A"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules([])
+
+                # Assert
+                assert RuffTool().get_rules() == ["A"]
+
     class TestDeselectRules:
         def test_no_pyproject_toml(self, tmp_path: Path):
             # Act
@@ -988,7 +1004,7 @@ select = ["A", "B"]
                 files_manager(),
                 pytest.raises(PyprojectTOMLNotFoundError),
             ):
-                RuffTool().select_rules(["A", "B", "C"])
+                RuffTool().deselect_rules(["A", "B", "C"])
 
         def test_blank_slate(self, tmp_path: Path):
             # Arrange
@@ -1048,3 +1064,36 @@ select = ["A", "B"]
 
                 # Assert
                 assert RuffTool().get_rules() == ["B"]
+
+    class TestIgnoreRules:
+        def test_add_to_existing(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+ignore = ["A", "B"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().ignore_rules(["C", "D"])
+
+                # Assert
+                assert RuffTool().get_ignored_rules() == ["A", "B", "C", "D"]
+
+        def test_no_rules(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+ignore = []
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().ignore_rules(["A", "B"])
+
+                # Assert
+                assert RuffTool().get_ignored_rules() == ["A", "B"]

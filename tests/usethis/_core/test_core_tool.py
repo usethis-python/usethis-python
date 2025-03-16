@@ -31,7 +31,7 @@ from usethis._integrations.uv.deps import (
     is_dep_satisfied_in,
 )
 from usethis._test import change_cwd
-from usethis._tool import ALL_TOOLS
+from usethis._tool import ALL_TOOLS, RuffTool
 
 
 class TestAllHooksList:
@@ -1269,6 +1269,18 @@ minversion = "7\""""
                     ["tool", "uv", "default-groups"]
                 ]
                 assert "test" in default_groups
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_integration(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_ruff()
+
+                # Act
+                use_pytest()
+
+                # Assert
+                assert "PT" in RuffTool().get_rules()
 
     class TestRemove:
         class TestRuffIntegration:

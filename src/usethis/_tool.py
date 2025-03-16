@@ -14,9 +14,6 @@ from usethis._integrations.ci.bitbucket.anchor import (
 )
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
-from usethis._integrations.file.pyproject_toml.errors import (
-    PyprojectTOMLValueMissingError,
-)
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import add_repo, get_hook_names, remove_hook
 from usethis._integrations.pre_commit.schema import (
@@ -363,10 +360,14 @@ class Tool(Protocol):
                 file_manager,
             ) in self.get_config_spec().file_manager_by_relative_path.items():
                 if file_manager.path in config_item.paths:
+                    if not (file_manager.path.exists() and file_manager.path.is_file()):
+                        # This is mostly for the sake of the first_removal message
+                        continue
+
                     entry = config_item.root[relative_path]
                     try:
                         del file_manager[entry.keys]
-                    except PyprojectTOMLValueMissingError:
+                    except KeyError:
                         pass
                     else:
                         if first_removal:

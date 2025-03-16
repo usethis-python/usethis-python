@@ -192,7 +192,7 @@ class TestTOMLFileManager:
             with change_cwd(tmp_path), MyTOMLFileManager() as manager:
                 (tmp_path / "pyproject.toml").touch()
 
-                manager[["a"]] = ["b", "c"]
+                manager[["b"]] = ["c"]
 
                 original = manager._content
 
@@ -201,3 +201,20 @@ class TestTOMLFileManager:
 
                 # Assert
                 assert manager._content == original
+
+    class TestGetItem:
+        def test_no_keys_raises(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                # Act, Assert
+                with pytest.raises(
+                    ValueError, match="At least one ID key must be provided."
+                ):
+                    manager[[]]

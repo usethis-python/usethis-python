@@ -68,11 +68,9 @@ class MyTool(Tool):
                 ConfigItem(
                     root={
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", self.name],
-                            value={"key": "value"},
+                            keys=["tool", self.name], value={"key": "value"}
                         )
-                    },
-                    managed=True,
+                    }
                 )
             ],
         )

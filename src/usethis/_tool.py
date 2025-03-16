@@ -74,8 +74,6 @@ class ConfigEntry(BaseModel):
 
     keys: list[str]
     value: Any | InstanceOf[_NoConfigValue] = _NoConfigValue()
-    # TODO this message can be put into GitHub issues for posterity:
-    # TODO if using _NoConfigValue should add a message to the user telling them to add the config... except what if the keys are subset of any keys in other configs... so maybe we don't bother, I don't feel like such messages are philosophically necessary/justified.
 
 
 class ConfigItem(BaseModel):
@@ -85,11 +83,13 @@ class ConfigItem(BaseModel):
         root: A dictionary mapping the file path to the configuration entry.
         managed: Whether this configuration should be considered managed by only this
                  tool, and therefore whether it should be removed when the tool is
-                 removed.
+                 removed. This might be set to False if we are modifying other tools'
+                 config sections or shared config sections that are pre-requisites for
+                 using this tool but might be relied on by other tools as well.
     """
 
     root: dict[Path, ConfigEntry]
-    managed: bool
+    managed: bool = True
 
     @property
     def paths(self) -> set[Path]:
@@ -258,42 +258,14 @@ class Tool(Protocol):
 
     def add_configs(self) -> None:
         """Add the tool's configuration sections."""
-        # TODO this comment should be given editorial attention.
-        # Rules:
+        # Principles:
         # 1. We will never add configuration to a config file that is not active.
         # 2. We will never add a child key to a new parent when an existing parent
         #    already exists, even if that parent is in another file.
         # 3. Subject to #2, we will always prefer to place config in higher-priority
-        #    config files
-        #
-        # This gives the algorithm:
-        # For each config item, cycle through the active config files.
-        # Find an active file (in order of priority) that is applicable to this config
-        # item by indexing (if we can't find one there's a problem!)
-        # If the config item has no parent keys (flat config), add it to that file.
-        # Otherwise, the item has parent keys. Iterate through the keys starting with
-        # the root key, each time checking which active, applicable files contain it.
-        # If we reach a point where only one such file contains it, add it to that file.
-        # Otherwise, if we reach a point where no such files contain it, backtrack one
-        # key level (possibly to the root level) and add it to the highest-priority file.
-        # Otherwise, we have iterated through all the keys and the section already exists
-        # in multiple files, in which case again we should add it to the highest-priority file,
-        # although in practice this means that the config has already been added - when
-        # we try to add a config section that's already added (in any case), we should
-        # pass the function without doing anything.
-        # TODO there's a problem with the above. It assumes that there's a single key
-        # sequence to iterate over for each config file. But each file is potentially different.
-        # One thing we can check is whether they are actually different... if the ConfigEntry
-        # objects are the same for each path then there's no issue.
-        # But if there are different ConfigEntry objects (or, at least, the objects have
-        # different key sequences) then there's no sure-fire way to determine how one
-        # will or won't over-ride the other. One heuristic might be to look at key depth
-        # (i.e. total number of strings deep we are) but I figure that might break down
-        # easily in a case (which I expect to be quite common) where a disambiguating
-        # [tool.xyz] section occurs in pyproject.toml which occurs at the root level
-        # in a bespoke config file (leading to an off-by-one issue in counting key levels.)
-        # This would only arise with esoteric resolution methodologies so maybe we just
-        # leave this issue for now and raise NotImplementedEror if this case ever arises.
+        #    config files.
+        # In practice, the most common resolution method is "first", in which case there
+        # is only ever one active file; so principles #2 and #3 are not relevant.
 
         active_config_file_managers = self.get_active_config_file_managers()
 
@@ -411,23 +383,16 @@ class CodespellTool(Tool):
 
         return ConfigSpec(
             file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-                # TODO need to add the other file managers
+                Path("pyproject.toml"): PyprojectTOMLManager()
             },
             resolution="first",
             config_items=[
                 ConfigItem(
                     root={
-                        # TODO uncomment this
-                        # Path(".codespellrc"): ConfigEntry(
-                        #     keys=["codespell"], value=value
-                        # ),
-                        # Path("setup.cfg"): ConfigEntry(keys=["codespell"], value=value),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "codespell"], value=value
-                        ),
-                    },
-                    managed=True,
+                        )
+                    }
                 )
             ],
         )
@@ -500,44 +465,23 @@ class CoverageTool(Tool):
 
         return ConfigSpec(
             file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-                # TODO need to add the other file managers
+                Path("pyproject.toml"): PyprojectTOMLManager()
             },
             resolution="first",
             config_items=[
                 ConfigItem(
                     root={
-                        # TODO uncomment these
-                        # Path(".coveragerc"): ConfigEntry(keys=["run"], value=run_value),
-                        # Path("setup.cfg"): ConfigEntry(
-                        #     keys=["coverage:run"], value=run_value
-                        # ),
-                        # Path("tox.ini"): ConfigEntry(  # TODO github issue for tox?
-                        #     keys=["coverage:run"], value=run_value
-                        # ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "coverage", "run"], value=run_value
-                        ),
-                    },
-                    managed=True,
+                        )
+                    }
                 ),
                 ConfigItem(
-                    # TODO uncomment this out.
                     root={
-                        # Path(".coveragerc"): ConfigEntry(
-                        #     keys=["report"], value=report_value
-                        # ),
-                        # Path("setup.cfg"): ConfigEntry(
-                        #     keys=["coverage:report"], value=report_value
-                        # ),
-                        # Path("tox.ini"): ConfigEntry(
-                        #     keys=["coverage:report"], value=report_value
-                        # ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "coverage", "report"], value=report_value
-                        ),
-                    },
-                    managed=True,
+                        )
+                    }
                 ),
             ],
         )
@@ -566,11 +510,9 @@ class DeptryTool(Tool):
                 Path("pyproject.toml"): PyprojectTOMLManager(),
             },
             resolution="first",
-            # TODO also when would we actually ever specify a non-managed config? Need to document this. I guess it would be if we are configuring other tools.
             config_items=[
                 ConfigItem(
-                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])},
-                    managed=True,
+                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])}
                 )
             ],
         )
@@ -670,8 +612,7 @@ class PyprojectFmtTool(Tool):
                             keys=["tool", "pyproject-fmt"],
                             value={"keep_full_version": True},
                         )
-                    },
-                    managed=True,
+                    }
                 )
             ],
         )
@@ -779,15 +720,13 @@ class PytestTool(Tool):
                         # Path("setup.cfg"): ConfigEntry(
                         #     keys=["tool:pytest"], value=value
                         # ),
-                    },
-                    managed=True,
+                    }
                 ),
                 ConfigItem(
                     root={
                         Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"])
                     },  # TODO need to test and add this for other managed tools etc.
                     # TODO also need to add this for other files (for all tools!) etc.
-                    managed=True,
                 ),
             ],
         )
@@ -882,8 +821,7 @@ class RuffTool(Tool):
                         # TODO uncomment
                         # Path(".ruff.toml"): ConfigEntry(keys=[], value=value),
                         # Path("ruff.toml"): ConfigEntry(keys=[], value=value),
-                    },
-                    managed=True,
+                    }
                 )
             ],
         )

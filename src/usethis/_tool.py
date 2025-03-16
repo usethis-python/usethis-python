@@ -7,6 +7,7 @@ from typing import Any, Literal, Protocol
 from pydantic import BaseModel, InstanceOf
 from typing_extensions import assert_never
 
+from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -44,7 +45,8 @@ class ConfigSpec(BaseModel):
                                        files, indexed by the relative path to the file.
                                        The order of the keys matters, as it determines
                                        the resolution order; the earlier occurring keys
-                                       take precedence over later ones.
+                                       take precedence over later ones. All file
+                                       managers used in the config items must be keys.
         resolution: The resolution strategy for the configuration files.
                     - "first": Using the order in file_managers, the first file found to
                       exist is used. All subsequent files are ignored. If no files are
@@ -251,13 +253,27 @@ class Tool(Protocol):
             for path, file_manager in config_spec.file_manager_by_relative_path.items():
                 if path.exists() and path.is_file():
                     return {file_manager}
-            # Couldn't find any existing file so use the first file, if any.
-            try:
-                return {next(iter(config_spec.file_manager_by_relative_path.values()))}
-            except StopIteration:
+
+            file_managers = config_spec.file_manager_by_relative_path.values()
+            if not file_managers:
                 return set()
+
+            # Use the preferred default file since there's no existing file.
+            preferred_file_manager = self.preferred_file_manager()
+            if preferred_file_manager not in file_managers:
+                msg = (
+                    f"The preferred file manager '{preferred_file_manager}' is not "
+                    f"among the file managers '{file_managers}' for the tool "
+                    f"'{self.name}'"
+                )
+                raise NotImplementedError(msg)
+            return {preferred_file_manager}
         else:
             assert_never(resolution)
+
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        """If there is no currently active config file, this is the preferred one."""
+        return PyprojectTOMLManager()
 
     def add_configs(self) -> None:
         """Add the tool's configuration sections."""
@@ -286,7 +302,17 @@ class Tool(Protocol):
                 msg = f"No active config file managers found for one of the '{self.name}' config items"
                 raise NotImplementedError(msg)
 
-            config_entries = list(config_item.root.values())
+            config_entries = [
+                config_item
+                for relative_path, config_item in config_item.root.items()
+                if relative_path
+                in {file_manager.relative_path for file_manager in file_managers}
+            ]
+            if not config_entries:
+                msg = (
+                    f"No config entries found for one of the '{self.name}' config items"
+                )
+                raise NotImplementedError(msg)
             if len(config_entries) != 1:
                 msg = (
                     "Adding config is not yet supported for the case of multiple "
@@ -795,24 +821,37 @@ class RuffTool(Tool):
     def get_config_spec(self) -> ConfigSpec:
         # https://docs.astral.sh/ruff/configuration/#config-file-discovery
 
-        value = {
-            "line-length": 88,
-            "lint": {"select": []},
-        }
+        root_value = {"line-length": 88}
+        lint_value = {"select": []}
 
         return ConfigSpec(
             file_manager_by_relative_path={
+                Path(".ruff.toml"): DotRuffTOMLManager(),
+                Path("ruff.toml"): RuffTOMLManager(),
                 Path("pyproject.toml"): PyprojectTOMLManager(),
             },
             resolution="first",
             config_items=[
                 ConfigItem(
                     root={
+                        Path(".ruff.toml"): ConfigEntry(keys=[], value=root_value),
+                        Path("ruff.toml"): ConfigEntry(keys=[], value=root_value),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "ruff"], value=value
-                        )
+                            keys=["tool", "ruff"], value=root_value
+                        ),
                     }
-                )
+                ),
+                ConfigItem(
+                    root={
+                        Path(".ruff.toml"): ConfigEntry(
+                            keys=["lint"], value=lint_value
+                        ),
+                        Path("ruff.toml"): ConfigEntry(keys=["lint"], value=lint_value),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "ruff", "lint"], value=lint_value
+                        ),
+                    }
+                ),
             ],
         )
 
@@ -869,6 +908,70 @@ class RuffTool(Tool):
                 ),
             )
         ]
+
+    def select_rules(self, rules: list[str]) -> None:
+        """Add Ruff rules to the project."""
+        rules = sorted(set(rules) - set(self.get_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+        tick_print(f"Enabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
+
+        (file_manager,) = self.get_active_config_file_managers()
+        file_manager.extend_list(keys=["tool", "ruff", "lint", "select"], values=rules)
+
+    def ignore_rules(self, rules: list[str]) -> None:
+        """Ignore Ruff rules in the project."""
+        rules = sorted(set(rules) - set(self.get_ignored_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+        tick_print(f"Ignoring Ruff rule{s} {rules_str} in 'pyproject.toml'.")
+
+        (file_manager,) = self.get_active_config_file_managers()
+        file_manager.extend_list(keys=["tool", "ruff", "lint", "ignore"], values=rules)
+
+    def deselect_rules(self, rules: list[str]) -> None:
+        """Ensure Ruff rules are not selected in the project."""
+        rules = list(set(rules) & set(self.get_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+        tick_print(f"Disabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
+
+        (file_manager,) = self.get_active_config_file_managers()
+        file_manager.remove_from_list(
+            keys=["tool", "ruff", "lint", "select"], values=rules
+        )
+
+    def get_rules(self) -> list[str]:
+        """Get the Ruff rules selected in the project."""
+        (file_manager,) = self.get_active_config_file_managers()
+        try:
+            rules: list[str] = file_manager[["tool", "ruff", "lint", "select"]]
+        except KeyError:
+            rules = []
+
+        return rules
+
+    def get_ignored_rules(self) -> list[str]:
+        """Get the Ruff rules ignored in the project."""
+        (file_manager,) = self.get_active_config_file_managers()
+        try:
+            rules: list[str] = file_manager[["tool", "ruff", "lint", "ignore"]]
+        except KeyError:
+            rules = []
+
+        return rules
 
 
 ALL_TOOLS: list[Tool] = [

@@ -25,11 +25,6 @@ from usethis._integrations.pre_commit.hooks import (
     get_hook_names,
 )
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
-from usethis._integrations.ruff.rules import (
-    deselect_ruff_rules,
-    ignore_ruff_rules,
-    select_ruff_rules,
-)
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import (
@@ -238,7 +233,7 @@ def use_pytest(*, remove: bool = False) -> None:
         tool.add_test_deps()
         tool.add_configs()
         if RuffTool().is_used():
-            select_ruff_rules(tool.get_associated_ruff_rules())
+            RuffTool().select_rules(tool.get_associated_ruff_rules())
 
         # deptry currently can't scan the tests folder for dev deps
         # https://github.com/fpgmaas/deptry/issues/302
@@ -256,7 +251,7 @@ def use_pytest(*, remove: bool = False) -> None:
             remove_bitbucket_pytest_steps()
 
         if RuffTool().is_used():
-            deselect_ruff_rules(tool.get_associated_ruff_rules())
+            RuffTool().deselect_rules(tool.get_associated_ruff_rules())
         tool.remove_configs()
         tool.remove_test_deps()
         remove_pytest_dir()  # Last, since this is a manual step
@@ -336,8 +331,8 @@ def use_ruff(*, remove: bool = False) -> None:
     if not remove:
         tool.add_dev_deps()
         tool.add_configs()
-        select_ruff_rules(rules)
-        ignore_ruff_rules(ignored_rules)
+        tool.select_rules(rules)
+        tool.ignore_rules(ignored_rules)
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
         elif is_bitbucket_used():

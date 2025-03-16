@@ -283,12 +283,11 @@ key = "value1"
                 del PyprojectTOMLManager()[["tool", "usethis", "key"]]
 
         def test_missing_pyproject(self, tmp_path: Path):
-            with (
-                change_cwd(tmp_path),
-                PyprojectTOMLManager(),
-                pytest.raises(PyprojectTOMLNotFoundError),
-            ):
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
                 del PyprojectTOMLManager()[["tool", "usethis", "key"]]
+
+            assert not (tmp_path / "pyproject.toml").exists()
 
         def test_single_key(self, tmp_path: Path):
             """This checks the empty section cleanup."""

@@ -4,7 +4,9 @@ import pytest
 import requests
 
 from usethis._config import usethis_config
+from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._console import box_print
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
@@ -16,6 +18,7 @@ from usethis._tool import (
     ConfigSpec,
     DeptryTool,
     PyprojectTOMLTool,
+    RuffTool,
     Tool,
 )
 
@@ -888,3 +891,160 @@ class TestPyprojectTOMLTool:
 
             # Assert
             assert result == []
+
+
+class TestRuffTool:
+    class TestSelectRules:
+        def test_no_pyproject_toml(self, tmp_path: Path):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                pytest.raises(PyprojectTOMLNotFoundError),
+            ):
+                RuffTool().select_rules(["A", "B", "C"])
+
+        def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("")
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules(["A", "B", "C"])
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert "✔ Enabling Ruff rules 'A', 'B', 'C' in 'pyproject.toml" in out
+
+        def test_blank_slate(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("")
+
+            # Act
+            new_rules = ["A", "B", "C"]
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules(new_rules)
+
+                # Assert
+                rules = RuffTool().get_rules()
+            assert rules == new_rules
+
+        def test_mixing(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+    [tool.ruff.lint]
+    select = ["A", "B"]
+    """
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules(["C", "D"])
+
+                # Assert
+                rules = RuffTool().get_rules()
+            assert rules == ["A", "B", "C", "D"]
+
+        def test_respects_order(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["D", "B", "A"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules(["E", "C", "A"])
+
+                # Assert
+                assert RuffTool().get_rules() == ["D", "B", "A", "C", "E"]
+
+        def test_ruff_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "ruff.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["A", "B"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), RuffTOMLManager():
+                RuffTool().select_rules(["C", "D"])
+
+                # Assert
+                rules = RuffTool().get_rules()
+
+            assert rules == ["A", "B", "C", "D"]
+
+    class TestDeselectRules:
+        def test_no_pyproject_toml(self, tmp_path: Path):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                pytest.raises(PyprojectTOMLNotFoundError),
+            ):
+                RuffTool().select_rules(["A", "B", "C"])
+
+        def test_blank_slate(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("")
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().deselect_rules(["A", "B", "C"])
+
+                # Assert
+                assert RuffTool().get_rules() == []
+
+        def test_single_rule(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["A"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().deselect_rules(["A"])
+
+                # Assert
+                assert RuffTool().get_rules() == []
+
+        def test_mix(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["A", "B", "C"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().deselect_rules(["A", "C"])
+
+                # Assert
+                assert RuffTool().get_rules() == ["B"]
+
+        def test_ruff_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".ruff.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["A", "B"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), DotRuffTOMLManager():
+                RuffTool().deselect_rules(["A"])
+
+                # Assert
+                assert RuffTool().get_rules() == ["B"]

@@ -3,6 +3,7 @@ from typing import Protocol
 import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
+from usethis._config_file import files_manager
 from usethis._console import err_print
 from usethis._core.tool import (
     use_codespell,
@@ -15,7 +16,6 @@ from usethis._core.tool import (
     use_requirements_txt,
     use_ruff,
 )
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis.errors import UsethisError
 
 app = typer.Typer(help="Add and configure development tools, e.g. linters.")
@@ -39,7 +39,7 @@ def codespell(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        PyprojectTOMLManager(),
+        files_manager(),
     ):
         _run_tool(use_codespell, remove=remove)
 
@@ -53,7 +53,7 @@ def coverage(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        PyprojectTOMLManager(),
+        files_manager(),
     ):
         _run_tool(use_coverage, remove=remove)
 
@@ -70,7 +70,7 @@ def deptry(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        PyprojectTOMLManager(),
+        files_manager(),
     ):
         _run_tool(use_deptry, remove=remove)
 
@@ -87,7 +87,7 @@ def pre_commit(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        PyprojectTOMLManager(),
+        files_manager(),
     ):
         _run_tool(use_pre_commit, remove=remove)
 
@@ -104,7 +104,7 @@ def pyproject_fmt(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        PyprojectTOMLManager(),
+        files_manager(),
     ):
         _run_tool(use_pyproject_fmt, remove=remove)
 
@@ -120,7 +120,7 @@ def pyproject_toml(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        PyprojectTOMLManager(),
+        files_manager(),
     ):
         _run_tool(use_pyproject_toml, remove=remove)
 
@@ -134,7 +134,7 @@ def pytest(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        PyprojectTOMLManager(),
+        files_manager(),
     ):
         _run_tool(use_pytest, remove=remove)
 
@@ -151,7 +151,7 @@ def requirements_txt(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        PyprojectTOMLManager(),
+        files_manager(),
     ):
         _run_tool(use_requirements_txt, remove=remove)
 
@@ -167,7 +167,7 @@ def ruff(
 ) -> None:
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        PyprojectTOMLManager(),
+        files_manager(),
     ):
         _run_tool(use_ruff, remove=remove)
 

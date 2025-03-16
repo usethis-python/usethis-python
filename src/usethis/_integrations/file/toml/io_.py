@@ -83,8 +83,15 @@ class TOMLFileManager(KeyValueFileManager):
             raise UnexpectedTOMLIOError(err) from None
 
     def __contains__(self, keys: list[str]) -> bool:
+        """Check if the TOML file contains a value.
+
+        An non-existent file will return False.
+        """
         try:
-            container = self.get()
+            try:
+                container = self.get()
+            except FileNotFoundError:
+                return False
             for key in keys:
                 TypeAdapter(dict).validate_python(container)
                 assert isinstance(container, dict)
@@ -112,16 +119,24 @@ class TOMLFileManager(KeyValueFileManager):
     def set_value(
         self, *, keys: list[str], value: Any, exists_ok: bool = False
     ) -> None:
-        if not keys:
-            msg = "At least one ID key must be provided."
-            raise ValueError(msg)
+        """Set a value in the TOML file.
 
+        An empty list of keys corresponds to the root of the document.
+        """
         toml_document = copy.copy(self.get())
 
         try:
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
             d, parent = toml_document, {}
+            if not keys:
+                # Root level config - value must be a mapping.
+                TypeAdapter(dict).validate_python(d)
+                assert isinstance(d, dict)
+                TypeAdapter(dict).validate_python(value)
+                assert isinstance(value, dict)
+                if not d:
+                    raise KeyError
             for key in keys:
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
@@ -140,22 +155,34 @@ class TOMLFileManager(KeyValueFileManager):
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
-                msg = f"Configuration value '{'.'.join(keys)}' is already set."
+                if keys:
+                    msg = f"Configuration value '{'.'.join(keys)}' is already set."
+                else:
+                    msg = "Configuration value is at root level is already set."
                 raise TOMLValueAlreadySetError(msg)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
                 TypeAdapter(dict).validate_python(parent)
                 assert isinstance(parent, dict)
-                parent[keys[-1]] = value
+                if parent:
+                    parent[keys[-1]] = value
+                else:
+                    # i.e. the case where we're creating the root of the document
+                    toml_document.update(value)
 
         self.commit(toml_document)
 
     def __delitem__(self, keys: list[str]) -> None:
-        if not keys:
-            msg = "At least one ID key must be provided."
-            raise ValueError(msg)
+        """Delete a value in the TOML file.
 
-        toml_document = copy.copy(self.get())
+        An empty list of keys corresponds to the root of the document.
+
+        Trying to delete a key from a document that doesn't exist will pass silently.
+        """
+        try:
+            toml_document = copy.copy(self.get())
+        except FileNotFoundError:
+            return
 
         # Exit early if the configuration is not present.
         try:
@@ -175,12 +202,15 @@ class TOMLFileManager(KeyValueFileManager):
             assert isinstance(d, dict)
             d = d[key]
         assert isinstance(d, dict)
-        del d[keys[-1]]
+        if keys:
+            del d[keys[-1]]
 
         # Cleanup: any empty sections should be removed.
         for idx in range(len(keys) - 1):
             d, parent = toml_document, {}
-            TypeAdapter(dict).validate_python(d)
+            if not keys:
+                TypeAdapter(dict).validate_python(d)
+                assert isinstance(d, dict)
             for key in keys[: idx + 1]:
                 d, parent = d[key], d
                 TypeAdapter(dict).validate_python(d)
@@ -189,7 +219,12 @@ class TOMLFileManager(KeyValueFileManager):
                 assert isinstance(parent, dict)
             assert isinstance(d, dict)
             if not d:
-                del parent[keys[idx]]
+                if parent:
+                    del parent[keys[idx]]
+                else:
+                    # i.e. the case where we're deleting the root of the document,
+                    # leaving nothing.
+                    toml_document.update({})
 
         self.commit(toml_document)
 

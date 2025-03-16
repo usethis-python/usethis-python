@@ -41,9 +41,21 @@ class UsethisFileManager(Generic[DocumentT]):
         """Return the relative path to the file."""
         raise NotImplementedError
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, UsethisFileManager):
+            return NotImplemented
+
+        return self.relative_path == other.relative_path
+
+    def __hash__(self) -> int:
+        return hash((self.__class__.__name__, self.relative_path))
+
     @property
     def name(self) -> str:
         return self.relative_path.name
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.relative_path!r})"
 
     def __init__(self) -> None:
         self.path = (Path.cwd() / self.relative_path).resolve()
@@ -93,6 +105,10 @@ class UsethisFileManager(Generic[DocumentT]):
 
         if self._content is None:
             # No changes made, nothing to write.
+            return
+
+        # Also, if the file has since been deleted, we should not write it.
+        if not self.path.exists():
             return
 
         self.path.write_text(self._dump_content())

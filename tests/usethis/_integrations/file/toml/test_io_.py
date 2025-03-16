@@ -40,21 +40,21 @@ class TestTOMLFileManager:
             assert manager._content == 42
 
     class TestSetValue:
-        def test_no_keys_raises(self, tmp_path: Path) -> None:
+        def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
-            with change_cwd(tmp_path):
-                manager = MyTOMLFileManager()
+            (tmp_path / "pyproject.toml").touch()
 
-            # Act, Assert
-            with pytest.raises(
-                ValueError, match="At least one ID key must be provided."
-            ):
-                manager.set_value(keys=[], value="d")
+            # Act
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.set_value(keys=[], value={"b": "c"})
+
+                # Assert
+                assert manager._content == {"b": "c"}
 
         def test_inplace_modifications(self, tmp_path: Path) -> None:
             # Arrange
@@ -77,7 +77,7 @@ class TestTOMLFileManager:
                 assert manager._content != original
 
     class TestDel:
-        def test_no_keys_raises(self, tmp_path: Path) -> None:
+        def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
@@ -87,11 +87,11 @@ class TestTOMLFileManager:
             with change_cwd(tmp_path), MyTOMLFileManager() as manager:
                 (tmp_path / "pyproject.toml").touch()
 
-                # Act, Assert
-                with pytest.raises(
-                    ValueError, match="At least one ID key must be provided."
-                ):
-                    del manager[[]]
+                # Act
+                del manager[[]]
+
+            # Assert
+            assert not manager._content
 
         def test_inplace_modifications(self, tmp_path: Path) -> None:
             # Arrange

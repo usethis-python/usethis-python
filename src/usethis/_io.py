@@ -55,7 +55,7 @@ class UsethisFileManager(Generic[DocumentT]):
         return self.relative_path.name
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.relative_path!r})"
+        return f"{self.__class__.__name__}({self.relative_path.as_posix()!r})"
 
     def __init__(self) -> None:
         self.path = (Path.cwd() / self.relative_path).resolve()

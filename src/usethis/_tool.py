@@ -759,9 +759,6 @@ class PytestTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path("pytest.ini"), Path("tests/conftest.py")]
 
-    def get_extra_dev_deps(self) -> list[Dependency]:
-        return [Dependency(name="pytest-cov")]
-
     def get_associated_ruff_rules(self) -> list[str]:
         return ["PT"]
 

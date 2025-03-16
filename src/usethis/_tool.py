@@ -393,7 +393,7 @@ class CodespellTool(Tool):
                             keys=["tool", "codespell"], value=value
                         )
                     }
-                )
+                ),
             ],
         )
 
@@ -481,6 +481,11 @@ class CoverageTool(Tool):
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "coverage", "report"], value=report_value
                         )
+                    }
+                ),
+                ConfigItem(
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "coverage"])
                     }
                 ),
             ],
@@ -705,28 +710,18 @@ class PytestTool(Tool):
         return ConfigSpec(
             file_manager_by_relative_path={
                 Path("pyproject.toml"): PyprojectTOMLManager(),
-                # TODO need to add the other file managers
             },
             resolution="first",
             config_items=[
                 ConfigItem(
                     root={
-                        # TODO uncomment these
-                        # Path("pytest.ini"): ConfigEntry(keys=["pytest"], value=value),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "pytest", "ini_options"], value=value
-                        ),
-                        # Path("tox.ini"): ConfigEntry(keys=["pytest"], value=value),
-                        # Path("setup.cfg"): ConfigEntry(
-                        #     keys=["tool:pytest"], value=value
-                        # ),
+                        )
                     }
                 ),
                 ConfigItem(
-                    root={
-                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"])
-                    },  # TODO need to test and add this for other managed tools etc.
-                    # TODO also need to add this for other files (for all tools!) etc.
+                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"])}
                 ),
             ],
         )
@@ -804,23 +799,15 @@ class RuffTool(Tool):
 
         return ConfigSpec(
             file_manager_by_relative_path={
-                # TODO need to uncomment these and give their own file manager.
-                # Can this be set up to avoid duplicated shallow class definition
-                # Path(".ruff.toml"): TOMLFileManager(),
-                # Path("ruff.toml"): TOMLFileManager(),
                 Path("pyproject.toml"): PyprojectTOMLManager(),
             },
             resolution="first",
             config_items=[
                 ConfigItem(
                     root={
-                        # TODO test that empty key works and puts at root
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "ruff"], value=value
-                        ),
-                        # TODO uncomment
-                        # Path(".ruff.toml"): ConfigEntry(keys=[], value=value),
-                        # Path("ruff.toml"): ConfigEntry(keys=[], value=value),
+                        )
                     }
                 )
             ],

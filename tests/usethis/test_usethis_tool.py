@@ -152,7 +152,20 @@ class TestTool:
                 UriRepo(repo="repo for my_tool", hooks=[HookDefinition(id="deptry")])
             ]
 
-    # TODO test get_config_spec
+    class TestGetConfigSpec:
+        def test_default(self):
+            # Arrange
+            tool = DefaultTool()
+
+            # Act
+            config_spec = tool.get_config_spec()
+
+            # Assert
+            assert config_spec == ConfigSpec(
+                file_manager_by_relative_path={},
+                resolution="first",
+                config_items=[],
+            )
 
     class TestGetAssociatedRuffRules:
         def test_default(self):

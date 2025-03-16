@@ -31,9 +31,9 @@ if TYPE_CHECKING:
 
 
 class TOMLFileManager(KeyValueFileManager):
-    _content_by_path: ClassVar[
-        dict[Path, TOMLDocument | None]
-    ] = {}  # TODO this isn't really shared with the child PyProjectTOMLManager class... is this a design issue?
+    """An abstract class for managing TOML files."""
+
+    _content_by_path: ClassVar[dict[Path, TOMLDocument | None]] = {}
 
     def __enter__(self) -> Self:
         try:

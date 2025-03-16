@@ -1087,13 +1087,13 @@ ignore = ["A", "B"]
             (tmp_path / "pyproject.toml").write_text(
                 """\
 [tool.ruff.lint]
-ignore = []
+ignore = ["A"]
 """
             )
 
             # Act
             with change_cwd(tmp_path), PyprojectTOMLManager():
-                RuffTool().ignore_rules(["A", "B"])
+                RuffTool().ignore_rules([])
 
                 # Assert
-                assert RuffTool().get_ignored_rules() == ["A", "B"]
+                assert RuffTool().get_ignored_rules() == ["A"]

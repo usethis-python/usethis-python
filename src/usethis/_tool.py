@@ -251,8 +251,11 @@ class Tool(Protocol):
             for path, file_manager in config_spec.file_manager_by_relative_path.items():
                 if path.exists() and path.is_file():
                     return {file_manager}
-            # Couldn't find any existing file so use the first file.
-            return {next(iter(config_spec.file_manager_by_relative_path.values()))}
+            # Couldn't find any existing file so use the first file, if any.
+            try:
+                return {next(iter(config_spec.file_manager_by_relative_path.values()))}
+            except StopIteration:
+                return set()
         else:
             assert_never(resolution)
 

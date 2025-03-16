@@ -240,18 +240,18 @@ class TestPyprojectTOMLManager:
             assert (
                 (tmp_path / "pyproject.toml").read_text()
                 == """\
-    [tool.usethis]
-    key = "value"
-    """
+[tool.usethis]
+key = "value"
+"""
             )
 
         def test_update_not_exists_ok(self, tmp_path: Path):
             # Arrange
             (tmp_path / "pyproject.toml").write_text(
                 """\
-    [tool.usethis]
-    key = "value1"
-    """
+[tool.usethis]
+key = "value1"
+"""
             )
 
             # Act
@@ -346,18 +346,18 @@ class TestPyprojectTOMLManager:
             assert (
                 (tmp_path / "pyproject.toml").read_text()
                 == """\
-    [tool.usethis]
-    key = ["value"]
-    """
+[tool.usethis]
+key = ["value"]
+"""
             )
 
         def test_add_one(self, tmp_path: Path):
             # Arrange
             (tmp_path / "pyproject.toml").write_text(
                 """\
-    [tool.usethis]
-    key = ["value1"]
-    """
+[tool.usethis]
+key = ["value1"]
+"""
             )
 
             # Act
@@ -370,7 +370,7 @@ class TestPyprojectTOMLManager:
             assert (
                 (tmp_path / "pyproject.toml").read_text()
                 == """\
-    [tool.usethis]
-    key = ["value1", "value2"]
-    """
+[tool.usethis]
+key = ["value1", "value2"]
+"""
             )

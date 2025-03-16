@@ -2,28 +2,20 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Literal, Protocol
 
+from pydantic import BaseModel, InstanceOf
+from typing_extensions import assert_never
+
+from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
-from usethis._integrations.file.pyproject_toml.config import PyprojectConfig
-from usethis._integrations.file.pyproject_toml.core import (
-    PyprojectTOMLValueAlreadySetError,
-    PyprojectTOMLValueMissingError,
-    do_pyproject_id_keys_exist,
-    remove_pyproject_value,
-    set_pyproject_value,
-)
-from usethis._integrations.file.pyproject_toml.remove import remove_pyproject_toml
-from usethis._integrations.pre_commit.hooks import (
-    add_repo,
-    get_hook_names,
-    remove_hook,
-)
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.pre_commit.hooks import add_repo, get_hook_names, remove_hook
 from usethis._integrations.pre_commit.schema import (
     FileType,
     FileTypes,
@@ -39,6 +31,69 @@ from usethis._integrations.uv.deps import (
     is_dep_in_any_group,
     remove_deps_from_group,
 )
+from usethis._io import KeyValueFileManager
+
+
+class ConfigSpec(BaseModel):
+    """Specification of configuration files for a tool.
+
+    Attributes:
+        file_manager_by_relative_path: File managers that handle the configuration
+                                       files, indexed by the relative path to the file.
+                                       The order of the keys matters, as it determines
+                                       the resolution order; the earlier occurring keys
+                                       take precedence over later ones. All file
+                                       managers used in the config items must be keys.
+        resolution: The resolution strategy for the configuration files.
+                    - "first": Using the order in file_managers, the first file found to
+                      exist is used. All subsequent files are ignored. If no files are
+                      found, the first file in the list is used.
+        config_items: A list of configuration items that can be managed by the tool.
+    """
+
+    file_manager_by_relative_path: dict[Path, InstanceOf[KeyValueFileManager]]
+    resolution: Literal["first"]
+    config_items: list[ConfigItem]
+
+
+class _NoConfigValue:
+    pass
+
+
+class ConfigEntry(BaseModel):
+    """A configuration entry in a config file associated with a tool.
+
+    Attributes:
+        keys: A sequentially nested sequence of keys giving a single configuration item.
+        value: The default value to be placed at the under the key sequence. By default,
+               no configuration will be added, which is most appropriate for high-level
+               configuration sections like [tool.usethis].
+
+    """
+
+    keys: list[str]
+    value: Any | InstanceOf[_NoConfigValue] = _NoConfigValue()
+
+
+class ConfigItem(BaseModel):
+    """A config item which can potentially live in different files.
+
+    Attributes:
+        root: A dictionary mapping the file path to the configuration entry.
+        managed: Whether this configuration should be considered managed by only this
+                 tool, and therefore whether it should be removed when the tool is
+                 removed. This might be set to False if we are modifying other tools'
+                 config sections or shared config sections that are pre-requisites for
+                 using this tool but might be relied on by other tools as well.
+    """
+
+    root: dict[Path, ConfigEntry]
+    managed: bool = True
+
+    @property
+    def paths(self) -> set[Path]:
+        """Get the absolute paths to the config files associated with this item."""
+        return {(Path.cwd() / path).resolve() for path in self.root}
 
 
 class Tool(Protocol):
@@ -50,6 +105,14 @@ class Tool(Protocol):
         It is assumed that this name is also the name of the Python package associated
         with the tool; if not, make sure to override methods which access this property.
         """
+
+    @abstractmethod
+    def print_how_to_use(self) -> None:
+        """Print instructions for using the tool.
+
+        This method is called after a tool is added to the project.
+        """
+        pass
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         """Get the Bitbucket pipeline step associated with this tool."""
@@ -77,16 +140,17 @@ class Tool(Protocol):
         """
         return []
 
+    def get_config_spec(self) -> ConfigSpec:
+        """Get the configuration specification for this tool.
+
+        This includes the file managers and resolution methodology.
+        """
+        return ConfigSpec(
+            file_manager_by_relative_path={}, resolution="first", config_items=[]
+        )
+
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         """Get the pre-commit repository configurations for the tool."""
-        return []
-
-    def get_pyproject_configs(self) -> list[PyprojectConfig]:
-        """Get the pyproject configurations for the tool.
-
-        All configuration keys returned by this method must be sub-keys of the
-        keys returned by get_pyproject_id_keys().
-        """
         return []
 
     def get_associated_ruff_rules(self) -> list[str]:
@@ -94,20 +158,8 @@ class Tool(Protocol):
         return []
 
     def get_managed_files(self) -> list[Path]:
-        """Get (relative) paths to files managed by the tool."""
+        """Get (relative) paths to files managed by (solely) this tool."""
         return []
-
-    def get_managed_pyproject_keys(self) -> list[list[str]]:
-        """Get keys for any pyproject.toml sections only used by this tool (not shared)."""
-        return []
-
-    @abstractmethod
-    def print_how_to_use(self) -> None:
-        """Print instructions for using the tool.
-
-        This method is called after a tool is added to the project.
-        """
-        pass
 
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project.
@@ -115,13 +167,10 @@ class Tool(Protocol):
         Three heuristics are used by default:
         1. Whether any of the tool's characteristic dev dependencies are in the project.
         2. Whether any of the tool's managed files are in the project.
-        3. Whether any of the tool's managed pyproject.toml sections are present.
+        3. Whether any of the tool's managed config file sections are present.
         """
         for file in self.get_managed_files():
             if file.exists() and file.is_file():
-                return True
-        for id_keys in self.get_managed_pyproject_keys():
-            if do_pyproject_id_keys_exist(id_keys):
                 return True
         for dep in self.get_dev_deps(unconditional=True):
             if is_dep_in_any_group(dep):
@@ -129,6 +178,15 @@ class Tool(Protocol):
         for dep in self.get_test_deps(unconditional=True):
             if is_dep_in_any_group(dep):
                 return True
+        config_spec = self.get_config_spec()
+        for config_item in config_spec.config_items:
+            if not config_item.managed:
+                continue
+
+            for path, entry in config_item.root.items():
+                file_manager = config_spec.file_manager_by_relative_path[path]
+                if entry.keys in file_manager:
+                    return True
 
         return False
 
@@ -184,45 +242,139 @@ class Tool(Protocol):
                 if hook.id in get_hook_names():
                     remove_hook(hook.id)
 
-    def add_pyproject_configs(self) -> None:
-        """Add the tool's pyproject.toml configurations."""
-        configs = self.get_pyproject_configs()
-        if not configs:
-            return
+    def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
+        """Get relative paths to all active configuration files."""
+        config_spec = self.get_config_spec()
+        resolution = config_spec.resolution
+        if resolution == "first":
+            for path, file_manager in config_spec.file_manager_by_relative_path.items():
+                if path.exists() and path.is_file():
+                    return {file_manager}
+
+            file_managers = config_spec.file_manager_by_relative_path.values()
+            if not file_managers:
+                return set()
+
+            # Use the preferred default file since there's no existing file.
+            preferred_file_manager = self.preferred_file_manager()
+            if preferred_file_manager not in file_managers:
+                msg = (
+                    f"The preferred file manager '{preferred_file_manager}' is not "
+                    f"among the file managers '{file_managers}' for the tool "
+                    f"'{self.name}'"
+                )
+                raise NotImplementedError(msg)
+            return {preferred_file_manager}
+        else:
+            assert_never(resolution)
+
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        """If there is no currently active config file, this is the preferred one."""
+        return PyprojectTOMLManager()
+
+    def add_configs(self) -> None:
+        """Add the tool's configuration sections."""
+        # Principles:
+        # 1. We will never add configuration to a config file that is not active.
+        # 2. We will never add a child key to a new parent when an existing parent
+        #    already exists, even if that parent is in another file.
+        # 3. Subject to #2, we will always prefer to place config in higher-priority
+        #    config files.
+        # In practice, the most common resolution method is "first", in which case there
+        # is only ever one active file; so principles #2 and #3 are not relevant.
+
+        active_config_file_managers = self.get_active_config_file_managers()
 
         first_addition = True
-        for config in configs:
-            try:
-                set_pyproject_value(config.id_keys, config.value)
-            except PyprojectTOMLValueAlreadySetError:
-                pass
-            else:
-                if first_addition:
-                    tick_print(f"Adding {self.name} config to 'pyproject.toml'.")
-                    first_addition = False
+        for config_item in self.get_config_spec().config_items:
+            # Filter to just those active config file managers which can manage this
+            # config
+            file_managers = [
+                file_manager
+                for file_manager in active_config_file_managers
+                if file_manager.path in config_item.paths
+            ]
 
-    def remove_pyproject_configs(self) -> None:
-        """Remove all pyproject.toml configurations associated with this tool.
+            if not file_managers:
+                msg = f"No active config file managers found for one of the '{self.name}' config items"
+                raise NotImplementedError(msg)
 
-        This includes any tool-specific sections in the pyproject.toml file.
-        If no configurations exist, this method has no effect.
+            config_entries = [
+                config_item
+                for relative_path, config_item in config_item.root.items()
+                if relative_path
+                in {file_manager.relative_path for file_manager in file_managers}
+            ]
+            if not config_entries:
+                msg = (
+                    f"No config entries found for one of the '{self.name}' config items"
+                )
+                raise NotImplementedError(msg)
+            if len(config_entries) != 1:
+                msg = (
+                    "Adding config is not yet supported for the case of multiple "
+                    "active config files."
+                )
+                raise NotImplementedError(msg)
+
+            (entry,) = config_entries
+
+            if isinstance(entry.value, _NoConfigValue):
+                # No value to add, so skip this config item.
+                continue
+
+            shared_keys = []
+            for key in entry.keys:
+                shared_keys += key
+                new_file_managers = [
+                    file_manager
+                    for file_manager in file_managers
+                    if shared_keys in file_manager
+                ]
+                if not new_file_managers:
+                    break
+                file_managers = new_file_managers
+
+            # Now, use the highest-prority file manager to add the config
+            (used_file_manager,) = file_managers
+            used_file_manager[entry.keys] = entry.value
+            if first_addition:
+                tick_print(
+                    f"Adding {self.name} config to '{used_file_manager.relative_path}'."
+                )
+                first_addition = False
+
+    def remove_configs(self) -> None:
+        """Remove the tool's configuration sections.
+
+        Note, this does not require knowledge of the config file resolution methodology,
+        since all files' configs are removed regardless of whether they are in use.
         """
-        # Collect all keys to remove
-        keys_to_remove = [
-            config.id_keys for config in self.get_pyproject_configs()
-        ] + self.get_managed_pyproject_keys()
-
-        # Try to remove the first key to trigger the message
         first_removal = True
-        for keys in keys_to_remove:
-            try:
-                remove_pyproject_value(keys)
-            except PyprojectTOMLValueMissingError:
-                pass
-            else:
-                if first_removal:
-                    tick_print(f"Removing {self.name} config from 'pyproject.toml'.")
-                    first_removal = False
+        for config_item in self.get_config_spec().config_items:
+            if not config_item.managed:
+                continue
+
+            for (
+                relative_path,
+                file_manager,
+            ) in self.get_config_spec().file_manager_by_relative_path.items():
+                if file_manager.path in config_item.paths:
+                    if not (file_manager.path.exists() and file_manager.path.is_file()):
+                        # This is mostly for the sake of the first_removal message
+                        continue
+
+                    entry = config_item.root[relative_path]
+                    try:
+                        del file_manager[entry.keys]
+                    except KeyError:
+                        pass
+                    else:
+                        if first_removal:
+                            tick_print(
+                                f"Removing {self.name} config from '{relative_path}'."
+                            )
+                            first_removal = False
 
     def remove_managed_files(self) -> None:
         """Remove all files managed by this tool.
@@ -237,12 +389,10 @@ class Tool(Protocol):
 
 
 class CodespellTool(Tool):
+    # https://github.com/codespell-project/codespell
     @property
     def name(self) -> str:
         return "Codespell"
-
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="codespell")]
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
@@ -252,17 +402,33 @@ class CodespellTool(Tool):
         else:
             box_print("Run 'codespell' to run the Codespell spellchecker.")
 
-    def get_pyproject_configs(self) -> list[PyprojectConfig]:
-        return [
-            PyprojectConfig(
-                id_keys=["tool", "codespell"],
-                value={
-                    "ignore-regex": [
-                        "[A-Za-z0-9+/]{100,}"  # Ignore long base64 strings
-                    ],
-                },
-            ),
-        ]
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        return [Dependency(name="codespell")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        # https://github.com/codespell-project/codespell?tab=readme-ov-file#using-a-config-file
+        value = {
+            "ignore-regex": ["[A-Za-z0-9+/]{100,}"],  # Ignore long base64 strings
+        }
+
+        return ConfigSpec(
+            file_manager_by_relative_path={
+                Path("pyproject.toml"): PyprojectTOMLManager()
+            },
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "codespell"], value=value
+                        )
+                    }
+                ),
+            ],
+        )
+
+    def get_managed_files(self) -> list[Path]:
+        return [Path(".codespellrc")]
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -274,12 +440,6 @@ class CodespellTool(Tool):
                 ],
             )
         ]
-
-    def get_managed_pyproject_keys(self) -> list[list[str]]:
-        return [["tool", "codespell"]]
-
-    def get_managed_files(self) -> list[Path]:
-        return [Path(".codespellrc")]
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
@@ -297,15 +457,11 @@ class CodespellTool(Tool):
 
 
 class CoverageTool(Tool):
+    # https://github.com/nedbat/coveragepy
+
     @property
     def name(self) -> str:
         return "coverage"
-
-    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
-        if unconditional or PytestTool().is_used():
-            deps += [Dependency(name="pytest-cov")]
-        return deps
 
     def print_how_to_use(self) -> None:
         if PytestTool().is_used():
@@ -313,48 +469,88 @@ class CoverageTool(Tool):
         else:
             box_print("Run 'coverage help' to see available coverage commands.")
 
-    def get_pyproject_configs(self) -> list[PyprojectConfig]:
-        return [
-            PyprojectConfig(
-                id_keys=["tool", "coverage", "run"],
-                value={
-                    "source": [get_source_dir_str()],
-                    "omit": ["*/pytest-of-*/*"],
-                },
-            ),
-            PyprojectConfig(
-                id_keys=["tool", "coverage", "report"],
-                value={
-                    "exclude_also": [
-                        "if TYPE_CHECKING:",
-                        "raise AssertionError",
-                        "raise NotImplementedError",
-                        "assert_never(.*)",
-                        "class .*\\bProtocol\\):",
-                        "@(abc\\.)?abstractmethod",
-                    ]
-                },
-            ),
-        ]
+    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
+        if unconditional or PytestTool().is_used():
+            deps += [Dependency(name="pytest-cov")]
+        return deps
 
-    def get_managed_pyproject_keys(self) -> list[list[str]]:
-        return [["tool", "coverage"]]
+    def get_config_spec(self) -> ConfigSpec:
+        # https://coverage.readthedocs.io/en/7.6.12/config.html#configuration-reference
+
+        run_value = {
+            "source": [get_source_dir_str()],
+            "omit": ["*/pytest-of-*/*"],
+        }
+        report_value = {
+            "exclude_also": [
+                "if TYPE_CHECKING:",
+                "raise AssertionError",
+                "raise NotImplementedError",
+                "assert_never(.*)",
+                "class .*\\bProtocol\\):",
+                "@(abc\\.)?abstractmethod",
+            ]
+        }
+
+        return ConfigSpec(
+            file_manager_by_relative_path={
+                Path("pyproject.toml"): PyprojectTOMLManager()
+            },
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "run"], value=run_value
+                        )
+                    }
+                ),
+                ConfigItem(
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "report"], value=report_value
+                        )
+                    }
+                ),
+                ConfigItem(
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "coverage"])
+                    }
+                ),
+            ],
+        )
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".coveragerc")]
 
 
 class DeptryTool(Tool):
+    # https://github.com/fpgmaas/deptry
     @property
     def name(self) -> str:
         return "deptry"
 
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="deptry")]
-
     def print_how_to_use(self) -> None:
         _dir = get_source_dir_str()
         box_print(f"Run 'deptry {_dir}' to run deptry.")
+
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        return [Dependency(name="deptry")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        # https://deptry.com/usage/#configuration
+        return ConfigSpec(
+            file_manager_by_relative_path={
+                Path("pyproject.toml"): PyprojectTOMLManager(),
+            },
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])}
+                )
+            ],
+        )
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         _dir = get_source_dir_str()
@@ -374,9 +570,6 @@ class DeptryTool(Tool):
             )
         ]
 
-    def get_managed_pyproject_keys(self) -> list[list[str]]:
-        return [["tool", "deptry"]]
-
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         _dir = get_source_dir_str()
         return [
@@ -394,15 +587,16 @@ class DeptryTool(Tool):
 
 
 class PreCommitTool(Tool):
+    # https://github.com/pre-commit/pre-commit
     @property
     def name(self) -> str:
         return "pre-commit"
 
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="pre-commit")]
-
     def print_how_to_use(self) -> None:
         box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
+
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        return [Dependency(name="pre-commit")]
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".pre-commit-config.yaml")]
@@ -423,12 +617,10 @@ class PreCommitTool(Tool):
 
 
 class PyprojectFmtTool(Tool):
+    # https://github.com/tox-dev/pyproject-fmt
     @property
     def name(self) -> str:
         return "pyproject-fmt"
-
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="pyproject-fmt")]
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
@@ -438,6 +630,28 @@ class PyprojectFmtTool(Tool):
         else:
             box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
 
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        return [Dependency(name="pyproject-fmt")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        # https://pyproject-fmt.readthedocs.io/en/latest/#configuration-via-file
+        return ConfigSpec(
+            file_manager_by_relative_path={
+                Path("pyproject.toml"): PyprojectTOMLManager(),
+            },
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "pyproject-fmt"],
+                            value={"keep_full_version": True},
+                        )
+                    }
+                )
+            ],
+        )
+
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
             UriRepo(
@@ -446,17 +660,6 @@ class PyprojectFmtTool(Tool):
                 hooks=[HookDefinition(id="pyproject-fmt")],
             )
         ]
-
-    def get_pyproject_configs(self) -> list[PyprojectConfig]:
-        return [
-            PyprojectConfig(
-                id_keys=["tool", "pyproject-fmt"],
-                value={"keep_full_version": True},
-            )
-        ]
-
-    def get_managed_pyproject_keys(self) -> list[list[str]]:
-        return [["tool", "pyproject-fmt"]]
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
@@ -474,6 +677,7 @@ class PyprojectFmtTool(Tool):
 
 
 class PyprojectTOMLTool(Tool):
+    # https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
     @property
     def name(self) -> str:
         return "pyproject.toml"
@@ -492,21 +696,12 @@ class PyprojectTOMLTool(Tool):
             Path("pyproject.toml"),
         ]
 
-    def remove_managed_files(self) -> None:
-        remove_pyproject_toml()
-        return super().remove_managed_files()
-
 
 class PytestTool(Tool):
+    # https://github.com/pytest-dev/pytest
     @property
     def name(self) -> str:
         return "pytest"
-
-    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        deps = [Dependency(name="pytest")]
-        if unconditional or CoverageTool().is_used():
-            deps += [Dependency(name="pytest-cov")]
-        return deps
 
     def print_how_to_use(self) -> None:
         box_print(
@@ -515,53 +710,65 @@ class PytestTool(Tool):
         box_print("Add test functions with the format 'test_*()'.")
         box_print("Run 'pytest' to run the tests.")
 
-    def get_extra_dev_deps(self) -> list[Dependency]:
-        return [Dependency(name="pytest-cov")]
+    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        deps = [Dependency(name="pytest")]
+        if unconditional or CoverageTool().is_used():
+            deps += [Dependency(name="pytest-cov")]
+        return deps
 
-    def get_pyproject_configs(self) -> list[PyprojectConfig]:
-        return [
-            PyprojectConfig(
-                id_keys=["tool", "pytest"],
-                # Much of what follows is recommended here (sp-repo-review):
-                # https://learn.scientific-python.org/development/guides/pytest/#configuring-pytest
-                value={
-                    "ini_options": {
-                        "testpaths": ["tests"],
-                        "addopts": [
-                            "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
-                            "-ra",  # summary report of all results (sp-repo-review)
-                            "--showlocals",  # print locals in tracebacks (sp-repo-review)
-                            "--strict-markers",  # fail on unknown markers (sp-repo-review)
-                            "--strict-config",  # fail on unknown config (sp-repo-review)
-                        ],
-                        "filterwarnings": [
-                            "error"
-                        ],  # fail on warnings (sp-repo-review)
-                        "xfail_strict": True,  # fail on tests marked xfail (sp-repo-review)
-                        "log_cli_level": "INFO",  # include all >=INFO level log messages (sp-repo-review)
-                        "minversion": "7",  # minimum pytest version (sp-repo-review)
+    def get_config_spec(self) -> ConfigSpec:
+        # https://docs.pytest.org/en/stable/reference/customize.html#configuration-file-formats
+        # "Options from multiple configfiles candidates are never merged - the first match wins."
+
+        # Much of what follows is recommended here (sp-repo-review):
+        # https://learn.scientific-python.org/development/guides/pytest/#configuring-pytest
+        value = {
+            "testpaths": ["tests"],
+            "addopts": [
+                "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
+                "-ra",  # summary report of all results (sp-repo-review)
+                "--showlocals",  # print locals in tracebacks (sp-repo-review)
+                "--strict-markers",  # fail on unknown markers (sp-repo-review)
+                "--strict-config",  # fail on unknown config (sp-repo-review)
+            ],
+            "filterwarnings": ["error"],  # fail on warnings (sp-repo-review)
+            "xfail_strict": True,  # fail on tests marked xfail (sp-repo-review)
+            "log_cli_level": "INFO",  # include all >=INFO level log messages (sp-repo-review)
+            "minversion": "7",  # minimum pytest version (sp-repo-review)
+        }
+
+        return ConfigSpec(
+            file_manager_by_relative_path={
+                Path("pyproject.toml"): PyprojectTOMLManager(),
+            },
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "pytest", "ini_options"], value=value
+                        )
                     }
-                },
-            ),
-        ]
+                ),
+                ConfigItem(
+                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"])}
+                ),
+            ],
+        )
+
+    def get_managed_files(self) -> list[Path]:
+        return [Path("pytest.ini"), Path("tests/conftest.py")]
 
     def get_associated_ruff_rules(self) -> list[str]:
         return ["PT"]
 
-    def get_managed_pyproject_keys(self) -> list[list[str]]:
-        return [["tool", "pytest"]]
-
-    def get_managed_files(self) -> list[Path]:
-        return [Path("tests/conftest.py")]
-
 
 class RequirementsTxtTool(Tool):
+    # https://pip.pypa.io/en/stable/reference/requirements-file-format/
+
     @property
     def name(self) -> str:
         return "requirements.txt"
-
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return []
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
@@ -570,6 +777,12 @@ class RequirementsTxtTool(Tool):
             box_print(
                 "Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'."
             )
+
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        return []
+
+    def get_managed_files(self) -> list[Path]:
+        return [Path("requirements.txt")]
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -589,21 +802,59 @@ class RequirementsTxtTool(Tool):
             )
         ]
 
-    def get_managed_files(self) -> list[Path]:
-        return [Path("requirements.txt")]
-
 
 class RuffTool(Tool):
+    # https://github.com/astral-sh/ruff
     @property
     def name(self) -> str:
         return "Ruff"
 
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="ruff")]
-
     def print_how_to_use(self) -> None:
         box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")
         box_print("Run 'ruff format' to run the Ruff formatter.")
+
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        return [Dependency(name="ruff")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        # https://docs.astral.sh/ruff/configuration/#config-file-discovery
+
+        root_value = {"line-length": 88}
+        lint_value = {"select": []}
+
+        return ConfigSpec(
+            file_manager_by_relative_path={
+                Path(".ruff.toml"): DotRuffTOMLManager(),
+                Path("ruff.toml"): RuffTOMLManager(),
+                Path("pyproject.toml"): PyprojectTOMLManager(),
+            },
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    root={
+                        Path(".ruff.toml"): ConfigEntry(keys=[], value=root_value),
+                        Path("ruff.toml"): ConfigEntry(keys=[], value=root_value),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "ruff"], value=root_value
+                        ),
+                    }
+                ),
+                ConfigItem(
+                    root={
+                        Path(".ruff.toml"): ConfigEntry(
+                            keys=["lint"], value=lint_value
+                        ),
+                        Path("ruff.toml"): ConfigEntry(keys=["lint"], value=lint_value),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "ruff", "lint"], value=lint_value
+                        ),
+                    }
+                ),
+            ],
+        )
+
+    def get_managed_files(self) -> list[Path]:
+        return [Path(".ruff.toml"), Path("ruff.toml")]
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
@@ -641,23 +892,6 @@ class RuffTool(Tool):
             ),
         ]
 
-    def get_pyproject_configs(self) -> list[PyprojectConfig]:
-        return [
-            PyprojectConfig(
-                id_keys=["tool", "ruff"],
-                value={
-                    "line-length": 88,
-                    "lint": {"select": []},
-                },
-            )
-        ]
-
-    def get_managed_pyproject_keys(self) -> list[list[str]]:
-        return [["tool", "ruff"]]
-
-    def get_managed_files(self) -> list[Path]:
-        return [Path("ruff.toml"), Path(".ruff.toml")]
-
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
             BitbucketStep(
@@ -672,6 +906,70 @@ class RuffTool(Tool):
                 ),
             )
         ]
+
+    def select_rules(self, rules: list[str]) -> None:
+        """Add Ruff rules to the project."""
+        rules = sorted(set(rules) - set(self.get_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+        tick_print(f"Enabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
+
+        (file_manager,) = self.get_active_config_file_managers()
+        file_manager.extend_list(keys=["tool", "ruff", "lint", "select"], values=rules)
+
+    def ignore_rules(self, rules: list[str]) -> None:
+        """Ignore Ruff rules in the project."""
+        rules = sorted(set(rules) - set(self.get_ignored_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+        tick_print(f"Ignoring Ruff rule{s} {rules_str} in 'pyproject.toml'.")
+
+        (file_manager,) = self.get_active_config_file_managers()
+        file_manager.extend_list(keys=["tool", "ruff", "lint", "ignore"], values=rules)
+
+    def deselect_rules(self, rules: list[str]) -> None:
+        """Ensure Ruff rules are not selected in the project."""
+        rules = list(set(rules) & set(self.get_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+        tick_print(f"Disabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
+
+        (file_manager,) = self.get_active_config_file_managers()
+        file_manager.remove_from_list(
+            keys=["tool", "ruff", "lint", "select"], values=rules
+        )
+
+    def get_rules(self) -> list[str]:
+        """Get the Ruff rules selected in the project."""
+        (file_manager,) = self.get_active_config_file_managers()
+        try:
+            rules: list[str] = file_manager[["tool", "ruff", "lint", "select"]]
+        except KeyError:
+            rules = []
+
+        return rules
+
+    def get_ignored_rules(self) -> list[str]:
+        """Get the Ruff rules ignored in the project."""
+        (file_manager,) = self.get_active_config_file_managers()
+        try:
+            rules: list[str] = file_manager[["tool", "ruff", "lint", "ignore"]]
+        except KeyError:
+            rules = []
+
+        return rules
 
 
 ALL_TOOLS: list[Tool] = [

@@ -25,11 +25,6 @@ from usethis._integrations.pre_commit.hooks import (
     get_hook_names,
 )
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
-from usethis._integrations.ruff.rules import (
-    deselect_ruff_rules,
-    ignore_ruff_rules,
-    select_ruff_rules,
-)
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool import (
@@ -62,11 +57,11 @@ def use_codespell(*, remove: bool = False) -> None:
         else:
             tool.add_pre_commit_repo_configs()
 
-        tool.add_pyproject_configs()
+        tool.add_configs()
         tool.print_how_to_use()
     else:
         remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
-        tool.remove_pyproject_configs()
+        tool.remove_configs()
         tool.remove_pre_commit_repo_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()
@@ -79,10 +74,10 @@ def use_coverage(*, remove: bool = False) -> None:
 
     if not remove:
         tool.add_test_deps()
-        tool.add_pyproject_configs()
+        tool.add_configs()
         tool.print_how_to_use()
     else:
-        tool.remove_pyproject_configs()
+        tool.remove_configs()
         tool.remove_test_deps()
         tool.remove_managed_files()
 
@@ -102,7 +97,7 @@ def use_deptry(*, remove: bool = False) -> None:
         tool.print_how_to_use()
     else:
         tool.remove_pre_commit_repo_configs()
-        tool.remove_pyproject_configs()
+        tool.remove_configs()
         remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
         tool.remove_dev_deps()
         tool.remove_managed_files()
@@ -123,11 +118,11 @@ def use_pre_commit(*, remove: bool = False) -> None:
         # We will use pre-commit instead of project-installed dependencies:
         if pyproject_fmt_tool.is_used():
             pyproject_fmt_tool.remove_dev_deps()
-            pyproject_fmt_tool.add_pyproject_configs()
+            pyproject_fmt_tool.add_configs()
             pyproject_fmt_tool.print_how_to_use()
         if codespell_tool.is_used():
             codespell_tool.remove_dev_deps()
-            codespell_tool.add_pyproject_configs()
+            codespell_tool.add_configs()
             codespell_tool.print_how_to_use()
 
         if requirements_txt_tool.is_used():
@@ -206,11 +201,11 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         else:
             tool.add_pre_commit_repo_configs()
 
-        tool.add_pyproject_configs()
+        tool.add_configs()
         tool.print_how_to_use()
     else:
         remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
-        tool.remove_pyproject_configs()
+        tool.remove_configs()
         tool.remove_pre_commit_repo_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()
@@ -236,9 +231,9 @@ def use_pytest(*, remove: bool = False) -> None:
 
     if not remove:
         tool.add_test_deps()
-        tool.add_pyproject_configs()
+        tool.add_configs()
         if RuffTool().is_used():
-            select_ruff_rules(tool.get_associated_ruff_rules())
+            RuffTool().select_rules(tool.get_associated_ruff_rules())
 
         # deptry currently can't scan the tests folder for dev deps
         # https://github.com/fpgmaas/deptry/issues/302
@@ -256,8 +251,8 @@ def use_pytest(*, remove: bool = False) -> None:
             remove_bitbucket_pytest_steps()
 
         if RuffTool().is_used():
-            deselect_ruff_rules(tool.get_associated_ruff_rules())
-        tool.remove_pyproject_configs()
+            RuffTool().deselect_rules(tool.get_associated_ruff_rules())
+        tool.remove_configs()
         tool.remove_test_deps()
         remove_pytest_dir()  # Last, since this is a manual step
 
@@ -335,9 +330,9 @@ def use_ruff(*, remove: bool = False) -> None:
 
     if not remove:
         tool.add_dev_deps()
-        tool.add_pyproject_configs()
-        select_ruff_rules(rules)
-        ignore_ruff_rules(ignored_rules)
+        tool.add_configs()
+        tool.select_rules(rules)
+        tool.ignore_rules(ignored_rules)
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
         elif is_bitbucket_used():
@@ -347,6 +342,6 @@ def use_ruff(*, remove: bool = False) -> None:
     else:
         tool.remove_pre_commit_repo_configs()
         remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
-        tool.remove_pyproject_configs()
+        tool.remove_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()

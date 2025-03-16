@@ -4,15 +4,23 @@ import pytest
 import requests
 
 from usethis._config import usethis_config
+from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._console import box_print
-from usethis._integrations.file.pyproject_toml.config import PyprojectConfig
-from usethis._integrations.file.pyproject_toml.core import set_pyproject_value
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
-from usethis._tool import ALL_TOOLS, DeptryTool, PyprojectTOMLTool, Tool
+from usethis._tool import (
+    ConfigEntry,
+    ConfigItem,
+    ConfigSpec,
+    DeptryTool,
+    PyprojectTOMLTool,
+    RuffTool,
+    Tool,
+)
 
 
 class DefaultTool(Tool):
@@ -39,6 +47,9 @@ class MyTool(Tool):
     def name(self) -> str:
         return "my_tool"
 
+    def print_how_to_use(self) -> None:
+        box_print("How to use my_tool")
+
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [
             Dependency(name=self.name),
@@ -49,9 +60,6 @@ class MyTool(Tool):
             deps.append(Dependency(name="pytest"))
         return deps
 
-    def print_how_to_use(self) -> None:
-        box_print("How to use my_tool")
-
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [
             UriRepo(
@@ -60,8 +68,22 @@ class MyTool(Tool):
             )
         ]
 
-    def get_pyproject_configs(self) -> list[PyprojectConfig]:
-        return [PyprojectConfig(id_keys=["tool", self.name], value={"key": "value"})]
+    def get_config_spec(self) -> ConfigSpec:
+        return ConfigSpec(
+            file_manager_by_relative_path={
+                Path("pyproject.toml"): PyprojectTOMLManager(),
+            },
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", self.name], value={"key": "value"}
+                        )
+                    }
+                )
+            ],
+        )
 
     def get_associated_ruff_rules(self) -> list[str]:
         return ["MYRULE"]
@@ -140,16 +162,20 @@ class TestTool:
                 UriRepo(repo="repo for my_tool", hooks=[HookDefinition(id="deptry")])
             ]
 
-    class TestGetPyprojectConfigs:
+    class TestGetConfigSpec:
         def test_default(self):
+            # Arrange
             tool = DefaultTool()
-            assert tool.get_pyproject_configs() == []
 
-        def test_specific(self):
-            tool = MyTool()
-            assert tool.get_pyproject_configs() == [
-                PyprojectConfig(id_keys=["tool", "my_tool"], value={"key": "value"})
-            ]
+            # Act
+            config_spec = tool.get_config_spec()
+
+            # Assert
+            assert config_spec == ConfigSpec(
+                file_manager_by_relative_path={},
+                resolution="first",
+                config_items=[],
+            )
 
     class TestGetAssociatedRuffRules:
         def test_default(self):
@@ -169,18 +195,6 @@ class TestTool:
             tool = MyTool()
             assert tool.get_managed_files() == [
                 Path("mytool-config.yaml"),
-            ]
-
-    class TestManagedPyprojectKeys:
-        def test_default(self):
-            tool = DefaultTool()
-            assert tool.get_managed_pyproject_keys() == []
-
-        def test_specific(self):
-            tool = MyTool()
-            assert tool.get_managed_pyproject_keys() == [
-                ["tool", "my_tool"],
-                ["project", "classifiers"],
             ]
 
     class TestIsUsed:
@@ -230,7 +244,9 @@ class TestTool:
             # Arrange
             tool = MyTool()
             with change_cwd(uv_init_dir), PyprojectTOMLManager():
-                set_pyproject_value(["tool", "my_tool", "key"], "value")
+                PyprojectTOMLManager().set_value(
+                    keys=["tool", "my_tool", "key"], value="value"
+                )
 
                 # Act
                 result = tool.is_used()
@@ -622,7 +638,7 @@ repos:
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
                 assert get_hook_names() == [_PLACEHOLDER_ID]
 
-    class TestAddPyprojectConfigs:
+    class TestAddConfigs:
         def test_no_config(self, tmp_path: Path):
             # Arrange
             class NoConfigTool(Tool):
@@ -633,14 +649,11 @@ repos:
                 def print_how_to_use(self) -> None:
                     box_print("How to use no_config_tool")
 
-                def get_pyproject_configs(self) -> list[PyprojectConfig]:
-                    return []
-
             nc_tool = NoConfigTool()
 
             # Act
             with change_cwd(tmp_path):
-                nc_tool.add_pyproject_configs()
+                nc_tool.add_configs()
 
                 # Assert
                 assert not (tmp_path / "pyproject.toml").exists()
@@ -655,19 +668,29 @@ repos:
                 def print_how_to_use(self) -> None:
                     box_print("How to use this_tool")
 
-                def get_pyproject_configs(self) -> list[PyprojectConfig]:
-                    return [
-                        PyprojectConfig(
-                            id_keys=["tool", "mytool"],
-                            value={"key": "value"},
-                        ),
-                    ]
+                def get_config_spec(self) -> ConfigSpec:
+                    return ConfigSpec(
+                        file_manager_by_relative_path={
+                            Path("pyproject.toml"): PyprojectTOMLManager(),
+                        },
+                        resolution="first",
+                        config_items=[
+                            ConfigItem(
+                                root={
+                                    Path("pyproject.toml"): ConfigEntry(
+                                        keys=["tool", self.name],
+                                        value={"key": "value"},
+                                    )
+                                }
+                            )
+                        ],
+                    )
 
             (tmp_path / "pyproject.toml").write_text("")
 
             # Act
             with change_cwd(tmp_path), PyprojectTOMLManager():
-                ThisTool().add_pyproject_configs()
+                ThisTool().add_configs()
 
             # Assert
             assert (
@@ -695,17 +718,26 @@ key = "value"
                 def print_how_to_use(self) -> None:
                     box_print("How to use this_tool")
 
-                def get_pyproject_configs(self) -> list[PyprojectConfig]:
-                    return [
-                        PyprojectConfig(
-                            id_keys=["tool", "mytool", "name"],
-                            value="Modular Design",
-                        ),
-                        PyprojectConfig(
-                            id_keys=["tool", "mytool", "root_packages"],
-                            value=["example"],
-                        ),
-                    ]
+                def get_config_spec(self) -> ConfigSpec:
+                    return ConfigSpec(
+                        file_manager_by_relative_path={
+                            Path("pyproject.toml"): PyprojectTOMLManager(),
+                        },
+                        resolution="first",
+                        config_items=[
+                            ConfigItem(
+                                root={
+                                    Path("pyproject.toml"): ConfigEntry(
+                                        keys=["tool", self.name],
+                                        value={
+                                            "name": "Modular Design",
+                                            "root_packages": ["example"],
+                                        },
+                                    )
+                                }
+                            )
+                        ],
+                    )
 
             (tmp_path / "pyproject.toml").write_text(
                 """\
@@ -716,7 +748,7 @@ name = "Modular Design"
 
             # Act
             with change_cwd(tmp_path), PyprojectTOMLManager():
-                ThisTool().add_pyproject_configs()
+                ThisTool().add_configs()
 
             # Assert
             assert (
@@ -781,10 +813,14 @@ class TestDeptryTool:
         tool = DeptryTool()
 
         # Act
-        result = tool.get_managed_pyproject_keys()
+        result = tool.get_config_spec()
 
         # Assert
-        assert result == [["tool", "deptry"]]
+        (config_item,) = result.config_items
+        config_item: ConfigItem
+        assert config_item.root[Path("pyproject.toml")] == ConfigEntry(
+            keys=["tool", "deptry"]
+        )
 
     def test_remove_pyproject_configs_removes_deptry_section(self, tmp_path: Path):
         """Test that remove_pyproject_configs removes the deptry section."""
@@ -797,40 +833,11 @@ ignore_missing = ["pytest"]
         # Act
         with change_cwd(tmp_path), PyprojectTOMLManager():
             tool = DeptryTool()
-            tool.remove_pyproject_configs()
+            tool.remove_configs()
 
         # Assert
         assert "[tool.deptry]" not in pyproject.read_text()
         assert "ignore_missing" not in pyproject.read_text()
-
-    def test_config_keys_are_subkeys_of_id_keys(self):
-        """Test that all config keys are subkeys of id keys."""
-        # Arrange
-        tool = DeptryTool()
-
-        # Act
-        id_keys = tool.get_managed_pyproject_keys()
-        configs = tool.get_pyproject_configs()
-
-        # Assert
-        for config in configs:
-            # For each config, check if its keys are a subset of any id_keys
-            assert any(config.id_keys[: len(id_key)] == id_key for id_key in id_keys), (
-                f"Config keys {config.id_keys} not covered by ID keys {id_keys}"
-            )
-
-
-@pytest.mark.parametrize("tool", ALL_TOOLS)
-def test_all_tools_config_keys_are_subkeys_of_id_keys(tool: Tool):
-    """Test that all tools' config keys are subkeys of their ID keys."""
-    id_keys = tool.get_managed_pyproject_keys()
-    configs = tool.get_pyproject_configs()
-
-    for config in configs:
-        # For each config, check if its keys are a subset of any id_keys
-        assert any(config.id_keys[: len(id_key)] == id_key for id_key in id_keys), (
-            f"Config keys {config.id_keys} not covered by ID keys in {tool.name}"
-        )
 
 
 class TestPyprojectTOMLTool:
@@ -884,3 +891,209 @@ class TestPyprojectTOMLTool:
 
             # Assert
             assert result == []
+
+
+class TestRuffTool:
+    class TestSelectRules:
+        def test_no_pyproject_toml(self, tmp_path: Path):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                pytest.raises(PyprojectTOMLNotFoundError),
+            ):
+                RuffTool().select_rules(["A", "B", "C"])
+
+        def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("")
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules(["A", "B", "C"])
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert "✔ Enabling Ruff rules 'A', 'B', 'C' in 'pyproject.toml" in out
+
+        def test_blank_slate(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("")
+
+            # Act
+            new_rules = ["A", "B", "C"]
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules(new_rules)
+
+                # Assert
+                rules = RuffTool().get_rules()
+            assert rules == new_rules
+
+        def test_mixing(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+    [tool.ruff.lint]
+    select = ["A", "B"]
+    """
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules(["C", "D"])
+
+                # Assert
+                rules = RuffTool().get_rules()
+            assert rules == ["A", "B", "C", "D"]
+
+        def test_respects_order(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["D", "B", "A"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules(["E", "C", "A"])
+
+                # Assert
+                assert RuffTool().get_rules() == ["D", "B", "A", "C", "E"]
+
+        def test_ruff_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "ruff.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["A", "B"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), RuffTOMLManager():
+                RuffTool().select_rules(["C", "D"])
+
+                # Assert
+                rules = RuffTool().get_rules()
+
+            assert rules == ["A", "B", "C", "D"]
+
+        def test_no_rules(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["A"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().select_rules([])
+
+                # Assert
+                assert RuffTool().get_rules() == ["A"]
+
+    class TestDeselectRules:
+        def test_no_pyproject_toml(self, tmp_path: Path):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                pytest.raises(PyprojectTOMLNotFoundError),
+            ):
+                RuffTool().deselect_rules(["A", "B", "C"])
+
+        def test_blank_slate(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("")
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().deselect_rules(["A", "B", "C"])
+
+                # Assert
+                assert RuffTool().get_rules() == []
+
+        def test_single_rule(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["A"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().deselect_rules(["A"])
+
+                # Assert
+                assert RuffTool().get_rules() == []
+
+        def test_mix(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """
+[tool.ruff.lint]
+select = ["A", "B", "C"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().deselect_rules(["A", "C"])
+
+                # Assert
+                assert RuffTool().get_rules() == ["B"]
+
+        def test_ruff_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".ruff.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["A", "B"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), DotRuffTOMLManager():
+                RuffTool().deselect_rules(["A"])
+
+                # Assert
+                assert RuffTool().get_rules() == ["B"]
+
+    class TestIgnoreRules:
+        def test_add_to_existing(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+ignore = ["A", "B"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().ignore_rules(["C", "D"])
+
+                # Assert
+                assert RuffTool().get_ignored_rules() == ["A", "B", "C", "D"]
+
+        def test_no_rules(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+ignore = ["A"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                RuffTool().ignore_rules([])
+
+                # Assert
+                assert RuffTool().get_ignored_rules() == ["A"]

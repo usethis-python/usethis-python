@@ -11,7 +11,7 @@ class TOMLValueAlreadySetError(TOMLError):
     """Raised when a value is unexpectedly already set in the TOML file."""
 
 
-class TOMLValueMissingError(TOMLError):
+class TOMLValueMissingError(KeyError, TOMLError):
     """Raised when a value is unexpectedly missing from the TOML file."""
 
 

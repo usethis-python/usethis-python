@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 from git import InvalidGitRepositoryError, Repo
 
 
@@ -8,7 +7,6 @@ class PytestSuiteConfigurationError(Exception):
     pass
 
 
-@pytest.mark.skip(reason="In progress of a refactor")  # TODO re-enable
 def test_skeleton_matches():
     # If a tests/usethis/**/test_*.py exists, it should have a matching module named
     # src/usethis/**/*.py

@@ -73,9 +73,9 @@ class ConfigEntry(BaseModel):
     """
 
     keys: list[str]
-    value: Any | InstanceOf[_NoConfigValue] = (
-        _NoConfigValue()
-    )  # TODO if using _NoConfigValue should add a message to the user telling them to add the config.
+    value: Any | InstanceOf[_NoConfigValue] = _NoConfigValue()
+    # TODO this message can be put into GitHub issues for posterity:
+    # TODO if using _NoConfigValue should add a message to the user telling them to add the config... except what if the keys are subset of any keys in other configs... so maybe we don't bother, I don't feel like such messages are philosophically necessary/justified.
 
 
 class ConfigItem(BaseModel):
@@ -258,6 +258,7 @@ class Tool(Protocol):
 
     def add_configs(self) -> None:
         """Add the tool's configuration sections."""
+        # TODO this comment should be given editorial attention.
         # Rules:
         # 1. We will never add configuration to a config file that is not active.
         # 2. We will never add a child key to a new parent when an existing parent
@@ -312,7 +313,6 @@ class Tool(Protocol):
 
             config_entries = list(config_item.root.values())
             if len(config_entries) != 1:
-                # TODO handle this case too (YAGNI though?!?)
                 msg = (
                     "Adding config is not yet supported for the case of multiple "
                     "active config files."
@@ -339,9 +339,7 @@ class Tool(Protocol):
 
             # Now, use the highest-prority file manager to add the config
             (used_file_manager,) = file_managers
-            used_file_manager.set_value(
-                keys=entry.keys, value=entry.value, exists_ok=True
-            )
+            used_file_manager[entry.keys] = entry.value
             if first_addition:
                 tick_print(
                     f"Adding {self.name} config to '{used_file_manager.relative_path}'."
@@ -366,7 +364,7 @@ class Tool(Protocol):
                 if file_manager.path in config_item.paths:
                     entry = config_item.root[relative_path]
                     try:
-                        file_manager.remove_value(keys=entry.keys, missing_ok=False)
+                        del file_manager[entry.keys]
                     except PyprojectTOMLValueMissingError:
                         pass
                     else:

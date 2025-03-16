@@ -150,7 +150,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         self.commit(toml_document)
 
-    def remove_value(self, *, keys: list[str], missing_ok: bool = False) -> None:
+    def __delitem__(self, keys: list[str]) -> None:
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
@@ -165,9 +165,6 @@ class TOMLFileManager(KeyValueFileManager):
                 assert isinstance(d, dict)
                 d = d[key]
         except KeyError:
-            if missing_ok:
-                # Nothing to do, the configuration is already not present.
-                return
             msg = f"Configuration value '{'.'.join(keys)}' is missing."
             raise TOMLValueMissingError(msg) from None
 

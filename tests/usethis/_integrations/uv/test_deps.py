@@ -412,7 +412,7 @@ class TestRemoveDepsFromGroup:
                 add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Remove the group from dependency-groups but keep it in default-groups
-            PyprojectTOMLManager().remove_value(keys=["dependency-groups", "test"])
+            del PyprojectTOMLManager()[["dependency-groups", "test"]]
 
             # Act
             remove_deps_from_group([Dependency(name="pytest")], "test")

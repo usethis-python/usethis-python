@@ -65,9 +65,9 @@ class PyprojectTOMLManager(TOMLFileManager):
         except TOMLValueAlreadySetError as err:
             raise PyprojectTOMLValueAlreadySetError(err) from None
 
-    def remove_value(self, *, keys: list[str], missing_ok: bool = False) -> None:
+    def __delitem__(self, keys: list[str]) -> None:
         """Remove a value from the pyproject.toml configuration file."""
         try:
-            super().remove_value(keys=keys, missing_ok=missing_ok)
+            del super()[keys]
         except TOMLValueMissingError as err:
             raise PyprojectTOMLValueMissingError(err) from None

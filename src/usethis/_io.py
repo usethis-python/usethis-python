@@ -161,16 +161,19 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
     def __getitem__(self, keys: list[str]) -> Any:
         raise NotImplementedError
 
+    def __setitem__(self, keys: list[str], value: Any) -> None:
+        """Set a value in the configuration file."""
+        return self.set_value(keys=keys, value=value, exists_ok=True)
+
+    def __delitem__(self, keys: list[str]) -> None:
+        """Remove a value from the configuration file."""
+        raise NotImplementedError
+
     @abstractmethod
-    def set_value(  # TODO naming. Could this be __setitem__ , but how to handle the exists_ok cases?
+    def set_value(
         self, *, keys: list[str], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the configuration file."""
-        raise NotImplementedError
-
-    @abstractmethod  # TODO naming. Could this be __delitem__ , but how to handle the missing_ok cases?
-    def remove_value(self, *, keys: list[str], missing_ok: bool = False) -> None:
-        """Remove a value from the configuration file."""
         raise NotImplementedError
 
     @abstractmethod

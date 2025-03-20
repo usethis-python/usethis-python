@@ -249,7 +249,7 @@ class TestCoverage:
                 # Assert
                 assert not get_deps_from_group("test")
                 out, err = capfd.readouterr()
-                assert not out
+                assert not out  # Should not be removing anything
                 assert not err
 
         def test_roundtrip(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
@@ -1322,7 +1322,12 @@ select = ["PT"]
 
                 # Assert
                 out, _ = capfd.readouterr()
-                assert out == ("✔ Disabling Ruff rule 'PT' in 'pyproject.toml'.\n")
+                assert (
+                    out
+                    == """\
+✔ Disabling Ruff rule 'PT' in 'pyproject.toml'.
+"""
+                )
 
         class TestPyproject:
             def test_removed(

@@ -23,6 +23,37 @@ class TestTOMLFileManager:
             with pytest.raises(ValueError, match="Content is None, cannot dump."):
                 manager._dump_content()
 
+    class TestContains:
+        def test_no_keys(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act, Assert
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                assert [] in manager
+
+    class TestGetItem:
+        def test_no_keys(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.usethis]
+a = "b"
+""")
+
+            # Act, Assert
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                assert manager[[]] == {"tool": {"usethis": {"a": "b"}}}
+
     class TestContent:
         def test_content_setter(self, tmp_path: Path) -> None:
             # Arrange
@@ -257,20 +288,3 @@ class TestTOMLFileManager:
 
                 # Assert
                 assert manager._content == original
-
-    class TestGetItem:
-        def test_no_keys_raises(self, tmp_path: Path) -> None:
-            # Arrange
-            class MyTOMLFileManager(TOMLFileManager):
-                @property
-                def relative_path(self) -> Path:
-                    return Path("pyproject.toml")
-
-            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
-                (tmp_path / "pyproject.toml").touch()
-
-                # Act, Assert
-                with pytest.raises(
-                    ValueError, match="At least one ID key must be provided."
-                ):
-                    manager[[]]

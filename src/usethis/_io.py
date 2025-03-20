@@ -41,6 +41,9 @@ class UsethisFileManager(Generic[DocumentT]):
         """Return the relative path to the file."""
         raise NotImplementedError
 
+    def __init__(self) -> None:
+        self.path = (Path.cwd() / self.relative_path).resolve()
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, UsethisFileManager):
             return NotImplemented
@@ -56,9 +59,6 @@ class UsethisFileManager(Generic[DocumentT]):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.relative_path.as_posix()!r})"
-
-    def __init__(self) -> None:
-        self.path = (Path.cwd() / self.relative_path).resolve()
 
     def __enter__(self) -> Self:
         if self.is_locked():

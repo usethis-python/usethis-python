@@ -13,7 +13,6 @@ from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
     TOMLValueAlreadySetError,
-    TOMLValueMissingError,
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
 )
@@ -104,10 +103,6 @@ class TOMLFileManager(KeyValueFileManager):
     def __getitem__(self, item: list[str]) -> Any:
         keys = item
 
-        if not keys:
-            msg = "At least one ID key must be provided."
-            raise ValueError(msg)
-
         d = self.get()
         for key in keys:
             TypeAdapter(dict).validate_python(d)
@@ -192,8 +187,8 @@ class TOMLFileManager(KeyValueFileManager):
                 assert isinstance(d, dict)
                 d = d[key]
         except KeyError:
-            msg = f"Configuration value '{'.'.join(keys)}' is missing."
-            raise TOMLValueMissingError(msg) from None
+            # The configuration is not present - do not modify
+            return
 
         # Remove the configuration.
         d = toml_document

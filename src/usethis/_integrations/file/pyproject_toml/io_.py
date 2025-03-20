@@ -7,7 +7,6 @@ from usethis._integrations.file.pyproject_toml.errors import (
     PyprojectTOMLDecodeError,
     PyprojectTOMLNotFoundError,
     PyprojectTOMLValueAlreadySetError,
-    PyprojectTOMLValueMissingError,
     UnexpectedPyprojectTOMLIOError,
     UnexpectedPyprojectTOMLOpenError,
 )
@@ -15,7 +14,6 @@ from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
     TOMLValueAlreadySetError,
-    TOMLValueMissingError,
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
 )
@@ -64,10 +62,3 @@ class PyprojectTOMLManager(TOMLFileManager):
             super().set_value(keys=keys, value=value, exists_ok=exists_ok)
         except TOMLValueAlreadySetError as err:
             raise PyprojectTOMLValueAlreadySetError(err) from None
-
-    def __delitem__(self, keys: list[str]) -> None:
-        """Remove a value from the pyproject.toml configuration file."""
-        try:
-            super().__delitem__(keys)
-        except TOMLValueMissingError as err:
-            raise PyprojectTOMLValueMissingError(err) from None

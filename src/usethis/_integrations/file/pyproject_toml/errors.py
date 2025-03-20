@@ -4,7 +4,6 @@ from usethis._integrations.file.toml.errors import (
     TOMLError,
     TOMLNotFoundError,
     TOMLValueAlreadySetError,
-    TOMLValueMissingError,
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
 )
@@ -48,7 +47,3 @@ class PyprojectTOMLProjectSectionError(PyprojectTOMLError):
 
 class PyprojectTOMLValueAlreadySetError(PyprojectTOMLError, TOMLValueAlreadySetError):
     """Raised when a value is unexpectedly already set in the 'pyproject.toml' file."""
-
-
-class PyprojectTOMLValueMissingError(PyprojectTOMLError, TOMLValueMissingError):
-    """Raised when a value is unexpectedly missing from the 'pyproject.toml' file."""

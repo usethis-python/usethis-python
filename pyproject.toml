@@ -198,7 +198,7 @@ exhaustive = true
 name = "File Integrations Modular Design"
 type = "layers"
 layers = [
-  "pyproject_toml",
+  "pyproject_toml | setup_cfg",
   "ini | toml | yaml",
 ]
 containers = [ "usethis._integrations.file" ]

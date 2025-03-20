@@ -7,6 +7,7 @@ from usethis._integrations.file.ini.errors import (
     INIDecodeError,
     ININotFoundError,
     INIValueAlreadySetError,
+    INIValueMissingError,
     UnexpectedINIIOError,
     UnexpectedINIOpenError,
 )
@@ -961,19 +962,14 @@ key1 = value1
 """)
 
             # Act, Assert
-            with change_cwd(tmp_path), MyINIFileManager() as manager:
+            with (
+                change_cwd(tmp_path),
+                MyINIFileManager() as manager,
+                pytest.raises(INIValueMissingError),
+            ):
                 manager.__delitem__(
                     ["non_existent_section"]
                 )  # Attempt to delete non-existent section
-
-            # Assert the file content remains the same
-            assert (
-                (tmp_path / "valid.ini").read_text()
-                == """\
-[section1]
-key1 = value1
-"""
-            )
 
         def test_delete_non_existent_option(self, tmp_path: Path):
             # Arrange
@@ -989,38 +985,14 @@ key1 = value1
 """)
 
             # Act, Assert
-            with change_cwd(tmp_path), MyINIFileManager() as manager:
+            with (
+                change_cwd(tmp_path),
+                MyINIFileManager() as manager,
+                pytest.raises(INIValueMissingError),
+            ):
                 manager.__delitem__(
                     ["section1", "non_existent_key"]
                 )  # Attempt to delete non-existent option
-
-            # Assert the file content remains the same
-            assert (
-                (tmp_path / "valid.ini").read_text()
-                == """\
-[section1]
-key1 = value1
-"""
-            )
-
-        def test_delete_section_when_root_is_empty(self, tmp_path: Path):
-            # Arrange
-            class MyINIFileManager(INIFileManager):
-                @property
-                def relative_path(self) -> Path:
-                    return Path("valid.ini")
-
-            valid_file = tmp_path / "valid.ini"
-            valid_file.touch()  # Create an empty file
-
-            # Act
-            with change_cwd(tmp_path), MyINIFileManager() as manager:
-                manager.__delitem__(
-                    ["non_existent_section"]
-                )  # Try to delete a non-existent section
-
-            # Assert: The file should remain empty
-            assert (tmp_path / "valid.ini").read_text() == ""
 
         def test_delete_root_when_not_empty(self, tmp_path: Path):
             # Arrange
@@ -1088,6 +1060,7 @@ key1 = value1
             with (
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
+                pytest.raises(INIValueMissingError),
             ):
                 del manager[["section", "key", "extra"]]
 

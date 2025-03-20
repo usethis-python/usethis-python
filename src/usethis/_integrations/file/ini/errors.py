@@ -11,6 +11,10 @@ class INIValueAlreadySetError(INIError):
     """Raised when a value is unexpectedly already set in the INI file."""
 
 
+class INIValueMissingError(KeyError, INIError):
+    """Raised when a value is unexpectedly missing from the TOML file."""
+
+
 class UnexpectedINIOpenError(INIError):
     """Raised when the INI file is unexpectedly opened."""
 

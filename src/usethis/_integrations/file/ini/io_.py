@@ -12,6 +12,7 @@ from usethis._integrations.file.ini.errors import (
     INIDecodeError,
     ININotFoundError,
     INIValueAlreadySetError,
+    INIValueMissingError,
     UnexpectedINIIOError,
     UnexpectedINIOpenError,
 )
@@ -266,27 +267,33 @@ class INIFileManager(KeyValueFileManager):
         """Delete a value in the INI file.
 
         An empty list of keys corresponds to the root of the document.
-
-        Trying to delete a key from a document that doesn't exist will pass silently.
         """
         root = self.get()
 
         if len(keys) == 0:
+            removed = False
             for section_key in root.sections():
-                root.remove_section(name=section_key)
+                removed |= root.remove_section(name=section_key)
         elif len(keys) == 1:
             (section_key,) = keys
-            root.remove_section(name=section_key)
+            removed = root.remove_section(name=section_key)
         elif len(keys) == 2:
             section_key, option_key = keys
-            root.remove_option(section=section_key, option=option_key)
+            removed = root.remove_option(section=section_key, option=option_key)
 
             # Cleanup section if empty
             if not root[section_key].options():
-                root.remove_section(name=section_key)
+                removed = root.remove_section(name=section_key)
         else:
-            # Impossible but since it doesn't exist our contract is to pass silently.
-            return
+            msg = (
+                f"INI files do not support nested config, whereas access to "
+                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+            )
+            raise INIValueMissingError(msg)
+
+        if not removed:
+            msg = f"INI file '{self.name}' does not contain the keys '{'.'.join(keys)}'"
+            raise INIValueMissingError(msg)
 
         self.commit(root)
 

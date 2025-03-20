@@ -13,6 +13,7 @@ from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
     TOMLValueAlreadySetError,
+    TOMLValueMissingError,
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
 )
@@ -187,8 +188,9 @@ class TOMLFileManager(KeyValueFileManager):
                 assert isinstance(d, dict)
                 d = d[key]
         except KeyError:
-            # The configuration is not present - do not modify
-            return
+            # N.B. by convention a del call should raise an error if the key is not found.
+            msg = f"Configuration value '{'.'.join(keys)}' is missing."
+            raise TOMLValueMissingError(msg) from None
 
         # Remove the configuration.
         d = toml_document

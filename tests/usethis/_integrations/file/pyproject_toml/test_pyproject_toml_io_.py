@@ -8,6 +8,7 @@ from usethis._integrations.file.pyproject_toml.errors import (
     PyprojectTOMLDecodeError,
     PyprojectTOMLNotFoundError,
     PyprojectTOMLValueAlreadySetError,
+    PyprojectTOMLValueMissingError,
     UnexpectedPyprojectTOMLIOError,
     UnexpectedPyprojectTOMLOpenError,
 )
@@ -273,12 +274,13 @@ key = "value1"
             # Arrange
             (tmp_path / "pyproject.toml").touch()
 
-            # Act, Assert (no errors)
+            # Act, Assert
             with (
                 change_cwd(tmp_path),
-                PyprojectTOMLManager() as manager,
+                PyprojectTOMLManager(),
+                pytest.raises(PyprojectTOMLValueMissingError),
             ):
-                del manager[["tool", "usethis", "key"]]
+                del PyprojectTOMLManager()[["tool", "usethis", "key"]]
 
         def test_missing_pyproject(self, tmp_path: Path):
             # Act

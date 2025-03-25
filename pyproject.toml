@@ -96,7 +96,7 @@ lint.select = [
   "EM",
   "ERA",
   "F",
-  "FIX002",
+  # "FIX002",
   "FURB",
   "I",
   "INP",
@@ -178,7 +178,7 @@ exhaustive_ignores = [ "_version" ]
 name = "Interface Independence"
 type = "layers"
 layers = [
-  "badge | browse | ci | readme | show | tool | version",
+  "badge | browse | ci | readme | rule | show | tool | version",
 ]
 containers = [ "usethis._interface" ]
 exhaustive = true

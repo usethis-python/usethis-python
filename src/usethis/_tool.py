@@ -585,6 +585,12 @@ class DeptryTool(Tool):
             )
         ]
 
+    def select_rules(self, rules: list[str]) -> None:
+        raise NotImplementedError
+
+    def deselect_rules(self, rules: list[str]) -> None:
+        raise NotImplementedError
+
 
 class PreCommitTool(Tool):
     # https://github.com/pre-commit/pre-commit

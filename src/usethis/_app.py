@@ -6,6 +6,7 @@ import usethis._interface.badge
 import usethis._interface.browse
 import usethis._interface.ci
 import usethis._interface.readme
+import usethis._interface.rule
 import usethis._interface.show
 import usethis._interface.tool
 import usethis._interface.version
@@ -21,6 +22,9 @@ app.add_typer(usethis._interface.browse.app, name="browse")
 app.add_typer(usethis._interface.ci.app, name="ci")
 app.command(help="Add a README.md file to the project.")(
     usethis._interface.readme.readme,
+)
+app.command(help="Enable a lint rule for the project.")(
+    usethis._interface.rule.rule,
 )
 app.add_typer(usethis._interface.show.app, name="show")
 app.add_typer(usethis._interface.tool.app, name="tool")

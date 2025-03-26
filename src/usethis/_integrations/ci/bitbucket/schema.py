@@ -2,10 +2,10 @@
 #   filename:  schema.json
 #   timestamp: 2025-01-13T20:41:41+00:00
 # using the command:
-#   datamodel-codegen --input tests\usethis\_integrations\bitbucket\schema.json --input-file-type jsonschema --output src\usethis\_integrations\bitbucket\schema.py --enum-field-as-literal all --field-constraints --use-double-quotes --use-union-operator --use-standard-collections --use-default-kwarg --output-model-type pydantic_v2.BaseModel --target-python-version 3.10
+#   datamodel-codegen --input tests\usethis\_integrations\ci\bitbucket\schema.json --input-file-type jsonschema --output src\usethis\_integrations\ci\bitbucket\schema.py --enum-field-as-literal all --field-constraints --use-double-quotes --use-union-operator --use-standard-collections --use-default-kwarg --output-model-type pydantic_v2.BaseModel --target-python-version 3.10
 # ruff: noqa: ERA001
 # pyright: reportAssignmentType=false
-# plus manually add Definitions.scripts for type hinting
+# plus manually add Definitions.script_items for type hinting
 # plus manually add ScriptItemAnchor as a root type of Script, and import it
 # plus manually forbid StepItem.step from being None
 # plus manually forbid Step1.step from being None

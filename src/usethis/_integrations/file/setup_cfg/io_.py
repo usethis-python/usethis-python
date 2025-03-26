@@ -28,11 +28,11 @@ if TYPE_CHECKING:
 
 
 class SetupCFGManager(INIFileManager):
-    """Manages the pyproject.toml file."""
+    """Manages the setup.cfg file."""
 
     @property
     def relative_path(self) -> Path:
-        return Path("pyproject.toml")
+        return Path("setup.cfg")
 
     def __enter__(self) -> Self:
         try:

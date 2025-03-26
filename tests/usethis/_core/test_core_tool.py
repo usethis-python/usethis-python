@@ -61,7 +61,7 @@ class TestCodespell:
             capfd.readouterr()
 
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 use_codespell()
 
             # Assert
@@ -143,6 +143,32 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 # Act, Assert (no errors)
                 call_uv_subprocess(["run", "codespell"], change_toml=False)
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_codespell_rc_file(self, uv_init_dir: Path):
+            # This file is only preferred to pyproject.toml if there's already
+            # some codespell config in the file
+
+            # Arrange
+            (uv_init_dir / ".codespellrc").write_text(
+                """\
+[codespell]
+fake = bar
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_codespell()
+
+            # Assert
+            assert (uv_init_dir / ".codespellrc").read_text() == (
+                """\
+[codespell]
+fake = bar
+ignore-regex = [A-Za-z0-9+/]{100,}
+"""
+            )
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(
@@ -157,7 +183,7 @@ foo = "bar"
             )
 
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 use_codespell(remove=True)
 
             # Assert
@@ -750,7 +776,7 @@ repos:
             (uv_init_repo_dir / ".pre-commit-config.yaml").touch()
 
             # Act
-            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_repo_dir), files_manager():
                 use_pre_commit(remove=True)
 
             # Assert
@@ -758,7 +784,7 @@ repos:
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_dep(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_repo_dir), files_manager():
                 # Arrange
                 add_deps_to_group([Dependency(name="pre-commit")], "dev")
 
@@ -780,7 +806,7 @@ repos:
 """
             )
 
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Arrange contd....
                 # Add dependency
                 add_deps_to_group([Dependency(name="pre-commit")], "dev")

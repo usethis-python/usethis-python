@@ -2,12 +2,16 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from pathlib import Path
-from typing import Any, Literal, Protocol
+from typing import Any, Literal, Protocol, TypeAlias
 
 from pydantic import BaseModel, InstanceOf
-from typing_extensions import assert_never
+from typing_extensions import Self, assert_never
 
-from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
+from usethis._config_file import (
+    CodespellRCManager,
+    DotRuffTOMLManager,
+    RuffTOMLManager,
+)
 from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -15,6 +19,7 @@ from usethis._integrations.ci.bitbucket.anchor import (
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.hooks import add_repo, get_hook_names, remove_hook
 from usethis._integrations.pre_commit.schema import (
     FileType,
@@ -32,6 +37,8 @@ from usethis._integrations.uv.deps import (
     remove_deps_from_group,
 )
 from usethis._io import KeyValueFileManager
+
+ResolutionT: TypeAlias = Literal["first"]
 
 
 class ConfigSpec(BaseModel):
@@ -52,8 +59,25 @@ class ConfigSpec(BaseModel):
     """
 
     file_manager_by_relative_path: dict[Path, InstanceOf[KeyValueFileManager]]
-    resolution: Literal["first"]
+    resolution: ResolutionT
     config_items: list[ConfigItem]
+
+    @classmethod
+    def from_flat(
+        cls,
+        file_managers: list[KeyValueFileManager],
+        resolution: ResolutionT,
+        config_items: list[ConfigItem],
+    ) -> Self:
+        file_manager_by_relative_path = {
+            file_manager.relative_path: file_manager for file_manager in file_managers
+        }
+
+        return cls(
+            file_manager_by_relative_path=file_manager_by_relative_path,
+            resolution=resolution,
+            config_items=config_items,
+        )
 
 
 class _NoConfigValue:
@@ -66,8 +90,9 @@ class ConfigEntry(BaseModel):
     Attributes:
         keys: A sequentially nested sequence of keys giving a single configuration item.
         value: The default value to be placed at the under the key sequence. By default,
-               no configuration will be added, which is most appropriate for high-level
-               configuration sections like [tool.usethis].
+               no configuration will be added, which is most appropriate for top-level
+               configuration sections like [tool.usethis] under which the entire tool's
+               config gets placed.
 
     """
 
@@ -79,6 +104,8 @@ class ConfigItem(BaseModel):
     """A config item which can potentially live in different files.
 
     Attributes:
+        description: An annotation explaining the meaning of what the config represents.
+                     This is purely for documentation and is optional.
         root: A dictionary mapping the file path to the configuration entry.
         managed: Whether this configuration should be considered managed by only this
                  tool, and therefore whether it should be removed when the tool is
@@ -87,6 +114,7 @@ class ConfigItem(BaseModel):
                  using this tool but might be relied on by other tools as well.
     """
 
+    description: str | None = None
     root: dict[Path, ConfigEntry]
     managed: bool = True
 
@@ -247,7 +275,11 @@ class Tool(Protocol):
         config_spec = self.get_config_spec()
         resolution = config_spec.resolution
         if resolution == "first":
-            for path, file_manager in config_spec.file_manager_by_relative_path.items():
+            for (
+                relative_path,
+                file_manager,
+            ) in config_spec.file_manager_by_relative_path.items():
+                path = Path.cwd() / relative_path
                 if path.exists() and path.is_file():
                     return {file_manager}
 
@@ -407,22 +439,45 @@ class CodespellTool(Tool):
 
     def get_config_spec(self) -> ConfigSpec:
         # https://github.com/codespell-project/codespell?tab=readme-ov-file#using-a-config-file
-        value = {
-            "ignore-regex": ["[A-Za-z0-9+/]{100,}"],  # Ignore long base64 strings
-        }
 
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager()
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[
+                CodespellRCManager(),
+                SetupCFGManager(),
+                PyprojectTOMLManager(),
+            ],
             resolution="first",
             config_items=[
                 ConfigItem(
+                    description="Overall config",
                     root={
+                        Path(".codespellrc"): ConfigEntry(
+                            keys=[], value=_NoConfigValue()
+                        ),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["codespell"], value=_NoConfigValue()
+                        ),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "codespell"], value=value
-                        )
-                    }
+                            keys=["tool", "codespell"], value=_NoConfigValue()
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Ignore long base64 strings",
+                    root={
+                        Path(".codespellrc"): ConfigEntry(
+                            keys=["codespell", "ignore-regex"],
+                            value="[A-Za-z0-9+/]{100,}",
+                        ),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["codespell", "ignore-regex"],
+                            value="[A-Za-z0-9+/]{100,}",
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "codespell", "ignore-regex"],
+                            value=["[A-Za-z0-9+/]{100,}"],
+                        ),
+                    },
                 ),
             ],
         )
@@ -493,30 +548,31 @@ class CoverageTool(Tool):
             ]
         }
 
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager()
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[PyprojectTOMLManager()],
             resolution="first",
             config_items=[
                 ConfigItem(
+                    description="Overall Config",
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "coverage"])
+                    },
+                ),
+                ConfigItem(
+                    description="Run configuration",
                     root={
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "coverage", "run"], value=run_value
                         )
-                    }
+                    },
                 ),
                 ConfigItem(
+                    description="Report Configuration",
                     root={
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "coverage", "report"], value=report_value
                         )
-                    }
-                ),
-                ConfigItem(
-                    root={
-                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "coverage"])
-                    }
+                    },
                 ),
             ],
         )
@@ -540,14 +596,13 @@ class DeptryTool(Tool):
 
     def get_config_spec(self) -> ConfigSpec:
         # https://deptry.com/usage/#configuration
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[PyprojectTOMLManager()],
             resolution="first",
             config_items=[
                 ConfigItem(
-                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])}
+                    description="Overall config",
+                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])},
                 )
             ],
         )
@@ -635,19 +690,18 @@ class PyprojectFmtTool(Tool):
 
     def get_config_spec(self) -> ConfigSpec:
         # https://pyproject-fmt.readthedocs.io/en/latest/#configuration-via-file
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[PyprojectTOMLManager()],
             resolution="first",
             config_items=[
                 ConfigItem(
+                    description="Overall config",
                     root={
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "pyproject-fmt"],
                             value={"keep_full_version": True},
                         )
-                    }
+                    },
                 )
             ],
         )
@@ -737,21 +791,21 @@ class PytestTool(Tool):
             "minversion": "7",  # minimum pytest version (sp-repo-review)
         }
 
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[PyprojectTOMLManager()],
             resolution="first",
             config_items=[
                 ConfigItem(
+                    description="Overall Config",
+                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"])},
+                ),
+                ConfigItem(
+                    description="INI-Style Options",
                     root={
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "pytest", "ini_options"], value=value
                         )
-                    }
-                ),
-                ConfigItem(
-                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"])}
+                    },
                 ),
             ],
         )
@@ -822,24 +876,26 @@ class RuffTool(Tool):
         root_value = {"line-length": 88}
         lint_value = {"select": []}
 
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path(".ruff.toml"): DotRuffTOMLManager(),
-                Path("ruff.toml"): RuffTOMLManager(),
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[
+                DotRuffTOMLManager(),
+                RuffTOMLManager(),
+                PyprojectTOMLManager(),
+            ],
             resolution="first",
             config_items=[
                 ConfigItem(
+                    description="Overall config",
                     root={
                         Path(".ruff.toml"): ConfigEntry(keys=[], value=root_value),
                         Path("ruff.toml"): ConfigEntry(keys=[], value=root_value),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "ruff"], value=root_value
                         ),
-                    }
+                    },
                 ),
                 ConfigItem(
+                    description="Lint config",
                     root={
                         Path(".ruff.toml"): ConfigEntry(
                             keys=["lint"], value=lint_value
@@ -848,7 +904,7 @@ class RuffTool(Tool):
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "ruff", "lint"], value=lint_value
                         ),
-                    }
+                    },
                 ),
             ],
         )

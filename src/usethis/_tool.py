@@ -385,7 +385,7 @@ class Tool(Protocol):
 
             shared_keys = []
             for key in entry.keys:
-                shared_keys += key
+                shared_keys.append(key)
                 new_file_managers = [
                     file_manager
                     for file_manager in file_managers
@@ -397,12 +397,12 @@ class Tool(Protocol):
 
             # Now, use the highest-prority file manager to add the config
             (used_file_manager,) = file_managers
-            used_file_manager[entry.keys] = entry.value
             if first_addition:
                 tick_print(
                     f"Adding {self.name} config to '{used_file_manager.relative_path}'."
                 )
                 first_addition = False
+            used_file_manager[entry.keys] = entry.value
 
     def remove_configs(self) -> None:
         """Remove the tool's configuration sections.
@@ -1075,8 +1075,7 @@ class RuffTool(Tool):
     def get_config_spec(self) -> ConfigSpec:
         # https://docs.astral.sh/ruff/configuration/#config-file-discovery
 
-        root_value = {"line-length": 88}
-        lint_value = {"select": []}
+        line_length = 88
 
         return ConfigSpec.from_flat(
             file_managers=[
@@ -1089,22 +1088,23 @@ class RuffTool(Tool):
                 ConfigItem(
                     description="Overall config",
                     root={
-                        Path(".ruff.toml"): ConfigEntry(keys=[], value=root_value),
-                        Path("ruff.toml"): ConfigEntry(keys=[], value=root_value),
-                        Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "ruff"], value=root_value
-                        ),
+                        Path(".ruff.toml"): ConfigEntry(keys=[]),
+                        Path("ruff.toml"): ConfigEntry(keys=[]),
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "ruff"]),
                     },
                 ),
                 ConfigItem(
-                    description="Lint config",
+                    description="Line length",
                     root={
                         Path(".ruff.toml"): ConfigEntry(
-                            keys=["lint"], value=lint_value
+                            keys=["line-length"], value=line_length
                         ),
-                        Path("ruff.toml"): ConfigEntry(keys=["lint"], value=lint_value),
+                        Path("ruff.toml"): ConfigEntry(
+                            keys=["line-length"], value=line_length
+                        ),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "ruff", "lint"], value=lint_value
+                            keys=["tool", "ruff", "line-length"],
+                            value=line_length,
                         ),
                     },
                 ),
@@ -1174,10 +1174,11 @@ class RuffTool(Tool):
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
-        tick_print(f"Enabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
         (file_manager,) = self.get_active_config_file_managers()
-        file_manager.extend_list(keys=["tool", "ruff", "lint", "select"], values=rules)
+        tick_print(f"Enabling Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        keys = self._get_select_keys(file_manager)
+        file_manager.extend_list(keys=keys, values=rules)
 
     def ignore_rules(self, rules: list[str]) -> None:
         """Ignore Ruff rules in the project."""
@@ -1188,10 +1189,11 @@ class RuffTool(Tool):
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
-        tick_print(f"Ignoring Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
         (file_manager,) = self.get_active_config_file_managers()
-        file_manager.extend_list(keys=["tool", "ruff", "lint", "ignore"], values=rules)
+        tick_print(f"Ignoring Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        keys = self._get_ignore_keys(file_manager)
+        file_manager.extend_list(keys=keys, values=rules)
 
     def deselect_rules(self, rules: list[str]) -> None:
         """Ensure Ruff rules are not selected in the project."""
@@ -1202,18 +1204,18 @@ class RuffTool(Tool):
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
-        tick_print(f"Disabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
         (file_manager,) = self.get_active_config_file_managers()
-        file_manager.remove_from_list(
-            keys=["tool", "ruff", "lint", "select"], values=rules
-        )
+        tick_print(f"Disabling Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        keys = self._get_select_keys(file_manager)
+        file_manager.remove_from_list(keys=keys, values=rules)
 
     def get_rules(self) -> list[str]:
         """Get the Ruff rules selected in the project."""
         (file_manager,) = self.get_active_config_file_managers()
+        keys = self._get_select_keys(file_manager)
         try:
-            rules: list[str] = file_manager[["tool", "ruff", "lint", "select"]]
+            rules: list[str] = file_manager[keys]
         except KeyError:
             rules = []
 
@@ -1222,12 +1224,41 @@ class RuffTool(Tool):
     def get_ignored_rules(self) -> list[str]:
         """Get the Ruff rules ignored in the project."""
         (file_manager,) = self.get_active_config_file_managers()
+        keys = self._get_ignore_keys(file_manager)
         try:
-            rules: list[str] = file_manager[["tool", "ruff", "lint", "ignore"]]
+            rules: list[str] = file_manager[keys]
         except KeyError:
             rules = []
 
         return rules
+
+    @staticmethod
+    def _get_select_keys(file_manager: KeyValueFileManager) -> list[str]:
+        """Get the keys for the select rules in the given file manager."""
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "ruff", "lint", "select"]
+        elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):
+            return ["lint", "select"]
+        else:
+            msg = (
+                f"Unknown location for selected ruff rules for file manager "
+                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+            )
+            raise NotImplementedError(msg)
+
+    @staticmethod
+    def _get_ignore_keys(file_manager: KeyValueFileManager) -> list[str]:
+        """Get the keys for the ignored rules in the given file manager."""
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "ruff", "lint", "ignore"]
+        elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):
+            return ["lint", "ignore"]
+        else:
+            msg = (
+                f"Unknown location for ignored ruff rules for file manager "
+                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+            )
+            raise NotImplementedError(msg)
 
 
 ALL_TOOLS: list[Tool] = [

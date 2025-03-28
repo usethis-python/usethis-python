@@ -304,29 +304,36 @@ def use_ruff(*, remove: bool = False) -> None:
 
     ensure_pyproject_toml()
 
-    rules = [
-        "A",
-        "C4",
-        "E4",
-        "E7",
-        "E9",
-        "EM",
-        "F",
-        "FURB",
-        "I",
-        "PLE",
-        "PLR",
-        "RUF",
-        "SIM",
-        "UP",
-    ]
-    for _tool in ALL_TOOLS:
-        if _tool.is_used():
-            rules += _tool.get_associated_ruff_rules()
-    ignored_rules = [
-        "PLR2004",  # https://github.com/nathanjmcdougall/usethis-python/issues/105
-        "SIM108",  # https://github.com/nathanjmcdougall/usethis-python/issues/118
-    ]
+    # Only add ruff rules if the user doesn't already have a select/ignore list.
+    # Otherwise, we should leave them alone.
+
+    if not RuffTool().get_rules() and not RuffTool().get_ignored_rules():
+        rules = [
+            "A",
+            "C4",
+            "E4",
+            "E7",
+            "E9",
+            "EM",
+            "F",
+            "FURB",
+            "I",
+            "PLE",
+            "PLR",
+            "RUF",
+            "SIM",
+            "UP",
+        ]
+        for _tool in ALL_TOOLS:
+            if _tool.is_used():
+                rules += _tool.get_associated_ruff_rules()
+        ignored_rules = [
+            "PLR2004",  # https://github.com/nathanjmcdougall/usethis-python/issues/105
+            "SIM108",  # https://github.com/nathanjmcdougall/usethis-python/issues/118
+        ]
+    else:
+        rules = []
+        ignored_rules = []
 
     if not remove:
         tool.add_dev_deps()

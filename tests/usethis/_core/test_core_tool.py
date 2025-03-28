@@ -1694,6 +1694,51 @@ class TestRuff:
             assert not err
             assert out.startswith("✔ Writing 'pyproject.toml'.\n")
 
+        def test_existing_ruff_toml(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/420
+
+            # Arrange
+            (uv_init_dir / "ruff.toml").write_text("""\
+namespace-packages = ["src/usethis/namespace"]
+
+[lint]
+select = [ "ALL" ]
+ignore = [ "EM", "T20", "TRY003", "S603" ]
+
+[lint.extend-per-file-ignores]
+"__main__.py" = [ "BLE001" ]
+""")
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'ruff'.\n"
+                "✔ Adding Ruff config to 'ruff.toml'.\n"
+                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            )
+            assert (uv_init_dir / "ruff.toml").read_text() == (
+                """\
+namespace-packages = ["src/usethis/namespace"]
+line-length = 88
+
+[lint]
+select = [ "ALL" ]
+ignore = [ "EM", "T20", "TRY003", "S603" ]
+
+[lint.extend-per-file-ignores]
+"__main__.py" = [ "BLE001" ]
+"""
+            )
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_dir: Path):

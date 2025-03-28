@@ -266,6 +266,58 @@ class TestCoverage:
                     "☐ Run 'pytest --cov' to run your tests with coverage.\n"
                 )
 
+        def test_coverage_rc_file(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / ".coveragerc").write_text("")
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_coverage()
+
+            # Assert
+            assert (uv_init_dir / ".coveragerc").read_text() == (
+                """\
+[run]
+source = src
+[report]
+exclude_also =
+    if TYPE_CHECKING:
+    raise AssertionError
+    raise NotImplementedError
+    assert_never(.*)
+    class .*\\bProtocol\\):
+    @(abc\\.)?abstractmethod
+omit =
+    */pytest-of-*/*
+"""
+            )
+
+        def test_tox_ini_file(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / "tox.ini").touch()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_coverage()
+
+            # Assert
+            assert (uv_init_dir / "tox.ini").read_text() == (
+                """\
+[coverage:run]
+source = src
+[coverage:report]
+exclude_also =
+    if TYPE_CHECKING:
+    raise AssertionError
+    raise NotImplementedError
+    assert_never(.*)
+    class .*\\bProtocol\\):
+    @(abc\\.)?abstractmethod
+omit =
+    */pytest-of-*/*
+"""
+            )
+
     class TestRemove:
         def test_unused(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), PyprojectTOMLManager():

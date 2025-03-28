@@ -5,7 +5,7 @@ from functools import singledispatch
 from typing import TYPE_CHECKING
 
 from configupdater import ConfigUpdater as INIDocument
-from configupdater import Section
+from configupdater import Option, Section
 from pydantic import TypeAdapter
 
 from usethis._integrations.file.ini.errors import (
@@ -163,7 +163,7 @@ class INIFileManager(KeyValueFileManager):
 
     @staticmethod
     def _set_value_in_root(
-        root: INIDocument, value: dict[str, Any], exists_ok: bool
+        root: INIDocument, value: dict[str, dict[str, str | list[str]]], exists_ok: bool
     ) -> None:
         root_dict = value
 
@@ -206,7 +206,7 @@ class INIFileManager(KeyValueFileManager):
         *,
         root: INIDocument,
         section_key: str,
-        value: dict[str, Any],
+        value: dict[str, str | list[str]],
         exists_ok: bool,
     ) -> None:
         TypeAdapter(dict).validate_python(value)
@@ -255,13 +255,39 @@ class INIFileManager(KeyValueFileManager):
 
     @staticmethod
     def _validated_set(
+        *, root: INIDocument, section_key: str, option_key: str, value: str | list[str]
+    ) -> None:
+        if not isinstance(value, str | list):
+            msg = (
+                f"INI files only support strings (or lists of strings), but a "
+                f"{type(value)} was provided."
+            )
+            raise NotImplementedError(msg)
+
+        if section_key not in root:
+            root.add_section(section_key)
+
+        root.set(section=section_key, option=option_key, value=value)
+
+    @staticmethod
+    def _validated_append(
         *, root: INIDocument, section_key: str, option_key: str, value: str
     ) -> None:
         if not isinstance(value, str):
-            msg = f"INI files only support strings, but a {type(value)} was provided."
+            msg = (
+                f"INI files only support strings (or lists of strings), but a "
+                f"{type(value)} was provided."
+            )
             raise NotImplementedError(msg)
 
-        root.set(section=section_key, option=option_key, value=value)
+        if section_key not in root:
+            root.add_section(section_key)
+
+        if option_key not in root[section_key]:
+            option = Option(key=option_key, value=value)
+            root[section_key].add_option(option)
+        else:
+            root[section_key][option_key].append(value)
 
     def __delitem__(self, keys: list[str]) -> None:
         """Delete a value in the INI file.
@@ -297,13 +323,108 @@ class INIFileManager(KeyValueFileManager):
 
         self.commit(root)
 
-    def extend_list(self, *, keys: list[str], values: list[Any]) -> None:
-        msg = "INI files do not support lists, so this operation is not applicable."
-        raise NotImplementedError(msg)
+    def extend_list(self, *, keys: list[str], values: list[str]) -> None:
+        """Extend a list in the INI file.
 
-    def remove_from_list(self, *, keys: list[str], values: list[Any]) -> None:
-        msg = "INI files do not support lists, so this operation is not applicable."
-        raise NotImplementedError(msg)
+        An empty list of keys corresponds to the root of the document.
+        """
+        root = self.get()
+
+        if len(keys) == 0:
+            msg = (
+                f"INI files do not support lists at the root level, whereas access to "
+                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+            )
+            raise ValueError(msg)
+        elif len(keys) == 1:
+            msg = (
+                f"INI files do not support lists at the section level, whereas access "
+                f"to '{self.name}' was attempted at '{'.'.join(keys)}'"
+            )
+            raise ValueError(msg)
+        elif len(keys) == 2:
+            section_key, option_key = keys
+            self._extend_list_in_option(
+                root=root, section_key=section_key, option_key=option_key, values=values
+            )
+        else:
+            msg = (
+                f"INI files do not support nested config, whereas access to "
+                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+            )
+            raise ValueError(msg)
+
+        self.commit(root)
+
+    @staticmethod
+    def _extend_list_in_option(
+        *, root: INIDocument, section_key: str, option_key: str, values: list[str]
+    ) -> None:
+        for value in values:
+            INIFileManager._validated_append(
+                root=root, section_key=section_key, option_key=option_key, value=value
+            )
+
+    @staticmethod
+    def _remove_from_list_in_option(
+        *, root: INIDocument, section_key: str, option_key: str, values: list[str]
+    ) -> None:
+        if section_key not in root:
+            return
+
+        if option_key not in root[section_key]:
+            return
+
+        original_values = root[section_key][option_key].as_list()
+        # If already not present, silently pass
+        new_values = [value for value in original_values if value not in values]
+
+        if len(new_values) == 0:
+            # Remove the option if empty
+            root.remove_option(section=section_key, option=option_key)
+
+            # Remove the section if empty
+            if not root[section_key].options():
+                root.remove_section(name=section_key)
+
+        elif len(new_values) == 1:
+            # If only one value left, set it directly
+            root[section_key][option_key] = new_values[0]
+        elif len(new_values) > 1:
+            root[section_key][option_key].set_values(new_values)
+
+    def remove_from_list(self, *, keys: list[str], values: list[str]) -> None:
+        """Remove values from a list in the INI file.
+
+        An empty list of keys corresponds to the root of the document.
+        """
+        root = self.get()
+
+        if len(keys) == 0:
+            msg = (
+                f"INI files do not support lists at the root level, whereas access to "
+                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+            )
+            raise ValueError(msg)
+        elif len(keys) == 1:
+            msg = (
+                f"INI files do not support lists at the section level, whereas access "
+                f"to '{self.name}' was attempted at '{'.'.join(keys)}'"
+            )
+            raise ValueError(msg)
+        elif len(keys) == 2:
+            section_key, option_key = keys
+            self._remove_from_list_in_option(
+                root=root, section_key=section_key, option_key=option_key, values=values
+            )
+        else:
+            msg = (
+                f"INI files do not support nested config, whereas access to "
+                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+            )
+            raise ValueError(msg)
+
+        self.commit(root)
 
 
 @singledispatch

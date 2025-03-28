@@ -18,11 +18,29 @@ def files_manager() -> Iterator[None]:
     with (
         PyprojectTOMLManager(),
         SetupCFGManager(),
+        CodespellRCManager(),
+        CoverageRCManager(),
         DotRuffTOMLManager(),
         RuffTOMLManager(),
-        CodespellRCManager(),
+        ToxINIManager(),
     ):
         yield
+
+
+class CodespellRCManager(INIFileManager):
+    """Class to manage the .codespellrc file."""
+
+    @property
+    def relative_path(self) -> Path:
+        return Path(".codespellrc")
+
+
+class CoverageRCManager(INIFileManager):
+    """Class to manage the .coveragerc file."""
+
+    @property
+    def relative_path(self) -> Path:
+        return Path(".coveragerc")
 
 
 class DotRuffTOMLManager(TOMLFileManager):
@@ -41,9 +59,9 @@ class RuffTOMLManager(TOMLFileManager):
         return Path("ruff.toml")
 
 
-class CodespellRCManager(INIFileManager):
-    """Class to manage the .codespellrc file."""
+class ToxINIManager(INIFileManager):
+    """Class to manage the tox.ini file."""
 
     @property
     def relative_path(self) -> Path:
-        return Path(".codespellrc")
+        return Path("tox.ini")

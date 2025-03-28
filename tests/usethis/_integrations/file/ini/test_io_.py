@@ -870,6 +870,155 @@ key = value
                     keys=["section", "key"], value="new_value", exists_ok=False
                 )
 
+        def test_section_does_not_exist_yet(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.set_value(
+                    keys=["new_section"], value={"key": "new_value"}, exists_ok=True
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[new_section]
+key = new_value
+"""
+            )
+
+        def test_empty_section(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("[section]")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.set_value(
+                    keys=["section"], value={"key": "value"}, exists_ok=True
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key = value
+"""
+            )
+
+        def test_new_list_root(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.set_value(keys=[], value={"section": {"key": ["new_value"]}})
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key =
+    new_value
+"""
+            )
+
+        def test_new_list_section(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("[section]")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.set_value(
+                    keys=["section"], value={"key": ["new_value"]}, exists_ok=True
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key =
+    new_value
+"""
+            )
+
+        def test_new_list_option(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("[section]\nkey=value")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.set_value(
+                    keys=["section", "key"], value=["new_value"], exists_ok=True
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key =
+    new_value
+"""
+            )
+
+        def test_new_list_option_with_existing(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("[section]\nkey=value")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.set_value(
+                    keys=["section", "key"],
+                    value=["new_value", "other"],
+                    exists_ok=True,
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key =
+    new_value
+    other
+"""
+            )
+
     class TestDelItem:
         def test_delete_root(self, tmp_path: Path):
             # Arrange
@@ -1095,7 +1244,36 @@ key3 = value3
             )
 
     class TestExtendList:
-        def test_not_implemented(self, tmp_path: Path):
+        def test_inplace_modifications(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section]
+key1 = value1
+key2 = value2
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.extend_list(keys=["section", "key1"], values=["new_value"])
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key1 =
+    value1
+    new_value
+key2 = value2
+"""
+            )
+
+        def test_no_keys_raises(self, tmp_path: Path):
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
@@ -1109,12 +1287,143 @@ key3 = value3
             with (
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
-                pytest.raises(NotImplementedError),
+                pytest.raises(
+                    ValueError, match="INI files do not support lists at the root level"
+                ),
             ):
+                manager.extend_list(keys=[], values=["new_value"])
+
+        def test_one_key_raises(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyINIFileManager() as manager,
+                pytest.raises(
+                    ValueError,
+                    match="INI files do not support lists at the section level",
+                ),
+            ):
+                manager.extend_list(keys=["section"], values=["new_value"])
+
+        def test_four_keys_raises(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyINIFileManager() as manager,
+                pytest.raises(
+                    ValueError, match="INI files do not support nested config"
+                ),
+            ):
+                manager.extend_list(
+                    keys=["section", "key", "extra", "fourth"], values=["new_value"]
+                )
+
+        def test_doesnt_exist_yet(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
                 manager.extend_list(keys=["section", "key"], values=["new_value"])
 
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key = new_value
+"""
+            )
+
     class TestRemoveFromList:
-        def test_not_implemented(self, tmp_path: Path):
+        def test_singleton_list_collapsed(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section]
+key1 =
+    value1
+    value3
+key2 = value2
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.remove_from_list(keys=["section", "key1"], values=["value3"])
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key1 = value1
+key2 = value2
+"""
+            )
+
+        def test_multiple_values(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section]
+key1 =
+    value1
+    value2
+    value3
+    value4
+key2 = value2
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.remove_from_list(
+                    keys=["section", "key1"], values=["value2", "value4"]
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key1 =
+    value1
+    value3
+key2 = value2
+"""
+            )
+
+        def test_no_keys_raises(self, tmp_path: Path):
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
@@ -1128,6 +1437,122 @@ key3 = value3
             with (
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
-                pytest.raises(NotImplementedError),
+                pytest.raises(
+                    ValueError, match="INI files do not support lists at the root level"
+                ),
             ):
+                manager.remove_from_list(keys=[], values=["new_value"])
+
+        def test_one_key_raises(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyINIFileManager() as manager,
+                pytest.raises(
+                    ValueError,
+                    match="INI files do not support lists at the section level",
+                ),
+            ):
+                manager.remove_from_list(keys=["section"], values=["new_value"])
+
+        def test_three_keys_raises(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyINIFileManager() as manager,
+                pytest.raises(
+                    ValueError, match="INI files do not support nested config"
+                ),
+            ):
+                manager.remove_from_list(
+                    keys=["section", "key", "extra"], values=["new_value"]
+                )
+
+        def test_doesnt_exist_yet(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
                 manager.remove_from_list(keys=["section", "key"], values=["new_value"])
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == ""
+
+        def test_nothing_left(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section]
+key1 =
+    value1
+    value2
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.remove_from_list(
+                    keys=["section", "key1"], values=["value1", "value2"]
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == ""
+
+        def test_no_options_left(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section]
+key1 =
+    value1
+    value2
+key2 = value2
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.remove_from_list(
+                    keys=["section", "key1"], values=["value1", "value2"]
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key2 = value2
+"""
+            )

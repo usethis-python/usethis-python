@@ -93,7 +93,12 @@ $ uvx usethis ci bitbucket
 ☐ Run your pipeline via the Bitbucket website.
 ```
 
-## Interface
+## Command Line Interface
+
+- [`usethis tool`](#usethis-tool)
+- [`usethis badge`](#usethis-badge)
+- [`usethis ci`](#usethis-ci)
+- [`usethis browse pypi`](#usethis-browse-pypi-package)
 
 ### `usethis tool`
 

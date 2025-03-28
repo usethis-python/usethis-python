@@ -1360,6 +1360,79 @@ minversion = "7\""""
                 # Assert
                 assert "PT" in RuffTool().get_rules()
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pytest_ini_priority(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / "pytest.ini").touch()
+            (uv_init_dir / "pyproject.toml").touch()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_pytest()
+
+            # Assert
+            assert (
+                (uv_init_dir / "pytest.ini").read_text()
+                == """\
+[pytest]
+testpaths =
+    tests
+addopts =
+    --import-mode=importlib
+    -ra
+    --showlocals
+    --strict-markers
+    --strict-config
+filterwarnings =
+    error
+xfail_strict = True
+log_cli_level = INFO
+minversion = 7
+"""
+            )
+
+            with PyprojectTOMLManager() as manager:
+                assert ["tool", "pytest"] not in manager
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pyproject_with_ini_priority(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # testing it takes priority over setup.cfg
+            # Arrange
+            (uv_init_repo_dir / "setup.cfg").touch()
+            (uv_init_repo_dir / "pyproject.toml").write_text("""\
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+""")
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_pytest()
+
+            # Assert
+            assert (uv_init_repo_dir / "setup.cfg").read_text() == "", (
+                "Expected pyproject.toml to take priority when it has a [tool.pytest.ini_options] section"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pyproject_without_ini_priority(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_repo_dir / "setup.cfg").touch()
+            (uv_init_repo_dir / "pyproject.toml").write_text("""\
+[tool.pytest]
+foo = "bar"
+""")
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_pytest()
+
+            # Assert
+            assert (uv_init_repo_dir / "setup.cfg").read_text()
+
     class TestRemove:
         class TestRuffIntegration:
             def test_deselected(self, uv_init_dir: Path):

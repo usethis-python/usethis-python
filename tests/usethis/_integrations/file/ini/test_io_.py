@@ -1467,7 +1467,7 @@ key2 = value2
                     keys=["section", "key", "extra"], values=["new_value"]
                 )
 
-        def test_doesnt_exist_yet(self, tmp_path: Path):
+        def test_section_doesnt_exist_yet(self, tmp_path: Path):
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
@@ -1483,6 +1483,26 @@ key2 = value2
 
             # Assert
             assert (tmp_path / "valid.ini").read_text() == ""
+
+        def test_option_doesnt_exist_yet(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("[section]")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.remove_from_list(keys=["section", "key"], values=["new_value"])
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]"""
+            )
 
         def test_nothing_left(self, tmp_path: Path):
             # Arrange

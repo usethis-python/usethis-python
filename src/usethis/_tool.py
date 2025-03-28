@@ -9,8 +9,10 @@ from typing_extensions import Self, assert_never
 
 from usethis._config_file import (
     CodespellRCManager,
+    CoverageRCManager,
     DotRuffTOMLManager,
     RuffTOMLManager,
+    ToxINIManager,
 )
 from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -112,11 +114,23 @@ class ConfigItem(BaseModel):
                  removed. This might be set to False if we are modifying other tools'
                  config sections or shared config sections that are pre-requisites for
                  using this tool but might be relied on by other tools as well.
+        applies_to_all: Whether all file managers should support this config item, or
+                        whether it is optional and is only desirable if we know in
+                        advance what the file managers are which are being used.
+                        Defaults to True, which means a NotImplementedError will be
+                        raised if a file manager does not support this config item.
+                        It is useful to set this to False when the config item
+                        corresponds to the root level config, which isn't always
+                        available for non-nested file types like INI. For example,
+                        we might have the [tool.coverage] section in pyproject.toml
+                        but in tox.ini we have [coverage:run] and [coverage:report]
+                        but no overall root [coverage] section.
     """
 
     description: str | None = None
     root: dict[Path, ConfigEntry]
     managed: bool = True
+    applies_to_all: bool = True
 
     @property
     def paths(self) -> set[Path]:
@@ -328,8 +342,13 @@ class Tool(Protocol):
             ]
 
             if not file_managers:
-                msg = f"No active config file managers found for one of the '{self.name}' config items"
-                raise NotImplementedError(msg)
+                if config_item.applies_to_all:
+                    msg = f"No active config file managers found for one of the '{self.name}' config items"
+                    raise NotImplementedError(msg)
+                else:
+                    # Early exist; this config item is not managed by any active files
+                    # so it's optional, effectively.
+                    continue
 
             config_entries = [
                 config_item
@@ -451,15 +470,9 @@ class CodespellTool(Tool):
                 ConfigItem(
                     description="Overall config",
                     root={
-                        Path(".codespellrc"): ConfigEntry(
-                            keys=[], value=_NoConfigValue()
-                        ),
-                        Path("setup.cfg"): ConfigEntry(
-                            keys=["codespell"], value=_NoConfigValue()
-                        ),
-                        Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "codespell"], value=_NoConfigValue()
-                        ),
+                        Path(".codespellrc"): ConfigEntry(keys=[]),
+                        Path("setup.cfg"): ConfigEntry(keys=["codespell"]),
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "codespell"]),
                     },
                 ),
                 ConfigItem(
@@ -531,13 +544,10 @@ class CoverageTool(Tool):
         return deps
 
     def get_config_spec(self) -> ConfigSpec:
-        # https://coverage.readthedocs.io/en/7.6.12/config.html#configuration-reference
+        # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
 
-        run_value = {
-            "source": [get_source_dir_str()],
-            "omit": ["*/pytest-of-*/*"],
-        }
-        report_value = {
+        run = {"source": get_source_dir_str()}
+        report = {
             "exclude_also": [
                 "if TYPE_CHECKING:",
                 "raise AssertionError",
@@ -545,33 +555,110 @@ class CoverageTool(Tool):
                 "assert_never(.*)",
                 "class .*\\bProtocol\\):",
                 "@(abc\\.)?abstractmethod",
-            ]
+            ],
+            "omit": ["*/pytest-of-*/*"],
         }
 
         return ConfigSpec.from_flat(
-            file_managers=[PyprojectTOMLManager()],
+            file_managers=[
+                CoverageRCManager(),
+                SetupCFGManager(),
+                ToxINIManager(),
+                PyprojectTOMLManager(),
+            ],
             resolution="first",
             config_items=[
                 ConfigItem(
                     description="Overall Config",
                     root={
-                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "coverage"])
+                        Path(".coveragerc"): ConfigEntry(keys=[]),
+                        # N.B. other ini files use a "coverage:" prefix so there's no
+                        # section corresponding to overall config
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "coverage"]),
                     },
+                    applies_to_all=False,
                 ),
                 ConfigItem(
-                    description="Run configuration",
+                    description="Run Configuration",
                     root={
+                        Path(".coveragerc"): ConfigEntry(keys=["run"], value=run),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["coverage:run"], value=run
+                        ),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:run"], value=run),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "coverage", "run"], value=run_value
-                        )
+                            keys=["tool", "coverage", "run"], value=run
+                        ),
                     },
                 ),
                 ConfigItem(
                     description="Report Configuration",
                     root={
+                        Path(".coveragerc"): ConfigEntry(keys=["report"], value=report),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["coverage:report"], value=report
+                        ),
+                        Path("tox.ini"): ConfigEntry(
+                            keys=["coverage:report"], value=report
+                        ),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "coverage", "report"], value=report_value
-                        )
+                            keys=["tool", "coverage", "report"], value=report
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Paths Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["paths"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:paths"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:paths"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "paths"],
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="HTML Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["html"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:html"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:html"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "html"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="XML Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["xml"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:xml"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:xml"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "xml"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="JSON Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["json"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:json"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:json"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "json"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="LCOV Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["lcov"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:lcov"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:lcov"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "lcov"]
+                        ),
                     },
                 ),
             ],

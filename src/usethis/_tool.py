@@ -837,6 +837,30 @@ class PyprojectTOMLTool(Tool):
             Path("pyproject.toml"),
         ]
 
+    def remove_managed_files(self) -> None:
+        # https://github.com/nathanjmcdougall/usethis-python/issues/416
+        # We need to step through the tools and see if pyproject.toml is the active
+        # config file.
+        # If it isn't an active config file, no action is required.
+        # If it is an active config file, we  display a message to the user to inform
+        # them that the active config is being removed and they need to re-configure
+        # the tool
+
+        box_print("Check that important config in 'pyproject.toml' is not lost.")
+
+        for tool in ALL_TOOLS:
+            if (
+                tool.is_used()
+                and PyprojectTOMLManager() in tool.get_active_config_file_managers()
+            ):
+                # Warn the user
+                box_print(
+                    f"The {tool.name} tool was using 'pyproject.toml' for config, "
+                    f"but that file is being removed. You will need to re-configure it."
+                )
+
+        super().remove_managed_files()
+
 
 class PytestTool(Tool):
     # https://github.com/pytest-dev/pytest

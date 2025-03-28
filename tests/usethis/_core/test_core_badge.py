@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-import typer
 
 from usethis._core.badge import Badge, add_badge, is_badge, remove_badge
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -51,18 +50,26 @@ class TestIsBadge:
 
 
 class TestAddBadge:
-    def test_not_markdown(self, bare_dir: Path):
+    def test_not_markdown(self, bare_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         path = bare_dir / "README.foo"
         path.touch()
 
-        # Act, Assert
-        with change_cwd(bare_dir), PyprojectTOMLManager(), pytest.raises(typer.Exit):
+        # Act
+        with change_cwd(bare_dir), PyprojectTOMLManager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)",
                 )
             )
+
+        # Assert (that the badge markdown is printed)
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == (
+            "⚠ README file not found, printing badge markdown instead...\n"
+            "![Licence](https://img.shields.io/badge/licence-mit-green)\n"
+        )
 
     def test_empty(self, bare_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange

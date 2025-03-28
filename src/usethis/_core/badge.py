@@ -4,10 +4,9 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import typer
 from pydantic import BaseModel
 
-from usethis._console import err_print, tick_print, warn_print
+from usethis._console import tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path
 from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLError
 from usethis._integrations.file.pyproject_toml.name import get_name
@@ -73,9 +72,10 @@ def add_badge(badge: Badge) -> None:
 
     try:
         path = _get_markdown_readme_path()
-    except FileNotFoundError as err:
-        err_print(err)
-        raise typer.Exit(code=1) from None
+    except FileNotFoundError:
+        warn_print("README file not found, printing badge markdown instead...")
+        print(badge.markdown)
+        return
 
     prerequisites: list[Badge] = []
     for _b in get_badge_order():

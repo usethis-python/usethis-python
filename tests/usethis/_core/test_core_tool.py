@@ -199,7 +199,7 @@ class TestCoverage:
         def test_from_nothing(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Act
                 use_coverage()
 
@@ -224,7 +224,7 @@ class TestCoverage:
             # Set python version
             (tmp_path / ".python-version").write_text(get_python_version())
 
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 # Act
                 use_coverage()
 
@@ -331,7 +331,7 @@ omit =
                 assert not err
 
         def test_roundtrip(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_coverage()

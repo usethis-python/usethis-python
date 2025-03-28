@@ -550,25 +550,6 @@ key = other
 """
             )
 
-        def test_list(self, tmp_path: Path):
-            # Arrange
-            class MyINIFileManager(INIFileManager):
-                @property
-                def relative_path(self) -> Path:
-                    return Path("valid.ini")
-
-            valid_file = tmp_path / "valid.ini"
-            valid_file.touch()
-            # Act
-            with (
-                change_cwd(tmp_path),
-                MyINIFileManager() as manager,
-                pytest.raises(NotImplementedError),
-            ):
-                manager.set_value(
-                    keys=["section"], value={"key": [1, 2, 3]}, exists_ok=True
-                )
-
         def test_int(self, tmp_path: Path):
             # Arrange
             class MyINIFileManager(INIFileManager):

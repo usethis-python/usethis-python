@@ -10,9 +10,11 @@ from pydantic import TypeAdapter
 
 from usethis._integrations.file.ini.errors import (
     INIDecodeError,
+    ININestingError,
     ININotFoundError,
     INIValueAlreadySetError,
     INIValueMissingError,
+    InvalidINITypeError,
     UnexpectedINIIOError,
     UnexpectedINIOpenError,
 )
@@ -157,7 +159,7 @@ class INIFileManager(KeyValueFileManager):
                 f"INI files do not support nested config, whereas access to "
                 f"'{self.name}' was attempted at '{'.'.join(keys)}'"
             )
-            raise ValueError(msg)
+            raise ININestingError(msg)
 
         self.commit(root)
 
@@ -262,7 +264,7 @@ class INIFileManager(KeyValueFileManager):
                 f"INI files only support strings (or lists of strings), but a "
                 f"{type(value)} was provided."
             )
-            raise NotImplementedError(msg)
+            raise InvalidINITypeError(msg)
 
         if section_key not in root:
             root.add_section(section_key)
@@ -278,7 +280,7 @@ class INIFileManager(KeyValueFileManager):
                 f"INI files only support strings (or lists of strings), but a "
                 f"{type(value)} was provided."
             )
-            raise NotImplementedError(msg)
+            raise InvalidINITypeError(msg)
 
         if section_key not in root:
             root.add_section(section_key)
@@ -335,13 +337,13 @@ class INIFileManager(KeyValueFileManager):
                 f"INI files do not support lists at the root level, whereas access to "
                 f"'{self.name}' was attempted at '{'.'.join(keys)}'"
             )
-            raise ValueError(msg)
+            raise InvalidINITypeError(msg)
         elif len(keys) == 1:
             msg = (
                 f"INI files do not support lists at the section level, whereas access "
                 f"to '{self.name}' was attempted at '{'.'.join(keys)}'"
             )
-            raise ValueError(msg)
+            raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
             self._extend_list_in_option(
@@ -352,7 +354,7 @@ class INIFileManager(KeyValueFileManager):
                 f"INI files do not support nested config, whereas access to "
                 f"'{self.name}' was attempted at '{'.'.join(keys)}'"
             )
-            raise ValueError(msg)
+            raise ININestingError(msg)
 
         self.commit(root)
 
@@ -405,13 +407,13 @@ class INIFileManager(KeyValueFileManager):
                 f"INI files do not support lists at the root level, whereas access to "
                 f"'{self.name}' was attempted at '{'.'.join(keys)}'"
             )
-            raise ValueError(msg)
+            raise InvalidINITypeError(msg)
         elif len(keys) == 1:
             msg = (
                 f"INI files do not support lists at the section level, whereas access "
                 f"to '{self.name}' was attempted at '{'.'.join(keys)}'"
             )
-            raise ValueError(msg)
+            raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
             self._remove_from_list_in_option(
@@ -422,7 +424,7 @@ class INIFileManager(KeyValueFileManager):
                 f"INI files do not support nested config, whereas access to "
                 f"'{self.name}' was attempted at '{'.'.join(keys)}'"
             )
-            raise ValueError(msg)
+            raise ININestingError(msg)
 
         self.commit(root)
 

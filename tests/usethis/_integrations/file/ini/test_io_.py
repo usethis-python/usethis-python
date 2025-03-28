@@ -6,8 +6,10 @@ from configupdater import ConfigUpdater
 from usethis._integrations.file.ini.errors import (
     INIDecodeError,
     ININotFoundError,
+    INIStructureError,
     INIValueAlreadySetError,
     INIValueMissingError,
+    InvalidINITypeError,
     UnexpectedINIIOError,
     UnexpectedINIOpenError,
 )
@@ -563,7 +565,7 @@ key = other
             with (
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
-                pytest.raises(NotImplementedError),
+                pytest.raises(TypeError),
             ):
                 manager.set_value(keys=["section"], value={"key": 1}, exists_ok=True)
 
@@ -1269,7 +1271,8 @@ key2 = value2
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
                 pytest.raises(
-                    ValueError, match="INI files do not support lists at the root level"
+                    INIStructureError,
+                    match="INI files do not support lists at the root level",
                 ),
             ):
                 manager.extend_list(keys=[], values=["new_value"])
@@ -1289,7 +1292,7 @@ key2 = value2
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
                 pytest.raises(
-                    ValueError,
+                    INIStructureError,
                     match="INI files do not support lists at the section level",
                 ),
             ):
@@ -1338,6 +1341,26 @@ key2 = value2
 key = new_value
 """
             )
+
+        def test_wrong_list_type_raises(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyINIFileManager() as manager,
+                pytest.raises(
+                    InvalidINITypeError, match="INI files only support strings"
+                ),
+            ):
+                manager.extend_list(keys=["section", "key"], values=[123])  # type: ignore
 
     class TestRemoveFromList:
         def test_singleton_list_collapsed(self, tmp_path: Path):
@@ -1419,7 +1442,8 @@ key2 = value2
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
                 pytest.raises(
-                    ValueError, match="INI files do not support lists at the root level"
+                    INIStructureError,
+                    match="INI files do not support lists at the root level",
                 ),
             ):
                 manager.remove_from_list(keys=[], values=["new_value"])
@@ -1439,7 +1463,7 @@ key2 = value2
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
                 pytest.raises(
-                    ValueError,
+                    INIStructureError,
                     match="INI files do not support lists at the section level",
                 ),
             ):

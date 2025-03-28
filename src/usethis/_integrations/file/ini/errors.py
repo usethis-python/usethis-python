@@ -29,3 +29,15 @@ class INIDecodeError(INIError):
 
 class UnexpectedINIIOError(INIError):
     """Raised when an unexpected attempt is made to read or write the INI file."""
+
+
+class INIStructureError(INIError):
+    """Raised when the INI file has an unexpected structure."""
+
+
+class InvalidINITypeError(TypeError, INIStructureError):
+    """Raised when an invalid type is encountered in the INI file."""
+
+
+class ININestingError(ValueError, INIStructureError):
+    """Raised when there is an unexpected nesting of INI sections."""

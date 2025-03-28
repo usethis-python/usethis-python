@@ -966,7 +966,7 @@ select = ["D", "B", "A"]
             # Arrange
             (tmp_path / "ruff.toml").write_text(
                 """
-[tool.ruff.lint]
+[lint]
 select = ["A", "B"]
 """
             )

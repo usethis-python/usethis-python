@@ -10,7 +10,9 @@ from typing_extensions import Self, assert_never
 from usethis._config_file import (
     CodespellRCManager,
     CoverageRCManager,
+    DotPytestINIManager,
     DotRuffTOMLManager,
+    PytestINIManager,
     RuffTOMLManager,
     ToxINIManager,
 )
@@ -40,7 +42,7 @@ from usethis._integrations.uv.deps import (
 )
 from usethis._io import KeyValueFileManager
 
-ResolutionT: TypeAlias = Literal["first"]
+ResolutionT: TypeAlias = Literal["first", "bespoke"]
 
 
 class ConfigSpec(BaseModel):
@@ -289,6 +291,7 @@ class Tool(Protocol):
         config_spec = self.get_config_spec()
         resolution = config_spec.resolution
         if resolution == "first":
+            # N.B. keep this roughly in sync with the bespoke logic for pytest
             for (
                 relative_path,
                 file_manager,
@@ -311,6 +314,12 @@ class Tool(Protocol):
                 )
                 raise NotImplementedError(msg)
             return {preferred_file_manager}
+        elif resolution == "bespoke":
+            msg = (
+                "The bespoke resolution method is not yet implemented for the tool "
+                f"{self.name}."
+            )
+            raise NotImplementedError(msg)
         else:
             assert_never(resolution)
 
@@ -901,31 +910,113 @@ class PytestTool(Tool):
             "log_cli_level": "INFO",  # include all >=INFO level log messages (sp-repo-review)
             "minversion": "7",  # minimum pytest version (sp-repo-review)
         }
+        value_ini = value.copy()
+        # https://docs.pytest.org/en/stable/reference/reference.html#confval-xfail_strict
+        value_ini["xfail_strict"] = "True"  # stringify boolean
 
         return ConfigSpec.from_flat(
-            file_managers=[PyprojectTOMLManager()],
-            resolution="first",
+            file_managers=[
+                PytestINIManager(),
+                DotPytestINIManager(),
+                PyprojectTOMLManager(),
+                ToxINIManager(),
+                SetupCFGManager(),
+            ],
+            resolution="bespoke",
             config_items=[
                 ConfigItem(
                     description="Overall Config",
-                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"])},
+                    root={
+                        Path("pytest.ini"): ConfigEntry(keys=[]),
+                        Path(".pytest.ini"): ConfigEntry(keys=[]),
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"]),
+                        Path("tox.ini"): ConfigEntry(keys=["pytest"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["tool:pytest"]),
+                    },
                 ),
                 ConfigItem(
                     description="INI-Style Options",
                     root={
+                        Path("pytest.ini"): ConfigEntry(
+                            keys=["pytest"], value=value_ini
+                        ),
+                        Path(".pytest.ini"): ConfigEntry(
+                            keys=["pytest"], value=value_ini
+                        ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "pytest", "ini_options"], value=value
-                        )
+                        ),
+                        Path("tox.ini"): ConfigEntry(keys=["pytest"], value=value_ini),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["tool:pytest"], value=value_ini
+                        ),
                     },
                 ),
             ],
         )
 
     def get_managed_files(self) -> list[Path]:
-        return [Path("pytest.ini"), Path("tests/conftest.py")]
+        return [Path(".pytest.ini"), Path("pytest.ini"), Path("tests/conftest.py")]
 
     def get_associated_ruff_rules(self) -> list[str]:
         return ["PT"]
+
+    def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
+        # This is a variant of the "first" method
+        config_spec = self.get_config_spec()
+        assert config_spec.resolution == "bespoke"
+        # As per https://docs.pytest.org/en/stable/reference/customize.html#finding-the-rootdir
+        # Files will only be matched for configuration if:
+        # - pytest.ini: will always match and take precedence, even if empty.
+        # - pyproject.toml: contains a [tool.pytest.ini_options] table.
+        # - tox.ini: contains a [pytest] section.
+        # - setup.cfg: contains a [tool:pytest] section.
+        # Finally, a pyproject.toml file will be considered the configfile if no other
+        # match was found, in this case even if it does not contain a
+        # [tool.pytest.ini_options] table
+        # Also, the docs mention that the hidden .pytest.ini variant is allowed, in my
+        # experimentation is takes precedence over pyproject.toml but not pytest.ini.
+
+        for (
+            relative_path,
+            file_manager,
+        ) in config_spec.file_manager_by_relative_path.items():
+            path = Path.cwd() / relative_path
+            if path.exists() and path.is_file():
+                if isinstance(file_manager, PyprojectTOMLManager):
+                    if ["tool", "pytest", "ini_options"] in file_manager:
+                        return {file_manager}
+                    else:
+                        continue
+                return {file_manager}
+
+        # Second chance for pyproject.toml
+        for (
+            relative_path,
+            file_manager,
+        ) in config_spec.file_manager_by_relative_path.items():
+            path = Path.cwd() / relative_path
+            if (
+                path.exists()
+                and path.is_file()
+                and isinstance(file_manager, PyprojectTOMLManager)
+            ):
+                return {file_manager}
+
+        file_managers = config_spec.file_manager_by_relative_path.values()
+        if not file_managers:
+            return set()
+
+        # Use the preferred default file since there's no existing file.
+        preferred_file_manager = self.preferred_file_manager()
+        if preferred_file_manager not in file_managers:
+            msg = (
+                f"The preferred file manager '{preferred_file_manager}' is not "
+                f"among the file managers '{file_managers}' for the tool "
+                f"'{self.name}'"
+            )
+            raise NotImplementedError(msg)
+        return {preferred_file_manager}
 
 
 class RequirementsTxtTool(Tool):

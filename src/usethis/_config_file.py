@@ -21,6 +21,8 @@ def files_manager() -> Iterator[None]:
         CodespellRCManager(),
         CoverageRCManager(),
         DotRuffTOMLManager(),
+        DotPytestINIManager(),
+        PytestINIManager(),
         RuffTOMLManager(),
         ToxINIManager(),
     ):
@@ -49,6 +51,22 @@ class DotRuffTOMLManager(TOMLFileManager):
     @property
     def relative_path(self) -> Path:
         return Path(".ruff.toml")
+
+
+class DotPytestINIManager(INIFileManager):
+    """Class to manage the .pytest.ini file."""
+
+    @property
+    def relative_path(self) -> Path:
+        return Path(".pytest.ini")
+
+
+class PytestINIManager(INIFileManager):
+    """Class to manage the pytest.ini file."""
+
+    @property
+    def relative_path(self) -> Path:
+        return Path("pytest.ini")
 
 
 class RuffTOMLManager(TOMLFileManager):

@@ -291,7 +291,7 @@ class Tool(Protocol):
         config_spec = self.get_config_spec()
         resolution = config_spec.resolution
         if resolution == "first":
-            # N.B. keep this roughly in sync with the bepoke logic for pytest
+            # N.B. keep this roughly in sync with the bespoke logic for pytest
             for (
                 relative_path,
                 file_manager,

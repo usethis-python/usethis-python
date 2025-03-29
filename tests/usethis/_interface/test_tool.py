@@ -35,6 +35,26 @@ class TestCoverage:
             else:
                 call_subprocess(["usethis", "tool", "coverage", "--offline"])
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_runs(self, tmp_path: Path):
+        # To check the config is valid
+        # https://github.com/nathanjmcdougall/usethis-python/issues/426
+
+        # Arrange
+        (tmp_path / "__main__.py").touch()
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            if not usethis_config.offline:
+                result = runner.invoke(app, ["coverage"])
+            else:
+                result = runner.invoke(app, ["coverage", "--offline"])
+
+            # Assert
+            assert result.exit_code == 0, result.output
+            call_subprocess(["coverage", "run", "."])
+
 
 class TestDeptry:
     @pytest.mark.usefixtures("_vary_network_conn")

@@ -555,7 +555,7 @@ class CoverageTool(Tool):
     def get_config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
 
-        run = {"source": get_source_dir_str()}
+        run = {"source": [get_source_dir_str()]}
         report = {
             "exclude_also": [
                 "if TYPE_CHECKING:",

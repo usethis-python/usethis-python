@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from abc import abstractmethod
 from pathlib import Path
 from typing import Any, Literal, Protocol, TypeAlias
@@ -22,6 +23,13 @@ from usethis._integrations.ci.bitbucket.anchor import (
 )
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
+from usethis._integrations.ci.bitbucket.steps import (
+    _steps_are_equivalent,
+    add_bitbucket_step_in_default,
+    get_steps_in_default,
+    remove_bitbucket_step_from_default,
+)
+from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.hooks import add_repo, get_hook_names, remove_hook
@@ -40,6 +48,7 @@ from usethis._integrations.uv.deps import (
     is_dep_in_any_group,
     remove_deps_from_group,
 )
+from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._io import KeyValueFileManager
 
 ResolutionT: TypeAlias = Literal["first", "bespoke"]
@@ -157,10 +166,6 @@ class Tool(Protocol):
         This method is called after a tool is added to the project.
         """
         pass
-
-    def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        """Get the Bitbucket pipeline step associated with this tool."""
-        return []
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's development dependencies.
@@ -446,6 +451,46 @@ class Tool(Protocol):
             if (Path.cwd() / file).exists() and (Path.cwd() / file).is_file():
                 tick_print(f"Removing '{file}'.")
                 file.unlink()
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        """Get the Bitbucket pipeline step associated with this tool."""
+        return []
+
+    def get_managed_bitbucket_step_names(self) -> list[str]:
+        """These are the names of the Bitbucket steps that are managed by this tool.
+
+        They should be removed if they are not currently active according to `get_bitbucket_steps`.
+        They should also be removed if the tool is removed.
+        """
+        return [
+            step.name for step in self.get_bitbucket_steps() if step.name is not None
+        ]
+
+    def remove_bitbucket_steps(self) -> None:
+        """Remove the Bitbucket steps associated with this tool."""
+        for step in get_steps_in_default():
+            if step.name in self.get_managed_bitbucket_step_names():
+                remove_bitbucket_step_from_default(step)
+
+    def update_bitbucket_steps(self) -> None:
+        """Add Bitbucket steps associated with this tool, and remove outdated ones.
+
+        Only runs if Bitbucket is used in the project.
+        """
+        if not is_bitbucket_used() or not self.is_used():
+            return
+
+        # Add the new steps
+        for step in self.get_bitbucket_steps():
+            add_bitbucket_step_in_default(step)
+
+        # Remove any old steps that are not active managed by this tool
+        for step in get_steps_in_default():
+            if step.name in self.get_managed_bitbucket_step_names() and not any(
+                _steps_are_equivalent(step, step_)
+                for step_ in self.get_bitbucket_steps()
+            ):
+                remove_bitbucket_step_from_default(step)
 
 
 class CodespellTool(Tool):
@@ -1017,6 +1062,39 @@ class PytestTool(Tool):
             )
             raise NotImplementedError(msg)
         return {preferred_file_manager}
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        versions = get_supported_major_python_versions()
+
+        steps = []
+        for version in versions:
+            steps.append(
+                BitbucketStep(
+                    name=f"Test on 3.{version}",
+                    caches=["uv"],
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="install-uv"),
+                            f"uv run --python 3.{version} pytest -x --junitxml=test-reports/report.xml",
+                        ]
+                    ),
+                )
+            )
+        return steps
+
+    def get_managed_bitbucket_step_names(self) -> list[str]:
+        names = set()
+        for step in get_steps_in_default():
+            if step.name is not None:
+                match = re.match(r"^Test on 3\.\d+$", step.name)
+                if match:
+                    names.add(step.name)
+
+        for step in self.get_bitbucket_steps():
+            if step.name is not None:
+                names.add(step.name)
+
+        return sorted(names)
 
 
 class RequirementsTxtTool(Tool):

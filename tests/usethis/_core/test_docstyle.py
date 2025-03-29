@@ -125,6 +125,33 @@ convention = "numpy"
 """
         )
 
+    def test_dont_add_d_if_all_already_selected_ruff(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "ruff.toml").write_text(
+            """\
+[lint]
+select = ["ALL"]
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            use_docstyle("numpy")
+
+        # Assert
+        contents = (tmp_path / "ruff.toml").read_text()
+        assert "pydocstyle" in contents
+        assert 'convention = "numpy"' in contents
+        assert contents == (
+            """\
+[lint]
+select = ["ALL"]
+
+[lint.pydocstyle]
+convention = "numpy"
+"""
+        )
+
     def test_leave_ok_config_alone(self, tmp_path: Path):
         # Arrange
         contents = """\

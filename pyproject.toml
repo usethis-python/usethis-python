@@ -162,7 +162,7 @@ layers = [
   "_app",
   "_interface",
   "_core",
-  "_tool | _ci",
+  "_tool",
   "_config_file",
   "_integrations",
   "_console",

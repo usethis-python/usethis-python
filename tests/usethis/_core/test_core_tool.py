@@ -278,7 +278,8 @@ class TestCoverage:
             assert (uv_init_dir / ".coveragerc").read_text() == (
                 """\
 [run]
-source = src
+source =
+    src
 [report]
 exclude_also =
     if TYPE_CHECKING:
@@ -304,7 +305,8 @@ omit =
             assert (uv_init_dir / "tox.ini").read_text() == (
                 """\
 [coverage:run]
-source = src
+source =
+    src
 [coverage:report]
 exclude_also =
     if TYPE_CHECKING:

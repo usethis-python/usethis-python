@@ -287,7 +287,15 @@ def use_requirements_txt(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_ruff(*, remove: bool = False) -> None:
+def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
+    """Add Ruff to the project.
+
+    By default, sensible default rules are selected. If rules are already selected, the
+    defaults are not selected, unless the existing rules are all pydocstyle rules.
+    """
+    # The reason for allowing additions to pydocstyle rules is that the usethis docstyle
+    # interface manages those rules.
+
     tool = RuffTool()
 
     ensure_pyproject_toml()
@@ -295,7 +303,17 @@ def use_ruff(*, remove: bool = False) -> None:
     # Only add ruff rules if the user doesn't already have a select/ignore list.
     # Otherwise, we should leave them alone.
 
-    if not RuffTool().get_rules() and not RuffTool().get_ignored_rules():
+    if minimal:
+        add_basic_rules = False
+    elif (
+        all(tool._is_pydocstyle_rule(rule) for rule in tool.get_rules())
+        or not RuffTool().get_rules()
+    ):
+        add_basic_rules = True
+    else:
+        add_basic_rules = False
+
+    if add_basic_rules:
         rules = [
             "A",
             "C4",

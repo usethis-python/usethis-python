@@ -96,8 +96,10 @@ $ uvx usethis ci bitbucket
 ## Command Line Interface
 
 - [`usethis tool`](#usethis-tool)
-- [`usethis badge`](#usethis-badge)
 - [`usethis ci`](#usethis-ci)
+- [`usethis readme`](#usethis-readme)
+- [`usethis docstyle`](#usethis-docstyle)
+- [`usethis badge`](#usethis-badge)
 - [`usethis browse pypi`](#usethis-browse-pypi-package)
 
 ### `usethis tool`
@@ -121,12 +123,35 @@ Currently supported tools:
 - `usethis tool requirements.txt`
 - `usethis tool ruff`
 
-Supported arguments:
+Supported options:
 
 - `--remove` to remove the tool instead of adding it
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
+
+### `usethis ci`
+
+Add Continuous Integration pipelines to the project.
+
+Currently supported platforms:
+
+- `usethis ci bitbcuket`
+
+Supported options:
+
+- `--remove` to remove the CI configuration instead of adding it
+- `--offline` to disable network access and rely on caches
+- `--quiet` to suppress output
+
+### `usethis readme`
+
+Add a README.md file to the project.
+
+Supported options:
+
+- `--quiet` to suppress output
+- `--badges` to also add badges to the README.md file
 
 ### `usethis badge`
 
@@ -138,24 +163,24 @@ Currently supported badges:
 - `usethis badge pre-commit`
 - `usethis badge pypi`
 
-Supported arguments:
+Supported options:
 
 - `--remove` to remove the badge instead of adding it
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 
-### `usethis ci`
+### `usethis docstyle`
 
-Add Continuous Integration pipelines to the project.
+Set a docstriny style convention for the project, and enforce it with Ruff.
 
-Currently supported platforms:
+Currently supported docstring styles:
 
-- `usethis ci bitbcuket`
+- `usethis docstyle numpy`
+- `usethis docstyle google`
+- `usethis docstyle pep257`
 
-Supported arguments:
+Supported options:
 
-- `--remove` to remove the CI configuration instead of adding it
-- `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 
 ### `usethis browse pypi <package>`
@@ -166,7 +191,7 @@ Example:
 
 `usethis browse pypi numpy`
 
-Supported arguments:
+Supported options:
 
 - `--browser` to open the link in the browser automatically.
 

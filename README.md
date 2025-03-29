@@ -171,7 +171,7 @@ Supported options:
 
 ### `usethis docstyle`
 
-Set a docstriny style convention for the project, and enforce it with Ruff.
+Set a docstring style convention for the project, and enforce it with Ruff.
 
 Currently supported docstring styles:
 

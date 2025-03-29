@@ -9,6 +9,7 @@ from usethis._core.docstyle import UnknownDocstringStyleError, use_docstyle
 
 def docstyle(
     style: str = typer.Argument(
+        default=None,
         help="Docstring style to enforce. Options: 'numpy', 'google', 'pep257'",
     ),
     quiet: bool = quiet_opt,

@@ -96,7 +96,7 @@ lint.select = [
   "EM",
   "ERA",
   "F",
-  "FIX002",
+  # "FIX002",
   "FURB",
   "I",
   "INP",
@@ -179,7 +179,7 @@ name = "Interface Independence"
 type = "layers"
 layers = [
   # Note; if you're adding an interface, make sure it's in the README too.
-  "badge | browse | ci | docstyle | readme | show | tool | version",
+  "author | badge | browse | ci | docstyle | readme | show | tool | version",
 ]
 containers = [ "usethis._interface" ]
 exhaustive = true

@@ -99,6 +99,7 @@ $ uvx usethis ci bitbucket
 - [`usethis ci`](#usethis-ci)
 - [`usethis readme`](#usethis-readme)
 - [`usethis docstyle`](#usethis-docstyle)
+- [`usethis author`](#usethis-author)
 - [`usethis badge`](#usethis-badge)
 - [`usethis browse pypi`](#usethis-browse-pypi-package)
 
@@ -152,6 +153,20 @@ Supported options:
 
 - `--quiet` to suppress output
 - `--badges` to also add badges to the README.md file
+
+### `usethis author`
+
+Set new author information for the project.
+
+Required options:
+
+- `--name` for the new author's name
+
+Other supported options:
+
+- `--email` to set the author email address
+- `--overwrite` to overwrite all existing author information
+- `--quiet` to suppress output
 
 ### `usethis badge`
 

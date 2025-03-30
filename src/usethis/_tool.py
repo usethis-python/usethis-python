@@ -746,7 +746,7 @@ class DeptryTool(Tool):
         if is_uv_used():
             box_print(f"Run 'uv run deptry {_dir}' to run deptry.")
         else:
-            box_print(f"Run 'udeptry {_dir}' to run deptry.")
+            box_print(f"Run 'deptry {_dir}' to run deptry.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="deptry")]

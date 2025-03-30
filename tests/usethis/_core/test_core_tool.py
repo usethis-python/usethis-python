@@ -242,7 +242,7 @@ class TestCoverage:
                     "✔ Writing 'pyproject.toml'.\n"
                     "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
                     "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'coverage help' to see available coverage commands.\n"
+                    "☐ Run 'uv run coverage help' to see available coverage commands.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1319,7 +1319,7 @@ class TestPytest:
                     "✔ Writing '/tests/conftest.py'.\n"
                     "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
                     "☐ Add test functions with the format 'test_*()'.\n"
-                    "☐ Run 'pytest' to run the tests.\n"
+                    "☐ Run 'uv run pytest' to run the tests.\n"
                 )
 
             assert (tmp_path / "pyproject.toml").exists()

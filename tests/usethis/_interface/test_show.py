@@ -49,7 +49,7 @@ project-key = "fun"
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["sonarqubeg"])
+            result = runner.invoke(app, ["sonarqube"])
 
         # Assert
         assert result.exit_code == 1, result.output

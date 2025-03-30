@@ -17,10 +17,10 @@ def name(
 
 
 @app.command(
-    name="sonarqube-config",
+    name="sonarqube",
     help="Show the sonar-projects.properties file for SonarQube.",
 )
-def sonarqube_config(
+def sonarqube(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:

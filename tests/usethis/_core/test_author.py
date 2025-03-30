@@ -20,6 +20,7 @@ class TestAddAuthor:
         # Assert
         assert (tmp_path / "pyproject.toml").read_text() == (
             """\
+
 [[project.authors]]
 name = "John Cleese"
 email = "jc@example.com"

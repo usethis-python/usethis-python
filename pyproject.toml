@@ -51,13 +51,13 @@ scripts.usethis = "usethis.__main__:app"
 dev = [
   "datamodel-code-generator[http]>=0.28.2",
   "deptry>=0.23.0",
-  "import-linter>=2.2",
-  "pre-commit>=4.1.0",
-  "pyright>=1.1.396",
-  "ruff>=0.9.9",
+  "import-linter>=2.3",
+  "pre-commit>=4.2.0",
+  "pyright>=1.1.398",
+  "ruff>=0.11.2",
 ]
 test = [
-  "coverage[toml]>=7.6.12",
+  "coverage[toml]>=7.7.1",
   "gitpython>=3.1.44",
   "pytest>=8.3.5",
   "pytest-codspeed>=3.2.0",
@@ -67,7 +67,7 @@ test = [
 ]
 doc = [
   "mkdocs>=1.6.1",
-  "mkdocs-material>=9.6.7",
+  "mkdocs-material>=9.6.10",
 ]
 
 [tool.hatch.version]

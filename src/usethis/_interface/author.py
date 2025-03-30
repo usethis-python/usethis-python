@@ -8,12 +8,12 @@ from usethis._core.author import add_author
 
 
 def author(
-    quiet: bool = quiet_opt,
     name: str = typer.Option(..., "--name", help="Author name"),
     email: str | None = typer.Option(None, "--email", help="Author email"),
     overwrite: bool = typer.Option(
         False, "--overwrite", help="Overwrite any existing authors"
     ),
+    quiet: bool = quiet_opt,
 ) -> None:
     with usethis_config.set(quiet=quiet), files_manager():
         add_author(

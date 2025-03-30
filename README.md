@@ -53,6 +53,26 @@ $ pip install usethis
 
 Alternatively, run in isolation, using `uvx` or `pipx`.
 
+## Command Line Interface
+
+### Main commands
+
+- [`usethis tool`](#usethis-tool)
+- [`usethis ci`](#usethis-ci)
+
+### Configuration
+
+- [`usethis readme`](#usethis-readme)
+- [`usethis author`](#usethis-author)
+- [`usethis badge`](#usethis-badge)
+- [`usethis docstyle`](#usethis-docstyle)
+
+### Information
+
+- [`usethis list`](#usethis-list)
+- [`usethis show`](#usethis-show)
+- [`usethis browse pypi`](#usethis-browse-pypi-package)
+
 ## Example Usage
 
 To use Ruff on a fresh project, run:
@@ -93,15 +113,7 @@ $ uvx usethis ci bitbucket
 ☐ Run your pipeline via the Bitbucket website.
 ```
 
-## Command Line Interface
-
-- [`usethis tool`](#usethis-tool)
-- [`usethis ci`](#usethis-ci)
-- [`usethis readme`](#usethis-readme)
-- [`usethis docstyle`](#usethis-docstyle)
-- [`usethis author`](#usethis-author)
-- [`usethis badge`](#usethis-badge)
-- [`usethis browse pypi`](#usethis-browse-pypi-package)
+## Command Reference
 
 ### `usethis tool`
 
@@ -197,6 +209,18 @@ Currently supported docstring styles:
 Supported options:
 
 - `--quiet` to suppress output
+
+### `usethis list`
+
+Display a table of all available tools and their current usage status.
+
+### `usethis show`
+
+Show a piece of information about the project.
+
+Currently supported subcommands:
+
+- `usethis show name` to show the name of the project.
 
 ### `usethis browse pypi <package>`
 

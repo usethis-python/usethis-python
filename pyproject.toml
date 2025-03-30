@@ -108,7 +108,7 @@ lint.select = [
   "TC",
   "UP",
 ]
-lint.ignore = [ "D417", "PLR2004", "SIM108" ]
+lint.ignore = [ "PLR2004", "SIM108" ]
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S101" ]
 lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
 lint.pydocstyle.convention = "google"
@@ -178,7 +178,8 @@ exhaustive_ignores = [ "_version" ]
 name = "Interface Independence"
 type = "layers"
 layers = [
-  "author | badge | browse | ci | readme | show | tool | version",
+  # Note; if you're adding an interface, make sure it's in the README too.
+  "author | badge | browse | ci | docstyle | readme | show | tool | version",
 ]
 containers = [ "usethis._interface" ]
 exhaustive = true

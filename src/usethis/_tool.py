@@ -1310,6 +1310,33 @@ class RuffTool(Tool):
 
         return rules
 
+    def set_docstyle(self, style: Literal["numpy", "google", "pep257"]) -> None:
+        (file_manager,) = self.get_active_config_file_managers()
+
+        keys = self._get_docstyle_keys(file_manager)
+        if keys in file_manager and file_manager[keys] == style:
+            # Already set properly
+            return
+
+        msg = f"Setting docstring style to '{style}' in '{file_manager.name}'."
+        tick_print(msg)
+        file_manager[self._get_docstyle_keys(file_manager)] = style
+
+    def _are_pydocstyle_rules_selected(self) -> bool:
+        """Check if pydocstyle rules are selected in the configuration."""
+        # If "ALL" is selected, or any rule whose alphabetical part is "D".
+        rules = self.get_rules()
+        for rule in rules:
+            if rule == "ALL":
+                return True
+            if self._is_pydocstyle_rule(rule):
+                return True
+        return False
+
+    @staticmethod
+    def _is_pydocstyle_rule(rule: str) -> bool:
+        return [d for d in rule if d.isalpha()] == ["D"]
+
     @staticmethod
     def _get_select_keys(file_manager: KeyValueFileManager) -> list[str]:
         """Get the keys for the select rules in the given file manager."""
@@ -1334,6 +1361,20 @@ class RuffTool(Tool):
         else:
             msg = (
                 f"Unknown location for ignored ruff rules for file manager "
+                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+            )
+            raise NotImplementedError(msg)
+
+    @staticmethod
+    def _get_docstyle_keys(file_manager: KeyValueFileManager) -> list[str]:
+        """Get the keys for the docstyle rules in the given file manager."""
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "ruff", "lint", "pydocstyle", "convention"]
+        elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):
+            return ["lint", "pydocstyle", "convention"]
+        else:
+            msg = (
+                f"Unknown location for ruff docstring style for file manager "
                 f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
             )
             raise NotImplementedError(msg)

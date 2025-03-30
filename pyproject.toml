@@ -185,6 +185,18 @@ containers = [ "usethis._interface" ]
 exhaustive = true
 
 [[tool.importlinter.contracts]]
+name = "Core Modular Design"
+type = "layers"
+layers = [
+  "list",
+  # docstyle uses (Ruff) tool, badge uses readme
+  "badge | docstyle",
+  "author | browse | ci | readme | show | tool",
+]
+containers = [ "usethis._core" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
 name = "Integrations Modular Design"
 type = "layers"
 layers = [

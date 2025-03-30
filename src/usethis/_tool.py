@@ -1322,6 +1322,21 @@ class RuffTool(Tool):
         tick_print(msg)
         file_manager[self._get_docstyle_keys(file_manager)] = style
 
+    def get_docstyle(self) -> Literal["numpy", "google", "pep257"] | None:
+        """Get the docstring style set in the project."""
+        (file_manager,) = self.get_active_config_file_managers()
+        keys = self._get_docstyle_keys(file_manager)
+        try:
+            docstyle = file_manager[keys]
+        except (KeyError, FileNotFoundError):
+            docstyle = None
+
+        if docstyle not in ("numpy", "google", "pep257"):
+            # Docstyle is not set or is invalid
+            return None
+
+        return docstyle
+
     def _are_pydocstyle_rules_selected(self) -> bool:
         """Check if pydocstyle rules are selected in the configuration."""
         # If "ALL" is selected, or any rule whose alphabetical part is "D".
@@ -1385,9 +1400,10 @@ ALL_TOOLS: list[Tool] = [
     CoverageTool(),
     DeptryTool(),
     PreCommitTool(),
-    PyprojectTOMLTool(),
     PyprojectFmtTool(),
+    PyprojectTOMLTool(),
     PytestTool(),
     RequirementsTxtTool(),
     RuffTool(),
 ]
+# TODO test that the list is sorted alphabetically by CLI name

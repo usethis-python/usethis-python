@@ -7,6 +7,7 @@ import usethis._interface.badge
 import usethis._interface.browse
 import usethis._interface.ci
 import usethis._interface.docstyle
+import usethis._interface.list
 import usethis._interface.readme
 import usethis._interface.show
 import usethis._interface.tool
@@ -29,6 +30,9 @@ app.command(help="Add a README.md file to the project.")(
 )
 app.command(help="Enforce a docstring style.")(
     usethis._interface.docstyle.docstyle,
+)
+app.command(help="List usage of tooling and config managed by usethis.")(
+    usethis._interface.list.list,
 )
 app.add_typer(usethis._interface.show.app, name="show")
 app.add_typer(usethis._interface.tool.app, name="tool")

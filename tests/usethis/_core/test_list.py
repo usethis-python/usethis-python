@@ -1,8 +1,26 @@
 from pathlib import Path
 
+import pytest
+
 from usethis._config_file import files_manager
-from usethis._core.list import UsageRow, UsageTable, get_usage_table
+from usethis._core.list import UsageRow, UsageTable, get_usage_table, show_usage_table
 from usethis._test import change_cwd
+
+
+class TestShowUsageTable:
+    def test_empty_project(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ) -> None:
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            show_usage_table()
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert "✘ Unused"
+        assert "✔ used" not in out
+        assert "─" in out  # Rich style formatting
 
 
 class TestGetUsageTable:

@@ -49,6 +49,7 @@ from usethis._integrations.uv.deps import (
     remove_deps_from_group,
 )
 from usethis._integrations.uv.python import get_supported_major_python_versions
+from usethis._integrations.uv.used import is_uv_used
 from usethis._io import KeyValueFileManager
 
 ResolutionT: TypeAlias = Literal["first", "bespoke"]
@@ -501,9 +502,16 @@ class CodespellTool(Tool):
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
-            box_print(
-                "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
-            )
+            if is_uv_used():
+                box_print(
+                    "Run 'uv run pre-commit run codespell --all-files' to run the Codespell spellchecker."
+                )
+            else:
+                box_print(
+                    "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
+                )
+        elif is_uv_used():
+            box_print("Run 'uv run codespell' to run the Codespell spellchecker.")
         else:
             box_print("Run 'codespell' to run the Codespell spellchecker.")
 
@@ -587,7 +595,12 @@ class CoverageTool(Tool):
 
     def print_how_to_use(self) -> None:
         if PytestTool().is_used():
-            box_print("Run 'pytest --cov' to run your tests with coverage.")
+            if is_uv_used():
+                box_print("Run 'uv run pytest --cov' to run your tests with coverage.")
+            else:
+                box_print("Run 'pytest --cov' to run your tests with coverage.")
+        elif is_uv_used():
+            box_print("Run 'uv run coverage help' to see available coverage commands.")
         else:
             box_print("Run 'coverage help' to see available coverage commands.")
 
@@ -730,7 +743,10 @@ class DeptryTool(Tool):
 
     def print_how_to_use(self) -> None:
         _dir = get_source_dir_str()
-        box_print(f"Run 'deptry {_dir}' to run deptry.")
+        if is_uv_used():
+            box_print(f"Run 'uv run deptry {_dir}' to run deptry.")
+        else:
+            box_print(f"Run 'deptry {_dir}' to run deptry.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="deptry")]
@@ -789,7 +805,12 @@ class PreCommitTool(Tool):
         return "pre-commit"
 
     def print_how_to_use(self) -> None:
-        box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
+        if is_uv_used():
+            box_print(
+                "Run 'uv run pre-commit run --all-files' to run the hooks manually."
+            )
+        else:
+            box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pre-commit")]
@@ -820,9 +841,16 @@ class PyprojectFmtTool(Tool):
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
-            box_print(
-                "Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
-            )
+            if is_uv_used():
+                box_print(
+                    "Run 'uv run pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
+                )
+            else:
+                box_print(
+                    "Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
+                )
+        elif is_uv_used():
+            box_print("Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.")
         else:
             box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
 
@@ -927,7 +955,10 @@ class PytestTool(Tool):
             "Add test files to the '/tests' directory with the format 'test_*.py'."
         )
         box_print("Add test functions with the format 'test_*()'.")
-        box_print("Run 'pytest' to run the tests.")
+        if is_uv_used():
+            box_print("Run 'uv run pytest' to run the tests.")
+        else:
+            box_print("Run 'pytest' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="pytest")]
@@ -1108,6 +1139,10 @@ class RequirementsTxtTool(Tool):
         if PreCommitTool().is_used():
             box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
         else:
+            if not is_uv_used():
+                # This is a very crude approach as a temporary measure.
+                box_print("Install uv to use 'uv export'.")
+
             box_print(
                 "Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'."
             )
@@ -1144,8 +1179,14 @@ class RuffTool(Tool):
         return "Ruff"
 
     def print_how_to_use(self) -> None:
-        box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")
-        box_print("Run 'ruff format' to run the Ruff formatter.")
+        if is_uv_used():
+            box_print(
+                "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
+            )
+            box_print("Run 'uv run ruff format' to run the Ruff formatter.")
+        else:
+            box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")
+            box_print("Run 'ruff format' to run the Ruff formatter.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ruff")]

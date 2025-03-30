@@ -25,7 +25,11 @@ class Dependency(BaseModel):
 
 
 def get_dep_groups() -> dict[str, list[Dependency]]:
-    pyproject = PyprojectTOMLManager().get()
+    try:
+        pyproject = PyprojectTOMLManager().get()
+    except FileNotFoundError:
+        return {}
+
     try:
         dep_groups_section = pyproject["dependency-groups"]
     except KeyError:

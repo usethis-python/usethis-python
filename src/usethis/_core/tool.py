@@ -3,17 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from usethis._ci import (
-    is_bitbucket_used,
-    remove_bitbucket_pytest_steps,
-    update_bitbucket_pytest_steps,
-)
 from usethis._config import usethis_config
 from usethis._console import tick_print
-from usethis._integrations.ci.bitbucket.steps import (
-    add_bitbucket_steps_in_default,
-    remove_bitbucket_steps_from_default,
-)
+from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.pre_commit.core import (
     install_pre_commit_hooks,
@@ -52,15 +44,14 @@ def use_codespell(*, remove: bool = False) -> None:
     if not remove:
         if not PreCommitTool().is_used():
             tool.add_dev_deps()
-            if is_bitbucket_used():
-                add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
+            tool.update_bitbucket_steps()
         else:
             tool.add_pre_commit_repo_configs()
 
         tool.add_configs()
         tool.print_how_to_use()
     else:
-        remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
+        tool.remove_bitbucket_steps()
         tool.remove_configs()
         tool.remove_pre_commit_repo_configs()
         tool.remove_dev_deps()
@@ -91,14 +82,14 @@ def use_deptry(*, remove: bool = False) -> None:
         tool.add_dev_deps()
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
-        elif is_bitbucket_used():
-            add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
+        else:
+            tool.update_bitbucket_steps()
 
         tool.print_how_to_use()
     else:
         tool.remove_pre_commit_repo_configs()
         tool.remove_configs()
-        remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
+        tool.remove_bitbucket_steps()
         tool.remove_dev_deps()
         tool.remove_managed_files()
 
@@ -133,14 +124,14 @@ def use_pre_commit(*, remove: bool = False) -> None:
 
         install_pre_commit_hooks()
 
+        tool.update_bitbucket_steps()
         if is_bitbucket_used():
-            add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
             _remove_bitbucket_linter_steps_from_default()
 
         tool.print_how_to_use()
     else:
+        tool.remove_bitbucket_steps()
         if is_bitbucket_used():
-            remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
             _add_bitbucket_linter_steps_to_default()
 
         uninstall_pre_commit_hooks()
@@ -177,15 +168,15 @@ def _add_bitbucket_linter_steps_to_default() -> None:
         tools: list[Tool] = [PyprojectFmtTool(), DeptryTool(), RuffTool()]
         for tool in tools:
             if tool.is_used():
-                add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
+                tool.update_bitbucket_steps()
 
 
 def _remove_bitbucket_linter_steps_from_default() -> None:
     # This order of removing tools should be synced with the order hard-coded
     # in the function which adds steps.
-    remove_bitbucket_steps_from_default(PyprojectFmtTool().get_bitbucket_steps())
-    remove_bitbucket_steps_from_default(DeptryTool().get_bitbucket_steps())
-    remove_bitbucket_steps_from_default(RuffTool().get_bitbucket_steps())
+    PyprojectFmtTool().remove_bitbucket_steps()
+    DeptryTool().remove_bitbucket_steps()
+    RuffTool().remove_bitbucket_steps()
 
 
 def use_pyproject_fmt(*, remove: bool = False) -> None:
@@ -196,15 +187,14 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
     if not remove:
         if not PreCommitTool().is_used():
             tool.add_dev_deps()
-            if is_bitbucket_used():
-                add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
+            tool.update_bitbucket_steps()
         else:
             tool.add_pre_commit_repo_configs()
 
         tool.add_configs()
         tool.print_how_to_use()
     else:
-        remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
+        tool.remove_bitbucket_steps()
         tool.remove_configs()
         tool.remove_pre_commit_repo_configs()
         tool.remove_dev_deps()
@@ -239,16 +229,14 @@ def use_pytest(*, remove: bool = False) -> None:
         # https://github.com/fpgmaas/deptry/issues/302
         add_pytest_dir()
 
-        if is_bitbucket_used():
-            update_bitbucket_pytest_steps()
+        PytestTool().update_bitbucket_steps()
 
         tool.print_how_to_use()
 
         if CoverageTool().is_used():
             CoverageTool().print_how_to_use()
     else:
-        if is_bitbucket_used():
-            remove_bitbucket_pytest_steps()
+        PytestTool().remove_bitbucket_steps()
 
         if RuffTool().is_used():
             RuffTool().deselect_rules(tool.get_associated_ruff_rules())
@@ -299,34 +287,59 @@ def use_requirements_txt(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_ruff(*, remove: bool = False) -> None:
+def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
+    """Add Ruff to the project.
+
+    By default, sensible default rules are selected. If rules are already selected, the
+    defaults are not selected, unless the existing rules are all pydocstyle rules.
+    """
+    # The reason for allowing additions to pydocstyle rules is that the usethis docstyle
+    # interface manages those rules.
+
     tool = RuffTool()
 
     ensure_pyproject_toml()
 
-    rules = [
-        "A",
-        "C4",
-        "E4",
-        "E7",
-        "E9",
-        "EM",
-        "F",
-        "FURB",
-        "I",
-        "PLE",
-        "PLR",
-        "RUF",
-        "SIM",
-        "UP",
-    ]
-    for _tool in ALL_TOOLS:
-        if _tool.is_used():
-            rules += _tool.get_associated_ruff_rules()
-    ignored_rules = [
-        "PLR2004",  # https://github.com/nathanjmcdougall/usethis-python/issues/105
-        "SIM108",  # https://github.com/nathanjmcdougall/usethis-python/issues/118
-    ]
+    # Only add ruff rules if the user doesn't already have a select/ignore list.
+    # Otherwise, we should leave them alone.
+
+    if minimal:
+        add_basic_rules = False
+    elif (
+        all(tool._is_pydocstyle_rule(rule) for rule in tool.get_rules())
+        or not RuffTool().get_rules()
+    ):
+        add_basic_rules = True
+    else:
+        add_basic_rules = False
+
+    if add_basic_rules:
+        rules = [
+            "A",
+            "C4",
+            "E4",
+            "E7",
+            "E9",
+            "EM",
+            "F",
+            "FURB",
+            "I",
+            "PLE",
+            "PLR",
+            "RUF",
+            "SIM",
+            "UP",
+        ]
+        for _tool in ALL_TOOLS:
+            if _tool.is_used():
+                rules += _tool.get_associated_ruff_rules()
+        ignored_rules = [
+            "PLR2004",  # https://github.com/nathanjmcdougall/usethis-python/issues/105
+            "SIM108",  # https://github.com/nathanjmcdougall/usethis-python/issues/118
+        ]
+    else:
+        rules = []
+        ignored_rules = []
 
     if not remove:
         tool.add_dev_deps()
@@ -335,13 +348,13 @@ def use_ruff(*, remove: bool = False) -> None:
         tool.ignore_rules(ignored_rules)
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
-        elif is_bitbucket_used():
-            add_bitbucket_steps_in_default(tool.get_bitbucket_steps())
+        else:
+            tool.update_bitbucket_steps()
 
         tool.print_how_to_use()
     else:
         tool.remove_pre_commit_repo_configs()
-        remove_bitbucket_steps_from_default(tool.get_bitbucket_steps())
+        tool.remove_bitbucket_steps()
         tool.remove_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()

@@ -51,13 +51,13 @@ scripts.usethis = "usethis.__main__:app"
 dev = [
   "datamodel-code-generator[http]>=0.28.2",
   "deptry>=0.23.0",
-  "import-linter>=2.2",
-  "pre-commit>=4.1.0",
-  "pyright>=1.1.396",
-  "ruff>=0.9.9",
+  "import-linter>=2.3",
+  "pre-commit>=4.2.0",
+  "pyright>=1.1.398",
+  "ruff>=0.11.2",
 ]
 test = [
-  "coverage[toml]>=7.6.12",
+  "coverage[toml]>=7.7.1",
   "gitpython>=3.1.44",
   "pytest>=8.3.5",
   "pytest-codspeed>=3.2.0",
@@ -67,7 +67,7 @@ test = [
 ]
 doc = [
   "mkdocs>=1.6.1",
-  "mkdocs-material>=9.6.7",
+  "mkdocs-material>=9.6.10",
 ]
 
 [tool.hatch.version]
@@ -108,7 +108,7 @@ lint.select = [
   "TC",
   "UP",
 ]
-lint.ignore = [ "D417", "PLR2004", "SIM108" ]
+lint.ignore = [ "PLR2004", "SIM108" ]
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S101" ]
 lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
 lint.pydocstyle.convention = "google"
@@ -162,7 +162,7 @@ layers = [
   "_app",
   "_interface",
   "_core",
-  "_tool | _ci",
+  "_tool",
   "_config_file",
   "_integrations",
   "_console",
@@ -178,9 +178,22 @@ exhaustive_ignores = [ "_version" ]
 name = "Interface Independence"
 type = "layers"
 layers = [
-  "badge | browse | ci | readme | rule | show | tool | version",
+  # Note; if you're adding an interface, make sure it's in the README too.
+  "author | badge | browse | ci | docstyle | list | readme | rule | show | tool | version",
 ]
 containers = [ "usethis._interface" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "Core Modular Design"
+type = "layers"
+layers = [
+  "list",
+  # docstyle uses (Ruff) tool, badge uses readme
+  "badge | docstyle",
+  "author | browse | ci | readme | show | tool",
+]
+containers = [ "usethis._core" ]
 exhaustive = true
 
 [[tool.importlinter.contracts]]
@@ -198,7 +211,7 @@ exhaustive = true
 name = "File Integrations Modular Design"
 type = "layers"
 layers = [
-  "pyproject_toml",
+  "pyproject_toml | setup_cfg",
   "ini | toml | yaml",
 ]
 containers = [ "usethis._integrations.file" ]

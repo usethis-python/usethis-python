@@ -171,7 +171,7 @@ pipelines:
                 (uv_init_dir / "ruff.toml").touch()
 
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert

@@ -53,6 +53,26 @@ $ pip install usethis
 
 Alternatively, run in isolation, using `uvx` or `pipx`.
 
+## Command Line Interface
+
+### Main commands
+
+- [`usethis tool`](#usethis-tool)
+- [`usethis ci`](#usethis-ci)
+
+### Configuration
+
+- [`usethis readme`](#usethis-readme)
+- [`usethis author`](#usethis-author)
+- [`usethis badge`](#usethis-badge)
+- [`usethis docstyle`](#usethis-docstyle)
+
+### Information
+
+- [`usethis list`](#usethis-list)
+- [`usethis show`](#usethis-show)
+- [`usethis browse pypi`](#usethis-browse-pypi-package)
+
 ## Example Usage
 
 To use Ruff on a fresh project, run:
@@ -93,7 +113,7 @@ $ uvx usethis ci bitbucket
 ☐ Run your pipeline via the Bitbucket website.
 ```
 
-## Interface
+## Command Reference
 
 ### `usethis tool`
 
@@ -116,11 +136,48 @@ Currently supported tools:
 - `usethis tool requirements.txt`
 - `usethis tool ruff`
 
-Supported arguments:
+Supported options:
 
 - `--remove` to remove the tool instead of adding it
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--quiet` to suppress output
+
+### `usethis ci`
+
+Add Continuous Integration pipelines to the project.
+
+Currently supported platforms:
+
+- `usethis ci bitbcuket`
+
+Supported options:
+
+- `--remove` to remove the CI configuration instead of adding it
+- `--offline` to disable network access and rely on caches
+- `--quiet` to suppress output
+
+### `usethis readme`
+
+Add a README.md file to the project.
+
+Supported options:
+
+- `--quiet` to suppress output
+- `--badges` to also add badges to the README.md file
+
+### `usethis author`
+
+Set new author information for the project.
+
+Required options:
+
+- `--name` for the new author's name
+
+Other supported options:
+
+- `--email` to set the author email address
+- `--overwrite` to overwrite all existing author information
 - `--quiet` to suppress output
 
 ### `usethis badge`
@@ -133,25 +190,37 @@ Currently supported badges:
 - `usethis badge pre-commit`
 - `usethis badge pypi`
 
-Supported arguments:
+Supported options:
 
 - `--remove` to remove the badge instead of adding it
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 
-### `usethis ci`
+### `usethis docstyle`
 
-Add Continuous Integration pipelines to the project.
+Set a docstring style convention for the project, and enforce it with Ruff.
 
-Currently supported platforms:
+Currently supported docstring styles:
 
-- `usethis ci bitbcuket`
+- `usethis docstyle numpy`
+- `usethis docstyle google`
+- `usethis docstyle pep257`
 
-Supported arguments:
+Supported options:
 
-- `--remove` to remove the CI configuration instead of adding it
-- `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
+
+### `usethis list`
+
+Display a table of all available tools and their current usage status.
+
+### `usethis show`
+
+Show a piece of information about the project.
+
+Currently supported subcommands:
+
+- `usethis show name` to show the name of the project.
 
 ### `usethis browse pypi <package>`
 
@@ -161,7 +230,7 @@ Example:
 
 `usethis browse pypi numpy`
 
-Supported arguments:
+Supported options:
 
 - `--browser` to open the link in the browser automatically.
 

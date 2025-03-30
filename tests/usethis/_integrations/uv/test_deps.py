@@ -92,6 +92,14 @@ test=['pytest']
                 ],
             }
 
+    def test_no_pyproject(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_dep_groups()
+
+        # Assert
+        assert result == {}
+
 
 class TestAddDepsToGroup:
     @pytest.mark.usefixtures("_vary_network_conn")

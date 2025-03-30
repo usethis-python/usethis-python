@@ -1,20 +1,37 @@
 from __future__ import annotations
 
+import re
 from abc import abstractmethod
 from pathlib import Path
-from typing import Any, Literal, Protocol
+from typing import Any, Literal, Protocol, TypeAlias
 
 from pydantic import BaseModel, InstanceOf
-from typing_extensions import assert_never
+from typing_extensions import Self, assert_never
 
-from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
+from usethis._config_file import (
+    CodespellRCManager,
+    CoverageRCManager,
+    DotPytestINIManager,
+    DotRuffTOMLManager,
+    PytestINIManager,
+    RuffTOMLManager,
+    ToxINIManager,
+)
 from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
+from usethis._integrations.ci.bitbucket.steps import (
+    _steps_are_equivalent,
+    add_bitbucket_step_in_default,
+    get_steps_in_default,
+    remove_bitbucket_step_from_default,
+)
+from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.hooks import add_repo, get_hook_names, remove_hook
 from usethis._integrations.pre_commit.schema import (
     FileType,
@@ -31,7 +48,11 @@ from usethis._integrations.uv.deps import (
     is_dep_in_any_group,
     remove_deps_from_group,
 )
+from usethis._integrations.uv.python import get_supported_major_python_versions
+from usethis._integrations.uv.used import is_uv_used
 from usethis._io import KeyValueFileManager
+
+ResolutionT: TypeAlias = Literal["first", "bespoke"]
 
 
 class ConfigSpec(BaseModel):
@@ -52,8 +73,25 @@ class ConfigSpec(BaseModel):
     """
 
     file_manager_by_relative_path: dict[Path, InstanceOf[KeyValueFileManager]]
-    resolution: Literal["first"]
+    resolution: ResolutionT
     config_items: list[ConfigItem]
+
+    @classmethod
+    def from_flat(
+        cls,
+        file_managers: list[KeyValueFileManager],
+        resolution: ResolutionT,
+        config_items: list[ConfigItem],
+    ) -> Self:
+        file_manager_by_relative_path = {
+            file_manager.relative_path: file_manager for file_manager in file_managers
+        }
+
+        return cls(
+            file_manager_by_relative_path=file_manager_by_relative_path,
+            resolution=resolution,
+            config_items=config_items,
+        )
 
 
 class _NoConfigValue:
@@ -66,8 +104,9 @@ class ConfigEntry(BaseModel):
     Attributes:
         keys: A sequentially nested sequence of keys giving a single configuration item.
         value: The default value to be placed at the under the key sequence. By default,
-               no configuration will be added, which is most appropriate for high-level
-               configuration sections like [tool.usethis].
+               no configuration will be added, which is most appropriate for top-level
+               configuration sections like [tool.usethis] under which the entire tool's
+               config gets placed.
 
     """
 
@@ -79,16 +118,31 @@ class ConfigItem(BaseModel):
     """A config item which can potentially live in different files.
 
     Attributes:
+        description: An annotation explaining the meaning of what the config represents.
+                     This is purely for documentation and is optional.
         root: A dictionary mapping the file path to the configuration entry.
         managed: Whether this configuration should be considered managed by only this
                  tool, and therefore whether it should be removed when the tool is
                  removed. This might be set to False if we are modifying other tools'
                  config sections or shared config sections that are pre-requisites for
                  using this tool but might be relied on by other tools as well.
+        applies_to_all: Whether all file managers should support this config item, or
+                        whether it is optional and is only desirable if we know in
+                        advance what the file managers are which are being used.
+                        Defaults to True, which means a NotImplementedError will be
+                        raised if a file manager does not support this config item.
+                        It is useful to set this to False when the config item
+                        corresponds to the root level config, which isn't always
+                        available for non-nested file types like INI. For example,
+                        we might have the [tool.coverage] section in pyproject.toml
+                        but in tox.ini we have [coverage:run] and [coverage:report]
+                        but no overall root [coverage] section.
     """
 
+    description: str | None = None
     root: dict[Path, ConfigEntry]
     managed: bool = True
+    applies_to_all: bool = True
 
     @property
     def paths(self) -> set[Path]:
@@ -113,10 +167,6 @@ class Tool(Protocol):
         This method is called after a tool is added to the project.
         """
         pass
-
-    def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        """Get the Bitbucket pipeline step associated with this tool."""
-        return []
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's development dependencies.
@@ -247,7 +297,12 @@ class Tool(Protocol):
         config_spec = self.get_config_spec()
         resolution = config_spec.resolution
         if resolution == "first":
-            for path, file_manager in config_spec.file_manager_by_relative_path.items():
+            # N.B. keep this roughly in sync with the bespoke logic for pytest
+            for (
+                relative_path,
+                file_manager,
+            ) in config_spec.file_manager_by_relative_path.items():
+                path = Path.cwd() / relative_path
                 if path.exists() and path.is_file():
                     return {file_manager}
 
@@ -265,6 +320,12 @@ class Tool(Protocol):
                 )
                 raise NotImplementedError(msg)
             return {preferred_file_manager}
+        elif resolution == "bespoke":
+            msg = (
+                "The bespoke resolution method is not yet implemented for the tool "
+                f"{self.name}."
+            )
+            raise NotImplementedError(msg)
         else:
             assert_never(resolution)
 
@@ -296,8 +357,13 @@ class Tool(Protocol):
             ]
 
             if not file_managers:
-                msg = f"No active config file managers found for one of the '{self.name}' config items"
-                raise NotImplementedError(msg)
+                if config_item.applies_to_all:
+                    msg = f"No active config file managers found for one of the '{self.name}' config items"
+                    raise NotImplementedError(msg)
+                else:
+                    # Early exist; this config item is not managed by any active files
+                    # so it's optional, effectively.
+                    continue
 
             config_entries = [
                 config_item
@@ -325,7 +391,7 @@ class Tool(Protocol):
 
             shared_keys = []
             for key in entry.keys:
-                shared_keys += key
+                shared_keys.append(key)
                 new_file_managers = [
                     file_manager
                     for file_manager in file_managers
@@ -337,12 +403,12 @@ class Tool(Protocol):
 
             # Now, use the highest-prority file manager to add the config
             (used_file_manager,) = file_managers
-            used_file_manager[entry.keys] = entry.value
             if first_addition:
                 tick_print(
                     f"Adding {self.name} config to '{used_file_manager.relative_path}'."
                 )
                 first_addition = False
+            used_file_manager[entry.keys] = entry.value
 
     def remove_configs(self) -> None:
         """Remove the tool's configuration sections.
@@ -387,6 +453,46 @@ class Tool(Protocol):
                 tick_print(f"Removing '{file}'.")
                 file.unlink()
 
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        """Get the Bitbucket pipeline step associated with this tool."""
+        return []
+
+    def get_managed_bitbucket_step_names(self) -> list[str]:
+        """These are the names of the Bitbucket steps that are managed by this tool.
+
+        They should be removed if they are not currently active according to `get_bitbucket_steps`.
+        They should also be removed if the tool is removed.
+        """
+        return [
+            step.name for step in self.get_bitbucket_steps() if step.name is not None
+        ]
+
+    def remove_bitbucket_steps(self) -> None:
+        """Remove the Bitbucket steps associated with this tool."""
+        for step in get_steps_in_default():
+            if step.name in self.get_managed_bitbucket_step_names():
+                remove_bitbucket_step_from_default(step)
+
+    def update_bitbucket_steps(self) -> None:
+        """Add Bitbucket steps associated with this tool, and remove outdated ones.
+
+        Only runs if Bitbucket is used in the project.
+        """
+        if not is_bitbucket_used() or not self.is_used():
+            return
+
+        # Add the new steps
+        for step in self.get_bitbucket_steps():
+            add_bitbucket_step_in_default(step)
+
+        # Remove any old steps that are not active managed by this tool
+        for step in get_steps_in_default():
+            if step.name in self.get_managed_bitbucket_step_names() and not any(
+                _steps_are_equivalent(step, step_)
+                for step_ in self.get_bitbucket_steps()
+            ):
+                remove_bitbucket_step_from_default(step)
+
 
 class CodespellTool(Tool):
     # https://github.com/codespell-project/codespell
@@ -396,9 +502,16 @@ class CodespellTool(Tool):
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
-            box_print(
-                "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
-            )
+            if is_uv_used():
+                box_print(
+                    "Run 'uv run pre-commit run codespell --all-files' to run the Codespell spellchecker."
+                )
+            else:
+                box_print(
+                    "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
+                )
+        elif is_uv_used():
+            box_print("Run 'uv run codespell' to run the Codespell spellchecker.")
         else:
             box_print("Run 'codespell' to run the Codespell spellchecker.")
 
@@ -407,22 +520,39 @@ class CodespellTool(Tool):
 
     def get_config_spec(self) -> ConfigSpec:
         # https://github.com/codespell-project/codespell?tab=readme-ov-file#using-a-config-file
-        value = {
-            "ignore-regex": ["[A-Za-z0-9+/]{100,}"],  # Ignore long base64 strings
-        }
 
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager()
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[
+                CodespellRCManager(),
+                SetupCFGManager(),
+                PyprojectTOMLManager(),
+            ],
             resolution="first",
             config_items=[
                 ConfigItem(
+                    description="Overall config",
                     root={
+                        Path(".codespellrc"): ConfigEntry(keys=[]),
+                        Path("setup.cfg"): ConfigEntry(keys=["codespell"]),
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "codespell"]),
+                    },
+                ),
+                ConfigItem(
+                    description="Ignore long base64 strings",
+                    root={
+                        Path(".codespellrc"): ConfigEntry(
+                            keys=["codespell", "ignore-regex"],
+                            value="[A-Za-z0-9+/]{100,}",
+                        ),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["codespell", "ignore-regex"],
+                            value="[A-Za-z0-9+/]{100,}",
+                        ),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "codespell"], value=value
-                        )
-                    }
+                            keys=["tool", "codespell", "ignore-regex"],
+                            value=["[A-Za-z0-9+/]{100,}"],
+                        ),
+                    },
                 ),
             ],
         )
@@ -465,7 +595,12 @@ class CoverageTool(Tool):
 
     def print_how_to_use(self) -> None:
         if PytestTool().is_used():
-            box_print("Run 'pytest --cov' to run your tests with coverage.")
+            if is_uv_used():
+                box_print("Run 'uv run pytest --cov' to run your tests with coverage.")
+            else:
+                box_print("Run 'pytest --cov' to run your tests with coverage.")
+        elif is_uv_used():
+            box_print("Run 'uv run coverage help' to see available coverage commands.")
         else:
             box_print("Run 'coverage help' to see available coverage commands.")
 
@@ -476,13 +611,10 @@ class CoverageTool(Tool):
         return deps
 
     def get_config_spec(self) -> ConfigSpec:
-        # https://coverage.readthedocs.io/en/7.6.12/config.html#configuration-reference
+        # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
 
-        run_value = {
-            "source": [get_source_dir_str()],
-            "omit": ["*/pytest-of-*/*"],
-        }
-        report_value = {
+        run = {"source": [get_source_dir_str()]}
+        report = {
             "exclude_also": [
                 "if TYPE_CHECKING:",
                 "raise AssertionError",
@@ -490,33 +622,111 @@ class CoverageTool(Tool):
                 "assert_never(.*)",
                 "class .*\\bProtocol\\):",
                 "@(abc\\.)?abstractmethod",
-            ]
+            ],
+            "omit": ["*/pytest-of-*/*"],
         }
 
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager()
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[
+                CoverageRCManager(),
+                SetupCFGManager(),
+                ToxINIManager(),
+                PyprojectTOMLManager(),
+            ],
             resolution="first",
             config_items=[
                 ConfigItem(
+                    description="Overall Config",
                     root={
-                        Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "coverage", "run"], value=run_value
-                        )
-                    }
+                        Path(".coveragerc"): ConfigEntry(keys=[]),
+                        # N.B. other ini files use a "coverage:" prefix so there's no
+                        # section corresponding to overall config
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "coverage"]),
+                    },
+                    applies_to_all=False,
                 ),
                 ConfigItem(
+                    description="Run Configuration",
                     root={
+                        Path(".coveragerc"): ConfigEntry(keys=["run"], value=run),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["coverage:run"], value=run
+                        ),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:run"], value=run),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "coverage", "report"], value=report_value
-                        )
-                    }
+                            keys=["tool", "coverage", "run"], value=run
+                        ),
+                    },
                 ),
                 ConfigItem(
+                    description="Report Configuration",
                     root={
-                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "coverage"])
-                    }
+                        Path(".coveragerc"): ConfigEntry(keys=["report"], value=report),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["coverage:report"], value=report
+                        ),
+                        Path("tox.ini"): ConfigEntry(
+                            keys=["coverage:report"], value=report
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "report"], value=report
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Paths Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["paths"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:paths"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:paths"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "paths"],
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="HTML Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["html"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:html"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:html"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "html"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="XML Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["xml"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:xml"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:xml"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "xml"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="JSON Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["json"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:json"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:json"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "json"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="LCOV Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(keys=["lcov"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:lcov"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:lcov"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "lcov"]
+                        ),
+                    },
                 ),
             ],
         )
@@ -533,21 +743,23 @@ class DeptryTool(Tool):
 
     def print_how_to_use(self) -> None:
         _dir = get_source_dir_str()
-        box_print(f"Run 'deptry {_dir}' to run deptry.")
+        if is_uv_used():
+            box_print(f"Run 'uv run deptry {_dir}' to run deptry.")
+        else:
+            box_print(f"Run 'deptry {_dir}' to run deptry.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="deptry")]
 
     def get_config_spec(self) -> ConfigSpec:
         # https://deptry.com/usage/#configuration
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[PyprojectTOMLManager()],
             resolution="first",
             config_items=[
                 ConfigItem(
-                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])}
+                    description="Overall config",
+                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])},
                 )
             ],
         )
@@ -599,7 +811,12 @@ class PreCommitTool(Tool):
         return "pre-commit"
 
     def print_how_to_use(self) -> None:
-        box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
+        if is_uv_used():
+            box_print(
+                "Run 'uv run pre-commit run --all-files' to run the hooks manually."
+            )
+        else:
+            box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pre-commit")]
@@ -630,9 +847,16 @@ class PyprojectFmtTool(Tool):
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
-            box_print(
-                "Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
-            )
+            if is_uv_used():
+                box_print(
+                    "Run 'uv run pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
+                )
+            else:
+                box_print(
+                    "Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
+                )
+        elif is_uv_used():
+            box_print("Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.")
         else:
             box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
 
@@ -641,19 +865,18 @@ class PyprojectFmtTool(Tool):
 
     def get_config_spec(self) -> ConfigSpec:
         # https://pyproject-fmt.readthedocs.io/en/latest/#configuration-via-file
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[PyprojectTOMLManager()],
             resolution="first",
             config_items=[
                 ConfigItem(
+                    description="Overall config",
                     root={
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "pyproject-fmt"],
                             value={"keep_full_version": True},
                         )
-                    }
+                    },
                 )
             ],
         )
@@ -702,6 +925,30 @@ class PyprojectTOMLTool(Tool):
             Path("pyproject.toml"),
         ]
 
+    def remove_managed_files(self) -> None:
+        # https://github.com/nathanjmcdougall/usethis-python/issues/416
+        # We need to step through the tools and see if pyproject.toml is the active
+        # config file.
+        # If it isn't an active config file, no action is required.
+        # If it is an active config file, we  display a message to the user to inform
+        # them that the active config is being removed and they need to re-configure
+        # the tool
+
+        box_print("Check that important config in 'pyproject.toml' is not lost.")
+
+        for tool in ALL_TOOLS:
+            if (
+                tool.is_used()
+                and PyprojectTOMLManager() in tool.get_active_config_file_managers()
+            ):
+                # Warn the user
+                box_print(
+                    f"The {tool.name} tool was using 'pyproject.toml' for config, "
+                    f"but that file is being removed. You will need to re-configure it."
+                )
+
+        super().remove_managed_files()
+
 
 class PytestTool(Tool):
     # https://github.com/pytest-dev/pytest
@@ -714,7 +961,10 @@ class PytestTool(Tool):
             "Add test files to the '/tests' directory with the format 'test_*.py'."
         )
         box_print("Add test functions with the format 'test_*()'.")
-        box_print("Run 'pytest' to run the tests.")
+        if is_uv_used():
+            box_print("Run 'uv run pytest' to run the tests.")
+        else:
+            box_print("Run 'pytest' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="pytest")]
@@ -742,31 +992,146 @@ class PytestTool(Tool):
             "log_cli_level": "INFO",  # include all >=INFO level log messages (sp-repo-review)
             "minversion": "7",  # minimum pytest version (sp-repo-review)
         }
+        value_ini = value.copy()
+        # https://docs.pytest.org/en/stable/reference/reference.html#confval-xfail_strict
+        value_ini["xfail_strict"] = "True"  # stringify boolean
 
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-            },
-            resolution="first",
+        return ConfigSpec.from_flat(
+            file_managers=[
+                PytestINIManager(),
+                DotPytestINIManager(),
+                PyprojectTOMLManager(),
+                ToxINIManager(),
+                SetupCFGManager(),
+            ],
+            resolution="bespoke",
             config_items=[
                 ConfigItem(
+                    description="Overall Config",
                     root={
-                        Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "pytest", "ini_options"], value=value
-                        )
-                    }
+                        Path("pytest.ini"): ConfigEntry(keys=[]),
+                        Path(".pytest.ini"): ConfigEntry(keys=[]),
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"]),
+                        Path("tox.ini"): ConfigEntry(keys=["pytest"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["tool:pytest"]),
+                    },
                 ),
                 ConfigItem(
-                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "pytest"])}
+                    description="INI-Style Options",
+                    root={
+                        Path("pytest.ini"): ConfigEntry(
+                            keys=["pytest"], value=value_ini
+                        ),
+                        Path(".pytest.ini"): ConfigEntry(
+                            keys=["pytest"], value=value_ini
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "pytest", "ini_options"], value=value
+                        ),
+                        Path("tox.ini"): ConfigEntry(keys=["pytest"], value=value_ini),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["tool:pytest"], value=value_ini
+                        ),
+                    },
                 ),
             ],
         )
 
     def get_managed_files(self) -> list[Path]:
-        return [Path("pytest.ini"), Path("tests/conftest.py")]
+        return [Path(".pytest.ini"), Path("pytest.ini"), Path("tests/conftest.py")]
 
     def get_associated_ruff_rules(self) -> list[str]:
         return ["PT"]
+
+    def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
+        # This is a variant of the "first" method
+        config_spec = self.get_config_spec()
+        assert config_spec.resolution == "bespoke"
+        # As per https://docs.pytest.org/en/stable/reference/customize.html#finding-the-rootdir
+        # Files will only be matched for configuration if:
+        # - pytest.ini: will always match and take precedence, even if empty.
+        # - pyproject.toml: contains a [tool.pytest.ini_options] table.
+        # - tox.ini: contains a [pytest] section.
+        # - setup.cfg: contains a [tool:pytest] section.
+        # Finally, a pyproject.toml file will be considered the configfile if no other
+        # match was found, in this case even if it does not contain a
+        # [tool.pytest.ini_options] table
+        # Also, the docs mention that the hidden .pytest.ini variant is allowed, in my
+        # experimentation is takes precedence over pyproject.toml but not pytest.ini.
+
+        for (
+            relative_path,
+            file_manager,
+        ) in config_spec.file_manager_by_relative_path.items():
+            path = Path.cwd() / relative_path
+            if path.exists() and path.is_file():
+                if isinstance(file_manager, PyprojectTOMLManager):
+                    if ["tool", "pytest", "ini_options"] in file_manager:
+                        return {file_manager}
+                    else:
+                        continue
+                return {file_manager}
+
+        # Second chance for pyproject.toml
+        for (
+            relative_path,
+            file_manager,
+        ) in config_spec.file_manager_by_relative_path.items():
+            path = Path.cwd() / relative_path
+            if (
+                path.exists()
+                and path.is_file()
+                and isinstance(file_manager, PyprojectTOMLManager)
+            ):
+                return {file_manager}
+
+        file_managers = config_spec.file_manager_by_relative_path.values()
+        if not file_managers:
+            return set()
+
+        # Use the preferred default file since there's no existing file.
+        preferred_file_manager = self.preferred_file_manager()
+        if preferred_file_manager not in file_managers:
+            msg = (
+                f"The preferred file manager '{preferred_file_manager}' is not "
+                f"among the file managers '{file_managers}' for the tool "
+                f"'{self.name}'"
+            )
+            raise NotImplementedError(msg)
+        return {preferred_file_manager}
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        versions = get_supported_major_python_versions()
+
+        steps = []
+        for version in versions:
+            steps.append(
+                BitbucketStep(
+                    name=f"Test on 3.{version}",
+                    caches=["uv"],
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="install-uv"),
+                            f"uv run --python 3.{version} pytest -x --junitxml=test-reports/report.xml",
+                        ]
+                    ),
+                )
+            )
+        return steps
+
+    def get_managed_bitbucket_step_names(self) -> list[str]:
+        names = set()
+        for step in get_steps_in_default():
+            if step.name is not None:
+                match = re.match(r"^Test on 3\.\d+$", step.name)
+                if match:
+                    names.add(step.name)
+
+        for step in self.get_bitbucket_steps():
+            if step.name is not None:
+                names.add(step.name)
+
+        return sorted(names)
 
 
 class RequirementsTxtTool(Tool):
@@ -780,6 +1145,10 @@ class RequirementsTxtTool(Tool):
         if PreCommitTool().is_used():
             box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
         else:
+            if not is_uv_used():
+                # This is a very crude approach as a temporary measure.
+                box_print("Install uv to use 'uv export'.")
+
             box_print(
                 "Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'."
             )
@@ -816,8 +1185,14 @@ class RuffTool(Tool):
         return "Ruff"
 
     def print_how_to_use(self) -> None:
-        box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")
-        box_print("Run 'ruff format' to run the Ruff formatter.")
+        if is_uv_used():
+            box_print(
+                "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
+            )
+            box_print("Run 'uv run ruff format' to run the Ruff formatter.")
+        else:
+            box_print("Run 'ruff check --fix' to run the Ruff linter with autofixes.")
+            box_print("Run 'ruff format' to run the Ruff formatter.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ruff")]
@@ -825,36 +1200,38 @@ class RuffTool(Tool):
     def get_config_spec(self) -> ConfigSpec:
         # https://docs.astral.sh/ruff/configuration/#config-file-discovery
 
-        root_value = {"line-length": 88}
-        lint_value = {"select": []}
+        line_length = 88
 
-        return ConfigSpec(
-            file_manager_by_relative_path={
-                Path(".ruff.toml"): DotRuffTOMLManager(),
-                Path("ruff.toml"): RuffTOMLManager(),
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-            },
+        return ConfigSpec.from_flat(
+            file_managers=[
+                DotRuffTOMLManager(),
+                RuffTOMLManager(),
+                PyprojectTOMLManager(),
+            ],
             resolution="first",
             config_items=[
                 ConfigItem(
+                    description="Overall config",
                     root={
-                        Path(".ruff.toml"): ConfigEntry(keys=[], value=root_value),
-                        Path("ruff.toml"): ConfigEntry(keys=[], value=root_value),
-                        Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "ruff"], value=root_value
-                        ),
-                    }
+                        Path(".ruff.toml"): ConfigEntry(keys=[]),
+                        Path("ruff.toml"): ConfigEntry(keys=[]),
+                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "ruff"]),
+                    },
                 ),
                 ConfigItem(
+                    description="Line length",
                     root={
                         Path(".ruff.toml"): ConfigEntry(
-                            keys=["lint"], value=lint_value
+                            keys=["line-length"], value=line_length
                         ),
-                        Path("ruff.toml"): ConfigEntry(keys=["lint"], value=lint_value),
+                        Path("ruff.toml"): ConfigEntry(
+                            keys=["line-length"], value=line_length
+                        ),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "ruff", "lint"], value=lint_value
+                            keys=["tool", "ruff", "line-length"],
+                            value=line_length,
                         ),
-                    }
+                    },
                 ),
             ],
         )
@@ -922,10 +1299,11 @@ class RuffTool(Tool):
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
-        tick_print(f"Enabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
         (file_manager,) = self.get_active_config_file_managers()
-        file_manager.extend_list(keys=["tool", "ruff", "lint", "select"], values=rules)
+        tick_print(f"Enabling Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        keys = self._get_select_keys(file_manager)
+        file_manager.extend_list(keys=keys, values=rules)
 
     def ignore_rules(self, rules: list[str]) -> None:
         """Ignore Ruff rules in the project."""
@@ -936,10 +1314,11 @@ class RuffTool(Tool):
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
-        tick_print(f"Ignoring Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
         (file_manager,) = self.get_active_config_file_managers()
-        file_manager.extend_list(keys=["tool", "ruff", "lint", "ignore"], values=rules)
+        tick_print(f"Ignoring Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        keys = self._get_ignore_keys(file_manager)
+        file_manager.extend_list(keys=keys, values=rules)
 
     def deselect_rules(self, rules: list[str]) -> None:
         """Ensure Ruff rules are not selected in the project."""
@@ -950,18 +1329,18 @@ class RuffTool(Tool):
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
-        tick_print(f"Disabling Ruff rule{s} {rules_str} in 'pyproject.toml'.")
 
         (file_manager,) = self.get_active_config_file_managers()
-        file_manager.remove_from_list(
-            keys=["tool", "ruff", "lint", "select"], values=rules
-        )
+        tick_print(f"Disabling Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        keys = self._get_select_keys(file_manager)
+        file_manager.remove_from_list(keys=keys, values=rules)
 
     def get_rules(self) -> list[str]:
         """Get the Ruff rules selected in the project."""
         (file_manager,) = self.get_active_config_file_managers()
+        keys = self._get_select_keys(file_manager)
         try:
-            rules: list[str] = file_manager[["tool", "ruff", "lint", "select"]]
+            rules: list[str] = file_manager[keys]
         except KeyError:
             rules = []
 
@@ -970,12 +1349,97 @@ class RuffTool(Tool):
     def get_ignored_rules(self) -> list[str]:
         """Get the Ruff rules ignored in the project."""
         (file_manager,) = self.get_active_config_file_managers()
+        keys = self._get_ignore_keys(file_manager)
         try:
-            rules: list[str] = file_manager[["tool", "ruff", "lint", "ignore"]]
+            rules: list[str] = file_manager[keys]
         except KeyError:
             rules = []
 
         return rules
+
+    def set_docstyle(self, style: Literal["numpy", "google", "pep257"]) -> None:
+        (file_manager,) = self.get_active_config_file_managers()
+
+        keys = self._get_docstyle_keys(file_manager)
+        if keys in file_manager and file_manager[keys] == style:
+            # Already set properly
+            return
+
+        msg = f"Setting docstring style to '{style}' in '{file_manager.name}'."
+        tick_print(msg)
+        file_manager[self._get_docstyle_keys(file_manager)] = style
+
+    def get_docstyle(self) -> Literal["numpy", "google", "pep257"] | None:
+        """Get the docstring style set in the project."""
+        (file_manager,) = self.get_active_config_file_managers()
+        keys = self._get_docstyle_keys(file_manager)
+        try:
+            docstyle = file_manager[keys]
+        except (KeyError, FileNotFoundError):
+            docstyle = None
+
+        if docstyle not in ("numpy", "google", "pep257"):
+            # Docstyle is not set or is invalid
+            return None
+
+        return docstyle
+
+    def _are_pydocstyle_rules_selected(self) -> bool:
+        """Check if pydocstyle rules are selected in the configuration."""
+        # If "ALL" is selected, or any rule whose alphabetical part is "D".
+        rules = self.get_rules()
+        for rule in rules:
+            if rule == "ALL":
+                return True
+            if self._is_pydocstyle_rule(rule):
+                return True
+        return False
+
+    @staticmethod
+    def _is_pydocstyle_rule(rule: str) -> bool:
+        return [d for d in rule if d.isalpha()] == ["D"]
+
+    @staticmethod
+    def _get_select_keys(file_manager: KeyValueFileManager) -> list[str]:
+        """Get the keys for the select rules in the given file manager."""
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "ruff", "lint", "select"]
+        elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):
+            return ["lint", "select"]
+        else:
+            msg = (
+                f"Unknown location for selected ruff rules for file manager "
+                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+            )
+            raise NotImplementedError(msg)
+
+    @staticmethod
+    def _get_ignore_keys(file_manager: KeyValueFileManager) -> list[str]:
+        """Get the keys for the ignored rules in the given file manager."""
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "ruff", "lint", "ignore"]
+        elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):
+            return ["lint", "ignore"]
+        else:
+            msg = (
+                f"Unknown location for ignored ruff rules for file manager "
+                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+            )
+            raise NotImplementedError(msg)
+
+    @staticmethod
+    def _get_docstyle_keys(file_manager: KeyValueFileManager) -> list[str]:
+        """Get the keys for the docstyle rules in the given file manager."""
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "ruff", "lint", "pydocstyle", "convention"]
+        elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):
+            return ["lint", "pydocstyle", "convention"]
+        else:
+            msg = (
+                f"Unknown location for ruff docstring style for file manager "
+                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+            )
+            raise NotImplementedError(msg)
 
 
 ALL_TOOLS: list[Tool] = [
@@ -983,9 +1447,10 @@ ALL_TOOLS: list[Tool] = [
     CoverageTool(),
     DeptryTool(),
     PreCommitTool(),
-    PyprojectTOMLTool(),
     PyprojectFmtTool(),
+    PyprojectTOMLTool(),
     PytestTool(),
     RequirementsTxtTool(),
     RuffTool(),
 ]
+# TODO test that the list is sorted alphabetically by CLI name

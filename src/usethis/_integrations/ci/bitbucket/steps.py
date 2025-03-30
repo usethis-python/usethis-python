@@ -64,11 +64,6 @@ for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
     script_item.yaml_set_anchor(value=name, always_dump=True)
 
 
-def add_bitbucket_steps_in_default(steps: list[Step]) -> None:
-    for step in steps:
-        add_bitbucket_step_in_default(step)
-
-
 def add_bitbucket_step_in_default(step: Step) -> None:
     try:
         existing_steps = get_steps_in_default()
@@ -185,11 +180,6 @@ def _add_step_in_default_via_doc(
         apply_pipeweld_instruction_via_doc(
             instruction=instruction, new_step=step, doc=doc
         )
-
-
-def remove_bitbucket_steps_from_default(steps: list[Step]) -> None:
-    for step in steps:
-        remove_bitbucket_step_from_default(step)
 
 
 def remove_bitbucket_step_from_default(step: Step) -> None:

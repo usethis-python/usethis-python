@@ -68,3 +68,13 @@ def get_readme_path():
 
     msg = "No README file found."
     raise FileNotFoundError(msg)
+
+
+def is_readme_used():
+    """Check if the README.md file is used."""
+    try:
+        get_readme_path()
+    except FileNotFoundError:
+        return False
+
+    return True

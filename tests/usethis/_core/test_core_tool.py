@@ -407,6 +407,29 @@ class TestDeptry:
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
+        def test_stdout_unfrozen(
+            self,
+            uv_init_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+        ):
+            # The idea here is we make sure that the 'uv run' prefix is added
+
+            # Act
+            with (
+                change_cwd(uv_init_dir),
+                PyprojectTOMLManager(),
+                usethis_config.set(frozen=False),
+            ):
+                use_deptry()
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Run 'uv run deptry src' to run deptry.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_run_deptry_fail(self, uv_init_dir: Path):
             # Arrange
             f = uv_init_dir / "bad.py"

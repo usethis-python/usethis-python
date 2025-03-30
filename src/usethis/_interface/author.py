@@ -9,15 +9,20 @@ from usethis._core.author import add_author
 
 def author(
     name: str = typer.Option(..., "--name", help="Author name"),
-    email: str | None = typer.Option(None, "--email", help="Author email"),
+    email: str = typer.Option("", "--email", help="Author email"),
     overwrite: bool = typer.Option(
         False, "--overwrite", help="Overwrite any existing authors"
     ),
     quiet: bool = quiet_opt,
 ) -> None:
+    if not email:
+        email_arg = None
+    else:
+        email_arg = email
+
     with usethis_config.set(quiet=quiet), files_manager():
         add_author(
             name=name,
-            email=email,
+            email=email_arg,
             overwrite=overwrite,
         )

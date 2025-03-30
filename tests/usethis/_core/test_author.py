@@ -48,7 +48,7 @@ authors = [
         # Assert
         assert (tmp_path / "pyproject.toml").read_text() == (
             """\
-[project]
+
 
 [[project.authors]]
 name = "First Contributor"
@@ -69,6 +69,7 @@ email = "jc@example.com"
         # Assert
         assert (tmp_path / "pyproject.toml").read_text() == (
             """\
+
 [[project.authors]]
 name = "John Cleese"
 """

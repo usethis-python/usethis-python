@@ -217,7 +217,7 @@ class TestCoverage:
                     "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
                     "☐ Install the dependency 'coverage'.\n"
                     "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'coverage help' to see available coverage commands.\n"
+                    "☐ Run 'uv run coverage help' to see available coverage commands.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -242,7 +242,7 @@ class TestCoverage:
                     "✔ Writing 'pyproject.toml'.\n"
                     "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
                     "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'coverage help' to see available coverage commands.\n"
+                    "☐ Run 'uv run coverage help' to see available coverage commands.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -267,7 +267,7 @@ class TestCoverage:
                     "✔ Adding dependencies 'coverage', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
                     "☐ Install the dependencies 'coverage', 'pytest-cov'.\n"
                     "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'pytest --cov' to run your tests with coverage.\n"
+                    "☐ Run 'uv run pytest --cov' to run your tests with coverage.\n"
                 )
 
         def test_coverage_rc_file(self, uv_init_dir: Path):
@@ -404,6 +404,29 @@ class TestDeptry:
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'deptry'.\n"
                 "☐ Run 'deptry src' to run deptry.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_stdout_unfrozen(
+            self,
+            uv_init_dir: Path,
+            capfd: pytest.CaptureFixture[str],
+        ):
+            # The idea here is we make sure that the 'uv run' prefix is added
+
+            # Act
+            with (
+                change_cwd(uv_init_dir),
+                PyprojectTOMLManager(),
+                usethis_config.set(frozen=False),
+            ):
+                use_deptry()
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Run 'uv run deptry src' to run deptry.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1319,7 +1342,7 @@ class TestPytest:
                     "✔ Writing '/tests/conftest.py'.\n"
                     "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
                     "☐ Add test functions with the format 'test_*()'.\n"
-                    "☐ Run 'pytest' to run the tests.\n"
+                    "☐ Run 'uv run pytest' to run the tests.\n"
                 )
 
             assert (tmp_path / "pyproject.toml").exists()
@@ -1369,8 +1392,8 @@ minversion = "7\""""
                 "✔ Writing '/tests/conftest.py'.\n"
                 "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
                 "☐ Add test functions with the format 'test_*()'.\n"
-                "☐ Run 'pytest' to run the tests.\n"
-                "☐ Run 'pytest --cov' to run your tests with coverage.\n"
+                "☐ Run 'uv run pytest' to run the tests.\n"
+                "☐ Run 'uv run pytest --cov' to run your tests with coverage.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1642,7 +1665,7 @@ pipelines:
                 "✔ Removing pytest config from 'pyproject.toml'.\n"
                 "✔ Removing dependencies 'pytest', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
                 "✔ Removing '/tests'.\n"
-                "☐ Run 'coverage help' to see available coverage commands.\n"
+                "☐ Run 'uv run coverage help' to see available coverage commands.\n"
             )
 
     class TestUpdateBitbucketSteps:

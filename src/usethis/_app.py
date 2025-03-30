@@ -2,6 +2,7 @@
 
 import typer
 
+import usethis._interface.author
 import usethis._interface.badge
 import usethis._interface.browse
 import usethis._interface.ci
@@ -15,6 +16,9 @@ app = typer.Typer(
         "Automate Python package and project setup tasks that are otherwise "
         "performed manually."
     )
+)
+app.command(help="Add an author to the project.")(
+    usethis._interface.author.author,
 )
 app.add_typer(usethis._interface.badge.app, name="badge")
 app.add_typer(usethis._interface.browse.app, name="browse")

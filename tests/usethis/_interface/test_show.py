@@ -22,7 +22,7 @@ class TestName:
         assert result.output == """fun\n"""
 
 
-class TestSonarqubeConfig:
+class TestSonarqube:
     def test_runs(self, tmp_path: Path):
         # Arrange
         (tmp_path / "pyproject.toml").write_text(
@@ -37,7 +37,7 @@ project-key = "fun"
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["sonarqube-config"])
+            result = runner.invoke(app, ["sonarqube"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -49,7 +49,7 @@ project-key = "fun"
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["sonarqube-config"])
+            result = runner.invoke(app, ["sonarqube"])
 
         # Assert
         assert result.exit_code == 1, result.output

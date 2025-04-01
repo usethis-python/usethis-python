@@ -59,11 +59,18 @@ def get_pre_commit_badge() -> Badge:
     )
 
 
+def get_usethis_badge() -> Badge:
+    return Badge(
+        markdown="[![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/nathanjmcdougall/usethis-python/main/assets/badge/v1.json)](https://github.com/nathanjmcdougall/usethis-python)"
+    )
+
+
 def get_badge_order() -> list[Badge]:
     return [
         get_pypi_badge(),
         get_ruff_badge(),
         get_pre_commit_badge(),
+        get_usethis_badge(),
     ]
 
 

@@ -8,6 +8,7 @@ from usethis._core.badge import (
     add_badge,
     get_pre_commit_badge,
     get_ruff_badge,
+    get_usethis_badge,
 )
 from usethis._core.readme import add_readme
 from usethis._tool import PreCommitTool, RuffTool
@@ -26,3 +27,5 @@ def readme(
 
             if PreCommitTool().is_used():
                 add_badge(get_pre_commit_badge())
+
+            add_badge(get_usethis_badge())

@@ -7,6 +7,7 @@ from usethis._core.badge import (
     get_pre_commit_badge,
     get_pypi_badge,
     get_ruff_badge,
+    get_usethis_badge,
     remove_badge,
 )
 
@@ -54,3 +55,16 @@ def pre_commit(
             add_badge(get_pre_commit_badge())
         else:
             remove_badge(get_pre_commit_badge())
+
+
+@app.command(help="Add a badge for usethis.")
+def usethis(
+    remove: bool = remove_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+) -> None:
+    with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+        if not remove:
+            add_badge(get_usethis_badge())
+        else:
+            remove_badge(get_usethis_badge())

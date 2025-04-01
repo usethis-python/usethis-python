@@ -4,6 +4,7 @@
 
 # usethis
 
+[![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/nathanjmcdougall/usethis-python/main/assets/badge/v1.json)](https://github.com/nathanjmcdougall/usethis-python)
 [![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
 ![PyPI License](https://img.shields.io/pypi/l/usethis.svg)
 [![PyPI Supported Versions](https://img.shields.io/pypi/pyversions/usethis.svg)](https://pypi.python.org/pypi/usethis)

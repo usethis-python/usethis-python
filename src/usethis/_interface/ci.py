@@ -2,7 +2,7 @@ import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._config_file import files_manager
-from usethis._console import err_print, info_print
+from usethis._console import err_print
 from usethis._core.ci import use_ci_bitbucket
 from usethis.errors import UsethisError
 
@@ -22,7 +22,4 @@ def bitbucket(
             use_ci_bitbucket(remove=remove)
     except UsethisError as err:
         err_print(err)
-
-        if "mapping values are not allowed here" in str(err):
-            info_print("Hint: You may have incorrect indentation the YAML file.")
         raise typer.Exit(code=1) from None

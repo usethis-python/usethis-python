@@ -16,7 +16,7 @@ from usethis._test import change_cwd
 
 
 class TestGetLayeredArchitectures:
-    def test_five(self, tmp_path: Path):
+    def test_five(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
@@ -38,8 +38,10 @@ import salut.d.f
 """)
         (tmp_path / "salut" / "d" / "f.py").touch()
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             arch_by_module = get_layered_architectures("salut")
 
         # Assert
@@ -54,7 +56,7 @@ import salut.d.f
 
 
 class TestGetModuleLayeredArchitecture:
-    def test_three(self, tmp_path: Path):
+    def test_three(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
@@ -67,8 +69,10 @@ import salut.a
 import salut.b
 """)
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
             arch = _get_module_layered_architecture("salut", graph=graph)
 
@@ -77,15 +81,17 @@ import salut.b
         assert arch.layers == [{"c"}, {"b"}, {"a"}]
         assert arch.excluded == set()
 
-    def test_independent(self, tmp_path: Path):
+    def test_independent(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
         (tmp_path / "salut" / "a.py").touch()
         (tmp_path / "salut" / "b.py").touch()
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
             arch = _get_module_layered_architecture("salut", graph=graph)
 
@@ -94,7 +100,7 @@ import salut.b
         assert arch.layers == [{"a", "b"}]
         assert arch.excluded == set()
 
-    def test_cyclic(self, tmp_path: Path):
+    def test_cyclic(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
@@ -105,8 +111,10 @@ import salut.b
 import salut.a
 """)
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
             arch = _get_module_layered_architecture("salut", graph=graph)
 
@@ -115,7 +123,7 @@ import salut.a
         assert arch.layers == []
         assert arch.excluded == {"a", "b"}
 
-    def test_bottom_heavy(self, tmp_path: Path):
+    def test_bottom_heavy(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # For a given package structure, there are multiple possible layered
         # architectures it will comply with. We would prefer one which is "bottom heavy",
         # i.e. one or modules which depend on many independent modules, rather than
@@ -155,8 +163,10 @@ import salut.e
 import salut.e
 """)
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
             arch = _get_module_layered_architecture("salut", graph=graph)
 
@@ -167,7 +177,7 @@ import salut.e
 
 
 class TestGetChildDependencies:
-    def test_three(self, tmp_path: Path):
+    def test_three(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
@@ -180,8 +190,10 @@ import salut.a
 import salut.b
 """)
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
             deps_by_module = _get_child_dependencies("salut", graph=graph)
 
@@ -192,7 +204,7 @@ import salut.b
             "c": {"a", "b"},
         }
 
-    def test_two(self, tmp_path: Path):
+    def test_two(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
@@ -201,8 +213,10 @@ import salut.b
 import salut.a
 """)
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
             deps_by_module = _get_child_dependencies("salut", graph=graph)
 
@@ -212,20 +226,22 @@ import salut.a
             "b": {"a"},
         }
 
-    def test_none(self, tmp_path: Path):
+    def test_none(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
             deps_by_module = _get_child_dependencies("salut", graph=graph)
 
         # Assert
         assert deps_by_module == {}
 
-    def test_submodule_file(self, tmp_path: Path):
+    def test_submodule_file(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
@@ -234,15 +250,17 @@ import salut.a
 import salut.a
 """)
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
             deps_by_module = _get_child_dependencies("salut.a", graph=graph)
 
         # Assert
         assert deps_by_module == {}
 
-    def test_submodule_dir(self, tmp_path: Path):
+    def test_submodule_dir(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
@@ -250,8 +268,10 @@ import salut.a
         (tmp_path / "salut" / "a" / "__init__.py").touch()
         (tmp_path / "salut" / "a" / "b.py").touch()
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
             deps_by_module = _get_child_dependencies("salut.a", graph=graph)
 
@@ -302,13 +322,15 @@ class TestFilterToSubmodule:
 
 
 class TestGetGraph:
-    def test_type(self, tmp_path: Path):
+    def test_type(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         (tmp_path / "salut").mkdir()
         (tmp_path / "salut" / "__init__.py").touch()
 
+        monkeypatch.syspath_prepend(str(tmp_path))
+
         # Act
-        with change_cwd(tmp_path, add_to_path=True):
+        with change_cwd(tmp_path):
             graph = _get_graph("salut")
 
         # Assert
@@ -325,3 +347,47 @@ class TestGetGraph:
         # Act, Assert
         with pytest.raises(ImportGraphBuildFailedError):
             _get_graph("does_not_exist")
+
+    def test_not_top_level(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Arrange
+        (tmp_path / "salut").mkdir()
+        (tmp_path / "salut" / "__init__.py").touch()
+        (tmp_path / "salut" / "a.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act, Assert
+        with (
+            change_cwd(tmp_path),
+            pytest.raises(ImportGraphBuildFailedError),
+        ):
+            _get_graph("salut.a")
+
+    def test_not_package(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Arrange
+        (tmp_path / "salut.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act, Assert
+        with (
+            change_cwd(tmp_path),
+            pytest.raises(ImportGraphBuildFailedError),
+        ):
+            _get_graph("salut.a")
+
+    def test_exists_not_on_path(self, tmp_path: Path):
+        # Arrange
+        # N.B. we use the name 'different_name' since generating the graph in other
+        # tests has the side-effect of importing the module, which persists between
+        # tests.
+        (tmp_path / "different_name.py").touch()
+
+        # Act, Assert
+        with (
+            change_cwd(tmp_path),
+            pytest.raises(
+                ImportGraphBuildFailedError, match="No module named 'different_name'"
+            ),
+        ):
+            _get_graph("different_name.a")

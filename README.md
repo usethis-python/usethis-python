@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/nathanjmcdougall/usethis-python/refs/heads/main/docs/logo.svg"><br>
 </h1>
 
-# usethis
+# usethis 🐍
 
 [![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/nathanjmcdougall/usethis-python/main/assets/badge/v1.json)](https://github.com/nathanjmcdougall/usethis-python)
 [![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
@@ -15,28 +15,24 @@
 
 Automate Python project setup and development tasks that are otherwise performed manually.
 
-usethis knows about popular Python tools, workflows and frameworks, and knows how they
-interact. It can add and remove tools, configure them, and set up the project for you
-in a way that won't break your existing configuration and it will make the necessary
-adjustments to your project configuration files.
+`usethis` knows about popular Python tools, workflows and frameworks, and knows how they interact. It can add and remove tools, configure them, and set up the project for you in a way that won't break your existing configuration and it will make the necessary adjustments to your project configuration files.
 
-usethis gives detailed messages about what it is doing (and what you need to do next).
+`usethis` gives detailed messages about what it is doing (and what you need to do next).
 
 - Output beginning with `✔` represents a task which usethis has automated.
 - Output beginning with `☐` represents a task which you need to perform manually.
 - Output beginning with `ℹ` gives hints and tips.
 
-Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html),
-this package brings a similar experience to the Python ecosystem as a CLI tool.
+Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html), this package brings a similar experience to the Python ecosystem as a CLI tool.
 
 ## Highlights
 
-- First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, `pre-commit`, and many more.
-- Automatically add and remove tools: declare, install, and configure in one step.
-- Powerful knowledge of how different tools interact and sensible defaults.
-- Get started on a new Python project or a new workflow in seconds.
+- 🧰 First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, `pre-commit`, and many more.
+- 🤖 Automatically add and remove tools: declare, install, and configure in one step.
+- 🧠 Powerful knowledge of how different tools interact and sensible defaults.
+- ⚡ Get started on a new Python project or a new workflow in seconds.
 
-## Getting Started
+## 🧭 Getting Started
 
 First, it is strongly recommended you [install the `uv` package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process. If you're already using `uv`, make sure you're using at least
 version v0.5.29 (run `uv version` to check, and `uv self update` to upgrade).
@@ -53,7 +49,7 @@ $ pip install usethis
 
 Alternatively, run in isolation, using `uvx` or `pipx`.
 
-## Command Line Interface
+## 🖥️ Command Line Interface
 
 ### Main commands
 
@@ -73,7 +69,7 @@ Alternatively, run in isolation, using `uvx` or `pipx`.
 - [`usethis show`](#usethis-show)
 - [`usethis browse pypi`](#usethis-browse-pypi-package)
 
-## Example Usage
+## 💡 Example Usage
 
 To use Ruff on a fresh project, run:
 
@@ -113,7 +109,7 @@ $ uvx usethis ci bitbucket
 ☐ Run your pipeline via the Bitbucket website.
 ```
 
-## Command Reference
+## 🖥️ Command Reference
 
 ### `usethis tool`
 
@@ -238,14 +234,10 @@ Supported options:
 
 ## Development
 
-This project is at the early stages of development. If you are interested in contributing,
-please ensure you have a corresponding GitHub Issue open.
+This project is at the early stages of development. If you are interested in contributing, please ensure you have a corresponding GitHub Issue open.
 
 ## License
 
 usethis is licensed under the MIT license ([LICENSE](https://github.com/nathanjmcdougall/usethis-python/blob/main/LICENSE) or <https://opensource.org/licenses/MIT>)
 
-Unless you explicitly state otherwise, any contribution intentionally submitted for
-inclusion in usethis by you, as defined in the Apache License, Version 2.0,
-(<https://www.apache.org/licenses/LICENSE-2.0>), shall be licensed under the
-MIT license, without any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in usethis by you, as defined in the Apache License, Version 2.0, (<https://www.apache.org/licenses/LICENSE-2.0>), shall be licensed under the MIT license, without any additional terms or conditions.

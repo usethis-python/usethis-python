@@ -8,6 +8,7 @@ from usethis._core.badge import (
     get_pypi_badge,
     get_ruff_badge,
     get_usethis_badge,
+    get_uv_badge,
     remove_badge,
 )
 
@@ -68,3 +69,16 @@ def usethis(
             add_badge(get_usethis_badge())
         else:
             remove_badge(get_usethis_badge())
+
+
+@app.command(help="Add a badge for the uv package manager.")
+def uv(
+    remove: bool = remove_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+) -> None:
+    with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+        if not remove:
+            add_badge(get_uv_badge())
+        else:
+            remove_badge(get_uv_badge())

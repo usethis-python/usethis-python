@@ -186,9 +186,11 @@ Add badges to README.md.
 
 Currently supported badges:
 
-- `usethis badge ruff`
 - `usethis badge pre-commit`
 - `usethis badge pypi`
+- `usethis badge ruff`
+- `usethis badge usethis`
+- `usethis badge uv`
 
 Supported options:
 

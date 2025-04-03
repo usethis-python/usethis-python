@@ -8,6 +8,7 @@ import ruamel.yaml
 from ruamel.yaml.error import YAMLError
 from ruamel.yaml.util import load_yaml_guess_indent
 
+from usethis._console import info_print
 from usethis._integrations.file.yaml.errors import InvalidYAMLError
 
 if TYPE_CHECKING:
@@ -84,6 +85,10 @@ def edit_yaml(
             content, sequence_ind, offset_ind = load_yaml_guess_indent(f)
         except YAMLError as err:
             msg = f"Error reading '{yaml_path}':\n{err}"
+
+            if "mapping values are not allowed here" in str(err):
+                info_print("Hint: You may have incorrect indentation the YAML file.")
+
             raise InvalidYAMLError(msg) from None
     if not guess_indent:
         sequence_ind = None

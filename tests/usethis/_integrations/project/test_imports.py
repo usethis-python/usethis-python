@@ -225,7 +225,38 @@ import salut.a
         # Assert
         assert deps_by_module == {}
 
-    # TODO test sub-module as arg
+    def test_submodule_file(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "salut").mkdir()
+        (tmp_path / "salut" / "__init__.py").touch()
+        (tmp_path / "salut" / "a.py").touch()
+        (tmp_path / "salut" / "b.py").write_text("""\
+import salut.a
+""")
+
+        # Act
+        with change_cwd(tmp_path, add_to_path=True):
+            graph = _get_graph("salut")
+            deps_by_module = _get_child_dependencies("salut.a", graph=graph)
+
+        # Assert
+        assert deps_by_module == {}
+
+    def test_submodule_dir(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "salut").mkdir()
+        (tmp_path / "salut" / "__init__.py").touch()
+        (tmp_path / "salut" / "a").mkdir()
+        (tmp_path / "salut" / "a" / "__init__.py").touch()
+        (tmp_path / "salut" / "a" / "b.py").touch()
+
+        # Act
+        with change_cwd(tmp_path, add_to_path=True):
+            graph = _get_graph("salut")
+            deps_by_module = _get_child_dependencies("salut.a", graph=graph)
+
+        # Assert
+        assert deps_by_module == {"b": set()}
 
 
 class TestFilterToSubmodule:

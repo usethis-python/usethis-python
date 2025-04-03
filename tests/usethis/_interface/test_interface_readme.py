@@ -23,6 +23,7 @@ class TestReadme:
         # Arrange
         (tmp_path / "ruff.toml").touch()
         (tmp_path / ".pre-commit-config.yaml").touch()
+        (tmp_path / "uv.lock").write_text("")
 
         # Act
         runner = CliRunner()
@@ -35,3 +36,4 @@ class TestReadme:
         # and check the badges get created
         assert "ruff" in (tmp_path / "README.md").read_text()
         assert "pre-commit" in (tmp_path / "README.md").read_text()
+        assert "uv" in (tmp_path / "README.md").read_text()

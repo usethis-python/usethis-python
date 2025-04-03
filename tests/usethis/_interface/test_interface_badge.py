@@ -73,3 +73,49 @@ class TestPreCommit:
 
         # Assert
         assert result.exit_code == 0, result.output
+
+
+class TestUsethis:
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["usethis"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_remove(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["usethis", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+
+class TestUV:
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["uv"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_remove(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["uv", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output

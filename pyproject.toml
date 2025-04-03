@@ -35,7 +35,8 @@ dynamic = [
 ]
 dependencies = [
   "configupdater>=3.2",
-  "mergedeep>=1.3.1",
+  "grimp>=2.5.0",
+  "mergedeep>=1.3.4",
   "packaging>=20.9",
   "pydantic>=2.5.0",
   "requests>=2.26.0",
@@ -157,18 +158,15 @@ root_packages = [ "usethis" ]
 name = "Modular Design"
 type = "layers"
 layers = [
-  "_test",
-  "__main__",
+  "_test | __main__",
   "_app",
   "_interface",
   "_core",
   "_tool",
   "_config_file",
   "_integrations",
-  "_console",
-  "_config | _io",
-  "errors | _subprocess",
-  "_pipeweld",
+  "_io | _pipeweld | _subprocess | _console",
+  "_config | errors",
 ]
 containers = [ "usethis" ]
 exhaustive = true
@@ -188,9 +186,8 @@ exhaustive = true
 name = "Core Modular Design"
 type = "layers"
 layers = [
-  "list",
   # docstyle uses (Ruff) tool, badge uses readme
-  "badge | docstyle",
+  "badge | docstyle | list",
   "author | browse | ci | readme | show | tool",
 ]
 containers = [ "usethis._core" ]

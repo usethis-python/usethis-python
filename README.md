@@ -27,10 +27,10 @@ Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.
 
 ## Highlights
 
-- 🔧 First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, `pre-commit`, and many more.
-- ⚙️ Automatically add and remove tools: declare, install, and configure in one step.
+- 🧰 First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, `pre-commit`, and many more.
+- 🤖 Automatically add and remove tools: declare, install, and configure in one step.
 - 🧠 Powerful knowledge of how different tools interact and sensible defaults.
-- ⏱️ Get started on a new Python project or a new workflow in seconds.
+- ⚡ Get started on a new Python project or a new workflow in seconds.
 
 ## 🧭 Getting Started
 
@@ -109,7 +109,7 @@ $ uvx usethis ci bitbucket
 ☐ Run your pipeline via the Bitbucket website.
 ```
 
-## Command Reference
+## 🖥️ Command Reference
 
 ### `usethis tool`
 
@@ -232,7 +232,7 @@ Supported options:
 
 - `--browser` to open the link in the browser automatically.
 
-## 👷 Development
+## Development
 
 This project is at the early stages of development. If you are interested in contributing, please ensure you have a corresponding GitHub Issue open.
 

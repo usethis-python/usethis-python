@@ -539,6 +539,31 @@ Automate Python project setup and development tasks that are otherwise performed
 """
         )
 
+    def test_wrong_readme_encoding(
+        self, bare_dir: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # Arrange
+        path = bare_dir / "README.md"
+        path.write_text(
+            """\
+# usethis
+""",
+            encoding="utf-16",
+        )
+
+        # Act
+        with change_cwd(bare_dir), PyprojectTOMLManager():
+            add_badge(
+                Badge(
+                    markdown="[![Ruff](https://example.com>)](<https://example.com)",
+                )
+            )
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert "encoding" in out
+
 
 class TestRemoveBadge:
     def test_empty(self, bare_dir: Path, capfd: pytest.CaptureFixture[str]):

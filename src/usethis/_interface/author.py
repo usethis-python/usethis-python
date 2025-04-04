@@ -4,7 +4,9 @@ import typer
 
 from usethis._config import quiet_opt, usethis_config
 from usethis._config_file import files_manager
+from usethis._console import err_print
 from usethis._core.author import add_author
+from usethis.errors import UsethisError
 
 
 def author(
@@ -21,8 +23,8 @@ def author(
         email_arg = email
 
     with usethis_config.set(quiet=quiet), files_manager():
-        add_author(
-            name=name,
-            email=email_arg,
-            overwrite=overwrite,
-        )
+        try:
+            add_author(name=name, email=email_arg, overwrite=overwrite)
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

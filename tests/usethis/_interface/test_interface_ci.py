@@ -65,3 +65,15 @@ class TestBitbucket:
             Path(__file__).parent / "maximal_bitbucket_pipelines.yml"
         ).read_text()
         assert (tmp_path / "bitbucket-pipelines.yml").read_text() == expected_yml
+
+    def test_invalid_pyproject_toml(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("(")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app)
+
+        # Assert
+        assert result.exit_code == 1, result.output

@@ -8,7 +8,7 @@ from usethis._integrations.project.layout import get_source_dir_str
 IMPORTABLE_PACKAGE_EXCLUSIONS = {"tests", "test", "doc", "docs"}
 
 
-def get_importable_packages() -> list[str]:
+def get_importable_packages() -> set[str]:
     """Get the names of packages in the source directory that can be imported.
 
     These are not necessarily the import packages distributed with the project, since
@@ -32,20 +32,20 @@ def get_importable_packages() -> list[str]:
     for parent in path.iterdir():
         if parent.is_dir() and not _is_excluded(parent.name):
             # Check if the directory is a package by looking for an __init__.py file
-            packages.extend(
-                [f"{parent.name}.{pkg}" for pkg in _get_packages_in_dir(parent)]
+            packages.union(
+                {f"{parent.name}.{pkg}" for pkg in _get_packages_in_dir(parent)}
             )
 
     return packages
 
 
-def _get_packages_in_dir(path: Path) -> list[str]:
+def _get_packages_in_dir(path: Path) -> set[str]:
     """Get the names of packages in the given directory."""
-    return [
+    return {
         Path(module_name).name
         for _, module_name, _ in pkgutil.iter_modules([path.as_posix()])
         if not _is_excluded(module_name)
-    ]
+    }
 
 
 def _is_excluded(name: str) -> bool:

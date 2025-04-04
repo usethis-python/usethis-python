@@ -13,7 +13,7 @@ class TestGetImportablePackages:
         (tmp_path / "src" / "foo" / "bar.py").touch()
 
         with change_cwd(tmp_path):
-            assert get_importable_packages() == ["foo"]
+            assert get_importable_packages() == {"foo"}
 
     def test_dir_in_root(self, tmp_path: Path):
         """Test that a directory in the root is detected as importable."""
@@ -22,7 +22,7 @@ class TestGetImportablePackages:
         (tmp_path / "foo" / "bar.py").touch()
 
         with change_cwd(tmp_path):
-            assert get_importable_packages() == ["foo"]
+            assert get_importable_packages() == {"foo"}
 
     def test_nothing(self, tmp_path: Path):
         """Test that no directories are detected as importable."""
@@ -30,7 +30,7 @@ class TestGetImportablePackages:
         (tmp_path / "foo").mkdir()
 
         with change_cwd(tmp_path):
-            assert get_importable_packages() == []
+            assert get_importable_packages() == set()
 
     def test_test_dir_ignored(self, tmp_path: Path):
         """Test that a test directory is ignored."""
@@ -40,7 +40,7 @@ class TestGetImportablePackages:
         (tmp_path / "src" / "tests" / "test_foo.py").touch()
 
         with change_cwd(tmp_path):
-            assert get_importable_packages() == []
+            assert get_importable_packages() == set()
 
     def test_namespace_package(self, tmp_path: Path):
         """Test that a namespace package is detected as importable."""
@@ -50,7 +50,7 @@ class TestGetImportablePackages:
         (tmp_path / "src" / "spam" / "subpackage" / "__init__.py").touch()
 
         with change_cwd(tmp_path):
-            assert get_importable_packages() == ["spam.subpackage"]
+            assert get_importable_packages() == {"spam.subpackage"}
 
     def test_multiple_namespace_packages(self, tmp_path: Path):
         """Test that multiple namespace packages are detected as importable."""
@@ -61,4 +61,4 @@ class TestGetImportablePackages:
         (tmp_path / "src" / "bar" / "__init__.py").touch()
 
         with change_cwd(tmp_path):
-            assert get_importable_packages() == ["bar", "foo"]
+            assert get_importable_packages() == {"foo", "bar"}

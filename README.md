@@ -77,26 +77,26 @@ To use Ruff on a fresh project, run:
 ```console
 $ uvx usethis tool ruff
 ✔ Writing 'pyproject.toml'.
-✔ Adding dependency 'ruff' to the 'dev' dependency group.
+✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.
 ✔ Adding Ruff config to 'pyproject.toml'.
 ✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'EM', 'F', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
 ✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
-☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.
-☐ Run 'ruff format' to run the Ruff formatter.
+☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
+☐ Run 'uv run ruff format' to run the Ruff formatter.
 ```
 
 To use pytest, run:
 
 ```console
 $ uvx usethis tool pytest
-✔ Adding dependency 'pytest' to the 'test' dependency group in 'pyproject.toml'.
+✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.
 ✔ Adding pytest config to 'pyproject.toml'.
 ✔ Enabling Ruff rule 'PT' in 'pyproject.toml'.
 ✔ Creating '/tests'.
 ✔ Writing '/tests/conftest.py'.
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.
-☐ Run 'pytest' to run the tests.
+☐ Run 'uv run pytest' to run the tests.
 ```
 
 To configure Bitbucket pipelines, run:
@@ -105,6 +105,7 @@ To configure Bitbucket pipelines, run:
 $ uvx usethis ci bitbucket
 ✔ Writing 'bitbucket-pipelines.yml'.
 ✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.
+✔ Adding 'Run Ruff' to default pipeline in 'bitbucket-pipelines.yml'.
 ✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.
 ✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
 ☐ Run your pipeline via the Bitbucket website.

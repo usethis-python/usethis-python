@@ -219,6 +219,7 @@ Show a piece of information about the project.
 Currently supported subcommands:
 
 - `usethis show name` to show the name of the project.
+- `usethis show sonarqube` to show appropriate contents of a `sonar-projects.properties` file for SonarQube analysis.
 
 ### `usethis browse pypi <package>`
 

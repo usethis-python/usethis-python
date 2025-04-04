@@ -4,7 +4,9 @@ import typer
 
 from usethis._config import quiet_opt, usethis_config
 from usethis._config_file import files_manager
+from usethis._console import err_print
 from usethis._core.docstyle import UnknownDocstringStyleError, use_docstyle
+from usethis.errors import UsethisError
 
 
 def docstyle(
@@ -14,9 +16,17 @@ def docstyle(
     ),
     quiet: bool = quiet_opt,
 ) -> None:
-    if style not in ("numpy", "google", "pep257"):
-        msg = f"Invalid docstring style: {style}. Choose from 'numpy', 'google', or 'pep257'."
-        raise UnknownDocstringStyleError(msg)
+    try:
+        if style not in ("numpy", "google", "pep257"):
+            msg = f"Invalid docstring style: {style}. Choose from 'numpy', 'google', or 'pep257'."
+            raise UnknownDocstringStyleError(msg)
+    except UnknownDocstringStyleError as err:
+        err_print(err)
+        raise typer.Exit(code=1) from None
 
     with usethis_config.set(quiet=quiet), files_manager():
-        use_docstyle(style)
+        try:
+            use_docstyle(style)
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

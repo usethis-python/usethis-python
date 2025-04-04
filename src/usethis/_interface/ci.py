@@ -17,9 +17,9 @@ def bitbucket(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    try:
-        with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+    with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+        try:
             use_ci_bitbucket(remove=remove)
-    except UsethisError as err:
-        err_print(err)
-        raise typer.Exit(code=1) from None
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

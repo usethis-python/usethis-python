@@ -236,7 +236,7 @@ Supported options:
 
 Not sure if usethis is the exact fit for your project?
 
-The closest match to usethis is [PyScaffold](https://github.com/pyscaffold/pyscaffold/). It provides Command Line Interface to automate the creation of a project from a sensible templated structure.
+The closest match to usethis is [PyScaffold](https://github.com/pyscaffold/pyscaffold/). It provides a Command Line Interface to automate the creation of a project from a sensible templated structure.
 
 You could also consider your own hard-coded template. Templating tools such as [Cookiecutter](https://github.com/cookiecutter/cookiecutter) and [Copier](https://github.com/copier-org/copier) allow you to create static templates with fixed configuration you can use across multiple projects. However, it's not always obvious which template you should use, and many do not use state-of-practice tooling such as `pyproject.toml`. Also, sometimes a template can overwhelm you with too many unfamiliar tools.
 

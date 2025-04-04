@@ -22,6 +22,7 @@ from usethis._integrations.ci.bitbucket.steps import (
     Step,
     UnexpectedImportPipelineError,
     _add_step_caches_via_doc,
+    _steps_are_equivalent,
     add_bitbucket_step_in_default,
     add_placeholder_step_in_default,
     get_defined_script_items_via_doc,
@@ -1130,6 +1131,90 @@ image: atlassian/default-image:3
                 ),
                 doc=doc,
             )
+
+
+class TestStepsAreEquivalent:
+    def test_identical(self):
+        # Arrange
+        step = Step(
+            name="Greeting",
+            script=Script(["echo 'Hello, world!'"]),
+        )
+        other = Step(
+            name="Greeting",
+            script=Script(["echo 'Hello, world!'"]),
+        )
+
+        # Act
+        result = _steps_are_equivalent(step, other)
+
+        # Assert
+        assert result is True
+
+    def test_different_name(self):
+        # Arrange
+        step = Step(
+            name="Greeting",
+            script=Script(["echo 'Hello, world!'"]),
+        )
+        other = Step(
+            name="Farewell",
+            script=Script(["echo 'Hello, world!'"]),
+        )
+
+        # Act
+        result = _steps_are_equivalent(step, other)
+
+        # Assert
+        assert result is True
+
+    def test_different_script(self):
+        # Arrange
+        step = Step(
+            name="Greeting",
+            script=Script(["echo 'Hello, world!'"]),
+        )
+        other = Step(
+            name="Greeting",
+            script=Script(["echo 'Goodbye!'"]),
+        )
+
+        # Act
+        result = _steps_are_equivalent(step, other)
+
+        # Assert
+        assert result is True
+
+    def test_case_sensitive_name_difference(self):
+        # Arrange
+        step = Step(
+            name="Greeting",
+            script=Script(["echo 'Hello, world!'"]),
+        )
+        other = Step(
+            name="greeting",
+            script=Script(["echo 'See ya!'"]),
+        )
+
+        # Act
+        result = _steps_are_equivalent(step, other)
+
+        # Assert
+        assert result is True
+
+    def test_none(self):
+        # Arrange
+        step = None
+        other = Step(
+            name="Greeting",
+            script=Script(["echo 'Hello, world!'"]),
+        )
+
+        # Act
+        result = _steps_are_equivalent(step, other)
+
+        # Assert
+        assert result is False
 
 
 class TestGetStepsInDefault:

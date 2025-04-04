@@ -334,6 +334,14 @@ def _steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
     if step1.name == step2.name:
         return True
 
+    # Same name up to case differences
+    if (
+        isinstance(step1.name, str)
+        and isinstance(step2.name, str)
+        and step1.name.lower() == step2.name.lower()
+    ):
+        return True
+
     # Same contents, different name
     step1 = step1.model_copy()
     step1.name = step2.name

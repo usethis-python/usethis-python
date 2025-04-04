@@ -49,9 +49,8 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
             raise NotImplementedError(msg)  # Should allow multiple or 0 hooks per repo
 
         (hook_config,) = repo.hooks
-        hook_name = hook_config.id
 
-        if hook_name is None:
+        if hook_config.id is None:
             msg = "Hook ID must be specified"
             raise ValueError(msg)
 
@@ -59,18 +58,20 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
         existing_hooks = extract_hook_names(doc.model)
 
         if not existing_hooks:
-            if hook_name == _PLACEHOLDER_ID:
+            if hook_config.id == _PLACEHOLDER_ID:
                 tick_print("Adding placeholder hook to '.pre-commit-config.yaml'.")
             else:
-                tick_print(f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'.")
+                tick_print(
+                    f"Adding hook '{hook_config.id}' to '.pre-commit-config.yaml'."
+                )
 
             doc.model.repos.append(repo)
         else:
             # Get the precendents, i.e. hooks occurring before the new hook
             try:
-                hook_idx = _HOOK_ORDER.index(hook_name)
+                hook_idx = _HOOK_ORDER.index(hook_config.id)
             except ValueError:
-                msg = f"Hook '{hook_name}' not recognized"
+                msg = f"Hook '{hook_config.id}' not recognized"
                 raise NotImplementedError(msg) from None
             precedents = _HOOK_ORDER[:hook_idx]
 

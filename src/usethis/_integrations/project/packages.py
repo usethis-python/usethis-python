@@ -32,7 +32,9 @@ def get_importable_packages() -> list[str]:
     for parent in path.iterdir():
         if parent.is_dir() and not _is_excluded(parent.name):
             # Check if the directory is a package by looking for an __init__.py file
-            packages.extend(_get_packages_in_dir(parent))
+            packages.extend(
+                [f"{parent.name}.{pkg}" for pkg in _get_packages_in_dir(parent)]
+            )
 
     return packages
 

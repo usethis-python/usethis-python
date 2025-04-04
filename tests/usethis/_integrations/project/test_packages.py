@@ -45,12 +45,12 @@ class TestGetImportablePackages:
     def test_namespace_package(self, tmp_path: Path):
         """Test that a namespace package is detected as importable."""
         (tmp_path / "src").mkdir()
-        (tmp_path / "src" / "foo").mkdir()
-        (tmp_path / "src" / "foo" / "subpackage").mkdir()
-        (tmp_path / "src" / "foo" / "subpackage" / "__init__.py").touch()
+        (tmp_path / "src" / "spam").mkdir()
+        (tmp_path / "src" / "spam" / "subpackage").mkdir()
+        (tmp_path / "src" / "spam" / "subpackage" / "__init__.py").touch()
 
         with change_cwd(tmp_path):
-            assert get_importable_packages() == ["foo.subpackage"]
+            assert get_importable_packages() == ["spam.subpackage"]
 
     def test_multiple_namespace_packages(self, tmp_path: Path):
         """Test that multiple namespace packages are detected as importable."""

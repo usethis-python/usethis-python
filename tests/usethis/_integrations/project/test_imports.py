@@ -13,6 +13,7 @@ from usethis._integrations.project.imports import (
     get_layered_architectures,
 )
 from usethis._test import change_cwd
+from usethis.errors import UsethisError
 
 
 class TestGetLayeredArchitectures:
@@ -391,3 +392,36 @@ class TestGetGraph:
             ),
         ):
             _get_graph("different_name.a")
+
+    def test_namespace_package_top_level(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        (tmp_path / "salut").mkdir()
+        (tmp_path / "salut" / "a").mkdir()
+        (tmp_path / "salut" / "a" / "__init__.py").touch()
+        (tmp_path / "salut" / "a" / "b.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act, Assert
+        with change_cwd(tmp_path), pytest.raises(UsethisError):
+            _get_graph("salut")
+
+    def test_namespace_package_portion(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        (tmp_path / "salut").mkdir()
+        (tmp_path / "salut" / "a").mkdir()
+        (tmp_path / "salut" / "a" / "__init__.py").touch()
+        (tmp_path / "salut" / "a" / "b.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        with change_cwd(tmp_path):
+            graph = _get_graph("salut.a")
+
+        # Assert
+        assert isinstance(graph, grimp.ImportGraph)

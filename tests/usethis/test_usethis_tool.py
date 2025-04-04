@@ -6,7 +6,6 @@ import requests
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._console import box_print
-from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
@@ -1098,14 +1097,26 @@ class TestPyprojectTOMLTool:
 
 class TestRuffTool:
     class TestSelectRules:
-        def test_no_pyproject_toml(self, tmp_path: Path):
+        def test_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
             # Act
             with (
                 change_cwd(tmp_path),
                 files_manager(),
-                pytest.raises(PyprojectTOMLNotFoundError),
             ):
                 RuffTool().select_rules(["A", "B", "C"])
+
+                # Assert
+                assert RuffTool().get_selected_rules() == ["A", "B", "C"]
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'pyproject.toml'.\n"
+                "✔ Enabling Ruff rules 'A', 'B', 'C' in 'pyproject.toml'.\n"
+            )
 
         def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
@@ -1200,14 +1211,15 @@ select = ["A"]
                 assert RuffTool().get_selected_rules() == ["A"]
 
     class TestDeselectRules:
-        def test_no_pyproject_toml(self, tmp_path: Path):
+        def test_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
             # Act
-            with (
-                change_cwd(tmp_path),
-                files_manager(),
-                pytest.raises(PyprojectTOMLNotFoundError),
-            ):
-                RuffTool().deselect_rules(["A", "B", "C"])
+            with change_cwd(tmp_path), files_manager():
+                RuffTool().deselect_rules(["A"])
+
+                # Assert
+                assert RuffTool().get_selected_rules() == []
 
         def test_blank_slate(self, tmp_path: Path):
             # Arrange

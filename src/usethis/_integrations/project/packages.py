@@ -32,13 +32,7 @@ def get_importable_packages() -> list[str]:
     for parent in path.iterdir():
         if parent.is_dir() and not _is_excluded(parent.name):
             # Check if the directory is a package by looking for an __init__.py file
-            packages.extend(
-                [
-                    f"{parent.name}.{module_name}"
-                    for _, module_name, _ in pkgutil.iter_modules([parent])
-                    if not _is_excluded(module_name)
-                ]
-            )
+            packages.extend(_get_packages_in_dir(parent))
 
     return packages
 
@@ -46,7 +40,7 @@ def get_importable_packages() -> list[str]:
 def _get_packages_in_dir(path: Path) -> list[str]:
     """Get the names of packages in the given directory."""
     return [
-        module_name
+        Path(module_name).name
         for _, module_name, _ in pkgutil.iter_modules([path])
         if not _is_excluded(module_name)
     ]

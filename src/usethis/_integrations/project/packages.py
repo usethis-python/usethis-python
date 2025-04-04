@@ -43,7 +43,7 @@ def _get_packages_in_dir(path: Path) -> list[str]:
     """Get the names of packages in the given directory."""
     return [
         Path(module_name).name
-        for _, module_name, _ in pkgutil.iter_modules([path])
+        for _, module_name, _ in pkgutil.iter_modules([path.as_posix()])
         if not _is_excluded(module_name)
     ]
 

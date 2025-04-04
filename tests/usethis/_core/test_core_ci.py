@@ -244,7 +244,7 @@ definitions:
 pipelines:
     default:
       - step:
-            name: Run Deptry
+            name: Run deptry
             caches:
               - uv
             script:
@@ -258,7 +258,7 @@ pipelines:
                 assert out == (
                     "✔ Writing 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                    "✔ Adding 'Run Deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding 'Run deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
                     "☐ Run your pipeline via the Bitbucket website.\n"
                 )
@@ -350,7 +350,7 @@ pipelines:
               - uv run ruff check --fix
               - uv run ruff format
       - step:
-            name: Run Deptry
+            name: Run deptry
             caches:
               - uv
             script:
@@ -367,7 +367,7 @@ pipelines:
                 "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding 'Run pyproject-fmt' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding 'Run Ruff' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-                "✔ Adding 'Run Deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding 'Run deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
                 "☐ Run your pipeline via the Bitbucket website.\n"
             )

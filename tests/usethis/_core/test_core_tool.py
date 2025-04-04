@@ -1428,7 +1428,7 @@ minversion = "7\""""
                 use_pytest()
 
                 # Assert
-                assert "PT" in RuffTool().get_rules()
+                assert "PT" in RuffTool().get_selected_rules()
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pytest_ini_priority(self, uv_init_dir: Path):

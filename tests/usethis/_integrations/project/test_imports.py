@@ -397,31 +397,31 @@ class TestGetGraph:
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):
         # Arrange
-        (tmp_path / "salut").mkdir()
-        (tmp_path / "salut" / "a").mkdir()
-        (tmp_path / "salut" / "a" / "__init__.py").touch()
-        (tmp_path / "salut" / "a" / "b.py").touch()
+        (tmp_path / "abientot").mkdir()
+        (tmp_path / "abientot" / "a").mkdir()
+        (tmp_path / "abientot" / "a" / "__init__.py").touch()
+        (tmp_path / "abientot" / "a" / "b.py").touch()
 
         monkeypatch.syspath_prepend(str(tmp_path))
 
         # Act, Assert
         with change_cwd(tmp_path), pytest.raises(UsethisError):
-            _get_graph("salut")
+            _get_graph("abientot")
 
     def test_namespace_package_portion(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):
         # Arrange
-        (tmp_path / "salut").mkdir()
-        (tmp_path / "salut" / "a").mkdir()
-        (tmp_path / "salut" / "a" / "__init__.py").touch()
-        (tmp_path / "salut" / "a" / "b.py").touch()
+        (tmp_path / "merci").mkdir()
+        (tmp_path / "merci" / "a").mkdir()
+        (tmp_path / "merci" / "a" / "__init__.py").touch()
+        (tmp_path / "merci" / "a" / "b.py").touch()
 
         monkeypatch.syspath_prepend(str(tmp_path))
 
         # Act
         with change_cwd(tmp_path):
-            graph = _get_graph("salut.a")
+            graph = _get_graph("merci.a")
 
         # Assert
         assert isinstance(graph, grimp.ImportGraph)

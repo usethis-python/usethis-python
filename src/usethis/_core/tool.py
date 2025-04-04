@@ -306,8 +306,8 @@ def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
     if minimal:
         add_basic_rules = False
     elif (
-        all(tool._is_pydocstyle_rule(rule) for rule in tool.get_rules())
-        or not RuffTool().get_rules()
+        all(tool._is_pydocstyle_rule(rule) for rule in tool.get_selected_rules())
+        or not RuffTool().get_selected_rules()
     ):
         add_basic_rules = True
     else:

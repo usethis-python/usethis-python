@@ -48,6 +48,7 @@ from usethis._integrations.uv.deps import (
     is_dep_in_any_group,
     remove_deps_from_group,
 )
+from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._integrations.uv.used import is_uv_used
 from usethis._io import KeyValueFileManager
@@ -201,10 +202,6 @@ class Tool(Protocol):
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         """Get the pre-commit repository configurations for the tool."""
-        return []
-
-    def get_associated_ruff_rules(self) -> list[str]:
-        """Get the Ruff rule codes associated with the tool."""
         return []
 
     def get_managed_files(self) -> list[Path]:
@@ -492,6 +489,46 @@ class Tool(Protocol):
                 for step_ in self.get_bitbucket_steps()
             ):
                 remove_bitbucket_step_from_default(step)
+
+    def get_associated_ruff_rules(self) -> list[str]:
+        """Get the Ruff rule codes associated with the tool."""
+        return []
+
+    def is_managed_rule(self, rule: str) -> bool:
+        """Determine if a rule is managed by this tool."""
+        return False
+
+    def select_rules(self, rules: list[str]) -> None:
+        """Select the rules managed by the tool.
+
+        These rules are not validated; it is assumed they are valid rules for the tool,
+        and that the tool will be able to manage them.
+        """
+
+    def get_selected_rules(self) -> list[str]:
+        """Get the rules managed by the tool that are currently selected."""
+        return []
+
+    def ignore_rules(self, rules: list[str]) -> None:
+        """Ignore rules managed by the tool.
+
+        Ignoring a rule is different from deselecting it - it means that even if it
+        selected, it will not take effect. See the way that Ruff configuration works to
+        understand this concept in more detail.
+
+        These rules are not validated; it is assumed they are valid rules for the tool,
+        and that the tool will be able to manage them.
+        """
+
+    def get_ignored_rules(self) -> list[str]:
+        """Get the ignored rules managed by the tool."""
+        return []
+
+    def deselect_rules(self, rules: list[str]) -> None:
+        """Deselect the rules managed by the tool.
+
+        Any rules that aren't already selected are ignored.
+        """
 
 
 class CodespellTool(Tool):
@@ -786,7 +823,7 @@ class DeptryTool(Tool):
         _dir = get_source_dir_str()
         return [
             BitbucketStep(
-                name="Run Deptry",
+                name="Run deptry",
                 caches=["uv"],
                 script=BitbucketScript(
                     [
@@ -796,6 +833,61 @@ class DeptryTool(Tool):
                 ),
             )
         ]
+
+    def is_managed_rule(self, rule: str) -> bool:
+        return rule.startswith("DEP") and rule[3:].isdigit()
+
+    def select_rules(self, rules: list[str]) -> None:
+        """Does nothing for deptry - all rules are automatically enabled by default."""
+
+    def get_selected_rules(self) -> list[str]:
+        """No notion of selection for deptry.
+
+        This doesn't mean rules won't be enabled, it just means we don't keep track
+        of selection for them.
+        """
+        return []
+
+    def deselect_rules(self, rules: list[str]) -> None:
+        """Does nothing for deptry - all rules are automatically enabled by default."""
+
+    def ignore_rules(self, rules: list[str]) -> None:
+        rules = sorted(set(rules) - set(self.get_ignored_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
+        (file_manager,) = self.get_active_config_file_managers()
+        _ensure_exists(file_manager)
+        tick_print(
+            f"Ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
+        keys = self._get_ignore_keys(file_manager)
+        file_manager.extend_list(keys=keys, values=rules)
+
+    def get_ignored_rules(self) -> list[str]:
+        (file_manager,) = self.get_active_config_file_managers()
+        keys = self._get_ignore_keys(file_manager)
+        try:
+            rules: list[str] = file_manager[keys]
+        except (KeyError, FileNotFoundError):
+            rules = []
+
+        return rules
+
+    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
+        """Get the keys for the ignored rules in the given file manager."""
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "deptry", "ignore"]
+        else:
+            msg = (
+                f"Unknown location for ignored {self.name} rules for file manager "
+                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+            )
+            raise NotImplementedError(msg)
 
 
 class PreCommitTool(Tool):
@@ -1286,7 +1378,7 @@ class RuffTool(Tool):
 
     def select_rules(self, rules: list[str]) -> None:
         """Add Ruff rules to the project."""
-        rules = sorted(set(rules) - set(self.get_rules()))
+        rules = sorted(set(rules) - set(self.get_selected_rules()))
 
         if not rules:
             return
@@ -1295,7 +1387,10 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        tick_print(f"Enabling Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        _ensure_exists(file_manager)
+        tick_print(
+            f"Enabling {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
         keys = self._get_select_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
@@ -1310,13 +1405,16 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        tick_print(f"Ignoring Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        _ensure_exists(file_manager)
+        tick_print(
+            f"Ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
         keys = self._get_ignore_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
     def deselect_rules(self, rules: list[str]) -> None:
         """Ensure Ruff rules are not selected in the project."""
-        rules = list(set(rules) & set(self.get_rules()))
+        rules = list(set(rules) & set(self.get_selected_rules()))
 
         if not rules:
             return
@@ -1325,17 +1423,21 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        tick_print(f"Disabling Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        _ensure_exists(file_manager)
+        tick_print(
+            f"Disabling {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
         keys = self._get_select_keys(file_manager)
         file_manager.remove_from_list(keys=keys, values=rules)
 
-    def get_rules(self) -> list[str]:
+    def get_selected_rules(self) -> list[str]:
         """Get the Ruff rules selected in the project."""
         (file_manager,) = self.get_active_config_file_managers()
+
         keys = self._get_select_keys(file_manager)
         try:
             rules: list[str] = file_manager[keys]
-        except KeyError:
+        except (KeyError, FileNotFoundError):
             rules = []
 
         return rules
@@ -1346,7 +1448,7 @@ class RuffTool(Tool):
         keys = self._get_ignore_keys(file_manager)
         try:
             rules: list[str] = file_manager[keys]
-        except KeyError:
+        except (KeyError, FileNotFoundError):
             rules = []
 
         return rules
@@ -1381,7 +1483,7 @@ class RuffTool(Tool):
     def _are_pydocstyle_rules_selected(self) -> bool:
         """Check if pydocstyle rules are selected in the configuration."""
         # If "ALL" is selected, or any rule whose alphabetical part is "D".
-        rules = self.get_rules()
+        rules = self.get_selected_rules()
         for rule in rules:
             if rule == "ALL":
                 return True
@@ -1393,8 +1495,7 @@ class RuffTool(Tool):
     def _is_pydocstyle_rule(rule: str) -> bool:
         return [d for d in rule if d.isalpha()] == ["D"]
 
-    @staticmethod
-    def _get_select_keys(file_manager: KeyValueFileManager) -> list[str]:
+    def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         """Get the keys for the select rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "select"]
@@ -1402,13 +1503,12 @@ class RuffTool(Tool):
             return ["lint", "select"]
         else:
             msg = (
-                f"Unknown location for selected ruff rules for file manager "
+                f"Unknown location for selected {self.name} rules for file manager "
                 f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
             )
             raise NotImplementedError(msg)
 
-    @staticmethod
-    def _get_ignore_keys(file_manager: KeyValueFileManager) -> list[str]:
+    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "ignore"]
@@ -1416,13 +1516,12 @@ class RuffTool(Tool):
             return ["lint", "ignore"]
         else:
             msg = (
-                f"Unknown location for ignored ruff rules for file manager "
+                f"Unknown location for ignored {self.name} rules for file manager "
                 f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
             )
             raise NotImplementedError(msg)
 
-    @staticmethod
-    def _get_docstyle_keys(file_manager: KeyValueFileManager) -> list[str]:
+    def _get_docstyle_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         """Get the keys for the docstyle rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "pydocstyle", "convention"]
@@ -1430,10 +1529,19 @@ class RuffTool(Tool):
             return ["lint", "pydocstyle", "convention"]
         else:
             msg = (
-                f"Unknown location for ruff docstring style for file manager "
+                f"Unknown location for {self.name} docstring style for file manager "
                 f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
             )
             raise NotImplementedError(msg)
+
+
+def _ensure_exists(file_manager: KeyValueFileManager) -> None:
+    """Ensure the file manager exists."""
+    if isinstance(file_manager, PyprojectTOMLManager):
+        ensure_pyproject_toml()
+    elif not file_manager.path.exists():
+        # Create the file if it doesn't exist. By assumption, an empty file is valid.
+        file_manager.path.touch()
 
 
 ALL_TOOLS: list[Tool] = [

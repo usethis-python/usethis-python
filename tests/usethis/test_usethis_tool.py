@@ -6,7 +6,6 @@ import requests
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._console import box_print
-from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
@@ -839,6 +838,209 @@ ignore_missing = ["pytest"]
         assert "[tool.deptry]" not in pyproject.read_text()
         assert "ignore_missing" not in pyproject.read_text()
 
+    class TestIsManagedRule:
+        def test_dep001(self):
+            # Arrange
+            rule = "DEP001"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is True
+
+        def test_not_deptry_rule(self):
+            # Arrange
+            rule = "NOT_DEPTRY_RULE"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is False
+
+        def test_extra_letters(self):
+            # Arrange
+            rule = "DEPA001"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is False
+
+        def test_leading_numbers(self):
+            # Arrange
+            rule = "001DEP"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is False
+
+        def test_letters_separated_by_numbers(self):
+            # Arrange
+            rule = "D0E0P1"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is False
+
+        def test_four_numbers(self):
+            # Arrange
+            rule = "DEP0001"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is True
+
+        def test_no_numbers(self):
+            # Arrange
+            rule = "DEP"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is False
+
+        def test_truncated(self):
+            # Arrange
+            rule = "DE"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is False
+
+    class TestSelectRules:
+        def test_always_empty(self, tmp_path: Path):
+            # Arrange
+            tool = DeptryTool()
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                tool.select_rules(["A", "B", "C"])
+
+                # Assert
+                assert tool.get_selected_rules() == []
+
+    class TestGetSelectedRules:
+        def test_always_empty(self, tmp_path: Path):
+            # Arrange
+            tool = DeptryTool()
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = tool.get_selected_rules()
+
+                # Assert
+                assert result == []
+
+    class TestDeselectRules:
+        def test_no_effect(self, tmp_path: Path):
+            # Arrange
+            tool = DeptryTool()
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                tool.deselect_rules(["A", "B", "C"])
+
+                # Assert
+                assert tool.get_selected_rules() == []
+
+    class TestIgnoreRules:
+        def test_ignore_dep001_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            tool = DeptryTool()
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                tool.ignore_rules(["DEP001"])
+
+                # Assert
+                assert tool.get_ignored_rules() == ["DEP001"]
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'pyproject.toml'.\n"
+                "✔ Ignoring deptry rule 'DEP001' in 'pyproject.toml'.\n"
+            )
+
+        def test_ignore_dep001(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            tool = DeptryTool()
+            (tmp_path / "pyproject.toml").write_text("")
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                tool.ignore_rules(["DEP001"])
+
+                # Assert
+                assert tool.get_ignored_rules() == ["DEP001"]
+
+            assert (
+                (tmp_path / "pyproject.toml").read_text()
+                == """\
+[tool.deptry]
+ignore = ["DEP001"]
+"""
+            )
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ("✔ Ignoring deptry rule 'DEP001' in 'pyproject.toml'.\n")
+
+    class TestGetIgnoredRules:
+        def test_no_pyproject_toml(self, tmp_path: Path):
+            # Arrange
+            tool = DeptryTool()
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = tool.get_ignored_rules()
+
+                # Assert
+                assert result == []
+
+        def test_empty(self, tmp_path: Path):
+            # Arrange
+            tool = DeptryTool()
+            (tmp_path / "pyproject.toml").write_text("")
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = tool.get_ignored_rules()
+
+                # Assert
+                assert result == []
+
+        def test_with_rule(self, tmp_path: Path):
+            # Arrange
+            tool = DeptryTool()
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.deptry]
+ignore = ["DEP003"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = tool.get_ignored_rules()
+
+                # Assert
+                assert result == ["DEP003"]
+
 
 class TestPyprojectTOMLTool:
     class TestPrintHowToUse:
@@ -895,14 +1097,26 @@ class TestPyprojectTOMLTool:
 
 class TestRuffTool:
     class TestSelectRules:
-        def test_no_pyproject_toml(self, tmp_path: Path):
+        def test_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
             # Act
             with (
                 change_cwd(tmp_path),
                 files_manager(),
-                pytest.raises(PyprojectTOMLNotFoundError),
             ):
                 RuffTool().select_rules(["A", "B", "C"])
+
+                # Assert
+                assert RuffTool().get_selected_rules() == ["A", "B", "C"]
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'pyproject.toml'.\n"
+                "✔ Enabling Ruff rules 'A', 'B', 'C' in 'pyproject.toml'.\n"
+            )
 
         def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
@@ -926,7 +1140,7 @@ class TestRuffTool:
                 RuffTool().select_rules(new_rules)
 
                 # Assert
-                rules = RuffTool().get_rules()
+                rules = RuffTool().get_selected_rules()
             assert rules == new_rules
 
         def test_mixing(self, tmp_path: Path):
@@ -943,7 +1157,7 @@ class TestRuffTool:
                 RuffTool().select_rules(["C", "D"])
 
                 # Assert
-                rules = RuffTool().get_rules()
+                rules = RuffTool().get_selected_rules()
             assert rules == ["A", "B", "C", "D"]
 
         def test_respects_order(self, tmp_path: Path):
@@ -960,7 +1174,7 @@ select = ["D", "B", "A"]
                 RuffTool().select_rules(["E", "C", "A"])
 
                 # Assert
-                assert RuffTool().get_rules() == ["D", "B", "A", "C", "E"]
+                assert RuffTool().get_selected_rules() == ["D", "B", "A", "C", "E"]
 
         def test_ruff_toml(self, tmp_path: Path):
             # Arrange
@@ -976,7 +1190,7 @@ select = ["A", "B"]
                 RuffTool().select_rules(["C", "D"])
 
                 # Assert
-                rules = RuffTool().get_rules()
+                rules = RuffTool().get_selected_rules()
 
             assert rules == ["A", "B", "C", "D"]
 
@@ -994,17 +1208,18 @@ select = ["A"]
                 RuffTool().select_rules([])
 
                 # Assert
-                assert RuffTool().get_rules() == ["A"]
+                assert RuffTool().get_selected_rules() == ["A"]
 
     class TestDeselectRules:
-        def test_no_pyproject_toml(self, tmp_path: Path):
+        def test_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
             # Act
-            with (
-                change_cwd(tmp_path),
-                files_manager(),
-                pytest.raises(PyprojectTOMLNotFoundError),
-            ):
-                RuffTool().deselect_rules(["A", "B", "C"])
+            with change_cwd(tmp_path), files_manager():
+                RuffTool().deselect_rules(["A"])
+
+                # Assert
+                assert RuffTool().get_selected_rules() == []
 
         def test_blank_slate(self, tmp_path: Path):
             # Arrange
@@ -1015,7 +1230,7 @@ select = ["A"]
                 RuffTool().deselect_rules(["A", "B", "C"])
 
                 # Assert
-                assert RuffTool().get_rules() == []
+                assert RuffTool().get_selected_rules() == []
 
         def test_single_rule(self, tmp_path: Path):
             # Arrange
@@ -1031,7 +1246,7 @@ select = ["A"]
                 RuffTool().deselect_rules(["A"])
 
                 # Assert
-                assert RuffTool().get_rules() == []
+                assert RuffTool().get_selected_rules() == []
 
         def test_mix(self, tmp_path: Path):
             # Arrange
@@ -1047,7 +1262,7 @@ select = ["A", "B", "C"]
                 RuffTool().deselect_rules(["A", "C"])
 
                 # Assert
-                assert RuffTool().get_rules() == ["B"]
+                assert RuffTool().get_selected_rules() == ["B"]
 
         def test_ruff_toml(self, tmp_path: Path):
             # Arrange
@@ -1063,7 +1278,7 @@ select = ["A", "B"]
                 RuffTool().deselect_rules(["A"])
 
                 # Assert
-                assert RuffTool().get_rules() == ["B"]
+                assert RuffTool().get_selected_rules() == ["B"]
 
     class TestIgnoreRules:
         def test_add_to_existing(self, tmp_path: Path):

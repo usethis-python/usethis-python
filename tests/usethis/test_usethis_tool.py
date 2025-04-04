@@ -900,6 +900,26 @@ ignore_missing = ["pytest"]
             # Assert
             assert result is True
 
+        def test_no_numbers(self):
+            # Arrange
+            rule = "DEP"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is False
+
+        def test_truncated(self):
+            # Arrange
+            rule = "DE"
+
+            # Act
+            result = DeptryTool().is_managed_rule(rule)
+
+            # Assert
+            assert result is False
+
     class TestSelectRules:
         def test_always_empty(self, tmp_path: Path):
             # Arrange

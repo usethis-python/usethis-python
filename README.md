@@ -243,7 +243,7 @@ You could also consider your own hard-coded template. Templating tools such as [
 You could [consider this template](https://github.com/pawamoy/copier-uv) which works with Copier, or [this template](https://github.com/johnthagen/python-blueprint) which works with Cookiecutter.
 
 > [!TIP]
-> You can still use usethis as a part of a templates using [hooks](https://cookiecutter.readthedocs.io/en/1.7.2/advanced/hooks.html#using-pre-post-generate-hooks-0-7-0) for Cookiecutter and [tasks](https://copier.readthedocs.io/en/stable/configuring/#tasks) for Copier.
+> You can still use usethis as a part of a templates using [hooks](https://cookiecutter.readthedocs.io/en/latest/advanced/hooks.html#using-pre-post-generate-hooks-0-7-0) for Cookiecutter and [tasks](https://copier.readthedocs.io/en/stable/configuring/#tasks) for Copier.
 
 One of usethis's strengths is that it can update existing configuration. If you're using Cookiecutter, then you can update to a latest version of a template using a tool like [cruft](https://github.com/cruft/cruft). Copier has inbuilt support for template updating.
 

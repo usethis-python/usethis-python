@@ -379,7 +379,7 @@ class TestHooksAreEquivalent:
         other = HookDefinition(
             id="FOO",
             name="Different",
-            entry="echo 'Au revior!'",
+            entry="echo 'Au revoir!'",
         )
 
         # Act

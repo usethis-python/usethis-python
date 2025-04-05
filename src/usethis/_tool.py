@@ -32,7 +32,12 @@ from usethis._integrations.ci.bitbucket.steps import (
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
-from usethis._integrations.pre_commit.hooks import add_repo, get_hook_names, remove_hook
+from usethis._integrations.pre_commit.hooks import (
+    _hook_ids_are_equivalent,
+    add_repo,
+    get_hook_ids,
+    remove_hook,
+)
 from usethis._integrations.pre_commit.schema import (
     FileType,
     FileTypes,
@@ -266,7 +271,10 @@ class Tool(Protocol):
                 raise NotImplementedError(msg)
 
             for hook in repo_config.hooks:
-                if hook.id not in get_hook_names():
+                if not any(
+                    _hook_ids_are_equivalent(hook.id, hook_id)
+                    for hook_id in get_hook_ids()
+                ):
                     # This will remove the placeholder, if present.
                     add_repo(repo_config)
 
@@ -286,7 +294,7 @@ class Tool(Protocol):
 
             # Remove the config for this specific tool.
             for hook in repo_config.hooks:
-                if hook.id in get_hook_names():
+                if hook.id in get_hook_ids():
                     remove_hook(hook.id)
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:

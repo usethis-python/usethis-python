@@ -7,7 +7,7 @@ from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._console import box_print
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_names
+from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_ids
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
@@ -387,7 +387,7 @@ class TestTool:
                 # Note that this deliberately doesn't include validate-pyproject
                 # That should only be included as a default when using the
                 # `use_pre_commit` interface.
-                assert get_hook_names() == ["ruff", "ruff-format", "deptry"]
+                assert get_hook_ids() == ["ruff", "ruff-format", "deptry"]
 
         def test_file_created(self, tmp_path: Path):
             # Arrange
@@ -428,7 +428,65 @@ class TestTool:
                     "✔ Writing '.pre-commit-config.yaml'.\n"
                     "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 )
-                assert "deptry" in get_hook_names()
+                assert "deptry" in get_hook_ids()
+
+        def test_dont_add_if_already_present(
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+        ):
+            # Arrange
+            tool = MyTool()
+
+            # Create a pre-commit config file with one hook
+            contents = """\
+repos:
+  - repo: local
+    hooks:
+      - id: deptry
+        entry: echo "different now!"
+"""
+
+            (tmp_path / ".pre-commit-config.yaml").write_text(contents)
+
+            # Act
+            with change_cwd(tmp_path):
+                tool.add_pre_commit_repo_configs()
+
+                # Assert
+                out, err = capfd.readouterr()
+                assert not err
+                assert not out
+                assert get_hook_ids() == ["deptry"]
+
+        def test_ignore_case_sensitivity(
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+        ):
+            # Arrange
+            tool = MyTool()
+
+            # Create a pre-commit config file with one hook
+            contents = """\
+repos:
+  - repo: local
+    hooks:
+      - id: Deptry
+        entry: echo "different now!"
+"""
+
+            (tmp_path / ".pre-commit-config.yaml").write_text(contents)
+
+            # Act
+            with change_cwd(tmp_path):
+                tool.add_pre_commit_repo_configs()
+
+                # Assert
+                out, err = capfd.readouterr()
+                assert not err
+                assert not out
+                assert get_hook_ids() == ["Deptry"]
 
         def test_add_two_hooks_in_one_repo_when_one_already_exists(
             self,
@@ -462,7 +520,7 @@ repos:
                 assert out == (
                     "✔ Adding hook 'ruff-format' to '.pre-commit-config.yaml'.\n"
                 )
-                assert get_hook_names() == ["ruff", "ruff-format"]
+                assert get_hook_ids() == ["ruff", "ruff-format"]
 
             assert (
                 (tmp_path / ".pre-commit-config.yaml").read_text()
@@ -537,7 +595,7 @@ repos:
 
                 # Assert
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
-                assert get_hook_names() == ["ruff-format"]
+                assert get_hook_ids() == ["ruff-format"]
                 assert (tmp_path / ".pre-commit-config.yaml").read_text() == contents
 
         def test_one_hook_remove_different_one(self, tmp_path: Path):
@@ -560,7 +618,7 @@ repos:
 
                 # Assert
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
-                assert get_hook_names() == ["ruff-format"]
+                assert get_hook_ids() == ["ruff-format"]
                 assert (tmp_path / ".pre-commit-config.yaml").read_text() == contents
 
         def test_one_hook_remove_same_hook(self, tmp_path: Path):
@@ -583,7 +641,7 @@ repos:
 
                 # Assert
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
-                assert get_hook_names() == [_PLACEHOLDER_ID]
+                assert get_hook_ids() == [_PLACEHOLDER_ID]
 
         def test_two_repos_remove_same_two(self, tmp_path: Path):
             # Arrange
@@ -635,7 +693,7 @@ repos:
 
                 # Assert
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
-                assert get_hook_names() == [_PLACEHOLDER_ID]
+                assert get_hook_ids() == [_PLACEHOLDER_ID]
 
     class TestAddConfigs:
         def test_no_config(self, tmp_path: Path):

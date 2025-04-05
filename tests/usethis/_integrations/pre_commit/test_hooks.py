@@ -3,11 +3,11 @@ from pathlib import Path
 import pytest
 
 from usethis._integrations.pre_commit.hooks import (
-    DuplicatedHookNameError,
     _get_placeholder_repo_config,
+    _hooks_are_equivalent,
     add_placeholder_hook,
     add_repo,
-    get_hook_names,
+    get_hook_ids,
     remove_hook,
 )
 from usethis._integrations.pre_commit.schema import (
@@ -209,7 +209,7 @@ class TestGetHookNames:
         (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n")
 
         with change_cwd(tmp_path):
-            assert get_hook_names() == []
+            assert get_hook_ids() == []
 
     def test_single(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text(
@@ -221,7 +221,7 @@ repos:
 """
         )
         with change_cwd(tmp_path):
-            assert get_hook_names() == ["bar"]
+            assert get_hook_ids() == ["bar"]
 
     def test_multihooks(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text(
@@ -234,7 +234,7 @@ repos:
 """
         )
         with change_cwd(tmp_path):
-            assert get_hook_names() == ["bar", "baz"]
+            assert get_hook_ids() == ["bar", "baz"]
 
     def test_multirepo(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text(
@@ -249,9 +249,10 @@ repos:
 """
         )
         with change_cwd(tmp_path):
-            assert get_hook_names() == ["bar", "qux"]
+            assert get_hook_ids() == ["bar", "qux"]
 
-    def test_duplicated_raises(self, tmp_path: Path):
+    def test_duplicated_ok(self, tmp_path: Path):
+        # Arrange
         (tmp_path / ".pre-commit-config.yaml").write_text(
             """
 repos:
@@ -264,13 +265,12 @@ repos:
 """
         )
 
-        with (
-            change_cwd(tmp_path),
-            pytest.raises(
-                DuplicatedHookNameError, match="Hook name 'bar' is duplicated"
-            ),
-        ):
-            get_hook_names()
+        # Act
+        with change_cwd(tmp_path):
+            result = get_hook_ids()
+
+        # Assert
+        assert result == ["bar", "bar"]
 
 
 class TestAddPlaceholderHook:
@@ -303,3 +303,108 @@ repos:
             "☐ Replace it with your own hooks.\n"
             "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
         )
+
+
+class TestHooksAreEquivalent:
+    def test_identical(self):
+        # Arrange
+        hook = HookDefinition(
+            id="foo",
+            name="Foo",
+            entry="echo 'Hello, world!'",
+            language=Language("python"),
+        )
+        other = HookDefinition(
+            id="foo",
+            name="Foo",
+            entry="echo 'Hello, world!'",
+            language=Language("python"),
+        )
+
+        # Act
+        result = _hooks_are_equivalent(hook, other)
+
+        # Assert
+        assert result is True
+
+    def test_different_id(self):
+        # Arrange
+        hook = HookDefinition(
+            id="foo",
+            name="Foo",
+            entry="echo 'Hello, world!'",
+            language=Language("python"),
+        )
+        other = HookDefinition(
+            id="bar",
+            name="Foo",
+            entry="echo 'Hello, world!'",
+            language=Language("python"),
+        )
+
+        # Act
+        result = _hooks_are_equivalent(hook, other)
+
+        # Assert
+        assert result is False
+
+    def test_different_name(self):
+        # Arrange
+        hook = HookDefinition(
+            id="foo",
+            name="Foo",
+            entry="echo 'Hello, world!'",
+            language=Language("python"),
+        )
+        other = HookDefinition(
+            id="foo",
+            name="Bar",
+            entry="echo 'Hello, world!'",
+            language=Language("python"),
+        )
+
+        # Act
+        result = _hooks_are_equivalent(hook, other)
+
+        # Assert
+        assert result is True
+
+    def test_case_sensitive_id_difference(self):
+        # Arrange
+        hook = HookDefinition(
+            id="foo",
+            name="Foo",
+            entry="echo 'Hello, world!'",
+        )
+        other = HookDefinition(
+            id="FOO",
+            name="Different",
+            entry="echo 'Au revior!'",
+        )
+
+        # Act
+        result = _hooks_are_equivalent(hook, other)
+
+        # Assert
+        assert result is True
+
+    def test_no_id(self):
+        # Arrange
+        hook = HookDefinition(
+            id=None,
+            name="Foo",
+            entry="echo 'Hello, world!'",
+            language=Language("python"),
+        )
+        other = HookDefinition(
+            id="foo",
+            name="Foo",
+            entry="echo 'Hello, world!'",
+            language=Language("python"),
+        )
+
+        # Act
+        result = _hooks_are_equivalent(hook, other)
+
+        # Assert
+        assert result is False

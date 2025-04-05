@@ -21,7 +21,7 @@ from usethis._integrations.ci.bitbucket.steps import add_placeholder_step_in_def
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
-    get_hook_names,
+    get_hook_ids,
 )
 from usethis._integrations.python.version import (
     extract_major_version,
@@ -125,7 +125,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 assert all(dep.name != "codespell" for dep in dev_deps)
 
                 # Check hook names
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
                 assert "codespell" in hook_names
             # Check output
             out, err = capfd.readouterr()
@@ -472,7 +472,7 @@ class TestDeptry:
                 use_pre_commit()
 
                 # Assert
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
 
             # 1. File exists
             assert (uv_init_dir / ".pre-commit-config.yaml").exists()
@@ -614,7 +614,7 @@ dev = []
                 use_deptry()
 
                 # Assert
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
 
             # 1. File exists
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
@@ -814,7 +814,7 @@ repos:
                 use_pre_commit()
 
                 # Assert
-                assert "uv-export" in get_hook_names()
+                assert "uv-export" in get_hook_ids()
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pyproject_fmt_used(self, uv_init_repo_dir: Path):
@@ -826,7 +826,7 @@ repos:
                 use_pre_commit()
 
                 # Assert
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
                 assert "pyproject-fmt" in hook_names
 
                 dev_deps = get_deps_from_group("dev")
@@ -843,7 +843,7 @@ repos:
                 use_pre_commit()
 
                 # Assert
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
                 assert "codespell" in hook_names
 
                 dev_deps = get_deps_from_group("dev")
@@ -1211,7 +1211,7 @@ foo = "bar"
                 use_pyproject_fmt()
 
                 # Assert
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
 
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
             assert "pyproject-fmt" in hook_names
@@ -1226,7 +1226,7 @@ foo = "bar"
                 use_pre_commit()
 
                 # Assert
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
 
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
             assert "pyproject-fmt" in hook_names
@@ -1929,7 +1929,7 @@ class TestRuff:
                 use_pre_commit()
 
                 # Assert
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
 
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names
@@ -2058,7 +2058,7 @@ dev = []
                 use_pre_commit()
 
                 # Assert
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
 
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names
@@ -2073,7 +2073,7 @@ dev = []
                 use_ruff()
 
                 # Assert
-                hook_names = get_hook_names()
+                hook_names = get_hook_ids()
 
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names

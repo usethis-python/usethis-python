@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import Counter
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -34,10 +33,6 @@ _HOOK_ORDER = [
 _PLACEHOLDER_ID = "placeholder"
 
 
-class DuplicatedHookNameError(ValueError):
-    """Raised when a hook name is duplicated in a pre-commit configuration file."""
-
-
 def add_repo(repo: LocalRepo | UriRepo) -> None:
     """Add a pre-commit repo configuration to the pre-commit configuration file.
 
@@ -55,10 +50,10 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
             raise ValueError(msg)
 
         # Ordered list of the hooks already in the file
-        existing_hooks = extract_hook_names(doc.model)
+        existing_hooks = extract_hook_ids(doc.model)
 
         if not existing_hooks:
-            if hook_config.id == _PLACEHOLDER_ID:
+            if _hook_ids_are_equivalent(hook_config.id, _PLACEHOLDER_ID):
                 tick_print("Adding placeholder hook to '.pre-commit-config.yaml'.")
             else:
                 tick_print(
@@ -116,11 +111,13 @@ def insert_repo(
 
         # Don't include the placeholder from now on, since we're adding a repo
         # which can be there instead.
-        if [hook.id for hook in hooks] != [_PLACEHOLDER_ID]:
+        if not (
+            len(hooks) == 1 and _hook_ids_are_equivalent(hooks[0].id, _PLACEHOLDER_ID)
+        ):
             repos.append(repo)
 
         for hook in hooks:
-            if hook.id == predecessor:
+            if _hook_ids_are_equivalent(hook.id, predecessor):
                 if repo_to_insert.hooks is not None:
                     for inserted_hook in repo_to_insert.hooks:
                         tick_print(
@@ -152,20 +149,20 @@ def _get_placeholder_repo_config() -> LocalRepo:
     )
 
 
-def remove_hook(name: str) -> None:
+def remove_hook(hook_id: str) -> None:
     """Remove pre-commit hook configuration.
 
     If the hook doesn't exist, this function will have no effect. Meta hooks are
     ignored.
     """
     with edit_pre_commit_config_yaml() as doc:
-        # search across the repos for any hooks with ID equal to name
+        # search across the repos for any hooks with matching ID
         for repo in doc.model.repos:
             if isinstance(repo, MetaRepo) or repo.hooks is None:
                 continue
 
             for hook in repo.hooks:
-                if hook.id == name:
+                if _hook_ids_are_equivalent(hook.id, hook_id):
                     tick_print(
                         f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'."
                     )
@@ -183,29 +180,47 @@ def remove_hook(name: str) -> None:
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 
-def get_hook_names() -> list[str]:
+def get_hook_ids() -> list[str]:
     path = Path.cwd() / ".pre-commit-config.yaml"
 
     if not path.exists():
         return []
 
     with edit_pre_commit_config_yaml() as doc:
-        return extract_hook_names(doc.model)
+        return extract_hook_ids(doc.model)
 
 
-def extract_hook_names(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
-    hook_names = []
+def extract_hook_ids(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
+    hook_ids = []
     for repo in model.repos:
         if repo.hooks is None:
             continue
 
         for hook in repo.hooks:
-            hook_names.append(hook.id)
+            hook_ids.append(hook.id)
 
-    # Need to validate there are no duplicates
-    for name, count in Counter(hook_names).items():
-        if count > 1:
-            msg = f"Hook name '{name}' is duplicated"
-            raise DuplicatedHookNameError(msg)
+    return hook_ids
 
-    return hook_names
+
+def _hooks_are_equivalent(hook: HookDefinition, other: HookDefinition) -> bool:
+    """Check if two hooks are equivalent."""
+    if _hook_ids_are_equivalent(hook.id, other.id):
+        return True
+
+    # Same contents, different name
+    hook = hook.model_copy()
+    hook.name = other.name
+    return hook == other
+
+
+def _hook_ids_are_equivalent(hook_id: str | None, other: str | None) -> bool:
+    """Check if two hook IDs are equivalent."""
+    # Same name
+    if hook_id == other:
+        return True
+
+    # Same name up to case differences
+    if isinstance(hook_id, str) and isinstance(other, str):
+        return hook_id.lower() == other.lower()
+
+    return False

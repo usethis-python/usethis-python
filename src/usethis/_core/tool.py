@@ -14,7 +14,7 @@ from usethis._integrations.pre_commit.core import (
 )
 from usethis._integrations.pre_commit.hooks import (
     add_placeholder_hook,
-    get_hook_names,
+    get_hook_ids,
 )
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.uv.call import call_uv_subprocess
@@ -119,7 +119,7 @@ def use_pre_commit(*, remove: bool = False) -> None:
         if requirements_txt_tool.is_used():
             requirements_txt_tool.print_how_to_use()
 
-        if not get_hook_names():
+        if not get_hook_ids():
             add_placeholder_hook()
 
         install_pre_commit_hooks()

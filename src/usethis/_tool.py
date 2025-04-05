@@ -1563,4 +1563,3 @@ ALL_TOOLS: list[Tool] = [
     RequirementsTxtTool(),
     RuffTool(),
 ]
-# TODO test that the list is sorted alphabetically by CLI name

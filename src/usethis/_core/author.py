@@ -1,13 +1,10 @@
-# TODO can we default to git info?
-# TODO neither name or email is strictly required, but at least one is.
-
-
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.init import ensure_pyproject_toml
 
 
 def add_author(
     *,
+    # Strictly, a name is not required by the TOML spec, but we do require it
     name: str,
     email: str | None = None,
     overwrite: bool = False,

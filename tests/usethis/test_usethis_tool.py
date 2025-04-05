@@ -12,6 +12,7 @@ from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, U
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._test import change_cwd
 from usethis._tool import (
+    ALL_TOOLS,
     ConfigEntry,
     ConfigItem,
     ConfigSpec,
@@ -1370,3 +1371,9 @@ ignore = ["A"]
 
                 # Assert
                 assert RuffTool().get_ignored_rules() == ["A"]
+
+
+class TestAllTools:
+    def test_sorted_alphabetically(self):
+        names = [tool.name.lower() for tool in ALL_TOOLS]
+        assert names == sorted(names)

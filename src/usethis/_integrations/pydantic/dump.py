@@ -1,16 +1,21 @@
+from __future__ import annotations
+
 from functools import singledispatch
 from itertools import zip_longest
-from typing import TypeAlias
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, RootModel
 
-ModelLiteral: TypeAlias = bool | int | float | str
-ModelRepresentation: TypeAlias = (
-    ModelLiteral
-    | dict[str, "ModelRepresentation"]
-    | list["ModelRepresentation"]
-    | BaseModel
-)
+if TYPE_CHECKING:
+    from typing import TypeAlias
+
+    ModelLiteral: TypeAlias = bool | int | float | str
+    ModelRepresentation: TypeAlias = (
+        ModelLiteral
+        | dict[str, "ModelRepresentation"]
+        | list["ModelRepresentation"]
+        | BaseModel
+    )
 
 
 class _FillValue:
@@ -30,6 +35,8 @@ def fancy_model_dump(
     """Like ``pydantic.model_dump`` but with bespoke formatting options.
 
     Args:
+        model: The model to dump. This can be a pydantic model or a representation of
+               the model (dict, list, etc.).
         reference: A representation to minimize the diff against. For example, if you
                    have a previous model_dump output and it contains default fields,
                    these will continue be included. If it omits default fields, these
@@ -99,7 +106,39 @@ def _(
     return d
 
 
-@fancy_model_dump.register(bool | int | float | str)
+# N.B. when Python 3.10 support is dropped, we can register unions of types, rather than
+# having these separate identical implementations for each type.
+@fancy_model_dump.register(bool)
+def _(
+    model: ModelLiteral,
+    *,
+    reference: ModelRepresentation | None = None,
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+) -> ModelLiteral:
+    return model
+
+
+@fancy_model_dump.register(int)
+def _(
+    model: ModelLiteral,
+    *,
+    reference: ModelRepresentation | None = None,
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+) -> ModelLiteral:
+    return model
+
+
+@fancy_model_dump.register(float)
+def _(
+    model: ModelLiteral,
+    *,
+    reference: ModelRepresentation | None = None,
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+) -> ModelLiteral:
+    return model
+
+
+@fancy_model_dump.register(str)
 def _(
     model: ModelLiteral,
     *,

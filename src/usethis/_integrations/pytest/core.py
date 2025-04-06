@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
 
@@ -33,5 +35,5 @@ def remove_pytest_dir() -> None:
         tick_print("Removing '/tests'.")
         shutil.rmtree(tests_dir)
     else:
-        box_print("Reconfigure the /tests directory to run without pytest.")
+        box_print("Reconfigure the '/tests' directory to run without pytest.")
         # Note we don't actually remove the directory, just explain what needs to be done.

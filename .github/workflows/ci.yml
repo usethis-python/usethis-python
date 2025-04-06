@@ -3,7 +3,16 @@ on:
   workflow_dispatch:
   push:
     branches: ['main']
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   tests:
     runs-on: ${{ matrix.os }}
@@ -19,9 +28,10 @@ jobs:
           git config --global user.email placeholder@example.com
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@e779db74266a80753577425b0f4ee823649f251d # v3.2.3
+        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
         with:
           version: "latest"
+          enable-cache: true
 
       - name: Set up Python
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
@@ -34,14 +44,53 @@ jobs:
           uv pip install --system --break-system-packages -r requirements.txt
 
       - name: Run pre-commit
+        if: matrix.pre-commit
         run: |
           uv run --frozen pre-commit run --all-files
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
+        with:
+          custom-arguments: --cov --junitxml=junit.xml -o junit_family=legacy
+
+      - name: Run benchmarks
+        uses: CodSpeedHQ/action@513a19673a831f139e8717bf45ead67e47f00044 # v3.2.0
+        if: matrix.codspeed
+        with:
+          token: ${{ secrets.CODSPEED_TOKEN }}
+          run: pytest --codspeed
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
+        if: matrix.codecov
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+
+        uses: codecov/test-results-action@44ecb3a270cd942bdf0fa8f2ce14cb32493e810a # v1.0.3
+        if: matrix.codecov && !cancelled()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.11, 3.12, 3.13]
-        resolution: [highest, lowest-direct]
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        resolution: ["highest"]
+        codspeed: [false]
+        codecov: [false]
+        pre-commit: [false]
+        include:
+          - os: "ubuntu-latest"
+            python-version: "3.10"
+            resolution: "lowest-direct"
+            codspeed: false
+            codecov: false
+            pre-commit: false
+          - os: "ubuntu-latest"
+            python-version: "3.13"
+            resolution: "highest"
+            codspeed: true
+            codecov: true
+            pre-commit: true

@@ -1,7 +1,9 @@
 import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
+from usethis._console import err_print
 from usethis._core.browse import browse_pypi
+from usethis.errors import UsethisError
 
 app = typer.Typer(help="Visit important project-related web pages.")
 
@@ -17,4 +19,8 @@ def pypi(
     quiet: bool = quiet_opt,
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet):
-        browse_pypi(package=package, browser=browser)
+        try:
+            browse_pypi(package=package, browser=browser)
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

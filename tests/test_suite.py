@@ -14,11 +14,26 @@ def test_skeleton_matches():
     for test_py in Path("tests/usethis").rglob("test_*.py"):
         path = Path("src") / test_py.relative_to("tests")
         std_path = path.parent / path.name.removeprefix("test_")
-        underscore_path = path.parent / path.name.removeprefix("test")
+        underscore_path = path.parent / ("_" + path.name.removeprefix("test_"))
+        std_parent_path = path.parent / path.name.removeprefix(
+            "test_" + path.parent.name.strip("_") + "_"
+        )
+        underscore_parent_path = path.parent / (
+            "_" + path.name.removeprefix("test_" + path.parent.name.strip("_") + "_")
+        )
 
-        if not std_path.exists() and not underscore_path.exists():
+        if (
+            not std_path.exists()
+            and not underscore_path.exists()
+            and not std_parent_path.exists()
+            and not underscore_parent_path.exists()
+        ):
             msg = (
-                f"{std_path} expected to exist by test suite structure, but is missing"
+                f"One of the following paths expected to exist by test suite structure:"
+                f"\n{std_path}"
+                f"\n{underscore_path}"
+                f"\n{std_parent_path}"
+                f"\n{underscore_parent_path}"
             )
             raise PytestSuiteConfigurationError(msg)
 

@@ -32,7 +32,6 @@ from usethis._integrations.ci.bitbucket.steps import (
 )
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.file.pyproject_toml.name import get_name
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.hooks import (
     _hook_ids_are_equivalent,
@@ -54,6 +53,7 @@ from usethis._integrations.project.imports import (
     get_layered_architectures,
 )
 from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.project.name import get_project_name
 from usethis._integrations.project.packages import get_importable_packages
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -946,12 +946,10 @@ class ImportLinterTool(Tool):
         root_packages = sorted(get_importable_packages())
         if not root_packages:
             # Couldn't find any packages, we're assuming the package name is the name
-            # of the package. Warn the user accordingly.
-            name = get_name()
+            # of the project. Warn the user accordingly.
+            name = get_project_name()
             warn_print("Could not find any importable packages.")
             warn_print(f"Assuming the package name is {name}.")
-
-            # https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#name
             root_packages = [name]
 
         contracts = []

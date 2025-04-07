@@ -199,7 +199,8 @@ type = "layers"
 layers = [
   "ci | pre_commit",
   "uv | pytest | pydantic | sonarqube",
-  "project | file | python",
+  "project | python",
+  "file",
 ]
 containers = [ "usethis._integrations" ]
 exhaustive = true
@@ -210,6 +211,7 @@ type = "layers"
 layers = [
   "pyproject_toml | setup_cfg",
   "ini | toml | yaml",
+  "dir",
 ]
 containers = [ "usethis._integrations.file" ]
 exhaustive = true

@@ -74,6 +74,7 @@ class TestAddReadme:
 
     def test_no_project_name_nor_description(self, tmp_path: Path):
         # Arrange
+        name = "test_no_project_name_nor_description"
         (tmp_path / "pyproject.toml").write_text("")
 
         # Act
@@ -82,7 +83,8 @@ class TestAddReadme:
 
         # Assert
         assert (tmp_path / "README.md").exists()
-        assert (tmp_path / "README.md").read_text() == ""
+        # First 30 characters of the function are used by pytest in the dir name.
+        assert (tmp_path / "README.md").read_text() == f"# {name[:30]}0\n"
 
     def test_no_project_name_only_description(self, tmp_path: Path):
         # Arrange

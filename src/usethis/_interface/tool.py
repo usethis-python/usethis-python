@@ -206,6 +206,7 @@ ALL_TOOL_COMMANDS: list[str] = [
     "codespell",
     "coverage",
     "deptry",
+    "import-linter",
     "pre-commit",
     "pyproject.toml",
     "pyproject-fmt",

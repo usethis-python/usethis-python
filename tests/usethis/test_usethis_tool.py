@@ -766,6 +766,7 @@ key = "value"
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # https://github.com/nathanjmcdougall/usethis-python/issues/184
+            # But needs the force=True argument.
 
             # Arrange
             class ThisTool(Tool):
@@ -792,7 +793,8 @@ key = "value"
                                             "root_packages": ["example"],
                                         },
                                     )
-                                }
+                                },
+                                force=True,
                             )
                         ],
                     )

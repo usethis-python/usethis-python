@@ -867,6 +867,40 @@ exhaustive = True
 """
             )
 
+        def test_cyclic_excluded(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
+            (tmp_path / "a" / "b.py").write_text("import a.c")
+            (tmp_path / "a" / "c.py").write_text("import a.b")
+
+            monkeypatch.syspath_prepend(str(tmp_path))
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    a
+[importlinter:contract:0]
+name = a
+type = layers
+layers = 
+containers =
+    a
+exhaustive = True
+exhaustive_ignores =
+    b
+    c
+"""
+            )
+
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange

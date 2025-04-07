@@ -455,12 +455,9 @@ def _(value: Section) -> dict[str, Any]:
 def _remove_option(updater: INIDocument, section_key: str, option_key: str) -> bool:
     try:
         return updater.remove_option(section=section_key, option=option_key)
-    except (configparser.NoSectionError, configparser.NoOptionError) as err:
+    except configparser.NoSectionError as err:
         raise INIValueMissingError(err) from None
 
 
 def _remove_section(updater: INIDocument, section_key: str) -> bool:
-    try:
-        return updater.remove_section(name=section_key)
-    except configparser.NoSectionError as err:
-        raise INIValueMissingError(err) from None
+    return updater.remove_section(name=section_key)

@@ -18,7 +18,9 @@ from usethis._tool import (
     ConfigSpec,
     DeptryTool,
     ImportLinterTool,
+    PyprojectFmtTool,
     PyprojectTOMLTool,
+    RequirementsTxtTool,
     RuffTool,
     Tool,
 )
@@ -1165,6 +1167,24 @@ class TestImportLinterTool:
             assert out == ("☐ Run 'lint-imports' to run Import Linter.\n")
 
 
+class TestPyprojectFmtTool:
+    class TestPrintHowToUse:
+        def test_uv_only(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            (tmp_path / "uv.lock").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                PyprojectFmtTool().print_how_to_use()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+            )
+
+
 class TestPyprojectTOMLTool:
     class TestPrintHowToUse:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1216,6 +1236,26 @@ class TestPyprojectTOMLTool:
 
             # Assert
             assert result == []
+
+
+class TestRequirementsTxtTool:
+    class TestPrintHowToUse:
+        def test_pre_commit_and_not_uv(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / ".pre-commit-config.yaml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                RequirementsTxtTool().print_how_to_use()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Run 'pre-commit run uv-export' to write 'requirements.txt'.\n"
+            )
 
 
 class TestRuffTool:

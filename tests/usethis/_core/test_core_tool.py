@@ -945,6 +945,24 @@ repos:
                 "☐ Run 'pre-commit run lint-imports --all-files' to run Import Linter.\n"
             )
 
+    class TestBitbucketIntegration:
+        def test_config_file(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "bitbucket-pipelines.yml").write_text("""\
+image: atlassian/default-image:3
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            assert (tmp_path / "bitbucket-pipelines.yml").exists()
+            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert "Import Linter" in contents
+            assert "lint-imports" in contents
+            assert "placeholder" not in contents
+
 
 class TestPreCommit:
     class TestAdd:

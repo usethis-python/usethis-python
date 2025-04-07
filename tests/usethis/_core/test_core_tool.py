@@ -718,6 +718,7 @@ class TestImportLinter:
                 "☐ Run 'lint-imports' to run Import Linter.\n"
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_ini_contracts(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").touch()
@@ -749,6 +750,7 @@ exhaustive = True
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_toml_contracts(self, tmp_path: Path):
             # Arrange
             (tmp_path / "pyproject.toml").write_text(

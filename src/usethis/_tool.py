@@ -963,7 +963,7 @@ class ImportLinterTool(Tool):
             warn_print(f"Assuming the package name is {name}.")
             root_packages = [name]
 
-        contracts = []
+        contracts: list[dict] = []
         for root_package in root_packages:
             try:
                 layered_architecture_by_module = get_layered_architectures(root_package)
@@ -979,10 +979,18 @@ class ImportLinterTool(Tool):
                 )
             )
 
+            min_depth = min(
+                module.count(".") for module in layered_architecture_by_module
+            )
+
             for module, layered_architecture in layered_architecture_by_module.items():
-                if len(contracts) > 0 and (
-                    layered_architecture.module_count()
-                    < IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT
+                if (
+                    len(contracts) > 0
+                    and module.count(".") > min_depth
+                    and (
+                        layered_architecture.module_count()
+                        < IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT
+                    )
                 ):
                     # This contract is too small and we already have one.
                     continue
@@ -1005,6 +1013,32 @@ class ImportLinterTool(Tool):
                     )
 
                 contracts.append(contract)
+
+        if not contracts:
+            raise AssertionError
+
+        ini_contracts_config_items = []
+        for idx, contract in enumerate(contracts):
+            # Cast bools to strings for INI files
+            ini_contract = contract.copy()
+            ini_contract["exhaustive"] = str(ini_contract["exhaustive"])
+
+            ini_contracts_config_items.append(
+                ConfigItem(
+                    description=f"Itemized Contract {idx} (INI)",
+                    root={
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=[f"importlinter:contract:{idx}"],
+                            value=ini_contract,
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=[f"importlinter:contract:{idx}"],
+                            value=ini_contract,
+                        ),
+                    },
+                    applies_to_all=False,
+                )
+            )
 
         return ConfigSpec(
             file_manager_by_relative_path={
@@ -1040,19 +1074,15 @@ class ImportLinterTool(Tool):
                     },
                 ),
                 ConfigItem(
-                    description="Contracts",
+                    description="Listed Contracts (TOML)",
                     root={
-                        Path("setup.cfg"): ConfigEntry(
-                            keys=["importlinter", "contracts"], value=contracts
-                        ),
-                        Path(".importlinter"): ConfigEntry(
-                            keys=["importlinter", "contracts"], value=contracts
-                        ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "importlinter", "contracts"], value=contracts
                         ),
                     },
+                    applies_to_all=False,
                 ),
+                *ini_contracts_config_items,
             ],
         )
 

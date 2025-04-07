@@ -701,7 +701,7 @@ repos:
 
 class TestImportLinter:
     class TestAdd:
-        def test_config(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        def test_dependency(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Act
             with change_cwd(uv_init_dir), files_manager():
                 use_import_linter()
@@ -717,6 +717,77 @@ class TestImportLinter:
                 "✔ Adding Import Linter config to 'pyproject.toml'.\n"
                 "☐ Run 'lint-imports' to run Import Linter.\n"
             )
+
+        def test_ini_contracts(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "qwerttyuiop").mkdir()
+            (tmp_path / "qwerttyuiop" / "a.py").touch()
+            (tmp_path / "qwerttyuiop" / "b.py").touch()
+            (tmp_path / "qwerttyuiop" / "__init__.py").touch()
+            (tmp_path / "qwerttyuiop" / "c").mkdir()
+            (tmp_path / "qwerttyuiop" / "c" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    qwerttyuiop
+[importlinter:contract:0]
+name = qwerttyuiop
+type = layers
+layers = 
+containers =
+    qwerttyuiop
+exhaustive = True
+"""
+            )
+
+        def test_toml_contracts(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[project]
+name = "usethis"
+version = "0.1.0"
+"""
+            )
+
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
+            (tmp_path / "b").mkdir()
+            (tmp_path / "b" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / "pyproject.toml").read_text()
+            assert contents.endswith("""\
+[tool.importlinter]
+root_packages = ["a", "b"]
+
+[[tool.importlinter.contracts]]
+name = "a"
+type = "layers"
+layers = []
+containers = ["a"]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "b"
+type = "layers"
+layers = []
+containers = ["b"]
+exhaustive = true
+""")
 
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):

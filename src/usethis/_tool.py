@@ -1732,6 +1732,7 @@ ALL_TOOLS: list[Tool] = [
     CodespellTool(),
     CoverageTool(),
     DeptryTool(),
+    ImportLinterTool(),
     PreCommitTool(),
     PyprojectFmtTool(),
     PyprojectTOMLTool(),

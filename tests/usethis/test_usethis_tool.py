@@ -78,7 +78,7 @@ class MyTool(Tool):
                 ConfigItem(
                     root={
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", self.name], value={"key": "value"}
+                            keys=["tool", self.name], get_value=lambda: {"key": "value"}
                         )
                     }
                 )
@@ -737,7 +737,7 @@ repos:
                                 root={
                                     Path("pyproject.toml"): ConfigEntry(
                                         keys=["tool", self.name],
-                                        value={"key": "value"},
+                                        get_value=lambda: {"key": "value"},
                                     )
                                 }
                             )
@@ -787,7 +787,7 @@ key = "value"
                                 root={
                                     Path("pyproject.toml"): ConfigEntry(
                                         keys=["tool", self.name],
-                                        value={
+                                        get_value=lambda: {
                                             "name": "Modular Design",
                                             "root_packages": ["example"],
                                         },

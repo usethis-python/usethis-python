@@ -11,6 +11,7 @@ from usethis._core.tool import (
     use_codespell,
     use_coverage,
     use_deptry,
+    use_import_linter,
     use_pre_commit,
     use_pyproject_fmt,
     use_pytest,
@@ -696,6 +697,58 @@ repos:
             # Assert
             content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
             assert "deptry" not in content
+
+
+class TestImportLinter:
+    class TestAdd:
+        def test_config(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_import_linter()
+
+                # Assert
+                assert Dependency(name="import-linter") in get_deps_from_group("dev")
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "☐ Run 'lint-imports' to run Import Linter.\n"
+            )
+
+    class TestPreCommitIntegration:
+        def test_config(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: placeholder
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert "import-linter" in contents
+            assert "placeholder" not in contents
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "✔ Adding hook 'import-linter' to '.pre-commit-config.yaml'.\n"
+                "☐ Run 'pre-commit run lint-imports --all-files' to run Import Linter.\n"
+            )
 
 
 class TestPreCommit:

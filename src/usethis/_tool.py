@@ -932,12 +932,23 @@ class ImportLinterTool(Tool):
         return "Import Linter"
 
     def print_how_to_use(self) -> None:
-        if is_uv_used():
+        if PreCommitTool().is_used():
+            if is_uv_used():
+                box_print(
+                    f"Run 'uv run pre-commit run lint-imports --all-files' to run {self.name}."
+                )
+            else:
+                box_print(
+                    f"Run 'pre-commit run lint-imports --all-files' to run {self.name}."
+                )
+        elif is_uv_used():
             box_print(f"Run 'uv run lint-imports' to run {self.name}.")
         else:
             box_print(f"Run 'lint-imports' to run {self.name}.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        # We need to add the import-linter package itself as a dev dependency.
+        # This is because it needs to run from within the virtual environment.
         return [Dependency(name="import-linter")]
 
     def get_config_spec(self) -> ConfigSpec:
@@ -1420,7 +1431,12 @@ class RequirementsTxtTool(Tool):
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
-            box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
+            if is_uv_used():
+                box_print(
+                    "Run 'uv run pre-commit run uv-export' to write 'requirements.txt'."
+                )
+            else:
+                box_print("Run 'pre-commit run uv-export' to write 'requirements.txt'.")
         else:
             if not is_uv_used():
                 # This is a very crude approach as a temporary measure.

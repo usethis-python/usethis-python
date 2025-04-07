@@ -718,6 +718,18 @@ class TestImportLinter:
                 "☐ Run 'lint-imports' to run Import Linter.\n"
             )
 
+    class TestRemove:
+        def test_config_file(self, uv_init_repo_dir: Path):
+            # Arrange
+            (uv_init_repo_dir / ".importlinter").touch()
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_import_linter(remove=True)
+
+            # Assert
+            assert not (uv_init_repo_dir / ".importlinter").exists()
+
     class TestPreCommitIntegration:
         def test_config(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]

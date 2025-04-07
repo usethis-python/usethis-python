@@ -48,7 +48,11 @@ from usethis._integrations.pre_commit.schema import (
     LocalRepo,
     UriRepo,
 )
-from usethis._integrations.project.imports import get_layered_architectures
+from usethis._integrations.project.errors import ImportGraphBuildFailedError
+from usethis._integrations.project.imports import (
+    LayeredArchitecture,
+    get_layered_architectures,
+)
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._integrations.project.packages import get_importable_packages
 from usethis._integrations.uv.deps import (
@@ -952,7 +956,12 @@ class ImportLinterTool(Tool):
 
         contracts = []
         for root_package in root_packages:
-            layered_architecture_by_module = get_layered_architectures(root_package)
+            try:
+                layered_architecture_by_module = get_layered_architectures(root_package)
+            except ImportGraphBuildFailedError:
+                layered_architecture_by_module = {
+                    root_package: LayeredArchitecture(layers=[], excluded=set())
+                }
 
             layered_architecture_by_module = dict(
                 sorted(

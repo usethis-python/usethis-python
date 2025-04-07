@@ -2435,7 +2435,7 @@ repos:
             assert out == (
                 "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run the 'pre-commit run uv-export' to write 'requirements.txt'.\n"
+                "☐ Run 'uv run pre-commit run uv-export' to write 'requirements.txt'.\n"
             )
 
     class TestRemove:

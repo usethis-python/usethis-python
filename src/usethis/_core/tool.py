@@ -354,8 +354,9 @@ def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
             "UP",
         ]
         for _tool in ALL_TOOLS:
-            if _tool.is_used():
-                rules += _tool.get_associated_ruff_rules()
+            associated_rules = _tool.get_associated_ruff_rules()
+            if associated_rules and _tool.is_used():
+                rules += associated_rules
         ignored_rules = [
             "PLR2004",  # https://github.com/nathanjmcdougall/usethis-python/issues/105
             "SIM108",  # https://github.com/nathanjmcdougall/usethis-python/issues/118

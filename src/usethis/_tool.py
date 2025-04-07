@@ -513,9 +513,12 @@ class Tool(Protocol):
     def get_associated_ruff_rules(self) -> list[str]:
         """Get the Ruff rule codes associated with the tool.
 
-        Note, it is not assumed that these rules are associated solely with this tool.
-        Whether these tools are removed when the tool is removed is tool-dependent.
+        These are managed rules and it is assumed that they can be removed if the tool
+        is removed. It only makes sense to include rules which are tightly bound
+        with the tool.
         """
+        # For other rules which are not tightly bound to the tool, see
+        # https://github.com/nathanjmcdougall/usethis-python/issues/499
         return []
 
     def is_managed_rule(self, rule: str) -> bool:
@@ -1069,9 +1072,6 @@ class ImportLinterTool(Tool):
                 ),
             )
         ]
-
-    def get_associated_ruff_rules(self) -> list[str]:
-        return ["INP"]
 
 
 class PreCommitTool(Tool):

@@ -22,6 +22,7 @@ def files_manager() -> Iterator[None]:
         CoverageRCManager(),
         DotRuffTOMLManager(),
         DotPytestINIManager(),
+        DotImportLinterManager(),
         PytestINIManager(),
         RuffTOMLManager(),
         ToxINIManager(),

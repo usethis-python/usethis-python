@@ -17,6 +17,7 @@ from usethis._tool import (
     ConfigItem,
     ConfigSpec,
     DeptryTool,
+    ImportLinterTool,
     PyprojectTOMLTool,
     RuffTool,
     Tool,
@@ -1101,6 +1102,67 @@ ignore = ["DEP003"]
 
                 # Assert
                 assert result == ["DEP003"]
+
+
+class TestImportLinterTool:
+    class TestPrintHowToUse:
+        def test_pre_commit_and_uv(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / "uv.lock").touch()
+            (tmp_path / ".pre-commit-config.yaml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                ImportLinterTool().print_how_to_use()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Run 'uv run pre-commit run lint-imports --all-files' to run Import Linter.\n"
+            )
+
+        def test_pre_commit_no_uv(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / ".pre-commit-config.yaml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                ImportLinterTool().print_how_to_use()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Run 'pre-commit run lint-imports --all-files' to run Import Linter.\n"
+            )
+
+        def test_uv_only(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            (tmp_path / "uv.lock").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                ImportLinterTool().print_how_to_use()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ("☐ Run 'uv run lint-imports' to run Import Linter.\n")
+
+        def test_basic(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                ImportLinterTool().print_how_to_use()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ("☐ Run 'lint-imports' to run Import Linter.\n")
 
 
 class TestPyprojectTOMLTool:

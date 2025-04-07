@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from abc import abstractmethod
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal, Protocol, TypeAlias
 
@@ -104,6 +105,10 @@ class _NoConfigValue:
     pass
 
 
+def _get_no_config_value() -> _NoConfigValue:
+    return _NoConfigValue()
+
+
 class ConfigEntry(BaseModel):
     """A configuration entry in a config file associated with a tool.
 
@@ -117,7 +122,7 @@ class ConfigEntry(BaseModel):
     """
 
     keys: list[str]
-    value: Any | InstanceOf[_NoConfigValue] = _NoConfigValue()
+    get_value: Callable[[], Any] = _get_no_config_value
 
 
 class ConfigItem(BaseModel):
@@ -390,7 +395,7 @@ class Tool(Protocol):
 
             (entry,) = config_entries
 
-            if isinstance(entry.value, _NoConfigValue):
+            if isinstance(entry.get_value(), _NoConfigValue):
                 # No value to add, so skip this config item.
                 continue
 
@@ -413,7 +418,7 @@ class Tool(Protocol):
                     f"Adding {self.name} config to '{used_file_manager.relative_path}'."
                 )
                 first_addition = False
-            used_file_manager[entry.keys] = entry.value
+            used_file_manager[entry.keys] = entry.get_value()
 
     def remove_configs(self) -> None:
         """Remove the tool's configuration sections.
@@ -587,15 +592,15 @@ class CodespellTool(Tool):
                     root={
                         Path(".codespellrc"): ConfigEntry(
                             keys=["codespell", "ignore-regex"],
-                            value="[A-Za-z0-9+/]{100,}",
+                            get_value=lambda: "[A-Za-z0-9+/]{100,}",
                         ),
                         Path("setup.cfg"): ConfigEntry(
                             keys=["codespell", "ignore-regex"],
-                            value="[A-Za-z0-9+/]{100,}",
+                            get_value=lambda: "[A-Za-z0-9+/]{100,}",
                         ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "codespell", "ignore-regex"],
-                            value=["[A-Za-z0-9+/]{100,}"],
+                            get_value=lambda: ["[A-Za-z0-9+/]{100,}"],
                         ),
                     },
                 ),
@@ -658,18 +663,18 @@ class CoverageTool(Tool):
     def get_config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
 
-        run = {"source": [get_source_dir_str()]}
-        report = {
-            "exclude_also": [
-                "if TYPE_CHECKING:",
-                "raise AssertionError",
-                "raise NotImplementedError",
-                "assert_never(.*)",
-                "class .*\\bProtocol\\):",
-                "@(abc\\.)?abstractmethod",
-            ],
-            "omit": ["*/pytest-of-*/*"],
-        }
+        exclude_also = [
+            "if TYPE_CHECKING:",
+            "raise AssertionError",
+            "raise NotImplementedError",
+            "assert_never(.*)",
+            "class .*\\bProtocol\\):",
+            "@(abc\\.)?abstractmethod",
+        ]
+        omit = ["*/pytest-of-*/*"]
+
+        def _get_source():
+            return [get_source_dir_str()]
 
         return ConfigSpec.from_flat(
             file_managers=[
@@ -693,28 +698,79 @@ class CoverageTool(Tool):
                 ConfigItem(
                     description="Run Configuration",
                     root={
-                        Path(".coveragerc"): ConfigEntry(keys=["run"], value=run),
-                        Path("setup.cfg"): ConfigEntry(
-                            keys=["coverage:run"], value=run
-                        ),
-                        Path("tox.ini"): ConfigEntry(keys=["coverage:run"], value=run),
+                        Path(".coveragerc"): ConfigEntry(keys=["run"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:run"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:run"]),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "coverage", "run"], value=run
+                            keys=["tool", "coverage", "run"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Source Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(
+                            keys=["run", "source"], get_value=_get_source
+                        ),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["coverage:run", "source"], get_value=_get_source
+                        ),
+                        Path("tox.ini"): ConfigEntry(
+                            keys=["coverage:run", "source"], get_value=_get_source
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "run", "source"],
+                            get_value=_get_source,
                         ),
                     },
                 ),
                 ConfigItem(
                     description="Report Configuration",
                     root={
-                        Path(".coveragerc"): ConfigEntry(keys=["report"], value=report),
+                        Path(".coveragerc"): ConfigEntry(keys=["report"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:report"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:report"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "report"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Exclude Also Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(
+                            keys=["report", "exclude_also"],
+                            get_value=lambda: exclude_also,
+                        ),
                         Path("setup.cfg"): ConfigEntry(
-                            keys=["coverage:report"], value=report
+                            keys=["coverage:report", "exclude_also"],
+                            get_value=lambda: exclude_also,
                         ),
                         Path("tox.ini"): ConfigEntry(
-                            keys=["coverage:report"], value=report
+                            keys=["coverage:report", "exclude_also"],
+                            get_value=lambda: exclude_also,
                         ),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "coverage", "report"], value=report
+                            keys=["tool", "coverage", "report", "exclude_also"],
+                            get_value=lambda: exclude_also,
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Omit Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(
+                            keys=["report", "omit"], get_value=lambda: omit
+                        ),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["coverage:report", "omit"], get_value=lambda: omit
+                        ),
+                        Path("tox.ini"): ConfigEntry(
+                            keys=["coverage:report", "omit"], get_value=lambda: omit
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "report", "omit"],
+                            get_value=lambda: omit,
                         ),
                     },
                 ),
@@ -964,14 +1020,22 @@ class PyprojectFmtTool(Tool):
             resolution="first",
             config_items=[
                 ConfigItem(
-                    description="Overall config",
+                    description="Overall Config",
                     root={
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "pyproject-fmt"],
-                            value={"keep_full_version": True},
+                            keys=["tool", "pyproject-fmt"]
                         )
                     },
-                )
+                ),
+                ConfigItem(
+                    description="Keep Full Version",
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "pyproject-fmt", "keep_full_version"],
+                            get_value=lambda: True,
+                        )
+                    },
+                ),
             ],
         )
 
@@ -1114,17 +1178,20 @@ class PytestTool(Tool):
                     description="INI-Style Options",
                     root={
                         Path("pytest.ini"): ConfigEntry(
-                            keys=["pytest"], value=value_ini
+                            keys=["pytest"], get_value=lambda: value_ini
                         ),
                         Path(".pytest.ini"): ConfigEntry(
-                            keys=["pytest"], value=value_ini
+                            keys=["pytest"], get_value=lambda: value_ini
                         ),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "pytest", "ini_options"], value=value
+                            keys=["tool", "pytest", "ini_options"],
+                            get_value=lambda: value,
                         ),
-                        Path("tox.ini"): ConfigEntry(keys=["pytest"], value=value_ini),
+                        Path("tox.ini"): ConfigEntry(
+                            keys=["pytest"], get_value=lambda: value_ini
+                        ),
                         Path("setup.cfg"): ConfigEntry(
-                            keys=["tool:pytest"], value=value_ini
+                            keys=["tool:pytest"], get_value=lambda: value_ini
                         ),
                     },
                 ),
@@ -1316,14 +1383,14 @@ class RuffTool(Tool):
                     description="Line length",
                     root={
                         Path(".ruff.toml"): ConfigEntry(
-                            keys=["line-length"], value=line_length
+                            keys=["line-length"], get_value=lambda: line_length
                         ),
                         Path("ruff.toml"): ConfigEntry(
-                            keys=["line-length"], value=line_length
+                            keys=["line-length"], get_value=lambda: line_length
                         ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "ruff", "line-length"],
-                            value=line_length,
+                            get_value=lambda: line_length,
                         ),
                     },
                 ),

@@ -88,6 +88,7 @@ class TestAddReadme:
 
     def test_no_project_name_only_description(self, tmp_path: Path):
         # Arrange
+        name = "test_no_project_name_only_description"
         (tmp_path / "pyproject.toml").write_text(
             """\
 [project]
@@ -101,7 +102,9 @@ description = "A description"
 
         # Assert
         assert (tmp_path / "README.md").exists()
-        assert (tmp_path / "README.md").read_text() == "A description\n"
+        assert (
+            tmp_path / "README.md"
+        ).read_text() == f"# {name[:30]}0\n\nA description\n"
 
     def test_no_project_description_only_name(self, tmp_path: Path):
         # Arrange

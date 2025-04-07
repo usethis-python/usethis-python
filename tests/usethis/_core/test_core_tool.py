@@ -791,6 +791,38 @@ containers = ["b"]
 exhaustive = true
 """)
 
+        @pytest.mark.xfail(
+            "https://github.com/nathanjmcdougall/usethis-python/issues/502"
+        )
+        def test_pre_commit_used_not_uv(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / ".pre-commit-config.yaml").write_text(
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: placeholder
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".pre-commit-config.yaml").read_text()
+            assert "import-linter" not in contents
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "☐ Run 'lint-imports' to run Import Linter.\n"
+            )
+
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange

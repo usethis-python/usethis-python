@@ -16,6 +16,35 @@ from usethis._test import change_cwd
 from usethis.errors import UsethisError
 
 
+class TestLayeredArchitecture:
+    class TestModuleCount:
+        def test_mix(self):
+            # Arrange
+            arch = LayeredArchitecture(
+                layers=[{"a"}, {"b", "c"}],
+                excluded={"d", "e"},
+            )
+
+            # Act
+            count = arch.module_count()
+
+            # Assert
+            assert count == 3
+
+        def test_excluded(self):
+            # Arrange
+            arch = LayeredArchitecture(
+                layers=[{"a"}, {"b", "c"}],
+                excluded={"d", "e"},
+            )
+
+            # Act
+            count = arch.module_count(include_excluded=True)
+
+            # Assert
+            assert count == 5
+
+
 class TestGetLayeredArchitectures:
     def test_five(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange

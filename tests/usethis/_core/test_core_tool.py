@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
-from usethis._config_file import files_manager
+from usethis._config_file import RuffTOMLManager, files_manager
 from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import (
     use_codespell,
@@ -1991,6 +1991,17 @@ ignore = [ "EM", "T20", "TRY003", "S603" ]
 "__main__.py" = [ "BLE001" ]
 """
             )
+
+        def test_doesnt_overwrite_existing_line_length(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / "ruff.toml").write_text("line-length = 100")
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+                # Assert
+                assert RuffTOMLManager()[["line-length"]] == 100
 
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")

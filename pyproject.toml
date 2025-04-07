@@ -215,6 +215,13 @@ containers = [ "usethis._integrations.file" ]
 exhaustive = true
 
 [[tool.importlinter.contracts]]
+name = "usethis._pipeweld"
+type = "layers"
+layers = [ "func", "result", "containers | ops" ]
+containers = [ "usethis._pipeweld" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
 name = "usethis._integrations.ci"
 type = "layers"
 layers = [

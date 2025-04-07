@@ -980,9 +980,9 @@ class ImportLinterTool(Tool):
             )
 
             min_depth = min(
-                module.count(".") for module in layered_architecture_by_module
+                (module.count(".") for module in layered_architecture_by_module),
+                default=0,
             )
-
             for module, layered_architecture in layered_architecture_by_module.items():
                 if (
                     len(contracts) > 0
@@ -992,7 +992,9 @@ class ImportLinterTool(Tool):
                         < IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT
                     )
                 ):
-                    # This contract is too small and we already have one.
+                    # This contract is too small and we already have one. Also, we have
+                    # waited until we have finished a complete depth level (e.g. we
+                    # have done all of a.b, a.c, and a.d so we won't go on to a.b.e)
                     continue
 
                 layers = []

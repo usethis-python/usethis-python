@@ -719,7 +719,7 @@ class TestImportLinter:
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_ini_contracts(self, tmp_path: Path):
+        def test_ini_contracts(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
             # Arrange
             (tmp_path / ".importlinter").touch()
             (tmp_path / "qwerttyuiop").mkdir()
@@ -728,6 +728,8 @@ class TestImportLinter:
             (tmp_path / "qwerttyuiop" / "__init__.py").touch()
             (tmp_path / "qwerttyuiop" / "c").mkdir()
             (tmp_path / "qwerttyuiop" / "c" / "__init__.py").touch()
+
+            monkeypatch.syspath_prepend(str(tmp_path))
 
             # Act
             with change_cwd(tmp_path), files_manager():
@@ -743,7 +745,8 @@ root_packages =
 [importlinter:contract:0]
 name = qwerttyuiop
 type = layers
-layers = 
+layers =
+    a | b | c
 containers =
     qwerttyuiop
 exhaustive = True
@@ -751,7 +754,7 @@ exhaustive = True
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_toml_contracts(self, tmp_path: Path):
+        def test_toml_contracts(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
             # Arrange
             (tmp_path / "pyproject.toml").write_text(
                 """\
@@ -765,6 +768,8 @@ version = "0.1.0"
             (tmp_path / "a" / "__init__.py").touch()
             (tmp_path / "b").mkdir()
             (tmp_path / "b" / "__init__.py").touch()
+
+            monkeypatch.syspath_prepend(str(tmp_path))
 
             # Act
             with change_cwd(tmp_path), files_manager():
@@ -792,7 +797,7 @@ exhaustive = true
 """)
 
         @pytest.mark.xfail(
-            "https://github.com/nathanjmcdougall/usethis-python/issues/502"
+            reason="https://github.com/nathanjmcdougall/usethis-python/issues/502"
         )
         def test_pre_commit_used_not_uv(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
@@ -821,6 +826,45 @@ repos:
                 "☐ Install the dependency 'import-linter'.\n"
                 "✔ Adding Import Linter config to 'pyproject.toml'.\n"
                 "☐ Run 'lint-imports' to run Import Linter.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_small_contracts_dropped(
+            self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        ):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "qwerttyuiop").mkdir()
+            (tmp_path / "qwerttyuiop" / "a.py").touch()
+            (tmp_path / "qwerttyuiop" / "b.py").touch()
+            (tmp_path / "qwerttyuiop" / "__init__.py").touch()
+            (tmp_path / "qwerttyuiop" / "c").mkdir()
+            (tmp_path / "qwerttyuiop" / "c" / "__init__.py").touch()
+            (tmp_path / "qwerttyuiop" / "c" / "d").mkdir()
+            (tmp_path / "qwerttyuiop" / "c" / "d" / "__init__.py").touch()
+
+            monkeypatch.syspath_prepend(str(tmp_path))
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    qwerttyuiop
+[importlinter:contract:0]
+name = qwerttyuiop
+type = layers
+layers =
+    a | b | c
+containers =
+    qwerttyuiop
+exhaustive = True
+"""
             )
 
     class TestRemove:

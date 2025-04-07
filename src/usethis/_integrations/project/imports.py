@@ -39,12 +39,7 @@ def get_layered_architectures(pkg_name: str) -> dict[str, LayeredArchitecture]:
 
     for module in sorted(graph.modules):
         arch = _get_module_layered_architecture(module, graph=graph)
-        if len(arch.layers) > 1:
-            arch_by_module[module] = arch
-        elif len(arch.layers) == 1:
-            (layer,) = arch.layers
-            if len(layer) > 1:
-                arch_by_module[module] = arch
+        arch_by_module[module] = arch
 
     return arch_by_module
 

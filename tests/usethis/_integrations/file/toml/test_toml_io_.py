@@ -71,6 +71,48 @@ a = "b"
             # Assert
             assert manager._content == 42
 
+        def test_set_high_levels_of_nesting(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                # Act
+                manager.set_value(
+                    keys=[],
+                    value={
+                        "project": {"name": "usethis", "version": "0.1.0"},
+                        "tool": {
+                            "ruff": {
+                                "lint": {
+                                    "select": ["A"],
+                                    "pydocstyle": {"convention": "pep257"},
+                                }
+                            }
+                        },
+                    },
+                )
+
+            # Assert
+            contents = (tmp_path / "pyproject.toml").read_text()
+            assert contents == (
+                """\
+[project]
+name = "usethis"
+version = "0.1.0"
+
+[tool.ruff.lint]
+select = ["A"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+"""
+            )
+
     class TestSetValue:
         def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange

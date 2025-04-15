@@ -754,7 +754,8 @@ repos:
             assert (
                 (tmp_path / "pyproject.toml").read_text()
                 == """\
-tool.mytool.key = "value"
+[tool.mytool]
+key = "value"
 """
             )
             out, err = capfd.readouterr()

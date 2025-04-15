@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import copy
 from typing import TYPE_CHECKING, Any
 
@@ -217,7 +218,17 @@ class TOMLFileManager(KeyValueFileManager):
             for key in list(d.keys()):
                 del d[key]
         else:
-            del d[keys[-1]]
+            if keys[-1] not in d:
+                raise KeyError
+
+            with contextlib.suppress(KeyError):
+                # There is a strange behaviour (bug?) in tomlkit where deleting a key
+                # has two separate lines:
+                # self._value.remove(key)  # noqa: ERA001
+                # dict.__delitem__(self, key)  # noqa: ERA001
+                # but it's not clear why there's this duplicate and it causes a KeyError
+                # in some cases.
+                d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
             for idx in range(len(keys) - 1):

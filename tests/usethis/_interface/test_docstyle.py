@@ -57,7 +57,14 @@ class TestDocstyle:
 
         assert valid_pyproject_toml.exists()
         content = valid_pyproject_toml.read_text()
-        assert "tool.ruff.lint.pydocstyle" in content
+        assert (
+            """\
+[tool.ruff]
+line-length = 88
+lint.pydocstyle.convention = "numpy"\
+"""
+            in content
+        )
 
     def test_adding_to_existing_file(self, tmp_path: Path):
         # Arrange

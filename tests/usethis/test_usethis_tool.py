@@ -736,8 +736,8 @@ repos:
                             ConfigItem(
                                 root={
                                     Path("pyproject.toml"): ConfigEntry(
-                                        keys=["tool", self.name],
-                                        get_value=lambda: {"key": "value"},
+                                        keys=["tool", self.name, "key"],
+                                        get_value=lambda: "value",
                                     )
                                 }
                             )
@@ -754,8 +754,7 @@ repos:
             assert (
                 (tmp_path / "pyproject.toml").read_text()
                 == """\
-[tool.mytool]
-key = "value"
+tool.mytool.key = "value"
 """
             )
             out, err = capfd.readouterr()

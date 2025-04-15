@@ -5,7 +5,10 @@ import tomlkit
 import tomlkit.api
 import tomlkit.items
 
-from usethis._integrations.file.toml.errors import TOMLValueAlreadySetError
+from usethis._integrations.file.toml.errors import (
+    TOMLValueAlreadySetError,
+    TOMLValueMissingError,
+)
 from usethis._integrations.file.toml.io_ import TOMLFileManager
 from usethis._test import change_cwd
 
@@ -308,7 +311,7 @@ lint.pydocstyle.convention = "pep257"
                 ):
                     manager.set_value(keys=["a"], value=["d"])
 
-    class TestDel:
+    class TestDelItem:
         def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
@@ -361,6 +364,22 @@ lint.pydocstyle.convention = "pep257"
 
                 # Assert
                 assert not manager._content
+
+        def test_removing_doesnt_exist(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                manager[["a"]] = "b"
+
+                # Act
+                with pytest.raises(TOMLValueMissingError):
+                    del manager[["c"]]
 
     class TestExtendList:
         def test_inplace_modifications(self, tmp_path: Path) -> None:

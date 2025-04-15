@@ -218,9 +218,6 @@ class TOMLFileManager(KeyValueFileManager):
             for key in list(d.keys()):
                 del d[key]
         else:
-            if keys[-1] not in d:
-                raise KeyError
-
             with contextlib.suppress(KeyError):
                 # There is a strange behaviour (bug?) in tomlkit where deleting a key
                 # has two separate lines:

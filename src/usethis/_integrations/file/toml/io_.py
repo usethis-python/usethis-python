@@ -149,20 +149,22 @@ class TOMLFileManager(KeyValueFileManager):
             # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
             # with [tool.deptry]; they should coexist. So under the "tool" key, we need
             # to "merge" the two dicts.
-            # Note that this logic has been modified to avoid a bug:
-            # https://github.com/nathanjmcdougall/usethis-python/issues/507
-            TypeAdapter(dict).validate_python(d)
-            assert isinstance(d, dict)
 
-            unshared_keys = keys[len(shared_keys) :]
-
-            single_keys = [tomlkit.items.SingleKey(key) for key in unshared_keys]
-            if len(single_keys) == 1:
-                (unified_key,) = single_keys
+            if len(keys) <= 3:
+                contents = value
+                for key in reversed(keys):
+                    contents = {key: contents}
+                toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
+                assert isinstance(toml_document, TOMLDocument)
             else:
-                unified_key = tomlkit.items.DottedKey(single_keys)
+                # Note that this alternative logic is just to avoid a bug:
+                # https://github.com/nathanjmcdougall/usethis-python/issues/507
+                TypeAdapter(dict).validate_python(d)
+                assert isinstance(d, dict)
 
-            d[unified_key] = value
+                unshared_keys = keys[len(shared_keys) :]
+
+                d[_get_unified_key(unshared_keys)] = value
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
@@ -297,3 +299,12 @@ class TOMLFileManager(KeyValueFileManager):
         p_parent[keys[-1]] = new_values
 
         self.commit(toml_document)
+
+
+def _get_unified_key(keys: list[str]) -> tomlkit.items.Key:
+    single_keys = [tomlkit.items.SingleKey(key) for key in keys]
+    if len(single_keys) == 1:
+        (unified_key,) = single_keys
+    else:
+        unified_key = tomlkit.items.DottedKey(single_keys)
+    return unified_key

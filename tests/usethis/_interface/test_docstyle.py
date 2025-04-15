@@ -38,6 +38,8 @@ class TestDocstyle:
         assert result.exit_code == 1, result.output
 
     def test_pyproject_toml_success(self, tmp_path: Path):
+        # https://github.com/nathanjmcdougall/usethis-python/issues/507
+
         # Arrange
         valid_pyproject_toml = tmp_path / "pyproject.toml"
         valid_pyproject_toml.touch()
@@ -55,7 +57,7 @@ class TestDocstyle:
 
         assert valid_pyproject_toml.exists()
         content = valid_pyproject_toml.read_text()
-        assert "[tool.ruff.lint.pydocstyle]" in content
+        assert "tool.ruff.lint.pydocstyle" in content
 
     def test_adding_to_existing_file(self, tmp_path: Path):
         # Arrange

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import contextlib
 import copy
 from typing import TYPE_CHECKING, Any
 
 import mergedeep
 import tomlkit.api
+import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 from tomlkit.exceptions import TOMLKitError
@@ -121,50 +123,62 @@ class TOMLFileManager(KeyValueFileManager):
         """
         toml_document = copy.copy(self.get())
 
+        if not keys:
+            # Root level config - value must be a mapping.
+            TypeAdapter(dict).validate_python(toml_document)
+            assert isinstance(toml_document, dict)
+            TypeAdapter(dict).validate_python(value)
+            assert isinstance(value, dict)
+            if not toml_document or exists_ok:
+                toml_document.update(value)
+                self.commit(toml_document)
+                return
+
+        d, parent = toml_document, {}
+        shared_keys = []
         try:
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
-            d, parent = toml_document, {}
-            if not keys:
-                # Root level config - value must be a mapping.
-                TypeAdapter(dict).validate_python(d)
-                assert isinstance(d, dict)
-                TypeAdapter(dict).validate_python(value)
-                assert isinstance(value, dict)
-                if not d:
-                    raise KeyError
             for key in keys:
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d, parent = d[key], d
+                shared_keys.append(key)
         except KeyError:
             # The old configuration should be kept for all ID keys except the
             # final/deepest one which shouldn't exist anyway since we checked as much,
             # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
             # with [tool.deptry]; they should coexist. So under the "tool" key, we need
-            # to merge the two dicts.
-            contents = value
-            for key in reversed(keys):
-                contents = {key: contents}
-            toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
-            assert isinstance(toml_document, TOMLDocument)
+            # to "merge" the two dicts.
+
+            if len(keys) <= 3:
+                contents = value
+                for key in reversed(keys):
+                    contents = {key: contents}
+                toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
+                assert isinstance(toml_document, TOMLDocument)
+            else:
+                # Note that this alternative logic is just to avoid a bug:
+                # https://github.com/nathanjmcdougall/usethis-python/issues/507
+                TypeAdapter(dict).validate_python(d)
+                assert isinstance(d, dict)
+
+                unshared_keys = keys[len(shared_keys) :]
+
+                d[_get_unified_key(unshared_keys)] = value
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
                 if keys:
                     msg = f"Configuration value '{'.'.join(keys)}' is already set."
                 else:
-                    msg = "Configuration value is at root level is already set."
+                    msg = "Configuration value at root level is already set."
                 raise TOMLValueAlreadySetError(msg)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
                 TypeAdapter(dict).validate_python(parent)
                 assert isinstance(parent, dict)
-                if parent:
-                    parent[keys[-1]] = value
-                else:
-                    # i.e. the case where we're creating the root of the document
-                    toml_document.update(value)
+                parent[keys[-1]] = value
 
         self.commit(toml_document)
 
@@ -204,7 +218,14 @@ class TOMLFileManager(KeyValueFileManager):
             for key in list(d.keys()):
                 del d[key]
         else:
-            del d[keys[-1]]
+            with contextlib.suppress(KeyError):
+                # There is a strange behaviour (bug?) in tomlkit where deleting a key
+                # has two separate lines:
+                # self._value.remove(key)  # noqa: ERA001
+                # dict.__delitem__(self, key)  # noqa: ERA001
+                # but it's not clear why there's this duplicate and it causes a KeyError
+                # in some cases.
+                d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
             for idx in range(len(keys) - 1):
@@ -286,3 +307,12 @@ class TOMLFileManager(KeyValueFileManager):
         p_parent[keys[-1]] = new_values
 
         self.commit(toml_document)
+
+
+def _get_unified_key(keys: list[str]) -> tomlkit.items.Key:
+    single_keys = [tomlkit.items.SingleKey(key) for key in keys]
+    if len(single_keys) == 1:
+        (unified_key,) = single_keys
+    else:
+        unified_key = tomlkit.items.DottedKey(single_keys)
+    return unified_key

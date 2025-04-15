@@ -736,8 +736,8 @@ repos:
                             ConfigItem(
                                 root={
                                     Path("pyproject.toml"): ConfigEntry(
-                                        keys=["tool", self.name],
-                                        get_value=lambda: {"key": "value"},
+                                        keys=["tool", self.name, "key"],
+                                        get_value=lambda: "value",
                                     )
                                 }
                             )

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 import mergedeep
 import tomlkit.api
+import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 from tomlkit.exceptions import TOMLKitError
@@ -121,50 +122,60 @@ class TOMLFileManager(KeyValueFileManager):
         """
         toml_document = copy.copy(self.get())
 
+        if not keys:
+            # Root level config - value must be a mapping.
+            TypeAdapter(dict).validate_python(toml_document)
+            assert isinstance(toml_document, dict)
+            TypeAdapter(dict).validate_python(value)
+            assert isinstance(value, dict)
+            if not toml_document or exists_ok:
+                toml_document.update(value)
+                self.commit(toml_document)
+                return
+
+        d, parent = toml_document, {}
+        shared_keys = []
         try:
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
-            d, parent = toml_document, {}
-            if not keys:
-                # Root level config - value must be a mapping.
-                TypeAdapter(dict).validate_python(d)
-                assert isinstance(d, dict)
-                TypeAdapter(dict).validate_python(value)
-                assert isinstance(value, dict)
-                if not d:
-                    raise KeyError
             for key in keys:
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d, parent = d[key], d
+                shared_keys.append(key)
         except KeyError:
             # The old configuration should be kept for all ID keys except the
             # final/deepest one which shouldn't exist anyway since we checked as much,
             # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
             # with [tool.deptry]; they should coexist. So under the "tool" key, we need
-            # to merge the two dicts.
-            contents = value
-            for key in reversed(keys):
-                contents = {key: contents}
-            toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
-            assert isinstance(toml_document, TOMLDocument)
+            # to "merge" the two dicts.
+            # Note that this logic has been modified to avoid a bug:
+            # https://github.com/nathanjmcdougall/usethis-python/issues/507
+            TypeAdapter(dict).validate_python(d)
+            assert isinstance(d, dict)
+
+            unshared_keys = keys[len(shared_keys) :]
+
+            single_keys = [tomlkit.items.SingleKey(key) for key in unshared_keys]
+            if len(single_keys) == 1:
+                (unified_key,) = single_keys
+            else:
+                unified_key = tomlkit.items.DottedKey(single_keys)
+
+            d[unified_key] = value
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
                 if keys:
                     msg = f"Configuration value '{'.'.join(keys)}' is already set."
                 else:
-                    msg = "Configuration value is at root level is already set."
+                    msg = "Configuration value at root level is already set."
                 raise TOMLValueAlreadySetError(msg)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
                 TypeAdapter(dict).validate_python(parent)
                 assert isinstance(parent, dict)
-                if parent:
-                    parent[keys[-1]] = value
-                else:
-                    # i.e. the case where we're creating the root of the document
-                    toml_document.update(value)
+                parent[keys[-1]] = value
 
         self.commit(toml_document)
 

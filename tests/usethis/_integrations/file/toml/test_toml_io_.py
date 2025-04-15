@@ -1,6 +1,9 @@
 from pathlib import Path
 
 import pytest
+import tomlkit
+import tomlkit.api
+import tomlkit.items
 
 from usethis._integrations.file.toml.errors import TOMLValueAlreadySetError
 from usethis._integrations.file.toml.io_ import TOMLFileManager
@@ -113,6 +116,89 @@ convention = "pep257"
 """
             )
 
+        def test_set_high_levels_of_nesting_in_existing(self, tmp_path: Path) -> None:
+            # https://github.com/nathanjmcdougall/usethis-python/issues/507
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                pyproject_toml_path = tmp_path / "pyproject.toml"
+                pyproject_toml_path.write_text(
+                    """\
+[project]
+name = "usethis"
+version = "0.1.0"
+
+[tool.ruff]
+lint.select = [ "A" ]
+"""
+                )
+
+                # Act
+                manager.set_value(
+                    keys=["tool", "ruff", "lint", "pydocstyle", "convention"],
+                    value="pep257",
+                )
+
+            # Assert
+            contents = (tmp_path / "pyproject.toml").read_text()
+            assert contents == (
+                """\
+[project]
+name = "usethis"
+version = "0.1.0"
+
+[tool.ruff]
+lint.select = [ "A" ]
+lint.pydocstyle.convention = "pep257"
+"""
+            )
+
+        def test_tomlkit_high_levels_of_nesting_in_existing(
+            self, tmp_path: Path
+        ) -> None:
+            # To help debug https://github.com/nathanjmcdougall/usethis-python/issues/507
+            # This proves that dottedkey works.
+
+            # Arrange
+            txt = """\
+[tool.ruff]
+lint.select = [ "A" ]
+"""
+
+            toml_document: tomlkit.TOMLDocument = tomlkit.api.parse(txt)
+
+            # Act
+            tool_section = toml_document["tool"]
+            assert isinstance(tool_section, tomlkit.items.Table)
+            ruff_section = tool_section["ruff"]
+            assert isinstance(ruff_section, tomlkit.items.Table)
+            lint_section = ruff_section["lint"]
+            assert isinstance(lint_section, tomlkit.items.Table)
+            lint_section[
+                tomlkit.items.DottedKey(
+                    [
+                        tomlkit.items.SingleKey("pydocstyle"),
+                        tomlkit.items.SingleKey("convention"),
+                    ]
+                )
+            ] = "pep257"
+            # Whereas this doesn't work:
+            # lint_section["pydocstyle"] = {"convention": "pep257"}  # noqa: ERA001
+
+            # Assert
+            contents = tomlkit.api.dumps(toml_document)
+            assert contents == (
+                """\
+[tool.ruff]
+lint.select = [ "A" ]
+lint.pydocstyle.convention = "pep257"
+"""
+            )
+
     class TestSetValue:
         def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange
@@ -165,7 +251,7 @@ convention = "pep257"
                 # Act, Assert
                 with pytest.raises(
                     TOMLValueAlreadySetError,
-                    match="Configuration value is at root level is already set.",
+                    match="Configuration value at root level is already set.",
                 ):
                     manager.set_value(keys=[], value={"a": "c"}, exists_ok=False)
 

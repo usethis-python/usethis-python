@@ -24,6 +24,7 @@ from usethis._io import (
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
+    print_keys,
 )
 
 if TYPE_CHECKING:
@@ -172,7 +173,7 @@ class TOMLFileManager(KeyValueFileManager):
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
                 if keys:
-                    msg = f"Configuration value '{'.'.join(keys)}' is already set."
+                    msg = f"Configuration value '{print_keys(keys)}' is already set."
                 else:
                     msg = "Configuration value at root level is already set."
                 raise TOMLValueAlreadySetError(msg)
@@ -205,7 +206,7 @@ class TOMLFileManager(KeyValueFileManager):
                 d = d[key]
         except KeyError:
             # N.B. by convention a del call should raise an error if the key is not found.
-            msg = f"Configuration value '{'.'.join(keys)}' is missing."
+            msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise TOMLValueMissingError(msg) from None
 
         # Remove the configuration.

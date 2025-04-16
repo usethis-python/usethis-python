@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeAlias, TypeVar
 
 from usethis.errors import UsethisError
 
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
+Key: TypeAlias = str
 DocumentT = TypeVar("DocumentT")
 
 
@@ -169,35 +170,35 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
     """A manager for files which store (at least some) values in key-value mappings."""
 
     @abstractmethod
-    def __contains__(self, keys: list[str]) -> bool:
+    def __contains__(self, keys: list[Key]) -> bool:
         """Check if a key exists in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def __getitem__(self, keys: list[str]) -> Any:
+    def __getitem__(self, keys: list[Key]) -> Any:
         raise NotImplementedError
 
-    def __setitem__(self, keys: list[str], value: Any) -> None:
+    def __setitem__(self, keys: list[Key], value: Any) -> None:
         """Set a value in the configuration file."""
         return self.set_value(keys=keys, value=value, exists_ok=True)
 
-    def __delitem__(self, keys: list[str]) -> None:
+    def __delitem__(self, keys: list[Key]) -> None:
         """Remove a value from the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
     def set_value(
-        self, *, keys: list[str], value: Any, exists_ok: bool = False
+        self, *, keys: list[Key], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def extend_list(self, *, keys: list[str], values: list[Any]) -> None:
+    def extend_list(self, *, keys: list[Key], values: list[Any]) -> None:
         """Extend a list in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def remove_from_list(self, *, keys: list[str], values: list[Any]) -> None:
+    def remove_from_list(self, *, keys: list[Key], values: list[Any]) -> None:
         """Remove values from a list in the configuration file."""
         raise NotImplementedError

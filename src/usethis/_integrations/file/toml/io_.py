@@ -20,6 +20,7 @@ from usethis._integrations.file.toml.errors import (
     UnexpectedTOMLOpenError,
 )
 from usethis._io import (
+    Key,
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
@@ -84,7 +85,7 @@ class TOMLFileManager(KeyValueFileManager):
         except UnexpectedFileIOError as err:
             raise UnexpectedTOMLIOError(err) from None
 
-    def __contains__(self, keys: list[str]) -> bool:
+    def __contains__(self, keys: list[Key]) -> bool:
         """Check if the TOML file contains a value.
 
         An non-existent file will return False.
@@ -103,7 +104,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         return True
 
-    def __getitem__(self, item: list[str]) -> Any:
+    def __getitem__(self, item: list[Key]) -> Any:
         keys = item
 
         d = self.get()
@@ -115,7 +116,7 @@ class TOMLFileManager(KeyValueFileManager):
         return d
 
     def set_value(
-        self, *, keys: list[str], value: Any, exists_ok: bool = False
+        self, *, keys: list[Key], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the TOML file.
 
@@ -182,7 +183,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         self.commit(toml_document)
 
-    def __delitem__(self, keys: list[str]) -> None:
+    def __delitem__(self, keys: list[Key]) -> None:
         """Delete a value in the TOML file.
 
         An empty list of keys corresponds to the root of the document.
@@ -243,7 +244,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         self.commit(toml_document)
 
-    def extend_list(self, *, keys: list[str], values: list[Any]) -> None:
+    def extend_list(self, *, keys: list[Key], values: list[Any]) -> None:
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
@@ -276,7 +277,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         self.commit(toml_document)
 
-    def remove_from_list(self, *, keys: list[str], values: list[Any]) -> None:
+    def remove_from_list(self, *, keys: list[Key], values: list[Any]) -> None:
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
@@ -309,7 +310,7 @@ class TOMLFileManager(KeyValueFileManager):
         self.commit(toml_document)
 
 
-def _get_unified_key(keys: list[str]) -> tomlkit.items.Key:
+def _get_unified_key(keys: list[Key]) -> tomlkit.items.Key:
     single_keys = [tomlkit.items.SingleKey(key) for key in keys]
     if len(single_keys) == 1:
         (unified_key,) = single_keys

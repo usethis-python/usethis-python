@@ -19,6 +19,7 @@ from usethis._integrations.file.ini.errors import (
     UnexpectedINIOpenError,
 )
 from usethis._io import (
+    Key,
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
@@ -83,7 +84,7 @@ class INIFileManager(KeyValueFileManager):
         except UnexpectedFileIOError as err:
             raise UnexpectedINIIOError(err) from None
 
-    def __contains__(self, keys: list[str]) -> bool:
+    def __contains__(self, keys: list[Key]) -> bool:
         """Check if the INI file contains a value at the given key.
 
         An non-existent file will return False.
@@ -109,7 +110,7 @@ class INIFileManager(KeyValueFileManager):
             # Nested keys can't exist in INI files.
             return False
 
-    def __getitem__(self, item: list[str]) -> Any:
+    def __getitem__(self, item: list[Key]) -> Any:
         keys = item
 
         root = self.get()
@@ -130,7 +131,7 @@ class INIFileManager(KeyValueFileManager):
             raise KeyError(msg)
 
     def set_value(
-        self, *, keys: list[str], value: Any, exists_ok: bool = False
+        self, *, keys: list[Key], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the INI file.
 
@@ -291,7 +292,7 @@ class INIFileManager(KeyValueFileManager):
         else:
             root[section_key][option_key].append(value)
 
-    def __delitem__(self, keys: list[str]) -> None:
+    def __delitem__(self, keys: list[Key]) -> None:
         """Delete a value in the INI file.
 
         An empty list of keys corresponds to the root of the document.
@@ -325,7 +326,7 @@ class INIFileManager(KeyValueFileManager):
 
         self.commit(root)
 
-    def extend_list(self, *, keys: list[str], values: list[str]) -> None:
+    def extend_list(self, *, keys: list[Key], values: list[str]) -> None:
         """Extend a list in the INI file.
 
         An empty list of keys corresponds to the root of the document.
@@ -395,7 +396,7 @@ class INIFileManager(KeyValueFileManager):
         elif len(new_values) > 1:
             root[section_key][option_key].set_values(new_values)
 
-    def remove_from_list(self, *, keys: list[str], values: list[str]) -> None:
+    def remove_from_list(self, *, keys: list[Key], values: list[str]) -> None:
         """Remove values from a list in the INI file.
 
         An empty list of keys corresponds to the root of the document.

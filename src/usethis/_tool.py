@@ -57,7 +57,7 @@ from usethis._integrations.uv.deps import (
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._integrations.uv.used import is_uv_used
-from usethis._io import KeyValueFileManager
+from usethis._io import Key, KeyValueFileManager
 
 ResolutionT: TypeAlias = Literal["first", "bespoke"]
 
@@ -121,7 +121,7 @@ class ConfigEntry(BaseModel):
 
     """
 
-    keys: list[str]
+    keys: list[Key]
     get_value: Callable[[], Any] = _get_no_config_value
 
 

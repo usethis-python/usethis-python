@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Generic, TypeAlias, TypeVar
 from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from types import TracebackType
     from typing import Any, ClassVar
 
@@ -170,35 +171,35 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
     """A manager for files which store (at least some) values in key-value mappings."""
 
     @abstractmethod
-    def __contains__(self, keys: list[Key]) -> bool:
+    def __contains__(self, keys: Sequence[Key]) -> bool:
         """Check if a key exists in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def __getitem__(self, keys: list[Key]) -> Any:
+    def __getitem__(self, keys: Sequence[Key]) -> Any:
         raise NotImplementedError
 
-    def __setitem__(self, keys: list[Key], value: Any) -> None:
+    def __setitem__(self, keys: Sequence[Key], value: Any) -> None:
         """Set a value in the configuration file."""
         return self.set_value(keys=keys, value=value, exists_ok=True)
 
-    def __delitem__(self, keys: list[Key]) -> None:
+    def __delitem__(self, keys: Sequence[Key]) -> None:
         """Remove a value from the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
     def set_value(
-        self, *, keys: list[Key], value: Any, exists_ok: bool = False
+        self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def extend_list(self, *, keys: list[Key], values: list[Any]) -> None:
+    def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
         """Extend a list in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def remove_from_list(self, *, keys: list[Key], values: list[Any]) -> None:
+    def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
         """Remove values from a list in the configuration file."""
         raise NotImplementedError

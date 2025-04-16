@@ -121,14 +121,16 @@ ignore-words-list = [ "edn" ]
 keep_full_version = true
 
 [tool.pytest.ini_options]
-testpaths = [ "tests" ]
+testpaths = [ "tests", "src" ]
 addopts = [
   "--import-mode=importlib",
   "-ra",
   "--showlocals",
   "--strict-config",
   "--strict-markers",
+  "--doctest-modules",
 ]
+doctest_optionflags = "NORMALIZE_WHITESPACE"
 filterwarnings = [ "error" ]
 xfail_strict = true
 log_cli_level = "INFO"

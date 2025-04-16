@@ -4,6 +4,8 @@ from abc import abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Generic, TypeAlias, TypeVar
 
+from typing_extensions import assert_never
+
 from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
@@ -13,7 +15,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
-Key: TypeAlias = str
+
 DocumentT = TypeVar("DocumentT")
 
 
@@ -167,6 +169,9 @@ class UsethisFileManager(Generic[DocumentT]):
         self._content_by_path.pop(self.path, None)
 
 
+Key: TypeAlias = str
+
+
 class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
     """A manager for files which store (at least some) values in key-value mappings."""
 
@@ -203,3 +208,26 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
     def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
         """Remove values from a list in the configuration file."""
         raise NotImplementedError
+
+
+def print_keys(keys: Sequence[Key]) -> str:
+    r"""Convert a list of keys to a string.
+
+    Args:
+        keys: A list of keys.
+
+    Returns:
+        A string representation of the keys.
+
+    Examples:
+        >>> print_keys(["tool", "ruff", "line-length"])
+        'tool.ruff.line-length'
+    """
+    components = []
+    for key in keys:
+        if isinstance(key, str):
+            components.append(key)
+        else:
+            assert_never(key)
+
+    return ".".join(components)

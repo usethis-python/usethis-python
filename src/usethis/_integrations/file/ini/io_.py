@@ -23,6 +23,7 @@ from usethis._io import (
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
+    print_keys,
 )
 
 if TYPE_CHECKING:
@@ -127,7 +128,7 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'"
             )
             raise KeyError(msg)
 
@@ -159,7 +160,7 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'"
             )
             raise ININestingError(msg)
 
@@ -317,12 +318,14 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'"
             )
             raise INIValueMissingError(msg)
 
         if not removed:
-            msg = f"INI file '{self.name}' does not contain the keys '{'.'.join(keys)}'"
+            msg = (
+                f"INI file '{self.name}' does not contain the keys '{print_keys(keys)}'"
+            )
             raise INIValueMissingError(msg)
 
         self.commit(root)
@@ -337,13 +340,13 @@ class INIFileManager(KeyValueFileManager):
         if len(keys) == 0:
             msg = (
                 f"INI files do not support lists at the root level, whereas access to "
-                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'"
             )
             raise InvalidINITypeError(msg)
         elif len(keys) == 1:
             msg = (
                 f"INI files do not support lists at the section level, whereas access "
-                f"to '{self.name}' was attempted at '{'.'.join(keys)}'"
+                f"to '{self.name}' was attempted at '{print_keys(keys)}'"
             )
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
@@ -354,7 +357,7 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'"
             )
             raise ININestingError(msg)
 
@@ -407,13 +410,13 @@ class INIFileManager(KeyValueFileManager):
         if len(keys) == 0:
             msg = (
                 f"INI files do not support lists at the root level, whereas access to "
-                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'"
             )
             raise InvalidINITypeError(msg)
         elif len(keys) == 1:
             msg = (
                 f"INI files do not support lists at the section level, whereas access "
-                f"to '{self.name}' was attempted at '{'.'.join(keys)}'"
+                f"to '{self.name}' was attempted at '{print_keys(keys)}'"
             )
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
@@ -424,7 +427,7 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{'.'.join(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'"
             )
             raise ININestingError(msg)
 

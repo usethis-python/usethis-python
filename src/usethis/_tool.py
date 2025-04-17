@@ -991,11 +991,11 @@ class ImportLinterTool(Tool):
         if PreCommitTool().is_used():
             if is_uv_used():
                 box_print(
-                    f"Run 'uv run pre-commit run lint-imports --all-files' to run {self.name}."
+                    f"Run 'uv run pre-commit run import-linter --all-files' to run {self.name}."
                 )
             else:
                 box_print(
-                    f"Run 'pre-commit run lint-imports --all-files' to run {self.name}."
+                    f"Run 'pre-commit run import-linter --all-files' to run {self.name}."
                 )
         elif is_uv_used():
             box_print(f"Run 'uv run lint-imports' to run {self.name}.")

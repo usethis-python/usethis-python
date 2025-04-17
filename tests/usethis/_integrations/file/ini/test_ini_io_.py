@@ -1239,7 +1239,7 @@ key3 = value3
             valid_file.write_text("""\
 [section]
 key_this = value1
-key_that = value2                             
+key_that = value2
 """)
 
             # Act

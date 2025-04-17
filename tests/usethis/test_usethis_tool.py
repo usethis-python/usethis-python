@@ -1235,7 +1235,7 @@ class TestImportLinterTool:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "☐ Run 'pre-commit run lint-imports --all-files' to run Import Linter.\n"
+                "☐ Run 'pre-commit run import-linter --all-files' to run Import Linter.\n"
             )
 
         def test_uv_only(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
@@ -1249,7 +1249,7 @@ class TestImportLinterTool:
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert out == ("☐ Run 'uv run lint-imports' to run Import Linter.\n")
+            assert out == ("☐ Run 'uv run import-linter' to run Import Linter.\n")
 
         def test_basic(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
             # Act

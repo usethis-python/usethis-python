@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -7,9 +8,11 @@ from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._console import box_print
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_ids
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
+from usethis._io import KeyValueFileManager
 from usethis._test import change_cwd
 from usethis._tool import (
     ALL_TOOLS,
@@ -820,6 +823,98 @@ root_packages = ["example"]
             out, err = capfd.readouterr()
             assert not err
             assert out == "✔ Adding mytool config to 'pyproject.toml'.\n"
+
+        def test_regex_config(self, tmp_path: Path):
+            # Arrange
+            class ThisTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "mytool"
+
+                def print_how_to_use(self) -> None:
+                    box_print("How to use this_tool")
+
+                def get_config_spec(self) -> ConfigSpec:
+                    return ConfigSpec(
+                        file_manager_by_relative_path={
+                            Path("setup.cfg"): SetupCFGManager(),
+                        },
+                        resolution="first",
+                        config_items=[
+                            ConfigItem(
+                                root={
+                                    Path("setup.cfg"): ConfigEntry(
+                                        keys=["this", re.compile("section:.*")]
+                                    )
+                                }
+                            )
+                        ],
+                    )
+
+                def preferred_file_manager(self) -> KeyValueFileManager:
+                    return SetupCFGManager()
+
+            (tmp_path / "setup.cfg").touch()
+
+            # Act
+            with change_cwd(tmp_path), SetupCFGManager():
+                ThisTool().add_configs()
+
+            # Assert
+            assert not (tmp_path / "setup.cfg").read_text()
+
+    class TestRemoveConfigs:
+        def test_regex_config(self, tmp_path: Path):
+            # Arrange
+            class ThisTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "mytool"
+
+                def print_how_to_use(self) -> None:
+                    box_print("How to use this_tool")
+
+                def get_config_spec(self) -> ConfigSpec:
+                    return ConfigSpec(
+                        file_manager_by_relative_path={
+                            Path("setup.cfg"): SetupCFGManager(),
+                        },
+                        resolution="first",
+                        config_items=[
+                            ConfigItem(
+                                root={
+                                    Path("setup.cfg"): ConfigEntry(
+                                        keys=[re.compile("this:section:.*")]
+                                    )
+                                }
+                            )
+                        ],
+                    )
+
+                def preferred_file_manager(self) -> KeyValueFileManager:
+                    return SetupCFGManager()
+
+            (tmp_path / "setup.cfg").write_text("""\
+[this:section:1]
+key1 = value1
+[this:section:2]
+key2 = value2
+[this:other]
+key3 = value3
+""")
+
+            # Act
+            with change_cwd(tmp_path), SetupCFGManager():
+                ThisTool().remove_configs()
+
+            # Assert
+            assert (
+                (tmp_path / "setup.cfg").read_text()
+                == """\
+[this:other]
+key3 = value3
+"""
+            )
 
     class TestRemoveManagedFiles:
         def test_no_files(self, tmp_path: Path):

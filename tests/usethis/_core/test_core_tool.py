@@ -1040,7 +1040,7 @@ repos:
                 "☐ Install the dependency 'import-linter'.\n"
                 "✔ Adding Import Linter config to 'pyproject.toml'.\n"
                 "✔ Adding hook 'import-linter' to '.pre-commit-config.yaml'.\n"
-                "☐ Run 'pre-commit run lint-imports --all-files' to run Import Linter.\n"
+                "☐ Run 'pre-commit run import-linter --all-files' to run Import Linter.\n"
             )
 
     class TestBitbucketIntegration:

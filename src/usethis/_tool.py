@@ -1134,10 +1134,18 @@ class ImportLinterTool(Tool):
                     },
                 ),
                 ConfigItem(
-                    description="Listed Contracts (TOML)",
+                    description="Listed Contracts",
                     root={
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "importlinter", "contracts"],
+                            get_value=lambda: contracts,
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=[re.compile("importlinter:contract:.*")],
+                            get_value=lambda: contracts,
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=[re.compile("importlinter:contract:.*")],
                             get_value=lambda: contracts,
                         ),
                     },

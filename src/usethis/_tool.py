@@ -1141,12 +1141,10 @@ class ImportLinterTool(Tool):
                             get_value=lambda: contracts,
                         ),
                         Path(".importlinter"): ConfigEntry(
-                            keys=[re.compile("importlinter:contract:.*")],
-                            get_value=lambda: contracts,
+                            keys=[re.compile("importlinter:contract:.*")]
                         ),
                         Path(".importlinter"): ConfigEntry(
-                            keys=[re.compile("importlinter:contract:.*")],
-                            get_value=lambda: contracts,
+                            keys=[re.compile("importlinter:contract:.*")]
                         ),
                     },
                     applies_to_all=False,

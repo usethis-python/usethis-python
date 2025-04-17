@@ -417,7 +417,8 @@ class TestGetGraph:
         with (
             change_cwd(tmp_path),
             pytest.raises(
-                ImportGraphBuildFailedError, match="No module named 'different_name'"
+                ImportGraphBuildFailedError,
+                match="__path__ attribute not found on 'different_name'",
             ),
         ):
             _get_graph("different_name.a")

@@ -1026,6 +1026,56 @@ exhaustive = True
 """
             )
 
+        def test_stdout_when_cant_find_package(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Having an issue where the message is being repeated multiple times
+            # https://github.com/nathanjmcdougall/usethis-python/pull/501#issuecomment-2784482750
+
+            # Act
+            with change_cwd(tmp_path), files_manager(), usethis_config.set(frozen=True):
+                use_import_linter()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'pyproject.toml'.\n"
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "⚠ Could not find any importable packages.\n"
+                "⚠ Assuming the package name is test-stdout-when-cant-find-pac0.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "☐ Run 'lint-imports' to run Import Linter.\n"
+            )
+
+        def test_root_packages_not_added_if_already_root_package(self, tmp_path: Path):
+            # Basically the user can either specify a list of root_packages, or
+            # a single root package. We prefer to always use `root_packages`, but
+            # we will leave the existing configuration alone if it already exists.
+
+            # Arrange
+            (tmp_path / ".importlinter").write_text(
+                """\
+[importlinter]
+root_package = a
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents.startswith(
+                """\
+[importlinter]
+root_package = a
+[importlinter:contract:0]
+"""
+            )
+
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange

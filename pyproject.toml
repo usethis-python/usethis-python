@@ -54,8 +54,8 @@ dev = [
   "deptry>=0.23.0",
   "import-linter>=2.3",
   "pre-commit>=4.2.0",
-  "pyright>=1.1.398",
-  "ruff>=0.11.2",
+  "pyright>=1.1.399",
+  "ruff>=0.11.5",
 ]
 test = [
   "coverage[toml]>=7.7.1",
@@ -121,14 +121,16 @@ ignore-words-list = [ "edn" ]
 keep_full_version = true
 
 [tool.pytest.ini_options]
-testpaths = [ "tests" ]
+testpaths = [ "tests", "src" ]
 addopts = [
   "--import-mode=importlib",
   "-ra",
   "--showlocals",
   "--strict-config",
   "--strict-markers",
+  "--doctest-modules",
 ]
+doctest_optionflags = "NORMALIZE_WHITESPACE"
 filterwarnings = [ "error" ]
 xfail_strict = true
 log_cli_level = "INFO"

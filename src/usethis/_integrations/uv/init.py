@@ -36,6 +36,6 @@ def ensure_pyproject_toml(*, author: bool = True) -> None:
     if not ((Path.cwd() / "src").exists() and (Path.cwd() / "src").is_dir()):
         # hatch needs to know where to find the package
         PyprojectTOMLManager().set_value(
-            keys=["tool", "hatch", "build", "targets", "wheel"],
-            value={"packages": ["."]},
+            keys=["tool", "hatch", "build", "targets", "wheel", "packages"],
+            value=["."],
         )

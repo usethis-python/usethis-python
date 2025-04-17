@@ -65,7 +65,7 @@ from usethis._integrations.uv.deps import (
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._integrations.uv.used import is_uv_used
-from usethis._io import KeyValueFileManager
+from usethis._io import Key, KeyValueFileManager
 
 ResolutionT: TypeAlias = Literal["first", "bespoke"]
 
@@ -129,7 +129,7 @@ class ConfigEntry(BaseModel):
 
     """
 
-    keys: list[str]
+    keys: list[Key]
     get_value: Callable[[], Any] = _get_no_config_value
 
 
@@ -1087,11 +1087,11 @@ class ImportLinterTool(Tool):
                     root={
                         Path("setup.cfg"): ConfigEntry(
                             keys=[f"importlinter:contract:{idx}"],
-                            value=ini_contract,
+                            get_value=lambda c=ini_contract: c,
                         ),
                         Path(".importlinter"): ConfigEntry(
                             keys=[f"importlinter:contract:{idx}"],
-                            value=ini_contract,
+                            get_value=lambda c=ini_contract: c,
                         ),
                     },
                     applies_to_all=False,
@@ -1120,14 +1120,16 @@ class ImportLinterTool(Tool):
                     description="Root packages",
                     root={
                         Path("setup.cfg"): ConfigEntry(
-                            keys=["importlinter", "root_packages"], value=root_packages
+                            keys=["importlinter", "root_packages"],
+                            get_value=lambda: root_packages,
                         ),
                         Path(".importlinter"): ConfigEntry(
-                            keys=["importlinter", "root_packages"], value=root_packages
+                            keys=["importlinter", "root_packages"],
+                            get_value=lambda: root_packages,
                         ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "importlinter", "root_packages"],
-                            value=root_packages,
+                            get_value=lambda: root_packages,
                         ),
                     },
                 ),
@@ -1135,7 +1137,8 @@ class ImportLinterTool(Tool):
                     description="Listed Contracts (TOML)",
                     root={
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "importlinter", "contracts"], value=contracts
+                            keys=["tool", "importlinter", "contracts"],
+                            get_value=lambda: contracts,
                         ),
                     },
                     applies_to_all=False,

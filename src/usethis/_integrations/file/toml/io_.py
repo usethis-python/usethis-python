@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import contextlib
 import copy
+import re
 from typing import TYPE_CHECKING, Any
 
 import mergedeep
 import tomlkit.api
+import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 from tomlkit.exceptions import TOMLKitError
+from typing_extensions import assert_never
 
 from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
@@ -18,16 +22,21 @@ from usethis._integrations.file.toml.errors import (
     UnexpectedTOMLOpenError,
 )
 from usethis._io import (
+    Key,
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
+    print_keys,
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from pathlib import Path
     from typing import ClassVar
 
     from typing_extensions import Self
+
+    from usethis._io import Key
 
 
 class TOMLFileManager(KeyValueFileManager):
@@ -82,11 +91,12 @@ class TOMLFileManager(KeyValueFileManager):
         except UnexpectedFileIOError as err:
             raise UnexpectedTOMLIOError(err) from None
 
-    def __contains__(self, keys: list[str]) -> bool:
+    def __contains__(self, keys: Sequence[Key]) -> bool:
         """Check if the TOML file contains a value.
 
         An non-existent file will return False.
         """
+        keys = _validate_keys(keys)
         try:
             try:
                 container = self.get()
@@ -101,8 +111,9 @@ class TOMLFileManager(KeyValueFileManager):
 
         return True
 
-    def __getitem__(self, item: list[str]) -> Any:
+    def __getitem__(self, item: Sequence[Key]) -> Any:
         keys = item
+        keys = _validate_keys(keys)
 
         d = self.get()
         for key in keys:
@@ -113,62 +124,75 @@ class TOMLFileManager(KeyValueFileManager):
         return d
 
     def set_value(
-        self, *, keys: list[str], value: Any, exists_ok: bool = False
+        self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the TOML file.
 
         An empty list of keys corresponds to the root of the document.
         """
         toml_document = copy.copy(self.get())
+        keys = _validate_keys(keys)
 
+        if not keys:
+            # Root level config - value must be a mapping.
+            TypeAdapter(dict).validate_python(toml_document)
+            assert isinstance(toml_document, dict)
+            TypeAdapter(dict).validate_python(value)
+            assert isinstance(value, dict)
+            if not toml_document or exists_ok:
+                toml_document.update(value)
+                self.commit(toml_document)
+                return
+
+        d, parent = toml_document, {}
+        shared_keys = []
         try:
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
-            d, parent = toml_document, {}
-            if not keys:
-                # Root level config - value must be a mapping.
-                TypeAdapter(dict).validate_python(d)
-                assert isinstance(d, dict)
-                TypeAdapter(dict).validate_python(value)
-                assert isinstance(value, dict)
-                if not d:
-                    raise KeyError
             for key in keys:
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d, parent = d[key], d
+                shared_keys.append(key)
         except KeyError:
             # The old configuration should be kept for all ID keys except the
             # final/deepest one which shouldn't exist anyway since we checked as much,
             # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
             # with [tool.deptry]; they should coexist. So under the "tool" key, we need
-            # to merge the two dicts.
-            contents = value
-            for key in reversed(keys):
-                contents = {key: contents}
-            toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
-            assert isinstance(toml_document, TOMLDocument)
+            # to "merge" the two dicts.
+
+            if len(keys) <= 3:
+                contents = value
+                for key in reversed(keys):
+                    contents = {key: contents}
+                toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
+                assert isinstance(toml_document, TOMLDocument)
+            else:
+                # Note that this alternative logic is just to avoid a bug:
+                # https://github.com/nathanjmcdougall/usethis-python/issues/507
+                TypeAdapter(dict).validate_python(d)
+                assert isinstance(d, dict)
+
+                unshared_keys = keys[len(shared_keys) :]
+
+                d[_get_unified_key(unshared_keys)] = value
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
                 if keys:
-                    msg = f"Configuration value '{'.'.join(keys)}' is already set."
+                    msg = f"Configuration value '{print_keys(keys)}' is already set."
                 else:
-                    msg = "Configuration value is at root level is already set."
+                    msg = "Configuration value at root level is already set."
                 raise TOMLValueAlreadySetError(msg)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
                 TypeAdapter(dict).validate_python(parent)
                 assert isinstance(parent, dict)
-                if parent:
-                    parent[keys[-1]] = value
-                else:
-                    # i.e. the case where we're creating the root of the document
-                    toml_document.update(value)
+                parent[keys[-1]] = value
 
         self.commit(toml_document)
 
-    def __delitem__(self, keys: list[str]) -> None:
+    def __delitem__(self, keys: Sequence[Key]) -> None:
         """Delete a value in the TOML file.
 
         An empty list of keys corresponds to the root of the document.
@@ -179,6 +203,7 @@ class TOMLFileManager(KeyValueFileManager):
             toml_document = copy.copy(self.get())
         except FileNotFoundError:
             return
+        keys = _validate_keys(keys)
 
         # Exit early if the configuration is not present.
         try:
@@ -189,7 +214,7 @@ class TOMLFileManager(KeyValueFileManager):
                 d = d[key]
         except KeyError:
             # N.B. by convention a del call should raise an error if the key is not found.
-            msg = f"Configuration value '{'.'.join(keys)}' is missing."
+            msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise TOMLValueMissingError(msg) from None
 
         # Remove the configuration.
@@ -204,7 +229,14 @@ class TOMLFileManager(KeyValueFileManager):
             for key in list(d.keys()):
                 del d[key]
         else:
-            del d[keys[-1]]
+            with contextlib.suppress(KeyError):
+                # There is a strange behaviour (bug?) in tomlkit where deleting a key
+                # has two separate lines:
+                # self._value.remove(key)  # noqa: ERA001
+                # dict.__delitem__(self, key)  # noqa: ERA001
+                # but it's not clear why there's this duplicate and it causes a KeyError
+                # in some cases.
+                d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
             for idx in range(len(keys) - 1):
@@ -222,10 +254,11 @@ class TOMLFileManager(KeyValueFileManager):
 
         self.commit(toml_document)
 
-    def extend_list(self, *, keys: list[str], values: list[Any]) -> None:
+    def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
+        keys = _validate_keys(keys)
 
         toml_document = copy.copy(self.get())
 
@@ -255,10 +288,11 @@ class TOMLFileManager(KeyValueFileManager):
 
         self.commit(toml_document)
 
-    def remove_from_list(self, *, keys: list[str], values: list[Any]) -> None:
+    def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
+        keys = _validate_keys(keys)
 
         toml_document = copy.copy(self.get())
 
@@ -286,3 +320,40 @@ class TOMLFileManager(KeyValueFileManager):
         p_parent[keys[-1]] = new_values
 
         self.commit(toml_document)
+
+
+def _validate_keys(keys: Sequence[Key]) -> list[str]:
+    """Validate the keys.
+
+    Args:
+        keys: The keys to validate.
+
+    Raises:
+        ValueError: If the keys are not valid.
+    """
+    so_far_keys: list[str] = []
+    for key in keys:
+        if isinstance(key, str):
+            so_far_keys.append(key)
+        elif isinstance(key, re.Pattern):
+            # Currently no need for this, perhaps we may add it in the future.
+            msg = (
+                f"Regex-based keys are not currently supported in TOML files: "
+                f"{print_keys([*so_far_keys, key])}"
+            )
+            raise NotImplementedError(msg)
+        else:
+            assert_never(key)
+
+    return so_far_keys
+
+
+def _get_unified_key(keys: Sequence[Key]) -> tomlkit.items.Key:
+    keys = _validate_keys(keys)
+
+    single_keys = [tomlkit.items.SingleKey(key) for key in keys]
+    if len(single_keys) == 1:
+        (unified_key,) = single_keys
+    else:
+        unified_key = tomlkit.items.DottedKey(single_keys)
+    return unified_key

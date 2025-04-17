@@ -22,9 +22,12 @@ from usethis._integrations.file.toml.errors import (
 from usethis._integrations.file.toml.io_ import TOMLFileManager
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import Any
 
     from typing_extensions import Self
+
+    from usethis._io import Key
 
 
 class PyprojectTOMLManager(TOMLFileManager):
@@ -57,7 +60,7 @@ class PyprojectTOMLManager(TOMLFileManager):
             raise UnexpectedPyprojectTOMLIOError(err) from None
 
     def set_value(
-        self, *, keys: list[str], value: Any, exists_ok: bool = False
+        self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the pyproject.toml configuration file."""
         try:
@@ -65,7 +68,7 @@ class PyprojectTOMLManager(TOMLFileManager):
         except TOMLValueAlreadySetError as err:
             raise PyprojectTOMLValueAlreadySetError(err) from None
 
-    def __delitem__(self, keys: list[str]) -> None:
+    def __delitem__(self, keys: Sequence[Key]) -> None:
         """Remove a value from the pyproject.toml configuration file."""
         try:
             super().__delitem__(keys)

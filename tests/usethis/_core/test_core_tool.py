@@ -928,6 +928,77 @@ root_packages =
 """
             )
 
+        def test_numbers_in_layer_names(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "hillslope").mkdir()
+            (tmp_path / "hillslope" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample.py").touch()
+            (tmp_path / "hillslope" / "s2_inspect.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    hillslope
+[importlinter:contract:0]
+name = hillslope
+type = layers
+layers =
+    s1_sample | s2_inspect
+containers =
+    hillslope
+exhaustive = True
+"""
+            )
+
+        def test_nesting(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "hillslope").mkdir()
+            (tmp_path / "hillslope" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample").mkdir()
+            (tmp_path / "hillslope" / "s1_sample" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s2_inspect.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s3_inspect.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s4_inspect.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    hillslope
+[importlinter:contract:0]
+name = hillslope
+type = layers
+layers =
+    s1_sample
+containers =
+    hillslope
+exhaustive = True
+[importlinter:contract:1]
+name = s1_sample
+type = layers
+layers =
+    s2_inspect | s3_inspect | s4_inspect
+containers =
+    hillslope.s1_sample
+exhaustive = True
+"""
+            )
+
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange

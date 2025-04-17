@@ -901,7 +901,7 @@ exhaustive_ignores =
 """
             )
 
-        def test_existing_ini(self, tmp_path: Path):
+        def test_existing_ini_match(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").write_text(
                 """\
@@ -921,6 +921,33 @@ name = a
             assert contents == (
                 """\
 [importlinter:contract:0]
+name = a
+[importlinter]
+root_packages =
+    a
+"""
+            )
+
+        def test_existing_ini_differs(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".importlinter").write_text(
+                """\
+[importlinter:contract:existing]
+name = a
+"""
+            )
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter:contract:existing]
 name = a
 [importlinter]
 root_packages =

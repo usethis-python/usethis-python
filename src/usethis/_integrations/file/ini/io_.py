@@ -93,19 +93,39 @@ class INIFileManager(KeyValueFileManager):
 
         An non-existent file will return False.
         """
+        if len(keys) == 0:
+            return True
+        elif len(keys) == 1:
+            (section_key,) = keys
+            for _ in _itermatches(self.get().sections(), key=section_key):
+                return True
+        elif len(keys) == 2:
+            (section_key, option_key) = keys
+            for section_strkey in _itermatches(self.get().sections(), key=section_key):
+                for _ in _itermatches(
+                    self.get()[section_strkey].options(), key=option_key
+                ):
+                    return True
+        return False
+
+    def _contains_strkeys(self, strkeys: Sequence[str]) -> bool:
+        """Check if the INI file contains a value at the given string-based keys.
+
+        An non-existent file will return False.
+        """
         try:
             root = self.get()
         except FileNotFoundError:
             return False
 
-        if len(keys) == 0:
+        if len(strkeys) == 0:
             # The root level exists if the file exists
             return True
-        elif len(keys) == 1:
-            (section_key,) = keys
+        elif len(strkeys) == 1:
+            (section_key,) = strkeys
             return section_key in root
-        elif len(keys) == 2:
-            section_key, option_key = keys
+        elif len(strkeys) == 2:
+            section_key, option_key = strkeys
             try:
                 return option_key in root[section_key]
             except KeyError:

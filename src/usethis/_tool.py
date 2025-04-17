@@ -32,6 +32,7 @@ from usethis._integrations.ci.bitbucket.steps import (
     remove_bitbucket_step_from_default,
 )
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
+from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.hooks import (
@@ -317,17 +318,29 @@ class Tool(Protocol):
         """Get relative paths to all active configuration files."""
         config_spec = self.get_config_spec()
         resolution = config_spec.resolution
+        return self._get_active_config_file_managers_from_resolution(
+            resolution,
+            file_manager_by_relative_path=config_spec.file_manager_by_relative_path,
+        )
+
+    def _get_active_config_file_managers_from_resolution(
+        self,
+        resolution: ResolutionT,
+        *,
+        file_manager_by_relative_path: dict[Path, KeyValueFileManager],
+    ) -> set[KeyValueFileManager]:
         if resolution == "first":
             # N.B. keep this roughly in sync with the bespoke logic for pytest
+            # since that logic is based on this logic.
             for (
                 relative_path,
                 file_manager,
-            ) in config_spec.file_manager_by_relative_path.items():
+            ) in file_manager_by_relative_path.items():
                 path = Path.cwd() / relative_path
                 if path.exists() and path.is_file():
                     return {file_manager}
 
-            file_managers = config_spec.file_manager_by_relative_path.values()
+            file_managers = file_manager_by_relative_path.values()
             if not file_managers:
                 return set()
 
@@ -1077,8 +1090,15 @@ class ImportLinterTool(Tool):
         if not contracts:
             raise AssertionError
 
+        # We're only going to add the INI contracts if there aren't already any
+        # contracts, so we need to check if there are any contracts.
+        are_active_ini_contracts = self._are_active_ini_contracts()
+
         ini_contracts_config_items = []
         for idx, contract in enumerate(contracts):
+            if are_active_ini_contracts:
+                continue
+
             # Cast bools to strings for INI files
             ini_contract = contract.copy()
             ini_contract["exhaustive"] = str(ini_contract["exhaustive"])
@@ -1101,12 +1121,8 @@ class ImportLinterTool(Tool):
             )
 
         return ConfigSpec(
-            file_manager_by_relative_path={
-                Path("setup.cfg"): SetupCFGManager(),
-                Path(".importlinter"): DotImportLinterManager(),
-                Path("pyproject.toml"): PyprojectTOMLManager(),
-            },
-            resolution="first",
+            file_manager_by_relative_path=self._get_file_manager_by_relative_path(),
+            resolution=self._get_resolution(),
             config_items=[
                 ConfigItem(
                     description="Overall config",
@@ -1154,6 +1170,27 @@ class ImportLinterTool(Tool):
                 *ini_contracts_config_items,
             ],
         )
+
+    def _get_resolution(self) -> ResolutionT:
+        return "first"
+
+    def _get_file_manager_by_relative_path(self) -> dict[Path, KeyValueFileManager]:
+        return {
+            Path("setup.cfg"): SetupCFGManager(),
+            Path(".importlinter"): DotImportLinterManager(),
+            Path("pyproject.toml"): PyprojectTOMLManager(),
+        }
+
+    def _are_active_ini_contracts(self) -> bool:
+        # Consider active config manager, and see if there's a matching regex
+        # for the contract in the INI file.
+        (file_manager,) = self._get_active_config_file_managers_from_resolution(
+            self._get_resolution(),
+            file_manager_by_relative_path=self._get_file_manager_by_relative_path(),
+        )
+        if not isinstance(file_manager, INIFileManager):
+            return False
+        return [re.compile("importlinter:contract:.*")] in file_manager
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [

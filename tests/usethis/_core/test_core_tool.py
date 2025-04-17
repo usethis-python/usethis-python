@@ -901,6 +901,33 @@ exhaustive_ignores =
 """
             )
 
+        def test_existing_ini(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".importlinter").write_text(
+                """\
+[importlinter:contract:0]
+name = a
+"""
+            )
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter:contract:0]
+name = a
+[importlinter]
+root_packages =
+    a
+"""
+            )
+
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange

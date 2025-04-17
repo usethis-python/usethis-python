@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from abc import abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Generic, TypeAlias, TypeVar
@@ -169,7 +170,7 @@ class UsethisFileManager(Generic[DocumentT]):
         self._content_by_path.pop(self.path, None)
 
 
-Key: TypeAlias = str
+Key: TypeAlias = str | re.Pattern
 
 
 class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
@@ -222,11 +223,15 @@ def print_keys(keys: Sequence[Key]) -> str:
     Examples:
         >>> print_keys(["tool", "ruff", "line-length"])
         'tool.ruff.line-length'
+        >>> print_keys([re.compile(r"importlinter:contracts:.*")])
+        '<REGEX("importlinter:contracts:.*")>'
     """
     components = []
     for key in keys:
         if isinstance(key, str):
             components.append(key)
+        elif isinstance(key, re.Pattern):
+            components.append(f'<REGEX("{key.pattern}")>')
         else:
             assert_never(key)
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import copy
+import re
 from typing import TYPE_CHECKING, Any
 
 import mergedeep
@@ -10,6 +11,7 @@ import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 from tomlkit.exceptions import TOMLKitError
+from typing_extensions import assert_never
 
 from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
@@ -33,6 +35,8 @@ if TYPE_CHECKING:
     from typing import ClassVar
 
     from typing_extensions import Self
+
+    from usethis._io import Key
 
 
 class TOMLFileManager(KeyValueFileManager):
@@ -92,6 +96,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         An non-existent file will return False.
         """
+        keys = _validate_keys(keys)
         try:
             try:
                 container = self.get()
@@ -108,6 +113,7 @@ class TOMLFileManager(KeyValueFileManager):
 
     def __getitem__(self, item: Sequence[Key]) -> Any:
         keys = item
+        keys = _validate_keys(keys)
 
         d = self.get()
         for key in keys:
@@ -125,6 +131,7 @@ class TOMLFileManager(KeyValueFileManager):
         An empty list of keys corresponds to the root of the document.
         """
         toml_document = copy.copy(self.get())
+        keys = _validate_keys(keys)
 
         if not keys:
             # Root level config - value must be a mapping.
@@ -196,6 +203,7 @@ class TOMLFileManager(KeyValueFileManager):
             toml_document = copy.copy(self.get())
         except FileNotFoundError:
             return
+        keys = _validate_keys(keys)
 
         # Exit early if the configuration is not present.
         try:
@@ -250,6 +258,7 @@ class TOMLFileManager(KeyValueFileManager):
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
+        keys = _validate_keys(keys)
 
         toml_document = copy.copy(self.get())
 
@@ -283,6 +292,7 @@ class TOMLFileManager(KeyValueFileManager):
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
+        keys = _validate_keys(keys)
 
         toml_document = copy.copy(self.get())
 
@@ -312,7 +322,35 @@ class TOMLFileManager(KeyValueFileManager):
         self.commit(toml_document)
 
 
+def _validate_keys(keys: Sequence[Key]) -> list[str]:
+    """Validate the keys.
+
+    Args:
+        keys: The keys to validate.
+
+    Raises:
+        ValueError: If the keys are not valid.
+    """
+    so_far_keys: list[str] = []
+    for key in keys:
+        if isinstance(key, str):
+            so_far_keys.append(key)
+        elif isinstance(key, re.Pattern):
+            # Currently no need for this, perhaps we may add it in the future.
+            msg = (
+                f"Regex-based keys are not currently supported in TOML files: "
+                f"{print_keys([*so_far_keys, key])}"
+            )
+            raise NotImplementedError(msg)
+        else:
+            assert_never(key)
+
+    return so_far_keys
+
+
 def _get_unified_key(keys: Sequence[Key]) -> tomlkit.items.Key:
+    keys = _validate_keys(keys)
+
     single_keys = [tomlkit.items.SingleKey(key) for key in keys]
     if len(single_keys) == 1:
         (unified_key,) = single_keys

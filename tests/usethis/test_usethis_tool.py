@@ -1249,7 +1249,7 @@ class TestImportLinterTool:
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert out == ("☐ Run 'uv run import-linter' to run Import Linter.\n")
+            assert out == ("☐ Run 'uv run lint-imports' to run Import Linter.\n")
 
         def test_basic(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
             # Act

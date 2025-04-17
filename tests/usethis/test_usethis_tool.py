@@ -1218,7 +1218,7 @@ class TestImportLinterTool:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "☐ Run 'uv run pre-commit run lint-imports --all-files' to run Import Linter.\n"
+                "☐ Run 'uv run pre-commit run import-linter --all-files' to run Import Linter.\n"
             )
 
         def test_pre_commit_no_uv(

@@ -336,8 +336,9 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
         if isinstance(key, str):
             so_far_keys.append(key)
         elif isinstance(key, re.Pattern):
+            # Currently no need for this, perhaps we may add it in the future.
             msg = (
-                f"Regex-based keys are not supported in TOML files: "
+                f"Regex-based keys are not currently supported in TOML files: "
                 f"{print_keys([*so_far_keys, key])}"
             )
             raise NotImplementedError(msg)

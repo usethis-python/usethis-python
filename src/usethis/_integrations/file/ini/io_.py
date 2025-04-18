@@ -305,6 +305,7 @@ class INIFileManager(KeyValueFileManager):
             raise NotImplementedError(msg)
 
         if section_key not in root:
+            _ensure_newline(root)
             root.add_section(section_key)
 
         root.set(section=section_key, option=option_key, value=value)
@@ -554,3 +555,13 @@ def _itermatches(values: Iterable[str], /, *, key: Key):
                 yield value
         else:
             assert_never(key)
+
+
+def _ensure_newline(root: INIDocument) -> None:
+    """Add a newline to the INI file."""
+    sections = list(root.iter_sections())
+    if not sections:
+        # No newline necessary
+        return
+    final_section = sections[-1]
+    final_section.add_after.space(newlines=1)

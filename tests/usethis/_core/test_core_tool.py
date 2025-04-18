@@ -284,6 +284,7 @@ class TestCoverage:
 [run]
 source =
     src
+
 [report]
 exclude_also =
     if TYPE_CHECKING:
@@ -311,6 +312,7 @@ omit =
 [coverage:run]
 source =
     src
+
 [coverage:report]
 exclude_also =
     if TYPE_CHECKING:

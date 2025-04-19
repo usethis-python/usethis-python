@@ -744,6 +744,7 @@ class TestImportLinter:
 [importlinter]
 root_packages =
     qwerttyuiop
+
 [importlinter:contract:0]
 name = qwerttyuiop
 type = layers
@@ -858,6 +859,7 @@ repos:
 [importlinter]
 root_packages =
     qwerttyuiop
+
 [importlinter:contract:0]
 name = qwerttyuiop
 type = layers
@@ -890,6 +892,7 @@ exhaustive = True
 [importlinter]
 root_packages =
     a
+
 [importlinter:contract:0]
 name = a
 type = layers
@@ -924,6 +927,7 @@ name = a
                 """\
 [importlinter:contract:0]
 name = a
+
 [importlinter]
 root_packages =
     a
@@ -951,6 +955,7 @@ name = a
                 """\
 [importlinter:contract:existing]
 name = a
+
 [importlinter]
 root_packages =
     a
@@ -976,6 +981,7 @@ root_packages =
 [importlinter]
 root_packages =
     hillslope
+
 [importlinter:contract:0]
 name = hillslope
 type = layers
@@ -1009,6 +1015,7 @@ exhaustive = True
 [importlinter]
 root_packages =
     hillslope
+
 [importlinter:contract:0]
 name = hillslope
 type = layers
@@ -1017,6 +1024,7 @@ layers =
 containers =
     hillslope
 exhaustive = True
+
 [importlinter:contract:1]
 name = s1_sample
 type = layers
@@ -1074,6 +1082,7 @@ root_package = a
                 """\
 [importlinter]
 root_package = a
+
 [importlinter:contract:0]
 """
             )

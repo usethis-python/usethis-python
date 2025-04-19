@@ -254,7 +254,7 @@ class Tool(Protocol):
 
             for path, entry in config_item.root.items():
                 file_manager = config_spec.file_manager_by_relative_path[path]
-                if entry.keys in file_manager:
+                if file_manager.__contains__(entry.keys):
                     return True
 
         return False

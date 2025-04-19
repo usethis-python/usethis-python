@@ -1067,7 +1067,7 @@ class ImportLinterTool(Tool):
                     layers.append(" | ".join(sorted(layer)))
 
                 contract = {
-                    "name": module.split(".")[-1],
+                    "name": module,
                     "type": "layers",
                     "layers": layers,
                     "containers": [module],

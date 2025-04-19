@@ -1026,7 +1026,7 @@ containers =
 exhaustive = True
 
 [importlinter:contract:1]
-name = s1_sample
+name = hillslope.s1_sample
 type = layers
 layers =
     s2_inspect | s3_inspect | s4_inspect
@@ -1081,7 +1081,7 @@ containers =
 exhaustive = True
 
 [importlinter:contract:1]
-name = s1_sample
+name = hillslope.s1_sample
 type = layers
 layers =
     s2_inspect | s3_inspect | s4_inspect

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import re
 from abc import abstractmethod
 from collections.abc import Callable
@@ -1028,8 +1029,7 @@ class ImportLinterTool(Tool):
             # Couldn't find any packages, we're assuming the package name is the name
             # of the project. Warn the user accordingly.
             name = get_project_name()
-            warn_print("Could not find any importable packages.")
-            warn_print(f"Assuming the package name is {name}.")
+            _importlinter_warn_no_packages_found(name)
             root_packages = [name]
 
         contracts: list[dict] = []
@@ -1251,6 +1251,12 @@ class ImportLinterTool(Tool):
                 ),
             )
         ]
+
+
+@functools.cache
+def _importlinter_warn_no_packages_found(name: str) -> None:
+    warn_print("Could not find any importable packages.")
+    warn_print(f"Assuming the package name is {name}.")
 
 
 class PreCommitTool(Tool):

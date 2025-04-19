@@ -1028,17 +1028,19 @@ class ImportLinterTool(Tool):
             self._get_layered_architecture_by_module_by_root_package()
         )
 
-        min_depth = 0
-        for (
-            layered_architecture_by_module
-        ) in layered_architecture_by_module_by_root_package.values():
-            min_depth = min(
-                min_depth,
-                min(
-                    (module.count(".") for module in layered_architecture_by_module),
-                    default=0,
-                ),
-            )
+        min_depth = min(
+            (
+                module.count(".")
+                for layered_architecture_by_module in layered_architecture_by_module_by_root_package.values()
+                for module in layered_architecture_by_module
+                if any(
+                    layered_architecture.module_count()
+                    >= IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT
+                    for layered_architecture in layered_architecture_by_module.values()
+                )
+            ),
+            default=0,
+        )
 
         contracts: list[dict] = []
         for (

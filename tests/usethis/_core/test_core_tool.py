@@ -1036,6 +1036,85 @@ exhaustive = True
 """
             )
 
+        def test_multiple_packages_with_nesting(self, tmp_path: Path):
+            # The logic here is that we want to have the minimum number of nesting
+            # levels required to reach the minimum number of modules which is 3.
+
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "hillslope").mkdir()
+            (tmp_path / "hillslope" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample").mkdir()
+            (tmp_path / "hillslope" / "s1_sample" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s2_inspect.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s3_inspect.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s4_inspect.py").touch()
+            (tmp_path / "hillslope2").mkdir()
+            (tmp_path / "hillslope2" / "__init__.py").touch()
+            (tmp_path / "hillslope3").mkdir()
+            (tmp_path / "hillslope3" / "__init__.py").touch()
+            (tmp_path / "hillslope4").mkdir()
+            (tmp_path / "hillslope4" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    hillslope
+    hillslope2
+    hillslope3
+    hillslope4
+
+[importlinter:contract:0]
+name = hillslope
+type = layers
+layers =
+    s1_sample
+containers =
+    hillslope
+exhaustive = True
+
+[importlinter:contract:1]
+name = s1_sample
+type = layers
+layers =
+    s2_inspect | s3_inspect | s4_inspect
+containers =
+    hillslope.s1_sample
+exhaustive = True
+
+[importlinter:contract:2]
+name = hillslope2
+type = layers
+layers = 
+containers =
+    hillslope2
+exhaustive = True
+
+[importlinter:contract:3]
+name = hillslope3
+type = layers
+layers = 
+containers =
+    hillslope3
+exhaustive = True
+
+[importlinter:contract:4]
+name = hillslope4
+type = layers
+layers = 
+containers =
+    hillslope4
+exhaustive = True
+"""
+            )
+
         def test_stdout_when_cant_find_package(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):

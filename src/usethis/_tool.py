@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import re
 from abc import abstractmethod
 from collections.abc import Callable
@@ -12,13 +13,14 @@ from typing_extensions import Self, assert_never
 from usethis._config_file import (
     CodespellRCManager,
     CoverageRCManager,
+    DotImportLinterManager,
     DotPytestINIManager,
     DotRuffTOMLManager,
     PytestINIManager,
     RuffTOMLManager,
     ToxINIManager,
 )
-from usethis._console import box_print, info_print, tick_print
+from usethis._console import box_print, info_print, tick_print, warn_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -31,6 +33,7 @@ from usethis._integrations.ci.bitbucket.steps import (
     remove_bitbucket_step_from_default,
 )
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
+from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.hooks import (
@@ -47,7 +50,14 @@ from usethis._integrations.pre_commit.schema import (
     LocalRepo,
     UriRepo,
 )
+from usethis._integrations.project.errors import ImportGraphBuildFailedError
+from usethis._integrations.project.imports import (
+    LayeredArchitecture,
+    get_layered_architectures,
+)
 from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.project.name import get_project_name
+from usethis._integrations.project.packages import get_importable_packages
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,
@@ -137,6 +147,8 @@ class ConfigItem(BaseModel):
                  removed. This might be set to False if we are modifying other tools'
                  config sections or shared config sections that are pre-requisites for
                  using this tool but might be relied on by other tools as well.
+        force: Whether to overwrite any existing configuration entry. Defaults to false,
+               in which case existing configuration is left as-is for the entry.
         applies_to_all: Whether all file managers should support this config item, or
                         whether it is optional and is only desirable if we know in
                         advance what the file managers are which are being used.
@@ -153,6 +165,7 @@ class ConfigItem(BaseModel):
     description: str | None = None
     root: dict[Path, ConfigEntry]
     managed: bool = True
+    force: bool = False
     applies_to_all: bool = True
 
     @property
@@ -242,7 +255,7 @@ class Tool(Protocol):
 
             for path, entry in config_item.root.items():
                 file_manager = config_spec.file_manager_by_relative_path[path]
-                if entry.keys in file_manager:
+                if file_manager.__contains__(entry.keys):
                     return True
 
         return False
@@ -306,17 +319,29 @@ class Tool(Protocol):
         """Get relative paths to all active configuration files."""
         config_spec = self.get_config_spec()
         resolution = config_spec.resolution
+        return self._get_active_config_file_managers_from_resolution(
+            resolution,
+            file_manager_by_relative_path=config_spec.file_manager_by_relative_path,
+        )
+
+    def _get_active_config_file_managers_from_resolution(
+        self,
+        resolution: ResolutionT,
+        *,
+        file_manager_by_relative_path: dict[Path, KeyValueFileManager],
+    ) -> set[KeyValueFileManager]:
         if resolution == "first":
             # N.B. keep this roughly in sync with the bespoke logic for pytest
+            # since that logic is based on this logic.
             for (
                 relative_path,
                 file_manager,
-            ) in config_spec.file_manager_by_relative_path.items():
+            ) in file_manager_by_relative_path.items():
                 path = Path.cwd() / relative_path
                 if path.exists() and path.is_file():
                     return {file_manager}
 
-            file_managers = config_spec.file_manager_by_relative_path.values()
+            file_managers = file_manager_by_relative_path.values()
             if not file_managers:
                 return set()
 
@@ -413,6 +438,11 @@ class Tool(Protocol):
 
             # Now, use the highest-prority file manager to add the config
             (used_file_manager,) = file_managers
+
+            if not config_item.force and entry.keys in used_file_manager:
+                # We won't overwrite, so skip if there is already a value set.
+                continue
+
             if first_addition:
                 tick_print(
                     f"Adding {self.name} config to '{used_file_manager.relative_path}'."
@@ -504,7 +534,14 @@ class Tool(Protocol):
                 remove_bitbucket_step_from_default(step)
 
     def get_associated_ruff_rules(self) -> list[str]:
-        """Get the Ruff rule codes associated with the tool."""
+        """Get the Ruff rule codes associated with the tool.
+
+        These are managed rules and it is assumed that they can be removed if the tool
+        is removed. It only makes sense to include rules which are tightly bound
+        with the tool.
+        """
+        # For other rules which are not tightly bound to the tool, see
+        # https://github.com/nathanjmcdougall/usethis-python/issues/499
         return []
 
     def is_managed_rule(self, rule: str) -> bool:
@@ -624,7 +661,7 @@ class CodespellTool(Tool):
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
             BitbucketStep(
-                name="Run Codespell",
+                name=f"Run {self.name}",
                 caches=["uv"],
                 script=BitbucketScript(
                     [
@@ -887,7 +924,7 @@ class DeptryTool(Tool):
         _dir = get_source_dir_str()
         return [
             BitbucketStep(
-                name="Run deptry",
+                name=f"Run {self.name}",
                 caches=["uv"],
                 script=BitbucketScript(
                     [
@@ -954,6 +991,301 @@ class DeptryTool(Tool):
             raise NotImplementedError(msg)
 
 
+IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
+
+
+class ImportLinterTool(Tool):
+    # https://github.com/seddonym/import-linter
+
+    @property
+    def name(self) -> str:
+        return "Import Linter"
+
+    def print_how_to_use(self) -> None:
+        if PreCommitTool().is_used():
+            if is_uv_used():
+                box_print(
+                    f"Run 'uv run pre-commit run import-linter --all-files' to run {self.name}."
+                )
+            else:
+                box_print(
+                    f"Run 'pre-commit run import-linter --all-files' to run {self.name}."
+                )
+        elif is_uv_used():
+            box_print(f"Run 'uv run lint-imports' to run {self.name}.")
+        else:
+            box_print(f"Run 'lint-imports' to run {self.name}.")
+
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        # We need to add the import-linter package itself as a dev dependency.
+        # This is because it needs to run from within the virtual environment.
+        return [Dependency(name="import-linter")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        # https://import-linter.readthedocs.io/en/stable/usage.html
+
+        layered_architecture_by_module_by_root_package = (
+            self._get_layered_architecture_by_module_by_root_package()
+        )
+
+        min_depth = min(
+            (
+                module.count(".")
+                for layered_architecture_by_module in layered_architecture_by_module_by_root_package.values()
+                for module in layered_architecture_by_module
+                if any(
+                    layered_architecture.module_count()
+                    >= IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT
+                    for layered_architecture in layered_architecture_by_module.values()
+                )
+            ),
+            default=0,
+        )
+
+        contracts: list[dict] = []
+        for (
+            layered_architecture_by_module
+        ) in layered_architecture_by_module_by_root_package.values():
+            for module, layered_architecture in layered_architecture_by_module.items():
+                # We only skip if we have at least one contract.
+                if len(contracts) > 0 and (
+                    (
+                        # Skip if the contract isn't big enough to be notable.
+                        layered_architecture.module_count()
+                        < IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT
+                    )
+                    and
+                    # We have waited until we have finished a complete depth level
+                    # (e.g. we have done all of a.b, a.c, and a.d so we won't go on to
+                    # a.b.e)
+                    module.count(".") > min_depth
+                ):
+                    continue
+
+                layers = []
+                for layer in layered_architecture.layers:
+                    layers.append(" | ".join(sorted(layer)))
+
+                contract = {
+                    "name": module,
+                    "type": "layers",
+                    "layers": layers,
+                    "containers": [module],
+                    "exhaustive": True,
+                }
+
+                if layered_architecture.excluded:
+                    contract["exhaustive_ignores"] = sorted(
+                        layered_architecture.excluded
+                    )
+
+                contracts.append(contract)
+
+        if not contracts:
+            raise AssertionError
+
+        def get_root_packages() -> list[str] | _NoConfigValue:
+            # There are two configuration items which are very similar:
+            # root_packages = ["usethis"]  # noqa: ERA001
+            # root_package = "usethis" # noqa: ERA001
+            # Maybe at a later point we can abstract this case of variant config
+            # into ConfigEntry but it seems premautre, so for now for Import Linter
+            # we manually check this case. This might give somewhat reduced performance,
+            # perhaps.
+            if self._is_root_package_singular():
+                return _NoConfigValue()
+            return list(layered_architecture_by_module_by_root_package.keys())
+
+        # We're only going to add the INI contracts if there aren't already any
+        # contracts, so we need to check if there are any contracts.
+        are_active_ini_contracts = self._are_active_ini_contracts()
+
+        ini_contracts_config_items = []
+        for idx, contract in enumerate(contracts):
+            if are_active_ini_contracts:
+                continue
+
+            # Cast bools to strings for INI files
+            ini_contract = contract.copy()
+            ini_contract["exhaustive"] = str(ini_contract["exhaustive"])
+
+            ini_contracts_config_items.append(
+                ConfigItem(
+                    description=f"Itemized Contract {idx} (INI)",
+                    root={
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=[f"importlinter:contract:{idx}"],
+                            get_value=lambda c=ini_contract: c,
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=[f"importlinter:contract:{idx}"],
+                            get_value=lambda c=ini_contract: c,
+                        ),
+                    },
+                    applies_to_all=False,
+                )
+            )
+
+        return ConfigSpec(
+            file_manager_by_relative_path=self._get_file_manager_by_relative_path(),
+            resolution=self._get_resolution(),
+            config_items=[
+                ConfigItem(
+                    description="Overall config",
+                    root={
+                        Path("setup.cfg"): ConfigEntry(keys=["importlinter"]),
+                        Path(".importlinter"): ConfigEntry(keys=["importlinter"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "importlinter"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Root packages",
+                    root={
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["importlinter", "root_packages"],
+                            get_value=get_root_packages,
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=["importlinter", "root_packages"],
+                            get_value=get_root_packages,
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "importlinter", "root_packages"],
+                            get_value=get_root_packages,
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Listed Contracts",
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "importlinter", "contracts"],
+                            get_value=lambda: contracts,
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=[re.compile("importlinter:contract:.*")]
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=[re.compile("importlinter:contract:.*")]
+                        ),
+                    },
+                    applies_to_all=False,
+                ),
+                *ini_contracts_config_items,
+            ],
+        )
+
+    def _get_layered_architecture_by_module_by_root_package(
+        self,
+    ) -> dict[str, dict[str, LayeredArchitecture]]:
+        root_packages = sorted(get_importable_packages())
+        if not root_packages:
+            # Couldn't find any packages, we're assuming the package name is the name
+            # of the project. Warn the user accordingly.
+            name = get_project_name()
+            _importlinter_warn_no_packages_found(name)
+            root_packages = [name]
+
+        layered_architecture_by_module_by_root_package = {}
+        for root_package in root_packages:
+            try:
+                layered_architecture_by_module = get_layered_architectures(root_package)
+            except ImportGraphBuildFailedError:
+                layered_architecture_by_module = {
+                    root_package: LayeredArchitecture(layers=[], excluded=set())
+                }
+
+            layered_architecture_by_module = dict(
+                sorted(
+                    layered_architecture_by_module.items(),
+                    key=lambda item: item[0].count("."),
+                )
+            )
+
+            layered_architecture_by_module_by_root_package[root_package] = (
+                layered_architecture_by_module
+            )
+
+        return layered_architecture_by_module_by_root_package
+
+    def _get_resolution(self) -> ResolutionT:
+        return "first"
+
+    def _get_file_manager_by_relative_path(self) -> dict[Path, KeyValueFileManager]:
+        return {
+            Path("setup.cfg"): SetupCFGManager(),
+            Path(".importlinter"): DotImportLinterManager(),
+            Path("pyproject.toml"): PyprojectTOMLManager(),
+        }
+
+    def _are_active_ini_contracts(self) -> bool:
+        # Consider active config manager, and see if there's a matching regex
+        # for the contract in the INI file.
+        (file_manager,) = self._get_active_config_file_managers_from_resolution(
+            self._get_resolution(),
+            file_manager_by_relative_path=self._get_file_manager_by_relative_path(),
+        )
+        if not isinstance(file_manager, INIFileManager):
+            return False
+        return [re.compile("importlinter:contract:.*")] in file_manager
+
+    def _is_root_package_singular(self) -> bool:
+        (file_manager,) = self._get_active_config_file_managers_from_resolution(
+            self._get_resolution(),
+            file_manager_by_relative_path=self._get_file_manager_by_relative_path(),
+        )
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "importlinter", "root_package"] in file_manager
+        elif isinstance(file_manager, SetupCFGManager | DotImportLinterManager):
+            return ["importlinter", "root_package"] in file_manager
+        else:
+            msg = f"Unsupported file manager: {file_manager}"
+            raise NotImplementedError(msg)
+
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+        return [
+            LocalRepo(
+                repo="local",
+                hooks=[
+                    HookDefinition(
+                        id="import-linter",
+                        name="import-linter",
+                        pass_filenames=False,
+                        entry="uv run --frozen --offline lint-imports",
+                        language=Language("system"),
+                        require_serial=True,
+                        always_run=True,
+                    )
+                ],
+            )
+        ]
+
+    def get_managed_files(self) -> list[Path]:
+        return [Path(".importlinter")]
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name=f"Run {self.name}",
+                caches=["uv"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run lint-imports",
+                    ]
+                ),
+            )
+        ]
+
+
+@functools.cache
+def _importlinter_warn_no_packages_found(name: str) -> None:
+    warn_print("Could not find any importable packages.")
+    warn_print(f"Assuming the package name is {name}.")
+
+
 class PreCommitTool(Tool):
     # https://github.com/pre-commit/pre-commit
     @property
@@ -977,7 +1309,7 @@ class PreCommitTool(Tool):
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
             BitbucketStep(
-                name="Run pre-commit",
+                name=f"Run {self.name}",
                 caches=["uv", "pre-commit"],
                 script=BitbucketScript(
                     [
@@ -999,16 +1331,16 @@ class PyprojectFmtTool(Tool):
         if PreCommitTool().is_used():
             if is_uv_used():
                 box_print(
-                    "Run 'uv run pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
+                    f"Run 'uv run pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
             else:
                 box_print(
-                    "Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
+                    f"Run 'pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
         elif is_uv_used():
-            box_print("Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.")
+            box_print(f"Run 'uv run pyproject-fmt pyproject.toml' to run {self.name}.")
         else:
-            box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
+            box_print(f"Run 'pyproject-fmt pyproject.toml' to run {self.name}.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pyproject-fmt")]
@@ -1051,7 +1383,7 @@ class PyprojectFmtTool(Tool):
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
             BitbucketStep(
-                name="Run pyproject-fmt",
+                name=f"Run {self.name}",
                 caches=["uv"],
                 script=BitbucketScript(
                     [
@@ -1304,7 +1636,12 @@ class RequirementsTxtTool(Tool):
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
-            box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
+            if is_uv_used():
+                box_print(
+                    "Run 'uv run pre-commit run uv-export' to write 'requirements.txt'."
+                )
+            else:
+                box_print("Run 'pre-commit run uv-export' to write 'requirements.txt'.")
         else:
             if not is_uv_used():
                 # This is a very crude approach as a temporary measure.
@@ -1439,7 +1776,7 @@ class RuffTool(Tool):
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
             BitbucketStep(
-                name="Run Ruff",
+                name=f"Run {self.name}",
                 caches=["uv"],
                 script=BitbucketScript(
                     [
@@ -1623,6 +1960,7 @@ ALL_TOOLS: list[Tool] = [
     CodespellTool(),
     CoverageTool(),
     DeptryTool(),
+    ImportLinterTool(),
     PreCommitTool(),
     PyprojectFmtTool(),
     PyprojectTOMLTool(),

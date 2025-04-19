@@ -321,6 +321,27 @@ class TestINIFileManager:
             # Assert
             assert result is False
 
+        def test_regex(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section]
+key_this = value1
+key_that = value2
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                result = ["section", re.compile("key.*")] in manager
+
+            # Assert
+            assert result is True
+
     class TestGetItem:
         def test_file_doesnt_exist_raises(self, tmp_path: Path):
             # Arrange

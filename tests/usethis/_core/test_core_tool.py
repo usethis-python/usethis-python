@@ -5,12 +5,13 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
-from usethis._config_file import files_manager
+from usethis._config_file import RuffTOMLManager, files_manager
 from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import (
     use_codespell,
     use_coverage,
     use_deptry,
+    use_import_linter,
     use_pre_commit,
     use_pyproject_fmt,
     use_pytest,
@@ -698,6 +699,558 @@ repos:
             # Assert
             content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
             assert "deptry" not in content
+
+
+class TestImportLinter:
+    class TestAdd:
+        def test_dependency(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_import_linter()
+
+                # Assert
+                assert Dependency(name="import-linter") in get_deps_from_group("dev")
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "☐ Run 'lint-imports' to run Import Linter.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ini_contracts(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "qwerttyuiop").mkdir()
+            (tmp_path / "qwerttyuiop" / "a.py").touch()
+            (tmp_path / "qwerttyuiop" / "b.py").touch()
+            (tmp_path / "qwerttyuiop" / "__init__.py").touch()
+            (tmp_path / "qwerttyuiop" / "c").mkdir()
+            (tmp_path / "qwerttyuiop" / "c" / "__init__.py").touch()
+
+            monkeypatch.syspath_prepend(str(tmp_path))
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    qwerttyuiop
+
+[importlinter:contract:0]
+name = qwerttyuiop
+type = layers
+layers =
+    a | b | c
+containers =
+    qwerttyuiop
+exhaustive = True
+"""
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_toml_contracts(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[project]
+name = "usethis"
+version = "0.1.0"
+"""
+            )
+
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
+            (tmp_path / "b").mkdir()
+            (tmp_path / "b" / "__init__.py").touch()
+
+            monkeypatch.syspath_prepend(str(tmp_path))
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / "pyproject.toml").read_text()
+            assert contents.endswith("""\
+[tool.importlinter]
+root_packages = ["a", "b"]
+
+[[tool.importlinter.contracts]]
+name = "a"
+type = "layers"
+layers = []
+containers = ["a"]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "b"
+type = "layers"
+layers = []
+containers = ["b"]
+exhaustive = true
+""")
+
+        @pytest.mark.xfail(
+            reason="https://github.com/nathanjmcdougall/usethis-python/issues/502"
+        )
+        def test_pre_commit_used_not_uv(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / ".pre-commit-config.yaml").write_text(
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: placeholder
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".pre-commit-config.yaml").read_text()
+            assert "import-linter" not in contents
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "☐ Run 'lint-imports' to run Import Linter.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_small_contracts_dropped(
+            self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        ):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "qwerttyuiop").mkdir()
+            (tmp_path / "qwerttyuiop" / "a.py").touch()
+            (tmp_path / "qwerttyuiop" / "b.py").touch()
+            (tmp_path / "qwerttyuiop" / "__init__.py").touch()
+            (tmp_path / "qwerttyuiop" / "c").mkdir()
+            (tmp_path / "qwerttyuiop" / "c" / "__init__.py").touch()
+            (tmp_path / "qwerttyuiop" / "c" / "d").mkdir()
+            (tmp_path / "qwerttyuiop" / "c" / "d" / "__init__.py").touch()
+
+            monkeypatch.syspath_prepend(str(tmp_path))
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    qwerttyuiop
+
+[importlinter:contract:0]
+name = qwerttyuiop
+type = layers
+layers =
+    a | b | c
+containers =
+    qwerttyuiop
+exhaustive = True
+"""
+            )
+
+        def test_cyclic_excluded(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
+            (tmp_path / "a" / "b.py").write_text("import a.c")
+            (tmp_path / "a" / "c.py").write_text("import a.b")
+
+            monkeypatch.syspath_prepend(str(tmp_path))
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    a
+
+[importlinter:contract:0]
+name = a
+type = layers
+layers = 
+containers =
+    a
+exhaustive = True
+exhaustive_ignores =
+    b
+    c
+"""
+            )
+
+        def test_existing_ini_match(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".importlinter").write_text(
+                """\
+[importlinter:contract:0]
+name = a
+"""
+            )
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter:contract:0]
+name = a
+
+[importlinter]
+root_packages =
+    a
+"""
+            )
+
+        def test_existing_ini_differs(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".importlinter").write_text(
+                """\
+[importlinter:contract:existing]
+name = a
+"""
+            )
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter:contract:existing]
+name = a
+
+[importlinter]
+root_packages =
+    a
+"""
+            )
+
+        def test_numbers_in_layer_names(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "hillslope").mkdir()
+            (tmp_path / "hillslope" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample.py").touch()
+            (tmp_path / "hillslope" / "s2_inspect.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    hillslope
+
+[importlinter:contract:0]
+name = hillslope
+type = layers
+layers =
+    s1_sample | s2_inspect
+containers =
+    hillslope
+exhaustive = True
+"""
+            )
+
+        def test_nesting(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "hillslope").mkdir()
+            (tmp_path / "hillslope" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample").mkdir()
+            (tmp_path / "hillslope" / "s1_sample" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s2_inspect.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s3_inspect.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s4_inspect.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    hillslope
+
+[importlinter:contract:0]
+name = hillslope
+type = layers
+layers =
+    s1_sample
+containers =
+    hillslope
+exhaustive = True
+
+[importlinter:contract:1]
+name = hillslope.s1_sample
+type = layers
+layers =
+    s2_inspect | s3_inspect | s4_inspect
+containers =
+    hillslope.s1_sample
+exhaustive = True
+"""
+            )
+
+        def test_multiple_packages_with_nesting(self, tmp_path: Path):
+            # The logic here is that we want to have the minimum number of nesting
+            # levels required to reach the minimum number of modules which is 3.
+
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "hillslope").mkdir()
+            (tmp_path / "hillslope" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample").mkdir()
+            (tmp_path / "hillslope" / "s1_sample" / "__init__.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s2_inspect.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s3_inspect.py").touch()
+            (tmp_path / "hillslope" / "s1_sample" / "s4_inspect.py").touch()
+            (tmp_path / "hillslope2").mkdir()
+            (tmp_path / "hillslope2" / "__init__.py").touch()
+            (tmp_path / "hillslope3").mkdir()
+            (tmp_path / "hillslope3" / "__init__.py").touch()
+            (tmp_path / "hillslope4").mkdir()
+            (tmp_path / "hillslope4" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    hillslope
+    hillslope2
+    hillslope3
+    hillslope4
+
+[importlinter:contract:0]
+name = hillslope
+type = layers
+layers =
+    s1_sample
+containers =
+    hillslope
+exhaustive = True
+
+[importlinter:contract:1]
+name = hillslope.s1_sample
+type = layers
+layers =
+    s2_inspect | s3_inspect | s4_inspect
+containers =
+    hillslope.s1_sample
+exhaustive = True
+
+[importlinter:contract:2]
+name = hillslope2
+type = layers
+layers = 
+containers =
+    hillslope2
+exhaustive = True
+
+[importlinter:contract:3]
+name = hillslope3
+type = layers
+layers = 
+containers =
+    hillslope3
+exhaustive = True
+
+[importlinter:contract:4]
+name = hillslope4
+type = layers
+layers = 
+containers =
+    hillslope4
+exhaustive = True
+"""
+            )
+
+        def test_stdout_when_cant_find_package(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Having an issue where the message is being repeated multiple times
+            # https://github.com/nathanjmcdougall/usethis-python/pull/501#issuecomment-2784482750
+
+            # Act
+            with change_cwd(tmp_path), files_manager(), usethis_config.set(frozen=True):
+                use_import_linter()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'pyproject.toml'.\n"
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "⚠ Could not find any importable packages.\n"
+                "⚠ Assuming the package name is test-stdout-when-cant-find-pac0.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "☐ Run 'lint-imports' to run Import Linter.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_root_packages_not_added_if_already_root_package_ini(
+            self, tmp_path: Path
+        ):
+            # Basically the user can either specify a list of root_packages, or
+            # a single root package. We prefer to always use `root_packages`, but
+            # we will leave the existing configuration alone if it already exists.
+
+            # Arrange
+            (tmp_path / ".importlinter").write_text(
+                """\
+[importlinter]
+root_package = a
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents.startswith(
+                """\
+[importlinter]
+root_package = a
+
+[importlinter:contract:0]
+"""
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_root_packages_not_added_if_already_root_package_toml(
+            self, tmp_path: Path
+        ):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.importlinter]
+root_package = "a"
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            content = (tmp_path / "pyproject.toml").read_text()
+            assert "root_packages = " not in content
+            assert "root_package = " in content
+
+    class TestRemove:
+        def test_config_file(self, uv_init_repo_dir: Path):
+            # Arrange
+            (uv_init_repo_dir / ".importlinter").touch()
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_import_linter(remove=True)
+
+            # Assert
+            assert not (uv_init_repo_dir / ".importlinter").exists()
+
+    class TestPreCommitIntegration:
+        def test_config(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_repo_dir / ".pre-commit-config.yaml").write_text(
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: placeholder
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert "import-linter" in contents
+            assert "placeholder" not in contents
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "✔ Adding hook 'import-linter' to '.pre-commit-config.yaml'.\n"
+                "☐ Run 'pre-commit run import-linter --all-files' to run Import Linter.\n"
+            )
+
+    class TestBitbucketIntegration:
+        def test_config_file(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "bitbucket-pipelines.yml").write_text("""\
+image: atlassian/default-image:3
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            assert (tmp_path / "bitbucket-pipelines.yml").exists()
+            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert "Import Linter" in contents
+            assert "lint-imports" in contents
+            assert "placeholder" not in contents
 
 
 class TestPreCommit:
@@ -1994,6 +2547,17 @@ ignore = [ "EM", "T20", "TRY003", "S603" ]
 """
             )
 
+        def test_doesnt_overwrite_existing_line_length(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / "ruff.toml").write_text("line-length = 100")
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+                # Assert
+                assert RuffTOMLManager()[["line-length"]] == 100
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_dir: Path):
@@ -2290,7 +2854,7 @@ repos:
             assert out == (
                 "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run the 'pre-commit run uv-export' to write 'requirements.txt'.\n"
+                "☐ Run 'uv run pre-commit run uv-export' to write 'requirements.txt'.\n"
             )
 
     class TestRemove:

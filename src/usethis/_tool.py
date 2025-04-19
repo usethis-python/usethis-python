@@ -1090,6 +1090,18 @@ class ImportLinterTool(Tool):
         if not contracts:
             raise AssertionError
 
+        def get_root_packages() -> list[str] | _NoConfigValue:
+            # There are two configuration items which are very similar:
+            # root_packages = ["usethis"]  # noqa: ERA001
+            # root_package = "usethis" # noqa: ERA001
+            # Maybe at a later point we can abstract this case of variant config
+            # into ConfigEntry but it seems premautre, so for now for Import Linter
+            # we manually check this case. This might give somewhat reduced performance,
+            # perhaps.
+            if self._is_root_package_singular():
+                return _NoConfigValue()
+            return root_packages
+
         # We're only going to add the INI contracts if there aren't already any
         # contracts, so we need to check if there are any contracts.
         are_active_ini_contracts = self._are_active_ini_contracts()
@@ -1139,15 +1151,15 @@ class ImportLinterTool(Tool):
                     root={
                         Path("setup.cfg"): ConfigEntry(
                             keys=["importlinter", "root_packages"],
-                            get_value=lambda: root_packages,
+                            get_value=get_root_packages,
                         ),
                         Path(".importlinter"): ConfigEntry(
                             keys=["importlinter", "root_packages"],
-                            get_value=lambda: root_packages,
+                            get_value=get_root_packages,
                         ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "importlinter", "root_packages"],
-                            get_value=lambda: root_packages,
+                            get_value=get_root_packages,
                         ),
                     },
                 ),
@@ -1191,6 +1203,19 @@ class ImportLinterTool(Tool):
         if not isinstance(file_manager, INIFileManager):
             return False
         return [re.compile("importlinter:contract:.*")] in file_manager
+
+    def _is_root_package_singular(self) -> bool:
+        (file_manager,) = self._get_active_config_file_managers_from_resolution(
+            self._get_resolution(),
+            file_manager_by_relative_path=self._get_file_manager_by_relative_path(),
+        )
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "importlinter", "root_package"] in file_manager
+        elif isinstance(file_manager, SetupCFGManager | DotImportLinterManager):
+            return ["importlinter", "root_package"] in file_manager
+        else:
+            msg = f"Unsupported file manager: {file_manager}"
+            raise NotImplementedError(msg)
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         return [

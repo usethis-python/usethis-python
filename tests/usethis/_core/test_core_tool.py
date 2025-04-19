@@ -1059,7 +1059,10 @@ exhaustive = True
                 "☐ Run 'lint-imports' to run Import Linter.\n"
             )
 
-        def test_root_packages_not_added_if_already_root_package(self, tmp_path: Path):
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_root_packages_not_added_if_already_root_package_ini(
+            self, tmp_path: Path
+        ):
             # Basically the user can either specify a list of root_packages, or
             # a single root package. We prefer to always use `root_packages`, but
             # we will leave the existing configuration alone if it already exists.
@@ -1086,6 +1089,27 @@ root_package = a
 [importlinter:contract:0]
 """
             )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_root_packages_not_added_if_already_root_package_toml(
+            self, tmp_path: Path
+        ):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.importlinter]
+root_package = "a"
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            content = (tmp_path / "pyproject.toml").read_text()
+            assert "root_packages = " not in content
+            assert "root_package = " in content
 
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):

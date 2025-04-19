@@ -1024,34 +1024,26 @@ class ImportLinterTool(Tool):
     def get_config_spec(self) -> ConfigSpec:
         # https://import-linter.readthedocs.io/en/stable/usage.html
 
-        root_packages = sorted(get_importable_packages())
-        if not root_packages:
-            # Couldn't find any packages, we're assuming the package name is the name
-            # of the project. Warn the user accordingly.
-            name = get_project_name()
-            _importlinter_warn_no_packages_found(name)
-            root_packages = [name]
+        layered_architecture_by_module_by_root_package = (
+            self._get_layered_architecture_by_module_by_root_package()
+        )
+
+        min_depth = 0
+        for (
+            layered_architecture_by_module
+        ) in layered_architecture_by_module_by_root_package.values():
+            min_depth = min(
+                min_depth,
+                min(
+                    (module.count(".") for module in layered_architecture_by_module),
+                    default=0,
+                ),
+            )
 
         contracts: list[dict] = []
-        for root_package in root_packages:
-            try:
-                layered_architecture_by_module = get_layered_architectures(root_package)
-            except ImportGraphBuildFailedError:
-                layered_architecture_by_module = {
-                    root_package: LayeredArchitecture(layers=[], excluded=set())
-                }
-
-            layered_architecture_by_module = dict(
-                sorted(
-                    layered_architecture_by_module.items(),
-                    key=lambda item: item[0].count("."),
-                )
-            )
-
-            min_depth = min(
-                (module.count(".") for module in layered_architecture_by_module),
-                default=0,
-            )
+        for (
+            layered_architecture_by_module
+        ) in layered_architecture_by_module_by_root_package.values():
             for module, layered_architecture in layered_architecture_by_module.items():
                 # We only skip if we have at least one contract.
                 if len(contracts) > 0 and (
@@ -1100,7 +1092,7 @@ class ImportLinterTool(Tool):
             # perhaps.
             if self._is_root_package_singular():
                 return _NoConfigValue()
-            return root_packages
+            return list(layered_architecture_by_module_by_root_package.keys())
 
         # We're only going to add the INI contracts if there aren't already any
         # contracts, so we need to check if there are any contracts.
@@ -1182,6 +1174,39 @@ class ImportLinterTool(Tool):
                 *ini_contracts_config_items,
             ],
         )
+
+    def _get_layered_architecture_by_module_by_root_package(
+        self,
+    ) -> dict[str, dict[str, LayeredArchitecture]]:
+        root_packages = sorted(get_importable_packages())
+        if not root_packages:
+            # Couldn't find any packages, we're assuming the package name is the name
+            # of the project. Warn the user accordingly.
+            name = get_project_name()
+            _importlinter_warn_no_packages_found(name)
+            root_packages = [name]
+
+        layered_architecture_by_module_by_root_package = {}
+        for root_package in root_packages:
+            try:
+                layered_architecture_by_module = get_layered_architectures(root_package)
+            except ImportGraphBuildFailedError:
+                layered_architecture_by_module = {
+                    root_package: LayeredArchitecture(layers=[], excluded=set())
+                }
+
+            layered_architecture_by_module = dict(
+                sorted(
+                    layered_architecture_by_module.items(),
+                    key=lambda item: item[0].count("."),
+                )
+            )
+
+            layered_architecture_by_module_by_root_package[root_package] = (
+                layered_architecture_by_module
+            )
+
+        return layered_architecture_by_module_by_root_package
 
     def _get_resolution(self) -> ResolutionT:
         return "first"

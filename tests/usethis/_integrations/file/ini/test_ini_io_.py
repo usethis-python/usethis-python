@@ -1025,6 +1025,32 @@ key =
 """
             )
 
+        def test_existing_file_no_newline(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("[section]\nkey = value")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.set_value(
+                    keys=["new_section", "new_key"], value="new_value", exists_ok=True
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key = value
+[new_section]
+new_key = new_value
+"""
+            )
+
     class TestDelItem:
         def test_delete_root(self, tmp_path: Path):
             # Arrange

@@ -111,27 +111,6 @@ class INIFileManager(KeyValueFileManager):
                     return True
         return False
 
-    def _contains_strkeys(self, strkeys: Sequence[str], *, root: INIDocument) -> bool:
-        """Check if the INI file contains a value at the given string-based keys.
-
-        An non-existent file will return False.
-        """
-        if len(strkeys) == 0:
-            # The root level exists if the file exists
-            return True
-        elif len(strkeys) == 1:
-            (section_key,) = strkeys
-            return section_key in root
-        elif len(strkeys) == 2:
-            section_key, option_key = strkeys
-            try:
-                return option_key in root[section_key]
-            except KeyError:
-                return False
-        else:
-            # Nested keys can't exist in INI files.
-            return False
-
     def __getitem__(self, item: Sequence[Key]) -> Any:
         keys = item
 

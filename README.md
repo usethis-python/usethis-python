@@ -127,6 +127,7 @@ Currently supported tools:
 - `usethis tool codespell`
 - `usethis tool coverage`
 - `usethis tool deptry`
+- `usethis tool import-linter`
 - `usethis tool pre-commit`
 - `usethis tool pyproject-fmt`
 - `usethis tool pyproject.toml`

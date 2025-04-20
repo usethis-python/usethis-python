@@ -345,6 +345,7 @@ def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
             "E9",
             "EM",
             "F",
+            "FLY",
             "FURB",
             "I",
             "PLE",

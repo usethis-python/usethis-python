@@ -31,7 +31,6 @@ class TestGetUsageTable:
 
         # Assert
         expected = UsageTable(
-            title="Usage",
             rows=[
                 UsageRow(category="tool", name="Codespell", status="unused"),
                 UsageRow(category="tool", name="coverage", status="unused"),
@@ -60,7 +59,6 @@ class TestGetUsageTable:
 
         # Assert
         expected = UsageTable(
-            title="Usage",
             rows=[
                 UsageRow(category="tool", name="Codespell", status="unused"),
                 UsageRow(category="tool", name="coverage", status="unused"),
@@ -86,7 +84,6 @@ class TestGetUsageTable:
 
         # Assert
         expected = UsageTable(
-            title="Usage",
             rows=[
                 UsageRow(category="tool", name="Codespell", status="unused"),
                 UsageRow(category="tool", name="coverage", status="unused"),

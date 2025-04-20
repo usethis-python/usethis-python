@@ -174,6 +174,24 @@ ignore-regex = [A-Za-z0-9+/]{100,}
 """
             )
 
+        def test_adding_twice(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/509
+
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_codespell()
+                capfd.readouterr()
+
+                # Act
+                use_codespell()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ("☐ Run 'codespell' to run the Codespell spellchecker.\n")
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(

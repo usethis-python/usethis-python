@@ -2076,6 +2076,35 @@ foo = "bar"
             # Assert
             assert (uv_init_repo_dir / "setup.cfg").read_text()
 
+        def test_pythonpath_needed(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/347
+
+            # Arrange
+            # No build backend, so finding './src' for imports won't work unless we
+            # explicitly tell pytest where to go.
+            (tmp_path / "pyproject.toml").touch()
+
+            (tmp_path / "src").mkdir()
+            (tmp_path / "src" / "foo").mkdir()
+            (tmp_path / "src" / "foo" / "__init__.py").touch()
+
+            (tmp_path / "tests").mkdir()
+            (tmp_path / "tests" / "test_foo.py").write_text(
+                """\
+def test_foo():
+    import foo
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_pytest()
+
+                # Assert (that this doesn't raise an error)
+                call_uv_subprocess(["run", "pytest"], change_toml=False)
+
     class TestRemove:
         class TestRuffIntegration:
             def test_deselected(self, uv_init_dir: Path):

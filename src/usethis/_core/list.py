@@ -27,12 +27,11 @@ class UsageRow(BaseModel):
 
 
 class UsageTable(BaseModel):
-    title: str
     rows: list[UsageRow]
 
     def to_rich(self) -> Table:
         """Convert the table to a rich Table."""
-        table = Table(title=self.title, show_lines=True)
+        table = Table(show_lines=True)
         table.add_column("Category", justify="left")
         table.add_column("Name", justify="left")
         table.add_column("Status", justify="left")
@@ -90,7 +89,7 @@ def show_usage_table() -> None:
 
 def get_usage_table() -> UsageTable:
     """Get the usage table."""
-    table = UsageTable(title="Usage", rows=[])
+    table = UsageTable(rows=[])
 
     # Add rows for each tool
     for tool in ALL_TOOLS:

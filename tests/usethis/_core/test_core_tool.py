@@ -2007,7 +2007,7 @@ minversion = "7\""""
         def test_pytest_ini_priority(self, uv_init_dir: Path):
             # Arrange
             (uv_init_dir / "pytest.ini").touch()
-            (uv_init_dir / "pyproject.toml").touch()
+            (uv_init_dir / "uv.lock").touch()
 
             # Act
             with change_cwd(uv_init_dir), files_manager():

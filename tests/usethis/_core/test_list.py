@@ -31,11 +31,11 @@ class TestGetUsageTable:
 
         # Assert
         expected = UsageTable(
-            title="Usage",
             rows=[
                 UsageRow(category="tool", name="Codespell", status="unused"),
                 UsageRow(category="tool", name="coverage", status="unused"),
                 UsageRow(category="tool", name="deptry", status="unused"),
+                UsageRow(category="tool", name="Import Linter", status="unused"),
                 UsageRow(category="tool", name="pre-commit", status="unused"),
                 UsageRow(category="tool", name="pyproject-fmt", status="unused"),
                 UsageRow(category="tool", name="pyproject.toml", status="unused"),
@@ -59,11 +59,11 @@ class TestGetUsageTable:
 
         # Assert
         expected = UsageTable(
-            title="Usage",
             rows=[
                 UsageRow(category="tool", name="Codespell", status="unused"),
                 UsageRow(category="tool", name="coverage", status="unused"),
                 UsageRow(category="tool", name="deptry", status="unused"),
+                UsageRow(category="tool", name="Import Linter", status="unused"),
                 UsageRow(category="tool", name="pre-commit", status="unused"),
                 UsageRow(category="tool", name="pyproject-fmt", status="unused"),
                 UsageRow(category="tool", name="pyproject.toml", status="unused"),
@@ -84,11 +84,11 @@ class TestGetUsageTable:
 
         # Assert
         expected = UsageTable(
-            title="Usage",
             rows=[
                 UsageRow(category="tool", name="Codespell", status="unused"),
                 UsageRow(category="tool", name="coverage", status="unused"),
                 UsageRow(category="tool", name="deptry", status="unused"),
+                UsageRow(category="tool", name="Import Linter", status="unused"),
                 UsageRow(category="tool", name="pre-commit", status="unused"),
                 UsageRow(category="tool", name="pyproject-fmt", status="unused"),
                 UsageRow(category="tool", name="pyproject.toml", status="used"),

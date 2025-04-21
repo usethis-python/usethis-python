@@ -2,7 +2,9 @@ import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._config_file import files_manager
+from usethis._console import err_print
 from usethis._core.show import show_name, show_sonarqube_config
+from usethis.errors import UsethisError
 
 app = typer.Typer(help="Show information about the current project.")
 
@@ -13,7 +15,11 @@ def name(
     quiet: bool = quiet_opt,
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
-        show_name()
+        try:
+            show_name()
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None
 
 
 @app.command(
@@ -25,4 +31,8 @@ def sonarqube(
     quiet: bool = quiet_opt,
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
-        show_sonarqube_config()
+        try:
+            show_sonarqube_config()
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

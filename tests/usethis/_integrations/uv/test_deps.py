@@ -7,9 +7,11 @@ import usethis._integrations
 import usethis._integrations.uv
 import usethis._integrations.uv.deps
 from usethis._config import usethis_config
+from usethis._config_file import files_manager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.deps import (
     Dependency,
+    add_default_groups,
     add_deps_to_group,
     get_default_groups,
     get_dep_groups,
@@ -20,6 +22,7 @@ from usethis._integrations.uv.deps import (
     remove_deps_from_group,
 )
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
+from usethis._integrations.uv.toml import UVTOMLManager
 from usethis._test import change_cwd
 
 
@@ -651,6 +654,25 @@ default-groups = ["test"]
             assert set(default_groups) == {"test"}
 
 
+class TestAddDefaultGroups:
+    def test_uv_toml(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "uv.toml").touch()
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            add_default_groups(["test"])
+
+        # Assert
+        with change_cwd(tmp_path), UVTOMLManager():
+            assert (
+                (tmp_path / "uv.toml").read_text()
+                == """\
+default-groups = ["test"]
+"""
+            )
+
+
 class TestGetDefaultGroups:
     def test_empty_pyproject_toml(self, tmp_path: Path):
         # Arrange
@@ -671,6 +693,39 @@ default-groups = "not a list"
 """)
 
         with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Act
+            result = get_default_groups()
+
+            # Assert
+            assert result == []
+
+    def test_uv_toml(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "uv.toml").write_text("""\
+default-groups = ["test"]
+""")
+        # Even if the pyproject.toml disagrees!
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["doc"]
+""")
+
+        with change_cwd(tmp_path), files_manager():
+            # Act
+            result = get_default_groups()
+
+            # Assert
+            assert result == ["test"]
+
+    def test_uv_toml_empty(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "uv.toml").touch()
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["doc"]
+""")
+
+        with change_cwd(tmp_path), files_manager():
             # Act
             result = get_default_groups()
 

@@ -51,6 +51,18 @@ class TestRuff:
         # Assert
         assert result.exit_code == 0, result.output
 
+    def test_wrong_encoding(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("utf-8", encoding="utf-16")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["ruff"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
 
 class TestPreCommit:
     def test_add(self, tmp_path: Path):

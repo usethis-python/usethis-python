@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+import re
 from abc import abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeAlias, TypeVar
+
+from typing_extensions import assert_never
 
 from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from types import TracebackType
     from typing import Any, ClassVar
 
     from typing_extensions import Self
+
 
 DocumentT = TypeVar("DocumentT")
 
@@ -165,39 +170,69 @@ class UsethisFileManager(Generic[DocumentT]):
         self._content_by_path.pop(self.path, None)
 
 
+Key: TypeAlias = str | re.Pattern
+
+
 class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
     """A manager for files which store (at least some) values in key-value mappings."""
 
     @abstractmethod
-    def __contains__(self, keys: list[str]) -> bool:
+    def __contains__(self, keys: Sequence[Key]) -> bool:
         """Check if a key exists in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def __getitem__(self, keys: list[str]) -> Any:
+    def __getitem__(self, keys: Sequence[Key]) -> Any:
         raise NotImplementedError
 
-    def __setitem__(self, keys: list[str], value: Any) -> None:
+    def __setitem__(self, keys: Sequence[Key], value: Any) -> None:
         """Set a value in the configuration file."""
         return self.set_value(keys=keys, value=value, exists_ok=True)
 
-    def __delitem__(self, keys: list[str]) -> None:
+    def __delitem__(self, keys: Sequence[Key]) -> None:
         """Remove a value from the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
     def set_value(
-        self, *, keys: list[str], value: Any, exists_ok: bool = False
+        self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def extend_list(self, *, keys: list[str], values: list[Any]) -> None:
+    def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
         """Extend a list in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def remove_from_list(self, *, keys: list[str], values: list[Any]) -> None:
+    def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
         """Remove values from a list in the configuration file."""
         raise NotImplementedError
+
+
+def print_keys(keys: Sequence[Key]) -> str:
+    r"""Convert a list of keys to a string.
+
+    Args:
+        keys: A list of keys.
+
+    Returns:
+        A string representation of the keys.
+
+    Examples:
+        >>> print_keys(["tool", "ruff", "line-length"])
+        'tool.ruff.line-length'
+        >>> print_keys([re.compile(r"importlinter:contracts:.*")])
+        '<REGEX("importlinter:contracts:.*")>'
+    """
+    components = []
+    for key in keys:
+        if isinstance(key, str):
+            components.append(key)
+        elif isinstance(key, re.Pattern):
+            components.append(f'<REGEX("{key.pattern}")>')
+        else:
+            assert_never(key)
+
+    return ".".join(components)

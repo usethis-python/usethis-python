@@ -8,6 +8,7 @@ from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.file.toml.io_ import TOMLFileManager
+from usethis._integrations.uv.toml import UVTOMLManager
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -22,9 +23,11 @@ def files_manager() -> Iterator[None]:
         CoverageRCManager(),
         DotRuffTOMLManager(),
         DotPytestINIManager(),
+        DotImportLinterManager(),
         PytestINIManager(),
         RuffTOMLManager(),
         ToxINIManager(),
+        UVTOMLManager(),
     ):
         yield
 
@@ -45,12 +48,12 @@ class CoverageRCManager(INIFileManager):
         return Path(".coveragerc")
 
 
-class DotRuffTOMLManager(TOMLFileManager):
-    """Class to manage the .ruff.toml file."""
+class DotImportLinterManager(INIFileManager):
+    """Class to manage the .importlinter file."""
 
     @property
     def relative_path(self) -> Path:
-        return Path(".ruff.toml")
+        return Path(".importlinter")
 
 
 class DotPytestINIManager(INIFileManager):
@@ -59,6 +62,14 @@ class DotPytestINIManager(INIFileManager):
     @property
     def relative_path(self) -> Path:
         return Path(".pytest.ini")
+
+
+class DotRuffTOMLManager(TOMLFileManager):
+    """Class to manage the .ruff.toml file."""
+
+    @property
+    def relative_path(self) -> Path:
+        return Path(".ruff.toml")
 
 
 class PytestINIManager(INIFileManager):

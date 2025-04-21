@@ -14,7 +14,7 @@ from usethis._integrations.pre_commit.core import (
 )
 from usethis._integrations.pre_commit.hooks import (
     add_placeholder_hook,
-    get_hook_names,
+    get_hook_ids,
 )
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.uv.call import call_uv_subprocess
@@ -24,6 +24,7 @@ from usethis._tool import (
     CodespellTool,
     CoverageTool,
     DeptryTool,
+    ImportLinterTool,
     PreCommitTool,
     PyprojectFmtTool,
     PyprojectTOMLTool,
@@ -94,6 +95,28 @@ def use_deptry(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
+def use_import_linter(*, remove: bool = False) -> None:
+    tool = ImportLinterTool()
+
+    ensure_pyproject_toml()
+
+    if not remove:
+        tool.add_dev_deps()
+        tool.add_configs()
+        if PreCommitTool().is_used():
+            tool.add_pre_commit_repo_configs()
+        else:
+            tool.update_bitbucket_steps()
+
+        tool.print_how_to_use()
+    else:
+        tool.remove_pre_commit_repo_configs()
+        tool.remove_bitbucket_steps()
+        tool.remove_configs()
+        tool.remove_dev_deps()
+        tool.remove_managed_files()
+
+
 def use_pre_commit(*, remove: bool = False) -> None:
     tool = PreCommitTool()
     pyproject_fmt_tool = PyprojectFmtTool()
@@ -119,7 +142,7 @@ def use_pre_commit(*, remove: bool = False) -> None:
         if requirements_txt_tool.is_used():
             requirements_txt_tool.print_how_to_use()
 
-        if not get_hook_names():
+        if not get_hook_ids():
             add_placeholder_hook()
 
         install_pre_commit_hooks()
@@ -306,8 +329,8 @@ def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
     if minimal:
         add_basic_rules = False
     elif (
-        all(tool._is_pydocstyle_rule(rule) for rule in tool.get_rules())
-        or not RuffTool().get_rules()
+        all(tool._is_pydocstyle_rule(rule) for rule in tool.get_selected_rules())
+        or not RuffTool().get_selected_rules()
     ):
         add_basic_rules = True
     else:
@@ -322,6 +345,7 @@ def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
             "E9",
             "EM",
             "F",
+            "FLY",
             "FURB",
             "I",
             "PLE",
@@ -331,8 +355,9 @@ def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
             "UP",
         ]
         for _tool in ALL_TOOLS:
-            if _tool.is_used():
-                rules += _tool.get_associated_ruff_rules()
+            associated_rules = _tool.get_associated_ruff_rules()
+            if associated_rules and _tool.is_used():
+                rules += associated_rules
         ignored_rules = [
             "PLR2004",  # https://github.com/nathanjmcdougall/usethis-python/issues/105
             "SIM108",  # https://github.com/nathanjmcdougall/usethis-python/issues/118

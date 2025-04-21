@@ -21,6 +21,18 @@ class TestName:
         assert result.exit_code == 0, result.output
         assert result.output == """fun\n"""
 
+    def test_invalid_pyproject(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("[")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["name"])
+
+        # Assert
+        assert result.exit_code == 1, result.output
+
 
 class TestSonarqube:
     def test_runs(self, tmp_path: Path):
@@ -45,6 +57,18 @@ project-key = "fun"
     def test_missing_key(self, tmp_path: Path):
         # Arrange
         (tmp_path / "pyproject.toml").touch()
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["sonarqube"])
+
+        # Assert
+        assert result.exit_code == 1, result.output
+
+    def test_invalid_pyproject(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("[")
 
         # Act
         runner = CliRunner()

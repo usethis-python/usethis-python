@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import functools
 import re
 from abc import abstractmethod
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal, Protocol, TypeAlias
 
@@ -11,13 +13,14 @@ from typing_extensions import Self, assert_never
 from usethis._config_file import (
     CodespellRCManager,
     CoverageRCManager,
+    DotImportLinterManager,
     DotPytestINIManager,
     DotRuffTOMLManager,
     PytestINIManager,
     RuffTOMLManager,
     ToxINIManager,
 )
-from usethis._console import box_print, info_print, tick_print
+from usethis._console import box_print, info_print, tick_print, warn_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -30,9 +33,15 @@ from usethis._integrations.ci.bitbucket.steps import (
     remove_bitbucket_step_from_default,
 )
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
+from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
-from usethis._integrations.pre_commit.hooks import add_repo, get_hook_names, remove_hook
+from usethis._integrations.pre_commit.hooks import (
+    _hook_ids_are_equivalent,
+    add_repo,
+    get_hook_ids,
+    remove_hook,
+)
 from usethis._integrations.pre_commit.schema import (
     FileType,
     FileTypes,
@@ -41,16 +50,25 @@ from usethis._integrations.pre_commit.schema import (
     LocalRepo,
     UriRepo,
 )
+from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
+from usethis._integrations.project.errors import ImportGraphBuildFailedError
+from usethis._integrations.project.imports import (
+    LayeredArchitecture,
+    get_layered_architectures,
+)
 from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.project.name import get_project_name
+from usethis._integrations.project.packages import get_importable_packages
 from usethis._integrations.uv.deps import (
     Dependency,
     add_deps_to_group,
     is_dep_in_any_group,
     remove_deps_from_group,
 )
+from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._integrations.uv.used import is_uv_used
-from usethis._io import KeyValueFileManager
+from usethis._io import Key, KeyValueFileManager
 
 ResolutionT: TypeAlias = Literal["first", "bespoke"]
 
@@ -98,6 +116,10 @@ class _NoConfigValue:
     pass
 
 
+def _get_no_config_value() -> _NoConfigValue:
+    return _NoConfigValue()
+
+
 class ConfigEntry(BaseModel):
     """A configuration entry in a config file associated with a tool.
 
@@ -110,8 +132,8 @@ class ConfigEntry(BaseModel):
 
     """
 
-    keys: list[str]
-    value: Any | InstanceOf[_NoConfigValue] = _NoConfigValue()
+    keys: list[Key]
+    get_value: Callable[[], Any] = _get_no_config_value
 
 
 class ConfigItem(BaseModel):
@@ -126,6 +148,8 @@ class ConfigItem(BaseModel):
                  removed. This might be set to False if we are modifying other tools'
                  config sections or shared config sections that are pre-requisites for
                  using this tool but might be relied on by other tools as well.
+        force: Whether to overwrite any existing configuration entry. Defaults to false,
+               in which case existing configuration is left as-is for the entry.
         applies_to_all: Whether all file managers should support this config item, or
                         whether it is optional and is only desirable if we know in
                         advance what the file managers are which are being used.
@@ -142,6 +166,7 @@ class ConfigItem(BaseModel):
     description: str | None = None
     root: dict[Path, ConfigEntry]
     managed: bool = True
+    force: bool = False
     applies_to_all: bool = True
 
     @property
@@ -203,10 +228,6 @@ class Tool(Protocol):
         """Get the pre-commit repository configurations for the tool."""
         return []
 
-    def get_associated_ruff_rules(self) -> list[str]:
-        """Get the Ruff rule codes associated with the tool."""
-        return []
-
     def get_managed_files(self) -> list[Path]:
         """Get (relative) paths to files managed by (solely) this tool."""
         return []
@@ -235,7 +256,7 @@ class Tool(Protocol):
 
             for path, entry in config_item.root.items():
                 file_manager = config_spec.file_manager_by_relative_path[path]
-                if entry.keys in file_manager:
+                if file_manager.__contains__(entry.keys):
                     return True
 
         return False
@@ -269,7 +290,10 @@ class Tool(Protocol):
                 raise NotImplementedError(msg)
 
             for hook in repo_config.hooks:
-                if hook.id not in get_hook_names():
+                if not any(
+                    _hook_ids_are_equivalent(hook.id, hook_id)
+                    for hook_id in get_hook_ids()
+                ):
                     # This will remove the placeholder, if present.
                     add_repo(repo_config)
 
@@ -289,24 +313,36 @@ class Tool(Protocol):
 
             # Remove the config for this specific tool.
             for hook in repo_config.hooks:
-                if hook.id in get_hook_names():
+                if hook.id in get_hook_ids():
                     remove_hook(hook.id)
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         """Get relative paths to all active configuration files."""
         config_spec = self.get_config_spec()
         resolution = config_spec.resolution
+        return self._get_active_config_file_managers_from_resolution(
+            resolution,
+            file_manager_by_relative_path=config_spec.file_manager_by_relative_path,
+        )
+
+    def _get_active_config_file_managers_from_resolution(
+        self,
+        resolution: ResolutionT,
+        *,
+        file_manager_by_relative_path: dict[Path, KeyValueFileManager],
+    ) -> set[KeyValueFileManager]:
         if resolution == "first":
             # N.B. keep this roughly in sync with the bespoke logic for pytest
+            # since that logic is based on this logic.
             for (
                 relative_path,
                 file_manager,
-            ) in config_spec.file_manager_by_relative_path.items():
+            ) in file_manager_by_relative_path.items():
                 path = Path.cwd() / relative_path
                 if path.exists() and path.is_file():
                     return {file_manager}
 
-            file_managers = config_spec.file_manager_by_relative_path.values()
+            file_managers = file_manager_by_relative_path.values()
             if not file_managers:
                 return set()
 
@@ -385,7 +421,7 @@ class Tool(Protocol):
 
             (entry,) = config_entries
 
-            if isinstance(entry.value, _NoConfigValue):
+            if isinstance(entry.get_value(), _NoConfigValue):
                 # No value to add, so skip this config item.
                 continue
 
@@ -403,12 +439,17 @@ class Tool(Protocol):
 
             # Now, use the highest-prority file manager to add the config
             (used_file_manager,) = file_managers
+
+            if not config_item.force and entry.keys in used_file_manager:
+                # We won't overwrite, so skip if there is already a value set.
+                continue
+
             if first_addition:
                 tick_print(
                     f"Adding {self.name} config to '{used_file_manager.relative_path}'."
                 )
                 first_addition = False
-            used_file_manager[entry.keys] = entry.value
+            used_file_manager[entry.keys] = entry.get_value()
 
     def remove_configs(self) -> None:
         """Remove the tool's configuration sections.
@@ -493,6 +534,53 @@ class Tool(Protocol):
             ):
                 remove_bitbucket_step_from_default(step)
 
+    def get_associated_ruff_rules(self) -> list[str]:
+        """Get the Ruff rule codes associated with the tool.
+
+        These are managed rules and it is assumed that they can be removed if the tool
+        is removed. It only makes sense to include rules which are tightly bound
+        with the tool.
+        """
+        # For other rules which are not tightly bound to the tool, see
+        # https://github.com/nathanjmcdougall/usethis-python/issues/499
+        return []
+
+    def is_managed_rule(self, rule: str) -> bool:
+        """Determine if a rule is managed by this tool."""
+        return False
+
+    def select_rules(self, rules: list[str]) -> None:
+        """Select the rules managed by the tool.
+
+        These rules are not validated; it is assumed they are valid rules for the tool,
+        and that the tool will be able to manage them.
+        """
+
+    def get_selected_rules(self) -> list[str]:
+        """Get the rules managed by the tool that are currently selected."""
+        return []
+
+    def ignore_rules(self, rules: list[str]) -> None:
+        """Ignore rules managed by the tool.
+
+        Ignoring a rule is different from deselecting it - it means that even if it
+        selected, it will not take effect. See the way that Ruff configuration works to
+        understand this concept in more detail.
+
+        These rules are not validated; it is assumed they are valid rules for the tool,
+        and that the tool will be able to manage them.
+        """
+
+    def get_ignored_rules(self) -> list[str]:
+        """Get the ignored rules managed by the tool."""
+        return []
+
+    def deselect_rules(self, rules: list[str]) -> None:
+        """Deselect the rules managed by the tool.
+
+        Any rules that aren't already selected are ignored.
+        """
+
 
 class CodespellTool(Tool):
     # https://github.com/codespell-project/codespell
@@ -542,15 +630,15 @@ class CodespellTool(Tool):
                     root={
                         Path(".codespellrc"): ConfigEntry(
                             keys=["codespell", "ignore-regex"],
-                            value="[A-Za-z0-9+/]{100,}",
+                            get_value=lambda: "[A-Za-z0-9+/]{100,}",
                         ),
                         Path("setup.cfg"): ConfigEntry(
                             keys=["codespell", "ignore-regex"],
-                            value="[A-Za-z0-9+/]{100,}",
+                            get_value=lambda: "[A-Za-z0-9+/]{100,}",
                         ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "codespell", "ignore-regex"],
-                            value=["[A-Za-z0-9+/]{100,}"],
+                            get_value=lambda: ["[A-Za-z0-9+/]{100,}"],
                         ),
                     },
                 ),
@@ -574,7 +662,7 @@ class CodespellTool(Tool):
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
             BitbucketStep(
-                name="Run Codespell",
+                name=f"Run {self.name}",
                 caches=["uv"],
                 script=BitbucketScript(
                     [
@@ -613,18 +701,18 @@ class CoverageTool(Tool):
     def get_config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
 
-        run = {"source": [get_source_dir_str()]}
-        report = {
-            "exclude_also": [
-                "if TYPE_CHECKING:",
-                "raise AssertionError",
-                "raise NotImplementedError",
-                "assert_never(.*)",
-                "class .*\\bProtocol\\):",
-                "@(abc\\.)?abstractmethod",
-            ],
-            "omit": ["*/pytest-of-*/*"],
-        }
+        exclude_also = [
+            "if TYPE_CHECKING:",
+            "raise AssertionError",
+            "raise NotImplementedError",
+            "assert_never(.*)",
+            "class .*\\bProtocol\\):",
+            "@(abc\\.)?abstractmethod",
+        ]
+        omit = ["*/pytest-of-*/*"]
+
+        def _get_source():
+            return [get_source_dir_str()]
 
         return ConfigSpec.from_flat(
             file_managers=[
@@ -648,28 +736,79 @@ class CoverageTool(Tool):
                 ConfigItem(
                     description="Run Configuration",
                     root={
-                        Path(".coveragerc"): ConfigEntry(keys=["run"], value=run),
-                        Path("setup.cfg"): ConfigEntry(
-                            keys=["coverage:run"], value=run
-                        ),
-                        Path("tox.ini"): ConfigEntry(keys=["coverage:run"], value=run),
+                        Path(".coveragerc"): ConfigEntry(keys=["run"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:run"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:run"]),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "coverage", "run"], value=run
+                            keys=["tool", "coverage", "run"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Source Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(
+                            keys=["run", "source"], get_value=_get_source
+                        ),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["coverage:run", "source"], get_value=_get_source
+                        ),
+                        Path("tox.ini"): ConfigEntry(
+                            keys=["coverage:run", "source"], get_value=_get_source
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "run", "source"],
+                            get_value=_get_source,
                         ),
                     },
                 ),
                 ConfigItem(
                     description="Report Configuration",
                     root={
-                        Path(".coveragerc"): ConfigEntry(keys=["report"], value=report),
+                        Path(".coveragerc"): ConfigEntry(keys=["report"]),
+                        Path("setup.cfg"): ConfigEntry(keys=["coverage:report"]),
+                        Path("tox.ini"): ConfigEntry(keys=["coverage:report"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "report"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Exclude Also Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(
+                            keys=["report", "exclude_also"],
+                            get_value=lambda: exclude_also,
+                        ),
                         Path("setup.cfg"): ConfigEntry(
-                            keys=["coverage:report"], value=report
+                            keys=["coverage:report", "exclude_also"],
+                            get_value=lambda: exclude_also,
                         ),
                         Path("tox.ini"): ConfigEntry(
-                            keys=["coverage:report"], value=report
+                            keys=["coverage:report", "exclude_also"],
+                            get_value=lambda: exclude_also,
                         ),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "coverage", "report"], value=report
+                            keys=["tool", "coverage", "report", "exclude_also"],
+                            get_value=lambda: exclude_also,
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Omit Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(
+                            keys=["report", "omit"], get_value=lambda: omit
+                        ),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["coverage:report", "omit"], get_value=lambda: omit
+                        ),
+                        Path("tox.ini"): ConfigEntry(
+                            keys=["coverage:report", "omit"], get_value=lambda: omit
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "report", "omit"],
+                            get_value=lambda: omit,
                         ),
                     },
                 ),
@@ -786,7 +925,7 @@ class DeptryTool(Tool):
         _dir = get_source_dir_str()
         return [
             BitbucketStep(
-                name="Run Deptry",
+                name=f"Run {self.name}",
                 caches=["uv"],
                 script=BitbucketScript(
                     [
@@ -797,11 +936,355 @@ class DeptryTool(Tool):
             )
         ]
 
+    def is_managed_rule(self, rule: str) -> bool:
+        return rule.startswith("DEP") and rule[3:].isdigit()
+
     def select_rules(self, rules: list[str]) -> None:
-        raise NotImplementedError
+        """Does nothing for deptry - all rules are automatically enabled by default."""
+
+    def get_selected_rules(self) -> list[str]:
+        """No notion of selection for deptry.
+
+        This doesn't mean rules won't be enabled, it just means we don't keep track
+        of selection for them.
+        """
+        return []
 
     def deselect_rules(self, rules: list[str]) -> None:
-        raise NotImplementedError
+        """Does nothing for deptry - all rules are automatically enabled by default."""
+
+    def ignore_rules(self, rules: list[str]) -> None:
+        rules = sorted(set(rules) - set(self.get_ignored_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
+        (file_manager,) = self.get_active_config_file_managers()
+        _ensure_exists(file_manager)
+        tick_print(
+            f"Ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
+        keys = self._get_ignore_keys(file_manager)
+        file_manager.extend_list(keys=keys, values=rules)
+
+    def get_ignored_rules(self) -> list[str]:
+        (file_manager,) = self.get_active_config_file_managers()
+        keys = self._get_ignore_keys(file_manager)
+        try:
+            rules: list[str] = file_manager[keys]
+        except (KeyError, FileNotFoundError):
+            rules = []
+
+        return rules
+
+    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
+        """Get the keys for the ignored rules in the given file manager."""
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "deptry", "ignore"]
+        else:
+            msg = (
+                f"Unknown location for ignored {self.name} rules for file manager "
+                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+            )
+            raise NotImplementedError(msg)
+
+
+IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
+
+
+class ImportLinterTool(Tool):
+    # https://github.com/seddonym/import-linter
+
+    @property
+    def name(self) -> str:
+        return "Import Linter"
+
+    def print_how_to_use(self) -> None:
+        if PreCommitTool().is_used():
+            if is_uv_used():
+                box_print(
+                    f"Run 'uv run pre-commit run import-linter --all-files' to run {self.name}."
+                )
+            else:
+                box_print(
+                    f"Run 'pre-commit run import-linter --all-files' to run {self.name}."
+                )
+        elif is_uv_used():
+            box_print(f"Run 'uv run lint-imports' to run {self.name}.")
+        else:
+            box_print(f"Run 'lint-imports' to run {self.name}.")
+
+    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        # We need to add the import-linter package itself as a dev dependency.
+        # This is because it needs to run from within the virtual environment.
+        return [Dependency(name="import-linter")]
+
+    def get_config_spec(self) -> ConfigSpec:
+        # https://import-linter.readthedocs.io/en/stable/usage.html
+
+        layered_architecture_by_module_by_root_package = (
+            self._get_layered_architecture_by_module_by_root_package()
+        )
+
+        min_depth = min(
+            (
+                module.count(".")
+                for layered_architecture_by_module in layered_architecture_by_module_by_root_package.values()
+                for module in layered_architecture_by_module
+                if any(
+                    layered_architecture.module_count()
+                    >= IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT
+                    for layered_architecture in layered_architecture_by_module.values()
+                )
+            ),
+            default=0,
+        )
+
+        contracts: list[dict] = []
+        for (
+            layered_architecture_by_module
+        ) in layered_architecture_by_module_by_root_package.values():
+            for module, layered_architecture in layered_architecture_by_module.items():
+                # We only skip if we have at least one contract.
+                if len(contracts) > 0 and (
+                    (
+                        # Skip if the contract isn't big enough to be notable.
+                        layered_architecture.module_count()
+                        < IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT
+                    )
+                    and
+                    # We have waited until we have finished a complete depth level
+                    # (e.g. we have done all of a.b, a.c, and a.d so we won't go on to
+                    # a.b.e)
+                    module.count(".") > min_depth
+                ):
+                    continue
+
+                layers = []
+                for layer in layered_architecture.layers:
+                    layers.append(" | ".join(sorted(layer)))
+
+                contract = {
+                    "name": module,
+                    "type": "layers",
+                    "layers": layers,
+                    "containers": [module],
+                    "exhaustive": True,
+                }
+
+                if layered_architecture.excluded:
+                    contract["exhaustive_ignores"] = sorted(
+                        layered_architecture.excluded
+                    )
+
+                contracts.append(contract)
+
+        if not contracts:
+            raise AssertionError
+
+        def get_root_packages() -> list[str] | _NoConfigValue:
+            # There are two configuration items which are very similar:
+            # root_packages = ["usethis"]  # noqa: ERA001
+            # root_package = "usethis" # noqa: ERA001
+            # Maybe at a later point we can abstract this case of variant config
+            # into ConfigEntry but it seems premautre, so for now for Import Linter
+            # we manually check this case. This might give somewhat reduced performance,
+            # perhaps.
+            if self._is_root_package_singular():
+                return _NoConfigValue()
+            return list(layered_architecture_by_module_by_root_package.keys())
+
+        # We're only going to add the INI contracts if there aren't already any
+        # contracts, so we need to check if there are any contracts.
+        are_active_ini_contracts = self._are_active_ini_contracts()
+
+        ini_contracts_config_items = []
+        for idx, contract in enumerate(contracts):
+            if are_active_ini_contracts:
+                continue
+
+            # Cast bools to strings for INI files
+            ini_contract = contract.copy()
+            ini_contract["exhaustive"] = str(ini_contract["exhaustive"])
+
+            ini_contracts_config_items.append(
+                ConfigItem(
+                    description=f"Itemized Contract {idx} (INI)",
+                    root={
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=[f"importlinter:contract:{idx}"],
+                            get_value=lambda c=ini_contract: c,
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=[f"importlinter:contract:{idx}"],
+                            get_value=lambda c=ini_contract: c,
+                        ),
+                    },
+                    applies_to_all=False,
+                )
+            )
+
+        return ConfigSpec(
+            file_manager_by_relative_path=self._get_file_manager_by_relative_path(),
+            resolution=self._get_resolution(),
+            config_items=[
+                ConfigItem(
+                    description="Overall config",
+                    root={
+                        Path("setup.cfg"): ConfigEntry(keys=["importlinter"]),
+                        Path(".importlinter"): ConfigEntry(keys=["importlinter"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "importlinter"]
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Root packages",
+                    root={
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["importlinter", "root_packages"],
+                            get_value=get_root_packages,
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=["importlinter", "root_packages"],
+                            get_value=get_root_packages,
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "importlinter", "root_packages"],
+                            get_value=get_root_packages,
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Listed Contracts",
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "importlinter", "contracts"],
+                            get_value=lambda: contracts,
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=[re.compile("importlinter:contract:.*")]
+                        ),
+                        Path(".importlinter"): ConfigEntry(
+                            keys=[re.compile("importlinter:contract:.*")]
+                        ),
+                    },
+                    applies_to_all=False,
+                ),
+                *ini_contracts_config_items,
+            ],
+        )
+
+    def _get_layered_architecture_by_module_by_root_package(
+        self,
+    ) -> dict[str, dict[str, LayeredArchitecture]]:
+        root_packages = sorted(get_importable_packages())
+        if not root_packages:
+            # Couldn't find any packages, we're assuming the package name is the name
+            # of the project. Warn the user accordingly.
+            name = get_project_name()
+            _importlinter_warn_no_packages_found(name)
+            root_packages = [name]
+
+        layered_architecture_by_module_by_root_package = {}
+        for root_package in root_packages:
+            try:
+                layered_architecture_by_module = get_layered_architectures(root_package)
+            except ImportGraphBuildFailedError:
+                layered_architecture_by_module = {
+                    root_package: LayeredArchitecture(layers=[], excluded=set())
+                }
+
+            layered_architecture_by_module = dict(
+                sorted(
+                    layered_architecture_by_module.items(),
+                    key=lambda item: item[0].count("."),
+                )
+            )
+
+            layered_architecture_by_module_by_root_package[root_package] = (
+                layered_architecture_by_module
+            )
+
+        return layered_architecture_by_module_by_root_package
+
+    def _get_resolution(self) -> ResolutionT:
+        return "first"
+
+    def _get_file_manager_by_relative_path(self) -> dict[Path, KeyValueFileManager]:
+        return {
+            Path("setup.cfg"): SetupCFGManager(),
+            Path(".importlinter"): DotImportLinterManager(),
+            Path("pyproject.toml"): PyprojectTOMLManager(),
+        }
+
+    def _are_active_ini_contracts(self) -> bool:
+        # Consider active config manager, and see if there's a matching regex
+        # for the contract in the INI file.
+        (file_manager,) = self._get_active_config_file_managers_from_resolution(
+            self._get_resolution(),
+            file_manager_by_relative_path=self._get_file_manager_by_relative_path(),
+        )
+        if not isinstance(file_manager, INIFileManager):
+            return False
+        return [re.compile("importlinter:contract:.*")] in file_manager
+
+    def _is_root_package_singular(self) -> bool:
+        (file_manager,) = self._get_active_config_file_managers_from_resolution(
+            self._get_resolution(),
+            file_manager_by_relative_path=self._get_file_manager_by_relative_path(),
+        )
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "importlinter", "root_package"] in file_manager
+        elif isinstance(file_manager, SetupCFGManager | DotImportLinterManager):
+            return ["importlinter", "root_package"] in file_manager
+        else:
+            msg = f"Unsupported file manager: {file_manager}"
+            raise NotImplementedError(msg)
+
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+        return [
+            LocalRepo(
+                repo="local",
+                hooks=[
+                    HookDefinition(
+                        id="import-linter",
+                        name="import-linter",
+                        pass_filenames=False,
+                        entry="uv run --frozen --offline lint-imports",
+                        language=Language("system"),
+                        require_serial=True,
+                        always_run=True,
+                    )
+                ],
+            )
+        ]
+
+    def get_managed_files(self) -> list[Path]:
+        return [Path(".importlinter")]
+
+    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        return [
+            BitbucketStep(
+                name=f"Run {self.name}",
+                caches=["uv"],
+                script=BitbucketScript(
+                    [
+                        BitbucketScriptItemAnchor(name="install-uv"),
+                        "uv run lint-imports",
+                    ]
+                ),
+            )
+        ]
+
+
+@functools.cache
+def _importlinter_warn_no_packages_found(name: str) -> None:
+    warn_print("Could not find any importable packages.")
+    warn_print(f"Assuming the package name is {name}.")
 
 
 class PreCommitTool(Tool):
@@ -827,7 +1310,7 @@ class PreCommitTool(Tool):
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
             BitbucketStep(
-                name="Run pre-commit",
+                name=f"Run {self.name}",
                 caches=["uv", "pre-commit"],
                 script=BitbucketScript(
                     [
@@ -849,16 +1332,16 @@ class PyprojectFmtTool(Tool):
         if PreCommitTool().is_used():
             if is_uv_used():
                 box_print(
-                    "Run 'uv run pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
+                    f"Run 'uv run pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
             else:
                 box_print(
-                    "Run 'pre-commit run pyproject-fmt --all-files' to run pyproject-fmt."
+                    f"Run 'pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
         elif is_uv_used():
-            box_print("Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.")
+            box_print(f"Run 'uv run pyproject-fmt pyproject.toml' to run {self.name}.")
         else:
-            box_print("Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.")
+            box_print(f"Run 'pyproject-fmt pyproject.toml' to run {self.name}.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pyproject-fmt")]
@@ -870,14 +1353,22 @@ class PyprojectFmtTool(Tool):
             resolution="first",
             config_items=[
                 ConfigItem(
-                    description="Overall config",
+                    description="Overall Config",
                     root={
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "pyproject-fmt"],
-                            value={"keep_full_version": True},
+                            keys=["tool", "pyproject-fmt"]
                         )
                     },
-                )
+                ),
+                ConfigItem(
+                    description="Keep Full Version",
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "pyproject-fmt", "keep_full_version"],
+                            get_value=lambda: True,
+                        )
+                    },
+                ),
             ],
         )
 
@@ -893,7 +1384,7 @@ class PyprojectFmtTool(Tool):
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
             BitbucketStep(
-                name="Run pyproject-fmt",
+                name=f"Run {self.name}",
                 caches=["uv"],
                 script=BitbucketScript(
                     [
@@ -992,6 +1483,19 @@ class PytestTool(Tool):
             "log_cli_level": "INFO",  # include all >=INFO level log messages (sp-repo-review)
             "minversion": "7",  # minimum pytest version (sp-repo-review)
         }
+
+        source_dir_str = get_source_dir_str()
+        set_pythonpath = (
+            not is_uv_used() or not has_pyproject_toml_declared_build_system()
+        )
+        if set_pythonpath:
+            if source_dir_str == ".":
+                value["pythonpath"] = []
+            elif source_dir_str == "src":
+                value["pythonpath"] = ["src"]
+            else:
+                assert_never(source_dir_str)
+
         value_ini = value.copy()
         # https://docs.pytest.org/en/stable/reference/reference.html#confval-xfail_strict
         value_ini["xfail_strict"] = "True"  # stringify boolean
@@ -1020,17 +1524,20 @@ class PytestTool(Tool):
                     description="INI-Style Options",
                     root={
                         Path("pytest.ini"): ConfigEntry(
-                            keys=["pytest"], value=value_ini
+                            keys=["pytest"], get_value=lambda: value_ini
                         ),
                         Path(".pytest.ini"): ConfigEntry(
-                            keys=["pytest"], value=value_ini
+                            keys=["pytest"], get_value=lambda: value_ini
                         ),
                         Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "pytest", "ini_options"], value=value
+                            keys=["tool", "pytest", "ini_options"],
+                            get_value=lambda: value,
                         ),
-                        Path("tox.ini"): ConfigEntry(keys=["pytest"], value=value_ini),
+                        Path("tox.ini"): ConfigEntry(
+                            keys=["pytest"], get_value=lambda: value_ini
+                        ),
                         Path("setup.cfg"): ConfigEntry(
-                            keys=["tool:pytest"], value=value_ini
+                            keys=["tool:pytest"], get_value=lambda: value_ini
                         ),
                     },
                 ),
@@ -1143,7 +1650,12 @@ class RequirementsTxtTool(Tool):
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
-            box_print("Run the 'pre-commit run uv-export' to write 'requirements.txt'.")
+            if is_uv_used():
+                box_print(
+                    "Run 'uv run pre-commit run uv-export' to write 'requirements.txt'."
+                )
+            else:
+                box_print("Run 'pre-commit run uv-export' to write 'requirements.txt'.")
         else:
             if not is_uv_used():
                 # This is a very crude approach as a temporary measure.
@@ -1222,14 +1734,14 @@ class RuffTool(Tool):
                     description="Line length",
                     root={
                         Path(".ruff.toml"): ConfigEntry(
-                            keys=["line-length"], value=line_length
+                            keys=["line-length"], get_value=lambda: line_length
                         ),
                         Path("ruff.toml"): ConfigEntry(
-                            keys=["line-length"], value=line_length
+                            keys=["line-length"], get_value=lambda: line_length
                         ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "ruff", "line-length"],
-                            value=line_length,
+                            get_value=lambda: line_length,
                         ),
                     },
                 ),
@@ -1278,7 +1790,7 @@ class RuffTool(Tool):
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [
             BitbucketStep(
-                name="Run Ruff",
+                name=f"Run {self.name}",
                 caches=["uv"],
                 script=BitbucketScript(
                     [
@@ -1292,7 +1804,7 @@ class RuffTool(Tool):
 
     def select_rules(self, rules: list[str]) -> None:
         """Add Ruff rules to the project."""
-        rules = sorted(set(rules) - set(self.get_rules()))
+        rules = sorted(set(rules) - set(self.get_selected_rules()))
 
         if not rules:
             return
@@ -1301,7 +1813,10 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        tick_print(f"Enabling Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        _ensure_exists(file_manager)
+        tick_print(
+            f"Enabling {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
         keys = self._get_select_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
@@ -1316,13 +1831,16 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        tick_print(f"Ignoring Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        _ensure_exists(file_manager)
+        tick_print(
+            f"Ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
         keys = self._get_ignore_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
     def deselect_rules(self, rules: list[str]) -> None:
         """Ensure Ruff rules are not selected in the project."""
-        rules = list(set(rules) & set(self.get_rules()))
+        rules = list(set(rules) & set(self.get_selected_rules()))
 
         if not rules:
             return
@@ -1331,17 +1849,21 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        tick_print(f"Disabling Ruff rule{s} {rules_str} in '{file_manager.name}'.")
+        _ensure_exists(file_manager)
+        tick_print(
+            f"Disabling {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
         keys = self._get_select_keys(file_manager)
         file_manager.remove_from_list(keys=keys, values=rules)
 
-    def get_rules(self) -> list[str]:
+    def get_selected_rules(self) -> list[str]:
         """Get the Ruff rules selected in the project."""
         (file_manager,) = self.get_active_config_file_managers()
+
         keys = self._get_select_keys(file_manager)
         try:
             rules: list[str] = file_manager[keys]
-        except KeyError:
+        except (KeyError, FileNotFoundError):
             rules = []
 
         return rules
@@ -1352,7 +1874,7 @@ class RuffTool(Tool):
         keys = self._get_ignore_keys(file_manager)
         try:
             rules: list[str] = file_manager[keys]
-        except KeyError:
+        except (KeyError, FileNotFoundError):
             rules = []
 
         return rules
@@ -1387,7 +1909,7 @@ class RuffTool(Tool):
     def _are_pydocstyle_rules_selected(self) -> bool:
         """Check if pydocstyle rules are selected in the configuration."""
         # If "ALL" is selected, or any rule whose alphabetical part is "D".
-        rules = self.get_rules()
+        rules = self.get_selected_rules()
         for rule in rules:
             if rule == "ALL":
                 return True
@@ -1399,8 +1921,7 @@ class RuffTool(Tool):
     def _is_pydocstyle_rule(rule: str) -> bool:
         return [d for d in rule if d.isalpha()] == ["D"]
 
-    @staticmethod
-    def _get_select_keys(file_manager: KeyValueFileManager) -> list[str]:
+    def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         """Get the keys for the select rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "select"]
@@ -1408,13 +1929,12 @@ class RuffTool(Tool):
             return ["lint", "select"]
         else:
             msg = (
-                f"Unknown location for selected ruff rules for file manager "
+                f"Unknown location for selected {self.name} rules for file manager "
                 f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
             )
             raise NotImplementedError(msg)
 
-    @staticmethod
-    def _get_ignore_keys(file_manager: KeyValueFileManager) -> list[str]:
+    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "ignore"]
@@ -1422,13 +1942,12 @@ class RuffTool(Tool):
             return ["lint", "ignore"]
         else:
             msg = (
-                f"Unknown location for ignored ruff rules for file manager "
+                f"Unknown location for ignored {self.name} rules for file manager "
                 f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
             )
             raise NotImplementedError(msg)
 
-    @staticmethod
-    def _get_docstyle_keys(file_manager: KeyValueFileManager) -> list[str]:
+    def _get_docstyle_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         """Get the keys for the docstyle rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "pydocstyle", "convention"]
@@ -1436,16 +1955,26 @@ class RuffTool(Tool):
             return ["lint", "pydocstyle", "convention"]
         else:
             msg = (
-                f"Unknown location for ruff docstring style for file manager "
+                f"Unknown location for {self.name} docstring style for file manager "
                 f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
             )
             raise NotImplementedError(msg)
+
+
+def _ensure_exists(file_manager: KeyValueFileManager) -> None:
+    """Ensure the file manager exists."""
+    if isinstance(file_manager, PyprojectTOMLManager):
+        ensure_pyproject_toml()
+    elif not file_manager.path.exists():
+        # Create the file if it doesn't exist. By assumption, an empty file is valid.
+        file_manager.path.touch()
 
 
 ALL_TOOLS: list[Tool] = [
     CodespellTool(),
     CoverageTool(),
     DeptryTool(),
+    ImportLinterTool(),
     PreCommitTool(),
     PyprojectFmtTool(),
     PyprojectTOMLTool(),
@@ -1453,4 +1982,3 @@ ALL_TOOLS: list[Tool] = [
     RequirementsTxtTool(),
     RuffTool(),
 ]
-# TODO test that the list is sorted alphabetically by CLI name

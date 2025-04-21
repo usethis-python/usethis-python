@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -5,6 +6,7 @@ from configupdater import ConfigUpdater
 
 from usethis._integrations.file.ini.errors import (
     INIDecodeError,
+    ININestingError,
     ININotFoundError,
     INIStructureError,
     INIValueAlreadySetError,
@@ -318,6 +320,27 @@ class TestINIFileManager:
 
             # Assert
             assert result is False
+
+        def test_regex(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section]
+key_this = value1
+key_that = value2
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                result = ["section", re.compile("key.*")] in manager
+
+            # Assert
+            assert result is True
 
     class TestGetItem:
         def test_file_doesnt_exist_raises(self, tmp_path: Path):
@@ -1002,6 +1025,32 @@ key =
 """
             )
 
+        def test_existing_file_no_newline(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("[section]\nkey = value")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.set_value(
+                    keys=["new_section", "new_key"], value="new_value", exists_ok=True
+                )
+
+            # Assert
+            assert (tmp_path / "valid.ini").read_text() == (
+                """\
+[section]
+key = value
+[new_section]
+new_key = new_value
+"""
+            )
+
     class TestDelItem:
         def test_delete_root(self, tmp_path: Path):
             # Arrange
@@ -1188,11 +1237,11 @@ key1 = value1
             valid_file = tmp_path / "valid.ini"
             valid_file.touch()
 
-            # Act, Assert (no error raised)
+            # Act, Assert
             with (
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
-                pytest.raises(INIValueMissingError),
+                pytest.raises(ININestingError),
             ):
                 del manager[["section", "key", "extra"]]
 
@@ -1223,6 +1272,86 @@ key3 = value3
                 == """\
 [section2]
 key3 = value3
+"""
+            )
+
+        def test_regex_option(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section]
+key_this = value1
+key_that = value2
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.__delitem__(["section", re.compile("key.*")])
+
+            # Assert
+            assert not (tmp_path / "valid.ini").read_text()
+
+        def test_regex_section(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section1]
+key1 = value1
+[section2]
+key2 = value2
+[other]
+key = value
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.__delitem__([re.compile("section.*")])
+
+            # Assert
+            assert (
+                valid_file.read_text()
+                == """\
+[other]
+key = value
+"""
+            )
+
+        def test_regex_section_with_option(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.write_text("""\
+[section1]
+key = value1
+other = value3
+[section2]
+key = value2
+""")
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                manager.__delitem__([re.compile("section.*"), "key"])
+
+            # Assert
+            assert (
+                valid_file.read_text()
+                == """\
+[section1]
+other = value3
 """
             )
 

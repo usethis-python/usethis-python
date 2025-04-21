@@ -162,7 +162,7 @@ def _add_step_in_default_via_doc(
         # For these tools, sync them with the pre-commit removal logic
         "Run pyproject-fmt",
         "Run Ruff",
-        "Run Deptry",
+        "Run deptry",
         "Run Codespell",
         *[f"Test on 3.{maj_version}" for maj_version in maj_versions],
     ]
@@ -332,6 +332,14 @@ def _steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
 
     # Same name
     if step1.name == step2.name:
+        return True
+
+    # Same name up to case differences
+    if (
+        isinstance(step1.name, str)
+        and isinstance(step2.name, str)
+        and step1.name.lower() == step2.name.lower()
+    ):
         return True
 
     # Same contents, different name

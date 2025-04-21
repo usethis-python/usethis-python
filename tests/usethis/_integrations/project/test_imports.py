@@ -13,6 +13,36 @@ from usethis._integrations.project.imports import (
     get_layered_architectures,
 )
 from usethis._test import change_cwd
+from usethis.errors import UsethisError
+
+
+class TestLayeredArchitecture:
+    class TestModuleCount:
+        def test_mix(self):
+            # Arrange
+            arch = LayeredArchitecture(
+                layers=[{"a"}, {"b", "c"}],
+                excluded={"d", "e"},
+            )
+
+            # Act
+            count = arch.module_count()
+
+            # Assert
+            assert count == 3
+
+        def test_excluded(self):
+            # Arrange
+            arch = LayeredArchitecture(
+                layers=[{"a"}, {"b", "c"}],
+                excluded={"d", "e"},
+            )
+
+            # Act
+            count = arch.module_count(include_excluded=True)
+
+            # Assert
+            assert count == 5
 
 
 class TestGetLayeredArchitectures:
@@ -48,7 +78,7 @@ import salut.d.f
         assert isinstance(arch_by_module, dict)
         for arch in arch_by_module.values():
             assert isinstance(arch, LayeredArchitecture)
-        assert len(arch_by_module) == 2
+        assert len(arch_by_module) == 7
         assert arch_by_module["salut"].layers == [{"c", "d"}, {"b"}, {"a"}]
         assert arch_by_module["salut"].excluded == set()
         assert arch_by_module["salut.d"].layers == [{"e"}, {"f"}]
@@ -387,7 +417,41 @@ class TestGetGraph:
         with (
             change_cwd(tmp_path),
             pytest.raises(
-                ImportGraphBuildFailedError, match="No module named 'different_name'"
+                ImportGraphBuildFailedError,
+                match="__path__ attribute not found on 'different_name'",
             ),
         ):
             _get_graph("different_name.a")
+
+    def test_namespace_package_top_level(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        (tmp_path / "abientot").mkdir()
+        (tmp_path / "abientot" / "a").mkdir()
+        (tmp_path / "abientot" / "a" / "__init__.py").touch()
+        (tmp_path / "abientot" / "a" / "b.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act, Assert
+        with change_cwd(tmp_path), pytest.raises(UsethisError):
+            _get_graph("abientot")
+
+    def test_namespace_package_portion(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        (tmp_path / "merci").mkdir()
+        (tmp_path / "merci" / "a").mkdir()
+        (tmp_path / "merci" / "a" / "__init__.py").touch()
+        (tmp_path / "merci" / "a" / "b.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        with change_cwd(tmp_path):
+            graph = _get_graph("merci.a")
+
+        # Assert
+        assert isinstance(graph, grimp.ImportGraph)

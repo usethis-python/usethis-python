@@ -50,6 +50,7 @@ from usethis._integrations.pre_commit.schema import (
     LocalRepo,
     UriRepo,
 )
+from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.imports import (
     LayeredArchitecture,
@@ -1482,6 +1483,19 @@ class PytestTool(Tool):
             "log_cli_level": "INFO",  # include all >=INFO level log messages (sp-repo-review)
             "minversion": "7",  # minimum pytest version (sp-repo-review)
         }
+
+        source_dir_str = get_source_dir_str()
+        set_pythonpath = (
+            not is_uv_used() or not has_pyproject_toml_declared_build_system()
+        )
+        if set_pythonpath:
+            if source_dir_str == ".":
+                value["pythonpath"] = []
+            elif source_dir_str == "src":
+                value["pythonpath"] = ["src"]
+            else:
+                assert_never(source_dir_str)
+
         value_ini = value.copy()
         # https://docs.pytest.org/en/stable/reference/reference.html#confval-xfail_strict
         value_ini["xfail_strict"] = "True"  # stringify boolean

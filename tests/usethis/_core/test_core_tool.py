@@ -2102,6 +2102,7 @@ def test_foo():
             with change_cwd(tmp_path), files_manager():
                 use_pytest()
 
+            with change_cwd(tmp_path):
                 # Assert (that this doesn't raise an error)
                 call_uv_subprocess(["run", "pytest"], change_toml=False)
 

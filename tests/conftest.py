@@ -22,7 +22,8 @@ def _uv_init_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
                 "3.12",
                 "--vcs",
                 "none",
-            ]
+            ],
+            change_toml=True,
         )
 
     return tmp_path
@@ -35,7 +36,10 @@ def uv_init_dir(tmp_path: Path, _uv_init_dir: Path) -> Generator[Path, None, Non
             src=_uv_init_dir, dst=tmp_path, symlinks=True, dirs_exist_ok=True
         )
 
-    with usethis_config.set(frozen=True):
+    with (
+        change_cwd(tmp_path),
+        usethis_config.set(frozen=True),
+    ):
         yield tmp_path
 
 
@@ -48,15 +52,27 @@ def uv_init_repo_dir(tmp_path: Path, _uv_init_dir: Path) -> Generator[Path, None
 
         call_subprocess(["git", "init"])
 
-    with usethis_config.set(frozen=True):
-        yield tmp_path
+        with (
+            change_cwd(tmp_path),
+            usethis_config.set(frozen=True),
+        ):
+            yield tmp_path
 
 
 @pytest.fixture
 def uv_env_dir(uv_init_repo_dir: Path) -> Generator[Path, None, None]:
     """A directory with a git repo, as well as uv-unfrozen project; allow venv and lockfile."""
-    with change_cwd(uv_init_repo_dir), usethis_config.set(frozen=False):
+    with (
+        change_cwd(uv_init_repo_dir),
+        usethis_config.set(frozen=False),
+    ):
         yield uv_init_repo_dir
+
+
+@pytest.fixture
+def bare_dir(tmp_path: Path) -> Generator[Path, None, None]:
+    with change_cwd(tmp_path):
+        yield tmp_path
 
 
 class NetworkConn(Enum):
@@ -71,16 +87,24 @@ class NetworkConn(Enum):
     ],
     scope="session",
 )
-def _vary_network_conn(request: pytest.FixtureRequest) -> Generator[None, None, None]:
-    """Fixture to vary the network connection; returns True if offline."""
+def _online_status(request: pytest.FixtureRequest) -> NetworkConn:
+    assert isinstance(request.param, NetworkConn)
+
     if request.param is NetworkConn.ONLINE and is_offline():
         pytest.skip("Network connection is offline")
 
-    offline = request.param is NetworkConn.OFFLINE
+    return request.param
+
+
+@pytest.fixture(scope="session")
+def _vary_network_conn(_online_status: NetworkConn) -> Generator[None, None, None]:
+    """Fixture to vary the network connection; returns True if offline."""
+    offline = _online_status is NetworkConn.OFFLINE
 
     usethis_config.offline = offline
     yield
-    usethis_config.offline = False
+    if offline:
+        usethis_config.offline = False
 
 
 @pytest.fixture

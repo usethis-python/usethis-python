@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 import re
 from pathlib import Path
-from sysconfig import get_python_version
 
 from pydantic import TypeAdapter
 
-from usethis._integrations.pyproject.core import get_config_value
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.python.version import get_python_version
 from usethis._integrations.sonarqube.errors import (
     CoverageReportConfigNotFoundError,
     InvalidSonarQubeProjectKeyError,
@@ -28,24 +31,24 @@ def get_sonar_project_properties() -> str:
         python_version = get_python_version()
 
     try:
-        project_key = get_config_value(
-            id_keys=["tool", "usethis", "sonarqube", "project-key"]
-        )
+        project_key = PyprojectTOMLManager()[
+            ["tool", "usethis", "sonarqube", "project-key"]
+        ]
     except (FileNotFoundError, KeyError):
         msg = "Could not find SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
-        raise MissingProjectKeyError(msg)
+        raise MissingProjectKeyError(msg) from None
     _validate_project_key(project_key)
 
     try:
-        verbose = get_config_value(id_keys=["tool", "usethis", "sonarqube", "verbose"])
+        verbose = PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]]
     except (FileNotFoundError, KeyError):
         verbose = False
     verbose = TypeAdapter(bool).validate_python(verbose)
 
     try:
-        exclusions = get_config_value(
-            id_keys=["tool", "usethis", "sonarqube", "exclusions"]
-        )
+        exclusions = PyprojectTOMLManager()[
+            ["tool", "usethis", "sonarqube", "exclusions"]
+        ]
     except (FileNotFoundError, KeyError):
         exclusions = []
     exclusions = TypeAdapter(list).validate_python(exclusions)
@@ -53,19 +56,23 @@ def get_sonar_project_properties() -> str:
         TypeAdapter(str).validate_python(exclusion)
 
     try:
-        coverage_output = get_config_value(
-            id_keys=["tool", "coverage", "xml", "output"]
-        )
+        coverage_output = PyprojectTOMLManager()[["tool", "coverage", "xml", "output"]]
     except (FileNotFoundError, KeyError):
         msg = "XML coverage report file path not found at 'tool.coverage.xml.output' in 'pyproject.toml'."
-        raise CoverageReportConfigNotFoundError(msg)
+        raise CoverageReportConfigNotFoundError(msg) from None
 
     # No file, so construct the contents
+    source_dir_str = get_source_dir_str()
+    if source_dir_str == ".":
+        sources = "./"
+    else:
+        sources = f"./{source_dir_str}"
+
     text = f"""\
 sonar.projectKey={project_key}
 sonar.language=py
 sonar.python.version={python_version}
-sonar.sources=./src
+sonar.sources={sources}
 sonar.tests=./tests
 sonar.python.coverage.reportPaths={coverage_output}
 sonar.verbose={"true" if verbose else "false"}

@@ -1,16 +1,18 @@
+from __future__ import annotations
+
 import re
-import sys
+from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
-from typing_extensions import Self
 
-from usethis._console import err_print, tick_print, warn_print
+from usethis._console import tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path
-from usethis._integrations.pyproject.errors import (
-    PyProjectTOMLError,
-)
-from usethis._integrations.pyproject.name import get_name
+from usethis._integrations.project.name import get_project_name
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 class Badge(BaseModel):
@@ -30,59 +32,72 @@ class Badge(BaseModel):
         return self.name == other.name
 
 
-RUFF_BADGE = Badge(
-    markdown="[![Ruff](<https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff>)"
-)
-PRE_COMMIT_BADGE = Badge(
-    markdown="[![pre-commit](<https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit>)"
-)
+def get_pre_commit_badge() -> Badge:
+    return Badge(
+        markdown="[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)"
+    )
 
 
 def get_pypi_badge() -> Badge:
-    try:
-        name = get_name()
-    except PyProjectTOMLError:
-        # Note; we don't want to create pyproject.toml because if it doesn't exist,
-        # the package is unlikely to be on PyPI. They could be using setup.py etc.
-        # So a second-best heuristic is the name of the current directory.
-        # Note that we need to filter out invalid characters
-        # https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
-        name = re.sub(r"[^a-zA-Z0-9._-]", "", Path.cwd().stem)
+    name = get_project_name()
     return Badge(
-        markdown=f"[![PyPI Version](<https://img.shields.io/pypi/v/{name}.svg>)](<https://pypi.python.org/pypi/{name}>)"
+        markdown=f"[![PyPI Version](https://img.shields.io/pypi/v/{name}.svg)](<https://pypi.python.org/pypi/{name})"
+    )
+
+
+def get_ruff_badge() -> Badge:
+    return Badge(
+        markdown="[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)"
+    )
+
+
+def get_uv_badge() -> Badge:
+    return Badge(
+        markdown="[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)"
+    )
+
+
+def get_usethis_badge() -> Badge:
+    return Badge(
+        markdown="[![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/nathanjmcdougall/usethis-python/main/assets/badge/v1.json)](https://github.com/nathanjmcdougall/usethis-python)"
     )
 
 
 def get_badge_order() -> list[Badge]:
     return [
         get_pypi_badge(),
-        RUFF_BADGE,
-        PRE_COMMIT_BADGE,
+        get_uv_badge(),
+        get_ruff_badge(),
+        get_pre_commit_badge(),
+        get_usethis_badge(),
     ]
 
 
-def add_pypi_badge():
-    add_badge(get_pypi_badge())
+@dataclass
+class MarkdownH1Status:
+    """A way of keeping track of whether we're in a block of H1 tags.
 
+    We don't want to add badges inside a block of H1 tags.
+    """
 
-def add_ruff_badge():
-    add_badge(RUFF_BADGE)
+    h1_count: int = 0
+    in_block: bool = False
 
+    def update_from_line(self, line: str) -> None:
+        self.h1_count += self._count_h1_open_tags(line)
+        self.in_block = self.h1_count > 0
+        self.h1_count -= self._count_h1_close_tags(line)
 
-def add_pre_commit_badge():
-    add_badge(PRE_COMMIT_BADGE)
+    @staticmethod
+    def _count_h1_open_tags(line: str) -> int:
+        h1_start_match = re.match(r"(<h1\s.*>)", line)
+        if h1_start_match is not None:
+            return len(h1_start_match.groups())
+        return 0
 
-
-def remove_pypi_badge():
-    remove_badge(get_pypi_badge())
-
-
-def remove_ruff_badge():
-    remove_badge(RUFF_BADGE)
-
-
-def remove_pre_commit_badge():
-    remove_badge(PRE_COMMIT_BADGE)
+    @staticmethod
+    def _count_h1_close_tags(line: str) -> int:
+        return line.count("</h1>")
 
 
 def add_badge(badge: Badge) -> None:
@@ -90,31 +105,33 @@ def add_badge(badge: Badge) -> None:
 
     try:
         path = _get_markdown_readme_path()
-    except FileNotFoundError as err:
-        err_print(err)
-        sys.exit(1)
+    except FileNotFoundError:
+        warn_print("README file not found, printing badge markdown instead...")
+        print(badge.markdown)
+        return
 
-    prerequisites: list[Badge] = []
-    for _b in get_badge_order():
-        if badge.equivalent_to(_b):
-            break
-        prerequisites.append(_b)
-
-    content = path.read_text(encoding="utf-8")
+    try:
+        content = path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        warn_print(
+            "README file uses an unsupported encoding, printing badge markdown instead..."
+        )
+        print(badge.markdown)
+        return
 
     original_lines = content.splitlines()
 
+    prerequisites = _get_prerequisites(badge)
+
     have_added = False
     have_encountered_badge = False
-    html_h1_count = 0
+    h1_status = MarkdownH1Status()
     lines: list[str] = []
     for original_line in original_lines:
         if is_badge(original_line):
             have_encountered_badge = True
 
-        html_h1_count += _count_h1_open_tags(original_line)
-        in_block = html_h1_count > 0
-        html_h1_count -= _count_h1_close_tags(original_line)
+        h1_status.update_from_line(original_line)
 
         original_badge = Badge(markdown=original_line)
 
@@ -129,7 +146,7 @@ def add_badge(badge: Badge) -> None:
             not original_line_is_prerequisite
             and (not is_blank(original_line) or have_encountered_badge)
             and not is_header(original_line)
-            and not in_block
+            and not h1_status.in_block
         ):
             lines.append(badge.markdown)
             have_added = True
@@ -161,6 +178,20 @@ def add_badge(badge: Badge) -> None:
         output = _ensure_final_newline(output)
 
     path.write_text(output, encoding="utf-8")
+
+
+def _get_prerequisites(badge: Badge) -> list[Badge]:
+    """Get the prerequisites for a badge.
+
+    We want to place the badges in a specific order, so we need to check if we've got
+    past those prerequisites.
+    """
+    prerequisites: list[Badge] = []
+    for _b in get_badge_order():
+        if badge.equivalent_to(_b):
+            break
+        prerequisites.append(_b)
+    return prerequisites
 
 
 def _get_markdown_readme_path() -> Path:
@@ -197,17 +228,6 @@ def is_badge(line: str) -> bool:
         re.match(r"^\[!\[.*\]\(.*\)\]\(.*\)$", line) is not None
         or re.match(r"^\!\[.*\]\(.*\)$", line) is not None
     )
-
-
-def _count_h1_open_tags(line: str) -> int:
-    h1_start_match = re.match(r"(<h1\s.*>)", line)
-    if h1_start_match is not None:
-        return len(h1_start_match.groups())
-    return 0
-
-
-def _count_h1_close_tags(line: str) -> int:
-    return line.count("</h1>")
 
 
 def remove_badge(badge: Badge) -> None:

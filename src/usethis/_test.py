@@ -1,13 +1,22 @@
+from __future__ import annotations
+
 import os
 import socket
-from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 @contextmanager
 def change_cwd(new_dir: Path) -> Generator[None, None, None]:
-    """Change the working directory temporarily."""
+    """Change the working directory temporarily.
+
+    Arguments:
+        new_dir: The new directory to change to.
+    """
     old_dir = Path.cwd()
     os.chdir(new_dir)
     try:

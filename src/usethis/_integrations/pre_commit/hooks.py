@@ -1,18 +1,24 @@
-from collections import Counter
+from __future__ import annotations
+
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from usethis._console import box_print, tick_print
+from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._integrations.pre_commit.dump import pre_commit_fancy_dump
 from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
-    JsonSchemaForPreCommitConfigYaml,
     Language,
     LocalRepo,
     MetaRepo,
-    UriRepo,
 )
-from usethis._integrations.yaml.update import update_ruamel_yaml_map
+
+if TYPE_CHECKING:
+    from usethis._integrations.pre_commit.schema import (
+        JsonSchemaForPreCommitConfigYaml,
+        UriRepo,
+    )
 
 _HOOK_ORDER = [
     "validate-pyproject",
@@ -21,14 +27,11 @@ _HOOK_ORDER = [
     "ruff",  # ruff followed by ruff-format seems to be the recommended way by Astral
     "ruff-format",
     "deptry",
+    "import-linter",
     "codespell",
 ]
 
 _PLACEHOLDER_ID = "placeholder"
-
-
-class DuplicatedHookNameError(ValueError):
-    """Raised when a hook name is duplicated in a pre-commit configuration file."""
 
 
 def add_repo(repo: LocalRepo | UriRepo) -> None:
@@ -42,29 +45,30 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
             raise NotImplementedError(msg)  # Should allow multiple or 0 hooks per repo
 
         (hook_config,) = repo.hooks
-        hook_name = hook_config.id
 
-        if hook_name is None:
+        if hook_config.id is None:
             msg = "Hook ID must be specified"
             raise ValueError(msg)
 
         # Ordered list of the hooks already in the file
-        existing_hooks = extract_hook_names(doc.model)
+        existing_hooks = extract_hook_ids(doc.model)
 
         if not existing_hooks:
-            if hook_name == _PLACEHOLDER_ID:
+            if _hook_ids_are_equivalent(hook_config.id, _PLACEHOLDER_ID):
                 tick_print("Adding placeholder hook to '.pre-commit-config.yaml'.")
             else:
-                tick_print(f"Adding hook '{hook_name}' to '.pre-commit-config.yaml'.")
+                tick_print(
+                    f"Adding hook '{hook_config.id}' to '.pre-commit-config.yaml'."
+                )
 
             doc.model.repos.append(repo)
         else:
             # Get the precendents, i.e. hooks occurring before the new hook
             try:
-                hook_idx = _HOOK_ORDER.index(hook_name)
+                hook_idx = _HOOK_ORDER.index(hook_config.id)
             except ValueError:
-                msg = f"Hook '{hook_name}' not recognized"
-                raise NotImplementedError(msg)
+                msg = f"Hook '{hook_config.id}' not recognized"
+                raise NotImplementedError(msg) from None
             precedents = _HOOK_ORDER[:hook_idx]
 
             # Find the last of the precedents in the existing hooks
@@ -108,11 +112,13 @@ def insert_repo(
 
         # Don't include the placeholder from now on, since we're adding a repo
         # which can be there instead.
-        if [hook.id for hook in hooks] != [_PLACEHOLDER_ID]:
+        if not (
+            len(hooks) == 1 and _hook_ids_are_equivalent(hooks[0].id, _PLACEHOLDER_ID)
+        ):
             repos.append(repo)
 
         for hook in hooks:
-            if hook.id == predecessor:
+            if _hook_ids_are_equivalent(hook.id, predecessor):
                 if repo_to_insert.hooks is not None:
                     for inserted_hook in repo_to_insert.hooks:
                         tick_print(
@@ -137,27 +143,27 @@ def _get_placeholder_repo_config() -> LocalRepo:
             HookDefinition(
                 id=_PLACEHOLDER_ID,
                 name="Placeholder - add your own hooks!",
-                entry="""uv run python -c "print('hello world!')\"""",
+                entry="""uv run --isolated --frozen --offline python -c "print('hello world!')\"""",
                 language=Language("system"),
             )
         ],
     )
 
 
-def remove_hook(name: str) -> None:
+def remove_hook(hook_id: str) -> None:
     """Remove pre-commit hook configuration.
 
     If the hook doesn't exist, this function will have no effect. Meta hooks are
     ignored.
     """
     with edit_pre_commit_config_yaml() as doc:
-        # search across the repos for any hooks with ID equal to name
+        # search across the repos for any hooks with matching ID
         for repo in doc.model.repos:
             if isinstance(repo, MetaRepo) or repo.hooks is None:
                 continue
 
             for hook in repo.hooks:
-                if hook.id == name:
+                if _hook_ids_are_equivalent(hook.id, hook_id):
                     tick_print(
                         f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'."
                     )
@@ -175,29 +181,47 @@ def remove_hook(name: str) -> None:
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 
-def get_hook_names() -> list[str]:
+def get_hook_ids() -> list[str]:
     path = Path.cwd() / ".pre-commit-config.yaml"
 
     if not path.exists():
         return []
 
     with edit_pre_commit_config_yaml() as doc:
-        return extract_hook_names(doc.model)
+        return extract_hook_ids(doc.model)
 
 
-def extract_hook_names(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
-    hook_names = []
+def extract_hook_ids(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
+    hook_ids = []
     for repo in model.repos:
         if repo.hooks is None:
             continue
 
         for hook in repo.hooks:
-            hook_names.append(hook.id)
+            hook_ids.append(hook.id)
 
-    # Need to validate there are no duplicates
-    for name, count in Counter(hook_names).items():
-        if count > 1:
-            msg = f"Hook name '{name}' is duplicated"
-            raise DuplicatedHookNameError(msg)
+    return hook_ids
 
-    return hook_names
+
+def _hooks_are_equivalent(hook: HookDefinition, other: HookDefinition) -> bool:
+    """Check if two hooks are equivalent."""
+    if _hook_ids_are_equivalent(hook.id, other.id):
+        return True
+
+    # Same contents, different name
+    hook = hook.model_copy()
+    hook.name = other.name
+    return hook == other
+
+
+def _hook_ids_are_equivalent(hook_id: str | None, other: str | None) -> bool:
+    """Check if two hook IDs are equivalent."""
+    # Same name
+    if hook_id == other:
+        return True
+
+    # Same name up to case differences
+    if isinstance(hook_id, str) and isinstance(other, str):
+        return hook_id.lower() == other.lower()
+
+    return False

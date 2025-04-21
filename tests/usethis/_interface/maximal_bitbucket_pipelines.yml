@@ -1,0 +1,28 @@
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+        pre-commit: ~/.cache/pre-commit
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Run pre-commit
+            caches:
+              - uv
+              - pre-commit
+            script:
+              - *install-uv
+              - uv run pre-commit run --all-files
+      - step:
+            name: Test on 3.13
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - uv run --python 3.13 pytest -x --junitxml=test-reports/report.xml

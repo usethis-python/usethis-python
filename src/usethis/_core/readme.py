@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 from usethis._console import box_print, tick_print
-from usethis._integrations.pyproject.errors import PyProjectTOMLError
-from usethis._integrations.pyproject.name import get_description, get_name
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLError
+from usethis._integrations.file.pyproject_toml.name import get_description
+from usethis._integrations.project.name import get_project_name
 from usethis._integrations.uv.init import ensure_pyproject_toml
 
 
@@ -19,14 +22,11 @@ def add_readme() -> None:
 
     ensure_pyproject_toml()
 
-    try:
-        project_name = get_name()
-    except PyProjectTOMLError:
-        project_name = None
+    project_name = get_project_name()
 
     try:
         project_description = get_description()
-    except PyProjectTOMLError:
+    except PyprojectTOMLError:
         project_description = None
 
     if project_name is not None and project_description is not None:
@@ -66,3 +66,13 @@ def get_readme_path():
 
     msg = "No README file found."
     raise FileNotFoundError(msg)
+
+
+def is_readme_used():
+    """Check if the README.md file is used."""
+    try:
+        get_readme_path()
+    except FileNotFoundError:
+        return False
+
+    return True

@@ -1,17 +1,16 @@
+from __future__ import annotations
+
+from pathlib import Path
+
 from packaging.requirements import Requirement
 from pydantic import BaseModel, TypeAdapter
 
 from usethis._config import usethis_config
-from usethis._console import tick_print
-from usethis._integrations.pyproject.core import (
-    append_config_list,
-    get_config_value,
-)
-from usethis._integrations.pyproject.io_ import (
-    read_pyproject_toml,
-)
+from usethis._console import box_print, tick_print
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
+from usethis._integrations.uv.toml import UVTOMLManager
 
 
 class Dependency(BaseModel):
@@ -27,7 +26,11 @@ class Dependency(BaseModel):
 
 
 def get_dep_groups() -> dict[str, list[Dependency]]:
-    pyproject = read_pyproject_toml()
+    try:
+        pyproject = PyprojectTOMLManager().get()
+    except FileNotFoundError:
+        return {}
+
     try:
         dep_groups_section = pyproject["dependency-groups"]
     except KeyError:
@@ -63,31 +66,52 @@ def register_default_group(group: str) -> None:
     This ensures that dependencies in the group will be installed by default.
     """
     if group == "dev":
+        # Note, if the "dev" group is missing already then then we'll respect the
+        # user's choice since they presumably would have added it themselves. So, we
+        # won't register in that case.
         return
 
-    ensure_dev_group_is_defined()
+    default_groups = get_default_groups()
 
-    try:
-        default_groups = get_config_value(["tool", "uv", "default-groups"])
-        if not isinstance(default_groups, list):
-            default_groups = []
-    except KeyError:
-        default_groups = []
-
+    # Choose which groups we want to add
     groups_to_add = []
     if group not in default_groups:
         groups_to_add.append(group)
         # Add "dev" if section is empty or if we're adding a new group and "dev" isn't present
         if (not default_groups or group != "dev") and "dev" not in default_groups:
+            ensure_dev_group_is_defined()
             groups_to_add.append("dev")
 
     if groups_to_add:
-        append_config_list(["tool", "uv", "default-groups"], groups_to_add)
+        add_default_groups(groups=groups_to_add)
+
+
+def add_default_groups(groups: list[str]) -> None:
+    if UVTOMLManager().path.exists():
+        UVTOMLManager().extend_list(keys=["default-groups"], values=groups)
+    else:
+        PyprojectTOMLManager().extend_list(
+            keys=["tool", "uv", "default-groups"], values=groups
+        )
+
+
+def get_default_groups() -> list[str]:
+    try:
+        if UVTOMLManager().path.exists():
+            default_groups = UVTOMLManager()[["default-groups"]]
+        else:
+            default_groups = PyprojectTOMLManager()[["tool", "uv", "default-groups"]]
+        if not isinstance(default_groups, list):
+            default_groups = []
+    except KeyError:
+        default_groups = []
+
+    return default_groups
 
 
 def ensure_dev_group_is_defined() -> None:
     # Ensure dev group exists in dependency-groups
-    append_config_list(["dependency-groups", "dev"], [])
+    PyprojectTOMLManager().extend_list(keys=["dependency-groups", "dev"], values=[])
 
 
 def add_deps_to_group(deps: list[Dependency], group: str) -> None:
@@ -107,19 +131,22 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
         f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
     )
 
-    register_default_group(group)  # Register the group before adding dependencies
+    if usethis_config.frozen:
+        box_print(f"Install the dependenc{ies} {deps_str}.")
 
     for dep in to_add_deps:
         try:
-            if not usethis_config.offline:
-                call_uv_subprocess(["add", "--group", group, "--quiet", str(dep)])
-            else:
-                call_uv_subprocess(
-                    ["add", "--group", group, "--quiet", "--offline", str(dep)]
-                )
+            call_uv_subprocess(
+                ["add", "--group", group, str(dep)],
+                change_toml=True,
+            )
         except UVSubprocessFailedError as err:
             msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
+            msg += (Path.cwd() / "pyproject.toml").read_text()
             raise UVDepGroupError(msg) from None
+
+    # Register the group - don't do this before adding the deps in case that step fails
+    register_default_group(group)
 
 
 def is_dep_satisfied_in(dep: Dependency, *, in_: list[Dependency]) -> bool:
@@ -148,12 +175,7 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
 
     for dep in _deps:
         try:
-            if not usethis_config.offline:
-                call_uv_subprocess(["remove", "--group", group, "--quiet", str(dep)])
-            else:
-                call_uv_subprocess(
-                    ["remove", "--group", group, "--quiet", "--offline", str(dep)]
-                )
+            call_uv_subprocess(["remove", "--group", group, str(dep)], change_toml=True)
         except UVSubprocessFailedError as err:
             msg = (
                 f"Failed to remove '{dep}' from the '{group}' dependency group:\n{err}"

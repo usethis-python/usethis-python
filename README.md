@@ -38,6 +38,9 @@ Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.
 First, it is strongly recommended you [install the `uv` package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process. If you're already using `uv`, make sure you're using at least
 version v0.5.29 (run `uv version` to check, and `uv self update` to upgrade).
 
+> [!TIP]
+> At the moment, `usethis` assumes you will have `uv` installed in some circumstances. Support for projects that don't use `uv` is planned for late 2025.
+
 Then, you can install usethis for the project:
 
 ```console

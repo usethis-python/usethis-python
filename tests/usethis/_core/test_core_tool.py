@@ -35,6 +35,7 @@ from usethis._integrations.uv.deps import (
     get_deps_from_group,
     is_dep_satisfied_in,
 )
+from usethis._integrations.uv.toml import UVTOMLManager
 from usethis._test import change_cwd
 from usethis._tool import ALL_TOOLS, PyprojectTOMLTool, PytestTool, RuffTool
 
@@ -1989,6 +1990,19 @@ minversion = "7\""""
                 default_groups = PyprojectTOMLManager()[
                     ["tool", "uv", "default-groups"]
                 ]
+                assert "test" in default_groups
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_registers_test_group_uv_toml(self, tmp_path: Path):
+            with change_cwd(tmp_path), files_manager():
+                # Arrange
+                (tmp_path / "uv.toml").touch()
+
+                # Act
+                use_pytest()
+
+                # Assert
+                default_groups = UVTOMLManager()[["default-groups"]]
                 assert "test" in default_groups
 
         @pytest.mark.usefixtures("_vary_network_conn")

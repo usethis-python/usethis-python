@@ -8,6 +8,7 @@ from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.file.toml.io_ import TOMLFileManager
+from usethis._integrations.uv.toml import UVTOMLManager
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -26,6 +27,7 @@ def files_manager() -> Iterator[None]:
         PytestINIManager(),
         RuffTOMLManager(),
         ToxINIManager(),
+        UVTOMLManager(),
     ):
         yield
 

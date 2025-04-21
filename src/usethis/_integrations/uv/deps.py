@@ -10,6 +10,7 @@ from usethis._console import box_print, tick_print
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
+from usethis._integrations.uv.toml import UVTOMLManager
 
 
 class Dependency(BaseModel):
@@ -86,14 +87,20 @@ def register_default_group(group: str) -> None:
 
 
 def add_default_groups(groups: list[str]) -> None:
-    PyprojectTOMLManager().extend_list(
-        keys=["tool", "uv", "default-groups"], values=groups
-    )
+    if UVTOMLManager().path.exists():
+        UVTOMLManager().extend_list(keys=["default-groups"], values=groups)
+    else:
+        PyprojectTOMLManager().extend_list(
+            keys=["tool", "uv", "default-groups"], values=groups
+        )
 
 
 def get_default_groups() -> list[str]:
     try:
-        default_groups = PyprojectTOMLManager()[["tool", "uv", "default-groups"]]
+        if UVTOMLManager().path.exists():
+            default_groups = UVTOMLManager()[["default-groups"]]
+        else:
+            default_groups = PyprojectTOMLManager()[["tool", "uv", "default-groups"]]
         if not isinstance(default_groups, list):
             default_groups = []
     except KeyError:

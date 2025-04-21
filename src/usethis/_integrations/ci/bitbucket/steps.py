@@ -64,11 +64,6 @@ for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
     script_item.yaml_set_anchor(value=name, always_dump=True)
 
 
-def add_bitbucket_steps_in_default(steps: list[Step]) -> None:
-    for step in steps:
-        add_bitbucket_step_in_default(step)
-
-
 def add_bitbucket_step_in_default(step: Step) -> None:
     try:
         existing_steps = get_steps_in_default()
@@ -167,7 +162,7 @@ def _add_step_in_default_via_doc(
         # For these tools, sync them with the pre-commit removal logic
         "Run pyproject-fmt",
         "Run Ruff",
-        "Run Deptry",
+        "Run deptry",
         "Run Codespell",
         *[f"Test on 3.{maj_version}" for maj_version in maj_versions],
     ]
@@ -185,11 +180,6 @@ def _add_step_in_default_via_doc(
         apply_pipeweld_instruction_via_doc(
             instruction=instruction, new_step=step, doc=doc
         )
-
-
-def remove_bitbucket_steps_from_default(steps: list[Step]) -> None:
-    for step in steps:
-        remove_bitbucket_step_from_default(step)
 
 
 def remove_bitbucket_step_from_default(step: Step) -> None:
@@ -342,6 +332,14 @@ def _steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
 
     # Same name
     if step1.name == step2.name:
+        return True
+
+    # Same name up to case differences
+    if (
+        isinstance(step1.name, str)
+        and isinstance(step2.name, str)
+        and step1.name.lower() == step2.name.lower()
+    ):
         return True
 
     # Same contents, different name

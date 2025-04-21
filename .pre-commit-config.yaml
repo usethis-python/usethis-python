@@ -1,4 +1,25 @@
+default_install_hook_types:
+  - pre-commit
+  - post-checkout
+  - post-merge
+  - post-rewrite
 repos:
+  - repo: local
+    hooks:
+      - id: uv-lock
+        name: uv-lock
+        entry: uv lock --offline
+        files: ^(uv\.lock|pyproject\.toml|uv\.toml)$
+        language: system
+        always_run: true
+        pass_filenames: false       
+      - id: uv-sync
+        name: uv-sync
+        entry: uv sync --no-active --offline
+        args: ["--locked"]
+        language: system
+        always_run: true
+        pass_filenames: false
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:

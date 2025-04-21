@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+import re
 from abc import abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeAlias, TypeVar
+
+from typing_extensions import assert_never
 
 from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from types import TracebackType
     from typing import Any, ClassVar
 
     from typing_extensions import Self
+
 
 DocumentT = TypeVar("DocumentT")
 
@@ -41,12 +46,24 @@ class UsethisFileManager(Generic[DocumentT]):
         """Return the relative path to the file."""
         raise NotImplementedError
 
+    def __init__(self) -> None:
+        self.path = (Path.cwd() / self.relative_path).resolve()
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, UsethisFileManager):
+            return NotImplemented
+
+        return self.relative_path == other.relative_path
+
+    def __hash__(self) -> int:
+        return hash((self.__class__.__name__, self.relative_path))
+
     @property
     def name(self) -> str:
         return self.relative_path.name
 
-    def __init__(self) -> None:
-        self._path = (Path.cwd() / self.relative_path).resolve()
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.relative_path.as_posix()!r})"
 
     def __enter__(self) -> Self:
         if self.is_locked():
@@ -95,7 +112,11 @@ class UsethisFileManager(Generic[DocumentT]):
             # No changes made, nothing to write.
             return
 
-        self._path.write_text(self._dump_content())
+        # Also, if the file has since been deleted, we should not write it.
+        if not self.path.exists():
+            return
+
+        self.path.write_text(self._dump_content())
 
     def read_file(self) -> None:
         """Read the document from disk and store it in memory."""
@@ -108,9 +129,9 @@ class UsethisFileManager(Generic[DocumentT]):
             )
             raise UnexpectedFileIOError(msg)
         try:
-            self._content = self._parse_content(self._path.read_text())
+            self._content = self._parse_content(self.path.read_text())
         except FileNotFoundError:
-            msg = f"'{self.name}' not found in the current directory at '{self._path}'"
+            msg = f"'{self.name}' not found in the current directory at '{self.path}'"
             raise FileNotFoundError(msg) from None
 
     @abstractmethod
@@ -125,11 +146,11 @@ class UsethisFileManager(Generic[DocumentT]):
 
     @property
     def _content(self) -> DocumentT | None:
-        return self._content_by_path.get(self._path)
+        return self._content_by_path.get(self.path)
 
     @_content.setter
     def _content(self, value: DocumentT | None) -> None:
-        self._content_by_path[self._path] = value
+        self._content_by_path[self.path] = value
 
     def _validate_lock(self) -> None:
         if not self.is_locked():
@@ -140,10 +161,78 @@ class UsethisFileManager(Generic[DocumentT]):
             raise UnexpectedFileIOError(msg)
 
     def is_locked(self) -> bool:
-        return self._path in self._content_by_path
+        return self.path in self._content_by_path
 
     def lock(self) -> None:
         self._content = None
 
     def unlock(self) -> None:
-        self._content_by_path.pop(self._path, None)
+        self._content_by_path.pop(self.path, None)
+
+
+Key: TypeAlias = str | re.Pattern
+
+
+class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
+    """A manager for files which store (at least some) values in key-value mappings."""
+
+    @abstractmethod
+    def __contains__(self, keys: Sequence[Key]) -> bool:
+        """Check if a key exists in the configuration file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def __getitem__(self, keys: Sequence[Key]) -> Any:
+        raise NotImplementedError
+
+    def __setitem__(self, keys: Sequence[Key], value: Any) -> None:
+        """Set a value in the configuration file."""
+        return self.set_value(keys=keys, value=value, exists_ok=True)
+
+    def __delitem__(self, keys: Sequence[Key]) -> None:
+        """Remove a value from the configuration file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_value(
+        self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
+    ) -> None:
+        """Set a value in the configuration file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+        """Extend a list in the configuration file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+        """Remove values from a list in the configuration file."""
+        raise NotImplementedError
+
+
+def print_keys(keys: Sequence[Key]) -> str:
+    r"""Convert a list of keys to a string.
+
+    Args:
+        keys: A list of keys.
+
+    Returns:
+        A string representation of the keys.
+
+    Examples:
+        >>> print_keys(["tool", "ruff", "line-length"])
+        'tool.ruff.line-length'
+        >>> print_keys([re.compile(r"importlinter:contracts:.*")])
+        '<REGEX("importlinter:contracts:.*")>'
+    """
+    components = []
+    for key in keys:
+        if isinstance(key, str):
+            components.append(key)
+        elif isinstance(key, re.Pattern):
+            components.append(f'<REGEX("{key.pattern}")>')
+        else:
+            assert_never(key)
+
+    return ".".join(components)

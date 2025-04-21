@@ -6,19 +6,28 @@ from typing import TYPE_CHECKING
 from usethis._integrations.file.pyproject_toml.errors import (
     PyprojectTOMLDecodeError,
     PyprojectTOMLNotFoundError,
+    PyprojectTOMLValueAlreadySetError,
+    PyprojectTOMLValueMissingError,
     UnexpectedPyprojectTOMLIOError,
     UnexpectedPyprojectTOMLOpenError,
 )
 from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
+    TOMLValueAlreadySetError,
+    TOMLValueMissingError,
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
 )
 from usethis._integrations.file.toml.io_ import TOMLFileManager
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Any
+
     from typing_extensions import Self
+
+    from usethis._io import Key
 
 
 class PyprojectTOMLManager(TOMLFileManager):
@@ -49,3 +58,19 @@ class PyprojectTOMLManager(TOMLFileManager):
             super()._validate_lock()
         except UnexpectedTOMLIOError as err:
             raise UnexpectedPyprojectTOMLIOError(err) from None
+
+    def set_value(
+        self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
+    ) -> None:
+        """Set a value in the pyproject.toml configuration file."""
+        try:
+            super().set_value(keys=keys, value=value, exists_ok=exists_ok)
+        except TOMLValueAlreadySetError as err:
+            raise PyprojectTOMLValueAlreadySetError(err) from None
+
+    def __delitem__(self, keys: Sequence[Key]) -> None:
+        """Remove a value from the pyproject.toml configuration file."""
+        try:
+            super().__delitem__(keys)
+        except TOMLValueMissingError as err:
+            raise PyprojectTOMLValueMissingError(err) from None

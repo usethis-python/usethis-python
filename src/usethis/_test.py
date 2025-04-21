@@ -12,7 +12,11 @@ if TYPE_CHECKING:
 
 @contextmanager
 def change_cwd(new_dir: Path) -> Generator[None, None, None]:
-    """Change the working directory temporarily."""
+    """Change the working directory temporarily.
+
+    Arguments:
+        new_dir: The new directory to change to.
+    """
     old_dir = Path.cwd()
     os.chdir(new_dir)
     try:

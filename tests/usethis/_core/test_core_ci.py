@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config_file import files_manager
 from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import (
     use_codespell,
@@ -29,7 +30,7 @@ pipelines:
               - echo 'Hello, world!'
 """)
 
-            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_repo_dir), files_manager():
                 # Act
                 use_pre_commit()
                 use_pre_commit(remove=True)
@@ -44,7 +45,7 @@ pipelines:
         class TestConfigFile:
             def test_exists(self, uv_init_dir: Path):
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert
@@ -52,7 +53,7 @@ pipelines:
 
             def test_contents(self, uv_init_dir: Path):
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert
@@ -88,7 +89,7 @@ pipelines:
                 (uv_init_dir / "bitbucket-pipelines.yml").touch()
 
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert
@@ -102,7 +103,7 @@ pipelines:
                 (uv_init_dir / ".pre-commit-config.yaml").touch()
 
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert
@@ -121,7 +122,7 @@ pipelines:
 
             def test_not_mentioned_if_not_used(self, uv_init_dir: Path):
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert
@@ -130,7 +131,7 @@ pipelines:
 
         class TestPlaceholder:
             def test_placeholder_removed(self, uv_init_repo_dir: Path):
-                with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_repo_dir), files_manager():
                     # Arrange
                     use_ci_bitbucket()
                     contents = (
@@ -146,7 +147,7 @@ pipelines:
                 assert "Placeholder" not in contents
 
             def test_placeholder_restored(self, uv_init_repo_dir: Path):
-                with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_repo_dir), files_manager():
                     # Arrange
                     use_pre_commit()
                     use_ci_bitbucket()
@@ -170,7 +171,7 @@ pipelines:
                 (uv_init_dir / "ruff.toml").touch()
 
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert
@@ -216,7 +217,7 @@ pipelines:
             def test_content(
                 self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
             ):
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     # Arrange
                     use_deptry()
                     capfd.readouterr()
@@ -243,7 +244,7 @@ definitions:
 pipelines:
     default:
       - step:
-            name: Run Deptry
+            name: Run deptry
             caches:
               - uv
             script:
@@ -257,14 +258,14 @@ pipelines:
                 assert out == (
                     "✔ Writing 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                    "✔ Adding 'Run Deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding 'Run deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
                     "☐ Run your pipeline via the Bitbucket website.\n"
                 )
 
         class TestCodespellIntegration:
             def test_content(self, uv_init_dir: Path):
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     # Arrange
                     use_codespell()
 
@@ -302,7 +303,7 @@ pipelines:
         def test_lots_of_tools_no_precommit(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Arrange
                 use_deptry()
                 use_ruff()
@@ -349,7 +350,7 @@ pipelines:
               - uv run ruff check --fix
               - uv run ruff format
       - step:
-            name: Run Deptry
+            name: Run deptry
             caches:
               - uv
             script:
@@ -366,7 +367,7 @@ pipelines:
                 "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding 'Run pyproject-fmt' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding 'Run Ruff' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-                "✔ Adding 'Run Deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding 'Run deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
                 "☐ Run your pipeline via the Bitbucket website.\n"
             )
@@ -380,7 +381,7 @@ pipelines:
                 (uv_init_dir / "tests" / "conftest.py").touch()
 
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert
@@ -398,7 +399,7 @@ pipelines:
 
             def test_not_mentioned_if_not_used(self, uv_init_dir: Path):
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert
@@ -432,7 +433,7 @@ pipelines:
                 )
 
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_ci_bitbucket()
 
                 # Assert

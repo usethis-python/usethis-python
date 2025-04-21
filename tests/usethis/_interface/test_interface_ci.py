@@ -66,16 +66,9 @@ class TestBitbucket:
         ).read_text()
         assert (tmp_path / "bitbucket-pipelines.yml").read_text() == expected_yml
 
-    def test_incorrect_indentation(self, tmp_path: Path):
+    def test_invalid_pyproject_toml(self, tmp_path: Path):
         # Arrange
-        (tmp_path / "bitbucket-pipelines.yml").write_text("""\
-- path: / 
-    backend: 
-      serviceName: <service_name> 
-      servicePort: <port> 
-""")
-        # Use something like pre-commit so we try and modify the file
-        (tmp_path / ".pre-commit-config.yaml").touch()
+        (tmp_path / "pyproject.toml").write_text("(")
 
         # Act
         runner = CliRunner()
@@ -84,7 +77,3 @@ class TestBitbucket:
 
         # Assert
         assert result.exit_code == 1, result.output
-        assert "mapping values are not allowed here" in result.output
-        assert (
-            "Hint: You may have incorrect indentation the YAML file." in result.output
-        )

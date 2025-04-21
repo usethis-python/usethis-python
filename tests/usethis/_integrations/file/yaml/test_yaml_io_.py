@@ -413,3 +413,28 @@ repos:
             edit_yaml(tmp_path / "x.yml") as _,
         ):
             pass
+
+    def test_incorrect_indentation(self, tmp_path: Path, capfd: pytest.CaptureFixture):
+        # Arrange
+        (tmp_path / "x.yml").write_text("""\
+- path: / 
+    backend: 
+      serviceName: <service_name> 
+      servicePort: <port> 
+""")
+
+        # Act
+        with (
+            change_cwd(tmp_path),
+            pytest.raises(
+                InvalidYAMLError, match=r"mapping values are not allowed here"
+            ),
+            edit_yaml(tmp_path / "x.yml"),
+        ):
+            pass
+
+        # Assert
+        # Should have a hint
+        out, err = capfd.readouterr()
+        assert "Hint: You may have incorrect indentation the YAML file." in out
+        assert not err

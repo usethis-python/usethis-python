@@ -193,6 +193,44 @@ ignore-regex = [A-Za-z0-9+/]{100,}
             assert not err
             assert out == ("☐ Run 'codespell' to run the Codespell spellchecker.\n")
 
+        def test_setup_cfg_nonempty(self, uv_init_dir: Path):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/542
+            # Basically we want to make sure the "first_content" resolution strategy
+            # works correctly.
+
+            # Arrange
+            content = """\
+[codespell]
+foo = bar
+"""
+            (uv_init_dir / "setup.cfg").write_text(content)
+
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_codespell()
+
+            # Assert
+            assert (uv_init_dir / "setup.cfg").read_text() != content
+            assert (
+                "[tool.codespell]" not in (uv_init_dir / "pyproject.toml").read_text()
+            )
+
+        def test_setup_cfg_empty(self, uv_init_dir: Path):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/542
+            # Basically we want to make sure the "first_content" resolution strategy
+            # works correctly.
+
+            # Arrange
+            (uv_init_dir / "setup.cfg").touch()
+
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_codespell()
+
+            # Assert
+            assert (uv_init_dir / "setup.cfg").read_text() == ""
+            assert "[tool.codespell]" in (uv_init_dir / "pyproject.toml").read_text()
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(

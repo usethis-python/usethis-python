@@ -70,7 +70,7 @@ from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._integrations.uv.used import is_uv_used
 from usethis._io import Key, KeyValueFileManager
 
-ResolutionT: TypeAlias = Literal["first", "bespoke"]
+ResolutionT: TypeAlias = Literal["first", "first_content", "bespoke"]
 
 
 class ConfigSpec(BaseModel):
@@ -87,6 +87,10 @@ class ConfigSpec(BaseModel):
                     - "first": Using the order in file_managers, the first file found to
                       exist is used. All subsequent files are ignored. If no files are
                       found, the first file in the list is used.
+                    - "first_content": Using the order in file_managers, the first file
+                      to contain managed configuration (as per config_items) is used.
+                      All subsequent files are ignored. If no files are found with any
+                      managed config, the first file in the list is used.
         config_items: A list of configuration items that can be managed by the tool.
     """
 
@@ -341,21 +345,15 @@ class Tool(Protocol):
                 path = Path.cwd() / relative_path
                 if path.exists() and path.is_file():
                     return {file_manager}
-
-            file_managers = file_manager_by_relative_path.values()
-            if not file_managers:
-                return set()
-
-            # Use the preferred default file since there's no existing file.
-            preferred_file_manager = self.preferred_file_manager()
-            if preferred_file_manager not in file_managers:
-                msg = (
-                    f"The preferred file manager '{preferred_file_manager}' is not "
-                    f"among the file managers '{file_managers}' for the tool "
-                    f"'{self.name}'"
-                )
-                raise NotImplementedError(msg)
-            return {preferred_file_manager}
+        elif resolution == "first_content":
+            config_spec = self.get_config_spec()
+            for relative_path, file_manager in file_manager_by_relative_path.items():
+                path = Path.cwd() / relative_path
+                if path.exists() and path.is_file():
+                    # We check whether any of the managed config exists
+                    for config_item in config_spec.config_items:
+                        if config_item.root[relative_path].keys in file_manager:
+                            return {file_manager}
         elif resolution == "bespoke":
             msg = (
                 "The bespoke resolution method is not yet implemented for the tool "
@@ -364,6 +362,20 @@ class Tool(Protocol):
             raise NotImplementedError(msg)
         else:
             assert_never(resolution)
+
+        file_managers = file_manager_by_relative_path.values()
+        if not file_managers:
+            return set()
+
+        preferred_file_manager = self.preferred_file_manager()
+        if preferred_file_manager not in file_managers:
+            msg = (
+                f"The preferred file manager '{preferred_file_manager}' is not "
+                f"among the file managers '{file_managers}' for the tool "
+                f"'{self.name}'"
+            )
+            raise NotImplementedError(msg)
+        return {preferred_file_manager}
 
     def preferred_file_manager(self) -> KeyValueFileManager:
         """If there is no currently active config file, this is the preferred one."""
@@ -615,7 +627,7 @@ class CodespellTool(Tool):
                 SetupCFGManager(),
                 PyprojectTOMLManager(),
             ],
-            resolution="first",
+            resolution="first_content",
             config_items=[
                 ConfigItem(
                     description="Overall config",

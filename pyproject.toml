@@ -139,7 +139,7 @@ minversion = "7"
 
 [tool.coverage.run]
 source = [ "src" ]
-omit = [ "*/pytest-of-*/*" ]
+omit = [ "*/pytest-of-*/*", "*/setup-uv-cache/*" ]
 
 [tool.coverage.report]
 exclude_also = [

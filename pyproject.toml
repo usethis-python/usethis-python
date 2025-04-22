@@ -190,7 +190,7 @@ name = "usethis._core"
 type = "layers"
 layers = [
   # docstyle uses (Ruff) tool, badge uses readme
-  "badge | docstyle | list",
+  "badge | docstyle | list | rule",
   "author | browse | ci | readme | show | tool",
 ]
 containers = [ "usethis._core" ]

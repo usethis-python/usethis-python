@@ -7,7 +7,8 @@ from typing_extensions import assert_never
 
 from usethis._core.readme import is_readme_used
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
-from usethis._tool import ALL_TOOLS, RuffTool
+from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.impl.ruff import RuffTool
 
 
 class UsageRow(BaseModel):

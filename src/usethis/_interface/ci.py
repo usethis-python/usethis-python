@@ -6,7 +6,9 @@ from usethis._console import err_print
 from usethis._core.ci import use_ci_bitbucket
 from usethis.errors import UsethisError
 
-app = typer.Typer(help="Add config for Continuous Integration (CI) pipelines.")
+app = typer.Typer(
+    help="Add config for Continuous Integration (CI) pipelines.", add_completion=False
+)
 
 
 @app.command(help="Use Bitbucket pipelines for CI.")

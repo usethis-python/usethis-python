@@ -14,20 +14,17 @@ from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, U
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._io import KeyValueFileManager
 from usethis._test import change_cwd
-from usethis._tool import (
-    ALL_TOOLS,
-    ConfigEntry,
-    ConfigItem,
-    ConfigSpec,
-    CoverageTool,
-    DeptryTool,
-    ImportLinterTool,
-    PyprojectFmtTool,
-    PyprojectTOMLTool,
-    RequirementsTxtTool,
-    RuffTool,
-    Tool,
-)
+from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.base import Tool
+from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.impl.coverage import CoverageTool
+from usethis._tool.impl.deptry import DeptryTool
+from usethis._tool.impl.import_linter import ImportLinterTool
+from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
+from usethis._tool.impl.pyproject_toml import PyprojectTOMLTool
+from usethis._tool.impl.requirements_txt import RequirementsTxtTool
+from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.rule import RuleConfig
 
 
 class DefaultTool(Tool):
@@ -92,8 +89,8 @@ class MyTool(Tool):
             ],
         )
 
-    def get_associated_ruff_rules(self) -> list[str]:
-        return ["MYRULE"]
+    def get_rule_config(self) -> RuleConfig:
+        return RuleConfig(selected=["MYRULE"])
 
     def get_managed_files(self) -> list[Path]:
         return [Path("mytool-config.yaml")]
@@ -187,11 +184,11 @@ class TestTool:
     class TestGetAssociatedRuffRules:
         def test_default(self):
             tool = DefaultTool()
-            assert tool.get_associated_ruff_rules() == []
+            assert tool.get_rule_config() == RuleConfig()
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.get_associated_ruff_rules() == ["MYRULE"]
+            assert tool.get_rule_config() == RuleConfig(selected=["MYRULE"])
 
     class TestGetManagedFiles:
         def test_default(self):

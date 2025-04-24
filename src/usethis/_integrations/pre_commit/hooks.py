@@ -54,7 +54,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
         existing_hooks = extract_hook_ids(doc.model)
 
         if not existing_hooks:
-            if _hook_ids_are_equivalent(hook_config.id, _PLACEHOLDER_ID):
+            if hook_ids_are_equivalent(hook_config.id, _PLACEHOLDER_ID):
                 tick_print("Adding placeholder hook to '.pre-commit-config.yaml'.")
             else:
                 tick_print(
@@ -113,12 +113,12 @@ def insert_repo(
         # Don't include the placeholder from now on, since we're adding a repo
         # which can be there instead.
         if not (
-            len(hooks) == 1 and _hook_ids_are_equivalent(hooks[0].id, _PLACEHOLDER_ID)
+            len(hooks) == 1 and hook_ids_are_equivalent(hooks[0].id, _PLACEHOLDER_ID)
         ):
             repos.append(repo)
 
         for hook in hooks:
-            if _hook_ids_are_equivalent(hook.id, predecessor):
+            if hook_ids_are_equivalent(hook.id, predecessor):
                 if repo_to_insert.hooks is not None:
                     for inserted_hook in repo_to_insert.hooks:
                         tick_print(
@@ -163,7 +163,7 @@ def remove_hook(hook_id: str) -> None:
                 continue
 
             for hook in repo.hooks:
-                if _hook_ids_are_equivalent(hook.id, hook_id):
+                if hook_ids_are_equivalent(hook.id, hook_id):
                     tick_print(
                         f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'."
                     )
@@ -205,7 +205,7 @@ def extract_hook_ids(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
 
 def _hooks_are_equivalent(hook: HookDefinition, other: HookDefinition) -> bool:
     """Check if two hooks are equivalent."""
-    if _hook_ids_are_equivalent(hook.id, other.id):
+    if hook_ids_are_equivalent(hook.id, other.id):
         return True
 
     # Same contents, different name
@@ -214,7 +214,7 @@ def _hooks_are_equivalent(hook: HookDefinition, other: HookDefinition) -> bool:
     return hook == other
 
 
-def _hook_ids_are_equivalent(hook_id: str | None, other: str | None) -> bool:
+def hook_ids_are_equivalent(hook_id: str | None, other: str | None) -> bool:
     """Check if two hook IDs are equivalent."""
     # Same name
     if hook_id == other:

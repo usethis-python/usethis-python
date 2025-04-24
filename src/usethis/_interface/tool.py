@@ -33,6 +33,7 @@ frozen_opt = typer.Option(False, "--frozen", help="Use the frozen dependencies."
 @app.command(
     name="codespell",
     help="Use the codespell spellchecker: detect common spelling mistakes.",
+    rich_help_panel="Code Quality Tools",
 )
 def codespell(
     remove: bool = remove_opt,
@@ -47,7 +48,11 @@ def codespell(
         _run_tool(use_codespell, remove=remove)
 
 
-@app.command(name="coverage", help="Use coverage: a code coverage measurement tool.")
+@app.command(
+    name="coverage",
+    help="Use coverage: a code coverage measurement tool.",
+    rich_help_panel="Testing",
+)
 def coverage(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
@@ -64,6 +69,7 @@ def coverage(
 @app.command(
     name="deptry",
     help="Use the deptry linter: avoid missing or superfluous dependency declarations.",
+    rich_help_panel="Code Quality Tools",
 )
 def deptry(
     remove: bool = remove_opt,
@@ -81,6 +87,7 @@ def deptry(
 @app.command(
     name="import-linter",
     help="Use Import Linter: enforce a self-imposed architecture on imports.",
+    rich_help_panel="Code Quality Tools",
 )
 def import_linter(
     remove: bool = remove_opt,
@@ -98,6 +105,7 @@ def import_linter(
 @app.command(
     name="pre-commit",
     help="Use the pre-commit framework to manage and maintain pre-commit hooks.",
+    rich_help_panel="Code Quality Tools",
 )
 def pre_commit(
     remove: bool = remove_opt,
@@ -115,6 +123,7 @@ def pre_commit(
 @app.command(
     name="pyproject-fmt",
     help="Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files.",
+    rich_help_panel="Code Quality Tools",
 )
 def pyproject_fmt(
     remove: bool = remove_opt,
@@ -130,7 +139,9 @@ def pyproject_fmt(
 
 
 @app.command(
-    name="pyproject.toml", help="Use a pyproject.toml file to configure the project."
+    name="pyproject.toml",
+    help="Use a pyproject.toml file to configure the project.",
+    rich_help_panel="Configuration Files",
 )
 def pyproject_toml(
     remove: bool = remove_opt,
@@ -145,7 +156,9 @@ def pyproject_toml(
         _run_tool(use_pyproject_toml, remove=remove)
 
 
-@app.command(name="pytest", help="Use the pytest testing framework.")
+@app.command(
+    name="pytest", help="Use the pytest testing framework.", rich_help_panel="Testing"
+)
 def pytest(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
@@ -162,6 +175,7 @@ def pytest(
 @app.command(
     name="requirements.txt",
     help="Use a requirements.txt file exported from the uv lockfile.",
+    rich_help_panel="Configuration Files",
 )
 def requirements_txt(
     remove: bool = remove_opt,
@@ -177,7 +191,9 @@ def requirements_txt(
 
 
 @app.command(
-    name="ruff", help="Use Ruff: an extremely fast Python linter and code formatter."
+    name="ruff",
+    help="Use Ruff: an extremely fast Python linter and code formatter.",
+    rich_help_panel="Code Quality Tools",
 )
 def ruff(
     remove: bool = remove_opt,

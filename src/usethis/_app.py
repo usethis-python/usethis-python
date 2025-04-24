@@ -20,23 +20,40 @@ app = typer.Typer(
     ),
     add_completion=False,
 )
-app.command(help="Add an author to the project.")(
+
+rich_help_panel = "Manage Tooling"
+app.add_typer(usethis._interface.ci.app, name="ci", rich_help_panel=rich_help_panel)
+app.add_typer(usethis._interface.tool.app, name="tool", rich_help_panel=rich_help_panel)
+
+rich_help_panel = "Manage Config"
+app.command(help="Add an author to the project.", rich_help_panel=rich_help_panel)(
     usethis._interface.author.author,
 )
-app.add_typer(usethis._interface.badge.app, name="badge")
-app.add_typer(usethis._interface.browse.app, name="browse")
-app.add_typer(usethis._interface.ci.app, name="ci")
-app.command(help="Add a README.md file to the project.")(
-    usethis._interface.readme.readme,
-)
-app.command(help="Enforce a docstring style.")(
+app.command(help="Enforce a docstring style.", rich_help_panel=rich_help_panel)(
     usethis._interface.docstyle.docstyle,
 )
-app.command(help="List usage of tooling and config managed by usethis.")(
+
+rich_help_panel = "Manage README"
+app.add_typer(
+    usethis._interface.badge.app, name="badge", rich_help_panel=rich_help_panel
+)
+app.command(
+    help="Add a README.md file to the project.", rich_help_panel=rich_help_panel
+)(
+    usethis._interface.readme.readme,
+)
+
+rich_help_panel = "Informative"
+app.add_typer(
+    usethis._interface.browse.app, name="browse", rich_help_panel=rich_help_panel
+)
+app.command(
+    help="List usage of tooling and config managed by usethis.",
+    rich_help_panel=rich_help_panel,
+)(
     usethis._interface.list.list,
 )
-app.add_typer(usethis._interface.show.app, name="show")
-app.add_typer(usethis._interface.tool.app, name="tool")
-app.command(help="Display the version of usethis.")(
+app.add_typer(usethis._interface.show.app, name="show", rich_help_panel=rich_help_panel)
+app.command(help="Display the version of usethis.", rich_help_panel=rich_help_panel)(
     usethis._interface.version.version,
 )

@@ -21,11 +21,25 @@ def use_rules(rules: list[str]) -> None:
     RuffTool().select_rules(rules_mapping.ruff_rules)
 
 
-def remove_rules(rules: list[str]) -> None:
+def deselect_rules(rules: list[str]) -> None:
     rules_mapping = get_rules_mapping(rules)
 
     DeptryTool().deselect_rules(rules_mapping.deptry_rules)
     RuffTool().deselect_rules(rules_mapping.ruff_rules)
+
+
+def ignore_rules(rules: list[str]) -> None:
+    rules_mapping = get_rules_mapping(rules)
+
+    DeptryTool().ignore_rules(rules_mapping.deptry_rules)
+    RuffTool().ignore_rules(rules_mapping.ruff_rules)
+
+
+def unignore_rules(rules: list[str]) -> None:
+    rules_mapping = get_rules_mapping(rules)
+
+    DeptryTool().unignore_rules(rules_mapping.deptry_rules)
+    RuffTool().unignore_rules(rules_mapping.ruff_rules)
 
 
 def get_rules_mapping(rules: list[str]) -> RulesMapping:

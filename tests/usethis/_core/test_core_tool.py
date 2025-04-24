@@ -2163,7 +2163,7 @@ select = ["PT"]
                 assert (
                     out
                     == """\
-✔ Disabling Ruff rule 'PT' in 'pyproject.toml'.
+✔ Deselecting Ruff rule 'PT' in 'pyproject.toml'.
 """
                 )
 
@@ -2532,7 +2532,7 @@ class TestRuff:
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
-                "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
                 "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
                 "☐ Run 'ruff format' to run the Ruff formatter.\n"

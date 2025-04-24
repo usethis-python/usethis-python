@@ -174,7 +174,7 @@ class TestRuff:
 ✔ Writing 'pyproject.toml'.
 ✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.
 ✔ Adding Ruff config to 'pyproject.toml'.
-✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 
+✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 
 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
 ✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
@@ -226,7 +226,7 @@ line-length = 88
             == """\
 ✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.
 ✔ Adding pytest config to 'pyproject.toml'.
-✔ Enabling Ruff rule 'PT' in 'pyproject.toml'.
+✔ Selecting Ruff rule 'PT' in 'pyproject.toml'.
 ✔ Creating '/tests'.
 ✔ Writing '/tests/conftest.py'.
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.

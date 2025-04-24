@@ -1373,7 +1373,7 @@ class TestRuffTool:
             assert not err
             assert out == (
                 "✔ Writing 'pyproject.toml'.\n"
-                "✔ Enabling Ruff rules 'A', 'B', 'C' in 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rules 'A', 'B', 'C' in 'pyproject.toml'.\n"
             )
 
         def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
@@ -1386,7 +1386,7 @@ class TestRuffTool:
 
             # Assert
             out, _ = capfd.readouterr()
-            assert "✔ Enabling Ruff rules 'A', 'B', 'C' in 'pyproject.toml" in out
+            assert "✔ Selecting Ruff rules 'A', 'B', 'C' in 'pyproject.toml" in out
 
         def test_blank_slate(self, tmp_path: Path):
             # Arrange

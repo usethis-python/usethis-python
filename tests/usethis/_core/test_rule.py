@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
-from usethis._core.rule import remove_rules, use_rules
+from usethis._core.rule import deselect_rules, unignore_rules, use_rules
 from usethis._integrations.uv.deps import Dependency, get_deps_from_group
 from usethis._test import change_cwd
 from usethis._tool import RuffTool
@@ -39,10 +39,10 @@ class TestUseRules:
 
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Enabling Ruff rule 'RUF001' in 'ruff.toml'.\n"
+        assert out == "✔ Selecting Ruff rule 'RUF001' in 'ruff.toml'.\n"
 
 
-class TestRemoveRules:
+class TestDeselectRules:
     def test_success(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir), files_manager():
             # Arrange
@@ -54,11 +54,29 @@ select = ["RUF001"]
             )
 
             # Act
-            remove_rules(rules=["RUF001"])
+            deselect_rules(rules=["RUF001"])
 
             # Assert
             assert "RUF001" not in RuffTool().get_selected_rules()
 
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Disabling Ruff rule 'RUF001' in 'ruff.toml'.\n"
+        assert out == "✔ Deselecting Ruff rule 'RUF001' in 'ruff.toml'.\n"
+
+
+class TestUnignoreRules:
+    def test_success(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        with change_cwd(uv_init_dir), files_manager():
+            # Arrange
+            (uv_init_dir / "ruff.toml").write_text(
+                """\
+[lint]
+ignore = ["RUF001"]
+"""
+            )
+
+            # Act
+            unignore_rules(rules=["RUF001"])
+
+            # Assert
+            assert "RUF001" not in RuffTool().get_ignored_rules()

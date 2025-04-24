@@ -57,7 +57,7 @@ class TestBitbucket:
                     result = runner.invoke(
                         main_app, ["tool", tool_command, "--offline"]
                     )
-                assert not result.exit_code, str(result.stdout)
+                assert not result.exit_code, f"{tool_command=}: {result.stdout}"
 
             # Act
             result = runner.invoke(app)  # The CI menu only has 1 command (bitbucket

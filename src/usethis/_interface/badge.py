@@ -15,7 +15,9 @@ from usethis._core.badge import (
 )
 from usethis.errors import UsethisError
 
-app = typer.Typer(help="Add badges to the top of the README.md file.")
+app = typer.Typer(
+    help="Add badges to the top of the README.md file.", add_completion=False
+)
 
 remove_opt = typer.Option(
     False, "--remove", help="Remove the badge instead of adding it."

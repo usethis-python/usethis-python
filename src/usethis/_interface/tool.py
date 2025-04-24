@@ -19,7 +19,9 @@ from usethis._core.tool import (
 )
 from usethis.errors import UsethisError
 
-app = typer.Typer(help="Add and configure development tools, e.g. linters.")
+app = typer.Typer(
+    help="Add and configure development tools, e.g. linters.", add_completion=False
+)
 
 remove_opt = typer.Option(
     False, "--remove", help="Remove the tool instead of adding it."

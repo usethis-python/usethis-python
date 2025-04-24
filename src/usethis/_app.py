@@ -17,7 +17,8 @@ app = typer.Typer(
     help=(
         "Automate Python package and project setup tasks that are otherwise "
         "performed manually."
-    )
+    ),
+    add_completion=False,
 )
 app.command(help="Add an author to the project.")(
     usethis._interface.author.author,

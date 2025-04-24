@@ -8,7 +8,7 @@ from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._interface.tool import ALL_TOOL_COMMANDS, app
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 from usethis._test import change_cwd
-from usethis._tool import ALL_TOOLS
+from usethis._tool.all_ import ALL_TOOLS
 
 
 class TestCodespell:

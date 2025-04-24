@@ -37,7 +37,10 @@ from usethis._integrations.uv.deps import (
 )
 from usethis._integrations.uv.toml import UVTOMLManager
 from usethis._test import change_cwd
-from usethis._tool import ALL_TOOLS, PyprojectTOMLTool, PytestTool, RuffTool
+from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.impl.pyproject_toml import PyprojectTOMLTool
+from usethis._tool.impl.pytest import PytestTool
+from usethis._tool.impl.ruff import RuffTool
 
 
 class TestAllHooksList:

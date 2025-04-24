@@ -31,7 +31,6 @@ from usethis._integrations.uv.python import get_supported_major_python_versions
 from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
-from usethis._tool.impl.coverage import CoverageTool
 from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
@@ -55,6 +54,8 @@ class PytestTool(Tool):
             box_print("Run 'pytest' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        from usethis._tool.impl.coverage import CoverageTool
+
         deps = [Dependency(name="pytest")]
         if unconditional or CoverageTool().is_used():
             deps += [Dependency(name="pytest-cov")]

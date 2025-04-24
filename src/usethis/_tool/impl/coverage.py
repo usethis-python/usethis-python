@@ -16,7 +16,6 @@ from usethis._integrations.uv.deps import (
 from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
-from usethis._tool.impl.pytest import PytestTool
 
 
 class CoverageTool(Tool):
@@ -27,6 +26,8 @@ class CoverageTool(Tool):
         return "coverage"
 
     def print_how_to_use(self) -> None:
+        from usethis._tool.impl.pytest import PytestTool
+
         if PytestTool().is_used():
             if is_uv_used():
                 box_print("Run 'uv run pytest --cov' to run your tests with coverage.")
@@ -38,6 +39,8 @@ class CoverageTool(Tool):
             box_print("Run 'coverage help' to see available coverage commands.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        from usethis._tool.impl.pytest import PytestTool
+
         deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
         if unconditional or PytestTool().is_used():
             deps += [Dependency(name="pytest-cov")]

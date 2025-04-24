@@ -19,23 +19,21 @@ from usethis._integrations.pre_commit.hooks import (
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.init import ensure_pyproject_toml
-from usethis._tool import (
-    ALL_TOOLS,
-    CodespellTool,
-    CoverageTool,
-    DeptryTool,
-    ImportLinterTool,
-    PreCommitTool,
-    PyprojectFmtTool,
-    PyprojectTOMLTool,
-    PytestTool,
-    RequirementsTxtTool,
-    RuffTool,
-    RuleConfig,
-)
+from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.impl.codespell import CodespellTool
+from usethis._tool.impl.coverage import CoverageTool
+from usethis._tool.impl.deptry import DeptryTool
+from usethis._tool.impl.import_linter import ImportLinterTool
+from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
+from usethis._tool.impl.pyproject_toml import PyprojectTOMLTool
+from usethis._tool.impl.pytest import PytestTool
+from usethis._tool.impl.requirements_txt import RequirementsTxtTool
+from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
-    from usethis._tool import Tool
+    from usethis._tool.base import Tool
 
 
 def use_codespell(*, remove: bool = False) -> None:

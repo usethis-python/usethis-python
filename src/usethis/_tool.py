@@ -86,11 +86,11 @@ class ConfigSpec(BaseModel):
         resolution: The resolution strategy for the configuration files.
                     - "first": Using the order in file_managers, the first file found to
                       exist is used. All subsequent files are ignored. If no files are
-                      found, the first file in the list is used.
+                      found, the preferred file manager is used.
                     - "first_content": Using the order in file_managers, the first file
                       to contain managed configuration (as per config_items) is used.
                       All subsequent files are ignored. If no files are found with any
-                      managed config, the first file in the list is used.
+                      managed config, the found, the preferred file manager is used.
         config_items: A list of configuration items that can be managed by the tool.
     """
 

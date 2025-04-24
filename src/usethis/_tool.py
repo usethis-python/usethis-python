@@ -7,7 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal, Protocol, TypeAlias
 
-from pydantic import BaseModel, InstanceOf
+from pydantic import BaseModel, Field, InstanceOf
 from typing_extensions import Self, assert_never
 
 from usethis._config_file import (
@@ -178,6 +178,41 @@ class ConfigItem(BaseModel):
     def paths(self) -> set[Path]:
         """Get the absolute paths to the config files associated with this item."""
         return {(Path.cwd() / path).resolve() for path in self.root}
+
+
+class RuleConfig(BaseModel):
+    """Configuration for linter rules associated with a tool.
+
+    There is a distinction between selected and ignored rules. Selected rules are those
+    which are enabled and will be run by the tool unless ignored. Ignored rules are
+    those which are not run by the tool, even if they are selected. This follows the
+    Ruff paradigm.
+
+    There is also a distinction between managed and unmanaged rule config. Managed
+    selections (and ignores) are those which are managed exclusively by the one tool,
+    and so can be safely removed if the tool is removed. Unmanaged selections
+    (and ignores) are those which are shared with other tools, and so they should only
+    be added, never removed.
+
+    Attributes:
+        selected: Managed selected rules.
+        ignored: Managed ignored rules.
+        unmanaged_selected: Unmanaged selected rules.
+        unmanaged_ignored: Unmanaged ignored rules.
+    """
+
+    selected: list[Rule] = Field(default_factory=list)
+    ignored: list[Rule] = Field(default_factory=list)
+    unmanaged_selected: list[Rule] = Field(default_factory=list)
+    unmanaged_ignored: list[Rule] = Field(default_factory=list)
+
+    def get_all_selected(self) -> list[Rule]:
+        """Get all selected rules."""
+        return self.selected + self.unmanaged_selected
+
+    def get_all_ignored(self) -> list[Rule]:
+        """Get all ignored rules."""
+        return self.ignored + self.unmanaged_ignored
 
 
 class Tool(Protocol):
@@ -547,16 +582,9 @@ class Tool(Protocol):
             ):
                 remove_bitbucket_step_from_default(step)
 
-    def get_associated_ruff_rules(self) -> list[Rule]:
-        """Get the Ruff rule codes associated with the tool.
-
-        These are managed rules and it is assumed that they can be removed if the tool
-        is removed. It only makes sense to include rules which are tightly bound
-        with the tool.
-        """
-        # For other rules which are not tightly bound to the tool, see
-        # https://github.com/nathanjmcdougall/usethis-python/issues/499
-        return []
+    def get_rule_config(self) -> RuleConfig:
+        """Get the linter rule configuration associated with this tool."""
+        return RuleConfig()
 
     def is_managed_rule(self, rule: Rule) -> bool:
         """Determine if a rule is managed by this tool."""
@@ -1560,8 +1588,8 @@ class PytestTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path(".pytest.ini"), Path("pytest.ini"), Path("tests/conftest.py")]
 
-    def get_associated_ruff_rules(self) -> list[Rule]:
-        return ["PT"]
+    def get_rule_config(self) -> RuleConfig:
+        return RuleConfig(selected=["PT"])
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         # This is a variant of the "first" method

@@ -25,7 +25,7 @@ from usethis._tool import (
     PyprojectTOMLTool,
     RequirementsTxtTool,
     RuffTool,
-    Rule,
+    RuleConfig,
     Tool,
 )
 
@@ -92,8 +92,8 @@ class MyTool(Tool):
             ],
         )
 
-    def get_associated_ruff_rules(self) -> list[Rule]:
-        return ["MYRULE"]
+    def get_rule_config(self) -> RuleConfig:
+        return RuleConfig(selected=["MYRULE"])
 
     def get_managed_files(self) -> list[Path]:
         return [Path("mytool-config.yaml")]
@@ -187,11 +187,11 @@ class TestTool:
     class TestGetAssociatedRuffRules:
         def test_default(self):
             tool = DefaultTool()
-            assert tool.get_associated_ruff_rules() == []
+            assert tool.get_rule_config() == RuleConfig()
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.get_associated_ruff_rules() == ["MYRULE"]
+            assert tool.get_rule_config() == RuleConfig(selected=["MYRULE"])
 
     class TestGetManagedFiles:
         def test_default(self):

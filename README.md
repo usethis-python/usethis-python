@@ -62,10 +62,11 @@ Alternatively, run in isolation, using `uvx` or `pipx`.
 
 ### Configuration
 
+- [`usethis badge`](#usethis-badge)
+- [`usethis rule`](#usethis-rule-rulecode)
+- [`usethis docstyle`](#usethis-docstyle)
 - [`usethis readme`](#usethis-readme)
 - [`usethis author`](#usethis-author)
-- [`usethis badge`](#usethis-badge)
-- [`usethis docstyle`](#usethis-docstyle)
 
 ### Information
 
@@ -159,6 +160,53 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 
+### `usethis badge`
+
+Add badges to README.md.
+
+Currently supported badges:
+
+- `usethis badge pre-commit`
+- `usethis badge pypi`
+- `usethis badge ruff`
+- `usethis badge usethis`
+- `usethis badge uv`
+
+Supported options:
+
+- `--remove` to remove the badge instead of adding it
+- `--offline` to disable network access and rely on caches
+- `--quiet` to suppress output
+
+### `usethis rule <rulecode>`
+
+Add (or manage configuration) of Ruff and Deptry rules in `pyproject.toml`.
+
+Example:
+
+`usethis rule RUF001`
+
+Supported options:
+
+- `--remove` to remove the rule selection or ignore status.
+- `--ignore` to add the rule to the ignore list (or remove it if --remove is specified).
+- `--offline` to disable network access and rely on caches
+- `--quiet` to suppress output
+
+### `usethis docstyle`
+
+Set a docstring style convention for the project, and enforce it with Ruff.
+
+Currently supported docstring styles:
+
+- `usethis docstyle numpy`
+- `usethis docstyle google`
+- `usethis docstyle pep257`
+
+Supported options:
+
+- `--quiet` to suppress output
+
 ### `usethis readme`
 
 Add a README.md file to the project.
@@ -180,38 +228,6 @@ Other supported options:
 
 - `--email` to set the author email address
 - `--overwrite` to overwrite all existing author information
-- `--quiet` to suppress output
-
-### `usethis badge`
-
-Add badges to README.md.
-
-Currently supported badges:
-
-- `usethis badge pre-commit`
-- `usethis badge pypi`
-- `usethis badge ruff`
-- `usethis badge usethis`
-- `usethis badge uv`
-
-Supported options:
-
-- `--remove` to remove the badge instead of adding it
-- `--offline` to disable network access and rely on caches
-- `--quiet` to suppress output
-
-### `usethis docstyle`
-
-Set a docstring style convention for the project, and enforce it with Ruff.
-
-Currently supported docstring styles:
-
-- `usethis docstyle numpy`
-- `usethis docstyle google`
-- `usethis docstyle pep257`
-
-Supported options:
-
 - `--quiet` to suppress output
 
 ### `usethis list`

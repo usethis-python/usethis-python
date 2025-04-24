@@ -384,6 +384,35 @@ omit =
 """
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_after_codespell(self, tmp_path: Path):
+        # To check the config is valid
+        # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "example"
+version = "0.1.0"
+description = "Add your description here"
+
+[dependency-groups]
+dev = [
+    "codespell>=2.4.1",
+]
+                                                    
+[tool.codespell]
+ignore-regex = ["[A-Za-z0-9+/]{100,}"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            use_coverage()
+
+            # Assert
+            assert ["tool", "coverage"] in PyprojectTOMLManager()
+        assert "[tool.coverage]" in (tmp_path / "pyproject.toml").read_text()
+
     class TestRemove:
         def test_unused(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), PyprojectTOMLManager():

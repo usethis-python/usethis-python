@@ -19,6 +19,7 @@ from usethis._tool import (
     ConfigEntry,
     ConfigItem,
     ConfigSpec,
+    CoverageTool,
     DeptryTool,
     ImportLinterTool,
     PyprojectFmtTool,
@@ -960,6 +961,37 @@ key3 = value3
 
                 # Assert
                 assert (tmp_path / "mytool-config.yaml").exists()
+
+
+class TestCoverageTool:
+    class TestAddConfigs:
+        def test_after_codespell(self, tmp_path: Path):
+            # To check the config is valid
+            # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+    [project]
+    name = "example"
+    version = "0.1.0"
+    description = "Add your description here"
+
+    [dependency-groups]
+    dev = [
+        "codespell>=2.4.1",
+    ]
+                                                        
+    [tool.codespell]
+    ignore-regex = ["[A-Za-z0-9+/]{100,}"]
+    """)
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                CoverageTool().add_configs()
+
+                # Assert
+                assert ["tool", "coverage"] in PyprojectTOMLManager()
+            assert "[tool.coverage]" in (tmp_path / "pyproject.toml").read_text()
 
 
 class TestDeptryTool:

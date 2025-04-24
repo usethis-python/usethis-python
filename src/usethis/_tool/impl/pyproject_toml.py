@@ -21,7 +21,7 @@ if TYPE_CHECKING:
         Dependency,
     )
 
-OTHER_TOOLS = [
+OTHER_TOOLS: list[Tool] = [
     CodespellTool(),
     CoverageTool(),
     DeptryTool(),

@@ -8,7 +8,9 @@ from usethis._tool.impl.pyproject_toml import OTHER_TOOLS, PyprojectTOMLTool
 
 class TestOtherTools:
     def test_in_sync_with_all_tools(self):
-        assert set(OTHER_TOOLS) | {PyprojectTOMLTool()} == set(ALL_TOOLS)
+        assert {tool.name.lower() for tool in OTHER_TOOLS} | {
+            PyprojectTOMLTool().name
+        } == {tool.name.lower() for tool in ALL_TOOLS}
 
 
 class TestPyprojectTOMLTool:

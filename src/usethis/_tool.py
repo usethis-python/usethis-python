@@ -71,6 +71,7 @@ from usethis._integrations.uv.used import is_uv_used
 from usethis._io import Key, KeyValueFileManager
 
 ResolutionT: TypeAlias = Literal["first", "first_content", "bespoke"]
+Rule: TypeAlias = str
 
 
 class ConfigSpec(BaseModel):
@@ -546,7 +547,7 @@ class Tool(Protocol):
             ):
                 remove_bitbucket_step_from_default(step)
 
-    def get_associated_ruff_rules(self) -> list[str]:
+    def get_associated_ruff_rules(self) -> list[Rule]:
         """Get the Ruff rule codes associated with the tool.
 
         These are managed rules and it is assumed that they can be removed if the tool
@@ -557,22 +558,22 @@ class Tool(Protocol):
         # https://github.com/nathanjmcdougall/usethis-python/issues/499
         return []
 
-    def is_managed_rule(self, rule: str) -> bool:
+    def is_managed_rule(self, rule: Rule) -> bool:
         """Determine if a rule is managed by this tool."""
         return False
 
-    def select_rules(self, rules: list[str]) -> None:
+    def select_rules(self, rules: list[Rule]) -> None:
         """Select the rules managed by the tool.
 
         These rules are not validated; it is assumed they are valid rules for the tool,
         and that the tool will be able to manage them.
         """
 
-    def get_selected_rules(self) -> list[str]:
+    def get_selected_rules(self) -> list[Rule]:
         """Get the rules managed by the tool that are currently selected."""
         return []
 
-    def ignore_rules(self, rules: list[str]) -> None:
+    def ignore_rules(self, rules: list[Rule]) -> None:
         """Ignore rules managed by the tool.
 
         Ignoring a rule is different from deselecting it - it means that even if it
@@ -583,11 +584,11 @@ class Tool(Protocol):
         and that the tool will be able to manage them.
         """
 
-    def get_ignored_rules(self) -> list[str]:
+    def get_ignored_rules(self) -> list[Rule]:
         """Get the ignored rules managed by the tool."""
         return []
 
-    def deselect_rules(self, rules: list[str]) -> None:
+    def deselect_rules(self, rules: list[Rule]) -> None:
         """Deselect the rules managed by the tool.
 
         Any rules that aren't already selected are ignored.
@@ -948,13 +949,13 @@ class DeptryTool(Tool):
             )
         ]
 
-    def is_managed_rule(self, rule: str) -> bool:
+    def is_managed_rule(self, rule: Rule) -> bool:
         return rule.startswith("DEP") and rule[3:].isdigit()
 
-    def select_rules(self, rules: list[str]) -> None:
+    def select_rules(self, rules: list[Rule]) -> None:
         """Does nothing for deptry - all rules are automatically enabled by default."""
 
-    def get_selected_rules(self) -> list[str]:
+    def get_selected_rules(self) -> list[Rule]:
         """No notion of selection for deptry.
 
         This doesn't mean rules won't be enabled, it just means we don't keep track
@@ -962,10 +963,10 @@ class DeptryTool(Tool):
         """
         return []
 
-    def deselect_rules(self, rules: list[str]) -> None:
+    def deselect_rules(self, rules: list[Rule]) -> None:
         """Does nothing for deptry - all rules are automatically enabled by default."""
 
-    def ignore_rules(self, rules: list[str]) -> None:
+    def ignore_rules(self, rules: list[Rule]) -> None:
         rules = sorted(set(rules) - set(self.get_ignored_rules()))
 
         if not rules:
@@ -982,11 +983,11 @@ class DeptryTool(Tool):
         keys = self._get_ignore_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
-    def get_ignored_rules(self) -> list[str]:
+    def get_ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
         try:
-            rules: list[str] = file_manager[keys]
+            rules: list[Rule] = file_manager[keys]
         except (KeyError, FileNotFoundError):
             rules = []
 
@@ -1559,7 +1560,7 @@ class PytestTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path(".pytest.ini"), Path("pytest.ini"), Path("tests/conftest.py")]
 
-    def get_associated_ruff_rules(self) -> list[str]:
+    def get_associated_ruff_rules(self) -> list[Rule]:
         return ["PT"]
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
@@ -1814,7 +1815,7 @@ class RuffTool(Tool):
             )
         ]
 
-    def select_rules(self, rules: list[str]) -> None:
+    def select_rules(self, rules: list[Rule]) -> None:
         """Add Ruff rules to the project."""
         rules = sorted(set(rules) - set(self.get_selected_rules()))
 
@@ -1832,7 +1833,7 @@ class RuffTool(Tool):
         keys = self._get_select_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
-    def ignore_rules(self, rules: list[str]) -> None:
+    def ignore_rules(self, rules: list[Rule]) -> None:
         """Ignore Ruff rules in the project."""
         rules = sorted(set(rules) - set(self.get_ignored_rules()))
 
@@ -1850,7 +1851,7 @@ class RuffTool(Tool):
         keys = self._get_ignore_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
-    def deselect_rules(self, rules: list[str]) -> None:
+    def deselect_rules(self, rules: list[Rule]) -> None:
         """Ensure Ruff rules are not selected in the project."""
         rules = list(set(rules) & set(self.get_selected_rules()))
 
@@ -1868,24 +1869,24 @@ class RuffTool(Tool):
         keys = self._get_select_keys(file_manager)
         file_manager.remove_from_list(keys=keys, values=rules)
 
-    def get_selected_rules(self) -> list[str]:
+    def get_selected_rules(self) -> list[Rule]:
         """Get the Ruff rules selected in the project."""
         (file_manager,) = self.get_active_config_file_managers()
 
         keys = self._get_select_keys(file_manager)
         try:
-            rules: list[str] = file_manager[keys]
+            rules: list[Rule] = file_manager[keys]
         except (KeyError, FileNotFoundError):
             rules = []
 
         return rules
 
-    def get_ignored_rules(self) -> list[str]:
+    def get_ignored_rules(self) -> list[Rule]:
         """Get the Ruff rules ignored in the project."""
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
         try:
-            rules: list[str] = file_manager[keys]
+            rules: list[Rule] = file_manager[keys]
         except (KeyError, FileNotFoundError):
             rules = []
 
@@ -1930,7 +1931,7 @@ class RuffTool(Tool):
         return False
 
     @staticmethod
-    def _is_pydocstyle_rule(rule: str) -> bool:
+    def _is_pydocstyle_rule(rule: Rule) -> bool:
         return [d for d in rule if d.isalpha()] == ["D"]
 
     def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:

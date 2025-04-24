@@ -4,6 +4,8 @@ import pytest
 from typer.testing import CliRunner
 
 from usethis._config import usethis_config
+from usethis._config_file import files_manager
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._interface.tool import ALL_TOOL_COMMANDS, app
 from usethis._subprocess import SubprocessFailedError, call_subprocess
@@ -54,6 +56,42 @@ class TestCoverage:
             # Assert
             assert result.exit_code == 0, result.output
             call_subprocess(["coverage", "run", "."])
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_after_codespell(self, uv_init_dir: Path):
+        # To check the config is valid
+        # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
+        # Arrange
+        (uv_init_dir / "pyproject.toml").write_text("""\
+[project]
+name = "example"
+version = "0.1.0"
+description = "Add your description here"
+
+[dependency-groups]
+dev = [
+    "codespell>=2.4.1",
+]
+                                                    
+[tool.codespell]
+ignore-regex = ["[A-Za-z0-9+/]{100,}"]
+""")
+
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            # Act
+            if not usethis_config.offline:
+                result = runner.invoke(app, ["coverage"])
+            else:
+                result = runner.invoke(app, ["coverage", "--offline"])
+
+            # Assert
+            assert result.exit_code == 0, result.output
+            with files_manager():
+                assert ["tool", "coverage"] in PyprojectTOMLManager()
+
+        assert "[tool.coverage]" in (uv_init_dir / "pyproject.toml").read_text()
 
 
 class TestDeptry:

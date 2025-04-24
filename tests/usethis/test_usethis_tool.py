@@ -989,7 +989,8 @@ class TestCoverageTool:
             with change_cwd(tmp_path), files_manager():
                 CoverageTool().add_configs()
 
-                # Assert
+            # Assert
+            with change_cwd(tmp_path), files_manager():
                 assert ["tool", "coverage"] in PyprojectTOMLManager()
             assert "[tool.coverage]" in (tmp_path / "pyproject.toml").read_text()
 

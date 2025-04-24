@@ -1934,7 +1934,7 @@ class RuffTool(Tool):
         return [d for d in rule if d.isalpha()] == ["D"]
 
     def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:
-        """Get the keys for the select rules in the given file manager."""
+        """Get the keys for the selected rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "select"]
         elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):

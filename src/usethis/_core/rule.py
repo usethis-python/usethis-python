@@ -9,7 +9,7 @@ class RulesMapping(BaseModel):
     deptry_rules: list[str]
 
 
-def use_rules(rules: list[str]) -> None:
+def select_rules(rules: list[str]) -> None:
     rules_mapping = get_rules_mapping(rules)
 
     if rules_mapping.deptry_rules and not DeptryTool().is_used():

@@ -3,17 +3,22 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
-from usethis._core.rule import deselect_rules, ignore_rules, unignore_rules, use_rules
+from usethis._core.rule import (
+    deselect_rules,
+    ignore_rules,
+    select_rules,
+    unignore_rules,
+)
 from usethis._integrations.uv.deps import Dependency, get_deps_from_group
 from usethis._test import change_cwd
 from usethis._tool import RuffTool
 
 
-class TestUseRules:
+class TestSelectRules:
     def test_ruff_gets_installed(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir), files_manager():
             # Act
-            use_rules(rules=["A"])
+            select_rules(rules=["A"])
 
             # Assert
             assert Dependency(name="ruff") in get_deps_from_group(group="dev")
@@ -23,7 +28,7 @@ class TestUseRules:
     ):
         with change_cwd(uv_init_dir), files_manager():
             # Act
-            use_rules(rules=["DEP001"])
+            select_rules(rules=["DEP001"])
 
             # Assert
             assert Dependency(name="deptry") in get_deps_from_group(group="dev")
@@ -43,7 +48,7 @@ class TestUseRules:
             (uv_init_dir / "ruff.toml").touch()  # avoid installation messages for ruff
 
             # Act
-            use_rules(rules=["RUF001"])
+            select_rules(rules=["RUF001"])
 
             # Assert
             assert "RUF001" in RuffTool().get_selected_rules()

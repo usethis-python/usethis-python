@@ -25,6 +25,7 @@ from usethis._tool import (
     PyprojectTOMLTool,
     RequirementsTxtTool,
     RuffTool,
+    Rule,
     Tool,
 )
 
@@ -91,7 +92,7 @@ class MyTool(Tool):
             ],
         )
 
-    def get_associated_ruff_rules(self) -> list[str]:
+    def get_associated_ruff_rules(self) -> list[Rule]:
         return ["MYRULE"]
 
     def get_managed_files(self) -> list[Path]:

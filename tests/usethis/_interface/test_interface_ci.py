@@ -52,13 +52,17 @@ class TestBitbucket:
             # Arrange
             for tool_command in ALL_TOOL_COMMANDS:
                 if not usethis_config.offline:
-                    runner.invoke(main_app, ["tool", tool_command])
+                    result = runner.invoke(main_app, ["tool", tool_command])
                 else:
-                    runner.invoke(main_app, ["tool", tool_command, "--offline"])
+                    result = runner.invoke(
+                        main_app, ["tool", tool_command, "--offline"]
+                    )
+                assert not result.exit_code, str(result.stdout)
 
             # Act
-            runner.invoke(app)  # The CI menu only has 1 command (bitbucket
+            result = runner.invoke(app)  # The CI menu only has 1 command (bitbucket
             # pipelines) so we skip the subcommand here
+            assert not result.exit_code, result.stdout
 
         # Assert
         expected_yml = (

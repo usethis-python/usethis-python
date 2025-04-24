@@ -58,12 +58,12 @@ class TestCoverage:
             call_subprocess(["coverage", "run", "."])
 
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_after_codespell(self, uv_init_dir: Path):
+    def test_after_codespell(self, tmp_path: Path):
         # To check the config is valid
         # https://github.com/nathanjmcdougall/usethis-python/issues/558
 
         # Arrange
-        (uv_init_dir / "pyproject.toml").write_text("""\
+        (tmp_path / "pyproject.toml").write_text("""\
 [project]
 name = "example"
 version = "0.1.0"
@@ -79,7 +79,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 """)
 
         runner = CliRunner()
-        with change_cwd(uv_init_dir):
+        with change_cwd(tmp_path):
             # Act
             if not usethis_config.offline:
                 result = runner.invoke(app, ["coverage"])
@@ -91,7 +91,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             with files_manager():
                 assert ["tool", "coverage"] in PyprojectTOMLManager()
 
-        assert "[tool.coverage]" in (uv_init_dir / "pyproject.toml").read_text()
+        assert "[tool.coverage]" in (tmp_path / "pyproject.toml").read_text()
 
 
 class TestDeptry:

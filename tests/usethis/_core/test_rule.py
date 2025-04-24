@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
-from usethis._core.rule import deselect_rules, unignore_rules, use_rules
+from usethis._core.rule import deselect_rules, ignore_rules, unignore_rules, use_rules
 from usethis._integrations.uv.deps import Dependency, get_deps_from_group
 from usethis._test import change_cwd
 from usethis._tool import RuffTool
@@ -18,13 +18,24 @@ class TestUseRules:
             # Assert
             assert Dependency(name="ruff") in get_deps_from_group(group="dev")
 
-    def test_deptry_gets_installed(self, uv_init_dir: Path):
+    def test_deptry_rule_selected(
+        self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+    ):
         with change_cwd(uv_init_dir), files_manager():
             # Act
             use_rules(rules=["DEP001"])
 
             # Assert
             assert Dependency(name="deptry") in get_deps_from_group(group="dev")
+
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == (
+            "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+            "☐ Install the dependency 'deptry'.\n"
+            "☐ Run 'deptry src' to run deptry.\n"
+            "ℹ All deptry rules are always implicitly selected.\n"  # noqa: RUF001
+        )
 
     def test_success(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         with change_cwd(uv_init_dir), files_manager():
@@ -80,3 +91,16 @@ ignore = ["RUF001"]
 
             # Assert
             assert "RUF001" not in RuffTool().get_ignored_rules()
+
+
+class TestIgnoreRules:
+    def test_deptry_rule(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        with change_cwd(uv_init_dir), files_manager():
+            # Act
+            ignore_rules(rules=["DEP001"])
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "✔ Ignoring deptry rule 'DEP001' in 'pyproject.toml'.\n"
+        assert "[tool.deptry]" in (uv_init_dir / "pyproject.toml").read_text()

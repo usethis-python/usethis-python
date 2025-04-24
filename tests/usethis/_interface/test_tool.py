@@ -80,6 +80,17 @@ class TestDeptry:
                 call_subprocess(["usethis", "tool", "deptry", "--offline"])
             assert (uv_init_dir / ".venv").exists()
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_runs(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["deptry"])
+
+            # Assert
+            assert result.exit_code == 0, result.output
+            call_subprocess(["deptry", "."])
+
 
 class TestPyprojectTOML:
     def test_add(self, tmp_path: Path):

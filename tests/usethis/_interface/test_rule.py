@@ -3,6 +3,10 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from usethis._app import app
+from usethis._config_file import files_manager
+from usethis._core.rule import ignore_rules
+from usethis._core.tool import use_deptry
+from usethis._subprocess import call_subprocess
 from usethis._test import change_cwd
 
 
@@ -71,3 +75,15 @@ ignore = ["RUF001"]
             result.output
             == """✔ No longer ignoring Ruff rule 'RUF001' in 'ruff.toml'.\n"""
         )
+
+    def test_runs_after_ignore(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            use_deptry()
+
+            # Act
+            ignore_rules(rules=["DEP001"])
+
+            # Assert (that deptry runs without error)
+            call_subprocess(["deptry", "."])

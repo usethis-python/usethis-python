@@ -197,6 +197,30 @@ containers = [ "usethis._core" ]
 exhaustive = true
 
 [[tool.importlinter.contracts]]
+name = "usethis._tool"
+type = "layers"
+layers = [
+  "all_",
+  "impl",
+  "base",
+  "config | rule",
+]
+containers = [ "usethis._tool" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "usethis._tool.impl"
+type = "layers"
+layers = [
+  "pyproject_toml",
+  "codespell | deptry | import_linter | pyproject_fmt | requirements_txt | ruff",
+  "pytest : coverage",
+  "pre_commit",
+]
+containers = [ "usethis._tool.impl" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
 name = "usethis._integrations"
 type = "layers"
 layers = [

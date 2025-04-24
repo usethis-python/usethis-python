@@ -22,9 +22,9 @@ from usethis._integrations.ci.bitbucket.steps import (
     Step,
     UnexpectedImportPipelineError,
     _add_step_caches_via_doc,
-    _steps_are_equivalent,
     add_bitbucket_step_in_default,
     add_placeholder_step_in_default,
+    bitbucket_steps_are_equivalent,
     get_defined_script_items_via_doc,
     get_steps_in_default,
     get_steps_in_pipeline_item,
@@ -1146,7 +1146,7 @@ class TestStepsAreEquivalent:
         )
 
         # Act
-        result = _steps_are_equivalent(step, other)
+        result = bitbucket_steps_are_equivalent(step, other)
 
         # Assert
         assert result is True
@@ -1163,7 +1163,7 @@ class TestStepsAreEquivalent:
         )
 
         # Act
-        result = _steps_are_equivalent(step, other)
+        result = bitbucket_steps_are_equivalent(step, other)
 
         # Assert
         assert result is True
@@ -1180,7 +1180,7 @@ class TestStepsAreEquivalent:
         )
 
         # Act
-        result = _steps_are_equivalent(step, other)
+        result = bitbucket_steps_are_equivalent(step, other)
 
         # Assert
         assert result is True
@@ -1197,7 +1197,7 @@ class TestStepsAreEquivalent:
         )
 
         # Act
-        result = _steps_are_equivalent(step, other)
+        result = bitbucket_steps_are_equivalent(step, other)
 
         # Assert
         assert result is True
@@ -1211,7 +1211,7 @@ class TestStepsAreEquivalent:
         )
 
         # Act
-        result = _steps_are_equivalent(step, other)
+        result = bitbucket_steps_are_equivalent(step, other)
 
         # Assert
         assert result is False

@@ -277,8 +277,8 @@ class TOMLFileManager(KeyValueFileManager):
             for key in reversed(keys):
                 contents = {key: contents}
             assert isinstance(contents, dict)
-            pyproject = mergedeep.merge(toml_document, contents)
-            assert isinstance(pyproject, TOMLDocument)
+            toml_document = mergedeep.merge(toml_document, contents)
+            assert isinstance(toml_document, TOMLDocument)
         else:
             TypeAdapter(dict).validate_python(p_parent)
             TypeAdapter(list).validate_python(d)

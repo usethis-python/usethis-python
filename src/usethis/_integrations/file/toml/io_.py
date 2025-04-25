@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any
 
 import mergedeep
 import tomlkit.api
-import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 from tomlkit.exceptions import TOMLKitError
@@ -161,26 +160,21 @@ class TOMLFileManager(KeyValueFileManager):
             # with [tool.deptry]; they should coexist. So under the "tool" key, we need
             # to "merge" the two dicts.
 
-            if len(keys) <= 3:
-                contents = value
-                for key in reversed(keys):
-                    contents = {key: contents}
-                toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
-                assert isinstance(toml_document, TOMLDocument)
-            else:
-                # Note that this alternative logic is just to avoid bugs:
-                # https://github.com/nathanjmcdougall/usethis-python/issues/507
-                # https://github.com/nathanjmcdougall/usethis-python/issues/558
-
-                TypeAdapter(dict).validate_python(d)
-                assert isinstance(d, dict)
-
-                unshared_keys = keys[len(shared_keys) :]
-                # Construct a mapping for the unshared keys.
-                contents = value
-                for key in reversed(unshared_keys):
-                    contents = {key: contents}
+            # Note that this logic needs care just to avoid bugs:
+            # https://github.com/nathanjmcdougall/usethis-python/issues/507
+            # https://github.com/nathanjmcdougall/usethis-python/issues/558
+            TypeAdapter(dict).validate_python(d)
+            assert isinstance(d, dict)
+            unshared_keys = keys[len(shared_keys) :]
+            # Construct a mapping for the unshared keys.
+            contents = value
+            for key in reversed(unshared_keys):
+                contents = {key: contents}
+            if shared_keys:
                 parent[shared_keys[-1]] = contents
+            else:
+                # If there are no shared keys, we need to set the value at the root level.
+                toml_document.update(contents)
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.

@@ -171,7 +171,7 @@ class TOMLFileManager(KeyValueFileManager):
             for key in reversed(unshared_keys):
                 contents = {key: contents}
             if shared_keys:
-                parent[shared_keys[-1]] = contents
+                parent[unshared_keys[0]] = contents
             else:
                 # If there are no shared keys, we need to set the value at the root level.
                 toml_document.update(contents)

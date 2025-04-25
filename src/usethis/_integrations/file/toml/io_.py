@@ -11,7 +11,7 @@ import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 from tomlkit.exceptions import TOMLKitError
-from typing_extensions import assert_never
+from typing_extensions import Never, assert_never
 
 from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
@@ -168,22 +168,23 @@ class TOMLFileManager(KeyValueFileManager):
                 toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
                 assert isinstance(toml_document, TOMLDocument)
             else:
-                # Note that this alternative logic is just to avoid a bug:
+                # Note that this alternative logic is just to avoid bugs:
                 # https://github.com/nathanjmcdougall/usethis-python/issues/507
+                # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
 
                 unshared_keys = keys[len(shared_keys) :]
-
-                d[_get_unified_key(unshared_keys)] = value
+                # Construct a mapping for the unshared keys.
+                contents = value
+                for key in reversed(unshared_keys):
+                    contents = {key: contents}
+                parent[shared_keys[-1]] = contents
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
-                if keys:
-                    msg = f"Configuration value '{print_keys(keys)}' is already set."
-                else:
-                    msg = "Configuration value at root level is already set."
-                raise TOMLValueAlreadySetError(msg)
+                _raise_already_set(keys)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
                 TypeAdapter(dict).validate_python(parent)
@@ -348,12 +349,10 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
     return so_far_keys
 
 
-def _get_unified_key(keys: Sequence[Key]) -> tomlkit.items.Key:
-    keys = _validate_keys(keys)
-
-    single_keys = [tomlkit.items.SingleKey(key) for key in keys]
-    if len(single_keys) == 1:
-        (unified_key,) = single_keys
+def _raise_already_set(keys: Sequence[Key]) -> Never:
+    """Raise an error if the configuration is already set."""
+    if keys:
+        msg = f"Configuration value '{print_keys(keys)}' is already set."
     else:
-        unified_key = tomlkit.items.DottedKey(single_keys)
-    return unified_key
+        msg = "Configuration value at root level is already set."
+    raise TOMLValueAlreadySetError(msg)

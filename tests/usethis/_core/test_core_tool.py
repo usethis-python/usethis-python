@@ -272,14 +272,17 @@ class TestCoverage:
                 assert Dependency(
                     name="coverage", extras=frozenset({"toml"})
                 ) in get_deps_from_group("test")
-                out, err = capfd.readouterr()
-                assert not err
-                assert out == (
-                    "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
-                    "☐ Install the dependency 'coverage'.\n"
-                    "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'uv run coverage help' to see available coverage commands.\n"
-                )
+
+                assert ["tool", "uv", "default-groups"] in PyprojectTOMLManager()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'coverage'.\n"
+                "✔ Adding coverage config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run coverage help' to see available coverage commands.\n"
+            )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_no_pyproject_toml(

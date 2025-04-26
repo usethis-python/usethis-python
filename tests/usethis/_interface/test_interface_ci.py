@@ -45,11 +45,6 @@ class TestBitbucket:
         # N.B. uv_init_repo_dir is used since we need git if we want to add pre-commit
         runner = CliRunner()
         with change_cwd(uv_init_repo_dir):
-            # Pin the Python version
-            (uv_init_repo_dir / ".python-version").write_text(
-                "3.13"  # Bump to latest version of Python
-            )
-
             # Arrange
             for tool_command in ALL_TOOL_COMMANDS:
                 if not usethis_config.offline:
@@ -67,6 +62,8 @@ class TestBitbucket:
 
         # Assert
         expected_yml = (
+            # N.B. when updating this file, check it against the validator:
+            # https://bitbucket.org/product/pipelines/validator
             Path(__file__).parent / "maximal_bitbucket_pipelines.yml"
         ).read_text()
         assert (

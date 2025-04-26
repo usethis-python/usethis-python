@@ -175,7 +175,7 @@ class TOMLFileManager(KeyValueFileManager):
 
                 unshared_keys = keys[len(shared_keys) :]
 
-                if unshared_keys and len(shared_keys) <= 1:
+                if unshared_keys and len(shared_keys) == 1:
                     # In this case, we need to "seed" the section to avoid another bug:
                     # https://github.com/nathanjmcdougall/usethis-python/issues/558
 

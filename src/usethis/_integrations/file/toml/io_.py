@@ -173,17 +173,21 @@ class TOMLFileManager(KeyValueFileManager):
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
 
-                if len(shared_keys) <= 2:
+                unshared_keys = keys[len(shared_keys) :]
+
+                if unshared_keys and len(shared_keys) <= 1:
                     # In this case, we need to "seed" the section to avoid another bug:
                     # https://github.com/nathanjmcdougall/usethis-python/issues/558
 
-                    contents = {}
-                    for key in reversed(keys[:3]):
+                    placeholder = {}
+                    contents = placeholder
+                    for key in reversed(keys[:2]):
+                        unshared_keys = unshared_keys[1:]
                         contents = {key: contents}
-                    toml_document = mergedeep.merge(toml_document, contents)
+                    toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportArgumentType]
 
-                unshared_keys = keys[len(shared_keys) :]
                 d[_get_unified_key(unshared_keys)] = value
+
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.

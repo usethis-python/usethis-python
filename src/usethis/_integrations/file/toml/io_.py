@@ -34,6 +34,8 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import ClassVar
 
+    from tomlkit.container import Container
+    from tomlkit.items import Item
     from typing_extensions import Self
 
     from usethis._io import Key
@@ -123,7 +125,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         return d
 
-    def set_value(  # noqa: PLR0912
+    def set_value(
         self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the TOML file.
@@ -155,40 +157,13 @@ class TOMLFileManager(KeyValueFileManager):
                 d, parent = d[key], d
                 shared_keys.append(key)
         except KeyError:
-            # The old configuration should be kept for all ID keys except the
-            # final/deepest one which shouldn't exist anyway since we checked as much,
-            # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
-            # with [tool.deptry]; they should coexist. So under the "tool" key, we need
-            # to "merge" the two dicts.
-
-            if len(keys) <= 3:
-                contents = value
-                for key in reversed(keys):
-                    contents = {key: contents}
-                toml_document = mergedeep.merge(toml_document, contents)
-                assert isinstance(toml_document, TOMLDocument)
-            else:
-                # Note that this alternative logic is just to avoid a bug:
-                # https://github.com/nathanjmcdougall/usethis-python/issues/507
-                TypeAdapter(dict).validate_python(d)
-                assert isinstance(d, dict)
-
-                unshared_keys = keys[len(shared_keys) :]
-
-                if len(shared_keys) == 1:
-                    # In this case, we need to "seed" the section to avoid another bug:
-                    # https://github.com/nathanjmcdougall/usethis-python/issues/558
-
-                    placeholder = {keys[0]: {keys[1]: {}}}
-                    toml_document = mergedeep.merge(toml_document, placeholder)  # type: ignore[reportArgumentType]
-
-                    contents = value
-                    for key in reversed(unshared_keys[1:]):
-                        contents = {key: contents}
-
-                    d[keys[1]] = contents
-                else:
-                    d[_get_unified_key(unshared_keys)] = value
+            _set_value_in_existing(
+                toml_document=toml_document,
+                current_container=d,
+                keys=keys,
+                current_keys=shared_keys,
+                value=value,
+            )
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
@@ -329,6 +304,50 @@ class TOMLFileManager(KeyValueFileManager):
         p_parent[keys[-1]] = new_values
 
         self.commit(toml_document)
+
+
+def _set_value_in_existing(
+    *,
+    toml_document: TOMLDocument,
+    current_container: TOMLDocument | Item | Container,
+    keys: Sequence[Key],
+    current_keys: Sequence[Key],
+    value: Any,
+) -> None:
+    # The old configuration should be kept for all ID keys except the
+    # final/deepest one which shouldn't exist anyway since we checked as much,
+    # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
+    # with [tool.deptry]; they should coexist. So under the "tool" key, we need
+    # to "merge" the two dicts.
+
+    if len(keys) <= 3:
+        contents = value
+        for key in reversed(keys):
+            contents = {key: contents}
+        toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
+        assert isinstance(toml_document, TOMLDocument)
+    else:
+        # Note that this alternative logic is just to avoid a bug:
+        # https://github.com/nathanjmcdougall/usethis-python/issues/507
+        TypeAdapter(dict).validate_python(current_container)
+        assert isinstance(current_container, dict)
+
+        unshared_keys = keys[len(current_keys) :]
+
+        if len(current_keys) == 1:
+            # In this case, we need to "seed" the section to avoid another bug:
+            # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
+            placeholder = {keys[0]: {keys[1]: {}}}
+            toml_document = mergedeep.merge(toml_document, placeholder)  # type: ignore[reportArgumentType]
+
+            contents = value
+            for key in reversed(unshared_keys[1:]):
+                contents = {key: contents}
+
+            current_container[keys[1]] = contents  # type: ignore[reportAssignmentType]
+        else:
+            current_container[_get_unified_key(unshared_keys)] = value
 
 
 def _validate_keys(keys: Sequence[Key]) -> list[str]:

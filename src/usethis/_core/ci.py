@@ -6,14 +6,12 @@ from usethis._integrations.ci.bitbucket.config import (
     remove_bitbucket_pipeline_config,
 )
 from usethis._integrations.uv.init import ensure_pyproject_toml
-from usethis._tool import (
-    CodespellTool,
-    DeptryTool,
-    PreCommitTool,
-    PyprojectFmtTool,
-    PytestTool,
-    RuffTool,
-)
+from usethis._tool.impl.codespell import CodespellTool
+from usethis._tool.impl.deptry import DeptryTool
+from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
+from usethis._tool.impl.pytest import PytestTool
+from usethis._tool.impl.ruff import RuffTool
 
 
 def use_ci_bitbucket(*, remove: bool = False) -> None:

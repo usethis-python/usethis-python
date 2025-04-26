@@ -6,7 +6,9 @@ from usethis._console import err_print
 from usethis._core.show import show_name, show_sonarqube_config
 from usethis.errors import UsethisError
 
-app = typer.Typer(help="Show information about the current project.")
+app = typer.Typer(
+    help="Show information about the current project.", add_completion=False
+)
 
 
 @app.command(help="Show the name of the project")

@@ -101,7 +101,8 @@ class DeptryTool(Tool):
 
     def select_rules(self, rules: list[Rule]) -> None:
         """Does nothing for deptry - all rules are automatically enabled by default."""
-        info_print(f"All {self.name} rules are always implicitly selected.")
+        if rules:
+            info_print(f"All {self.name} rules are always implicitly selected.")
 
     def get_selected_rules(self) -> list[Rule]:
         """No notion of selection for deptry.

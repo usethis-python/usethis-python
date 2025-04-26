@@ -19,7 +19,7 @@ def _uv_init_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
                 "init",
                 "--lib",
                 "--python",
-                "3.12",
+                "3.13",  # Bump to latest version of Python
                 "--vcs",
                 "none",
             ],

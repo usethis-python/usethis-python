@@ -41,11 +41,12 @@ class TestBitbucket:
         assert not (tmp_path / "bitbucket-pipelines.yml").exists()
 
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_maximal_config(self, uv_init_dir: Path):
+    def test_maximal_config(self, uv_init_repo_dir: Path):
+        # N.B. uv_init_repo_dir is used since we need git if we want to add pre-commit
         runner = CliRunner()
-        with change_cwd(uv_init_dir):
+        with change_cwd(uv_init_repo_dir):
             # Pin the Python version
-            (uv_init_dir / ".python-version").write_text(
+            (uv_init_repo_dir / ".python-version").write_text(
                 "3.13"  # Bump to latest version of Python
             )
 
@@ -68,7 +69,9 @@ class TestBitbucket:
         expected_yml = (
             Path(__file__).parent / "maximal_bitbucket_pipelines.yml"
         ).read_text()
-        assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == expected_yml
+        assert (
+            uv_init_repo_dir / "bitbucket-pipelines.yml"
+        ).read_text() == expected_yml
 
     def test_invalid_pyproject_toml(self, tmp_path: Path):
         # Arrange

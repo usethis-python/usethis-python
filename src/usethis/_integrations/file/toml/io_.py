@@ -144,7 +144,7 @@ class TOMLFileManager(KeyValueFileManager):
                 return
 
         d, parent = toml_document, {}
-        shared_keys = []
+        shared_keys: list[str] = []
         try:
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
@@ -171,7 +171,10 @@ class TOMLFileManager(KeyValueFileManager):
             for key in reversed(unshared_keys):
                 contents = {key: contents}
             if shared_keys:
-                parent[unshared_keys[0]] = contents
+                previous_contents = parent[shared_keys[-1]]
+                TypeAdapter(dict).validate_python(previous_contents)
+                assert isinstance(previous_contents, dict)
+                parent[shared_keys[-1]] = mergedeep.merge(previous_contents, contents)
             else:
                 # If there are no shared keys, we need to set the value at the root level.
                 toml_document.update(contents)

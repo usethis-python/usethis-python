@@ -118,30 +118,7 @@ class RuffTool(Tool):
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         repos = []
-        if self.using_formatter:
-            repos.append(
-                LocalRepo(
-                    repo="local",
-                    hooks=[
-                        HookDefinition(
-                            id="ruff-format",
-                            name="ruff-format",
-                            entry="uv run --frozen --offline ruff format --force-exclude",
-                            language=Language("system"),
-                            types_or=FileTypes(
-                                [
-                                    FileType("python"),
-                                    FileType("pyi"),
-                                    FileType("jupyter"),
-                                ]
-                            ),
-                            always_run=True,
-                            require_serial=True,
-                        ),
-                    ],
-                )
-            )
-        elif self.using_linter:
+        if self.using_linter:
             repos.append(
                 LocalRepo(
                     repo="local",
@@ -164,6 +141,29 @@ class RuffTool(Tool):
                     ],
                 )
             )
+        elif self.using_formatter:
+            repos.append(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="ruff-format",
+                            name="ruff-format",
+                            entry="uv run --frozen --offline ruff format --force-exclude",
+                            language=Language("system"),
+                            types_or=FileTypes(
+                                [
+                                    FileType("python"),
+                                    FileType("pyi"),
+                                    FileType("jupyter"),
+                                ]
+                            ),
+                            always_run=True,
+                            require_serial=True,
+                        ),
+                    ],
+                )
+            )
         return repos
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
@@ -171,10 +171,10 @@ class RuffTool(Tool):
             BitbucketScriptItemAnchor(name="install-uv")
         ]
 
-        if self.using_formatter:
-            lines.append("uv run ruff format")
         if self.using_linter:
             lines.append("uv run ruff check --fix")
+        if self.using_formatter:
+            lines.append("uv run ruff format")
 
         return [
             BitbucketStep(

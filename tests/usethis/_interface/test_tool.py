@@ -285,9 +285,11 @@ def test_several_tools_add_and_remove(tmp_path: Path):
     (tmp_path / "src" / "benchmark").mkdir(exist_ok=True)
     (tmp_path / "src" / "benchmark" / "__init__.py").touch(exist_ok=True)
 
-    # Act
     runner = CliRunner()
     with change_cwd(tmp_path):
+        call_subprocess(["git", "init"])
+
+        # Act
         result = runner.invoke(app, ["pytest"])
         assert not result.exit_code, result.stdout
         result = runner.invoke(app, ["coverage"])

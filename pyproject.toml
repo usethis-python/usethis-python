@@ -42,7 +42,7 @@ dependencies = [
   "requests>=2.26.0",
   "rich>=9.6.1",
   "ruamel-yaml>=0.16.13",
-  "tomlkit>=0.12.0",
+  "tomlkit>=0.13.2",
   "typer>=0.6.0",
   "typing-extensions>=3.10.0.0",
 ]

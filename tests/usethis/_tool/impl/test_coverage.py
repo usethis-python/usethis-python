@@ -35,4 +35,4 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             # Assert
             with change_cwd(tmp_path), files_manager():
                 assert ["tool", "coverage"] in PyprojectTOMLManager()
-            assert "[tool.coverage.report]" in (tmp_path / "pyproject.toml").read_text()
+            assert "[tool.coverage]" in (tmp_path / "pyproject.toml").read_text()

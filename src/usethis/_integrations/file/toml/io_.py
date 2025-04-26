@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 import mergedeep
 import tomlkit.api
+import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 from tomlkit.exceptions import TOMLKitError
@@ -160,24 +161,29 @@ class TOMLFileManager(KeyValueFileManager):
             # with [tool.deptry]; they should coexist. So under the "tool" key, we need
             # to "merge" the two dicts.
 
-            # Note that this logic needs care just to avoid bugs:
-            # https://github.com/nathanjmcdougall/usethis-python/issues/507
-            # https://github.com/nathanjmcdougall/usethis-python/issues/558
-            TypeAdapter(dict).validate_python(d)
-            assert isinstance(d, dict)
-            unshared_keys = keys[len(shared_keys) :]
-            # Construct a mapping for the unshared keys.
-            contents = value
-            for key in reversed(unshared_keys):
-                contents = {key: contents}
-            if shared_keys:
-                previous_contents = parent[shared_keys[-1]]
-                TypeAdapter(dict).validate_python(previous_contents)
-                assert isinstance(previous_contents, dict)
-                parent[shared_keys[-1]] = mergedeep.merge(previous_contents, contents)
+            if len(keys) <= 3:
+                contents = value
+                for key in reversed(keys):
+                    contents = {key: contents}
+                toml_document = mergedeep.merge(toml_document, contents)
+                assert isinstance(toml_document, TOMLDocument)
             else:
-                # If there are no shared keys, we need to set the value at the root level.
-                toml_document.update(contents)
+                # Note that this alternative logic is just to avoid a bug:
+                # https://github.com/nathanjmcdougall/usethis-python/issues/507
+                TypeAdapter(dict).validate_python(d)
+                assert isinstance(d, dict)
+
+                if len(shared_keys) <= 2:
+                    # In this case, we need to "seed" the section to avoid another bug:
+                    # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
+                    contents = {}
+                    for key in reversed(keys[:3]):
+                        contents = {key: contents}
+                    toml_document = mergedeep.merge(toml_document, contents)
+
+                unshared_keys = keys[len(shared_keys) :]
+                d[_get_unified_key(unshared_keys)] = value
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
@@ -188,7 +194,7 @@ class TOMLFileManager(KeyValueFileManager):
                 assert isinstance(parent, dict)
                 parent[keys[-1]] = value
 
-        self.commit(toml_document)
+        self.commit(toml_document)  # type: ignore[reportAssignmentType]
 
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Delete a value in the TOML file.
@@ -353,3 +359,14 @@ def _raise_already_set(keys: Sequence[Key]) -> Never:
     else:
         msg = "Configuration value at root level is already set."
     raise TOMLValueAlreadySetError(msg)
+
+
+def _get_unified_key(keys: Sequence[Key]) -> tomlkit.items.Key:
+    keys = _validate_keys(keys)
+
+    single_keys = [tomlkit.items.SingleKey(key) for key in keys]
+    if len(single_keys) == 1:
+        (unified_key,) = single_keys
+    else:
+        unified_key = tomlkit.items.DottedKey(single_keys)
+    return unified_key

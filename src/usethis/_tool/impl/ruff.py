@@ -141,7 +141,7 @@ class RuffTool(Tool):
                     ],
                 )
             )
-        elif self.using_formatter:
+        if self.using_formatter:
             repos.append(
                 LocalRepo(
                     repo="local",

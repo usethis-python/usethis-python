@@ -123,7 +123,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         return d
 
-    def set_value(
+    def set_value(  # noqa: PLR0912
         self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
         """Set a value in the TOML file.
@@ -175,16 +175,20 @@ class TOMLFileManager(KeyValueFileManager):
 
                 unshared_keys = keys[len(shared_keys) :]
 
-                if unshared_keys and len(shared_keys) == 1:
+                if len(shared_keys) == 1:
                     # In this case, we need to "seed" the section to avoid another bug:
                     # https://github.com/nathanjmcdougall/usethis-python/issues/558
 
-                    contents = {keys[0]: {keys[1]: {}}}
-                    toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportArgumentType]
-                    toml_document[_get_unified_key(unshared_keys[1:])] = value
+                    placeholder = {keys[0]: {keys[1]: {}}}
+                    toml_document = mergedeep.merge(toml_document, placeholder)  # type: ignore[reportArgumentType]
+
+                    contents = value
+                    for key in reversed(unshared_keys[1:]):
+                        contents = {key: contents}
+
+                    d[keys[1]] = contents
                 else:
                     d[_get_unified_key(unshared_keys)] = value
-
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.

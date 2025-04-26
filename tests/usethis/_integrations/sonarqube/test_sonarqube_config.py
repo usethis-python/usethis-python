@@ -82,7 +82,10 @@ sonar.verbose=false
             PyprojectTOMLManager().set_value(
                 keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
             )
+        content = (tmp_path / "pyproject.toml").read_text()
+        assert "xml" in content
 
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             # Act
             result = get_sonar_project_properties()
 

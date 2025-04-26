@@ -179,14 +179,11 @@ class TOMLFileManager(KeyValueFileManager):
                     # In this case, we need to "seed" the section to avoid another bug:
                     # https://github.com/nathanjmcdougall/usethis-python/issues/558
 
-                    placeholder = {}
-                    contents = placeholder
-                    for key in reversed(keys[:2]):
-                        unshared_keys = unshared_keys[1:]
-                        contents = {key: contents}
+                    contents = {keys[0]: {keys[1]: {}}}
                     toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportArgumentType]
+                    unshared_keys = unshared_keys[1:]
 
-                d[_get_unified_key(unshared_keys)] = value
+                toml_document[_get_unified_key(unshared_keys)] = value
 
         else:
             if not exists_ok:

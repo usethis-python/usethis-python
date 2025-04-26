@@ -38,8 +38,8 @@ class TestGetSonarProjectProperties:
         # If the file does not exist, we should construct based on information in
         # the repo.
 
+        # Arrange
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
-            # Arrange
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
             )
@@ -47,8 +47,11 @@ class TestGetSonarProjectProperties:
                 keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
             )
             python_pin("3.12")
+        content = (uv_init_dir / "pyproject.toml").read_text()
+        assert "xml" in content
 
-            # Act
+        # Act
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
             result = get_sonar_project_properties()
 
         # Assert

@@ -272,14 +272,17 @@ class TestCoverage:
                 assert Dependency(
                     name="coverage", extras=frozenset({"toml"})
                 ) in get_deps_from_group("test")
-                out, err = capfd.readouterr()
-                assert not err
-                assert out == (
-                    "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
-                    "☐ Install the dependency 'coverage'.\n"
-                    "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'uv run coverage help' to see available coverage commands.\n"
-                )
+
+                assert ["tool", "uv", "default-groups"] in PyprojectTOMLManager()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'coverage'.\n"
+                "✔ Adding coverage config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run coverage help' to see available coverage commands.\n"
+            )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_no_pyproject_toml(
@@ -386,6 +389,36 @@ omit =
     */pytest-of-*/*
 """
             )
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_after_codespell(self, tmp_path: Path):
+        # To check the config is valid
+        # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "example"
+version = "0.1.0"
+description = "Add your description here"
+
+[dependency-groups]
+dev = [
+    "codespell>=2.4.1",
+]
+                                                    
+[tool.codespell]
+ignore-regex = ["[A-Za-z0-9+/]{100,}"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            use_coverage()
+
+            # Assert
+            assert ["tool", "coverage"] in PyprojectTOMLManager()
+        content = (tmp_path / "pyproject.toml").read_text()
+        assert "[tool.coverage]" in content
 
     class TestRemove:
         def test_unused(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):

@@ -181,9 +181,9 @@ class TOMLFileManager(KeyValueFileManager):
 
                     contents = {keys[0]: {keys[1]: {}}}
                     toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportArgumentType]
-                    unshared_keys = unshared_keys[1:]
-
-                toml_document[_get_unified_key(unshared_keys)] = value
+                    toml_document[_get_unified_key(unshared_keys[1:])] = value
+                else:
+                    d[_get_unified_key(unshared_keys)] = value
 
         else:
             if not exists_ok:

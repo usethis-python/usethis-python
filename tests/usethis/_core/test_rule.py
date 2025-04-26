@@ -11,7 +11,7 @@ from usethis._core.rule import (
 )
 from usethis._integrations.uv.deps import Dependency, get_deps_from_group
 from usethis._test import change_cwd
-from usethis._tool import RuffTool
+from usethis._tool.impl.ruff import RuffTool
 
 
 class TestSelectRules:

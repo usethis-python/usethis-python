@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 
 from usethis._core.tool import use_deptry, use_ruff
-from usethis._tool import DeptryTool, RuffTool
+from usethis._tool.impl.deptry import DeptryTool
+from usethis._tool.impl.ruff import RuffTool
 
 
 class RulesMapping(BaseModel):

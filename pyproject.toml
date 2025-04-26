@@ -180,7 +180,7 @@ name = "usethis._interface"
 type = "layers"
 layers = [
   # Note; if you're adding an interface, make sure it's in the README too.
-  "author | badge | browse | ci | docstyle | list | readme | show | tool | version",
+  "author | badge | browse | ci | docstyle | list | readme | rule | show | tool | version",
 ]
 containers = [ "usethis._interface" ]
 exhaustive = true
@@ -190,7 +190,7 @@ name = "usethis._core"
 type = "layers"
 layers = [
   # docstyle uses (Ruff) tool, badge uses readme
-  "badge | docstyle | list",
+  "badge | docstyle | list | rule",
   "author | browse | ci | readme | show | tool",
 ]
 containers = [ "usethis._core" ]

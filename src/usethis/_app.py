@@ -9,6 +9,7 @@ import usethis._interface.ci
 import usethis._interface.docstyle
 import usethis._interface.list
 import usethis._interface.readme
+import usethis._interface.rule
 import usethis._interface.show
 import usethis._interface.tool
 import usethis._interface.version
@@ -31,6 +32,11 @@ app.command(help="Add an author to the project.", rich_help_panel=rich_help_pane
 )
 app.command(help="Enforce a docstring style.", rich_help_panel=rich_help_panel)(
     usethis._interface.docstyle.docstyle,
+)
+app.command(
+    help="Enable a lint rule for the project.", rich_help_panel=rich_help_panel
+)(
+    usethis._interface.rule.rule,
 )
 
 rich_help_panel = "Manage README"

@@ -164,7 +164,7 @@ class RuffTool(Tool):
         (file_manager,) = self.get_active_config_file_managers()
         ensure_file_manager_exists(file_manager)
         tick_print(
-            f"Enabling {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+            f"Selecting {self.name} rule{s} {rules_str} in '{file_manager.name}'."
         )
         keys = self._get_select_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
@@ -187,6 +187,24 @@ class RuffTool(Tool):
         keys = self._get_ignore_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
+    def unignore_rules(self, rules: list[str]) -> None:
+        """Unignore Ruff rules in the project."""
+        rules = list(set(rules) & set(self.get_ignored_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
+        (file_manager,) = self.get_active_config_file_managers()
+        ensure_file_manager_exists(file_manager)
+        tick_print(
+            f"No longer ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
+        keys = self._get_ignore_keys(file_manager)
+        file_manager.remove_from_list(keys=keys, values=rules)
+
     def deselect_rules(self, rules: list[Rule]) -> None:
         """Ensure Ruff rules are not selected in the project."""
         rules = list(set(rules) & set(self.get_selected_rules()))
@@ -200,7 +218,7 @@ class RuffTool(Tool):
         (file_manager,) = self.get_active_config_file_managers()
         ensure_file_manager_exists(file_manager)
         tick_print(
-            f"Disabling {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+            f"Deselecting {self.name} rule{s} {rules_str} in '{file_manager.name}'."
         )
         keys = self._get_select_keys(file_manager)
         file_manager.remove_from_list(keys=keys, values=rules)

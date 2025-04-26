@@ -429,6 +429,13 @@ class Tool(Protocol):
         and that the tool will be able to manage them.
         """
 
+    def unignore_rules(self, rules: list[str]) -> None:
+        """Stop ignoring rules managed by the tool.
+
+        These rules are not validated; it is assumed they are valid rules for the tool,
+        and that the tool will be able to manage them.
+        """
+
     def get_ignored_rules(self) -> list[Rule]:
         """Get the ignored rules managed by the tool."""
         return []

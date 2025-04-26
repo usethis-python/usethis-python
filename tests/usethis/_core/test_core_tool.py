@@ -2803,8 +2803,8 @@ dev = []
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing hook 'ruff' from '.pre-commit-config.yaml'.\n"
+                "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing Ruff config from 'pyproject.toml'.\n"
                 "✔ Removing dependency 'ruff' from the 'dev' group in 'pyproject.toml'.\n"
             )

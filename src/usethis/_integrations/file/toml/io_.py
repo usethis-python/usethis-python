@@ -11,7 +11,7 @@ import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 from tomlkit.exceptions import TOMLKitError
-from typing_extensions import assert_never
+from typing_extensions import Never, assert_never
 
 from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
@@ -34,6 +34,8 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import ClassVar
 
+    from tomlkit.container import Container
+    from tomlkit.items import Item
     from typing_extensions import Self
 
     from usethis._io import Key
@@ -145,7 +147,7 @@ class TOMLFileManager(KeyValueFileManager):
                 return
 
         d, parent = toml_document, {}
-        shared_keys = []
+        shared_keys: list[str] = []
         try:
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
@@ -155,42 +157,24 @@ class TOMLFileManager(KeyValueFileManager):
                 d, parent = d[key], d
                 shared_keys.append(key)
         except KeyError:
-            # The old configuration should be kept for all ID keys except the
-            # final/deepest one which shouldn't exist anyway since we checked as much,
-            # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
-            # with [tool.deptry]; they should coexist. So under the "tool" key, we need
-            # to "merge" the two dicts.
-
-            if len(keys) <= 3:
-                contents = value
-                for key in reversed(keys):
-                    contents = {key: contents}
-                toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
-                assert isinstance(toml_document, TOMLDocument)
-            else:
-                # Note that this alternative logic is just to avoid a bug:
-                # https://github.com/nathanjmcdougall/usethis-python/issues/507
-                TypeAdapter(dict).validate_python(d)
-                assert isinstance(d, dict)
-
-                unshared_keys = keys[len(shared_keys) :]
-
-                d[_get_unified_key(unshared_keys)] = value
+            _set_value_in_existing(
+                toml_document=toml_document,
+                current_container=d,
+                keys=keys,
+                current_keys=shared_keys,
+                value=value,
+            )
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
-                if keys:
-                    msg = f"Configuration value '{print_keys(keys)}' is already set."
-                else:
-                    msg = "Configuration value at root level is already set."
-                raise TOMLValueAlreadySetError(msg)
+                _raise_already_set(keys)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
                 TypeAdapter(dict).validate_python(parent)
                 assert isinstance(parent, dict)
                 parent[keys[-1]] = value
 
-        self.commit(toml_document)
+        self.commit(toml_document)  # type: ignore[reportAssignmentType]
 
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Delete a value in the TOML file.
@@ -277,8 +261,8 @@ class TOMLFileManager(KeyValueFileManager):
             for key in reversed(keys):
                 contents = {key: contents}
             assert isinstance(contents, dict)
-            pyproject = mergedeep.merge(toml_document, contents)
-            assert isinstance(pyproject, TOMLDocument)
+            toml_document = mergedeep.merge(toml_document, contents)
+            assert isinstance(toml_document, TOMLDocument)
         else:
             TypeAdapter(dict).validate_python(p_parent)
             TypeAdapter(list).validate_python(d)
@@ -322,6 +306,50 @@ class TOMLFileManager(KeyValueFileManager):
         self.commit(toml_document)
 
 
+def _set_value_in_existing(
+    *,
+    toml_document: TOMLDocument,
+    current_container: TOMLDocument | Item | Container,
+    keys: Sequence[Key],
+    current_keys: Sequence[Key],
+    value: Any,
+) -> None:
+    # The old configuration should be kept for all ID keys except the
+    # final/deepest one which shouldn't exist anyway since we checked as much,
+    # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
+    # with [tool.deptry]; they should coexist. So under the "tool" key, we need
+    # to "merge" the two dicts.
+
+    if len(keys) <= 3:
+        contents = value
+        for key in reversed(keys):
+            contents = {key: contents}
+        toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
+        assert isinstance(toml_document, TOMLDocument)
+    else:
+        # Note that this alternative logic is just to avoid a bug:
+        # https://github.com/nathanjmcdougall/usethis-python/issues/507
+        TypeAdapter(dict).validate_python(current_container)
+        assert isinstance(current_container, dict)
+
+        unshared_keys = keys[len(current_keys) :]
+
+        if len(current_keys) == 1:
+            # In this case, we need to "seed" the section to avoid another bug:
+            # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
+            placeholder = {keys[0]: {keys[1]: {}}}
+            toml_document = mergedeep.merge(toml_document, placeholder)  # type: ignore[reportArgumentType]
+
+            contents = value
+            for key in reversed(unshared_keys[1:]):
+                contents = {key: contents}
+
+            current_container[keys[1]] = contents  # type: ignore[reportAssignmentType]
+        else:
+            current_container[_get_unified_key(unshared_keys)] = value
+
+
 def _validate_keys(keys: Sequence[Key]) -> list[str]:
     """Validate the keys.
 
@@ -346,6 +374,15 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
             assert_never(key)
 
     return so_far_keys
+
+
+def _raise_already_set(keys: Sequence[Key]) -> Never:
+    """Raise an error if the configuration is already set."""
+    if keys:
+        msg = f"Configuration value '{print_keys(keys)}' is already set."
+    else:
+        msg = "Configuration value at root level is already set."
+    raise TOMLValueAlreadySetError(msg)
 
 
 def _get_unified_key(keys: Sequence[Key]) -> tomlkit.items.Key:

@@ -5,7 +5,9 @@ from usethis._console import err_print
 from usethis._core.browse import browse_pypi
 from usethis.errors import UsethisError
 
-app = typer.Typer(help="Visit important project-related web pages.")
+app = typer.Typer(
+    help="Visit important project-related web pages.", add_completion=False
+)
 
 
 @app.command(help="Visit the PyPI project page for a package.")

@@ -1,7 +1,7 @@
 from typing import Literal
 
 from usethis._core.tool import use_ruff
-from usethis._tool import RuffTool
+from usethis._tool.impl.ruff import RuffTool
 from usethis.errors import UsethisError
 
 

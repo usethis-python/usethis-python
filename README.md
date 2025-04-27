@@ -269,17 +269,6 @@ Supported options:
 
 - `--browser` to open the link in the browser automatically.
 
-## 🚧 Development Roadmap
-
-Major features planned for later in 2025 are:
-
-- Support for users who aren't using uv, e.g. poetry users,
-- Support for automated GitHub Actions workflows ([#57](https://github.com/nathanjmcdougall/usethis-python/issues/57)),
-- Support for a typechecker (likely Pyright, [#121](https://github.com/nathanjmcdougall/usethis-python/issues/121)), and
-- Support for documentation pages (likely using mkdocs, [#188](https://github.com/nathanjmcdougall/usethis-python/issues/188)).
-
-Other features are tracked in the [GitHub Issues](https://github.com/nathanjmcdougall/usethis-python/issues) page.
-
 ## 📚 Similar Projects
 
 Not sure if usethis is the exact fit for your project?
@@ -295,9 +284,22 @@ You could [consider this template](https://github.com/pawamoy/copier-uv) which w
 
 One of usethis's strengths is that it can update existing configuration. If you're using Cookiecutter, then you can update to a latest version of a template using a tool like [cruft](https://github.com/cruft/cruft). Copier has inbuilt support for template updating.
 
-## Development
+## 🚧 Development Roadmap
 
-This project is at the early stages of development. If you are interested in contributing, please ensure you have a corresponding GitHub Issue open.
+Major features planned for later in 2025 are:
+
+- Support for users who aren't using uv, e.g. poetry users,
+- Support for automated GitHub Actions workflows ([#57](https://github.com/nathanjmcdougall/usethis-python/issues/57)),
+- Support for a typechecker (likely Pyright, [#121](https://github.com/nathanjmcdougall/usethis-python/issues/121)), and
+- Support for documentation pages (likely using mkdocs, [#188](https://github.com/nathanjmcdougall/usethis-python/issues/188)).
+
+Other features are tracked in the [GitHub Issues](https://github.com/nathanjmcdougall/usethis-python/issues) page.
+
+## 🙌 Contributing
+
+See the
+[CONTRIBUTING.md](https://github.com/nathanjmcdougall/usethis-python/blob/main/CONTRIBUTING.md)
+file.
 
 ## License
 

@@ -25,11 +25,15 @@ Automate Python project setup and development tasks that are otherwise performed
 
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html), this package brings a similar experience to the Python ecosystem as a CLI tool.
 
+> [!TIP]
+> `usethis` is great for fresh projects using [uv](https://docs.astral.sh/uv), but also supports updating existing projects. However, this should be considered experimental. If you encounter problems or have feedback, please [open an issue](https://github.com/nathanjmcdougall/usethis-python/issues/new?template=idea.md).
+
 ## Highlights
 
 - 🧰 First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, `pre-commit`, and many more.
 - 🤖 Automatically add and remove tools: declare, install, and configure in one step.
 - 🧠 Powerful knowledge of how different tools interact and sensible defaults.
+- 🔄 Update existing configuration files automatically.
 - 📢 Fully declarative project configuration.
 - ⚡ Get started on a new Python project or a new workflow in seconds.
 

@@ -27,6 +27,21 @@ class TestCodespell:
         # Assert
         assert result.exit_code == 0, result.output
 
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["codespell", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'codespell' to run the Codespell spellchecker.
+"""
+        )
+
 
 class TestCoverage:
     @pytest.mark.usefixtures("_vary_network_conn")

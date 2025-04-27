@@ -36,8 +36,12 @@ if TYPE_CHECKING:
     from usethis._tool.base import Tool
 
 
-def use_codespell(*, remove: bool = False) -> None:
+def use_codespell(*, remove: bool = False, how: bool = False) -> None:
     tool = CodespellTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -58,8 +62,12 @@ def use_codespell(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_coverage(*, remove: bool = False) -> None:
+def use_coverage(*, remove: bool = False, how: bool = False) -> None:
     tool = CoverageTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -73,8 +81,12 @@ def use_coverage(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_deptry(*, remove: bool = False) -> None:
+def use_deptry(*, remove: bool = False, how: bool = False) -> None:
     tool = DeptryTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -94,8 +106,12 @@ def use_deptry(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_import_linter(*, remove: bool = False) -> None:
+def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
     tool = ImportLinterTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -116,8 +132,13 @@ def use_import_linter(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pre_commit(*, remove: bool = False) -> None:
+def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
     tool = PreCommitTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
+
     pyproject_fmt_tool = PyprojectFmtTool()
     codespell_tool = CodespellTool()
     requirements_txt_tool = RequirementsTxtTool()
@@ -201,8 +222,12 @@ def _remove_bitbucket_linter_steps_from_default() -> None:
     RuffTool().remove_bitbucket_steps()
 
 
-def use_pyproject_fmt(*, remove: bool = False) -> None:
+def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
     tool = PyprojectFmtTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -223,8 +248,12 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pyproject_toml(*, remove: bool = False) -> None:
+def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
     tool = PyprojectTOMLTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -236,8 +265,12 @@ def use_pyproject_toml(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pytest(*, remove: bool = False) -> None:
+def use_pytest(*, remove: bool = False, how: bool = False) -> None:
     tool = PytestTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -273,8 +306,12 @@ def use_pytest(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_requirements_txt(*, remove: bool = False) -> None:
+def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
     tool = RequirementsTxtTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -311,7 +348,7 @@ def use_requirements_txt(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
+def use_ruff(*, remove: bool = False, how: bool = False, minimal: bool = False) -> None:
     """Add Ruff to the project.
 
     By default, sensible default rules are selected. If rules are already selected, the
@@ -321,6 +358,10 @@ def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
     # interface manages those rules.
 
     tool = RuffTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 

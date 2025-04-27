@@ -350,7 +350,7 @@ def use_ruff(
         all(tool._is_pydocstyle_rule(rule) for rule in tool.get_selected_rules())
         # Another situation where we add default rules is when there are no rules
         # selected yet (and we haven't explicitly been requested to add minimal config).
-        or not RuffTool().get_selected_rules()
+        or not tool.get_selected_rules()
     ):
         rule_config = _get_basic_rule_config()
     else:

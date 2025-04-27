@@ -1999,7 +1999,7 @@ class TestPytest:
                 """\
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = ["--import-mode=importlib", "-ra", "--showlocals", "--strict-markers", "--strict-config"]
+addopts = ["--import-mode=importlib", "-ra", "--strict-markers", "--strict-config"]
 filterwarnings = ["error"]
 xfail_strict = true
 log_cli_level = "INFO"
@@ -2111,7 +2111,6 @@ testpaths =
 addopts =
     --import-mode=importlib
     -ra
-    --showlocals
     --strict-markers
     --strict-config
 filterwarnings =

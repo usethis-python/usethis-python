@@ -289,7 +289,11 @@ You could [consider this template](https://github.com/pawamoy/copier-uv) which w
 
 One of usethis's strengths is that it can update existing configuration. If you're using Cookiecutter, then you can update to a latest version of a template using a tool like [cruft](https://github.com/cruft/cruft). Copier has inbuilt support for template updating.
 
-## 🚧 Development Roadmap
+## 🚀 Development
+
+[![Commits since latest release](https://img.shields.io/github/commits-since/nathanjmcdougall/usethis-python/latest.svg)](https://github.com/nathanjmcdougall/usethis-python/releases)
+
+### Roadmap
 
 Major features planned for later in 2025 are:
 
@@ -300,7 +304,7 @@ Major features planned for later in 2025 are:
 
 Other features are tracked in the [GitHub Issues](https://github.com/nathanjmcdougall/usethis-python/issues) page.
 
-## 🙌 Contributing
+### Contributing
 
 See the
 [CONTRIBUTING.md](https://github.com/nathanjmcdougall/usethis-python/blob/main/CONTRIBUTING.md)

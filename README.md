@@ -269,6 +269,17 @@ Supported options:
 
 - `--browser` to open the link in the browser automatically.
 
+## 🚧 Development Roadmap
+
+Major features planned for later in 2025 are:
+
+- Support for users who aren't using uv, e.g. poetry users,
+- Support for automated GitHub Actions workflows ([#57](https://github.com/nathanjmcdougall/usethis-python/issues/57)),
+- Support for a typechecker (likely Pyright, [#121](https://github.com/nathanjmcdougall/usethis-python/issues/121)), and
+- Support for documentation pages (likely using mkdocs, [#188](https://github.com/nathanjmcdougall/usethis-python/issues/188)).
+
+Other features are tracked in the [GitHub Issues](https://github.com/nathanjmcdougall/usethis-python/issues) page.
+
 ## 📚 Similar Projects
 
 Not sure if usethis is the exact fit for your project?

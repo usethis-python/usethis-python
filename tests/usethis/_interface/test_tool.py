@@ -175,6 +175,23 @@ class TestDeptry:
         )
 
 
+class TestImportLinter:
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["import-linter", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'lint-imports' to run Import Linter.
+"""
+        )
+
+
 class TestPyprojectTOML:
     def test_add(self, tmp_path: Path):
         # Act
@@ -209,6 +226,23 @@ class TestPyprojectTOML:
 ℹ Learn more at 
 https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
 """  # noqa: RUF001
+        )
+
+
+class TestPyprojectFmt:
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pyproject-fmt", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.
+"""
         )
 
 

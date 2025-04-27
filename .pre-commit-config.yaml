@@ -1,8 +1,3 @@
-default_install_hook_types:
-  - pre-commit
-  - post-checkout
-  - post-merge
-  - post-rewrite
 repos:
   - repo: local
     hooks:
@@ -12,11 +7,11 @@ repos:
         files: ^(uv\.lock|pyproject\.toml|uv\.toml)$
         language: system
         always_run: true
-        pass_filenames: false       
+        pass_filenames: false
       - id: uv-sync
         name: uv-sync
         entry: uv sync --no-active --offline
-        args: ["--locked"]
+        args: [--locked]
         language: system
         always_run: true
         pass_filenames: false
@@ -30,11 +25,20 @@ repos:
       - id: check-yaml
       - id: debug-statements
       - id: name-tests-test
-        args: ["--pytest-test-first"]
+        args: [--pytest-test-first]
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:
       - id: validate-pyproject
+  - repo: local
+    hooks:
+      - id: uv-export
+        name: uv-export
+        files: ^uv\.lock$
+        entry: uv export --frozen --offline --quiet --only-group doc -o='docs/requirements.txt'
+        language: system
+        pass_filenames: false
+        require_serial: true
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.5.0
     hooks:
@@ -88,3 +92,8 @@ repos:
         types_or: [python, pyi]
         always_run: true
         require_serial: true
+default_install_hook_types:
+  - pre-commit
+  - post-checkout
+  - post-merge
+  - post-rewrite

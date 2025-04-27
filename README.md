@@ -55,24 +55,28 @@ Alternatively, run in isolation, using `uvx` or `pipx`.
 
 ## 🖥️ Command Line Interface
 
-### Main commands
+### Manage Tooling
 
-- [`usethis tool`](#usethis-tool)
 - [`usethis ci`](#usethis-ci)
+- [`usethis tool`](#usethis-tool)
 
-### Configuration
+### Manage Configuration
+
+- [`usethis author`](#usethis-author)
+- [`usethis docstyle`](#usethis-docstyle)
+- [`usethis rule`](#usethis-rule-rulecode)
+
+### Manage README
 
 - [`usethis badge`](#usethis-badge)
-- [`usethis rule`](#usethis-rule-rulecode)
-- [`usethis docstyle`](#usethis-docstyle)
 - [`usethis readme`](#usethis-readme)
-- [`usethis author`](#usethis-author)
 
 ### Information
 
 - [`usethis list`](#usethis-list)
-- [`usethis show`](#usethis-show)
+- [`usethis version`](#usethis-version)
 - [`usethis browse pypi`](#usethis-browse-pypi-package)
+- [`usethis show`](#usethis-show)
 
 ## 💡 Example Usage
 
@@ -126,18 +130,24 @@ Add a new tool to a Python project, including:
 - any other relevant directories or tool-bespoke configuration files, and
 - `.pre-commit-config.yaml` configuration if using `pre-commit`.
 
-Currently supported tools:
+#### Code Quality Tools
 
-- `usethis tool codespell`
-- `usethis tool coverage`
-- `usethis tool deptry`
-- `usethis tool import-linter`
-- `usethis tool pre-commit`
-- `usethis tool pyproject-fmt`
-- `usethis tool pyproject.toml`
-- `usethis tool pytest`
-- `usethis tool requirements.txt`
-- `usethis tool ruff`
+- `usethis tool codespell` - Use the codespell spellchecker: detect common spelling mistakes.
+- `usethis tool deptry` - Use the deptry linter: avoid missing or superfluous dependency declarations.
+- `usethis tool import-linter` - Use Import Linter: enforce a self-imposed architecture on imports.
+- `usethis tool pre-commit` - Use the pre-commit framework to manage and maintain pre-commit hooks.
+- `usethis tool pyproject-fmt` - Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files.
+- `usethis tool ruff` - Use Ruff: an extremely fast Python linter and code formatter.
+
+#### Testing
+
+- `usethis tool coverage` - Use coverage: a code coverage measurement tool.
+- `usethis tool pytest` - Use the pytest testing framework.
+
+#### Configuration Files
+
+- `usethis tool pyproject.toml` - Use a pyproject.toml file to configure the project.
+- `usethis tool requirements.txt` - Use a requirements.txt file exported from the uv lockfile.
 
 Supported options:
 
@@ -233,6 +243,10 @@ Other supported options:
 ### `usethis list`
 
 Display a table of all available tools and their current usage status.
+
+### `usethis version`
+
+Display the current version of usethis.
 
 ### `usethis show`
 

@@ -26,7 +26,7 @@ rich_help_panel = "Manage Tooling"
 app.add_typer(usethis._interface.ci.app, name="ci", rich_help_panel=rich_help_panel)
 app.add_typer(usethis._interface.tool.app, name="tool", rich_help_panel=rich_help_panel)
 
-rich_help_panel = "Manage Config"
+rich_help_panel = "Manage Configuration"
 app.command(help="Add an author to the project.", rich_help_panel=rich_help_panel)(
     usethis._interface.author.author,
 )

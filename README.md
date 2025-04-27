@@ -30,7 +30,7 @@ Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.
 
 ## Highlights
 
-- 🧰 First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, `pre-commit`, and many more.
+- 🧰 First-class support for state-of-the-practice tooling: uv, Ruff, pytest, pre-commit, and many more.
 - 🤖 Automatically add and remove tools: declare, install, and configure in one step.
 - 🧠 Powerful knowledge of how different tools interact and sensible defaults.
 - 🔄 Update existing configuration files automatically.
@@ -39,13 +39,13 @@ Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.
 
 ## 🧭 Getting Started
 
-First, it is strongly recommended you [install the `uv` package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process. If you're already using `uv`, make sure you're using at least
+First, it is strongly recommended you [install the uv package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process. If you're already using uv, make sure you're using at least
 version v0.5.29 (run `uv version` to check, and `uv self update` to upgrade).
 
 > [!TIP]
-> At the moment, `usethis` assumes you will have `uv` installed in some circumstances. Support for projects that don't use `uv` is planned for late 2025.
+> At the moment, `usethis` assumes you will have uv installed in some circumstances. Support for projects that don't use uv is planned for late 2025.
 
-Then, you can install usethis for the project:
+You can install `usethis` directly into the project environment:
 
 ```console
 # With uv
@@ -55,7 +55,15 @@ $ uv add --dev usethis
 $ pip install usethis
 ```
 
-Alternatively, run in isolation, using `uvx` or `pipx`.
+Alternatively, you can also run `usethis` commands in isolation, using `uvx` or `pipx`. For example, to add Ruff to the project:
+
+```console
+# With uv
+$ uvx usethis tool ruff
+
+# With pipx
+$ pipx run usethis tool ruff
+```
 
 ## 🖥️ Command Line Interface
 

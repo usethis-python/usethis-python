@@ -28,6 +28,18 @@ class TestPyPI:
         # Assert
         assert result.exit_code == 0, result.output
 
+    def test_show(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pypi", "--show"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
 
 class TestRuff:
     def test_add(self, tmp_path: Path):
@@ -63,6 +75,18 @@ class TestRuff:
         # Assert
         assert result.exit_code == 0, result.output
 
+    def test_show(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["ruff", "--show"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
 
 class TestPreCommit:
     def test_add(self, tmp_path: Path):
@@ -82,6 +106,18 @@ class TestPreCommit:
         runner = CliRunner()
         with change_cwd(tmp_path):
             result = runner.invoke(app, ["pre-commit", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_show(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pre-commit", "--show"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -109,6 +145,18 @@ class TestUsethis:
         # Assert
         assert result.exit_code == 0, result.output
 
+    def test_show(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["usethis", "--show"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
 
 class TestUV:
     def test_add(self, tmp_path: Path):
@@ -128,6 +176,18 @@ class TestUV:
         runner = CliRunner()
         with change_cwd(tmp_path):
             result = runner.invoke(app, ["uv", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_show(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["uv", "--show"])
 
         # Assert
         assert result.exit_code == 0, result.output

@@ -41,7 +41,7 @@ jobs:
       - name: Setup dependencies
         run: |
           uv export --resolution ${{ matrix.resolution }} > requirements.txt 
-          uv pip install --system --break-system-packages -r requirements.txt
+          uv pip install --system -r requirements.txt
 
       - name: Run pre-commit
         if: matrix.pre-commit

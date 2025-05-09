@@ -5,11 +5,11 @@ on:
     branches: ['main']
     paths-ignore:
       - 'docs/**'
-      - 'README.md'
+      - '**/*.md'
   pull_request:
     paths-ignore:
       - 'docs/**'
-      - 'README.md'
+      - '**/*.md'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

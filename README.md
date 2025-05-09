@@ -295,7 +295,7 @@ You could [consider this template](https://github.com/pawamoy/copier-uv) which w
 > [!TIP]
 > You can still use usethis as a part of a templates using [hooks](https://cookiecutter.readthedocs.io/en/latest/advanced/hooks.html#using-pre-post-generate-hooks-0-7-0) for Cookiecutter and [tasks](https://copier.readthedocs.io/en/stable/configuring/#tasks) for Copier.
 
-One of usethis's strengths is that it can update existing configuration. If you're using Cookiecutter, then you can update to a latest version of a template using a tool like [cruft](https://github.com/cruft/cruft). Copier has inbuilt support for template updating.
+If you're using Cookiecutter, then you can update to a latest version of a template using a tool like [cruft](https://github.com/cruft/cruft). Copier has inbuilt support for template updating. Another template-style option which provides updating is [jaraco/skeleton](https://blog.jaraco.com/skeleton/), which is a specific, git-based template rather than a general templating system.
 
 ## 🚀 Development
 

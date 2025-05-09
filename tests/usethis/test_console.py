@@ -1,6 +1,14 @@
 import pytest
+from rich.table import Table
 
-from usethis._console import box_print, err_print, info_print, plain_print, tick_print
+from usethis._console import (
+    box_print,
+    err_print,
+    info_print,
+    plain_print,
+    table_print,
+    tick_print,
+)
 
 
 class TestPlainPrint:
@@ -11,6 +19,24 @@ class TestPlainPrint:
         # Assert
         out, _ = capfd.readouterr()
         assert out == "Hello\n"
+
+
+class TestTablePrint:
+    def test_out(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Act
+        table_print(
+            Table(
+                "hello",
+                title="Hello",
+                show_lines=True,
+                box=None,
+            )
+        )
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert "hello" in out
+        assert "Hello" in out
 
 
 class TestTickPrint:

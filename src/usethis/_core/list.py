@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from rich.table import Table
 from typing_extensions import assert_never
 
-from usethis._console import plain_print
+from usethis._console import table_print
 from usethis._core.readme import is_readme_used
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._tool.all_ import ALL_TOOLS
@@ -84,7 +84,7 @@ def _rich_category(
 
 def show_usage_table() -> None:
     """Show the usage table."""
-    plain_print(get_usage_table().to_rich())
+    table_print(get_usage_table().to_rich())
 
 
 def get_usage_table() -> UsageTable:

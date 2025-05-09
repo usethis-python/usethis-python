@@ -18,11 +18,16 @@ sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
 console = Console()
 
 
-def plain_print(msg: str | Exception | Table) -> None:
+def plain_print(msg: str | Exception) -> None:
     msg = str(msg)
 
     if not usethis_config.quiet:
         console.print(msg)
+
+
+def table_print(table: Table) -> None:
+    if not usethis_config.quiet:
+        console.print(table, justify="left", overflow="fold", soft_wrap=True)
 
 
 def tick_print(msg: str | Exception) -> None:

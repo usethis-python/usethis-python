@@ -55,3 +55,10 @@ Please see this guide from the VS Code project for instructions on how to do thi
 This project uses [Import Linter](https://import-linter.readthedocs.io/en/stable/) to
 enforce a software architecture. Refer to the `[[tool.importlinter.contracts]]` sections
 in `pyproject.toml` to understand the structure of the project.
+
+## Conventions
+
+### Print statements
+
+To ensure the `--quiet` flag is always effective, avoid using simple `print` statements.
+Instead, use the purpose-built `usethis._console.plain_print` function.

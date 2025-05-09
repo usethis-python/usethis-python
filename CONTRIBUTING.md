@@ -24,11 +24,22 @@ uv sync
 
 ## Testing
 
+### Running the Test Suite
+
 To run the tests, simply run:
 
 ```shell
 uv run pytest
 ```
+
+### Writing Tests
+
+Tests are written using the `pytest` framework. The test suite is located in the
+`tests` directory. The tests are organized into subdirectories with a directory
+structure that mirrors the structure of the code being tested. This makes it easy
+to find the tests for a specific module or function.
+
+PRs should ideally include tests for any new features or bug fixes.
 
 ## Documentation
 

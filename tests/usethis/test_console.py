@@ -1,6 +1,16 @@
 import pytest
 
-from usethis._console import box_print, err_print, info_print, tick_print
+from usethis._console import box_print, err_print, info_print, plain_print, tick_print
+
+
+class TestPlainPrint:
+    def test_out(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Act
+        plain_print("Hello")
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == "Hello\n"
 
 
 class TestTickPrint:

@@ -2,15 +2,27 @@ from __future__ import annotations
 
 import codecs
 import sys
+from typing import TYPE_CHECKING
 
 from rich.console import Console
 
 from usethis._config import usethis_config
 
+if TYPE_CHECKING:
+    from rich.table import Table
+
 # Unicode support - but we need to be able to write bytes
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
 
+
 console = Console()
+
+
+def plain_print(msg: str | Exception | Table) -> None:
+    msg = str(msg)
+
+    if not usethis_config.quiet:
+        console.print(msg)
 
 
 def tick_print(msg: str | Exception) -> None:

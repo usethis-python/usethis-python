@@ -1,10 +1,10 @@
 from typing import Literal
 
 from pydantic import BaseModel
-from rich.console import Console
 from rich.table import Table
 from typing_extensions import assert_never
 
+from usethis._console import plain_print
 from usethis._core.readme import is_readme_used
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._tool.all_ import ALL_TOOLS
@@ -84,8 +84,7 @@ def _rich_category(
 
 def show_usage_table() -> None:
     """Show the usage table."""
-    console = Console()
-    console.print(get_usage_table().to_rich())
+    plain_print(get_usage_table().to_rich())
 
 
 def get_usage_table() -> UsageTable:

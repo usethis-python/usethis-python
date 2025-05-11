@@ -5,11 +5,11 @@ on:
     branches: ['main']
     paths-ignore:
       - 'docs/**'
-      - 'README.md'
+      - '**/*.md'
   pull_request:
     paths-ignore:
       - 'docs/**'
-      - 'README.md'
+      - '**/*.md'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -41,7 +41,7 @@ jobs:
       - name: Setup dependencies
         run: |
           uv export --resolution ${{ matrix.resolution }} > requirements.txt 
-          uv pip install --system --break-system-packages -r requirements.txt
+          uv pip install --system -r requirements.txt
 
       - name: Run pre-commit
         if: matrix.pre-commit

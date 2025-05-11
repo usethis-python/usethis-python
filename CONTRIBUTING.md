@@ -11,6 +11,8 @@ feature is aligned with the project's goals and that there is no duplication of 
 
 ## Setup
 
+### Development Environment
+
 [uv](https://github.com/astral-sh/uv) is required to install the development
 environment. You can install it using the instructions here:
 
@@ -20,6 +22,15 @@ Then with the current working directory set to the project root, run:
 
 ```shell
 uv sync
+```
+
+### Pre-commit Hooks
+
+This project uses the `pre-commit` framework to manage Git hooks. To install the hooks,
+run:
+
+```shell
+uv run pre-commit install
 ```
 
 ## Testing

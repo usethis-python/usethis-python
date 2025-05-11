@@ -144,22 +144,22 @@ Add a new tool to a Python project, including:
 
 #### Code Quality Tools
 
-- `usethis tool codespell` - Use the codespell spellchecker: detect common spelling mistakes.
-- `usethis tool deptry` - Use the deptry linter: avoid missing or superfluous dependency declarations.
-- `usethis tool import-linter` - Use Import Linter: enforce a self-imposed architecture on imports.
-- `usethis tool pre-commit` - Use the pre-commit framework to manage and maintain pre-commit hooks.
-- `usethis tool pyproject-fmt` - Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files.
-- `usethis tool ruff` - Use Ruff: an extremely fast Python linter and code formatter.
+- `usethis tool codespell` - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.
+- `usethis tool deptry` - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.
+- `usethis tool import-linter` - Use [Import Linter](https://import-linter.readthedocs.io/en/stable/): enforce a self-imposed architecture on imports.
+- `usethis tool pre-commit` - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain pre-commit hooks.
+- `usethis tool pyproject-fmt` - Use the [pyproject-fmt linter](https://github.com/tox-dev/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
+- `usethis tool ruff` - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
 
 #### Testing
 
-- `usethis tool coverage` - Use coverage: a code coverage measurement tool.
-- `usethis tool pytest` - Use the pytest testing framework.
+- `usethis tool coverage` - Use [coverage](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
+- `usethis tool pytest` - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
 
 #### Configuration Files
 
-- `usethis tool pyproject.toml` - Use a pyproject.toml file to configure the project.
-- `usethis tool requirements.txt` - Use a requirements.txt file exported from the uv lockfile.
+- `usethis tool pyproject.toml` - Use a [pyproject.toml](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#writing-your-pyproject-toml) file to configure the project.
+- `usethis tool requirements.txt` - Use a [requirements.txt](https://pip.pypa.io/en/stable/reference/requirements-file-format/) file exported from the uv lockfile.
 
 Supported options:
 
@@ -175,7 +175,7 @@ Add Continuous Integration pipelines to the project.
 
 Currently supported platforms:
 
-- `usethis ci bitbcuket`
+- `usethis ci bitbcuket` - Use [Bitbucket Pipelines](https://bitbucket.org/product/features/pipelines): a CI/CD service for Bitbucket.
 
 Supported options:
 
@@ -189,11 +189,11 @@ Add badges to README.md.
 
 Currently supported badges:
 
-- `usethis badge pre-commit`
-- `usethis badge pypi`
-- `usethis badge ruff`
-- `usethis badge usethis`
-- `usethis badge uv`
+- `usethis badge pre-commit` - [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+- `usethis badge pypi` - [![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
+- `usethis badge ruff` - [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+- `usethis badge usethis` - [![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/nathanjmcdougall/usethis-python/main/assets/badge/v1.json)](https://github.com/nathanjmcdougall/usethis-python)
+- `usethis badge uv` - [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 Supported options:
 
@@ -204,6 +204,10 @@ Supported options:
 ### `usethis rule <rulecode>`
 
 Add (or manage configuration) of Ruff and Deptry rules in `pyproject.toml`.
+
+See [the Ruff documentation](https://docs.astral.sh/ruff/rules/) for a list of available
+rules, and [the Deptry documentation](https://deptry.com/rules-violations/) for a list
+of available rules.
 
 Example:
 

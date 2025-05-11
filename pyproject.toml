@@ -43,7 +43,7 @@ dependencies = [
   "rich>=9.6.1",
   "ruamel-yaml>=0.16.13",
   "tomlkit>=0.12.0",
-  "typer>=0.11.0",
+  "typer>=0.11.1",
   "typing-extensions>=3.10.0.0",
 ]
 scripts.usethis = "usethis.__main__:app"

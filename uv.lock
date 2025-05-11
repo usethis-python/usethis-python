@@ -1467,7 +1467,7 @@ requires-dist = [
     { name = "rich", specifier = ">=9.6.1" },
     { name = "ruamel-yaml", specifier = ">=0.16.13" },
     { name = "tomlkit", specifier = ">=0.12.0" },
-    { name = "typer", specifier = ">=0.11.0" },
+    { name = "typer", specifier = ">=0.11.1" },
     { name = "typing-extensions", specifier = ">=3.10.0.0" },
 ]
 

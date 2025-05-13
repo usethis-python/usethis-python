@@ -197,6 +197,7 @@ Currently supported badges:
 
 Supported options:
 
+- `--show` to show the badge URL instead of adding (or removing) it
 - `--remove` to remove the badge instead of adding it
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output

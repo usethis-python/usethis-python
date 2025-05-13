@@ -142,6 +142,9 @@ Add a new tool to a Python project, including:
 - any other relevant directories or tool-bespoke configuration files, and
 - `.pre-commit-config.yaml` configuration if using `pre-commit`.
 
+Note if `pyproject.toml` is not present, it will be created, since this is required for
+declaring dependencies with `uv add`.
+
 #### Code Quality Tools
 
 - `usethis tool codespell` - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.

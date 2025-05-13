@@ -1,3 +1,5 @@
+"""Tool functions to add/remove tools to/from the project."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -34,6 +36,9 @@ from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
     from usethis._tool.base import Tool
+
+# Note - all these functions invoke ensure_pyproject_toml() at the start, since
+# declaring dependencies in pyproject.toml requires that file to exist.
 
 
 def use_codespell(*, remove: bool = False, how: bool = False) -> None:

@@ -234,6 +234,41 @@ foo = bar
             assert (uv_init_dir / "setup.cfg").read_text() == ""
             assert "[tool.codespell]" in (uv_init_dir / "pyproject.toml").read_text()
 
+        def test_dont_restore_partial_config(self, uv_init_dir: Path):
+            """Test that we don't restore _parts_ of default config.
+
+            If there's no config at all; yes, we add the default config. But if the user
+            then goes on to delete some of the config, we don't want to restore it.
+
+            Likewise, if the user didn't start with usethis and, in fact, has no default
+            config at all, if they have different config associated with codespell,
+            again we should assume the user has got it sorted out and we shouldn't mess
+            with it by adding more config.
+            """
+            # https://github.com/nathanjmcdougall/usethis-python/issues/549
+
+            config = """\
+[project]
+name = "example"
+version = "0.1.0"
+
+[dependency-groups]
+dev = [ "codespell" ]
+
+[tool.codespell]
+ignore-words-list = [ "edn" ]
+"""
+
+            # Arrange
+            (uv_init_dir / "pyproject.toml").write_text(config)
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_codespell()
+
+            # Assert
+            assert (uv_init_dir / "pyproject.toml").read_text() == config
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(

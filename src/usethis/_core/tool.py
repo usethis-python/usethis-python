@@ -260,10 +260,9 @@ def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
         ensure_pyproject_toml()
+
         ensure_pyproject_validity()
         tool.print_how_to_use()
     else:

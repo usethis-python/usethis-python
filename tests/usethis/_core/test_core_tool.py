@@ -1680,6 +1680,21 @@ repos:
                     "☐ Run 'codespell' to run the Codespell spellchecker.\n"
                 )
 
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_pre_commit(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not out
+            assert not err
+
     class TestBitbucketCIIntegration:
         def test_prexisting(self, uv_init_repo_dir: Path):
             # Arrange

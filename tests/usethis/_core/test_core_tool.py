@@ -1334,6 +1334,21 @@ root_package = "a"
             # Assert
             assert not (uv_init_repo_dir / ".importlinter").exists()
 
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not out
+            assert not err
+
     class TestPreCommitIntegration:
         def test_config(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]

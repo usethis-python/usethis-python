@@ -56,25 +56,6 @@ def codespell(
     help="Use Coverage.py: a code coverage measurement tool.",
     rich_help_panel="Testing",
 )
-def coverage_py(
-    remove: bool = remove_opt,
-    how: bool = how_opt,
-    offline: bool = offline_opt,
-    quiet: bool = quiet_opt,
-    frozen: bool = frozen_opt,
-) -> None:
-    with (
-        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
-        files_manager(),
-    ):
-        _run_tool(use_coverage_py, remove=remove, how=how)
-
-
-@app.command(
-    name="coverage.py",
-    help="Use Coverage.py: a code coverage measurement tool.",
-    rich_help_panel="Testing",
-)
 @app.command(
     name="coverage",
     help="Use Coverage.py: a code coverage measurement tool.",
@@ -82,7 +63,7 @@ def coverage_py(
     hidden=True,
     deprecated=True,
 )
-def coverage(
+def coverage_py(
     remove: bool = remove_opt,
     how: bool = how_opt,
     offline: bool = offline_opt,

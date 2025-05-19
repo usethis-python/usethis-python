@@ -2463,6 +2463,17 @@ pipelines:
                 "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
             )
 
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").unlink(missing_ok=True)
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_pytest(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
     class TestUpdateBitbucketSteps:
         def test_new_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), files_manager():

@@ -7,7 +7,7 @@ from usethis._console import box_print, info_print
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool.base import Tool
 from usethis._tool.impl.codespell import CodespellTool
-from usethis._tool.impl.coverage import CoveragePyTool
+from usethis._tool.impl.coverage_py import CoveragePyTool
 from usethis._tool.impl.deptry import DeptryTool
 from usethis._tool.impl.import_linter import ImportLinterTool
 from usethis._tool.impl.pre_commit import PreCommitTool

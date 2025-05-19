@@ -3161,3 +3161,11 @@ repos:
 
             # Assert
             assert not (tmp_path / "requirements.txt").exists()
+
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()

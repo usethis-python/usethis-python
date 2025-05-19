@@ -2692,6 +2692,174 @@ pipelines:
             )
 
 
+class TestRequirementsTxt:
+    class TestAdd:
+        def test_start_from_nothing(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'pyproject.toml'.\n"
+                "✔ Writing 'uv.lock'.\n"
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+            )
+
+        def test_start_from_uv_init(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(uv_init_dir),
+                PyprojectTOMLManager(),
+                usethis_config.set(frozen=False),
+            ):
+                use_requirements_txt()
+
+            # Assert
+            assert (uv_init_dir / "requirements.txt").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'uv.lock'.\n"
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+            )
+
+        def test_start_from_uv_locked(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with (
+                change_cwd(uv_init_dir),
+                PyprojectTOMLManager(),
+                usethis_config.set(frozen=False),
+            ):
+                # Arrange
+                call_uv_subprocess(["lock"], change_toml=False)
+
+                # Act
+                use_requirements_txt()
+
+            # Assert
+            assert (uv_init_dir / "requirements.txt").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pre_commit(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with (
+                change_cwd(uv_init_repo_dir),
+                files_manager(),
+                usethis_config.set(frozen=False),
+            ):
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_requirements_txt()
+
+            # Assert
+            assert (uv_init_repo_dir / "requirements.txt").exists()
+            content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert content == (
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: uv-export
+        name: uv-export
+        files: ^uv\\.lock$
+        entry: uv export --frozen --offline --quiet --no-dev -o=requirements.txt
+        language: system
+        pass_filenames: false
+        require_serial: true
+"""
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv run pre-commit run uv-export' to write 'requirements.txt'.\n"
+            )
+
+    class TestRemove:
+        def test_file_gone(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "requirements.txt").touch()
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "requirements.txt").exists()
+
+        def test_requirements_dir(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "requirements.txt").mkdir()
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+
+        def test_precommit_integration(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".pre-commit-config.yaml").write_text(
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: uv-export
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert (tmp_path / ".pre-commit-config.yaml").exists()
+            content = (tmp_path / ".pre-commit-config.yaml").read_text()
+            assert "uv-export" not in content
+
+        def test_roundtrip(self, tmp_path: Path):
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                # Arrange
+                use_requirements_txt()
+
+                # Act
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "requirements.txt").exists()
+
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
+
 class TestRuff:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -3007,171 +3175,3 @@ select = ["A", "B", "C"]
                 "[tool.ruff.lint]" not in (uv_init_dir / "pyproject.toml").read_text()
             )
             assert not (uv_init_dir / "ruff.toml").exists()
-
-
-class TestRequirementsTxt:
-    class TestAdd:
-        def test_start_from_nothing(
-            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
-                use_requirements_txt()
-
-            # Assert
-            assert (tmp_path / "requirements.txt").exists()
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Writing 'pyproject.toml'.\n"
-                "✔ Writing 'uv.lock'.\n"
-                "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
-            )
-
-        def test_start_from_uv_init(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            # Act
-            with (
-                change_cwd(uv_init_dir),
-                PyprojectTOMLManager(),
-                usethis_config.set(frozen=False),
-            ):
-                use_requirements_txt()
-
-            # Assert
-            assert (uv_init_dir / "requirements.txt").exists()
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Writing 'uv.lock'.\n"
-                "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
-            )
-
-        def test_start_from_uv_locked(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            with (
-                change_cwd(uv_init_dir),
-                PyprojectTOMLManager(),
-                usethis_config.set(frozen=False),
-            ):
-                # Arrange
-                call_uv_subprocess(["lock"], change_toml=False)
-
-                # Act
-                use_requirements_txt()
-
-            # Assert
-            assert (uv_init_dir / "requirements.txt").exists()
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
-            )
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_pre_commit(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            with (
-                change_cwd(uv_init_repo_dir),
-                files_manager(),
-                usethis_config.set(frozen=False),
-            ):
-                # Arrange
-                use_pre_commit()
-                capfd.readouterr()
-
-                # Act
-                use_requirements_txt()
-
-            # Assert
-            assert (uv_init_repo_dir / "requirements.txt").exists()
-            content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
-            assert content == (
-                """\
-repos:
-  - repo: local
-    hooks:
-      - id: uv-export
-        name: uv-export
-        files: ^uv\\.lock$
-        entry: uv export --frozen --offline --quiet --no-dev -o=requirements.txt
-        language: system
-        pass_filenames: false
-        require_serial: true
-"""
-            )
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
-                "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv run pre-commit run uv-export' to write 'requirements.txt'.\n"
-            )
-
-    class TestRemove:
-        def test_file_gone(self, tmp_path: Path):
-            # Arrange
-            (tmp_path / "requirements.txt").touch()
-
-            # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
-                use_requirements_txt(remove=True)
-
-            # Assert
-            assert not (tmp_path / "requirements.txt").exists()
-
-        def test_requirements_dir(self, tmp_path: Path):
-            # Arrange
-            (tmp_path / "requirements.txt").mkdir()
-
-            # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
-                use_requirements_txt(remove=True)
-
-            # Assert
-            assert (tmp_path / "requirements.txt").exists()
-
-        def test_precommit_integration(self, tmp_path: Path):
-            # Arrange
-            (tmp_path / ".pre-commit-config.yaml").write_text(
-                """\
-repos:
-  - repo: local
-    hooks:
-      - id: uv-export
-"""
-            )
-
-            # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
-                use_requirements_txt(remove=True)
-
-            # Assert
-            assert (tmp_path / ".pre-commit-config.yaml").exists()
-            content = (tmp_path / ".pre-commit-config.yaml").read_text()
-            assert "uv-export" not in content
-
-        def test_roundtrip(self, tmp_path: Path):
-            with change_cwd(tmp_path), PyprojectTOMLManager():
-                # Arrange
-                use_requirements_txt()
-
-                # Act
-                use_requirements_txt(remove=True)
-
-            # Assert
-            assert not (tmp_path / "requirements.txt").exists()
-
-        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
-            # Act
-            with change_cwd(tmp_path), files_manager():
-                use_requirements_txt(remove=True)
-
-            # Assert
-            assert not (tmp_path / "pyproject.toml").exists()

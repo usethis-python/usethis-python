@@ -15,6 +15,7 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
+        stages: [manual, pre-commit, post-checkout, post-merge, post-rewrite]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -103,6 +104,3 @@ repos:
         require_serial: true
 default_install_hook_types:
   - pre-commit
-  - post-checkout
-  - post-merge
-  - post-rewrite

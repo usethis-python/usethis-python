@@ -106,17 +106,7 @@ class Tool(Protocol):
         for dep in self.get_test_deps(unconditional=True):
             if is_dep_in_any_group(dep):
                 return True
-        config_spec = self.get_config_spec()
-        for config_item in config_spec.config_items:
-            if not config_item.managed:
-                continue
-
-            for path, entry in config_item.root.items():
-                file_manager = config_spec.file_manager_by_relative_path[path]
-                if file_manager.__contains__(entry.keys):
-                    return True
-
-        return False
+        return self.is_config_present()
 
     def add_dev_deps(self) -> None:
         add_deps_to_group(self.get_dev_deps(), "dev")
@@ -233,6 +223,20 @@ class Tool(Protocol):
     def preferred_file_manager(self) -> KeyValueFileManager:
         """If there is no currently active config file, this is the preferred one."""
         return PyprojectTOMLManager()
+
+    def is_config_present(self) -> bool:
+        """Whether any of the tool's managed config sections are present."""
+        config_spec = self.get_config_spec()
+        for config_item in config_spec.config_items:
+            if not config_item.managed:
+                continue
+
+            for path, entry in config_item.root.items():
+                file_manager = config_spec.file_manager_by_relative_path[path]
+                if file_manager.__contains__(entry.keys):
+                    return True
+
+        return False
 
     def add_configs(self) -> None:
         """Add the tool's configuration sections."""

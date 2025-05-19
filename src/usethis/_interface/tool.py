@@ -71,9 +71,16 @@ def coverage_py(
 
 
 @app.command(
+    name="coverage.py",
+    help="Use Coverage.py: a code coverage measurement tool.",
+    rich_help_panel="Testing",
+)
+@app.command(
     name="coverage",
     help="Use Coverage.py: a code coverage measurement tool.",
     rich_help_panel="Testing",
+    hidden=True,
+    deprecated=True,
 )
 def coverage(
     remove: bool = remove_opt,

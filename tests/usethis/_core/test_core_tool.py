@@ -481,6 +481,20 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                     "✔ Removing dependencies 'coverage', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
                 )
 
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_coverage_py(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not out
+
 
 class TestDeptry:
     class TestAdd:

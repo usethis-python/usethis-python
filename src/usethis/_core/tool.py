@@ -74,9 +74,9 @@ def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_test_deps()
         tool.add_configs()
         tool.print_how_to_use()

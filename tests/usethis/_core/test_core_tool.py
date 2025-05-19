@@ -9,7 +9,7 @@ from usethis._config_file import RuffTOMLManager, files_manager
 from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import (
     use_codespell,
-    use_coverage,
+    use_coverage_py,
     use_deptry,
     use_import_linter,
     use_pre_commit,
@@ -266,7 +266,7 @@ class TestCoverage:
         ):
             with change_cwd(uv_init_dir), files_manager():
                 # Act
-                use_coverage()
+                use_coverage_py()
 
                 # Assert
                 assert Dependency(
@@ -280,8 +280,8 @@ class TestCoverage:
             assert out == (
                 "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'coverage'.\n"
-                "✔ Adding coverage config to 'pyproject.toml'.\n"
-                "☐ Run 'uv run coverage help' to see available coverage commands.\n"
+                "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -294,7 +294,7 @@ class TestCoverage:
 
             with change_cwd(tmp_path), files_manager():
                 # Act
-                use_coverage()
+                use_coverage_py()
 
                 # Assert
                 assert Dependency(
@@ -305,8 +305,8 @@ class TestCoverage:
                 assert out == (
                     "✔ Writing 'pyproject.toml'.\n"
                     "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
-                    "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'uv run coverage help' to see available coverage commands.\n"
+                    "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
+                    "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -319,7 +319,7 @@ class TestCoverage:
                     use_pytest()
 
                 # Act
-                use_coverage()
+                use_coverage_py()
 
                 # Assert
                 assert Dependency(
@@ -330,8 +330,8 @@ class TestCoverage:
                 assert out == (
                     "✔ Adding dependencies 'coverage', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
                     "☐ Install the dependencies 'coverage', 'pytest-cov'.\n"
-                    "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'uv run pytest --cov' to run your tests with coverage.\n"
+                    "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
+                    "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
                 )
 
         def test_coverage_rc_file(self, uv_init_dir: Path):
@@ -340,7 +340,7 @@ class TestCoverage:
 
             # Act
             with change_cwd(uv_init_dir), files_manager():
-                use_coverage()
+                use_coverage_py()
 
             # Assert
             assert (uv_init_dir / ".coveragerc").read_text() == (
@@ -368,7 +368,7 @@ omit =
 
             # Act
             with change_cwd(uv_init_dir), files_manager():
-                use_coverage()
+                use_coverage_py()
 
             # Assert
             assert (uv_init_dir / "tox.ini").read_text() == (
@@ -413,7 +413,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 
         # Act
         with change_cwd(tmp_path), files_manager():
-            use_coverage()
+            use_coverage_py()
 
             # Assert
             assert ["tool", "coverage"] in PyprojectTOMLManager()
@@ -424,7 +424,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         def test_unused(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Act
-                use_coverage(remove=True)
+                use_coverage_py(remove=True)
 
                 # Assert
                 assert not get_deps_from_group("test")
@@ -436,17 +436,17 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
                 with usethis_config.set(quiet=True):
-                    use_coverage()
+                    use_coverage_py()
 
                 # Act
-                use_coverage(remove=True)
+                use_coverage_py(remove=True)
 
                 # Assert
                 assert not get_deps_from_group("test")
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing coverage config from 'pyproject.toml'.\n"
+                "✔ Removing Coverage.py config from 'pyproject.toml'.\n"
                 "✔ Removing dependency 'coverage' from the 'test' group in 'pyproject.toml'.\n"
             )
 
@@ -457,17 +457,17 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pytest()
-                    use_coverage()
+                    use_coverage_py()
 
                 # Act
-                use_coverage(remove=True)
+                use_coverage_py(remove=True)
 
                 # Assert
                 assert get_deps_from_group("test") == [Dependency(name="pytest")]
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
-                    "✔ Removing coverage config from 'pyproject.toml'.\n"
+                    "✔ Removing Coverage.py config from 'pyproject.toml'.\n"
                     "✔ Removing dependencies 'coverage', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
                 )
 
@@ -2025,7 +2025,7 @@ minversion = "7\""""
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
                 with usethis_config.set(quiet=True):
-                    use_coverage()
+                    use_coverage_py()
 
                 # Act
                 use_pytest()
@@ -2041,7 +2041,7 @@ minversion = "7\""""
                 "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
                 "☐ Add test functions with the format 'test_*()'.\n"
                 "☐ Run 'uv run pytest' to run the tests.\n"
-                "☐ Run 'uv run pytest --cov' to run your tests with coverage.\n"
+                "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2343,7 +2343,7 @@ pipelines:
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
                 with usethis_config.set(quiet=True):
-                    use_coverage()
+                    use_coverage_py()
                     use_pytest()
 
                 # Act
@@ -2355,7 +2355,7 @@ pipelines:
                 "✔ Removing pytest config from 'pyproject.toml'.\n"
                 "✔ Removing dependencies 'pytest', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
                 "✔ Removing '/tests'.\n"
-                "☐ Run 'uv run coverage help' to see available coverage commands.\n"
+                "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
             )
 
     class TestUpdateBitbucketSteps:

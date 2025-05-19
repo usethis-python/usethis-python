@@ -54,10 +54,10 @@ class PytestTool(Tool):
             box_print("Run 'pytest' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.coverage import CoverageTool
+        from usethis._tool.impl.coverage_py import CoveragePyTool
 
         deps = [Dependency(name="pytest")]
-        if unconditional or CoverageTool().is_used():
+        if unconditional or CoveragePyTool().is_used():
             deps += [Dependency(name="pytest-cov")]
         return deps
 

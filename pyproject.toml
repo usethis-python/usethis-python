@@ -155,6 +155,7 @@ exclude_also = [
   "class .*\\bProtocol\\):",
   "@(abc\\.)?abstractmethod",
 ]
+omit = [ "*/pytest-of-*/*" ]
 
 [tool.uv]
 default-groups = [ "test", "dev", "doc" ]
@@ -219,7 +220,7 @@ type = "layers"
 layers = [
   "pyproject_toml",
   "codespell | deptry | import_linter | pyproject_fmt | requirements_txt | ruff",
-  "pytest : coverage",
+  "pytest : coverage_py",
   "pre_commit",
 ]
 containers = [ "usethis._tool.impl" ]

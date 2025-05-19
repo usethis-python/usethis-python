@@ -64,9 +64,9 @@ class TestCoverage:
         runner = CliRunner()
         with change_cwd(tmp_path):
             if not usethis_config.offline:
-                result = runner.invoke(app, ["coverage"])
+                result = runner.invoke(app, ["coverage.py"])
             else:
-                result = runner.invoke(app, ["coverage", "--offline"])
+                result = runner.invoke(app, ["coverage.py", "--offline"])
 
             # Assert
             assert result.exit_code == 0, result.output
@@ -97,9 +97,9 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         with change_cwd(tmp_path):
             # Act
             if not usethis_config.offline:
-                result = runner.invoke(app, ["coverage"])
+                result = runner.invoke(app, ["coverage.py"])
             else:
-                result = runner.invoke(app, ["coverage", "--offline"])
+                result = runner.invoke(app, ["coverage.py", "--offline"])
 
             # Assert
             assert result.exit_code == 0, result.output
@@ -112,14 +112,14 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["coverage", "--how"])
+            result = runner.invoke(app, ["coverage.py", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
         assert (
             result.output
             == """\
-☐ Run 'coverage help' to see available coverage commands.
+☐ Run 'coverage help' to see available Coverage.py commands.
 """
         )
 
@@ -460,7 +460,7 @@ def test_several_tools_add_and_remove(tmp_path: Path):
     runner = CliRunner()
     with change_cwd(tmp_path):
         runner.invoke(app, ["pytest"])
-        runner.invoke(app, ["coverage"])
+        runner.invoke(app, ["coverage.py"])
         runner.invoke(app, ["ruff"])
         runner.invoke(app, ["deptry"])
         runner.invoke(app, ["pre-commit"])
@@ -478,4 +478,5 @@ def test_tool_matches_command():
 def test_app_commands_match_list():
     commands = app.registered_commands
     names = [command.name for command in commands]
+    names.remove("coverage")  # Deprecated
     assert set(names) == set(ALL_TOOL_COMMANDS)

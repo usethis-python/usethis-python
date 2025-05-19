@@ -38,7 +38,7 @@ def get_supported_major_python_versions() -> list[int]:
 
 
 def _parse_python_version_from_uv_output(version: str) -> str:
-    match = re.match(r"^[A-z]*-(\d+.\d+.\d+[a-z\d]*)+[+-].*$", version)
+    match = re.match(r"^[A-z]*-(\d{1,2}.\d{1,2}.\d{1,2}[a-z\d]*)+[+-].*$", version)
 
     if match:
         return match.group(1)

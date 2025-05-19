@@ -1,3 +1,5 @@
+"""Tool functions to add/remove tools to/from the project."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -19,30 +21,36 @@ from usethis._integrations.pre_commit.hooks import (
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.init import ensure_pyproject_toml
-from usethis._tool import (
-    ALL_TOOLS,
-    CodespellTool,
-    CoverageTool,
-    DeptryTool,
-    ImportLinterTool,
-    PreCommitTool,
-    PyprojectFmtTool,
-    PyprojectTOMLTool,
-    PytestTool,
-    RequirementsTxtTool,
-    RuffTool,
-)
+from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.impl.codespell import CodespellTool
+from usethis._tool.impl.coverage_py import CoveragePyTool
+from usethis._tool.impl.deptry import DeptryTool
+from usethis._tool.impl.import_linter import ImportLinterTool
+from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
+from usethis._tool.impl.pyproject_toml import PyprojectTOMLTool
+from usethis._tool.impl.pytest import PytestTool
+from usethis._tool.impl.requirements_txt import RequirementsTxtTool
+from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
-    from usethis._tool import Tool
+    from usethis._tool.base import Tool
+
+# Note - all these functions invoke ensure_pyproject_toml() at the start, since
+# declaring dependencies in pyproject.toml requires that file to exist.
 
 
-def use_codespell(*, remove: bool = False) -> None:
+def use_codespell(*, remove: bool = False, how: bool = False) -> None:
     tool = CodespellTool()
 
-    ensure_pyproject_toml()
+    if how:
+        tool.print_how_to_use()
+        return
 
     if not remove:
+        ensure_pyproject_toml()
+
         if not PreCommitTool().is_used():
             tool.add_dev_deps()
             tool.update_bitbucket_steps()
@@ -59,12 +67,16 @@ def use_codespell(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_coverage(*, remove: bool = False) -> None:
-    tool = CoverageTool()
+def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
+    tool = CoveragePyTool()
 
-    ensure_pyproject_toml()
+    if how:
+        tool.print_how_to_use()
+        return
 
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_test_deps()
         tool.add_configs()
         tool.print_how_to_use()
@@ -74,12 +86,16 @@ def use_coverage(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_deptry(*, remove: bool = False) -> None:
+def use_deptry(*, remove: bool = False, how: bool = False) -> None:
     tool = DeptryTool()
 
-    ensure_pyproject_toml()
+    if how:
+        tool.print_how_to_use()
+        return
 
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
@@ -95,12 +111,16 @@ def use_deptry(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_import_linter(*, remove: bool = False) -> None:
+def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
     tool = ImportLinterTool()
 
-    ensure_pyproject_toml()
+    if how:
+        tool.print_how_to_use()
+        return
 
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         tool.add_configs()
         if PreCommitTool().is_used():
@@ -117,15 +137,20 @@ def use_import_linter(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pre_commit(*, remove: bool = False) -> None:
+def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
     tool = PreCommitTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
+
     pyproject_fmt_tool = PyprojectFmtTool()
     codespell_tool = CodespellTool()
     requirements_txt_tool = RequirementsTxtTool()
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         _add_all_tools_pre_commit_configs()
 
@@ -202,12 +227,16 @@ def _remove_bitbucket_linter_steps_from_default() -> None:
     RuffTool().remove_bitbucket_steps()
 
 
-def use_pyproject_fmt(*, remove: bool = False) -> None:
+def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
     tool = PyprojectFmtTool()
 
-    ensure_pyproject_toml()
+    if how:
+        tool.print_how_to_use()
+        return
 
     if not remove:
+        ensure_pyproject_toml()
+
         if not PreCommitTool().is_used():
             tool.add_dev_deps()
             tool.update_bitbucket_steps()
@@ -224,29 +253,38 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pyproject_toml(*, remove: bool = False) -> None:
+def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
     tool = PyprojectTOMLTool()
 
-    ensure_pyproject_toml()
+    if how:
+        tool.print_how_to_use()
+        return
 
     if not remove:
         ensure_pyproject_toml()
+
         ensure_pyproject_validity()
         tool.print_how_to_use()
     else:
         tool.remove_managed_files()
 
 
-def use_pytest(*, remove: bool = False) -> None:
+def use_pytest(*, remove: bool = False, how: bool = False) -> None:
     tool = PytestTool()
 
-    ensure_pyproject_toml()
+    if how:
+        tool.print_how_to_use()
+        return
+
+    rule_config = tool.get_rule_config()
 
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_test_deps()
         tool.add_configs()
         if RuffTool().is_used():
-            RuffTool().select_rules(tool.get_associated_ruff_rules())
+            RuffTool().select_rules(rule_config.get_all_selected())
 
         # deptry currently can't scan the tests folder for dev deps
         # https://github.com/fpgmaas/deptry/issues/302
@@ -256,30 +294,34 @@ def use_pytest(*, remove: bool = False) -> None:
 
         tool.print_how_to_use()
 
-        if CoverageTool().is_used():
-            CoverageTool().print_how_to_use()
+        if CoveragePyTool().is_used():
+            CoveragePyTool().print_how_to_use()
     else:
         PytestTool().remove_bitbucket_steps()
 
         if RuffTool().is_used():
-            RuffTool().deselect_rules(tool.get_associated_ruff_rules())
+            RuffTool().deselect_rules(rule_config.selected)
         tool.remove_configs()
         tool.remove_test_deps()
         remove_pytest_dir()  # Last, since this is a manual step
 
-        if CoverageTool().is_used():
-            CoverageTool().print_how_to_use()
+        if CoveragePyTool().is_used():
+            CoveragePyTool().print_how_to_use()
         tool.remove_managed_files()
 
 
-def use_requirements_txt(*, remove: bool = False) -> None:
+def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
     tool = RequirementsTxtTool()
 
-    ensure_pyproject_toml()
+    if how:
+        tool.print_how_to_use()
+        return
 
     path = Path.cwd() / "requirements.txt"
 
     if not remove:
+        ensure_pyproject_toml()
+
         is_pre_commit = PreCommitTool().is_used()
 
         if is_pre_commit:
@@ -310,7 +352,7 @@ def use_requirements_txt(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
+def use_ruff(*, remove: bool = False, how: bool = False, minimal: bool = False) -> None:
     """Add Ruff to the project.
 
     By default, sensible default rules are selected. If rules are already selected, the
@@ -321,55 +363,30 @@ def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
 
     tool = RuffTool()
 
-    ensure_pyproject_toml()
+    if how:
+        tool.print_how_to_use()
+        return
 
     # Only add ruff rules if the user doesn't already have a select/ignore list.
     # Otherwise, we should leave them alone.
 
     if minimal:
-        add_basic_rules = False
+        rule_config = RuleConfig()
     elif (
         all(tool._is_pydocstyle_rule(rule) for rule in tool.get_selected_rules())
         or not RuffTool().get_selected_rules()
     ):
-        add_basic_rules = True
+        rule_config = _get_basic_rule_config()
     else:
-        add_basic_rules = False
-
-    if add_basic_rules:
-        rules = [
-            "A",
-            "C4",
-            "E4",
-            "E7",
-            "E9",
-            "F",
-            "FLY",
-            "FURB",
-            "I",
-            "PLE",
-            "PLR",
-            "RUF",
-            "SIM",
-            "UP",
-        ]
-        for _tool in ALL_TOOLS:
-            associated_rules = _tool.get_associated_ruff_rules()
-            if associated_rules and _tool.is_used():
-                rules += associated_rules
-        ignored_rules = [
-            "PLR2004",  # https://github.com/nathanjmcdougall/usethis-python/issues/105
-            "SIM108",  # https://github.com/nathanjmcdougall/usethis-python/issues/118
-        ]
-    else:
-        rules = []
-        ignored_rules = []
+        rule_config = RuleConfig()
 
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         tool.add_configs()
-        tool.select_rules(rules)
-        tool.ignore_rules(ignored_rules)
+        tool.select_rules(rule_config.get_all_selected())
+        tool.ignore_rules(rule_config.get_all_ignored())
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
         else:
@@ -382,3 +399,32 @@ def use_ruff(*, remove: bool = False, minimal: bool = False) -> None:
         tool.remove_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()
+
+
+def _get_basic_rule_config() -> RuleConfig:
+    """Get the basic rule config for Ruff."""
+    selected = [
+        "A",
+        "C4",
+        "E4",
+        "E7",
+        "E9",
+        "F",
+        "FLY",
+        "FURB",
+        "I",
+        "PLE",
+        "PLR",
+        "RUF",
+        "SIM",
+        "UP",
+    ]
+    for _tool in ALL_TOOLS:
+        additional_selected = _tool.get_rule_config().get_all_selected()
+        if additional_selected and _tool.is_used():
+            selected += additional_selected
+    ignored = [
+        "PLR2004",  # https://github.com/nathanjmcdougall/usethis-python/issues/105
+        "SIM108",  # https://github.com/nathanjmcdougall/usethis-python/issues/118
+    ]
+    return RuleConfig(selected=selected, ignored=ignored)

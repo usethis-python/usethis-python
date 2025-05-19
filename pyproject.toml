@@ -14,7 +14,7 @@ authors = [
 ]
 requires-python = ">=3.10"
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
@@ -34,6 +34,7 @@ dynamic = [
   "version",
 ]
 dependencies = [
+  "click>=8.0.0,!=8.2.0",
   "configupdater>=3.2",
   "grimp>=2.5.0",
   "mergedeep>=1.3.4",
@@ -43,7 +44,7 @@ dependencies = [
   "rich>=9.6.1",
   "ruamel-yaml>=0.16.13",
   "tomlkit>=0.12.0",
-  "typer>=0.4.1",
+  "typer>=0.6.0",
   "typing-extensions>=3.10.0.0",
 ]
 scripts.usethis = "usethis.__main__:app"
@@ -53,6 +54,7 @@ dev = [
   "datamodel-code-generator[http]>=0.28.2",
   "deptry>=0.23.0",
   "import-linter>=2.3",
+  "jinja2>=3.1.6",
   "pre-commit>=4.2.0",
   "pyright>=1.1.399",
   "ruff>=0.11.5",
@@ -118,6 +120,9 @@ lint.pydocstyle.convention = "google"
 [tool.codespell]
 ignore-words-list = [ "edn" ]
 
+[tool.deptry.per_rule_ignores]
+DEP002 = [ "click" ] # https://github.com/nathanjmcdougall/usethis-python/issues/623
+
 [tool.pyproject-fmt]
 keep_full_version = true
 
@@ -150,6 +155,7 @@ exclude_also = [
   "class .*\\bProtocol\\):",
   "@(abc\\.)?abstractmethod",
 ]
+omit = [ "*/pytest-of-*/*" ]
 
 [tool.uv]
 default-groups = [ "test", "dev", "doc" ]
@@ -180,7 +186,7 @@ name = "usethis._interface"
 type = "layers"
 layers = [
   # Note; if you're adding an interface, make sure it's in the README too.
-  "author | badge | browse | ci | docstyle | list | readme | show | tool | version",
+  "author | badge | browse | ci | docstyle | list | readme | rule | show | tool | version",
 ]
 containers = [ "usethis._interface" ]
 exhaustive = true
@@ -190,10 +196,34 @@ name = "usethis._core"
 type = "layers"
 layers = [
   # docstyle uses (Ruff) tool, badge uses readme
-  "badge | docstyle | list",
+  "badge | docstyle | list | rule",
   "author | browse | ci | readme | show | tool",
 ]
 containers = [ "usethis._core" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "usethis._tool"
+type = "layers"
+layers = [
+  "all_",
+  "impl",
+  "base",
+  "config | rule",
+]
+containers = [ "usethis._tool" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "usethis._tool.impl"
+type = "layers"
+layers = [
+  "pyproject_toml",
+  "codespell | deptry | import_linter | pyproject_fmt | requirements_txt | ruff",
+  "pytest : coverage_py",
+  "pre_commit",
+]
+containers = [ "usethis._tool.impl" ]
 exhaustive = true
 
 [[tool.importlinter.contracts]]

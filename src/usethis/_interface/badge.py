@@ -15,11 +15,15 @@ from usethis._core.badge import (
 )
 from usethis.errors import UsethisError
 
-app = typer.Typer(help="Add badges to the top of the README.md file.")
+app = typer.Typer(
+    help="Add badges to the top of the README.md file.", add_completion=False
+)
 
 remove_opt = typer.Option(
     False, "--remove", help="Remove the badge instead of adding it."
 )
+
+show_opt = typer.Option(False, "--show", help="Print the badge to the console.")
 
 
 @app.command(help="Add a badge with the version of your package on PyPI.")
@@ -27,9 +31,10 @@ def pypi(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    show: bool = show_opt,
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
-        _modify_badge(get_pypi_badge(), remove=remove)
+        _badge_effect(get_pypi_badge(), remove=remove, show=show)
 
 
 @app.command(help="Add a badge for the Ruff linter.")
@@ -37,9 +42,10 @@ def ruff(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    show: bool = show_opt,
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
-        _modify_badge(get_ruff_badge(), remove=remove)
+        _badge_effect(get_ruff_badge(), remove=remove, show=show)
 
 
 @app.command(help="Add a badge for the pre-commit framework.")
@@ -47,9 +53,10 @@ def pre_commit(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    show: bool = show_opt,
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
-        _modify_badge(get_pre_commit_badge(), remove=remove)
+        _badge_effect(get_pre_commit_badge(), remove=remove, show=show)
 
 
 @app.command(help="Add a badge for usethis.")
@@ -57,9 +64,10 @@ def usethis(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    show: bool = show_opt,
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
-        _modify_badge(get_usethis_badge(), remove=remove)
+        _badge_effect(get_usethis_badge(), remove=remove, show=show)
 
 
 @app.command(help="Add a badge for the uv package manager.")
@@ -67,17 +75,21 @@ def uv(
     remove: bool = remove_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    show: bool = show_opt,
 ) -> None:
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
-        _modify_badge(get_uv_badge(), remove=remove)
+        _badge_effect(get_uv_badge(), remove=remove, show=show)
 
 
-def _modify_badge(
+def _badge_effect(
     badge: Badge,
     remove: bool = False,
+    show: bool = False,
 ):
     try:
-        if not remove:
+        if show:
+            print(badge.markdown)
+        elif not remove:
             add_badge(badge)
         else:
             remove_badge(badge)

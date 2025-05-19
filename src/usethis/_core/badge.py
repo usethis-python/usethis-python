@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-from usethis._console import tick_print, warn_print
+from usethis._console import plain_print, tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path
 from usethis._integrations.project.name import get_project_name
 
@@ -107,7 +107,7 @@ def add_badge(badge: Badge) -> None:
         path = _get_markdown_readme_path()
     except FileNotFoundError:
         warn_print("README file not found, printing badge markdown instead...")
-        print(badge.markdown)
+        plain_print(badge.markdown)
         return
 
     try:
@@ -116,7 +116,7 @@ def add_badge(badge: Badge) -> None:
         warn_print(
             "README file uses an unsupported encoding, printing badge markdown instead..."
         )
-        print(badge.markdown)
+        plain_print(badge.markdown)
         return
 
     original_lines = content.splitlines()

@@ -1,6 +1,9 @@
 import os
 import subprocess
+import unittest
+import unittest.mock
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -9,25 +12,22 @@ from usethis._config_file import RuffTOMLManager, files_manager
 from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import (
     use_codespell,
-    use_coverage,
+    use_coverage_py,
     use_deptry,
     use_import_linter,
     use_pre_commit,
     use_pyproject_fmt,
+    use_pyproject_toml,
     use_pytest,
     use_requirements_txt,
     use_ruff,
 )
-from usethis._integrations.ci.bitbucket.steps import add_placeholder_step_in_default
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import (
     _HOOK_ORDER,
     get_hook_ids,
 )
-from usethis._integrations.python.version import (
-    extract_major_version,
-    get_python_version,
-)
+from usethis._integrations.python.version import get_python_version
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -37,7 +37,8 @@ from usethis._integrations.uv.deps import (
 )
 from usethis._integrations.uv.toml import UVTOMLManager
 from usethis._test import change_cwd
-from usethis._tool import ALL_TOOLS, PyprojectTOMLTool, PytestTool, RuffTool
+from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.impl.ruff import RuffTool
 
 
 class TestAllHooksList:
@@ -193,6 +194,44 @@ ignore-regex = [A-Za-z0-9+/]{100,}
             assert not err
             assert out == ("☐ Run 'codespell' to run the Codespell spellchecker.\n")
 
+        def test_setup_cfg_nonempty(self, uv_init_dir: Path):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/542
+            # Basically we want to make sure the "first_content" resolution strategy
+            # works correctly.
+
+            # Arrange
+            content = """\
+[codespell]
+foo = bar
+"""
+            (uv_init_dir / "setup.cfg").write_text(content)
+
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_codespell()
+
+            # Assert
+            assert (uv_init_dir / "setup.cfg").read_text() != content
+            assert (
+                "[tool.codespell]" not in (uv_init_dir / "pyproject.toml").read_text()
+            )
+
+        def test_setup_cfg_empty(self, uv_init_dir: Path):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/542
+            # Basically we want to make sure the "first_content" resolution strategy
+            # works correctly.
+
+            # Arrange
+            (uv_init_dir / "setup.cfg").touch()
+
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_codespell()
+
+            # Assert
+            assert (uv_init_dir / "setup.cfg").read_text() == ""
+            assert "[tool.codespell]" in (uv_init_dir / "pyproject.toml").read_text()
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(
@@ -216,6 +255,16 @@ foo = "bar"
             assert not err
             assert out == ("✔ Removing Codespell config from 'pyproject.toml'.\n")
 
+        def test_doesnt_add_pyproject(self, tmp_path: Path):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_codespell(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
 
 class TestCoverage:
     class TestAdd:
@@ -225,20 +274,23 @@ class TestCoverage:
         ):
             with change_cwd(uv_init_dir), files_manager():
                 # Act
-                use_coverage()
+                use_coverage_py()
 
                 # Assert
                 assert Dependency(
                     name="coverage", extras=frozenset({"toml"})
                 ) in get_deps_from_group("test")
-                out, err = capfd.readouterr()
-                assert not err
-                assert out == (
-                    "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
-                    "☐ Install the dependency 'coverage'.\n"
-                    "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'uv run coverage help' to see available coverage commands.\n"
-                )
+
+                assert ["tool", "uv", "default-groups"] in PyprojectTOMLManager()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'coverage'.\n"
+                "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
+            )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_no_pyproject_toml(
@@ -250,7 +302,7 @@ class TestCoverage:
 
             with change_cwd(tmp_path), files_manager():
                 # Act
-                use_coverage()
+                use_coverage_py()
 
                 # Assert
                 assert Dependency(
@@ -261,8 +313,8 @@ class TestCoverage:
                 assert out == (
                     "✔ Writing 'pyproject.toml'.\n"
                     "✔ Adding dependency 'coverage' to the 'test' group in 'pyproject.toml'.\n"
-                    "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'uv run coverage help' to see available coverage commands.\n"
+                    "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
+                    "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -275,7 +327,7 @@ class TestCoverage:
                     use_pytest()
 
                 # Act
-                use_coverage()
+                use_coverage_py()
 
                 # Assert
                 assert Dependency(
@@ -286,8 +338,8 @@ class TestCoverage:
                 assert out == (
                     "✔ Adding dependencies 'coverage', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
                     "☐ Install the dependencies 'coverage', 'pytest-cov'.\n"
-                    "✔ Adding coverage config to 'pyproject.toml'.\n"
-                    "☐ Run 'uv run pytest --cov' to run your tests with coverage.\n"
+                    "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
+                    "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
                 )
 
         def test_coverage_rc_file(self, uv_init_dir: Path):
@@ -296,7 +348,7 @@ class TestCoverage:
 
             # Act
             with change_cwd(uv_init_dir), files_manager():
-                use_coverage()
+                use_coverage_py()
 
             # Assert
             assert (uv_init_dir / ".coveragerc").read_text() == (
@@ -324,7 +376,7 @@ omit =
 
             # Act
             with change_cwd(uv_init_dir), files_manager():
-                use_coverage()
+                use_coverage_py()
 
             # Assert
             assert (uv_init_dir / "tox.ini").read_text() == (
@@ -346,11 +398,41 @@ omit =
 """
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_after_codespell(self, tmp_path: Path):
+        # To check the config is valid
+        # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "example"
+version = "0.1.0"
+description = "Add your description here"
+
+[dependency-groups]
+dev = [
+    "codespell>=2.4.1",
+]
+                                                    
+[tool.codespell]
+ignore-regex = ["[A-Za-z0-9+/]{100,}"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            use_coverage_py()
+
+            # Assert
+            assert ["tool", "coverage"] in PyprojectTOMLManager()
+        content = (tmp_path / "pyproject.toml").read_text()
+        assert "[tool.coverage]" in content
+
     class TestRemove:
         def test_unused(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 # Act
-                use_coverage(remove=True)
+                use_coverage_py(remove=True)
 
                 # Assert
                 assert not get_deps_from_group("test")
@@ -362,17 +444,17 @@ omit =
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
                 with usethis_config.set(quiet=True):
-                    use_coverage()
+                    use_coverage_py()
 
                 # Act
-                use_coverage(remove=True)
+                use_coverage_py(remove=True)
 
                 # Assert
                 assert not get_deps_from_group("test")
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing coverage config from 'pyproject.toml'.\n"
+                "✔ Removing Coverage.py config from 'pyproject.toml'.\n"
                 "✔ Removing dependency 'coverage' from the 'test' group in 'pyproject.toml'.\n"
             )
 
@@ -383,19 +465,33 @@ omit =
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pytest()
-                    use_coverage()
+                    use_coverage_py()
 
                 # Act
-                use_coverage(remove=True)
+                use_coverage_py(remove=True)
 
                 # Assert
                 assert get_deps_from_group("test") == [Dependency(name="pytest")]
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
-                    "✔ Removing coverage config from 'pyproject.toml'.\n"
+                    "✔ Removing Coverage.py config from 'pyproject.toml'.\n"
                     "✔ Removing dependencies 'coverage', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
                 )
+
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_coverage_py(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not out
 
 
 class TestDeptry:
@@ -621,6 +717,21 @@ ignore_missing = ["pytest"]
 dev = []
 """
             )
+
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_deptry(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not out
+            assert not err
 
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1222,6 +1333,16 @@ root_package = "a"
             # Assert
             assert not (uv_init_repo_dir / ".importlinter").exists()
 
+        def test_doesnt_add_pyproject(self, tmp_path: Path):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
     class TestPreCommitIntegration:
         def test_config(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
@@ -1557,6 +1678,20 @@ repos:
                     "☐ Run 'codespell' to run the Codespell spellchecker.\n"
                 )
 
+        def test_doesnt_add_pyproject(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            # We use uv_init_repo_dir to get a git repo
+            (uv_init_repo_dir / "pyproject.toml").unlink()
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_pre_commit(remove=True)
+
+            # Assert
+            assert not (uv_init_repo_dir / "pyproject.toml").exists()
+
     class TestBitbucketCIIntegration:
         def test_prexisting(self, uv_init_repo_dir: Path):
             # Arrange
@@ -1780,6 +1915,18 @@ foo = "bar"
             contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
             assert "pyproject-fmt" not in contents
 
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_pyproject_fmt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):
@@ -1857,43 +2004,25 @@ foo = "bar"
             )
 
 
-class TestPyprojectTOMLTool:
-    class TestRemoveManagedFiles:
-        def test_warning(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                PyprojectTOMLTool().remove_managed_files()
-
-                out, err = capfd.readouterr()
-                assert not err
-                assert out == (
-                    "☐ Check that important config in 'pyproject.toml' is not lost.\n"
-                    "✔ Removing 'pyproject.toml'.\n"
-                )
-
-        def test_extra_warning_when_config_exists(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
+class TestPyprojectTOML:
+    class TestRemove:
+        def test_doesnt_invoke_ensure_pyproject_toml(self, tmp_path: Path):
             # Arrange
-            (uv_init_dir / "pyproject.toml").write_text(
-                """\
-[tool.ruff.lint]
-select = ["E", "PT"]
-"""
-            )
+            # Mock the ensure_pyproject_toml function to raise an error
+
+            mock = MagicMock()
 
             # Act
-            with change_cwd(uv_init_dir), files_manager():
-                PyprojectTOMLTool().remove_managed_files()
+            with (
+                unittest.mock.patch("usethis._core.tool.ensure_pyproject_toml", mock),
+                change_cwd(tmp_path),
+                files_manager(),
+            ):
+                use_pyproject_toml(remove=True)
 
-                out, err = capfd.readouterr()
-                assert not err
-                assert out == (
-                    "☐ Check that important config in 'pyproject.toml' is not lost.\n"
-                    "☐ The Ruff tool was using 'pyproject.toml' for config, but that file is being \n"
-                    "removed. You will need to re-configure it.\n"
-                    "✔ Removing 'pyproject.toml'.\n"
-                )
+            # Assert
+            assert not mock.called
+            assert not (tmp_path / "pyproject.toml").exists()
 
 
 class TestPytest:
@@ -1931,7 +2060,7 @@ class TestPytest:
                 """\
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = ["--import-mode=importlib", "-ra", "--showlocals", "--strict-markers", "--strict-config"]
+addopts = ["--import-mode=importlib", "-ra", "--strict-markers", "--strict-config"]
 filterwarnings = ["error"]
 xfail_strict = true
 log_cli_level = "INFO"
@@ -1957,7 +2086,7 @@ minversion = "7\""""
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
                 with usethis_config.set(quiet=True):
-                    use_coverage()
+                    use_coverage_py()
 
                 # Act
                 use_pytest()
@@ -1973,7 +2102,7 @@ minversion = "7\""""
                 "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
                 "☐ Add test functions with the format 'test_*()'.\n"
                 "☐ Run 'uv run pytest' to run the tests.\n"
-                "☐ Run 'uv run pytest --cov' to run your tests with coverage.\n"
+                "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2043,7 +2172,6 @@ testpaths =
 addopts =
     --import-mode=importlib
     -ra
-    --showlocals
     --strict-markers
     --strict-config
 filterwarnings =
@@ -2169,7 +2297,7 @@ select = ["PT"]
                 assert (
                     out
                     == """\
-✔ Disabling Ruff rule 'PT' in 'pyproject.toml'.
+✔ Deselecting Ruff rule 'PT' in 'pyproject.toml'.
 """
                 )
 
@@ -2276,7 +2404,7 @@ pipelines:
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
                 with usethis_config.set(quiet=True):
-                    use_coverage()
+                    use_coverage_py()
                     use_pytest()
 
                 # Act
@@ -2288,536 +2416,19 @@ pipelines:
                 "✔ Removing pytest config from 'pyproject.toml'.\n"
                 "✔ Removing dependencies 'pytest', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
                 "✔ Removing '/tests'.\n"
-                "☐ Run 'uv run coverage help' to see available coverage commands.\n"
+                "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
             )
 
-    class TestUpdateBitbucketSteps:
-        def test_new_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-            with change_cwd(uv_init_dir), files_manager():
-                # Arrange
-                add_placeholder_step_in_default(report_placeholder=False)
-                (uv_init_dir / "pytest.ini").touch()
-
-                # Act
-                PytestTool().update_bitbucket_steps()
-
-            # Assert
-            assert (uv_init_dir / "bitbucket-pipelines.yml").exists()
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            assert (
-                contents
-                == """\
-image: atlassian/default-image:3
-definitions:
-    caches:
-        uv: ~/.cache/uv
-    script_items:
-      - &install-uv |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        source $HOME/.local/bin/env
-        export UV_LINK_MODE=copy
-        uv --version
-pipelines:
-    default:
-      - step:
-            name: Test on 3.12
-            caches:
-              - uv
-            script:
-              - *install-uv
-              - uv run --python 3.12 pytest -x --junitxml=test-reports/report.xml
-      - step:
-            name: Test on 3.13
-            caches:
-              - uv
-            script:
-              - *install-uv
-              - uv run --python 3.13 pytest -x --junitxml=test-reports/report.xml
-"""
-            )
-
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Writing 'bitbucket-pipelines.yml'.\n"
-                "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                "✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-                "✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-            )
-
-        def test_remove_old_steps(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            """Note this test also checks we don't add a cache when it's not needed."""
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
             # Arrange
-            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
-                """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: Test on 3.11
-            script:
-              - echo 'Hello, Python 3.11!'
-      - step:
-            name: Test on 3.12
-            script:
-              - echo 'Hello, Python 3.12!'
-"""
-            )
-            (uv_init_dir / "pyproject.toml").write_text(
-                """\
-[project]
-requires-python = ">=3.12,<3.13"
-version = "0.1.0"
-"""
-            )
-            (uv_init_dir / "pytest.ini").touch()
+            (tmp_path / "pyproject.toml").unlink(missing_ok=True)
 
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                PytestTool().update_bitbucket_steps()
-
-            # Assert
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            assert (
-                contents
-                == """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: Test on 3.12
-            script:
-              - echo 'Hello, Python 3.12!'
-"""
-            )
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Removing 'Test on 3.11' from default pipeline in 'bitbucket-pipelines.yml'.\n"
-            )
-
-        def test_no_requires_python(self, tmp_path: Path):
-            # Arrange
-            (tmp_path / "pyproject.toml").write_text(
-                """\
-[project]
-name = "example"
-version = "0.1.0"
-"""
-            )
-            (tmp_path / "pytest.ini").touch()
-
-            with change_cwd(tmp_path), PyprojectTOMLManager():
-                add_placeholder_step_in_default(report_placeholder=False)
-
-                # Act
-                PytestTool().update_bitbucket_steps()
-
-            # Assert
-            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
-            version = extract_major_version(get_python_version())
-            assert (
-                contents
-                == f"""\
-image: atlassian/default-image:3
-definitions:
-    caches:
-        uv: ~/.cache/uv
-    script_items:
-      - &install-uv |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        source $HOME/.local/bin/env
-        export UV_LINK_MODE=copy
-        uv --version
-pipelines:
-    default:
-      - step:
-            name: Test on 3.{version}
-            caches:
-              - uv
-            script:
-              - *install-uv
-              - uv run --python 3.{version} pytest -x --junitxml=test-reports/report.xml
-"""
-            )
-
-    class TestRemoveBitbucketSteps:
-        def test_no_file(self, uv_init_dir: Path):
-            # Act
-            with change_cwd(uv_init_dir):
-                PytestTool().remove_bitbucket_steps()
-
-            # Assert
-            assert not (uv_init_dir / "bitbucket-pipelines.yml").exists()
-
-        def test_dont_touch_if_no_pytest_steps(self, uv_init_dir: Path):
-            # Arrange
-            with change_cwd(uv_init_dir), files_manager():
-                add_placeholder_step_in_default(report_placeholder=False)
-                PytestTool().update_bitbucket_steps()
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            (uv_init_dir / "pytest.ini").touch()
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                PytestTool().remove_bitbucket_steps()
-
-            # Assert
-            assert (uv_init_dir / "bitbucket-pipelines.yml").exists()
-            assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == contents
-
-        def test_one_step(self, uv_init_dir: Path):
-            # Arrange
-            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
-                """\
-image: atlassian/default-image:3
-pipelines:
-  default:
-    - step:
-        name: Test on 3.12
-        script:
-          - echo 'Hello, Python 3.12!'
-"""
-            )
-
-            # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
-                PytestTool().remove_bitbucket_steps()
-
-            # Assert
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            assert (
-                contents
-                == """\
-image: atlassian/default-image:3
-definitions:
-    caches:
-        uv: ~/.cache/uv
-    script_items:
-      - &install-uv |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        source $HOME/.local/bin/env
-        export UV_LINK_MODE=copy
-        uv --version
-pipelines:
-    default:
-      - step:
-            name: Placeholder - add your own steps!
-            caches:
-              - uv
-            script:
-              - *install-uv
-              - echo 'Hello, world!'
-"""
-            )
-
-
-class TestRuff:
-    class TestAdd:
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_dependency_added(self, uv_init_dir: Path):
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff()
-
-                # Assert
-                (dev_dep,) = get_deps_from_group("dev")
-            assert dev_dep == Dependency(name="ruff")
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff()
-
-            # Assert
-            out, _ = capfd.readouterr()
-            assert out == (
-                "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Install the dependency 'ruff'.\n"
-                "✔ Adding Ruff config to 'pyproject.toml'.\n"
-                "✔ Enabling Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
-                "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
-                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
-                "☐ Run 'ruff format' to run the Ruff formatter.\n"
-            )
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_pre_commit_first(self, uv_init_repo_dir: Path):
-            # Act
-            with change_cwd(uv_init_repo_dir), files_manager():
-                use_ruff()
-                use_pre_commit()
-
-                # Assert
-                hook_names = get_hook_ids()
-
-            assert "ruff-format" in hook_names
-            assert "ruff" in hook_names
-
-        def test_creates_pyproject_toml(
-            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
-        ):
             # Act
             with change_cwd(tmp_path), files_manager():
-                use_ruff()
+                use_pytest(remove=True)
 
             # Assert
-            assert (tmp_path / "pyproject.toml").exists()
-            out, err = capfd.readouterr()
-            assert not err
-            assert out.startswith("✔ Writing 'pyproject.toml'.\n")
-
-        def test_existing_ruff_toml(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            # https://github.com/nathanjmcdougall/usethis-python/issues/420
-
-            # Arrange
-            (uv_init_dir / "ruff.toml").write_text("""\
-namespace-packages = ["src/usethis/namespace"]
-
-[lint]
-select = [ "ALL" ]
-ignore = [ "EM", "T20", "TRY003", "S603" ]
-
-[lint.extend-per-file-ignores]
-"__main__.py" = [ "BLE001" ]
-""")
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff()
-
-            # Assert
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Install the dependency 'ruff'.\n"
-                "✔ Adding Ruff config to 'ruff.toml'.\n"
-                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
-                "☐ Run 'ruff format' to run the Ruff formatter.\n"
-            )
-            assert (uv_init_dir / "ruff.toml").read_text() == (
-                """\
-namespace-packages = ["src/usethis/namespace"]
-line-length = 88
-
-[lint]
-select = [ "ALL" ]
-ignore = [ "EM", "T20", "TRY003", "S603" ]
-
-[lint.extend-per-file-ignores]
-"__main__.py" = [ "BLE001" ]
-"""
-            )
-
-        def test_doesnt_overwrite_existing_line_length(self, uv_init_dir: Path):
-            # Arrange
-            (uv_init_dir / "ruff.toml").write_text("line-length = 100")
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff()
-
-                # Assert
-                assert RuffTOMLManager()[["line-length"]] == 100
-
-    class TestRemove:
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_config_file(self, uv_init_dir: Path):
-            # Arrange
-            (uv_init_dir / "pyproject.toml").write_text(
-                """\
-[tool.ruff.lint]
-select = ["A", "B", "C"]
-"""
-            )
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff(remove=True)
-
-            # Assert
-            assert (uv_init_dir / "pyproject.toml").read_text() == ""
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_blank_slate(self, uv_init_dir: Path):
-            # Arrange
-            contents = (uv_init_dir / "pyproject.toml").read_text()
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff(remove=True)
-
-            # Assert
-            assert (uv_init_dir / "pyproject.toml").read_text() == contents
-
-        @pytest.mark.skipif(
-            not os.getenv("CI"),
-            reason="https://github.com/nathanjmcdougall/usethis-python/issues/45",
-        )
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_roundtrip(self, uv_init_dir: Path):
-            # Arrange
-            contents = (uv_init_dir / "pyproject.toml").read_text()
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff()
-                use_ruff(remove=True)
-
-            # Assert
-            assert (
-                (uv_init_dir / "pyproject.toml").read_text()
-                == contents
-                + """\
-
-[dependency-groups]
-dev = []
-"""
-            )
-
-    class TestPrecommitIntegration:
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_use_first(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir), files_manager():
-                # Arrange
-                use_ruff()
-
-                # Act
-                use_pre_commit()
-
-                # Assert
-                hook_names = get_hook_ids()
-
-            assert "ruff-format" in hook_names
-            assert "ruff" in hook_names
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_use_after(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir), files_manager():
-                # Arrange
-                use_pre_commit()
-
-                # Act
-                use_ruff()
-
-                # Assert
-                hook_names = get_hook_ids()
-
-            assert "ruff-format" in hook_names
-            assert "ruff" in hook_names
-
-        @pytest.mark.skipif(
-            not os.getenv("CI"),
-            reason="https://github.com/nathanjmcdougall/usethis-python/issues/45",
-        )
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_remove(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            with change_cwd(uv_init_repo_dir), files_manager():
-                # Arrange
-                with usethis_config.set(quiet=True):
-                    use_ruff()
-                    use_pre_commit()
-
-                # Act
-                use_ruff(remove=True)
-
-            # Assert
-            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
-            assert "ruff" not in contents
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
-                "✔ Removing hook 'ruff' from '.pre-commit-config.yaml'.\n"
-                "✔ Removing Ruff config from 'pyproject.toml'.\n"
-                "✔ Removing dependency 'ruff' from the 'dev' group in 'pyproject.toml'.\n"
-            )
-
-    class TestConfig:
-        def test_removed(self, uv_init_dir: Path):
-            # Arrange
-            (uv_init_dir / ".ruff.toml").write_text(
-                """\
-[lint]
-select = ["A", "B", "C"]
-"""
-            )
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff(remove=True)
-
-            # Assert
-            assert not (uv_init_dir / ".ruff.toml").exists()
-
-        def test_adding_to_file(self, uv_init_dir: Path):
-            # Arrange
-            (uv_init_dir / ".ruff.toml").touch()
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff()
-
-            # Assert
-            assert (uv_init_dir / ".ruff.toml").exists()
-            assert "[lint]" in (uv_init_dir / ".ruff.toml").read_text()
-
-        def test_highest_priority(self, uv_init_dir: Path):
-            # Arrange
-            (uv_init_dir / ".ruff.toml").touch()
-            (uv_init_dir / "pyproject.toml").touch()
-            (uv_init_dir / "ruff.toml").touch()
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff()
-
-            # Assert
-            assert "[lint]" in (uv_init_dir / ".ruff.toml").read_text()
-            assert "[lint]" not in (uv_init_dir / "pyproject.toml").read_text()
-            assert (uv_init_dir / "ruff.toml").read_text() == ""
-
-        def test_removed_from_all_files(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            # Arrange
-            (uv_init_dir / ".ruff.toml").write_text(
-                """\
-[lint]
-select = ["A", "B", "C"]
-"""
-            )
-            (uv_init_dir / "pyproject.toml").write_text(
-                """\
-[tool.ruff.lint]
-select = ["A", "B", "C"]
-"""
-            )
-            (uv_init_dir / "ruff.toml").write_text(
-                """\
-[lint]
-select = ["A", "B", "C"]
-"""
-            )
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff(remove=True)
-
-            # Assert
-            assert not (uv_init_dir / ".ruff.toml").exists()
-            assert (
-                "[tool.ruff.lint]" not in (uv_init_dir / "pyproject.toml").read_text()
-            )
-            assert not (uv_init_dir / "ruff.toml").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
 
 
 class TestRequirementsTxt:
@@ -2979,3 +2590,328 @@ repos:
 
             # Assert
             assert not (tmp_path / "requirements.txt").exists()
+
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
+
+class TestRuff:
+    class TestAdd:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_dependency_added(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+                # Assert
+                (dev_dep,) = get_deps_from_group("dev")
+            assert dev_dep == Dependency(name="ruff")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_stdout(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'ruff'.\n"
+                "✔ Adding Ruff config to 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
+                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pre_commit_first(self, uv_init_repo_dir: Path):
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_ruff()
+                use_pre_commit()
+
+                # Assert
+                hook_names = get_hook_ids()
+
+            assert "ruff-format" in hook_names
+            assert "ruff" in hook_names
+
+        def test_creates_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff()
+
+            # Assert
+            assert (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out.startswith("✔ Writing 'pyproject.toml'.\n")
+
+        def test_existing_ruff_toml(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/420
+
+            # Arrange
+            (uv_init_dir / "ruff.toml").write_text("""\
+namespace-packages = ["src/usethis/namespace"]
+
+[lint]
+select = [ "ALL" ]
+ignore = [ "EM", "T20", "TRY003", "S603" ]
+
+[lint.extend-per-file-ignores]
+"__main__.py" = [ "BLE001" ]
+""")
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'ruff'.\n"
+                "✔ Adding Ruff config to 'ruff.toml'.\n"
+                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            )
+            assert (uv_init_dir / "ruff.toml").read_text() == (
+                """\
+namespace-packages = ["src/usethis/namespace"]
+line-length = 88
+
+[lint]
+select = [ "ALL" ]
+ignore = [ "EM", "T20", "TRY003", "S603" ]
+
+[lint.extend-per-file-ignores]
+"__main__.py" = [ "BLE001" ]
+"""
+            )
+
+        def test_doesnt_overwrite_existing_line_length(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / "ruff.toml").write_text("line-length = 100")
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+                # Assert
+                assert RuffTOMLManager()[["line-length"]] == 100
+
+    class TestRemove:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_config_file(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["A", "B", "C"]
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(remove=True)
+
+            # Assert
+            assert (uv_init_dir / "pyproject.toml").read_text() == ""
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_blank_slate(self, uv_init_dir: Path):
+            # Arrange
+            contents = (uv_init_dir / "pyproject.toml").read_text()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(remove=True)
+
+            # Assert
+            assert (uv_init_dir / "pyproject.toml").read_text() == contents
+
+        @pytest.mark.skipif(
+            not os.getenv("CI"),
+            reason="https://github.com/nathanjmcdougall/usethis-python/issues/45",
+        )
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_roundtrip(self, uv_init_dir: Path):
+            # Arrange
+            contents = (uv_init_dir / "pyproject.toml").read_text()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+                use_ruff(remove=True)
+
+            # Assert
+            assert (
+                (uv_init_dir / "pyproject.toml").read_text()
+                == contents
+                + """\
+
+[dependency-groups]
+dev = []
+"""
+            )
+
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").unlink(missing_ok=True)
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
+    class TestPrecommitIntegration:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_use_first(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                use_ruff()
+
+                # Act
+                use_pre_commit()
+
+                # Assert
+                hook_names = get_hook_ids()
+
+            assert "ruff-format" in hook_names
+            assert "ruff" in hook_names
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_use_after(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                use_pre_commit()
+
+                # Act
+                use_ruff()
+
+                # Assert
+                hook_names = get_hook_ids()
+
+            assert "ruff-format" in hook_names
+            assert "ruff" in hook_names
+
+        @pytest.mark.skipif(
+            not os.getenv("CI"),
+            reason="https://github.com/nathanjmcdougall/usethis-python/issues/45",
+        )
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_remove(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    use_ruff()
+                    use_pre_commit()
+
+                # Act
+                use_ruff(remove=True)
+
+            # Assert
+            contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
+            assert "ruff" not in contents
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
+                "✔ Removing hook 'ruff' from '.pre-commit-config.yaml'.\n"
+                "✔ Removing Ruff config from 'pyproject.toml'.\n"
+                "✔ Removing dependency 'ruff' from the 'dev' group in 'pyproject.toml'.\n"
+            )
+
+    class TestConfig:
+        def test_removed(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / ".ruff.toml").write_text(
+                """\
+[lint]
+select = ["A", "B", "C"]
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(remove=True)
+
+            # Assert
+            assert not (uv_init_dir / ".ruff.toml").exists()
+
+        def test_adding_to_file(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / ".ruff.toml").touch()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+            # Assert
+            assert (uv_init_dir / ".ruff.toml").exists()
+            assert "[lint]" in (uv_init_dir / ".ruff.toml").read_text()
+
+        def test_highest_priority(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / ".ruff.toml").touch()
+            (uv_init_dir / "pyproject.toml").touch()
+            (uv_init_dir / "ruff.toml").touch()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+            # Assert
+            assert "[lint]" in (uv_init_dir / ".ruff.toml").read_text()
+            assert "[lint]" not in (uv_init_dir / "pyproject.toml").read_text()
+            assert (uv_init_dir / "ruff.toml").read_text() == ""
+
+        def test_removed_from_all_files(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_dir / ".ruff.toml").write_text(
+                """\
+[lint]
+select = ["A", "B", "C"]
+"""
+            )
+            (uv_init_dir / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["A", "B", "C"]
+"""
+            )
+            (uv_init_dir / "ruff.toml").write_text(
+                """\
+[lint]
+select = ["A", "B", "C"]
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(remove=True)
+
+            # Assert
+            assert not (uv_init_dir / ".ruff.toml").exists()
+            assert (
+                "[tool.ruff.lint]" not in (uv_init_dir / "pyproject.toml").read_text()
+            )
+            assert not (uv_init_dir / "ruff.toml").exists()

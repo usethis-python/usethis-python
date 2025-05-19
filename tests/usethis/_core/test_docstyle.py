@@ -57,7 +57,7 @@ convention = "google"
         assert not err
         assert out == (
             "✔ Setting docstring style to 'google' in 'ruff.toml'.\n"
-            "✔ Enabling Ruff rules 'D2', 'D3', 'D4' in 'ruff.toml'.\n"
+            "✔ Selecting Ruff rules 'D2', 'D3', 'D4' in 'ruff.toml'.\n"
         )
 
     def test_pep257(self, tmp_path: Path):

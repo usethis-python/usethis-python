@@ -269,6 +269,27 @@ key = "value1"
                     keys=["tool", "usethis", "key"], value="value2", exists_ok=False
                 )
 
+        def test_coverage_to_codespell(self, tmp_path: Path):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/558
+
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.codespell]
+ignore-regex = ["[A-Za-z0-9+/]{100,}"]
+""")
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager() as file_manager:
+                file_manager.set_value(
+                    keys=["tool", "coverage", "run", "source"], value=["."]
+                )
+
+                # Assert
+                assert ["tool", "coverage"] in PyprojectTOMLManager()
+
+            with change_cwd(tmp_path), PyprojectTOMLManager() as file_manager:
+                assert ["tool", "coverage"] in PyprojectTOMLManager()
+
     class TestDel:
         def test_already_missing(self, tmp_path: Path):
             # Arrange

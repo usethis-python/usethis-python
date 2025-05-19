@@ -83,7 +83,7 @@ sonar.verbose={"true" if verbose else "false"}
 
 
 def _get_short_version(version: str) -> str:
-    match = re.match(r"^(\d+\.\d+)", version)
+    match = re.match(r"^(\d{1,2}\.\d{1,2})", version)
     if match is None:
         msg = f"Could not parse Python version from {version}"
         raise _NonstandardPythonVersionError(msg)

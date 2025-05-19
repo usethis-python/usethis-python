@@ -76,7 +76,7 @@ def add_bitbucket_step_in_default(step: Step) -> None:
 
     # Early exit if the step already exists in some sense
     for existing_step in existing_steps:
-        if _steps_are_equivalent(existing_step, step):
+        if bitbucket_steps_are_equivalent(existing_step, step):
             return
 
     # Add the step to the default pipeline
@@ -91,7 +91,7 @@ def add_bitbucket_step_in_default(step: Step) -> None:
 
     # Remove the placeholder step if it already exists
     placeholder = _get_placeholder_step()
-    if not _steps_are_equivalent(placeholder, step):
+    if not bitbucket_steps_are_equivalent(placeholder, step):
         # Only remove the placeholder if it hasn't already been added.
         remove_bitbucket_step_from_default(placeholder)
 
@@ -247,7 +247,7 @@ def _censor_step(
 
 @_censor_step.register(StepItem)
 def _(item: StepItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
-    if _steps_are_equivalent(item.step, step):
+    if bitbucket_steps_are_equivalent(item.step, step):
         return None
     return item
 
@@ -265,7 +265,7 @@ def _(item: ParallelItem, *, step: Step) -> StepItem | ParallelItem | StageItem 
 
     new_step_items: list[StepItem] = []
     for step_item in step_items:
-        if _steps_are_equivalent(step_item.step, step):
+        if bitbucket_steps_are_equivalent(step_item.step, step):
             continue
         new_step_items.append(step_item)
 
@@ -288,7 +288,7 @@ def _(item: StageItem, *, step: Step) -> StepItem | ParallelItem | StageItem | N
 
     new_step1s = []
     for step1 in step1s:
-        if _steps_are_equivalent(step1tostep(step1), step):
+        if bitbucket_steps_are_equivalent(step1tostep(step1), step):
             continue
         new_step1s.append(step1)
 
@@ -326,7 +326,7 @@ def _add_step_caches_via_doc(
         _add_caches_via_doc(cache_by_name, doc=doc)
 
 
-def _steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
+def bitbucket_steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
     if step1 is None:
         return False
 

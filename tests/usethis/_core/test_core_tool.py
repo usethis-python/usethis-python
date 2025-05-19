@@ -1,6 +1,9 @@
 import os
 import subprocess
+import unittest
+import unittest.mock
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -14,6 +17,7 @@ from usethis._core.tool import (
     use_import_linter,
     use_pre_commit,
     use_pyproject_fmt,
+    use_pyproject_toml,
     use_pytest,
     use_requirements_txt,
     use_ruff,
@@ -2042,6 +2046,27 @@ select = ["E", "PT"]
                     "removed. You will need to re-configure it.\n"
                     "✔ Removing 'pyproject.toml'.\n"
                 )
+
+
+class TestPyprojectTOML:
+    class TestRemove:
+        def test_doesnt_invoke_ensure_pyproject_toml(self, tmp_path: Path):
+            # Arrange
+            # Mock the ensure_pyproject_toml function to raise an error
+
+            mock = MagicMock()
+
+            # Act
+            with (
+                unittest.mock.patch("usethis._core.tool.ensure_pyproject_toml", mock),
+                change_cwd(tmp_path),
+                files_manager(),
+            ):
+                use_pyproject_toml(remove=True)
+
+            # Assert
+            assert not mock.called
+            assert not (tmp_path / "pyproject.toml").exists()
 
 
 class TestPytest:

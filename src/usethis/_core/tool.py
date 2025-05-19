@@ -276,11 +276,11 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     rule_config = tool.get_rule_config()
 
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_test_deps()
         tool.add_configs()
         if RuffTool().is_used():

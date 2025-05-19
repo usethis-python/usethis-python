@@ -317,11 +317,11 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     path = Path.cwd() / "requirements.txt"
 
     if not remove:
+        ensure_pyproject_toml()
+
         is_pre_commit = PreCommitTool().is_used()
 
         if is_pre_commit:

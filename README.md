@@ -156,7 +156,7 @@ declaring dependencies with `uv add`.
 
 #### Testing
 
-- `usethis tool coverage` - Use [coverage](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
+- `usethis tool coverage.py` - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
 - `usethis tool pytest` - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
 
 #### Configuration Files

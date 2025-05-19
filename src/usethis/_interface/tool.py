@@ -7,7 +7,7 @@ from usethis._config_file import files_manager
 from usethis._console import err_print
 from usethis._core.tool import (
     use_codespell,
-    use_coverage,
+    use_coverage_py,
     use_deptry,
     use_import_linter,
     use_pre_commit,
@@ -53,10 +53,10 @@ def codespell(
 
 @app.command(
     name="coverage",
-    help="Use coverage: a code coverage measurement tool.",
+    help="Use Coverage.py: a code coverage measurement tool.",
     rich_help_panel="Testing",
 )
-def coverage(
+def coverage_py(
     remove: bool = remove_opt,
     how: bool = how_opt,
     offline: bool = offline_opt,
@@ -67,7 +67,7 @@ def coverage(
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_coverage, remove=remove, how=how)
+        _run_tool(use_coverage_py, remove=remove, how=how)
 
 
 @app.command(

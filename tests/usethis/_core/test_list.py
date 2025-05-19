@@ -33,7 +33,7 @@ class TestGetUsageTable:
         expected = UsageTable(
             rows=[
                 UsageRow(category="tool", name="Codespell", status="unused"),
-                UsageRow(category="tool", name="coverage", status="unused"),
+                UsageRow(category="tool", name="Coverage.py", status="unused"),
                 UsageRow(category="tool", name="deptry", status="unused"),
                 UsageRow(category="tool", name="Import Linter", status="unused"),
                 UsageRow(category="tool", name="pre-commit", status="unused"),
@@ -61,7 +61,7 @@ class TestGetUsageTable:
         expected = UsageTable(
             rows=[
                 UsageRow(category="tool", name="Codespell", status="unused"),
-                UsageRow(category="tool", name="coverage", status="unused"),
+                UsageRow(category="tool", name="Coverage.py", status="unused"),
                 UsageRow(category="tool", name="deptry", status="unused"),
                 UsageRow(category="tool", name="Import Linter", status="unused"),
                 UsageRow(category="tool", name="pre-commit", status="unused"),
@@ -86,7 +86,7 @@ class TestGetUsageTable:
         expected = UsageTable(
             rows=[
                 UsageRow(category="tool", name="Codespell", status="unused"),
-                UsageRow(category="tool", name="coverage", status="unused"),
+                UsageRow(category="tool", name="Coverage.py", status="unused"),
                 UsageRow(category="tool", name="deptry", status="unused"),
                 UsageRow(category="tool", name="Import Linter", status="unused"),
                 UsageRow(category="tool", name="pre-commit", status="unused"),

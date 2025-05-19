@@ -23,7 +23,7 @@ from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.codespell import CodespellTool
-from usethis._tool.impl.coverage import CoverageTool
+from usethis._tool.impl.coverage import CoveragePyTool
 from usethis._tool.impl.deptry import DeptryTool
 from usethis._tool.impl.import_linter import ImportLinterTool
 from usethis._tool.impl.pre_commit import PreCommitTool
@@ -67,8 +67,8 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_coverage(*, remove: bool = False, how: bool = False) -> None:
-    tool = CoverageTool()
+def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
+    tool = CoveragePyTool()
 
     if how:
         tool.print_how_to_use()
@@ -295,8 +295,8 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
 
         tool.print_how_to_use()
 
-        if CoverageTool().is_used():
-            CoverageTool().print_how_to_use()
+        if CoveragePyTool().is_used():
+            CoveragePyTool().print_how_to_use()
     else:
         PytestTool().remove_bitbucket_steps()
 
@@ -306,8 +306,8 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_test_deps()
         remove_pytest_dir()  # Last, since this is a manual step
 
-        if CoverageTool().is_used():
-            CoverageTool().print_how_to_use()
+        if CoveragePyTool().is_used():
+            CoveragePyTool().print_how_to_use()
         tool.remove_managed_files()
 
 

@@ -260,7 +260,7 @@ def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool):
 
 ALL_TOOL_COMMANDS: list[str] = [
     "codespell",
-    "coverage",
+    "coverage.py",
     "deptry",
     "import-linter",
     "pre-commit",

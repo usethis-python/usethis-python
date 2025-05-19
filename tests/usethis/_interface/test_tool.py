@@ -478,4 +478,5 @@ def test_tool_matches_command():
 def test_app_commands_match_list():
     commands = app.registered_commands
     names = [command.name for command in commands]
+    names.remove("coverage")  # Deprecated
     assert set(names) == set(ALL_TOOL_COMMANDS)

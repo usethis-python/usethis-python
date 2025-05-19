@@ -93,9 +93,9 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()

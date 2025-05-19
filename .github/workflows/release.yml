@@ -1,5 +1,7 @@
 
 name: Release to PyPI
+permissions:
+  contents: read
 on:
   push:
     tags:

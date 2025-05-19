@@ -2864,6 +2864,17 @@ dev = []
 """
             )
 
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").unlink(missing_ok=True)
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
     class TestPrecommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):

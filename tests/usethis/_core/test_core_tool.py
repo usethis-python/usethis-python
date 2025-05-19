@@ -1,6 +1,9 @@
 import os
 import subprocess
+import unittest
+import unittest.mock
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -14,6 +17,7 @@ from usethis._core.tool import (
     use_import_linter,
     use_pre_commit,
     use_pyproject_fmt,
+    use_pyproject_toml,
     use_pytest,
     use_requirements_txt,
     use_ruff,
@@ -257,6 +261,16 @@ foo = "bar"
             assert not err
             assert out == ("✔ Removing Codespell config from 'pyproject.toml'.\n")
 
+        def test_doesnt_add_pyproject(self, tmp_path: Path):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_codespell(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
 
 class TestCoverage:
     class TestAdd:
@@ -470,6 +484,20 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                     "✔ Removing Coverage.py config from 'pyproject.toml'.\n"
                     "✔ Removing dependencies 'coverage', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
                 )
+
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_coverage_py(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not out
 
 
 class TestDeptry:
@@ -694,6 +722,21 @@ ignore_missing = ["pytest"]
 dev = []
 """
             )
+
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_deptry(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not out
+            assert not err
 
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1295,6 +1338,16 @@ root_package = "a"
             # Assert
             assert not (uv_init_repo_dir / ".importlinter").exists()
 
+        def test_doesnt_add_pyproject(self, tmp_path: Path):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
     class TestPreCommitIntegration:
         def test_config(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
@@ -1626,6 +1679,20 @@ repos:
                     "☐ Run 'codespell' to run the Codespell spellchecker.\n"
                 )
 
+        def test_doesnt_add_pyproject(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            # We use uv_init_repo_dir to get a git repo
+            (uv_init_repo_dir / "pyproject.toml").unlink()
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_pre_commit(remove=True)
+
+            # Assert
+            assert not (uv_init_repo_dir / "pyproject.toml").exists()
+
     class TestBitbucketCIIntegration:
         def test_prexisting(self, uv_init_repo_dir: Path):
             # Arrange
@@ -1848,6 +1915,18 @@ foo = "bar"
             contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
             assert "pyproject-fmt" not in contents
 
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_pyproject_fmt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):
@@ -1962,6 +2041,27 @@ select = ["E", "PT"]
                     "removed. You will need to re-configure it.\n"
                     "✔ Removing 'pyproject.toml'.\n"
                 )
+
+
+class TestPyprojectTOML:
+    class TestRemove:
+        def test_doesnt_invoke_ensure_pyproject_toml(self, tmp_path: Path):
+            # Arrange
+            # Mock the ensure_pyproject_toml function to raise an error
+
+            mock = MagicMock()
+
+            # Act
+            with (
+                unittest.mock.patch("usethis._core.tool.ensure_pyproject_toml", mock),
+                change_cwd(tmp_path),
+                files_manager(),
+            ):
+                use_pyproject_toml(remove=True)
+
+            # Assert
+            assert not mock.called
+            assert not (tmp_path / "pyproject.toml").exists()
 
 
 class TestPytest:
@@ -2358,6 +2458,17 @@ pipelines:
                 "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
             )
 
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").unlink(missing_ok=True)
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_pytest(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
     class TestUpdateBitbucketSteps:
         def test_new_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), files_manager():
@@ -2748,6 +2859,17 @@ dev = []
 """
             )
 
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").unlink(missing_ok=True)
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
     class TestPrecommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):
@@ -3045,3 +3167,11 @@ repos:
 
             # Assert
             assert not (tmp_path / "requirements.txt").exists()
+
+        def test_doesnt_create_pyproject_toml(self, tmp_path: Path):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_requirements_txt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()

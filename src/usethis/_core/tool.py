@@ -48,9 +48,9 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         if not PreCommitTool().is_used():
             tool.add_dev_deps()
             tool.update_bitbucket_steps()
@@ -74,9 +74,9 @@ def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_test_deps()
         tool.add_configs()
         tool.print_how_to_use()
@@ -93,9 +93,9 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
@@ -118,9 +118,9 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         tool.add_configs()
         if PreCommitTool().is_used():
@@ -148,9 +148,9 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
     codespell_tool = CodespellTool()
     requirements_txt_tool = RequirementsTxtTool()
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         _add_all_tools_pre_commit_configs()
 
@@ -234,9 +234,9 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         if not PreCommitTool().is_used():
             tool.add_dev_deps()
             tool.update_bitbucket_steps()
@@ -260,10 +260,9 @@ def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
         ensure_pyproject_toml()
+
         ensure_pyproject_validity()
         tool.print_how_to_use()
     else:
@@ -277,11 +276,11 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     rule_config = tool.get_rule_config()
 
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_test_deps()
         tool.add_configs()
         if RuffTool().is_used():
@@ -318,11 +317,11 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     path = Path.cwd() / "requirements.txt"
 
     if not remove:
+        ensure_pyproject_toml()
+
         is_pre_commit = PreCommitTool().is_used()
 
         if is_pre_commit:
@@ -368,8 +367,6 @@ def use_ruff(*, remove: bool = False, how: bool = False, minimal: bool = False) 
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     # Only add ruff rules if the user doesn't already have a select/ignore list.
     # Otherwise, we should leave them alone.
 
@@ -384,6 +381,8 @@ def use_ruff(*, remove: bool = False, how: bool = False, minimal: bool = False) 
         rule_config = RuleConfig()
 
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         tool.add_configs()
         tool.select_rules(rule_config.get_all_selected())

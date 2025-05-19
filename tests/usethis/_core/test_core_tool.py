@@ -257,6 +257,16 @@ foo = "bar"
             assert not err
             assert out == ("✔ Removing Codespell config from 'pyproject.toml'.\n")
 
+        def test_doesnt_add_pyproject(self, tmp_path: Path):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_codespell(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
 
 class TestCoverage:
     class TestAdd:

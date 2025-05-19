@@ -25,23 +25,27 @@ Automate Python project setup and development tasks that are otherwise performed
 
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html), this package brings a similar experience to the Python ecosystem as a CLI tool.
 
+> [!TIP]
+> `usethis` is great for fresh projects using [uv](https://docs.astral.sh/uv), but also supports updating existing projects. However, this should be considered experimental. If you encounter problems or have feedback, please [open an issue](https://github.com/nathanjmcdougall/usethis-python/issues/new?template=idea.md).
+
 ## Highlights
 
-- 🧰 First-class support for state-of-the-practice tooling: `uv`, `ruff`, `pytest`, `pre-commit`, and many more.
+- 🧰 First-class support for state-of-the-practice tooling: uv, Ruff, pytest, pre-commit, and many more.
 - 🤖 Automatically add and remove tools: declare, install, and configure in one step.
 - 🧠 Powerful knowledge of how different tools interact and sensible defaults.
+- 🔄 Update existing configuration files automatically.
 - 📢 Fully declarative project configuration.
 - ⚡ Get started on a new Python project or a new workflow in seconds.
 
 ## 🧭 Getting Started
 
-First, it is strongly recommended you [install the `uv` package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process. If you're already using `uv`, make sure you're using at least
+First, it is strongly recommended you [install the uv package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process. If you're already using uv, make sure you're using at least
 version v0.5.29 (run `uv version` to check, and `uv self update` to upgrade).
 
 > [!TIP]
-> At the moment, `usethis` assumes you will have `uv` installed in some circumstances. Support for projects that don't use `uv` is planned for late 2025.
+> At the moment, `usethis` assumes you will have uv installed in some circumstances. Support for projects that don't use uv is planned for late 2025.
 
-Then, you can install usethis for the project:
+You can install `usethis` directly into the project environment:
 
 ```console
 # With uv
@@ -51,28 +55,40 @@ $ uv add --dev usethis
 $ pip install usethis
 ```
 
-Alternatively, run in isolation, using `uvx` or `pipx`.
+Alternatively, you can also run `usethis` commands in isolation, using `uvx` or `pipx`. For example, to add Ruff to the project:
+
+```console
+# With uv
+$ uvx usethis tool ruff
+
+# With pipx
+$ pipx run usethis tool ruff
+```
 
 ## 🖥️ Command Line Interface
 
-### Main commands
+### Manage Tooling
 
-- [`usethis tool`](#usethis-tool)
 - [`usethis ci`](#usethis-ci)
+- [`usethis tool`](#usethis-tool)
 
-### Configuration
+### Manage Configuration
+
+- [`usethis author`](#usethis-author)
+- [`usethis docstyle`](#usethis-docstyle)
+- [`usethis rule`](#usethis-rule-rulecode)
+
+### Manage README
 
 - [`usethis badge`](#usethis-badge)
-- [`usethis rule`](#usethis-rule-rulecode)
-- [`usethis docstyle`](#usethis-docstyle)
 - [`usethis readme`](#usethis-readme)
-- [`usethis author`](#usethis-author)
 
 ### Information
 
 - [`usethis list`](#usethis-list)
-- [`usethis show`](#usethis-show)
+- [`usethis version`](#usethis-version)
 - [`usethis browse pypi`](#usethis-browse-pypi-package)
+- [`usethis show`](#usethis-show)
 
 ## 💡 Example Usage
 
@@ -126,22 +142,32 @@ Add a new tool to a Python project, including:
 - any other relevant directories or tool-bespoke configuration files, and
 - `.pre-commit-config.yaml` configuration if using `pre-commit`.
 
-Currently supported tools:
+Note if `pyproject.toml` is not present, it will be created, since this is required for
+declaring dependencies with `uv add`.
 
-- `usethis tool codespell`
-- `usethis tool coverage`
-- `usethis tool deptry`
-- `usethis tool import-linter`
-- `usethis tool pre-commit`
-- `usethis tool pyproject-fmt`
-- `usethis tool pyproject.toml`
-- `usethis tool pytest`
-- `usethis tool requirements.txt`
-- `usethis tool ruff`
+#### Code Quality Tools
+
+- `usethis tool codespell` - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.
+- `usethis tool deptry` - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.
+- `usethis tool import-linter` - Use [Import Linter](https://import-linter.readthedocs.io/en/stable/): enforce a self-imposed architecture on imports.
+- `usethis tool pre-commit` - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain pre-commit hooks.
+- `usethis tool pyproject-fmt` - Use the [pyproject-fmt linter](https://github.com/tox-dev/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
+- `usethis tool ruff` - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+
+#### Testing
+
+- `usethis tool coverage.py` - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
+- `usethis tool pytest` - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
+
+#### Configuration Files
+
+- `usethis tool pyproject.toml` - Use a [pyproject.toml](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#writing-your-pyproject-toml) file to configure the project.
+- `usethis tool requirements.txt` - Use a [requirements.txt](https://pip.pypa.io/en/stable/reference/requirements-file-format/) file exported from the uv lockfile.
 
 Supported options:
 
 - `--remove` to remove the tool instead of adding it
+- `--how` to only print how to use the tool, with no other side effects
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
@@ -152,7 +178,7 @@ Add Continuous Integration pipelines to the project.
 
 Currently supported platforms:
 
-- `usethis ci bitbcuket`
+- `usethis ci bitbcuket` - Use [Bitbucket Pipelines](https://bitbucket.org/product/features/pipelines): a CI/CD service for Bitbucket.
 
 Supported options:
 
@@ -166,14 +192,15 @@ Add badges to README.md.
 
 Currently supported badges:
 
-- `usethis badge pre-commit`
-- `usethis badge pypi`
-- `usethis badge ruff`
-- `usethis badge usethis`
-- `usethis badge uv`
+- `usethis badge pre-commit` - [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+- `usethis badge pypi` - [![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
+- `usethis badge ruff` - [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+- `usethis badge usethis` - [![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/nathanjmcdougall/usethis-python/main/assets/badge/v1.json)](https://github.com/nathanjmcdougall/usethis-python)
+- `usethis badge uv` - [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
 Supported options:
 
+- `--show` to show the badge URL instead of adding (or removing) it
 - `--remove` to remove the badge instead of adding it
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
@@ -181,6 +208,10 @@ Supported options:
 ### `usethis rule <rulecode>`
 
 Add (or manage configuration) of Ruff and Deptry rules in `pyproject.toml`.
+
+See [the Ruff documentation](https://docs.astral.sh/ruff/rules/) for a list of available
+rules, and [the Deptry documentation](https://deptry.com/rules-violations/) for a list
+of available rules.
 
 Example:
 
@@ -234,6 +265,10 @@ Other supported options:
 
 Display a table of all available tools and their current usage status.
 
+### `usethis version`
+
+Display the current version of usethis.
+
 ### `usethis show`
 
 Show a piece of information about the project.
@@ -268,11 +303,28 @@ You could [consider this template](https://github.com/pawamoy/copier-uv) which w
 > [!TIP]
 > You can still use usethis as a part of a templates using [hooks](https://cookiecutter.readthedocs.io/en/latest/advanced/hooks.html#using-pre-post-generate-hooks-0-7-0) for Cookiecutter and [tasks](https://copier.readthedocs.io/en/stable/configuring/#tasks) for Copier.
 
-One of usethis's strengths is that it can update existing configuration. If you're using Cookiecutter, then you can update to a latest version of a template using a tool like [cruft](https://github.com/cruft/cruft). Copier has inbuilt support for template updating.
+If you're using Cookiecutter, then you can update to a latest version of a template using a tool like [cruft](https://github.com/cruft/cruft). Copier has inbuilt support for template updating. Another template-style option which provides updating is [jaraco/skeleton](https://blog.jaraco.com/skeleton/), which is a specific, git-based template rather than a general templating system.
 
-## Development
+## 🚀 Development
 
-This project is at the early stages of development. If you are interested in contributing, please ensure you have a corresponding GitHub Issue open.
+[![Commits since latest release](https://img.shields.io/github/commits-since/nathanjmcdougall/usethis-python/latest.svg)](https://github.com/nathanjmcdougall/usethis-python/releases)
+
+### Roadmap
+
+Major features planned for later in 2025 are:
+
+- Support for users who aren't using uv, e.g. poetry users,
+- Support for automated GitHub Actions workflows ([#57](https://github.com/nathanjmcdougall/usethis-python/issues/57)),
+- Support for a typechecker (likely Pyright, [#121](https://github.com/nathanjmcdougall/usethis-python/issues/121)), and
+- Support for documentation pages (likely using mkdocs, [#188](https://github.com/nathanjmcdougall/usethis-python/issues/188)).
+
+Other features are tracked in the [GitHub Issues](https://github.com/nathanjmcdougall/usethis-python/issues) page.
+
+### Contributing
+
+See the
+[CONTRIBUTING.md](https://github.com/nathanjmcdougall/usethis-python/blob/main/CONTRIBUTING.md)
+file.
 
 ## License
 

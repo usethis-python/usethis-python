@@ -1,3 +1,5 @@
+"""Tool functions to add/remove tools to/from the project."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -21,7 +23,7 @@ from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.codespell import CodespellTool
-from usethis._tool.impl.coverage import CoverageTool
+from usethis._tool.impl.coverage_py import CoveragePyTool
 from usethis._tool.impl.deptry import DeptryTool
 from usethis._tool.impl.import_linter import ImportLinterTool
 from usethis._tool.impl.pre_commit import PreCommitTool
@@ -35,9 +37,16 @@ from usethis._tool.rule import RuleConfig
 if TYPE_CHECKING:
     from usethis._tool.base import Tool
 
+# Note - all these functions invoke ensure_pyproject_toml() at the start, since
+# declaring dependencies in pyproject.toml requires that file to exist.
 
-def use_codespell(*, remove: bool = False) -> None:
+
+def use_codespell(*, remove: bool = False, how: bool = False) -> None:
     tool = CodespellTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -58,8 +67,12 @@ def use_codespell(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_coverage(*, remove: bool = False) -> None:
-    tool = CoverageTool()
+def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
+    tool = CoveragePyTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -73,8 +86,12 @@ def use_coverage(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_deptry(*, remove: bool = False) -> None:
+def use_deptry(*, remove: bool = False, how: bool = False) -> None:
     tool = DeptryTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -94,8 +111,12 @@ def use_deptry(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_import_linter(*, remove: bool = False) -> None:
+def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
     tool = ImportLinterTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -116,8 +137,13 @@ def use_import_linter(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pre_commit(*, remove: bool = False) -> None:
+def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
     tool = PreCommitTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
+
     pyproject_fmt_tool = PyprojectFmtTool()
     codespell_tool = CodespellTool()
     requirements_txt_tool = RequirementsTxtTool()
@@ -201,8 +227,12 @@ def _remove_bitbucket_linter_steps_from_default() -> None:
     RuffTool().remove_bitbucket_steps()
 
 
-def use_pyproject_fmt(*, remove: bool = False) -> None:
+def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
     tool = PyprojectFmtTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -223,8 +253,12 @@ def use_pyproject_fmt(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pyproject_toml(*, remove: bool = False) -> None:
+def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
     tool = PyprojectTOMLTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -236,8 +270,12 @@ def use_pyproject_toml(*, remove: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pytest(*, remove: bool = False) -> None:
+def use_pytest(*, remove: bool = False, how: bool = False) -> None:
     tool = PytestTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -257,8 +295,8 @@ def use_pytest(*, remove: bool = False) -> None:
 
         tool.print_how_to_use()
 
-        if CoverageTool().is_used():
-            CoverageTool().print_how_to_use()
+        if CoveragePyTool().is_used():
+            CoveragePyTool().print_how_to_use()
     else:
         PytestTool().remove_bitbucket_steps()
 
@@ -268,13 +306,17 @@ def use_pytest(*, remove: bool = False) -> None:
         tool.remove_test_deps()
         remove_pytest_dir()  # Last, since this is a manual step
 
-        if CoverageTool().is_used():
-            CoverageTool().print_how_to_use()
+        if CoveragePyTool().is_used():
+            CoveragePyTool().print_how_to_use()
         tool.remove_managed_files()
 
 
-def use_requirements_txt(*, remove: bool = False) -> None:
+def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
     tool = RequirementsTxtTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 
@@ -314,6 +356,7 @@ def use_requirements_txt(*, remove: bool = False) -> None:
 def use_ruff(
     *,
     remove: bool = False,
+    how: bool = False,
     minimal: bool = False,
     linter: bool = True,
     formatter: bool = True,
@@ -327,6 +370,7 @@ def use_ruff(
 
     Args:
         remove: Remove Ruff configuration.
+        how: Print how to use Ruff.
         minimal: Don't add any default rules.
         linter: Whether to add/remove the Ruff linter.
         formatter: Whether to add/remove the Ruff formatter.
@@ -335,6 +379,10 @@ def use_ruff(
     # interface manages those rules.
 
     tool = RuffTool(linter=linter, formatter=formatter)
+
+    if how:
+        tool.print_how_to_use()
+        return
 
     ensure_pyproject_toml()
 

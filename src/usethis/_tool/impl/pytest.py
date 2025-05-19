@@ -54,10 +54,10 @@ class PytestTool(Tool):
             box_print("Run 'pytest' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.coverage import CoverageTool
+        from usethis._tool.impl.coverage_py import CoveragePyTool
 
         deps = [Dependency(name="pytest")]
-        if unconditional or CoverageTool().is_used():
+        if unconditional or CoveragePyTool().is_used():
             deps += [Dependency(name="pytest-cov")]
         return deps
 
@@ -72,7 +72,7 @@ class PytestTool(Tool):
             "addopts": [
                 "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
                 "-ra",  # summary report of all results (sp-repo-review)
-                "--showlocals",  # print locals in tracebacks (sp-repo-review)
+                # Not --showlocals", because it's too verbose in some cases (https://github.com/nathanjmcdougall/usethis-python/issues/527)
                 "--strict-markers",  # fail on unknown markers (sp-repo-review)
                 "--strict-config",  # fail on unknown config (sp-repo-review)
             ],
@@ -228,7 +228,7 @@ class PytestTool(Tool):
         names = set()
         for step in get_steps_in_default():
             if step.name is not None:
-                match = re.match(r"^Test on 3\.\d+$", step.name)
+                match = re.match(r"^Test on 3\.\d{1,2}$", step.name)
                 if match:
                     names.add(step.name)
 

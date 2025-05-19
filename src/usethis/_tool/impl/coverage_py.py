@@ -18,25 +18,29 @@ from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 
 
-class CoverageTool(Tool):
+class CoveragePyTool(Tool):
     # https://github.com/nedbat/coveragepy
 
     @property
     def name(self) -> str:
-        return "coverage"
+        return "Coverage.py"
 
     def print_how_to_use(self) -> None:
         from usethis._tool.impl.pytest import PytestTool
 
         if PytestTool().is_used():
             if is_uv_used():
-                box_print("Run 'uv run pytest --cov' to run your tests with coverage.")
+                box_print(
+                    f"Run 'uv run pytest --cov' to run your tests with {self.name}."
+                )
             else:
-                box_print("Run 'pytest --cov' to run your tests with coverage.")
+                box_print(f"Run 'pytest --cov' to run your tests with {self.name}.")
         elif is_uv_used():
-            box_print("Run 'uv run coverage help' to see available coverage commands.")
+            box_print(
+                f"Run 'uv run coverage help' to see available {self.name} commands."
+            )
         else:
-            box_print("Run 'coverage help' to see available coverage commands.")
+            box_print(f"Run 'coverage help' to see available {self.name} commands.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         from usethis._tool.impl.pytest import PytestTool

@@ -27,6 +27,21 @@ class TestCodespell:
         # Assert
         assert result.exit_code == 0, result.output
 
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["codespell", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'codespell' to run the Codespell spellchecker.
+"""
+        )
+
 
 class TestCoverage:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -49,9 +64,9 @@ class TestCoverage:
         runner = CliRunner()
         with change_cwd(tmp_path):
             if not usethis_config.offline:
-                result = runner.invoke(app, ["coverage"])
+                result = runner.invoke(app, ["coverage.py"])
             else:
-                result = runner.invoke(app, ["coverage", "--offline"])
+                result = runner.invoke(app, ["coverage.py", "--offline"])
 
             # Assert
             assert result.exit_code == 0, result.output
@@ -82,9 +97,9 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         with change_cwd(tmp_path):
             # Act
             if not usethis_config.offline:
-                result = runner.invoke(app, ["coverage"])
+                result = runner.invoke(app, ["coverage.py"])
             else:
-                result = runner.invoke(app, ["coverage", "--offline"])
+                result = runner.invoke(app, ["coverage.py", "--offline"])
 
             # Assert
             assert result.exit_code == 0, result.output
@@ -92,6 +107,21 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 assert ["tool", "coverage"] in PyprojectTOMLManager()
 
         assert "[tool.coverage]" in (tmp_path / "pyproject.toml").read_text()
+
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["coverage.py", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'coverage help' to see available Coverage.py commands.
+"""
+        )
 
 
 class TestDeptry:
@@ -129,6 +159,38 @@ class TestDeptry:
             assert result.exit_code == 0, result.output
             call_subprocess(["deptry", "."])
 
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["deptry", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'deptry .' to run deptry.
+"""
+        )
+
+
+class TestImportLinter:
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["import-linter", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'lint-imports' to run Import Linter.
+"""
+        )
+
 
 class TestPyprojectTOML:
     def test_add(self, tmp_path: Path):
@@ -148,6 +210,40 @@ class TestPyprojectTOML:
 
         # Assert
         assert result.exit_code == 0, result.output
+
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pyproject.toml", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Populate 'pyproject.toml' with the project configuration.
+ℹ Learn more at 
+https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+"""  # noqa: RUF001
+        )
+
+
+class TestPyprojectFmt:
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pyproject-fmt", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.
+"""
+        )
 
 
 class TestPreCommit:
@@ -180,6 +276,21 @@ class TestPreCommit:
             else:
                 pytest.fail("Expected subprocess.CalledProcessError")
 
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pre-commit", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'pre-commit run --all-files' to run the hooks manually.
+"""
+        )
+
 
 class TestRequirementsTxt:
     def test_runs(self, tmp_path: Path):
@@ -190,6 +301,22 @@ class TestRequirementsTxt:
 
         # Assert
         assert result.exit_code == 0, result.output
+
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["requirements.txt", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Install uv to use 'uv export'.
+☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.
+"""
+        )
 
 
 class TestRuff:
@@ -228,6 +355,22 @@ class TestRuff:
 ✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run ruff format' to run the Ruff formatter.
+"""
+        )
+
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["ruff", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.
+☐ Run 'ruff format' to run the Ruff formatter.
 """
         )
 
@@ -284,6 +427,23 @@ line-length = 88
 """
         )
 
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pytest", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Add test files to the '/tests' directory with the format 'test_*.py'.
+☐ Add test functions with the format 'test_*()'.
+☐ Run 'pytest' to run the tests.
+"""
+        )
+
 
 @pytest.mark.benchmark
 def test_several_tools_add_and_remove(tmp_path: Path):
@@ -300,7 +460,7 @@ def test_several_tools_add_and_remove(tmp_path: Path):
     runner = CliRunner()
     with change_cwd(tmp_path):
         runner.invoke(app, ["pytest"])
-        runner.invoke(app, ["coverage"])
+        runner.invoke(app, ["coverage.py"])
         runner.invoke(app, ["ruff"])
         runner.invoke(app, ["deptry"])
         runner.invoke(app, ["pre-commit"])
@@ -318,4 +478,5 @@ def test_tool_matches_command():
 def test_app_commands_match_list():
     commands = app.registered_commands
     names = [command.name for command in commands]
+    names.remove("coverage")  # Deprecated
     assert set(names) == set(ALL_TOOL_COMMANDS)

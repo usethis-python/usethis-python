@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import typer
 
+from usethis._console import plain_print
+
 try:
     from usethis._version import __version__
 except ImportError:
@@ -10,6 +12,6 @@ except ImportError:
 
 def version() -> None:
     if __version__ is not None:
-        print(__version__)
+        plain_print(__version__)
     else:
         raise typer.Exit(code=1)

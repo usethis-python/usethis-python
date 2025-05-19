@@ -148,9 +148,9 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
     codespell_tool = CodespellTool()
     requirements_txt_tool = RequirementsTxtTool()
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         _add_all_tools_pre_commit_configs()
 

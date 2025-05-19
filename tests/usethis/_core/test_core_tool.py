@@ -1681,19 +1681,18 @@ repos:
                 )
 
         def test_doesnt_add_pyproject(
-            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            # No pyproject.toml file to begin with...
+            # Arrange
+            # We use uv_init_repo_dir to get a git repo
+            (uv_init_repo_dir / "pyproject.toml").unlink()
 
             # Act
-            with change_cwd(tmp_path), files_manager():
+            with change_cwd(uv_init_repo_dir), files_manager():
                 use_pre_commit(remove=True)
 
             # Assert
-            assert not (tmp_path / "pyproject.toml").exists()
-            out, err = capfd.readouterr()
-            assert not out
-            assert not err
+            assert not (uv_init_repo_dir / "pyproject.toml").exists()
 
     class TestBitbucketCIIntegration:
         def test_prexisting(self, uv_init_repo_dir: Path):

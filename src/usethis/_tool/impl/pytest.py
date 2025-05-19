@@ -228,7 +228,7 @@ class PytestTool(Tool):
         names = set()
         for step in get_steps_in_default():
             if step.name is not None:
-                match = re.match(r"^Test on 3\.\d+$", step.name)
+                match = re.match(r"^Test on 3\.\d{1,2}$", step.name)
                 if match:
                     names.add(step.name)
 

@@ -367,8 +367,6 @@ def use_ruff(*, remove: bool = False, how: bool = False, minimal: bool = False) 
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     # Only add ruff rules if the user doesn't already have a select/ignore list.
     # Otherwise, we should leave them alone.
 
@@ -383,6 +381,8 @@ def use_ruff(*, remove: bool = False, how: bool = False, minimal: bool = False) 
         rule_config = RuleConfig()
 
     if not remove:
+        ensure_pyproject_toml()
+
         tool.add_dev_deps()
         tool.add_configs()
         tool.select_rules(rule_config.get_all_selected())

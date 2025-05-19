@@ -48,9 +48,9 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ensure_pyproject_toml()
-
     if not remove:
+        ensure_pyproject_toml()
+
         if not PreCommitTool().is_used():
             tool.add_dev_deps()
             tool.update_bitbucket_steps()

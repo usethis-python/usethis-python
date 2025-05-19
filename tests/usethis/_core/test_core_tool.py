@@ -1916,6 +1916,18 @@ foo = "bar"
             contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
             assert "pyproject-fmt" not in contents
 
+        def test_doesnt_add_pyproject(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # No pyproject.toml file to begin with...
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_pyproject_fmt(remove=True)
+
+            # Assert
+            assert not (tmp_path / "pyproject.toml").exists()
+
     class TestPreCommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):

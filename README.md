@@ -15,9 +15,9 @@
 
 Automate Python project setup and development tasks that are otherwise performed manually.
 
-`usethis` knows about popular Python tools, workflows and frameworks, and knows how they interact. It can declaratively add and remove tools, configure them, and set up the project for you in a way that won't break your existing configuration and it will make the necessary adjustments to your project configuration files.
+usethis knows about popular Python tools, workflows and frameworks, and knows how they interact. It can declaratively add and remove tools, configure them, and set up the project for you in a way that won't break your existing configuration and it will make the necessary adjustments to your project configuration files.
 
-`usethis` gives detailed messages about what it is doing (and what you need to do next).
+usethis gives detailed messages about what it is doing (and what you need to do next).
 
 - Output beginning with `✔` represents a task which usethis has automated.
 - Output beginning with `☐` represents a task which you need to perform manually.
@@ -26,7 +26,7 @@ Automate Python project setup and development tasks that are otherwise performed
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html), this package brings a similar experience to the Python ecosystem as a CLI tool.
 
 > [!TIP]
-> `usethis` is great for fresh projects using [uv](https://docs.astral.sh/uv), but also supports updating existing projects. However, this should be considered experimental. If you encounter problems or have feedback, please [open an issue](https://github.com/nathanjmcdougall/usethis-python/issues/new?template=idea.md).
+> usethis is great for fresh projects using [uv](https://docs.astral.sh/uv), but also supports updating existing projects. However, this should be considered experimental. If you encounter problems or have feedback, please [open an issue](https://github.com/nathanjmcdougall/usethis-python/issues/new?template=idea.md).
 
 ## Highlights
 
@@ -43,9 +43,9 @@ First, it is strongly recommended you [install the uv package manager](https://d
 version v0.5.29 (run `uv version` to check, and `uv self update` to upgrade).
 
 > [!TIP]
-> At the moment, `usethis` assumes you will have uv installed in some circumstances. Support for projects that don't use uv is planned for late 2025.
+> At the moment, usethis assumes you will have uv installed in some circumstances. Support for projects that don't use uv is planned for late 2025.
 
-You can install `usethis` directly into the project environment:
+You can install usethis directly into the project environment:
 
 ```console
 # With uv
@@ -55,7 +55,7 @@ $ uv add --dev usethis
 $ pip install usethis
 ```
 
-Alternatively, you can also run `usethis` commands in isolation, using `uvx` or `pipx`. For example, to add Ruff to the project:
+Alternatively, you can also run usethis commands in isolation, using `uvx` or `pipx`. For example, to add Ruff to the project:
 
 ```console
 # With uv

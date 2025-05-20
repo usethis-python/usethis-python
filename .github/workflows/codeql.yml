@@ -3,9 +3,14 @@ name: "CodeQL"
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   pull_request:
     branches: [ "main" ]
-
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -26,7 +31,7 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
-        build-mode: ${{ matrix.build-mode }}
+        build-mode: none
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:

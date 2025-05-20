@@ -27,7 +27,7 @@ class TestSchemaJSON:
         local_schema_json = (Path(__file__).parent / "schema.json").read_text()
         try:
             online_schema_json = requests.get(
-                "https://json.schemastore.org/pre-commit-config.json"
+                "https://json.schemastore.org/pre-commit-config.json", timeout=5
             ).text
         except requests.exceptions.ConnectionError as err:
             if os.getenv("CI"):

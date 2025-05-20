@@ -114,3 +114,25 @@ def _vary_network_conn(_online_status: NetworkConn) -> Generator[None, None, Non
 @pytest.fixture
 def usethis_dev_dir() -> Path:
     return Path(__file__).parent.parent
+
+
+@pytest.fixture
+def git_path() -> Path:
+    """Fixture to get the path to the git executable."""
+    git_path = shutil.which("git")
+
+    if not git_path:
+        pytest.skip("Git executable not found")
+
+    return Path(git_path)
+
+
+@pytest.fixture
+def uv_path() -> Path:
+    """Fixture to get the path to the uv executable."""
+    uv_path = shutil.which("uv")
+
+    if not uv_path:
+        pytest.skip("uv executable not found")
+
+    return Path(uv_path)

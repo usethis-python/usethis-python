@@ -548,7 +548,7 @@ class TestDeptry:
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_run_deptry_fail(self, uv_init_dir: Path):
+        def test_run_deptry_fail(self, uv_init_dir: Path, uv_path: Path):
             # Arrange
             f = uv_init_dir / "bad.py"
             f.write_text("import broken_dependency")
@@ -560,7 +560,9 @@ class TestDeptry:
             # Assert
             with pytest.raises(subprocess.CalledProcessError):
                 subprocess.run(
-                    ["uv", "run", "deptry", "."], cwd=uv_init_dir, check=True
+                    [uv_path.as_posix(), "run", "deptry", "."],
+                    cwd=uv_init_dir,
+                    check=True,
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1467,7 +1469,7 @@ repos:
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_bad_commit(self, uv_env_dir: Path):
+        def test_bad_commit(self, uv_env_dir: Path, git_path: Path):
             # This needs a venv so that we can actually run pre-commit via git
 
             # Arrange
@@ -1476,9 +1478,11 @@ repos:
             # Act
             with change_cwd(uv_env_dir), files_manager():
                 use_pre_commit()
-            subprocess.run(["git", "add", "."], cwd=uv_env_dir, check=True)
+            subprocess.run(
+                [git_path.as_posix(), "add", "."], cwd=uv_env_dir, check=True
+            )
             result = subprocess.run(
-                ["git", "commit", "-m", "Good commit"], cwd=uv_env_dir
+                [git_path.as_posix(), "commit", "-m", "Good commit"], cwd=uv_env_dir
             )
             assert not result.stderr
             assert result.returncode == 0, (
@@ -1487,9 +1491,11 @@ repos:
 
             # Assert
             (uv_env_dir / ".pre-commit-config.yaml").write_text("[")
-            subprocess.run(["git", "add", "."], cwd=uv_env_dir, check=True)
+            subprocess.run(
+                [git_path.as_posix(), "add", "."], cwd=uv_env_dir, check=True
+            )
             result = subprocess.run(
-                ["git", "commit", "-m", "Bad commit"],
+                [git_path.as_posix(), "commit", "-m", "Bad commit"],
                 cwd=uv_env_dir,
                 capture_output=True,
             )

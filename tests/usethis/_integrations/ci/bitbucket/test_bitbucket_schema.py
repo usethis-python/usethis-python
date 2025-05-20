@@ -25,7 +25,7 @@ class TestSchemaJSON:
         local_schema_json = (Path(__file__).parent / "schema.json").read_text()
         try:
             online_schema_json = requests.get(
-                "https://api.bitbucket.org/schemas/pipelines-configuration"
+                "https://api.bitbucket.org/schemas/pipelines-configuration", timeout=5
             ).text
         except requests.exceptions.ConnectionError as err:
             if os.getenv("CI"):

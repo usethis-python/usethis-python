@@ -359,6 +359,11 @@ def use_ruff(*, remove: bool = False, how: bool = False, minimal: bool = False) 
     `minimal` option, or if rules are already selected, in which case they are left
     alone. However, if the existing rules are all pydocstyle rules (managed by the
     `usethis docstyle` interface, then the default rules will still be added).
+
+    Args:
+        remove: Remove Ruff configuration.
+        how: Print how to use Ruff.
+        minimal: Don't add any default rules.
     """
     tool = RuffTool()
 

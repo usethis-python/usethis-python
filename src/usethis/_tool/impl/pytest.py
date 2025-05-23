@@ -151,7 +151,9 @@ class PytestTool(Tool):
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         # This is a variant of the "first" method
         config_spec = self.get_config_spec()
-        assert config_spec.resolution == "bespoke"
+        if config_spec.resolution != "bespoke":
+            # Something has gone badly wrong, perhaps in a subclass of PytestTool.
+            raise NotImplementedError
         # As per https://docs.pytest.org/en/stable/reference/customize.html#finding-the-rootdir
         # Files will only be matched for configuration if:
         # - pytest.ini: will always match and take precedence, even if empty.

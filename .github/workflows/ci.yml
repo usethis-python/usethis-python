@@ -53,6 +53,7 @@ jobs:
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
+        if: matrix.pytest
         with:
           custom-arguments: --cov --junitxml=junit.xml -o junit_family=legacy
 
@@ -84,6 +85,7 @@ jobs:
         codspeed: [false]
         codecov: [false]
         pre-commit: [false]
+        pytest: [true]
         include:
           - os: "ubuntu-latest"
             python-version: "3.10"
@@ -91,9 +93,18 @@ jobs:
             codspeed: false
             codecov: false
             pre-commit: false
+            pytest: true
+          - os: "ubuntu-latest"
+            python-version: "3.13"
+            resolution: "highest"
+            codspeed: false
+            codecov: true
+            pre-commit: false
+            pytest: true
           - os: "ubuntu-latest"
             python-version: "3.13"
             resolution: "highest"
             codspeed: true
-            codecov: true
-            pre-commit: true
+            codecov: false
+            pre-commit: false
+            pytest: false

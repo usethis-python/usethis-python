@@ -9,7 +9,7 @@ class SubprocessFailedError(Exception):
 
 def call_subprocess(args: list[str]) -> str:
     try:
-        process = subprocess.run(
+        process = subprocess.run(  # noqa: S603
             args,
             check=True,
             capture_output=True,

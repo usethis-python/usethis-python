@@ -241,9 +241,9 @@ class UseToolFunc(Protocol):
     def __call__(self, *, remove: bool, how: bool) -> None: ...
 
 
-def _run_tool(caller: UseToolFunc, *, remove: bool, **kwargs: Any):
+def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: Any):
     try:
-        caller(remove=remove, **kwargs)
+        caller(remove=remove, how=how, **kwargs)
     except UsethisError as err:
         err_print(err)
         raise typer.Exit(code=1) from None

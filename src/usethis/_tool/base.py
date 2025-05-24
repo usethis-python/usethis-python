@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
 
 from usethis._console import tick_print
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_step_in_default,
     bitbucket_steps_are_equivalent,
@@ -20,16 +21,23 @@ from usethis._integrations.pre_commit.hooks import (
     hook_ids_are_equivalent,
     remove_hook,
 )
-from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
 from usethis._integrations.uv.deps import (
-    Dependency,
     add_deps_to_group,
     is_dep_in_any_group,
     remove_deps_from_group,
 )
-from usethis._io import KeyValueFileManager
-from usethis._tool.config import ConfigSpec, NoConfigValue, ResolutionT
-from usethis._tool.rule import Rule, RuleConfig
+from usethis._tool.config import ConfigSpec, NoConfigValue
+from usethis._tool.rule import RuleConfig
+
+if TYPE_CHECKING:
+    from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
+    from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
+    from usethis._integrations.uv.deps import (
+        Dependency,
+    )
+    from usethis._io import KeyValueFileManager
+    from usethis._tool.config import ResolutionT
+    from usethis._tool.rule import Rule
 
 
 class Tool(Protocol):

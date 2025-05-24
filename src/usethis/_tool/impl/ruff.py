@@ -20,7 +20,6 @@ from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
     LocalRepo,
-    UriRepo,
 )
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -35,6 +34,9 @@ from usethis._tool.config import (
 )
 
 if TYPE_CHECKING:
+    from usethis._integrations.pre_commit.schema import (
+        UriRepo,
+    )
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule
 

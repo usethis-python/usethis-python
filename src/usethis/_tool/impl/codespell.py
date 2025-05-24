@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from usethis._config_file import (
     CodespellRCManager,
@@ -15,7 +16,6 @@ from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
-    LocalRepo,
     UriRepo,
 )
 from usethis._integrations.uv.deps import (
@@ -25,6 +25,11 @@ from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.impl.pre_commit import PreCommitTool
+
+if TYPE_CHECKING:
+    from usethis._integrations.pre_commit.schema import (
+        LocalRepo,
+    )
 
 
 class CodespellTool(Tool):

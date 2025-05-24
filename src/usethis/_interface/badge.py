@@ -1,10 +1,13 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import typer
 
 from usethis._config import offline_opt, quiet_opt, usethis_config
 from usethis._config_file import files_manager
 from usethis._console import err_print
 from usethis._core.badge import (
-    Badge,
     add_badge,
     get_pre_commit_badge,
     get_pypi_badge,
@@ -14,6 +17,11 @@ from usethis._core.badge import (
     remove_badge,
 )
 from usethis.errors import UsethisError
+
+if TYPE_CHECKING:
+    from usethis._core.badge import (
+        Badge,
+    )
 
 app = typer.Typer(
     help="Add badges to the top of the README.md file.", add_completion=False

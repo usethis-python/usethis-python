@@ -11,7 +11,7 @@ import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
 from tomlkit.exceptions import TOMLKitError
-from typing_extensions import Never, assert_never
+from typing_extensions import assert_never
 
 from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
     from tomlkit.container import Container
     from tomlkit.items import Item
-    from typing_extensions import Self
+    from typing_extensions import Never, Self
 
     from usethis._io import Key
 

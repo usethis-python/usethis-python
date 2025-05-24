@@ -2697,6 +2697,9 @@ ignore = [ "EM", "T20", "TRY003", "S603" ]
 
 [lint.extend-per-file-ignores]
 "__main__.py" = [ "BLE001" ]
+
+[format]
+docstring-code-format = true
 """
             )
 

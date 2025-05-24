@@ -61,6 +61,7 @@ class TestDocstyle:
             """\
 [tool.ruff]
 line-length = 88
+format.docstring-code-format = true
 lint.pydocstyle.convention = "numpy"\
 """
             in content

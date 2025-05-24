@@ -96,6 +96,23 @@ class RuffTool(Tool):
                         ),
                     },
                 ),
+                ConfigItem(
+                    description="Docstring Code Format",
+                    root={
+                        Path(".ruff.toml"): ConfigEntry(
+                            keys=["format", "docstring-code-format"],
+                            get_value=lambda: True,
+                        ),
+                        Path("ruff.toml"): ConfigEntry(
+                            keys=["format", "docstring-code-format"],
+                            get_value=lambda: True,
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "ruff", "format", "docstring-code-format"],
+                            get_value=lambda: True,
+                        ),
+                    },
+                ),
             ],
         )
 

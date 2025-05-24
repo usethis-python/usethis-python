@@ -189,5 +189,8 @@ select = ["D2", "D3", "D4", "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I"
 ignore = ["PLR2004", "SIM108"]
 [lint.pydocstyle]
 convention = "numpy"
+
+[format]
+docstring-code-format = true
 """
         )

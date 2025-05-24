@@ -21,7 +21,6 @@ from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
     LocalRepo,
-    UriRepo,
 )
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.imports import (
@@ -40,12 +39,17 @@ from usethis._tool.config import (
     ConfigItem,
     ConfigSpec,
     NoConfigValue,
-    ResolutionT,
 )
 from usethis._tool.impl.pre_commit import PreCommitTool
 
 if TYPE_CHECKING:
+    from usethis._integrations.pre_commit.schema import (
+        UriRepo,
+    )
     from usethis._io import KeyValueFileManager
+    from usethis._tool.config import (
+        ResolutionT,
+    )
 
 IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
 

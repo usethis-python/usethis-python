@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import sys
-from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import grimp
 import grimp.application
@@ -11,6 +13,9 @@ from pydantic import BaseModel
 
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.layout import get_source_dir_str
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 class LayeredArchitecture(BaseModel):

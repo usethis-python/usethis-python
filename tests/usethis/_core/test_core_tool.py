@@ -2737,6 +2737,24 @@ docstring-code-format = true
                 "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
             )
 
+        def test_only_add_formatter(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(linter=False, formatter=True)
+
+                # Assert
+                assert not PyprojectTOMLManager().__contains__(["tool", "ruff", "lint"])
+
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'ruff'.\n"
+                "✔ Adding Ruff config to 'pyproject.toml'.\n"
+                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            )
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_dir: Path):

@@ -345,3 +345,28 @@ class RuffTool(Tool):
                 f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
             )
             raise NotImplementedError(msg)
+
+    def is_linter_used(self) -> bool:
+        """Check if the linter is used in the project."""
+        return self._is_config_spec_present(
+            ConfigSpec.from_flat(
+                file_managers=[
+                    DotRuffTOMLManager(),
+                    RuffTOMLManager(),
+                    PyprojectTOMLManager(),
+                ],
+                resolution="first",
+                config_items=[
+                    ConfigItem(
+                        description="Linter Config",
+                        root={
+                            Path(".ruff.toml"): ConfigEntry(keys=["lint"]),
+                            Path("ruff.toml"): ConfigEntry(keys=["lint"]),
+                            Path("pyproject.toml"): ConfigEntry(
+                                keys=["tool", "ruff", "lint"]
+                            ),
+                        },
+                    ),
+                ],
+            )
+        )

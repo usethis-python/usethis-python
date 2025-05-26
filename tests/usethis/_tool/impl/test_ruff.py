@@ -225,3 +225,35 @@ ignore = ["A"]
 
                 # Assert
                 assert RuffTool().get_ignored_rules() == ["A"]
+
+    class TestIsLinterUsed:
+        def test_no_pyproject_toml(self, tmp_path: Path):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                assert not RuffTool().is_linter_used()
+
+        def test_pyproject_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["A"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                assert RuffTool().is_linter_used()
+
+        def test_ruff_toml(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".ruff.toml").write_text(
+                """\
+[lint]
+select = ["A"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), DotRuffTOMLManager():
+                assert RuffTool().is_linter_used()

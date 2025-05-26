@@ -14,7 +14,6 @@ from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
     LocalRepo,
-    UriRepo,
 )
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._integrations.uv.deps import (
@@ -30,6 +29,9 @@ from usethis._tool.config import (
 )
 
 if TYPE_CHECKING:
+    from usethis._integrations.pre_commit.schema import (
+        UriRepo,
+    )
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule
 

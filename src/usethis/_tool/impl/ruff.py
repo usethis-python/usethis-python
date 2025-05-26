@@ -11,7 +11,6 @@ from usethis._console import box_print, tick_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
-from usethis._integrations.ci.bitbucket.schema import Pipe as BitbucketPipe
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -21,7 +20,6 @@ from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
     LocalRepo,
-    UriRepo,
 )
 from usethis._integrations.uv.deps import (
     Dependency,
@@ -36,6 +34,10 @@ from usethis._tool.config import (
 )
 
 if TYPE_CHECKING:
+    from usethis._integrations.ci.bitbucket.schema import Pipe as BitbucketPipe
+    from usethis._integrations.pre_commit.schema import (
+        UriRepo,
+    )
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule
 
@@ -107,6 +109,23 @@ class RuffTool(Tool):
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "ruff", "line-length"],
                             get_value=lambda: line_length,
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Docstring Code Format",
+                    root={
+                        Path(".ruff.toml"): ConfigEntry(
+                            keys=["format", "docstring-code-format"],
+                            get_value=lambda: True,
+                        ),
+                        Path("ruff.toml"): ConfigEntry(
+                            keys=["format", "docstring-code-format"],
+                            get_value=lambda: True,
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "ruff", "format", "docstring-code-format"],
+                            get_value=lambda: True,
                         ),
                     },
                 ),

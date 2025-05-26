@@ -8,10 +8,12 @@ from pydantic import BaseModel, InstanceOf
 
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.init import ensure_pyproject_toml
-from usethis._io import Key, KeyValueFileManager, UsethisFileManager
+from usethis._io import Key, KeyValueFileManager
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
+    from usethis._io import UsethisFileManager
 
 ResolutionT: TypeAlias = Literal["first", "first_content", "bespoke"]
 

@@ -21,7 +21,6 @@ from usethis._integrations.file.ini.errors import (
     UnexpectedINIOpenError,
 )
 from usethis._io import (
-    Key,
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
@@ -34,6 +33,10 @@ if TYPE_CHECKING:
     from typing import Any, ClassVar
 
     from typing_extensions import Self
+
+    from usethis._io import (
+        Key,
+    )
 
 
 class INIFileManager(KeyValueFileManager):

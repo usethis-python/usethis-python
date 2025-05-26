@@ -1,6 +1,11 @@
 from __future__ import annotations
 
-from usethis._integrations.ci.bitbucket.schema import Step, Step1
+from typing import TYPE_CHECKING
+
+from usethis._integrations.ci.bitbucket.schema import Step
+
+if TYPE_CHECKING:
+    from usethis._integrations.ci.bitbucket.schema import Step1
 
 
 def step1tostep(step1: Step1) -> Step:

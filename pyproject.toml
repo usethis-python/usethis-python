@@ -88,6 +88,8 @@ version-file = "src/usethis/_version.py"
 [tool.ruff]
 line-length = 88
 
+format.docstring-code-format = true
+
 lint.select = [
   "A",
   "B",
@@ -114,8 +116,10 @@ lint.select = [
   "UP",
 ]
 lint.ignore = [ "PLR2004", "S101", "SIM108" ]
-lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S603" ]
+lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S603", "TC" ]
+lint.flake8-type-checking.quote-annotations = true
 lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
+lint.flake8-type-checking.strict = true
 lint.pydocstyle.convention = "google"
 
 [tool.codespell]

@@ -8,13 +8,15 @@ from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
     LocalRepo,
-    UriRepo,
 )
 from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.impl.pre_commit import PreCommitTool
 
 if TYPE_CHECKING:
+    from usethis._integrations.pre_commit.schema import (
+        UriRepo,
+    )
     from usethis._integrations.uv.deps import (
         Dependency,
     )

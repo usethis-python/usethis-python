@@ -1,4 +1,6 @@
-from typing import Any, Protocol
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import typer
 
@@ -18,6 +20,13 @@ from usethis._core.tool import (
     use_ruff,
 )
 from usethis.errors import UsethisError
+
+if TYPE_CHECKING:
+    from typing import Any
+
+    from usethis._core.tool import (
+        UseToolFunc,
+    )
 
 app = typer.Typer(
     help="Add and configure development tools, e.g. linters.", add_completion=False
@@ -235,10 +244,6 @@ def ruff(  # noqa: PLR0913
         files_manager(),
     ):
         _run_tool(use_ruff, remove=remove, how=how, linter=linter, formatter=formatter)
-
-
-class UseToolFunc(Protocol):
-    def __call__(self, *, remove: bool, how: bool) -> None: ...
 
 
 def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: Any):

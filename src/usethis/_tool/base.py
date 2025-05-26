@@ -234,13 +234,25 @@ class Tool(Protocol):
 
     def is_config_present(self) -> bool:
         """Whether any of the tool's managed config sections are present."""
-        config_spec = self.get_config_spec()
+        return self._is_config_spec_present(self.get_config_spec())
+
+    def _is_config_spec_present(self, config_spec: ConfigSpec) -> bool:
+        """Check whether a bespoke config spec is present.
+
+        The reason for splitting this method out from the overall `is_config_present`
+        method is to allow for checking a `config_spec` different from the main
+        config_spec (e.g. a subset of it to distinguish between two different aspects
+        of a tool, e.g. Ruff's linter vs. formatter configuration sections).
+        """
         for config_item in config_spec.config_items:
             if not config_item.managed:
                 continue
 
-            for path, entry in config_item.root.items():
-                file_manager = config_spec.file_manager_by_relative_path[path]
+            for relative_path, entry in config_item.root.items():
+                file_manager = config_spec.file_manager_by_relative_path[relative_path]
+                if not (file_manager.path.exists() and file_manager.path.is_file()):
+                    continue
+
                 if file_manager.__contains__(entry.keys):
                     return True
 

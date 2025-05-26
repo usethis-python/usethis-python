@@ -42,18 +42,19 @@ from usethis._tool.impl.ruff import RuffTool
 
 
 class TestAllHooksList:
-    def test_subset_hook_names(self):
-        for tool in ALL_TOOLS:
-            try:
-                hook_names = [
-                    hook.id
-                    for repo_config in tool.get_pre_commit_repos()
-                    for hook in repo_config.hooks or []
-                ]
-            except NotImplementedError:
-                continue
-            for hook_name in hook_names:
-                assert hook_name in _HOOK_ORDER
+    def test_subset_hook_names(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            for tool in ALL_TOOLS:
+                try:
+                    hook_names = [
+                        hook.id
+                        for repo_config in tool.get_pre_commit_repos()
+                        for hook in repo_config.hooks or []
+                    ]
+                except NotImplementedError:
+                    continue
+                for hook_name in hook_names:
+                    assert hook_name in _HOOK_ORDER
 
 
 class TestCodespell:

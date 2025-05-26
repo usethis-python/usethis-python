@@ -384,7 +384,7 @@ def use_ruff(
         linter: Whether to add/remove the Ruff linter.
         formatter: Whether to add/remove the Ruff formatter.
     """
-    tool = RuffTool(linter=linter, formatter=formatter)
+    tool = RuffTool(force_linter=linter, force_formatter=formatter)
 
     if how:
         tool.print_how_to_use()

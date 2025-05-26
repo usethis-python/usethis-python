@@ -45,13 +45,19 @@ if TYPE_CHECKING:
 class RuffTool(Tool):
     # https://github.com/astral-sh/ruff
 
-    def __init__(self, linter: bool = True, formatter: bool = True):
-        self.using_linter = linter
-        self.using_formatter = formatter
+    def __init__(self, force_linter: bool = False, force_formatter: bool = False):
+        """Initialize the Ruff management class.
 
-        if not linter and not formatter:
-            msg = f"{self.name} must be used as either a linter, a formatter, or both."
-            raise NotImplementedError(msg)
+        Args:
+            force_linter: If True, the linter will always be considered used. Otherwise,
+                          the standard heuristics will be used to determine if the
+                          linter is used.
+            force_formatter: If True, the formatter will always be considered used.
+                             Otherwise, the standard heuristics will be used to
+                             determine if the formatter is used.
+        """
+        self.force_linter = force_linter
+        self.force_formatter = force_formatter
 
     @property
     def name(self) -> str:
@@ -59,18 +65,18 @@ class RuffTool(Tool):
 
     def print_how_to_use(self) -> None:
         if is_uv_used():
-            if self.using_linter:
+            if self.is_linter_used():
                 box_print(
                     "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
                 )
-            if self.using_formatter:
+            if self.is_formatter_used():
                 box_print("Run 'uv run ruff format' to run the Ruff formatter.")
         else:
-            if self.using_linter:
+            if self.is_linter_used():
                 box_print(
                     "Run 'ruff check --fix' to run the Ruff linter with autofixes."
                 )
-            if self.using_formatter:
+            if self.is_formatter_used():
                 box_print("Run 'ruff format' to run the Ruff formatter.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
@@ -137,7 +143,7 @@ class RuffTool(Tool):
 
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         repos = []
-        if self.using_linter:
+        if self.is_linter_used():
             repos.append(
                 LocalRepo(
                     repo="local",
@@ -160,7 +166,7 @@ class RuffTool(Tool):
                     ],
                 )
             )
-        if self.using_formatter:
+        if self.is_formatter_used():
             repos.append(
                 LocalRepo(
                     repo="local",
@@ -190,9 +196,9 @@ class RuffTool(Tool):
             BitbucketScriptItemAnchor(name="install-uv")
         ]
 
-        if self.using_linter:
+        if self.is_linter_used():
             lines.append("uv run ruff check --fix")
-        if self.using_formatter:
+        if self.is_formatter_used():
             lines.append("uv run ruff format")
 
         return [
@@ -381,6 +387,9 @@ class RuffTool(Tool):
 
     def is_linter_used(self) -> bool:
         """Check if the linter is used in the project."""
+        if self.force_linter:
+            return True
+
         return self._is_config_spec_present(
             ConfigSpec.from_flat(
                 file_managers=[
@@ -406,6 +415,9 @@ class RuffTool(Tool):
 
     def is_formatter_used(self) -> bool:
         """Check if the formatter is used in the project."""
+        if self.force_formatter:
+            return True
+
         return self._is_config_spec_present(
             ConfigSpec.from_flat(
                 file_managers=[

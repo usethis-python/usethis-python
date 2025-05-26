@@ -58,6 +58,7 @@ class RuffTool(Tool):
         """
         self.force_linter = force_linter
         self.force_formatter = force_formatter
+        self.no_force = not (force_linter or force_formatter)
 
     @property
     def name(self) -> str:
@@ -401,7 +402,9 @@ class RuffTool(Tool):
         if self.force_linter:
             return True
 
-        return self.is_linter_config_present() or self.is_no_subtool_config_present()
+        return self.is_linter_config_present() or (
+            self.no_force and self.is_no_subtool_config_present()
+        )
 
     def is_linter_config_present(self) -> bool:
         return self._is_config_spec_present(
@@ -435,7 +438,9 @@ class RuffTool(Tool):
         if self.force_formatter:
             return True
 
-        return self.is_formatter_config_present() or self.is_no_subtool_config_present()
+        return self.is_formatter_config_present() or (
+            self.no_force and self.is_no_subtool_config_present()
+        )
 
     def is_formatter_config_present(self) -> bool:
         return self._is_config_spec_present(

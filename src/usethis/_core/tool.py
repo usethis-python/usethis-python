@@ -413,8 +413,10 @@ def use_ruff(
 
         tool.add_dev_deps()
         tool.add_configs()
-        tool.select_rules(rule_config.get_all_selected())
-        tool.ignore_rules(rule_config.get_all_ignored())
+
+        if linter:
+            tool.select_rules(rule_config.get_all_selected())
+            tool.ignore_rules(rule_config.get_all_ignored())
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
         else:

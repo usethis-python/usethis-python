@@ -87,22 +87,18 @@ class RuffTool(Tool):
 
         line_length = 88
 
-        return ConfigSpec.from_flat(
-            file_managers=[
-                DotRuffTOMLManager(),
-                RuffTOMLManager(),
-                PyprojectTOMLManager(),
-            ],
-            resolution="first",
-            config_items=[
-                ConfigItem(
-                    description="Overall config",
-                    root={
-                        Path(".ruff.toml"): ConfigEntry(keys=[]),
-                        Path("ruff.toml"): ConfigEntry(keys=[]),
-                        Path("pyproject.toml"): ConfigEntry(keys=["tool", "ruff"]),
-                    },
-                ),
+        config_items = [
+            ConfigItem(
+                description="Overall config",
+                root={
+                    Path(".ruff.toml"): ConfigEntry(keys=[]),
+                    Path("ruff.toml"): ConfigEntry(keys=[]),
+                    Path("pyproject.toml"): ConfigEntry(keys=["tool", "ruff"]),
+                },
+            ),
+        ]
+        if self.is_linter_used():
+            config_items.append(
                 ConfigItem(
                     description="Line length",
                     root={
@@ -117,7 +113,10 @@ class RuffTool(Tool):
                             get_value=lambda: line_length,
                         ),
                     },
-                ),
+                )
+            )
+        if self.is_formatter_used():
+            config_items.append(
                 ConfigItem(
                     description="Docstring Code Format",
                     root={
@@ -135,7 +134,16 @@ class RuffTool(Tool):
                         ),
                     },
                 ),
+            )
+
+        return ConfigSpec.from_flat(
+            file_managers=[
+                DotRuffTOMLManager(),
+                RuffTOMLManager(),
+                PyprojectTOMLManager(),
             ],
+            resolution="first",
+            config_items=config_items,
         )
 
     def get_managed_files(self) -> list[Path]:

@@ -2719,9 +2719,13 @@ docstring-code-format = true
         ):
             # Act
             with change_cwd(uv_init_dir), files_manager():
-                use_ruff(linter=True)
+                use_ruff(linter=True, formatter=False)
 
-            # Assert
+                # Assert
+                assert not PyprojectTOMLManager().__contains__(
+                    ["tool", "ruff", "format"]
+                )
+
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"

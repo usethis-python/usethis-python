@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 from usethis._config import usethis_config
 from usethis._console import tick_print
@@ -39,6 +39,16 @@ if TYPE_CHECKING:
 
 # Note - all these functions invoke ensure_pyproject_toml() at the start, since
 # declaring dependencies in pyproject.toml requires that file to exist.
+
+
+class UseToolFunc(Protocol):
+    def __call__(self, *, remove: bool, how: bool) -> None:
+        """A function that adds/removes a tool to/from the project.
+
+        Args:
+            remove: If True, remove the tool instead of adding it.
+            how: If True, print how to use the tool instead of adding/removing it.
+        """
 
 
 def use_codespell(*, remove: bool = False, how: bool = False) -> None:

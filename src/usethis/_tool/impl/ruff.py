@@ -394,18 +394,14 @@ class RuffTool(Tool):
             raise NotImplementedError(msg)
 
     def is_linter_used(self) -> bool:
-        """Check if the linter is used in the project."""
+        """Check if the linter is used in the project.
+
+        This assumes we already know that Ruff is used.
+        """
         if self.force_linter:
             return True
 
         return self.is_linter_config_present() or self.is_no_subtool_config_present()
-
-    def is_no_subtool_config_present(self) -> bool:
-        """Check if no subtool config is present."""
-        return (
-            not self.is_linter_config_present()
-            and not self.is_formatter_config_present()
-        )
 
     def is_linter_config_present(self) -> bool:
         return self._is_config_spec_present(
@@ -432,11 +428,14 @@ class RuffTool(Tool):
         )
 
     def is_formatter_used(self) -> bool:
-        """Check if the formatter is used in the project."""
+        """Check if the formatter is used in the project.
+
+        This assumes we already know that Ruff is used.
+        """
         if self.force_formatter:
             return True
 
-        return self.is_linter_config_present() or self.is_no_subtool_config_present()
+        return self.is_formatter_config_present() or self.is_no_subtool_config_present()
 
     def is_formatter_config_present(self) -> bool:
         return self._is_config_spec_present(
@@ -460,4 +459,11 @@ class RuffTool(Tool):
                     ),
                 ],
             )
+        )
+
+    def is_no_subtool_config_present(self) -> bool:
+        """Check if no subtool config is present."""
+        return (
+            not self.is_linter_config_present()
+            and not self.is_formatter_config_present()
         )

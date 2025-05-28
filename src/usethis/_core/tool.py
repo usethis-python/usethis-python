@@ -384,7 +384,7 @@ def use_ruff(
         linter: Whether to add/remove the Ruff linter.
         formatter: Whether to add/remove the Ruff formatter.
     """
-    tool = RuffTool(force_linter=linter, force_formatter=formatter)
+    tool = RuffTool()
 
     if how:
         tool.print_how_to_use()
@@ -409,6 +409,11 @@ def use_ruff(
         rule_config = RuleConfig()
 
     if not remove:
+        tool = RuffTool(
+            linter_detection="always" if linter else "auto",
+            formatter_detection="always" if formatter else "auto",
+        )
+
         ensure_pyproject_toml()
 
         tool.add_dev_deps()
@@ -424,6 +429,11 @@ def use_ruff(
 
         tool.print_how_to_use()
     else:
+        tool = RuffTool(
+            linter_detection="never" if not linter else "auto",
+            formatter_detection="never" if not formatter else "auto",
+        )
+
         tool.remove_pre_commit_repo_configs()
         tool.remove_bitbucket_steps()
         tool.remove_configs()

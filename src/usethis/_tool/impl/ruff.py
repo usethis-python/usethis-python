@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+from typing_extensions import assert_never
+
 from usethis._config_file import (
     DotRuffTOMLManager,
     RuffTOMLManager,
@@ -45,20 +47,28 @@ if TYPE_CHECKING:
 class RuffTool(Tool):
     # https://github.com/astral-sh/ruff
 
-    def __init__(self, force_linter: bool = False, force_formatter: bool = False):
+    def __init__(
+        self,
+        linter_detection: Literal["auto", "always", "never"] = "auto",
+        formatter_detection: Literal["auto", "always", "never"] = "auto",
+    ):
         """Initialize the Ruff management class.
 
         Args:
-            force_linter: If True, the linter will always be considered used. Otherwise,
-                          the standard heuristics will be used to determine if the
-                          linter is used.
-            force_formatter: If True, the formatter will always be considered used.
-                             Otherwise, the standard heuristics will be used to
-                             determine if the formatter is used.
+            linter_detection: A method to determine whether the linter is being used. By
+                              default, it will be determined using heuristics
+                              automatically, but this can be over-ridden.
+            formatter_detection: A method to determine whether the formatter is used. By
+                                 default, it will be determined using heuristics
+                                 automatically, but this can be over-ridden.
         """
-        self.force_linter = force_linter
-        self.force_formatter = force_formatter
-        self.no_force = not (force_linter or force_formatter)
+        self.linter_detection: Literal["auto", "always", "never"] = linter_detection
+        self.formatter_detection: Literal["auto", "always", "never"] = (
+            formatter_detection
+        )
+        self.is_auto_detection = (linter_detection == "auto") and (
+            formatter_detection == "auto"
+        )
 
     @property
     def name(self) -> str:
@@ -399,11 +409,17 @@ class RuffTool(Tool):
 
         This assumes we already know that Ruff is used.
         """
-        if self.force_linter:
+        if self.linter_detection == "always":
             return True
+        elif self.linter_detection == "never":
+            return False
+        elif self.linter_detection == "auto":
+            pass
+        else:
+            assert_never(self.linter_detection)
 
         return self.is_linter_config_present() or (
-            self.no_force and self.is_no_subtool_config_present()
+            self.is_auto_detection and self.is_no_subtool_config_present()
         )
 
     def is_linter_config_present(self) -> bool:
@@ -435,11 +451,17 @@ class RuffTool(Tool):
 
         This assumes we already know that Ruff is used.
         """
-        if self.force_formatter:
+        if self.formatter_detection == "always":
             return True
+        elif self.formatter_detection == "never":
+            return False
+        elif self.formatter_detection == "auto":
+            pass
+        else:
+            assert_never(self.formatter_detection)
 
         return self.is_formatter_config_present() or (
-            self.no_force and self.is_no_subtool_config_present()
+            self.is_auto_detection and self.is_no_subtool_config_present()
         )
 
     def is_formatter_config_present(self) -> bool:

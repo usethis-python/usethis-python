@@ -34,7 +34,7 @@ dynamic = [
   "version",
 ]
 dependencies = [
-  "click>=8.0.0,!=8.2.0",
+  "click>=8.0.0",
   "configupdater>=3.2",
   "grimp>=2.5.0",
   "mergedeep>=1.3.4",

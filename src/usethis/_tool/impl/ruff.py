@@ -106,45 +106,82 @@ class RuffTool(Tool):
                     Path("ruff.toml"): ConfigEntry(keys=[]),
                     Path("pyproject.toml"): ConfigEntry(keys=["tool", "ruff"]),
                 },
+                # If the detection method is "never" for either the linter or formatter,
+                # then we shouldn't remove the overall config section. And when it comes
+                # to adding, it will be added regardless since there are other config
+                # subsections below.
+                managed=not (
+                    (self.linter_detection == "never")
+                    or (self.formatter_detection == "never")
+                ),
             ),
         ]
-        if self.is_linter_used():
-            config_items.append(
-                ConfigItem(
-                    description="Line length",
-                    root={
-                        Path(".ruff.toml"): ConfigEntry(
-                            keys=["line-length"], get_value=lambda: line_length
-                        ),
-                        Path("ruff.toml"): ConfigEntry(
-                            keys=["line-length"], get_value=lambda: line_length
-                        ),
-                        Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "ruff", "line-length"],
-                            get_value=lambda: line_length,
-                        ),
-                    },
-                )
+        if self.linter_detection == "always":
+            config_items.extend(
+                [
+                    ConfigItem(
+                        description="Linter config",
+                        root={
+                            Path(".ruff.toml"): ConfigEntry(keys=["lint"]),
+                            Path("ruff.toml"): ConfigEntry(keys=["lint"]),
+                            Path("pyproject.toml"): ConfigEntry(
+                                keys=["tool", "ruff", "lint"]
+                            ),
+                        },
+                    ),
+                    ConfigItem(
+                        description="Line length",
+                        root={
+                            Path(".ruff.toml"): ConfigEntry(
+                                keys=["line-length"], get_value=lambda: line_length
+                            ),
+                            Path("ruff.toml"): ConfigEntry(
+                                keys=["line-length"], get_value=lambda: line_length
+                            ),
+                            Path("pyproject.toml"): ConfigEntry(
+                                keys=["tool", "ruff", "line-length"],
+                                get_value=lambda: line_length,
+                            ),
+                        },
+                    ),
+                ]
             )
-        if self.is_formatter_used():
-            config_items.append(
-                ConfigItem(
-                    description="Docstring Code Format",
-                    root={
-                        Path(".ruff.toml"): ConfigEntry(
-                            keys=["format", "docstring-code-format"],
-                            get_value=lambda: True,
-                        ),
-                        Path("ruff.toml"): ConfigEntry(
-                            keys=["format", "docstring-code-format"],
-                            get_value=lambda: True,
-                        ),
-                        Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "ruff", "format", "docstring-code-format"],
-                            get_value=lambda: True,
-                        ),
-                    },
-                ),
+        if self.formatter_detection == "always":
+            config_items.extend(
+                [
+                    ConfigItem(
+                        description="Formatter config",
+                        root={
+                            Path(".ruff.toml"): ConfigEntry(keys=["format"]),
+                            Path("ruff.toml"): ConfigEntry(keys=["format"]),
+                            Path("pyproject.toml"): ConfigEntry(
+                                keys=["tool", "ruff", "format"]
+                            ),
+                        },
+                    ),
+                    ConfigItem(
+                        description="Docstring Code Format",
+                        root={
+                            Path(".ruff.toml"): ConfigEntry(
+                                keys=["format", "docstring-code-format"],
+                                get_value=lambda: True,
+                            ),
+                            Path("ruff.toml"): ConfigEntry(
+                                keys=["format", "docstring-code-format"],
+                                get_value=lambda: True,
+                            ),
+                            Path("pyproject.toml"): ConfigEntry(
+                                keys=[
+                                    "tool",
+                                    "ruff",
+                                    "format",
+                                    "docstring-code-format",
+                                ],
+                                get_value=lambda: True,
+                            ),
+                        },
+                    ),
+                ]
             )
 
         return ConfigSpec.from_flat(

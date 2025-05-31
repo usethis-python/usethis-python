@@ -430,8 +430,8 @@ def use_ruff(
         tool.print_how_to_use()
     else:
         tool = RuffTool(
-            linter_detection="never" if not linter else "auto",
-            formatter_detection="never" if not formatter else "auto",
+            linter_detection="never" if not linter else "always",
+            formatter_detection="never" if not formatter else "always",
         )
 
         tool.remove_pre_commit_repo_configs()

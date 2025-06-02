@@ -172,6 +172,11 @@ Supported options:
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
 
+For `usethis tool ruff`, in addition to the above options, you can also specify:
+
+- `--linter` to add or remove specifically the linter component of Ruff
+- `--formatter` to add or remove specifically the formatter component of Ruff
+
 ### `usethis ci`
 
 Add Continuous Integration pipelines to the project.

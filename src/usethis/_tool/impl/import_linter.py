@@ -41,6 +41,7 @@ from usethis._tool.config import (
     NoConfigValue,
 )
 from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
     from usethis._integrations.pre_commit.schema import (
@@ -338,6 +339,9 @@ class ImportLinterTool(Tool):
                 ),
             )
         ]
+
+    def get_rule_config(self) -> RuleConfig:
+        return RuleConfig(unmanaged_selected=["INP"])
 
 
 @functools.cache

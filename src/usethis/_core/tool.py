@@ -128,11 +128,15 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
+    rule_config = tool.get_rule_config()
+
     if not remove:
         ensure_pyproject_toml()
 
         tool.add_dev_deps()
         tool.add_configs()
+        if RuffTool().is_used():
+            RuffTool().select_rules(rule_config.get_all_selected())
         if PreCommitTool().is_used():
             tool.add_pre_commit_repo_configs()
         else:
@@ -142,6 +146,8 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
     else:
         tool.remove_pre_commit_repo_configs()
         tool.remove_bitbucket_steps()
+        if RuffTool().is_used():
+            RuffTool().deselect_rules(rule_config.selected)
         tool.remove_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()

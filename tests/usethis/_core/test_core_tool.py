@@ -2870,18 +2870,6 @@ select = ["F"]
 """
             )
 
-        # TODO for both adding and removing we need to check th integration with other things like pre-commit etc.
-        # Especially concerned with setting ="always" for removing. Presumably removing
-        # doesn't tend to check whether the thing actually exists - it just removes
-        # but we should check that... and test it
-
-        # TODO test adding integration with pre-commit for linter-only
-        # TODO test adding integration with pre-commit for formatter-only
-        # TODO test adding integration with pre-commit for neither
-        # TODO test removing integration with pre-commit for linter-only
-        # TODO test removing integration with pre-commit for formatter-only
-        # TODO test removing integration with pre-commit for neither
-
         # TODO test adding integration with Bitbucket for linter-only
         # TODO test adding integration with Bitbucket for formatter-only
         # TODO test adding integration with Bitbucket for neither
@@ -3212,6 +3200,121 @@ repos:
         entry: uv run --frozen --offline ruff format --force-exclude
         language: system
         require_serial: true
+"""
+            )
+
+    class TestBitbucketIntegration:
+        def test_add_linter_only(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "bitbucket-pipelines.yml").write_text("""\
+image: atlassian/default-image:3
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(linter=True, formatter=False)
+
+            # Assert
+            assert (tmp_path / "bitbucket-pipelines.yml").exists()
+            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert "ruff check" in contents
+            assert "ruff format" not in contents
+
+        def test_add_formatter_only(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "bitbucket-pipelines.yml").write_text("""\
+image: atlassian/default-image:3
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(linter=False, formatter=True)
+
+            # Assert
+            assert (tmp_path / "bitbucket-pipelines.yml").exists()
+            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert "ruff check" not in contents
+            assert "ruff format" in contents
+
+        def test_remove_linter_only(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Run Ruff
+            script:
+              - uv run ruff check --fix --force-exclude
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(linter=True, formatter=False, remove=True)
+
+            # Assert
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            assert (
+                contents
+                == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+            )
+
+        def test_remove_formatter_only_unchanged(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Run Ruff
+            script:
+              - uv run ruff check --fix --force-exclude
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(linter=False, formatter=True, remove=True)
+
+            # Assert
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            assert (
+                contents
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Run Ruff
+            script:
+              - uv run ruff check --fix --force-exclude
 """
             )
 

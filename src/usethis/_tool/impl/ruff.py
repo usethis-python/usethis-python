@@ -248,22 +248,29 @@ class RuffTool(Tool):
         return repos
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        lines: list[str | BitbucketPipe | BitbucketScriptItemAnchor] = [
+        shared_lines: list[str | BitbucketPipe | BitbucketScriptItemAnchor] = [
             BitbucketScriptItemAnchor(name="install-uv")
         ]
 
+        steps = []
         if self.is_linter_used():
-            lines.append("uv run ruff check --fix")
-        if self.is_formatter_used():
-            lines.append("uv run ruff format")
-
-        return [
-            BitbucketStep(
+            lines = [*shared_lines, "uv run ruff check --fix"]
+            step = BitbucketStep(
                 name=f"Run {self.name}",
                 caches=["uv"],
                 script=BitbucketScript(lines),
             )
-        ]
+            steps.append(step)
+        if self.is_formatter_used():
+            lines = [*shared_lines, "uv run ruff format"]
+            step = BitbucketStep(
+                name=f"Run {self.name} Formatter",
+                caches=["uv"],
+                script=BitbucketScript(lines),
+            )
+            steps.append(step)
+
+        return steps
 
     def select_rules(self, rules: list[Rule]) -> None:
         """Add Ruff rules to the project."""

@@ -3010,6 +3010,60 @@ repos:
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_add_only_linter_to_existing_formatter(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                use_ruff(formatter=True)
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_ruff(linter=True, formatter=False)
+
+                # Assert
+                hook_names = get_hook_ids()
+
+            # 1. File exists
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+
+            # 2. Hook is in the file
+            assert "ruff" in hook_names
+            assert "ruff-format" in hook_names
+
+            # 3. Test file contents
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff check --fix --force-exclude
+        language: system
+        require_serial: true
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff format --force-exclude
+        language: system
+        require_serial: true
+"""
+            )
+
     class TestConfig:
         def test_removed(self, uv_init_dir: Path):
             # Arrange

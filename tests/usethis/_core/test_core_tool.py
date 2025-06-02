@@ -42,18 +42,19 @@ from usethis._tool.impl.ruff import RuffTool
 
 
 class TestAllHooksList:
-    def test_subset_hook_names(self):
-        for tool in ALL_TOOLS:
-            try:
-                hook_names = [
-                    hook.id
-                    for repo_config in tool.get_pre_commit_repos()
-                    for hook in repo_config.hooks or []
-                ]
-            except NotImplementedError:
-                continue
-            for hook_name in hook_names:
-                assert hook_name in _HOOK_ORDER
+    def test_subset_hook_names(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            for tool in ALL_TOOLS:
+                try:
+                    hook_names = [
+                        hook.id
+                        for repo_config in tool.get_pre_commit_repos()
+                        for hook in repo_config.hooks or []
+                    ]
+                except NotImplementedError:
+                    continue
+                for hook_name in hook_names:
+                    assert hook_name in _HOOK_ORDER
 
 
 class TestCodespell:
@@ -2714,6 +2715,46 @@ docstring-code-format = true
                 # Assert
                 assert RuffTOMLManager()[["line-length"]] == 100
 
+        def test_only_add_linter(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(linter=True, formatter=False)
+
+                # Assert
+                assert not PyprojectTOMLManager().__contains__(
+                    ["tool", "ruff", "format"]
+                )
+
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'ruff'.\n"
+                "✔ Adding Ruff config to 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
+                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+            )
+
+        def test_only_add_formatter(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(linter=False, formatter=True)
+
+                # Assert
+                assert not PyprojectTOMLManager().__contains__(["tool", "ruff", "lint"])
+
+            out, _ = capfd.readouterr()
+            assert out == (
+                "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'ruff'.\n"
+                "✔ Adding Ruff config to 'pyproject.toml'.\n"
+                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            )
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_dir: Path):
@@ -2780,6 +2821,55 @@ dev = []
             # Assert
             assert not (tmp_path / "pyproject.toml").exists()
 
+        def test_only_formatter(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["E", "PT"]
+
+[tool.ruff.format]
+select = ["F"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(linter=False, formatter=True, remove=True)
+
+            # Assert
+            assert (tmp_path / "pyproject.toml").read_text() == (
+                """\
+[tool.ruff.lint]
+select = ["E", "PT"]
+
+"""
+            )
+
+        def test_only_linter(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+fake = ["E", "PT"]
+
+[tool.ruff.format]
+select = ["F"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(linter=True, formatter=False, remove=True)
+
+            # Assert
+            assert (tmp_path / "pyproject.toml").read_text() == (
+                """\
+[tool.ruff.format]
+select = ["F"]
+"""
+            )
+
     class TestPrecommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):
@@ -2834,10 +2924,371 @@ dev = []
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing hook 'ruff' from '.pre-commit-config.yaml'.\n"
+                "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing Ruff config from 'pyproject.toml'.\n"
                 "✔ Removing dependency 'ruff' from the 'dev' group in 'pyproject.toml'.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_add_only_linter(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_ruff(linter=True, formatter=False)
+
+                # Assert
+                hook_names = get_hook_ids()
+
+            # 1. File exists
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+
+            # 2. Hook is in the file
+            assert "ruff" in hook_names
+            assert "ruff-format" not in hook_names
+
+            # 3. Test file contents
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff check --fix --force-exclude
+        language: system
+        require_serial: true
+"""
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_add_only_linter_to_existing_formatter(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                use_ruff(formatter=True)
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_ruff(linter=True, formatter=False)
+
+                # Assert
+                hook_names = get_hook_ids()
+
+            # 1. File exists
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+
+            # 2. Hook is in the file
+            assert "ruff" in hook_names
+            assert "ruff-format" in hook_names
+
+            # 3. Test file contents
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff check --fix --force-exclude
+        language: system
+        require_serial: true
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff format --force-exclude
+        language: system
+        require_serial: true
+"""
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_add_only_formatter(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_ruff(linter=False, formatter=True)
+
+                # Assert
+                hook_names = get_hook_ids()
+
+            # 1. File exists
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+
+            # 2. Hook is in the file
+            assert "ruff" not in hook_names
+            assert "ruff-format" in hook_names
+
+            # 3. Test file contents
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff format --force-exclude
+        language: system
+        require_serial: true
+"""
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_remove_only_linter(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                use_ruff()
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_ruff(linter=True, formatter=False, remove=True)
+
+                # Assert
+                hook_names = get_hook_ids()
+
+            # 1. File exists
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+
+            # 2. Hook is in the file
+            assert "ruff" not in hook_names
+            assert "ruff-format" in hook_names
+
+            # 3. Test file contents
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff format --force-exclude
+        language: system
+        require_serial: true
+"""
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_remove_only_linter_yaml_only(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_repo_dir / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff check --fix --force-exclude
+        language: system
+        require_serial: true
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff format --force-exclude
+        language: system
+        require_serial: true
+""")
+
+            with change_cwd(uv_init_repo_dir), files_manager():
+                capfd.readouterr()
+
+                # Act
+                use_ruff(linter=True, formatter=False, remove=True)
+
+                # Assert
+                hook_names = get_hook_ids()
+
+            # 1. File exists
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
+
+            # 2. Hook is in the file
+            assert "ruff" not in hook_names
+            assert "ruff-format" in hook_names
+
+            # 3. Test file contents
+            assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
+                """\
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-format
+        name: ruff-format
+        types_or:
+          - python
+          - pyi
+          - jupyter
+        always_run: true
+        entry: uv run --frozen --offline ruff format --force-exclude
+        language: system
+        require_serial: true
+"""
+            )
+
+    class TestBitbucketIntegration:
+        def test_add_linter_only(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "bitbucket-pipelines.yml").write_text("""\
+image: atlassian/default-image:3
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(linter=True, formatter=False)
+
+            # Assert
+            assert (tmp_path / "bitbucket-pipelines.yml").exists()
+            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert "ruff check" in contents
+            assert "ruff format" not in contents
+
+        def test_add_formatter_only(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "bitbucket-pipelines.yml").write_text("""\
+image: atlassian/default-image:3
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(linter=False, formatter=True)
+
+            # Assert
+            assert (tmp_path / "bitbucket-pipelines.yml").exists()
+            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert "ruff check" not in contents
+            assert "ruff format" in contents
+
+        def test_remove_linter_only(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Run Ruff
+            script:
+              - uv run ruff check --fix --force-exclude
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(linter=True, formatter=False, remove=True)
+
+            # Assert
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            assert (
+                contents
+                == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - echo 'Hello, world!'
+"""
+            )
+
+        def test_remove_formatter_only_unchanged(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Run Ruff
+            script:
+              - uv run ruff check --fix --force-exclude
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(linter=False, formatter=True, remove=True)
+
+            # Assert
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            assert (
+                contents
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Run Ruff
+            script:
+              - uv run ruff check --fix --force-exclude
+"""
             )
 
     class TestConfig:

@@ -96,7 +96,7 @@ pipelines:
                 assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == ""
 
         class TestPreCommitIntegration:
-            def test_mentioned_in_file(
+            def test_contents(
                 self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
             ):
                 # Arrange
@@ -108,7 +108,33 @@ pipelines:
 
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-                assert "pre-commit" in contents
+                assert (
+                    contents
+                    == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+        pre-commit: ~/.cache/pre-commit
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Run pre-commit
+            caches:
+              - uv
+              - pre-commit
+            script:
+              - *install-uv
+              - uv run pre-commit run --all-files
+"""
+                )
+
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (

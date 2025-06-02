@@ -162,6 +162,7 @@ def _add_step_in_default_via_doc(
         # For these tools, sync them with the pre-commit removal logic
         "Run pyproject-fmt",
         "Run Ruff",
+        "Run Ruff Formatter",
         "Run deptry",
         "Run Codespell",
         *[f"Test on 3.{maj_version}" for maj_version in maj_versions],

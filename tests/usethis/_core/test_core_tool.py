@@ -2870,33 +2870,6 @@ select = ["F"]
 """
             )
 
-        # TODO test adding integration with Bitbucket for linter-only
-        # TODO test adding integration with Bitbucket for formatter-only
-        # TODO test adding integration with Bitbucket for neither
-        # TODO test removing integration with Bitbucket for linter-only
-        # TODO test removing integration with Bitbucket for formatter-only
-        # TODO test removing integration with Bitbucket for neither
-
-        # TODO conceptual challenge - removing _part_ of a Bitbucket script.
-        # Need to split Ruff into two steps - one for linter, one for formatter,
-        # each will have separate names. Then we need similar techniques to the ones
-        # used for config in terms of directly using the attributes associated with
-        # over-rides rather than the is_*_used calls.
-
-        # TODO document implications of current pre-commit approach (separate repos
-        # for the same tool, i.e. ruff) which suits this well - but there is a ticket
-        # about combining them. Think about how this would work. Presumably it could be
-        # handled automatically by pipeweld but I haven't thought about it.
-        # TODO also there are implications to us moving to a standard URL-based pre-commit
-        # because that would also tend to involve shared repo. There's a ticket for that
-        # too and this is related.
-
-        # TODO it's worth trying the MultiTool design. It might be more elegant by
-        # providing a dedicated interface for removing _part_ of something. I get the
-        # impression that this won't be as difficult as it seems. I think it makes sense
-        # to do after the tests have been written though, and possible in a separate PR
-        # or branch off of this branch
-
     class TestPrecommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):

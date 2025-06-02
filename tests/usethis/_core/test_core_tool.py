@@ -2846,7 +2846,29 @@ select = ["E", "PT"]
 """
             )
 
-        # TODO test removing linter
+        def test_only_linter(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+fake = ["E", "PT"]
+
+[tool.ruff.format]
+select = ["F"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ruff(linter=True, formatter=False, remove=True)
+
+            # Assert
+            assert (tmp_path / "pyproject.toml").read_text() == (
+                """\
+[tool.ruff.format]
+select = ["F"]
+"""
+            )
 
         # TODO for both adding and removing we need to check th integration with other things like pre-commit etc.
         # Especially concerned with setting ="always" for removing. Presumably removing

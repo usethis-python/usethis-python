@@ -55,18 +55,18 @@ repos:
       - id: pyproject-fmt
   - repo: local
     hooks:
-      - id: ruff-format
-        name: ruff-format
-        entry: uv run --frozen --offline ruff format --force-exclude
+      - id: ruff
+        name: ruff
+        entry: uv run --frozen --offline ruff check --fix --force-exclude
         types_or: [python, pyi, jupyter]
         language: system
         always_run: true
         require_serial: true
   - repo: local
     hooks:
-      - id: ruff
-        name: ruff
-        entry: uv run --frozen --offline ruff check --fix --force-exclude
+      - id: ruff-format
+        name: ruff-format
+        entry: uv run --frozen --offline ruff format --force-exclude
         types_or: [python, pyi, jupyter]
         language: system
         always_run: true

@@ -14,8 +14,8 @@ class TestDocstyle:
         with pytest.raises(typer.Exit):
             docstyle("invalid_style")
         out, err = capfd.readouterr()
-        assert "Invalid docstring style" in out
-        assert not err
+        assert "Invalid docstring style" in err
+        assert not out
 
     def test_google_runs(self, tmp_path: Path):
         with change_cwd(tmp_path):

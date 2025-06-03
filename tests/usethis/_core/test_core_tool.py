@@ -1357,6 +1357,22 @@ root_package = "a"
             # Assert
             assert not (tmp_path / "pyproject.toml").exists()
 
+        def test_doesnt_deselect_inp_rules(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / "ruff.toml").touch()
+
+            with change_cwd(tmp_path), files_manager():
+                RuffTool().select_rules(["INP"])
+
+                # Act
+                use_import_linter(remove=True)
+
+            # Assert
+            contents = (tmp_path / "ruff.toml").read_text()
+            assert "INP" in contents
+
     class TestPreCommitIntegration:
         def test_config(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]

@@ -35,9 +35,7 @@ if TYPE_CHECKING:
         UseToolFunc,
     )
 
-app = typer.Typer(
-    help="Add and configure development tools, e.g. linters.", add_completion=False
-)
+app = typer.Typer(help="Add and configure individual tools.", add_completion=False)
 
 
 @app.command(

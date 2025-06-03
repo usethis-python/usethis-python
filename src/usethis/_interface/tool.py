@@ -4,7 +4,14 @@ from typing import TYPE_CHECKING
 
 import typer
 
-from usethis._config import offline_opt, quiet_opt, usethis_config
+from usethis._config import (
+    frozen_opt,
+    how_opt,
+    offline_opt,
+    quiet_opt,
+    remove_opt,
+    usethis_config,
+)
 from usethis._config_file import files_manager
 from usethis._console import err_print
 from usethis._core.tool import (
@@ -31,14 +38,6 @@ if TYPE_CHECKING:
 app = typer.Typer(
     help="Add and configure development tools, e.g. linters.", add_completion=False
 )
-
-how_opt = typer.Option(
-    False, "--how", help="Only print how to use the tool, do not add or remove it."
-)
-remove_opt = typer.Option(
-    False, "--remove", help="Remove the tool instead of adding it."
-)
-frozen_opt = typer.Option(False, "--frozen", help="Use the frozen dependencies.")
 
 
 @app.command(

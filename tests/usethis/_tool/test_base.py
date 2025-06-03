@@ -312,6 +312,95 @@ class TestTool:
             # Assert
             assert not result
 
+        def test_syntax_errors_in_pyproject_toml(
+            self, uv_init_dir: Path, capsys: pytest.CaptureFixture[str]
+        ):
+            # https://github.com/nathanjmcdougall/usethis-python/issues/483
+            # Should warn that parsing pyproject.toml failed, and print the error.
+            # But should continue, with the assumption that the pyproject.toml file
+            # does not contain any tool-specific configuration.
+
+            # Arrange
+            tool = MyTool()
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                # Create a pyproject.toml with a syntax error
+                (uv_init_dir / "pyproject.toml").write_text(
+                    """\
+[tool.my_tool
+"""
+                )
+
+                # Act
+                result = tool.is_used()
+
+            # Assert
+            assert not result
+            out, err = capsys.readouterr()
+            assert not err
+            assert out.replace("\n", " ").replace("  ", " ") == (
+                r"⚠ Failed to decode 'pyproject.toml': Unexpected character: '\n' at line 1 col 13 "
+                "⚠ Assuming 'pyproject.toml' contains no evidence of my_tool being used. "
+            )
+
+        def test_syntax_errors_in_setup_cfg(
+            self, uv_init_dir: Path, capsys: pytest.CaptureFixture[str]
+        ):
+            # A generalization of the associated test for pyproject.toml
+
+            # Arrange
+            class ThisTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "my_tool"
+
+                def print_how_to_use(self) -> None:
+                    box_print("How to use my_tool")
+
+                def get_config_spec(self) -> ConfigSpec:
+                    # Should use setup.cfg instead of pyproject.toml
+                    return ConfigSpec(
+                        file_manager_by_relative_path={
+                            Path("setup.cfg"): SetupCFGManager(),
+                        },
+                        resolution="first",
+                        config_items=[
+                            ConfigItem(
+                                root={
+                                    Path("setup.cfg"): ConfigEntry(
+                                        keys=["tool", self.name, "key"],
+                                        get_value=lambda: "value",
+                                    )
+                                }
+                            )
+                        ],
+                    )
+
+                def preferred_file_manager(self) -> KeyValueFileManager:
+                    return SetupCFGManager()
+
+            tool = ThisTool()
+            with change_cwd(uv_init_dir), SetupCFGManager():
+                # Create a setup.cfg with a syntax error
+                (uv_init_dir / "setup.cfg").write_text(
+                    """\
+[tool.my_tool
+"""
+                )
+
+                # Act
+                result = tool.is_used()
+
+            # Assert
+            assert not result
+            out, err = capsys.readouterr()
+            assert not err
+            assert out == (
+                r"⚠ Failed to decode 'setup.cfg': File contains no section headers."
+                "\nfile: '<string>', line: 1\n"
+                r"'[tool.my_tool\n'"
+                "\n⚠ Assuming 'setup.cfg' contains no evidence of my_tool being used.\n"
+            )
+
     class TestAddPreCommitRepoConfigs:
         def test_no_repo_configs(self, uv_init_dir: Path):
             # Arrange

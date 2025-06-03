@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
 
-from usethis._console import tick_print
+from usethis._console import tick_print, warn_print
 from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_step_in_default,
     bitbucket_steps_are_equivalent,
@@ -28,6 +28,7 @@ from usethis._integrations.uv.deps import (
 )
 from usethis._tool.config import ConfigSpec, NoConfigValue
 from usethis._tool.rule import RuleConfig
+from usethis.errors import FileDecodeError
 
 if TYPE_CHECKING:
     from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
@@ -105,16 +106,44 @@ class Tool(Protocol):
         2. Whether any of the tool's managed files are in the project.
         3. Whether any of the tool's managed config file sections are present.
         """
-        for file in self.get_managed_files():
-            if file.exists() and file.is_file():
-                return True
-        for dep in self.get_dev_deps(unconditional=True):
-            if is_dep_in_any_group(dep):
-                return True
-        for dep in self.get_test_deps(unconditional=True):
-            if is_dep_in_any_group(dep):
-                return True
-        return self.is_config_present()
+        decode_err_by_name: dict[str, FileDecodeError] = {}
+        _is_used = False
+
+        _is_used = any(
+            file.exists() and file.is_file() for file in self.get_managed_files()
+        )
+
+        if not _is_used:
+            try:
+                _is_used = any(
+                    is_dep_in_any_group(dep)
+                    for dep in self.get_dev_deps(unconditional=True)
+                )
+            except FileDecodeError as err:
+                decode_err_by_name[err.name] = err
+
+        if not _is_used:
+            try:
+                _is_used = any(
+                    is_dep_in_any_group(dep)
+                    for dep in self.get_test_deps(unconditional=True)
+                )
+            except FileDecodeError as err:
+                decode_err_by_name[err.name] = err
+
+        if not _is_used:
+            try:
+                _is_used = self.is_config_present()
+            except FileDecodeError as err:
+                decode_err_by_name[err.name] = err
+
+        for name, decode_err in decode_err_by_name.items():
+            warn_print(decode_err)
+            warn_print(
+                f"Assuming '{name}' contains no evidence of {self.name} being used."
+            )
+
+        return _is_used
 
     def add_dev_deps(self) -> None:
         add_deps_to_group(self.get_dev_deps(), "dev")

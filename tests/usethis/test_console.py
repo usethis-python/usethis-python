@@ -75,5 +75,6 @@ class TestErrPrint:
         err_print("Hello")
 
         # Assert
-        out, _ = capfd.readouterr()
-        assert out == "✗ Hello\n"
+        out, err = capfd.readouterr()
+        assert not out
+        assert err == "✗ Hello\n"

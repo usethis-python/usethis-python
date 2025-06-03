@@ -109,20 +109,25 @@ class Tool(Protocol):
         decode_err_by_name: dict[str, FileDecodeError] = {}
         _is_used = False
 
-        for file in self.get_managed_files():
-            _is_used = file.exists() and file.is_file()
+        _is_used = any(
+            file.exists() and file.is_file() for file in self.get_managed_files()
+        )
 
         if not _is_used:
             try:
-                for dep in self.get_dev_deps(unconditional=True):
-                    _is_used = is_dep_in_any_group(dep)
+                _is_used = any(
+                    is_dep_in_any_group(dep)
+                    for dep in self.get_dev_deps(unconditional=True)
+                )
             except FileDecodeError as err:
                 decode_err_by_name[err.name] = err
 
         if not _is_used:
             try:
-                for dep in self.get_test_deps(unconditional=True):
-                    _is_used = is_dep_in_any_group(dep)
+                _is_used = any(
+                    is_dep_in_any_group(dep)
+                    for dep in self.get_test_deps(unconditional=True)
+                )
             except FileDecodeError as err:
                 decode_err_by_name[err.name] = err
 

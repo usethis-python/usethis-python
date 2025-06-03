@@ -13,9 +13,10 @@ if TYPE_CHECKING:
 
 # Unicode support - but we need to be able to write bytes
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
-
+sys.stderr = codecs.getwriter("utf-8")(sys.stderr.buffer)
 
 console = Console()
+err_console = Console(stderr=True)
 
 
 def plain_print(msg: str | Exception) -> None:
@@ -61,7 +62,7 @@ def err_print(msg: str | Exception) -> None:
     msg = str(msg)
 
     if not usethis_config.quiet:
-        console.print(f"✗ {msg}", style="red")
+        err_console.print(f"✗ {msg}", style="red")
 
 
 def warn_print(msg: str | Exception) -> None:

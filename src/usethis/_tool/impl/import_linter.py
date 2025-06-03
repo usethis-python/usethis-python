@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from usethis._config import usethis_config
 from usethis._config_file import (
     DotImportLinterManager,
 )
@@ -41,6 +42,7 @@ from usethis._tool.config import (
     NoConfigValue,
 )
 from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
     from usethis._integrations.pre_commit.schema import (
@@ -51,6 +53,7 @@ if TYPE_CHECKING:
         ResolutionT,
     )
 
+
 IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
 
 
@@ -60,6 +63,13 @@ class ImportLinterTool(Tool):
     @property
     def name(self) -> str:
         return "Import Linter"
+
+    def is_used(self) -> bool:
+        """Check if the Import Linter tool is used in the project."""
+        # We suppress the warning about assumptions regarding the package name.
+        # See _importlinter_warn_no_packages_found
+        with usethis_config.set(quiet=True):
+            return super().is_used()
 
     def print_how_to_use(self) -> None:
         if PreCommitTool().is_used():
@@ -338,6 +348,9 @@ class ImportLinterTool(Tool):
                 ),
             )
         ]
+
+    def get_rule_config(self) -> RuleConfig:
+        return RuleConfig(unmanaged_selected=["INP"])
 
 
 @functools.cache

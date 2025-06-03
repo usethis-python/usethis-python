@@ -1323,6 +1323,18 @@ root_package = "a"
             assert "root_packages = " not in content
             assert "root_package = " in content
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_inp_rules_selected(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "ruff.toml").touch()
+
+            with change_cwd(tmp_path), files_manager():
+                # Act
+                use_import_linter()
+
+                # Assert
+                assert "INP" in RuffTool().get_selected_rules()
+
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange
@@ -1344,6 +1356,22 @@ root_package = "a"
 
             # Assert
             assert not (tmp_path / "pyproject.toml").exists()
+
+        def test_doesnt_deselect_inp_rules(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / "ruff.toml").touch()
+
+            with change_cwd(tmp_path), files_manager():
+                RuffTool().select_rules(["INP"])
+
+                # Act
+                use_import_linter(remove=True)
+
+            # Assert
+            contents = (tmp_path / "ruff.toml").read_text()
+            assert "INP" in contents
 
     class TestPreCommitIntegration:
         def test_config(

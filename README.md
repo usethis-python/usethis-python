@@ -70,6 +70,7 @@ $ pipx run usethis tool ruff
 ### Manage Tooling
 
 - [`usethis ci`](#usethis-ci)
+- [`usethis lint`](#usethis-lint)
 - [`usethis tool`](#usethis-tool)
 
 ### Manage Configuration
@@ -132,6 +133,26 @@ $ uvx usethis ci bitbucket
 ```
 
 ## 🖥️ Command Reference
+
+### `usethis lint`
+
+Add recommended linters to the project (namely, Ruff and deptry), including:
+
+- declared & installed dependencies with `uv add`,
+- relevant `pyproject.toml` configuration,
+- any other relevant directories or tool-bespoke configuration files, and
+
+Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies with `uv add`.
+
+Supported options:
+
+- `--remove` to remove the tool instead of adding it
+- `--how` to only print how to use the tool, with no other side effects
+- `--offline` to disable network access and rely on caches
+- `--frozen` to leave the virtual environment and lockfile unchanged
+- `--quiet` to suppress output
+
+See [`usethis tool`](#usethis-tool) for more information.
 
 ### `usethis tool`
 

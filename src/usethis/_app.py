@@ -7,6 +7,7 @@ import usethis._interface.badge
 import usethis._interface.browse
 import usethis._interface.ci
 import usethis._interface.docstyle
+import usethis._interface.lint
 import usethis._interface.list
 import usethis._interface.readme
 import usethis._interface.rule
@@ -23,6 +24,11 @@ app = typer.Typer(
 )
 
 rich_help_panel = "Manage Tooling"
+app.command(
+    help="Add recommended linters to the project", rich_help_panel=rich_help_panel
+)(
+    usethis._interface.lint.lint,
+)
 app.add_typer(usethis._interface.ci.app, name="ci", rich_help_panel=rich_help_panel)
 app.add_typer(usethis._interface.tool.app, name="tool", rich_help_panel=rich_help_panel)
 

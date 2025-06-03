@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from usethis._integrations.file.ini.errors import (
+    INIDecodeError,
     INIError,
     ININotFoundError,
     INIValueAlreadySetError,
@@ -18,8 +19,13 @@ class SetupCFGNotFoundError(SetupCFGError, ININotFoundError):
     """Raised when a setup.cfg file is not found."""
 
 
-class SetupCFGDecodeError(SetupCFGError):
+class SetupCFGDecodeError(INIDecodeError, SetupCFGError):
     """Raised when a setup.cfg file cannot be decoded."""
+
+    @property
+    def name(self) -> str:
+        """The name of the file that could not be decoded."""
+        return "setup.cfg"
 
 
 class UnexpectedSetupCFGOpenError(SetupCFGError, UnexpectedINIOpenError):

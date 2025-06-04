@@ -13,6 +13,7 @@ import usethis._interface.list
 import usethis._interface.readme
 import usethis._interface.rule
 import usethis._interface.show
+import usethis._interface.spellcheck
 import usethis._interface.tool
 import usethis._interface.version
 
@@ -25,7 +26,6 @@ app = typer.Typer(
 )
 
 rich_help_panel = "Manage Tooling"
-app.add_typer(usethis._interface.ci.app, name="ci", rich_help_panel=rich_help_panel)
 app.command(
     help="Add recommended linters to the project.", rich_help_panel=rich_help_panel
 )(
@@ -38,6 +38,13 @@ app.command(
 )(
     usethis._interface.format_.format_,
 )
+app.command(
+    help="Add a recommended spellchecker to the project.",
+    rich_help_panel=rich_help_panel,
+)(
+    usethis._interface.spellcheck.spellcheck,
+)
+app.add_typer(usethis._interface.ci.app, name="ci", rich_help_panel=rich_help_panel)
 app.add_typer(usethis._interface.tool.app, name="tool", rich_help_panel=rich_help_panel)
 
 rich_help_panel = "Manage Configuration"

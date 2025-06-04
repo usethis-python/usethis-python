@@ -194,6 +194,26 @@ Supported options:
 
 See [`usethis tool`](#usethis-tool) for more information.
 
+### `usethis test`
+
+Add a recommended testing framework to the project (namely pytest), including:
+
+- declared & installed dependencies with `uv add`,
+- relevant `pyproject.toml` configuration,
+- any other relevant directories or tool-bespoke configuration files, and
+
+Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies with `uv add`.
+
+Supported options:
+
+- `--remove` to remove the tool instead of adding it
+- `--how` to only print how to use the tool, with no other side effects
+- `--offline` to disable network access and rely on caches
+- `--frozen` to leave the virtual environment and lockfile unchanged
+- `--quiet` to suppress output
+
+See [`usethis tool`](#usethis-tool) for more information.
+
 ### `usethis tool`
 
 Add a new tool to a Python project, including:

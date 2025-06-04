@@ -69,8 +69,11 @@ $ pipx run usethis tool ruff
 
 ### Manage Tooling
 
-- [`usethis ci`](#usethis-ci)
+- [`usethis format`](#usethis-format)
 - [`usethis lint`](#usethis-lint)
+- [`usethis spellcheck`](#usethis-spellcheck)
+- [`usethis test`](#usethis-test)
+- [`usethis ci`](#usethis-ci)
 - [`usethis tool`](#usethis-tool)
 
 ### Manage Configuration

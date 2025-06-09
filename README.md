@@ -69,30 +69,30 @@ $ pipx run usethis tool ruff
 
 ### Manage Tooling
 
-- [`usethis format`](#usethis-format)
-- [`usethis lint`](#usethis-lint)
-- [`usethis spellcheck`](#usethis-spellcheck)
-- [`usethis test`](#usethis-test)
-- [`usethis ci`](#usethis-ci)
-- [`usethis tool`](#usethis-tool)
+- [`usethis format`](#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
+- [`usethis lint`](#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
+- [`usethis spellcheck`](#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
+- [`usethis test`](#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest)).
+- [`usethis ci`](#usethis-ci) — Add/Configure a recommended CI service.
+- [`usethis tool`](#usethis-tool) — Add/Configure specific tools individually.
 
 ### Manage Configuration
 
-- [`usethis author`](#usethis-author)
-- [`usethis docstyle`](#usethis-docstyle)
-- [`usethis rule`](#usethis-rule-rulecode)
+- [`usethis author`](#usethis-author) — Set new author information for the project.
+- [`usethis docstyle`](#usethis-docstyle) — Set new author information for the project.
+- [`usethis rule`](#usethis-rule-rulecode) — Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
 
 ### Manage README
 
-- [`usethis badge`](#usethis-badge)
-- [`usethis readme`](#usethis-readme)
+- [`usethis badge`](#usethis-badge) — Set new author information for the project.
+- [`usethis readme`](#usethis-readme) — Add badges to the README file.
 
 ### Information
 
-- [`usethis list`](#usethis-list)
-- [`usethis version`](#usethis-version)
-- [`usethis browse pypi`](#usethis-browse-pypi-package)
-- [`usethis show`](#usethis-show)
+- [`usethis list`](#usethis-list) — Display a table of all available tools and their current usage status.
+- [`usethis version`](#usethis-version) — Display the current version of usethis.
+- [`usethis browse pypi`](#usethis-browse-pypi-package) — Display or open the PyPI landing page associated with another project.
+- [`usethis show`](#usethis-show) — Show a specific piece of information about the project.
 
 ## 💡 Example Usage
 
@@ -137,9 +137,9 @@ $ uvx usethis ci bitbucket
 
 ## 🖥️ Command Reference
 
-### `usethis lint`
+### `usethis format`
 
-Add recommended linters to the project (namely, Ruff and deptry), including:
+Add recommended formatters to the project (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)), including:
 
 - declared & installed dependencies with `uv add`,
 - relevant `pyproject.toml` configuration,
@@ -157,9 +157,9 @@ Supported options:
 
 See [`usethis tool`](#usethis-tool) for more information.
 
-### `usethis format`
+### `usethis lint`
 
-Add recommended formatters to the project (namely, Ruff and pyproject-fmt), including:
+Add recommended linters to the project (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)), including:
 
 - declared & installed dependencies with `uv add`,
 - relevant `pyproject.toml` configuration,
@@ -179,7 +179,7 @@ See [`usethis tool`](#usethis-tool) for more information.
 
 ### `usethis spellcheck`
 
-Add a recommended spellchecker to the project (namely codespell), including:
+Add a recommended spellchecker to the project (namely, [codespell](https://github.com/codespell-project/codespell)), including:
 
 - declared & installed dependencies with `uv add`,
 - relevant `pyproject.toml` configuration,
@@ -277,7 +277,7 @@ Supported options:
 
 ### `usethis badge`
 
-Add badges to README.md.
+Add badges to the README file.
 
 Currently supported badges:
 
@@ -315,7 +315,7 @@ Supported options:
 
 ### `usethis docstyle`
 
-Set a docstring style convention for the project, and enforce it with Ruff.
+Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
 
 Currently supported docstring styles:
 

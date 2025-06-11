@@ -116,7 +116,8 @@ lint.select = [
   "TC",
   "UP",
 ]
-lint.ignore = [ "ARG002", "PLR2004", "S101", "SIM108" ]
+lint.ignore = [ "PLR2004", "S101", "SIM108" ]
+lint.per-file-ignores."!tests/**/*.py" = [ "ARG002" ]
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S603", "TC" ]
 lint.flake8-bugbear.extend-immutable-calls = [ "typer.Argument", "typer.Option" ]
 

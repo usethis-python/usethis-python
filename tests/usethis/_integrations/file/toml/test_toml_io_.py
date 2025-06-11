@@ -160,9 +160,7 @@ lint.pydocstyle.convention = "pep257"
 """
             )
 
-        def test_tomlkit_high_levels_of_nesting_in_existing(
-            self, tmp_path: Path
-        ) -> None:
+        def test_tomlkit_high_levels_of_nesting_in_existing(self) -> None:
             # To help debug https://github.com/nathanjmcdougall/usethis-python/issues/507
             # This proves that dottedkey works.
 

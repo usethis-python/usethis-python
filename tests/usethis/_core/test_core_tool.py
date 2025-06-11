@@ -1357,9 +1357,7 @@ root_package = "a"
             # Assert
             assert not (tmp_path / "pyproject.toml").exists()
 
-        def test_doesnt_deselect_inp_rules(
-            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_doesnt_deselect_inp_rules(self, tmp_path: Path):
             # Arrange
             (tmp_path / "ruff.toml").touch()
 
@@ -1708,9 +1706,7 @@ repos:
                     "☐ Run 'codespell' to run the Codespell spellchecker.\n"
                 )
 
-        def test_doesnt_add_pyproject(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_doesnt_add_pyproject(self, uv_init_repo_dir: Path):
             # Arrange
             # We use uv_init_repo_dir to get a git repo
             (uv_init_repo_dir / "pyproject.toml").unlink()
@@ -1944,9 +1940,7 @@ foo = "bar"
             contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
             assert "pyproject-fmt" not in contents
 
-        def test_doesnt_add_pyproject(
-            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_doesnt_add_pyproject(self, tmp_path: Path):
             # No pyproject.toml file to begin with...
 
             # Act
@@ -2215,9 +2209,7 @@ minversion = 7
                 assert ["tool", "pytest"] not in manager
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_pyproject_with_ini_priority(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_pyproject_with_ini_priority(self, uv_init_repo_dir: Path):
             # testing it takes priority over setup.cfg
             # Arrange
             (uv_init_repo_dir / "setup.cfg").touch()
@@ -2236,9 +2228,7 @@ testpaths = ["tests"]
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_pyproject_without_ini_priority(
-            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_pyproject_without_ini_priority(self, uv_init_repo_dir: Path):
             # Arrange
             (uv_init_repo_dir / "setup.cfg").touch()
             (uv_init_repo_dir / "pyproject.toml").write_text("""\
@@ -2253,9 +2243,7 @@ foo = "bar"
             # Assert
             assert (uv_init_repo_dir / "setup.cfg").read_text()
 
-        def test_pythonpath_needed(
-            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_pythonpath_needed(self, tmp_path: Path):
             # https://github.com/nathanjmcdougall/usethis-python/issues/347
 
             # Arrange
@@ -3237,9 +3225,7 @@ image: atlassian/default-image:3
             assert "ruff check" not in contents
             assert "ruff format" in contents
 
-        def test_remove_linter_only(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_remove_linter_only(self, uv_init_dir: Path):
             # Arrange
             (uv_init_dir / "bitbucket-pipelines.yml").write_text(
                 """\
@@ -3284,9 +3270,7 @@ pipelines:
 """
             )
 
-        def test_remove_formatter_only_unchanged(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_remove_formatter_only_unchanged(self, uv_init_dir: Path):
             # Arrange
             (uv_init_dir / "bitbucket-pipelines.yml").write_text(
                 """\
@@ -3363,9 +3347,7 @@ select = ["A", "B", "C"]
             assert "[lint]" not in (uv_init_dir / "pyproject.toml").read_text()
             assert (uv_init_dir / "ruff.toml").read_text() == ""
 
-        def test_removed_from_all_files(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_removed_from_all_files(self, uv_init_dir: Path):
             # Arrange
             (uv_init_dir / ".ruff.toml").write_text(
                 """\

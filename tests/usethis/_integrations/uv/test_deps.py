@@ -286,10 +286,7 @@ class TestAddDepsToGroup:
             assert "tool" not in (uv_init_dir / "pyproject.toml").read_text()
 
     def test_uv_subprocess_error(
-        self,
-        uv_init_dir: Path,
-        monkeypatch: pytest.MonkeyPatch,
-        capfd: pytest.CaptureFixture[str],
+        self, uv_init_dir: Path, monkeypatch: pytest.MonkeyPatch
     ):
         def mock_call_uv_subprocess(*_, **__):
             raise UVSubprocessFailedError
@@ -435,10 +432,7 @@ class TestRemoveDepsFromGroup:
             assert not out
 
     def test_uv_subprocess_error(
-        self,
-        uv_init_dir: Path,
-        monkeypatch: pytest.MonkeyPatch,
-        capfd: pytest.CaptureFixture[str],
+        self, uv_init_dir: Path, monkeypatch: pytest.MonkeyPatch
     ):
         with (
             change_cwd(uv_init_dir),

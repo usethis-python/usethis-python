@@ -117,6 +117,8 @@ lint.select = [
 ]
 lint.ignore = [ "PLR2004", "S101", "SIM108" ]
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S603", "TC" ]
+lint.flake8-bugbear.extend-immutable-calls = [ "typer.Argument", "typer.Option" ]
+
 lint.flake8-type-checking.quote-annotations = true
 lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
 lint.flake8-type-checking.strict = true

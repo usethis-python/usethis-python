@@ -42,12 +42,10 @@ from usethis._tool.config import (
     NoConfigValue,
 )
 from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
-    from usethis._integrations.pre_commit.schema import (
-        UriRepo,
-    )
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import (
         ResolutionT,
@@ -314,8 +312,8 @@ class ImportLinterTool(Tool):
             msg = f"Unsupported file manager: {file_manager}"
             raise NotImplementedError(msg)
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        return [
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        return PreCommitConfig.from_single_repo(
             LocalRepo(
                 repo="local",
                 hooks=[
@@ -329,8 +327,10 @@ class ImportLinterTool(Tool):
                         always_run=True,
                     )
                 ],
-            )
-        ]
+            ),
+            requires_venv=True,
+            inform_how_to_use_on_migrate=False,
+        )
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".importlinter")]

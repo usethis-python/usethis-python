@@ -66,7 +66,7 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
             tool.add_dev_deps()
             tool.update_bitbucket_steps()
         else:
-            tool.add_pre_commit_repo_configs()
+            tool.add_pre_commit_config()
 
         tool.add_configs()
         tool.print_how_to_use()
@@ -109,7 +109,7 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
 
         tool.add_dev_deps()
         if PreCommitTool().is_used():
-            tool.add_pre_commit_repo_configs()
+            tool.add_pre_commit_config()
         else:
             tool.update_bitbucket_steps()
 
@@ -139,7 +139,7 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
         if RuffTool().is_used():
             RuffTool().select_rules(rule_config.get_all_selected())
         if PreCommitTool().is_used():
-            tool.add_pre_commit_repo_configs()
+            tool.add_pre_commit_config()
         else:
             tool.update_bitbucket_steps()
 
@@ -161,24 +161,14 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    ISOLATABLE_TOOLS: list[Tool] = [
-        PyprojectFmtTool(),
-        CodespellTool(),
-        RequirementsTxtTool(),
-    ]
-
     if not remove:
         ensure_pyproject_toml()
 
         tool.add_dev_deps()
         _add_all_tools_pre_commit_configs()
 
-        # We will use pre-commit instead of project-installed dependencies:
-        for _tool in ISOLATABLE_TOOLS:
-            if _tool.is_used():
-                _tool.remove_dev_deps()
-                _tool.add_configs()
-                _tool.print_how_to_use()
+        for _tool in ALL_TOOLS:
+            _tool.migrate_config_to_pre_commit()
 
         if not get_hook_ids():
             add_placeholder_hook()
@@ -208,12 +198,8 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
         remove_pre_commit_config()
         tool.remove_dev_deps()
 
-        for _tool in ISOLATABLE_TOOLS:
-            if _tool.is_used():
-                # Need to add a new way of running some hooks manually if they are not dev
-                # dependencies yet - explain to the user.
-                _tool.add_dev_deps()
-                _tool.print_how_to_use()
+        for _tool in ALL_TOOLS:
+            _tool.migrate_config_from_pre_commit()
 
         tool.remove_managed_files()
 
@@ -221,7 +207,7 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
 def _add_all_tools_pre_commit_configs():
     for _tool in ALL_TOOLS:
         if _tool.is_used():
-            _tool.add_pre_commit_repo_configs()
+            _tool.add_pre_commit_config()
 
 
 def _add_bitbucket_linter_steps_to_default() -> None:
@@ -256,7 +242,7 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
             tool.add_dev_deps()
             tool.update_bitbucket_steps()
         else:
-            tool.add_pre_commit_repo_configs()
+            tool.add_pre_commit_config()
 
         tool.add_configs()
         tool.print_how_to_use()
@@ -340,7 +326,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         is_pre_commit = PreCommitTool().is_used()
 
         if is_pre_commit:
-            tool.add_pre_commit_repo_configs()
+            tool.add_pre_commit_config()
 
         if not path.exists():
             # N.B. this is where a task runner would come in handy, to reduce duplication.
@@ -428,7 +414,7 @@ def use_ruff(
             tool.select_rules(rule_config.get_all_selected())
             tool.ignore_rules(rule_config.get_all_ignored())
         if PreCommitTool().is_used():
-            tool.add_pre_commit_repo_configs()
+            tool.add_pre_commit_config()
         else:
             tool.update_bitbucket_steps()
 

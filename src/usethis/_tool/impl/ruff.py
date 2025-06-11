@@ -34,12 +34,10 @@ from usethis._tool.config import (
     ConfigSpec,
     ensure_file_manager_exists,
 )
+from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 
 if TYPE_CHECKING:
     from usethis._integrations.ci.bitbucket.schema import Pipe as BitbucketPipe
-    from usethis._integrations.pre_commit.schema import (
-        UriRepo,
-    )
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule
 
@@ -197,55 +195,64 @@ class RuffTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path(".ruff.toml"), Path("ruff.toml")]
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        repos = []
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        repo_configs = []
         if self.is_linter_used():
-            repos.append(
-                LocalRepo(
-                    repo="local",
-                    hooks=[
-                        HookDefinition(
-                            id="ruff",
-                            name="ruff",
-                            entry="uv run --frozen --offline ruff check --fix --force-exclude",
-                            language=Language("system"),
-                            types_or=FileTypes(
-                                [
-                                    FileType("python"),
-                                    FileType("pyi"),
-                                    FileType("jupyter"),
-                                ]
+            repo_configs.append(
+                PreCommitRepoConfig(
+                    repo=LocalRepo(
+                        repo="local",
+                        hooks=[
+                            HookDefinition(
+                                id="ruff",
+                                name="ruff",
+                                entry="uv run --frozen --offline ruff check --fix --force-exclude",
+                                language=Language("system"),
+                                types_or=FileTypes(
+                                    [
+                                        FileType("python"),
+                                        FileType("pyi"),
+                                        FileType("jupyter"),
+                                    ]
+                                ),
+                                always_run=True,
+                                require_serial=True,
                             ),
-                            always_run=True,
-                            require_serial=True,
-                        ),
-                    ],
+                        ],
+                    ),
+                    requires_venv=True,
                 )
             )
         if self.is_formatter_used():
-            repos.append(
-                LocalRepo(
-                    repo="local",
-                    hooks=[
-                        HookDefinition(
-                            id="ruff-format",
-                            name="ruff-format",
-                            entry="uv run --frozen --offline ruff format --force-exclude",
-                            language=Language("system"),
-                            types_or=FileTypes(
-                                [
-                                    FileType("python"),
-                                    FileType("pyi"),
-                                    FileType("jupyter"),
-                                ]
+            repo_configs.append(
+                PreCommitRepoConfig(
+                    repo=LocalRepo(
+                        repo="local",
+                        hooks=[
+                            HookDefinition(
+                                id="ruff-format",
+                                name="ruff-format",
+                                entry="uv run --frozen --offline ruff format --force-exclude",
+                                language=Language("system"),
+                                types_or=FileTypes(
+                                    [
+                                        FileType("python"),
+                                        FileType("pyi"),
+                                        FileType("jupyter"),
+                                    ]
+                                ),
+                                always_run=True,
+                                require_serial=True,
                             ),
-                            always_run=True,
-                            require_serial=True,
-                        ),
-                    ],
+                        ],
+                    ),
+                    requires_venv=True,
                 )
             )
-        return repos
+        return PreCommitConfig(
+            repo_configs=repo_configs,
+            inform_how_to_use_on_migrate=True,  # The pre-commit commands are not simpler than the venv-based commands
+        )
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         shared_lines: list[str | BitbucketPipe | BitbucketScriptItemAnchor] = [

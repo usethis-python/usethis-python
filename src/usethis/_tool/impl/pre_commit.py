@@ -48,3 +48,9 @@ class PreCommitTool(Tool):
                 ),
             )
         ]
+
+    def migrate_config_to_pre_commit(self) -> None:
+        pass
+
+    def migrate_config_from_pre_commit(self) -> None:
+        pass

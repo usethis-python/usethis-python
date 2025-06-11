@@ -112,8 +112,8 @@ def _(
 def _(
     model: ModelLiteral,
     *,
-    reference: ModelRepresentation | None = None,
-    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+    reference: ModelRepresentation | None = None,  # noqa: ARG001
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,  # noqa: ARG001
 ) -> ModelLiteral:
     return model
 
@@ -122,8 +122,8 @@ def _(
 def _(
     model: ModelLiteral,
     *,
-    reference: ModelRepresentation | None = None,
-    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+    reference: ModelRepresentation | None = None,  # noqa: ARG001
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,  # noqa: ARG001
 ) -> ModelLiteral:
     return model
 
@@ -132,8 +132,8 @@ def _(
 def _(
     model: ModelLiteral,
     *,
-    reference: ModelRepresentation | None = None,
-    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+    reference: ModelRepresentation | None = None,  # noqa: ARG001
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,  # noqa: ARG001
 ) -> ModelLiteral:
     return model
 
@@ -142,8 +142,8 @@ def _(
 def _(
     model: ModelLiteral,
     *,
-    reference: ModelRepresentation | None = None,
-    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
+    reference: ModelRepresentation | None = None,  # noqa: ARG001
+    order_by_cls: dict[type[BaseModel], list[str]] | None = None,  # noqa: ARG001
 ) -> ModelLiteral:
     return model
 

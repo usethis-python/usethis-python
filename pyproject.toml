@@ -175,6 +175,7 @@ layers = [
   "_test | __main__",
   "_app",
   "_interface",
+  "_toolset",
   "_core",
   "_tool",
   "_config_file",

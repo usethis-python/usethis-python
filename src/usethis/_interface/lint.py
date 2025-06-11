@@ -1,3 +1,5 @@
+import typer
+
 from usethis._config import (
     frozen_opt,
     how_opt,
@@ -7,7 +9,9 @@ from usethis._config import (
     usethis_config,
 )
 from usethis._config_file import files_manager
-from usethis._core.tool import use_deptry, use_ruff
+from usethis._console import err_print
+from usethis._toolset.lint import use_linters
+from usethis.errors import UsethisError
 
 
 def lint(
@@ -22,5 +26,8 @@ def lint(
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        use_ruff(linter=True, formatter=False, remove=remove, how=how)
-        use_deptry(remove=remove, how=how)
+        try:
+            use_linters(remove=remove, how=how)
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

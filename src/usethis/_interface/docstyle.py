@@ -11,7 +11,7 @@ from usethis.errors import UsethisError
 
 def docstyle(
     style: str = typer.Argument(
-        default=None,
+        None,
         help="Docstring style to enforce. Options: 'numpy', 'google', 'pep257'",
     ),
     quiet: bool = quiet_opt,

@@ -10,6 +10,7 @@ import tomlkit.api
 import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
+from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
 from typing_extensions import assert_never
 
@@ -214,13 +215,18 @@ class TOMLFileManager(KeyValueFileManager):
                 del d[key]
         else:
             with contextlib.suppress(KeyError):
-                # There is a strange behaviour (bug?) in tomlkit where deleting a key
-                # has two separate lines:
+                # N.B. There was a strange behaviour (bug?) in tomlkit where deleting a
+                # key has two separate lines:
                 # self._value.remove(key)  # noqa: ERA001
                 # dict.__delitem__(self, key)  # noqa: ERA001
                 # but it's not clear why there's this duplicate and it causes a KeyError
                 # in some cases.
-                d.remove(keys[-1])
+                if isinstance(d, OutOfOrderTableProxy):
+                    # N.B. this case isn't expected based on the type annotations but
+                    # it is possible in practice.
+                    d.__delitem__(keys[-1])
+                else:
+                    d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
             for idx in range(len(keys) - 1):

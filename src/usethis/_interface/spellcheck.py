@@ -27,7 +27,7 @@ def spellcheck(
         files_manager(),
     ):
         try:
-            use_spellcheckers()
+            use_spellcheckers(remove=remove, how=how)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

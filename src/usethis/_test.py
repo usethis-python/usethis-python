@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 def change_cwd(new_dir: Path) -> Generator[None, None, None]:
     """Change the working directory temporarily.
 
-    Arguments:
+    Args:
         new_dir: The new directory to change to.
     """
     old_dir = Path.cwd()

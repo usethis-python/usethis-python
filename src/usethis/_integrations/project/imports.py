@@ -159,7 +159,7 @@ def _get_graph(pkg_name: str) -> grimp.ImportGraph:
 def augment_pythonpath(new_dir: Path) -> Generator[None, None, None]:
     """Temporarily add a directory to the Python path.
 
-    Arguments:
+    Args:
         new_dir: The directory to add to the Python path.
     """
     # Uses sys.path

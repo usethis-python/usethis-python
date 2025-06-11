@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 from usethis._config import usethis_config
-from usethis._console import tick_print
+from usethis._console import box_print, tick_print
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.pre_commit.core import (
@@ -14,6 +14,7 @@ from usethis._integrations.pre_commit.core import (
     remove_pre_commit_config,
     uninstall_pre_commit_hooks,
 )
+from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.pre_commit.hooks import (
     add_placeholder_hook,
     get_hook_ids,
@@ -160,9 +161,11 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    pyproject_fmt_tool = PyprojectFmtTool()
-    codespell_tool = CodespellTool()
-    requirements_txt_tool = RequirementsTxtTool()
+    ISOLATABLE_TOOLS: list[Tool] = [
+        PyprojectFmtTool(),
+        CodespellTool(),
+        RequirementsTxtTool(),
+    ]
 
     if not remove:
         ensure_pyproject_toml()
@@ -171,22 +174,19 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
         _add_all_tools_pre_commit_configs()
 
         # We will use pre-commit instead of project-installed dependencies:
-        if pyproject_fmt_tool.is_used():
-            pyproject_fmt_tool.remove_dev_deps()
-            pyproject_fmt_tool.add_configs()
-            pyproject_fmt_tool.print_how_to_use()
-        if codespell_tool.is_used():
-            codespell_tool.remove_dev_deps()
-            codespell_tool.add_configs()
-            codespell_tool.print_how_to_use()
-
-        if requirements_txt_tool.is_used():
-            requirements_txt_tool.print_how_to_use()
+        for _tool in ISOLATABLE_TOOLS:
+            if _tool.is_used():
+                _tool.remove_dev_deps()
+                _tool.add_configs()
+                _tool.print_how_to_use()
 
         if not get_hook_ids():
             add_placeholder_hook()
 
-        install_pre_commit_hooks()
+        try:
+            install_pre_commit_hooks()
+        except PreCommitInstallationError:
+            box_print("Run 'uv run pre-commit install' to install pre-commit to Git.")
 
         tool.update_bitbucket_steps()
         if is_bitbucket_used():
@@ -198,24 +198,23 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
         if is_bitbucket_used():
             _add_bitbucket_linter_steps_to_default()
 
-        uninstall_pre_commit_hooks()
+        try:
+            uninstall_pre_commit_hooks()
+        except PreCommitInstallationError:
+            box_print(
+                "Run 'uv run pre-commit uninstall' to uninstall pre-commit from Git."
+            )
 
         remove_pre_commit_config()
         tool.remove_dev_deps()
 
-        # Need to add a new way of running some hooks manually if they are not dev
-        # dependencies yet - explain to the user.
-        if pyproject_fmt_tool.is_used():
-            pyproject_fmt_tool.add_dev_deps()
-            pyproject_fmt_tool.print_how_to_use()
-        if codespell_tool.is_used():
-            codespell_tool.add_dev_deps()
-            codespell_tool.print_how_to_use()
+        for _tool in ISOLATABLE_TOOLS:
+            if _tool.is_used():
+                # Need to add a new way of running some hooks manually if they are not dev
+                # dependencies yet - explain to the user.
+                _tool.add_dev_deps()
+                _tool.print_how_to_use()
 
-        # Likewise, explain how to manually generate the requirements.txt file, since
-        # they're not going to do it via pre-commit anymore.
-        if requirements_txt_tool.is_used():
-            requirements_txt_tool.print_how_to_use()
         tool.remove_managed_files()
 
 

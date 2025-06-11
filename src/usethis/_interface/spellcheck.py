@@ -1,3 +1,5 @@
+import typer
+
 from usethis._config import (
     frozen_opt,
     how_opt,
@@ -7,7 +9,9 @@ from usethis._config import (
     usethis_config,
 )
 from usethis._config_file import files_manager
-from usethis._core.tool import use_codespell
+from usethis._console import err_print
+from usethis._toolset.spellcheck import use_spellcheckers
+from usethis.errors import UsethisError
 
 
 def spellcheck(
@@ -22,4 +26,8 @@ def spellcheck(
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        use_codespell(remove=remove, how=how)
+        try:
+            use_spellcheckers()
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

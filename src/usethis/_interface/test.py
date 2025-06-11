@@ -1,3 +1,5 @@
+import typer
+
 from usethis._config import (
     frozen_opt,
     how_opt,
@@ -7,7 +9,9 @@ from usethis._config import (
     usethis_config,
 )
 from usethis._config_file import files_manager
-from usethis._core.tool import use_pytest
+from usethis._console import err_print
+from usethis._toolset.test import use_test_frameworks
+from usethis.errors import UsethisError
 
 
 def test(
@@ -22,4 +26,8 @@ def test(
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        use_pytest(remove=remove, how=how)
+        try:
+            use_test_frameworks(remove=remove, how=how)
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

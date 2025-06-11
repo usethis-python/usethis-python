@@ -27,6 +27,7 @@ from usethis._integrations.uv.deps import (
     remove_deps_from_group,
 )
 from usethis._tool.config import ConfigSpec, NoConfigValue
+from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
 from usethis.errors import FileDecodeError
 
@@ -90,9 +91,9 @@ class Tool(Protocol):
             file_manager_by_relative_path={}, resolution="first", config_items=[]
         )
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        """Get the pre-commit repository configurations for the tool."""
-        return []
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        """Get the pre-commit configurations for the tool."""
+        return PreCommitConfig(repo_configs=[], inform_how_to_use_on_migrate=False)
 
     def get_managed_files(self) -> list[Path]:
         """Get (relative) paths to files managed by (solely) this tool."""
@@ -157,7 +158,11 @@ class Tool(Protocol):
     def remove_test_deps(self) -> None:
         remove_deps_from_group(self.get_test_deps(unconditional=True), "test")
 
-    def add_pre_commit_repo_configs(self) -> None:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+        """Get the pre-commit repository definitions for the tool."""
+        return [c.repo for c in self.get_pre_commit_config().repo_configs]
+
+    def add_pre_commit_config(self) -> None:
         """Add the tool's pre-commit configuration."""
         repos = self.get_pre_commit_repos()
 
@@ -199,6 +204,35 @@ class Tool(Protocol):
             for hook in repo_config.hooks:
                 if hook.id in get_hook_ids():
                     remove_hook(hook.id)
+
+    def migrate_config_to_pre_commit(self) -> None:
+        """Migrate the tool's configuration to pre-commit."""
+        if self.is_used():
+            pre_commit_config = self.get_pre_commit_config()
+            # For tools that don't require a venv for their pre-commits, we will
+            # remove the dependency as an explicit dependency, and make it
+            # pre-commit only.
+            if not pre_commit_config.any_require_venv:
+                self.remove_dev_deps()
+
+            # We're migrating, so sometimes we might need to inform the user about the
+            # new way to do things.
+            if pre_commit_config.inform_how_to_use_on_migrate:
+                self.print_how_to_use()
+
+    def migrate_config_from_pre_commit(self) -> None:
+        """Migrate the tool's configuration from pre-commit."""
+        if self.is_used():
+            pre_commit_config = self.get_pre_commit_config()
+            # For tools that don't require a venv for their pre-commits, we will
+            # need to add the dependency explicitly.
+            if not pre_commit_config.any_require_venv:
+                self.add_dev_deps()
+
+            # We're migrating, so sometimes we might need to inform the user about
+            # the new way to do things.
+            if pre_commit_config.inform_how_to_use_on_migrate:
+                self.print_how_to_use()
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         """Get relative paths to all active configuration files."""

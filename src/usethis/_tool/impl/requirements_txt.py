@@ -12,11 +12,9 @@ from usethis._integrations.pre_commit.schema import (
 from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.pre_commit import PreCommitConfig
 
 if TYPE_CHECKING:
-    from usethis._integrations.pre_commit.schema import (
-        UriRepo,
-    )
     from usethis._integrations.uv.deps import (
         Dependency,
     )
@@ -52,8 +50,8 @@ class RequirementsTxtTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path("requirements.txt")]
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        return [
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        return PreCommitConfig.from_single_repo(
             LocalRepo(
                 repo="local",
                 hooks=[
@@ -67,5 +65,6 @@ class RequirementsTxtTool(Tool):
                         require_serial=True,
                     )
                 ],
-            )
-        ]
+            ),
+            requires_venv=True,
+        )

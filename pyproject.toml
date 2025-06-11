@@ -217,7 +217,7 @@ layers = [
   "all_",
   "impl",
   "base",
-  "config | rule",
+  "config | pre_commit | rule",
 ]
 containers = [ "usethis._tool" ]
 exhaustive = true

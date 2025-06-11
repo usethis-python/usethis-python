@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from usethis._config_file import (
     CodespellRCManager,
@@ -25,11 +24,7 @@ from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.impl.pre_commit import PreCommitTool
-
-if TYPE_CHECKING:
-    from usethis._integrations.pre_commit.schema import (
-        LocalRepo,
-    )
+from usethis._tool.pre_commit import PreCommitConfig
 
 
 class CodespellTool(Tool):
@@ -98,16 +93,17 @@ class CodespellTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path(".codespellrc")]
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        return [
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        return PreCommitConfig.from_single_repo(
             UriRepo(
                 repo="https://github.com/codespell-project/codespell",
                 rev="v2.4.1",  # Manually bump this version when necessary
                 hooks=[
                     HookDefinition(id="codespell", additional_dependencies=["tomli"])
                 ],
-            )
-        ]
+            ),
+            requires_venv=False,
+        )
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         return [

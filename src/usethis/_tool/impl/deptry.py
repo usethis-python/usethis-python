@@ -27,11 +27,9 @@ from usethis._tool.config import (
     ConfigSpec,
     ensure_file_manager_exists,
 )
+from usethis._tool.pre_commit import PreCommitConfig
 
 if TYPE_CHECKING:
-    from usethis._integrations.pre_commit.schema import (
-        UriRepo,
-    )
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule
 
@@ -65,9 +63,9 @@ class DeptryTool(Tool):
             ],
         )
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+    def get_pre_commit_config(self) -> PreCommitConfig:
         _dir = get_source_dir_str()
-        return [
+        return PreCommitConfig.from_single_repo(
             LocalRepo(
                 repo="local",
                 hooks=[
@@ -80,8 +78,10 @@ class DeptryTool(Tool):
                         pass_filenames=False,
                     )
                 ],
-            )
-        ]
+            ),
+            requires_venv=True,
+            inform_how_to_use_on_migrate=False,
+        )
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         _dir = get_source_dir_str()

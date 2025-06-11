@@ -28,16 +28,16 @@ app = typer.Typer(
 
 rich_help_panel = "Manage Tooling"
 app.command(
-    help="Add or configure recommended linters.", rich_help_panel=rich_help_panel
-)(
-    usethis._interface.lint.lint,
-)
-app.command(
     name="format",
     help="Add or configure recommended formatters.",
     rich_help_panel=rich_help_panel,
 )(
     usethis._interface.format_.format_,
+)
+app.command(
+    help="Add or configure recommended linters.", rich_help_panel=rich_help_panel
+)(
+    usethis._interface.lint.lint,
 )
 app.command(
     help="Add or configure a recommended spellchecker.",

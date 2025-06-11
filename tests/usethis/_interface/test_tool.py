@@ -291,6 +291,34 @@ class TestPreCommit:
 """
         )
 
+    def test_adds_okay_without_git(self, tmp_path: Path):
+        """Test that pre-commit runs without a git repo."""
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("[project]\nname = 'example'\n")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pre-commit"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_removes_okay_without_git(self, tmp_path: Path):
+        """Test that pre-commit removes without a git repo."""
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("[project]\nname = 'example'\n")
+        (tmp_path / ".pre-commit-config.yaml").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pre-commit", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert not (tmp_path / ".pre-commit-config.yaml").exists()
+
 
 class TestRequirementsTxt:
     def test_runs(self, tmp_path: Path):

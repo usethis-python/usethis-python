@@ -105,7 +105,7 @@ class TestEnsurePyprojectTOML:
 
     def test_subprocess_failed(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
-        def mock_call_uv_subprocess(*args: Any, **kwargs: Any) -> None:
+        def mock_call_uv_subprocess(*_: Any, **__: Any) -> None:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(

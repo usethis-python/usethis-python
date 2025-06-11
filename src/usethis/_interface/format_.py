@@ -10,7 +10,7 @@ from usethis._config import (
 )
 from usethis._config_file import files_manager
 from usethis._console import err_print
-from usethis._core.tool import use_pyproject_fmt, use_ruff
+from usethis._toolset.format_ import use_formatters
 from usethis.errors import UsethisError
 
 
@@ -27,8 +27,7 @@ def format_(
         files_manager(),
     ):
         try:
-            use_ruff(linter=False, formatter=True, remove=remove, how=how)
-            use_pyproject_fmt(remove=remove, how=how)
+            use_formatters(remove=remove, how=how)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

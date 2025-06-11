@@ -10,7 +10,7 @@ from usethis._config import (
 )
 from usethis._config_file import files_manager
 from usethis._console import err_print
-from usethis._core.tool import use_pytest
+from usethis._toolset.test import use_test_frameworks
 from usethis.errors import UsethisError
 
 
@@ -27,7 +27,7 @@ def test(
         files_manager(),
     ):
         try:
-            use_pytest(remove=remove, how=how)
+            use_test_frameworks(remove=remove, how=how)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

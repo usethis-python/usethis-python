@@ -10,7 +10,7 @@ from usethis._config import (
 )
 from usethis._config_file import files_manager
 from usethis._console import err_print
-from usethis._core.tool import use_codespell
+from usethis._toolset.spellcheck import use_spellcheckers
 from usethis.errors import UsethisError
 
 
@@ -27,7 +27,7 @@ def spellcheck(
         files_manager(),
     ):
         try:
-            use_codespell(remove=remove, how=how)
+            use_spellcheckers()
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

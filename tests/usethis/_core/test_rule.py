@@ -82,7 +82,7 @@ select = ["RUF001"]
 
 
 class TestUnignoreRules:
-    def test_ruff(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+    def test_ruff(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir), files_manager():
             # Arrange
             (uv_init_dir / "ruff.toml").write_text(
@@ -98,7 +98,7 @@ ignore = ["RUF001"]
             # Assert
             assert "RUF001" not in RuffTool().get_ignored_rules()
 
-    def test_deptry(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+    def test_deptry(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir), files_manager():
             # Arrange
             (uv_init_dir / "pyproject.toml").write_text(

@@ -632,11 +632,7 @@ repos:
 """
             )
 
-        def test_two_hooks_one_repo(
-            self,
-            tmp_path: Path,
-            capfd: pytest.CaptureFixture[str],
-        ):
+        def test_two_hooks_one_repo(self, tmp_path: Path):
             # Arrange
             th_tool = TwoHooksTool()
 

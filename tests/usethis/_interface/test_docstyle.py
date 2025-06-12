@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import pytest
 from typer.testing import CliRunner
 
 from usethis._app import app
@@ -14,9 +13,7 @@ class TestDocstyle:
         with change_cwd(tmp_path):
             docstyle(DocStyleEnum.google)
 
-    def test_invalid_pyproject_toml(
-        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
-    ):
+    def test_invalid_pyproject_toml(self, tmp_path: Path):
         # Arrange
         invalid_pyproject_toml = tmp_path / "pyproject.toml"
         invalid_pyproject_toml.write_text("[")

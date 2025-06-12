@@ -366,14 +366,14 @@ class TestGetGraph:
         # Assert
         assert isinstance(graph, grimp.ImportGraph)
 
-    def test_self(self, tmp_path: Path):
+    def test_self(self):
         # Act
         graph = _get_graph("usethis")
 
         # Assert
         assert isinstance(graph, grimp.ImportGraph)
 
-    def test_does_not_exist(self, tmp_path: Path):
+    def test_does_not_exist(self):
         # Act, Assert
         with pytest.raises(ImportGraphBuildFailedError):
             _get_graph("does_not_exist")

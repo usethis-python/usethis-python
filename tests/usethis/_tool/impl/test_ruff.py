@@ -124,9 +124,7 @@ select = ["A"]
                 assert RuffTool().get_selected_rules() == ["A"]
 
     class TestDeselectRules:
-        def test_no_pyproject_toml(
-            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
-        ):
+        def test_no_pyproject_toml(self, tmp_path: Path):
             # Act
             with change_cwd(tmp_path), files_manager():
                 RuffTool().deselect_rules(["A"])

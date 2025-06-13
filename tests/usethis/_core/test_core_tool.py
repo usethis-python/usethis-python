@@ -2886,6 +2886,45 @@ select = ["F"]
 """
             )
 
+    class TestHow:
+        def test_both_linter_and_formatter(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(how=True, linter=True, formatter=True)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            )
+
+        def test_only_linter(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(how=True, linter=True, formatter=False)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+            )
+
+        def test_only_formatter(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_ruff(how=True, linter=False, formatter=True)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == "☐ Run 'ruff format' to run the Ruff formatter.\n"
+
     class TestPrecommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_first(self, uv_init_repo_dir: Path):

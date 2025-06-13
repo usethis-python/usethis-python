@@ -378,6 +378,10 @@ def use_ruff(
     tool = RuffTool()
 
     if how:
+        tool = RuffTool(
+            linter_detection="always" if linter else "never",
+            formatter_detection="always" if formatter else "never",
+        )
         tool.print_how_to_use()
         return
 

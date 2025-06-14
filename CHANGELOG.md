@@ -2,7 +2,7 @@
 
 ## 0.13.0
 
-## 🚀 New Features
+### 🚀 New Features
 
 - New high-level interfaces have been added: `usethis init` to initialize projects including recommended tools, and `usethis lint`, `usethis format`, `usethis spellcheck`, and `usethis test` to add sets of recommended tools for different purposes. For example, `usethis lint` will add both Ruff and deptry. As recommended tooling changes in the long-term, these commands will remain the same but potentially change the specific tools they include.
 
@@ -12,13 +12,13 @@
 
 - The `usethis docstyle` possible arguments (`numpy`, `google`, and `pep257`) are now handled in a way that should lead to more readable error messages and `--help` explanations.
 
-## 🦾 Robustness
+### 🦾 Robustness
 
 - If `pre-commit install` does not run successfully (e.g. if there is not Git Repository for the project) then usethis will display a message for the user to ask them to run this command themselves, rather than the previous behaviour which was to stop with an error.
 
 - Syntax errors in TOML and INI configuration files will be handled when trying to determine whether a given tool is being used. A warning is displayed but usethis will continue under the assumption that the invalid file does not contain relevant configuration for the tool.
 
-## 🐞 Bug Fixes
+### 🐞 Bug Fixes
 
 - Previously, when calling `usethis tool ruff --how`, any passed `--linter` or `--formatter` arguments would be ignored and instructions would be displayed for both the linter and the formatter regardless. This is no longer the case - now if either the `--linter` or `--formatter` argument is passed, just the specified arguments will be considered in terms of the messages displayed.
 
@@ -28,17 +28,17 @@
 
 - Previously, the `usethis rule` command did not handle some error messages properly, and would dump the full stack trace. This has been resolved.
 
-## 📦 Packaging
+### 📦 Packaging
 
 - The `typer` dependency lower bound has been bumped from version 0.6.0 to 0.12.4 to provide support for union types of Enum with `None`.
 
-## 📚 Documentation
+### 📚 Documentation
 
 - More information has been added to the README in the Command Line Interface Table of Contents, giving a one-line summary of each command.
 
 - The GitHub Issue templates have been simplified down to make them more accessible.
 
-## 🔧 Internal Changes
+### 🔧 Internal Changes
 
 - The test suite on CI now runs on the lowest supported version of uv (0.5.29), rather than just the latest version.
 

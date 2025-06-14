@@ -2,20 +2,19 @@ from __future__ import annotations
 
 import sys
 from contextlib import contextmanager
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import grimp
-import grimp.application
-import grimp.application.config
 import grimp.exceptions
 from pydantic import BaseModel
 
+from usethis._config import usethis_config
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.layout import get_source_dir_str
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+    from pathlib import Path
 
 
 class LayeredArchitecture(BaseModel):
@@ -139,7 +138,7 @@ def _get_graph(pkg_name: str) -> grimp.ImportGraph:
     # PYTHONPATH is used by grimp to find the package. When running in the test suite,
     # or via uvx, this is problematic. So we'll patch it.
 
-    with augment_pythonpath(Path.cwd() / get_source_dir_str()):
+    with augment_pythonpath(usethis_config.cpd() / get_source_dir_str()):
         try:
             graph = grimp.build_graph(pkg_name, cache_dir=None)
         except ValueError as err:

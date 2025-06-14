@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
-
+from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLError
 from usethis._integrations.file.pyproject_toml.name import get_description
@@ -47,20 +46,20 @@ def add_readme() -> None:
         content = ""
 
     tick_print("Writing 'README.md'.")
-    (Path.cwd() / "README.md").write_text(content, encoding="utf-8")
+    (usethis_config.cpd() / "README.md").write_text(content, encoding="utf-8")
     box_print("Populate 'README.md' to help users understand the project.")
 
 
 def get_readme_path():
-    path_readme_md = Path.cwd() / "README.md"
-    path_readme = Path.cwd() / "README"
+    path_readme_md = usethis_config.cpd() / "README.md"
+    path_readme = usethis_config.cpd() / "README"
 
     if path_readme_md.exists() and path_readme_md.is_file():
         return path_readme_md
     elif path_readme.exists() and path_readme.is_file():
         return path_readme
 
-    for path in Path.cwd().glob("README*"):
+    for path in usethis_config.cpd().glob("README*"):
         if path.is_file() and path.stem == "README":
             return path
 

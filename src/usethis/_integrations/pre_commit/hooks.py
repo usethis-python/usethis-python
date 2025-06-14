@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
+from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._integrations.pre_commit.dump import pre_commit_fancy_dump
@@ -224,7 +224,7 @@ def remove_hook(hook_id: str) -> None:
 
 
 def get_hook_ids() -> list[str]:
-    path = Path.cwd() / ".pre-commit-config.yaml"
+    path = usethis_config.cpd() / ".pre-commit-config.yaml"
 
     if not path.exists():
         return []

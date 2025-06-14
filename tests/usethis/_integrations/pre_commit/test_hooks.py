@@ -111,6 +111,55 @@ repos:
             "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
         )
 
+    def test_hook_order_constant_is_respected(self, tmp_path: Path):
+        # Arrange: Add 'codespell' first (later in _HOOK_ORDER)
+        with change_cwd(tmp_path):
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+        # Now add 'pyproject-fmt' (earlier in _HOOK_ORDER)
+        with change_cwd(tmp_path):
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="pyproject-fmt",
+                            name="pyproject-fmt",
+                            entry="uv run --frozen pyproject-fmt .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+        # Assert: pyproject-fmt should appear before codespell
+        assert (
+            (tmp_path / ".pre-commit-config.yaml").read_text()
+            == """\
+repos:
+  - repo: local
+    hooks:
+      - id: pyproject-fmt
+        name: pyproject-fmt
+        entry: uv run --frozen pyproject-fmt .
+        language: system
+      - id: codespell
+        name: codespell
+        entry: codespell .
+        language: system
+"""
+        )
+
 
 class TestRemoveHook:
     def test_empty(self, tmp_path: Path):

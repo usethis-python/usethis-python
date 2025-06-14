@@ -63,22 +63,36 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
 
             doc.model.repos.append(repo)
         else:
+            # There are existing hooks so we need to know where to insert the new hook.
+
             # Get the precendents, i.e. hooks occurring before the new hook
+            # Also the successors, i.e. hooks occurring after the new hook
             try:
                 hook_idx = _HOOK_ORDER.index(hook_config.id)
             except ValueError:
                 msg = f"Hook '{hook_config.id}' not recognized"
                 raise NotImplementedError(msg) from None
             precedents = _HOOK_ORDER[:hook_idx]
+            successors = _HOOK_ORDER[hook_idx + 1 :]
 
-            # Find the last of the precedents in the existing hooks
-            existings_precedents = [
+            existing_precedents = [
                 hook for hook in existing_hooks if hook in precedents
             ]
-            if existings_precedents:
-                last_precedent = existings_precedents[-1]
+            existing_successors = [
+                hook for hook in existing_hooks if hook in successors
+            ]
+
+            # Add immediately after the last precedecessor.
+            # If there isn't one, we want to add as late as possible without violating
+            # order, i.e. before the first successor, if there is one.
+            if existing_precedents:
+                last_precedent = existing_precedents[-1]
+            elif not existing_successors:
+                last_precedent = existing_hooks[-1]
             else:
-                last_precedent = None
+                first_successor = existing_successors[0]
+                first_successor_idx = existing_hooks.index(first_successor)
+                last_precedent = existing_hooks[first_successor_idx - 1]
 
             doc.model.repos = insert_repo(
                 repo_to_insert=repo,

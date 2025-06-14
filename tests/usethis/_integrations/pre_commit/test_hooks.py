@@ -8,8 +8,10 @@ from usethis._integrations.pre_commit.hooks import (
     add_placeholder_hook,
     add_repo,
     get_hook_ids,
+    insert_repo,
     remove_hook,
 )
+from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
@@ -112,8 +114,8 @@ repos:
         )
 
     def test_hook_order_constant_is_respected(self, tmp_path: Path):
-        # Arrange: Add 'codespell' first (later in _HOOK_ORDER)
         with change_cwd(tmp_path):
+            # Arrange: Add 'codespell' first (later in _HOOK_ORDER)
             add_repo(
                 LocalRepo(
                     repo="local",
@@ -127,8 +129,8 @@ repos:
                     ],
                 )
             )
-        # Now add 'pyproject-fmt' (earlier in _HOOK_ORDER)
-        with change_cwd(tmp_path):
+
+            # Now add 'pyproject-fmt' (earlier in _HOOK_ORDER)
             add_repo(
                 LocalRepo(
                     repo="local",
@@ -142,23 +144,51 @@ repos:
                     ],
                 )
             )
-        # Assert: pyproject-fmt should appear before codespell
-        assert (
-            (tmp_path / ".pre-commit-config.yaml").read_text()
-            == """\
+
+            # Assert: pyproject-fmt should appear before codespell
+            assert get_hook_ids() == [
+                "pyproject-fmt",
+                "codespell",
+            ]
+
+
+class TestInsertRepo:
+    def test_predecessor_is_none(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").write_text("""\
 repos:
-  - repo: local
-    hooks:
-      - id: pyproject-fmt
-        name: pyproject-fmt
-        entry: uv run --frozen pyproject-fmt .
-        language: system
+    - repo: codespell
+      hooks:
       - id: codespell
-        name: codespell
-        entry: codespell .
-        language: system
-"""
-        )
+""")
+
+        # Act
+        with change_cwd(tmp_path), edit_pre_commit_config_yaml() as doc:
+            repos = insert_repo(
+                repo_to_insert=LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="pyproject-fmt",
+                            name="pyproject-fmt",
+                            entry="uv run --frozen pyproject-fmt .",
+                            language=Language("system"),
+                        )
+                    ],
+                ),
+                existing_repos=doc.model.repos,
+                predecessor=None,
+            )
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'.\n"
+        assert isinstance(repos, list)
+        assert len(repos) == 2
+        assert [repo.repo for repo in repos] == ["local", "codespell"]
 
 
 class TestRemoveHook:

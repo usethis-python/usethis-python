@@ -78,8 +78,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
             if existings_precedents:
                 last_precedent = existings_precedents[-1]
             else:
-                # Use the last existing hook
-                last_precedent = existing_hooks[-1]
+                last_precedent = None
 
             doc.model.repos = insert_repo(
                 repo_to_insert=repo,
@@ -98,35 +97,56 @@ def insert_repo(
     *,
     repo_to_insert: LocalRepo | UriRepo | MetaRepo,
     existing_repos: list[LocalRepo | UriRepo | MetaRepo],
-    predecessor: str,
+    predecessor: str | None,
 ) -> list[LocalRepo | UriRepo | MetaRepo]:
     # Insert the new hook after the last precedent repo
     # Do this by iterating over the repos and hooks, and inserting the new hook
     # after the last precedent
 
     repos = []
-    for repo in existing_repos:
-        hooks = repo.hooks
-        if hooks is None:
-            hooks = []
 
-        # Don't include the placeholder from now on, since we're adding a repo
-        # which can be there instead.
+    if predecessor is None:
+        # If there is no predecessor, we can just append the new repo
+        _report_adding_repo(repo_to_insert)
+        repos.append(repo_to_insert)
+
+    for existing_repo in existing_repos:
+        existing_hooks = existing_repo.hooks
+        if existing_hooks is None:
+            existing_hooks = []
+
+        # Add the existing repos, because they need to be in the final list too!
+        # One is exception is that we don't include the placeholder from now on, since
+        # we're adding a repo which can be there instead.
+        # One exception to _that_ is if the user has kept the placeholder consciously,
+        # i.e. there are multiple hooks; in that case we will not remove it.
         if not (
-            len(hooks) == 1 and hook_ids_are_equivalent(hooks[0].id, _PLACEHOLDER_ID)
+            len(existing_hooks) == 1
+            and hook_ids_are_equivalent(existing_hooks[0].id, _PLACEHOLDER_ID)
         ):
-            repos.append(repo)
+            repos.append(existing_repo)
 
-        for hook in hooks:
+        # If there are no predecessors, we're done.
+        if predecessor is None:
+            continue
+
+        # Otherwise, we need to search through this existing repo we've reached to see
+        # if it's the earliest found predecessor. If so, we're done.
+        for hook in existing_hooks:
             if hook_ids_are_equivalent(hook.id, predecessor):
-                if repo_to_insert.hooks is not None:
-                    for inserted_hook in repo_to_insert.hooks:
-                        tick_print(
-                            f"Adding hook '{inserted_hook.id}' to '.pre-commit-config.yaml'."
-                        )
+                _report_adding_repo(repo_to_insert)
                 repos.append(repo_to_insert)
 
     return repos
+
+
+def _report_adding_repo(repo: LocalRepo | UriRepo | MetaRepo) -> None:
+    """Append a repo to the end of the existing repos with message."""
+    if repo.hooks is not None:
+        for inserted_hook in repo.hooks:
+            tick_print(
+                f"Adding hook '{inserted_hook.id}' to '.pre-commit-config.yaml'."
+            )
 
 
 def add_placeholder_hook() -> None:

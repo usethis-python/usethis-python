@@ -11,11 +11,20 @@ if TYPE_CHECKING:
 
 
 class UsethisConfig(BaseModel):
-    """Global-state for command options which affect low level behaviour."""
+    """Global-state for command options which affect low level behaviour.
+
+    Attributes:
+        offline: Disable network access.
+        quiet: Suppress all output, regardless of any other options.
+        frozen: Do not install dependencies, nor update lockfiles.
+        alert_only: Suppress all output except for warnings and errors.
+        subprocess_verbose: Verbose output for subprocesses.
+    """
 
     offline: bool
     quiet: bool
     frozen: bool = False
+    alert_only: bool = False
     subprocess_verbose: bool = False
 
     @contextmanager
@@ -25,12 +34,14 @@ class UsethisConfig(BaseModel):
         offline: bool | None = None,
         quiet: bool | None = None,
         frozen: bool | None = None,
+        alert_only: bool | None = None,
         subprocess_verbose: bool | None = None,
     ) -> Generator[None, None, None]:
         """Temporarily change command options."""
         old_offline = self.offline
         old_quiet = self.quiet
         old_frozen = self.frozen
+        old_alert_only = self.alert_only
         old_subprocess_verbose = self.subprocess_verbose
 
         if offline is None:
@@ -39,17 +50,21 @@ class UsethisConfig(BaseModel):
             quiet = old_quiet
         if frozen is None:
             frozen = old_frozen
+        if alert_only is None:
+            alert_only = self.alert_only
         if subprocess_verbose is None:
             subprocess_verbose = old_subprocess_verbose
 
         self.offline = offline
         self.quiet = quiet
         self.frozen = frozen
+        self.alert_only = alert_only
         self.subprocess_verbose = subprocess_verbose
         yield
         self.offline = old_offline
         self.quiet = old_quiet
         self.frozen = old_frozen
+        self.alert_only = old_alert_only
         self.subprocess_verbose = old_subprocess_verbose
 
 
@@ -63,6 +78,7 @@ usethis_config = UsethisConfig(
     offline=_OFFLINE_DEFAULT,
     quiet=_QUIET_DEFAULT,
     frozen=False,
+    alert_only=False,
     subprocess_verbose=False,
 )
 

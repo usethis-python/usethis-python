@@ -5,7 +5,7 @@ from usethis._console import tick_print
 from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLInitError
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv import call
-from usethis._integrations.uv.errors import UVSubprocessFailedError
+from usethis._integrations.uv.errors import UVInitError, UVSubprocessFailedError
 
 
 def opinionated_uv_init() -> None:
@@ -24,7 +24,7 @@ def opinionated_uv_init() -> None:
         )
     except UVSubprocessFailedError as err:
         msg = f"Failed to create a pyproject.toml file and initialize project:\n{err}"
-        raise PyprojectTOMLInitError(msg) from None
+        raise UVInitError(msg) from None
 
 
 def ensure_pyproject_toml(*, author: bool = True) -> None:

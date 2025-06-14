@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from usethis._config import usethis_config
 from usethis._integrations.file.pyproject_toml.io_ import (
     PyprojectTOMLManager,
@@ -20,7 +18,7 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
     Raises:
         UVSubprocessFailedError: If the subprocess fails.
     """
-    is_pyproject_toml = (Path.cwd() / "pyproject.toml").exists()
+    is_pyproject_toml = (usethis_config.cpd() / "pyproject.toml").exists()
 
     if is_pyproject_toml and change_toml:
         if PyprojectTOMLManager().is_locked():
@@ -53,7 +51,9 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         new_args = [*new_args[:2], "--quiet", *new_args[2:]]
 
     try:
-        output = call_subprocess(new_args)
+        output = call_subprocess(
+            new_args, cwd=usethis_config.cpd() if args[0] != "init" else None
+        )
     except SubprocessFailedError as err:
         raise UVSubprocessFailedError(err) from None
 

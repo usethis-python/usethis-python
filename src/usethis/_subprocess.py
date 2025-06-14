@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 import subprocess
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class SubprocessFailedError(Exception):
     pass
 
 
-def call_subprocess(args: list[str]) -> str:
+def call_subprocess(args: list[str], *, cwd: Path | None) -> str:
     try:
         process = subprocess.run(  # noqa: S603
-            args,
-            check=True,
-            capture_output=True,
+            args, check=True, capture_output=True, cwd=cwd.as_posix() if cwd else None
         )
         return process.stdout.decode()
     except subprocess.CalledProcessError as err:

@@ -8,6 +8,25 @@ from usethis._integrations.uv import call
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 
 
+def opinionated_uv_init() -> None:
+    """Subprocess `uv init` with opinionated arguments.
+
+    Pass silently if a `pyproject.toml` file already exists.
+    """
+    if (usethis_config.cpd() / "pyproject.toml").exists():
+        return
+
+    tick_print("Writing 'pyproject.toml' and initializing project.")
+    try:
+        call.call_uv_subprocess(
+            ["init", "--lib", usethis_config.cpd().as_posix()],
+            change_toml=True,
+        )
+    except UVSubprocessFailedError as err:
+        msg = f"Failed to create a pyproject.toml file and initialize project:\n{err}"
+        raise PyprojectTOMLInitError(msg) from None
+
+
 def ensure_pyproject_toml(*, author: bool = True) -> None:
     """Create a pyproject.toml file using `uv init --bare`."""
     if (usethis_config.cpd() / "pyproject.toml").exists():
@@ -25,6 +44,7 @@ def ensure_pyproject_toml(*, author: bool = True) -> None:
                 f"--author-from={author_from}",
                 "--build-backend",  # https://github.com/nathanjmcdougall/usethis-python/issues/347
                 "hatch",  # until https://github.com/astral-sh/uv/issues/3957
+                usethis_config.cpd().as_posix(),
             ],
             change_toml=True,
         )

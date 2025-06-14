@@ -8,6 +8,7 @@ import usethis._interface.browse
 import usethis._interface.ci
 import usethis._interface.docstyle
 import usethis._interface.format_
+import usethis._interface.init
 import usethis._interface.lint
 import usethis._interface.list
 import usethis._interface.readme
@@ -24,6 +25,15 @@ app = typer.Typer(
         "performed manually."
     ),
     add_completion=False,
+)
+
+rich_help_panel = "Start a new project"
+app.command(
+    name="init",
+    help="Initialize a new project with recommended defaults.",
+    rich_help_panel=rich_help_panel,
+)(
+    usethis._interface.init.init,
 )
 
 rich_help_panel = "Manage Tooling"

@@ -40,7 +40,7 @@ class UsethisConfig(BaseModel):
         frozen: bool | None = None,
         alert_only: bool | None = None,
         subprocess_verbose: bool | None = None,
-        project_dir: Path | None = None,
+        project_dir: Path | str | None = None,
     ) -> Generator[None, None, None]:
         """Temporarily change command options."""
         old_offline = self.offline
@@ -48,7 +48,7 @@ class UsethisConfig(BaseModel):
         old_frozen = self.frozen
         old_alert_only = self.alert_only
         old_subprocess_verbose = self.subprocess_verbose
-        old_roject_dir = self.project_dir
+        old_project_dir = self.project_dir
 
         if offline is None:
             offline = old_offline
@@ -61,13 +61,15 @@ class UsethisConfig(BaseModel):
         if subprocess_verbose is None:
             subprocess_verbose = old_subprocess_verbose
         if project_dir is None:
-            project_dir = old_roject_dir
+            project_dir = old_project_dir
 
         self.offline = offline
         self.quiet = quiet
         self.frozen = frozen
         self.alert_only = alert_only
         self.subprocess_verbose = subprocess_verbose
+        if isinstance(project_dir, str):
+            project_dir = Path(project_dir)
         self.project_dir = project_dir
         yield
         self.offline = old_offline
@@ -75,7 +77,7 @@ class UsethisConfig(BaseModel):
         self.frozen = old_frozen
         self.alert_only = old_alert_only
         self.subprocess_verbose = old_subprocess_verbose
-        self.project_dir = old_roject_dir
+        self.project_dir = old_project_dir
 
     def cpd(self) -> Path:
         """Return the current project directory."""

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from enum import Enum
+
 from usethis._console import box_print, info_print
 from usethis._integrations.ci.bitbucket.config import (
     add_bitbucket_pipeline_config,
@@ -14,8 +16,16 @@ from usethis._tool.impl.pytest import PytestTool
 from usethis._tool.impl.ruff import RuffTool
 
 
-def use_ci_bitbucket(*, remove: bool = False) -> None:
+class CIServiceEnum(Enum):
+    bitbucket = "bitbucket"
+
+
+def use_ci_bitbucket(*, remove: bool = False, how: bool = True) -> None:
     ensure_pyproject_toml()
+
+    if how:
+        print_how_to_use_ci_bitbucket()
+        return
 
     if not remove:
         use_pre_commit = PreCommitTool().is_used()
@@ -47,11 +57,14 @@ def use_ci_bitbucket(*, remove: bool = False) -> None:
 
         PytestTool().update_bitbucket_steps()
 
-        if not use_pytest:
-            info_print(
-                "Consider `usethis tool pytest` to test your code for the pipeline."
-            )
-
-        box_print("Run your pipeline via the Bitbucket website.")
+        print_how_to_use_ci_bitbucket()
     else:
         remove_bitbucket_pipeline_config()
+
+
+def print_how_to_use_ci_bitbucket() -> None:
+    """Print how to use the Bitbucket CI service."""
+    if not PytestTool().is_used():
+        info_print("Consider `usethis tool pytest` to test your code for the pipeline.")
+
+    box_print("Run your pipeline via the Bitbucket website.")

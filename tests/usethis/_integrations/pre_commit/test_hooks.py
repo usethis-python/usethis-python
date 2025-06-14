@@ -8,8 +8,10 @@ from usethis._integrations.pre_commit.hooks import (
     add_placeholder_hook,
     add_repo,
     get_hook_ids,
+    insert_repo,
     remove_hook,
 )
+from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
@@ -110,6 +112,49 @@ repos:
             "✔ Writing '.pre-commit-config.yaml'.\n"
             "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
         )
+
+
+class TestInsertRepo:
+    def test_duplicate_predecessor(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # What if the predecessor ID is repeated multiple times? Will we end up
+        # inserting the new repo multiple times? No.
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: foo
+    hooks:
+    - id: bar
+  - repo: foo
+    hooks:
+    - id: bar
+""")
+
+        # Act
+        with change_cwd(tmp_path), edit_pre_commit_config_yaml() as doc:
+            repos = insert_repo(
+                repo_to_insert=LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="pyproject-fmt",
+                            name="pyproject-fmt",
+                            entry="uv run --frozen pyproject-fmt .",
+                            language=Language("system"),
+                        )
+                    ],
+                ),
+                existing_repos=doc.model.repos,
+                predecessor="bar",
+            )
+
+        # Assert
+        assert isinstance(repos, list)
+        assert len(repos) == 3
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'.\n"
 
 
 class TestRemoveHook:

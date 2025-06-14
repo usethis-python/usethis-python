@@ -113,6 +113,199 @@ repos:
             "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
         )
 
+    def test_hook_order_constant_is_respected(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            # Arrange: Add 'codespell' first (later in _HOOK_ORDER)
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Now add 'pyproject-fmt' (earlier in _HOOK_ORDER)
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="pyproject-fmt",
+                            name="pyproject-fmt",
+                            entry="uv run --frozen pyproject-fmt .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Assert: pyproject-fmt should appear before codespell
+            assert get_hook_ids() == [
+                "pyproject-fmt",
+                "codespell",
+            ]
+
+    def test_hooks_added_in_standard_order(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            # Arrange
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="pyproject-fmt",
+                            name="pyproject-fmt",
+                            entry="uv run --frozen pyproject-fmt .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Act
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+            # Assert
+            assert get_hook_ids() == [
+                "pyproject-fmt",
+                "codespell",
+            ]
+
+    def test_hook_order_constant_is_respected_multi(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            # Act
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="foo",
+                            name="foo",
+                            entry="foo .",
+                            language=Language("system"),
+                        )
+                    ],
+                ),
+            )
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="pyproject-fmt",
+                            name="pyproject-fmt",
+                            entry="uv run --frozen pyproject-fmt .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Assert
+            assert get_hook_ids() == [
+                "foo",
+                "pyproject-fmt",
+                "codespell",
+            ]
+
+
+class TestInsertRepo:
+    def test_predecessor_is_none(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+    - repo: codespell
+      hooks:
+      - id: codespell
+""")
+
+        # Act
+        with change_cwd(tmp_path), edit_pre_commit_config_yaml() as doc:
+            repos = insert_repo(
+                repo_to_insert=LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="pyproject-fmt",
+                            name="pyproject-fmt",
+                            entry="uv run --frozen pyproject-fmt .",
+                            language=Language("system"),
+                        )
+                    ],
+                ),
+                existing_repos=doc.model.repos,
+                predecessor=None,
+            )
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'.\n"
+        assert isinstance(repos, list)
+        assert len(repos) == 2
+        assert [repo.repo for repo in repos] == ["local", "codespell"]
+
+    def test_existing_repo_has_none_hooks(self):
+        # Arrange
+        existing_repos = [LocalRepo(repo="local", hooks=None)]
+        new_hook = HookDefinition(
+            id="new-hook",
+            name="New Hook",
+            entry="echo 'New hook'",
+            language=Language("system"),
+        )
+        repo_to_insert = LocalRepo(
+            repo="local",
+            hooks=[new_hook],
+        )
+
+        # Act
+        results = insert_repo(
+            repo_to_insert=repo_to_insert,
+            existing_repos=existing_repos,
+            predecessor=None,
+        )
+
+        # Assert
+        assert isinstance(results, list)
+        assert len(results) == 2
+        assert results == [
+            LocalRepo(repo="local", hooks=[new_hook]),
+            LocalRepo(repo="local", hooks=None),
+        ]
+
 
 class TestInsertRepo:
     def test_duplicate_predecessor(

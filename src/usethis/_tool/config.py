@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 
 from pydantic import BaseModel, InstanceOf
 
+from usethis._config import usethis_config
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._io import Key, KeyValueFileManager
@@ -121,7 +122,7 @@ class ConfigItem(BaseModel):
     @property
     def paths(self) -> set[Path]:
         """Get the absolute paths to the config files associated with this item."""
-        return {(Path.cwd() / path).resolve() for path in self.root}
+        return {(usethis_config.cpd() / path).resolve() for path in self.root}
 
 
 def ensure_file_manager_exists(file_manager: UsethisFileManager) -> None:

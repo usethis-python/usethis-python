@@ -2,16 +2,18 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
+from usethis._config import usethis_config
 from usethis._console import plain_print, tick_print, warn_print
 from usethis._core.readme import add_readme, get_readme_path
 from usethis._integrations.project.name import get_project_name
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from typing_extensions import Self
 
 
@@ -231,7 +233,7 @@ def is_badge(line: str) -> bool:
 
 
 def remove_badge(badge: Badge) -> None:
-    path = Path.cwd() / "README.md"
+    path = usethis_config.cpd() / "README.md"
 
     try:
         path = _get_markdown_readme_path()

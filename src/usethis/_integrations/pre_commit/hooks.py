@@ -122,12 +122,14 @@ def insert_repo(
     # Do this by iterating over the repos and hooks, and inserting the new hook
     # after the last precedent
 
+    inserted = False
     repos = []
 
     if predecessor is None:
         # If there is no predecessor, we can just append the new repo
         _report_adding_repo(repo_to_insert)
         repos.append(repo_to_insert)
+        inserted = True
 
     for existing_repo in existing_repos:
         existing_hooks = existing_repo.hooks
@@ -145,8 +147,8 @@ def insert_repo(
         ):
             repos.append(existing_repo)
 
-        # If there are no predecessors, we're done.
-        if predecessor is None:
+        # If we have already inserted the new repo, we're done.
+        if inserted:
             continue
 
         # Otherwise, we need to search through this existing repo we've reached to see
@@ -155,6 +157,7 @@ def insert_repo(
             if hook_ids_are_equivalent(hook.id, predecessor):
                 _report_adding_repo(repo_to_insert)
                 repos.append(repo_to_insert)
+                inserted = True
 
     return repos
 

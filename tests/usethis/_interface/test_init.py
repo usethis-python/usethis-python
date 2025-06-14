@@ -119,8 +119,6 @@ class TestInit:
         assert (tmp_path / "pyproject.toml").exists()
         assert result.output == (
             "✔ Writing 'pyproject.toml' and initializing project.\n"
-            "✔ Adding the pre-commit framework.\n"
-            "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
             "✔ Adding recommended linters.\n"
             "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'uv run deptry src' to run deptry.\n"

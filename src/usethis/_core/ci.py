@@ -20,7 +20,7 @@ class CIServiceEnum(Enum):
     bitbucket = "bitbucket"
 
 
-def use_ci_bitbucket(*, remove: bool = False, how: bool = True) -> None:
+def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:
     ensure_pyproject_toml()
 
     if how:

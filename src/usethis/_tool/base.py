@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
 
+from usethis._config import usethis_config
 from usethis._console import tick_print, warn_print
 from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_step_in_default,
@@ -32,6 +32,8 @@ from usethis._tool.rule import RuleConfig
 from usethis.errors import FileDecodeError
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
     from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
     from usethis._integrations.uv.deps import (
@@ -256,13 +258,13 @@ class Tool(Protocol):
                 relative_path,
                 file_manager,
             ) in file_manager_by_relative_path.items():
-                path = Path.cwd() / relative_path
+                path = usethis_config.cpd() / relative_path
                 if path.exists() and path.is_file():
                     return {file_manager}
         elif resolution == "first_content":
             config_spec = self.get_config_spec()
             for relative_path, file_manager in file_manager_by_relative_path.items():
-                path = Path.cwd() / relative_path
+                path = usethis_config.cpd() / relative_path
                 if path.exists() and path.is_file():
                     # We check whether any of the managed config exists
                     for config_item in config_spec.config_items:
@@ -444,7 +446,9 @@ class Tool(Protocol):
         If no files exist, this method has no effect.
         """
         for file in self.get_managed_files():
-            if (Path.cwd() / file).exists() and (Path.cwd() / file).is_file():
+            if (usethis_config.cpd() / file).exists() and (
+                usethis_config.cpd() / file
+            ).is_file():
                 tick_print(f"Removing '{file}'.")
                 file.unlink()
 

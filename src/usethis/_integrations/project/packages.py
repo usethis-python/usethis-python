@@ -3,6 +3,7 @@ from pathlib import Path
 
 from typing_extensions import assert_never
 
+from usethis._config import usethis_config
 from usethis._integrations.project.layout import get_source_dir_str
 
 IMPORTABLE_PACKAGE_EXCLUSIONS = {"tests", "test", "doc", "docs"}
@@ -25,7 +26,7 @@ def get_importable_packages() -> set[str]:
     source_dir_str = get_source_dir_str()
 
     if source_dir_str in ("src", "."):
-        path = Path.cwd() / source_dir_str
+        path = usethis_config.cpd() / source_dir_str
     else:
         assert_never(source_dir_str)
 

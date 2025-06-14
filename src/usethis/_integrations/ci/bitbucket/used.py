@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
+from usethis._config import usethis_config
 
 
 def is_bitbucket_used() -> bool:
-    return (Path.cwd() / "bitbucket-pipelines.yml").exists()
+    return (usethis_config.cpd() / "bitbucket-pipelines.yml").exists()

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 from usethis._config import usethis_config
@@ -318,7 +317,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    path = Path.cwd() / "requirements.txt"
+    path = usethis_config.cpd() / "requirements.txt"
 
     if not remove:
         ensure_pyproject_toml()
@@ -330,7 +329,10 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
 
         if not path.exists():
             # N.B. this is where a task runner would come in handy, to reduce duplication.
-            if not (Path.cwd() / "uv.lock").exists() and not usethis_config.frozen:
+            if (
+                not (usethis_config.cpd() / "uv.lock").exists()
+                and not usethis_config.frozen
+            ):
                 tick_print("Writing 'uv.lock'.")
                 call_uv_subprocess(["lock"], change_toml=False)
 

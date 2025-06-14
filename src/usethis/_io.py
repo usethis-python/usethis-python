@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import re
 from abc import abstractmethod
-from pathlib import Path
 from typing import TYPE_CHECKING, Generic, TypeAlias, TypeVar
 
 from typing_extensions import assert_never
 
+from usethis._config import usethis_config
 from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+    from pathlib import Path
     from types import TracebackType
     from typing import Any, ClassVar
 
@@ -47,7 +48,7 @@ class UsethisFileManager(Generic[DocumentT]):
         raise NotImplementedError
 
     def __init__(self) -> None:
-        self.path = (Path.cwd() / self.relative_path).resolve()
+        self.path = (usethis_config.cpd() / self.relative_path).resolve()
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, UsethisFileManager):

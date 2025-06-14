@@ -15,6 +15,8 @@ from usethis._integrations.pre_commit.schema import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+
     from usethis._integrations.pre_commit.schema import (
         JsonSchemaForPreCommitConfigYaml,
         UriRepo,
@@ -113,7 +115,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
 def insert_repo(
     *,
     repo_to_insert: LocalRepo | UriRepo | MetaRepo,
-    existing_repos: list[LocalRepo | UriRepo | MetaRepo],
+    existing_repos: Collection[LocalRepo | UriRepo | MetaRepo],
     predecessor: str | None,
 ) -> list[LocalRepo | UriRepo | MetaRepo]:
     # Insert the new hook after the last precedent repo

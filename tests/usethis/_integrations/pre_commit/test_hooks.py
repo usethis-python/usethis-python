@@ -277,6 +277,35 @@ repos:
         assert len(repos) == 2
         assert [repo.repo for repo in repos] == ["local", "codespell"]
 
+    def test_existing_repo_has_none_hooks(self):
+        # Arrange
+        existing_repos = [LocalRepo(repo="local", hooks=None)]
+        new_hook = HookDefinition(
+            id="new-hook",
+            name="New Hook",
+            entry="echo 'New hook'",
+            language=Language("system"),
+        )
+        repo_to_insert = LocalRepo(
+            repo="local",
+            hooks=[new_hook],
+        )
+
+        # Act
+        results = insert_repo(
+            repo_to_insert=repo_to_insert,
+            existing_repos=existing_repos,
+            predecessor=None,
+        )
+
+        # Assert
+        assert isinstance(results, list)
+        assert len(results) == 2
+        assert results == [
+            LocalRepo(repo="local", hooks=[new_hook]),
+            LocalRepo(repo="local", hooks=None),
+        ]
+
 
 class TestRemoveHook:
     def test_empty(self, tmp_path: Path):

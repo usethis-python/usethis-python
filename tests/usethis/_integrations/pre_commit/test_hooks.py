@@ -306,8 +306,6 @@ repos:
             LocalRepo(repo="local", hooks=None),
         ]
 
-
-class TestInsertRepo:
     def test_duplicate_predecessor(
         self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
     ):

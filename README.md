@@ -103,7 +103,7 @@ $ pipx run usethis tool ruff
 To start a new project from scratch with a complete set of recommended tooling, run:
 
 ```console
-$ uvx usethis init highhopes
+$ uvx usethis init
 ✔ Writing 'pyproject.toml' and initializing project.
 ✔ Adding recommended linters.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.

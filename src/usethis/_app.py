@@ -27,7 +27,7 @@ app = typer.Typer(
     add_completion=False,
 )
 
-rich_help_panel = "Start a new project"
+rich_help_panel = "Start a New Project"
 app.command(
     name="init",
     help="Initialize a new project with recommended defaults.",

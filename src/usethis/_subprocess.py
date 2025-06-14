@@ -11,7 +11,7 @@ class SubprocessFailedError(Exception):
     pass
 
 
-def call_subprocess(args: list[str], *, cwd: Path | None) -> str:
+def call_subprocess(args: list[str], *, cwd: Path | None = None) -> str:
     try:
         process = subprocess.run(  # noqa: S603
             args, check=True, capture_output=True, cwd=cwd.as_posix() if cwd else None

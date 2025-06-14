@@ -8,11 +8,11 @@ from usethis._test import change_cwd
 
 
 class TestInit:
-    def test_from_scratch(self, tmp_path: Path):
+    def test_pre_commit_included(self, tmp_path: Path):
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["init"])
+            result = runner.invoke(app, ["init", "--pre-commit"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -40,14 +40,59 @@ class TestInit:
         with change_cwd(tmp_path):
             hook_ids = get_hook_ids()
             assert hook_ids == [
-                "validate-pyproject",
-                "uv-export",
                 "pyproject-fmt",
                 "ruff",
                 "ruff-format",
                 "deptry",
                 "codespell",
             ]
+
+    def test_readme_example(self, tmp_path: Path):
+        """This example is used the README.md file.
+
+        Note carefully! If this test is updated, the README.md file must be
+        updated too.
+        """
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["init"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            # ###################################
+            # See docstring!
+            # ###################################
+            == """\
+✔ Writing 'pyproject.toml' and initializing project.
+✔ Adding recommended linters.
+☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
+☐ Run 'uv run deptry src' to run deptry.
+✔ Adding recommended formatters.
+☐ Run 'uv run ruff format' to run the Ruff formatter.
+☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.
+✔ Adding recommended spellcheckers.
+☐ Run 'uv run codespell' to run the Codespell spellchecker.
+✔ Adding recommended test frameworks.
+☐ Add test files to the '/tests' directory with the format 'test_*.py'.
+☐ Add test functions with the format 'test_*()'.
+☐ Run 'uv run pytest' to run the tests.
+"""
+        )
+
+    def test_specify_path(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["init", "myproject"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert result.output.startswith(
+            "☐ Change the current working directory to the project directory.\n"
+        )
 
     def test_no_err_when_pyproject_toml_exists(self, tmp_path: Path):
         # Arrange

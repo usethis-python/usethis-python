@@ -43,7 +43,7 @@ def init(  # noqa: PLR0913
         help="Add a recommended testing framework.",
     ),
     pre_commit: bool = typer.Option(
-        True,
+        False,
         "--pre-commit/--no-pre-commit",
         help="Add the pre-commit framework for git hooks.",
     ),

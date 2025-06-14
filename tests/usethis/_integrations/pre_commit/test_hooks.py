@@ -151,6 +151,93 @@ repos:
                 "codespell",
             ]
 
+    def test_hooks_added_in_standard_order(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            # Arrange
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="pyproject-fmt",
+                            name="pyproject-fmt",
+                            entry="uv run --frozen pyproject-fmt .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Act
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+            # Assert
+            assert get_hook_ids() == [
+                "pyproject-fmt",
+                "codespell",
+            ]
+
+    def test_hook_order_constant_is_respected_multi(self, tmp_path: Path):
+        with change_cwd(tmp_path):
+            # Act
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="foo",
+                            name="foo",
+                            entry="foo .",
+                            language=Language("system"),
+                        )
+                    ],
+                ),
+            )
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+            add_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="pyproject-fmt",
+                            name="pyproject-fmt",
+                            entry="uv run --frozen pyproject-fmt .",
+                            language=Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Assert
+            assert get_hook_ids() == [
+                "foo",
+                "pyproject-fmt",
+                "codespell",
+            ]
+
 
 class TestInsertRepo:
     def test_predecessor_is_none(

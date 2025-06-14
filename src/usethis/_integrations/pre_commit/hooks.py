@@ -92,7 +92,10 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
             else:
                 first_successor = existing_successors[0]
                 first_successor_idx = existing_hooks.index(first_successor)
-                last_precedent = existing_hooks[first_successor_idx - 1]
+                if first_successor_idx == 0:
+                    last_precedent = None
+                else:
+                    last_precedent = existing_hooks[first_successor_idx - 1]
 
             doc.model.repos = insert_repo(
                 repo_to_insert=repo,

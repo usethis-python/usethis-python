@@ -15,5 +15,9 @@ class UVSubprocessFailedError(UVError):
     """Raised when a subprocess call to uv fails."""
 
 
+class UVInitError(UVSubprocessFailedError):
+    """Raised when the uv init command fails to create a pyproject.toml file."""
+
+
 class UVUnparsedPythonVersionError(UVError):
     """Raised when a Python version string cannot be parsed."""

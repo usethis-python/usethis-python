@@ -356,7 +356,7 @@ class TestRuff:
             else:
                 call_subprocess(["usethis", "tool", "ruff", "--offline"])
 
-    def test_readme_example(self, tmp_path: Path):
+    def test_readme_example(self, uv_init_dir: Path):
         """This example is used the README.md file.
 
         Note carefully! If this test is updated, the README.md file must be
@@ -364,7 +364,7 @@ class TestRuff:
         """
         # Act
         runner = CliRunner()
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             result = runner.invoke(app, ["ruff"])
 
         # Assert
@@ -375,7 +375,6 @@ class TestRuff:
             # See docstring!
             # ###################################
             == """\
-✔ Writing 'pyproject.toml'.
 ✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.
 ✔ Adding Ruff config to 'pyproject.toml'.
 ✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 

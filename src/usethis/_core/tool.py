@@ -377,8 +377,6 @@ def use_ruff(
         linter: Whether to add/remove the Ruff linter.
         formatter: Whether to add/remove the Ruff formatter.
     """
-    tool = RuffTool()
-
     if how:
         tool = RuffTool(
             linter_detection="always" if linter else "never",
@@ -390,6 +388,7 @@ def use_ruff(
     # Only add ruff rules if the user doesn't already have a select/ignore list.
     # Otherwise, we should leave them alone. An exception is pydocstyle rules, since
     # these are the responsibility of the pydocstyle interface via `usethis docstyle`.
+    tool = RuffTool()
     if minimal:
         rule_config = RuleConfig()
     elif (

@@ -44,7 +44,7 @@ dependencies = [
   "rich>=9.6.1",
   "ruamel-yaml>=0.16.13",
   "tomlkit>=0.12.0",
-  "typer>=0.6.0",
+  "typer>=0.12.4",
   "typing-extensions>=3.10.0.0",
 ]
 scripts.usethis = "usethis.__main__:app"
@@ -197,7 +197,7 @@ name = "usethis._interface"
 type = "layers"
 layers = [
   # Note; if you're adding an interface, make sure it's in the README too.
-  "author | badge | browse | ci | docstyle | format_ | lint | list | readme | rule | show | spellcheck | test | tool | version",
+  "author | badge | browse | ci | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | test | tool | version",
 ]
 containers = [ "usethis._interface" ]
 exhaustive = true

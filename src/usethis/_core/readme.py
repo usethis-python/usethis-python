@@ -7,7 +7,6 @@ from usethis._console import box_print, tick_print, warn_print
 from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLError
 from usethis._integrations.file.pyproject_toml.name import get_description
 from usethis._integrations.project.name import get_project_name
-from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
@@ -27,8 +26,6 @@ def add_readme() -> None:
         existing_content = path.read_text().strip()
         if existing_content:
             return
-
-    ensure_pyproject_toml()
 
     project_name = get_project_name()
 

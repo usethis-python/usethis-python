@@ -1,6 +1,6 @@
 ---
 name: Enhancement Request
-about: A high-level description of a feature or other enhancement you'd like.
+about: A high-level description of a feature or other enhancement you'd like
 title: ''
 labels: ''
 assignees: nathanjmcdougall

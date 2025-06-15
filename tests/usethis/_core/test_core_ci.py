@@ -506,3 +506,17 @@ pipelines:
                 # Assert
                 out, _ = capfd.readouterr()
                 assert out == "✔ Removing 'bitbucket-pipelines.yml'.\n"
+
+    class TestHow:
+        def test_message(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ci_bitbucket(how=True)
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
+                "☐ Run your pipeline via the Bitbucket website.\n"
+            )

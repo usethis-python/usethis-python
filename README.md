@@ -67,6 +67,10 @@ $ pipx run usethis tool ruff
 
 ## 🖥️ Command Line Interface
 
+### Start a New Project
+
+- [`usethis init`](#usethis-init) — Initialize a new project with recommended defaults.
+
 ### Manage Tooling
 
 - [`usethis format`](#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
@@ -79,7 +83,7 @@ $ pipx run usethis tool ruff
 ### Manage Configuration
 
 - [`usethis author`](#usethis-author) — Set new author information for the project.
-- [`usethis docstyle`](#usethis-docstyle) — Set new author information for the project.
+- [`usethis docstyle`](#usethis-docstyle-style) — Set new author information for the project.
 - [`usethis rule`](#usethis-rule-rulecode) — Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
 
 ### Manage README
@@ -96,11 +100,29 @@ $ pipx run usethis tool ruff
 
 ## 💡 Example Usage
 
-To use Ruff on a fresh project, run:
+To start a new project from scratch with a complete set of recommended tooling, run:
+
+```console
+$ uvx usethis init
+✔ Writing 'pyproject.toml' and initializing project.
+✔ Adding recommended linters.
+☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
+☐ Run 'uv run deptry src' to run deptry.
+✔ Adding recommended formatters.
+☐ Run 'uv run ruff format' to run the Ruff formatter.
+☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.
+✔ Adding recommended spellcheckers.
+☐ Run 'uv run codespell' to run the Codespell spellchecker.
+✔ Adding recommended test frameworks.
+☐ Add test files to the '/tests' directory with the format 'test_*.py'.
+☐ Add test functions with the format 'test_*()'.
+☐ Run 'uv run pytest' to run the tests.
+```
+
+To use Ruff on an existing project, run:
 
 ```console
 $ uvx usethis tool ruff
-✔ Writing 'pyproject.toml'.
 ✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.
 ✔ Adding Ruff config to 'pyproject.toml'.
 ✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
@@ -137,15 +159,46 @@ $ uvx usethis ci bitbucket
 
 ## 🖥️ Command Reference
 
+### `usethis init`
+
+Initialize a new Python project with recommended defaults, including:
+
+- a `pyproject.toml` file and relevant configuration,
+- recommended linters, formatters, spellcheckers, and test frameworks (all opt-out),
+- docstring style enforcement (opt-in),
+- the pre-commit framework (opt-in),
+- CI services (opt-in),
+- declared & installed dependencies via `uv add`, and
+- any other relevant directories or tool-bespoke configuration files.
+
+Supported options:
+
+- `--format` to add recommended formatters (default; or `--no-format` to opt-out)
+- `--lint` to add recommended linters (default; or `--no-lint` to opt-out)
+- `--spellcheck` to add a recommended spellchecker (default; or `--no-spellcheck` to opt-out)
+- `--test` to add a recommended testing framework (default; or `--no-test` to opt-out)
+- `--pre-commit` to add the pre-commit framework for git hooks (but the default is `--no-pre-commit`)
+- `--ci` to add a CI service configuration
+  Possible values:
+  - `bitbucket` for [Bitbucket Pipelines](https://bitbucket.org/product/features/pipelines)
+- `--docstyle` to set a docstring style convention for the project
+  Possible values:
+  - `numpy` for [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
+  - `google` for [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
+  - `pep257` for [PEP 257 docstring style](https://www.python.org/dev/peps/pep-0257/)
+- `--offline` to disable network access and rely on caches
+- `--quiet` to suppress output
+- `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
+
 ### `usethis format`
 
 Add recommended formatters to the project (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)), including:
 
-- declared & installed dependencies with `uv add`,
-- relevant `pyproject.toml` configuration,
-- any other relevant directories or tool-bespoke configuration files, and
+- declared & installed dependencies via `uv add`,
+- relevant `pyproject.toml` configuration, and
+- any other relevant directories or tool-bespoke configuration files.
 
-Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies with `uv add`.
+Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies via `uv add`.
 
 Supported options:
 
@@ -162,8 +215,8 @@ See [`usethis tool`](#usethis-tool) for more information.
 Add recommended linters to the project (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)), including:
 
 - declared & installed dependencies with `uv add`,
-- relevant `pyproject.toml` configuration,
-- any other relevant directories or tool-bespoke configuration files, and
+- relevant `pyproject.toml` configuration, and
+- any other relevant directories or tool-bespoke configuration files.
 
 Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies with `uv add`.
 
@@ -182,8 +235,8 @@ See [`usethis tool`](#usethis-tool) for more information.
 Add a recommended spellchecker to the project (namely, [codespell](https://github.com/codespell-project/codespell)), including:
 
 - declared & installed dependencies with `uv add`,
-- relevant `pyproject.toml` configuration,
-- any other relevant directories or tool-bespoke configuration files, and
+- relevant `pyproject.toml` configuration, and
+- any other relevant directories or tool-bespoke configuration files.
 
 Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies with `uv add`.
 
@@ -202,8 +255,8 @@ See [`usethis tool`](#usethis-tool) for more information.
 Add a recommended testing framework to the project (namely pytest), including:
 
 - declared & installed dependencies with `uv add`,
-- relevant `pyproject.toml` configuration,
-- any other relevant directories or tool-bespoke configuration files, and
+- relevant `pyproject.toml` configuration, and
+- any other relevant directories or tool-bespoke configuration files.
 
 Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies with `uv add`.
 
@@ -258,8 +311,8 @@ Supported options:
 
 For `usethis tool ruff`, in addition to the above options, you can also specify:
 
-- `--linter` to add or remove specifically the linter component of Ruff
-- `--formatter` to add or remove specifically the formatter component of Ruff
+- `--linter` to add or remove specifically the linter component of Ruff (default; or `--no-linter` to opt-out)
+- `--formatter` to add or remove specifically the formatter component of Ruff (default; or `--no-formatter` to opt-out)
 
 ### `usethis ci`
 
@@ -313,15 +366,21 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 
-### `usethis docstyle`
+### `usethis docstyle <style>`
 
 Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
 
-Currently supported docstring styles:
+Defaults to the Google docstring style.
 
-- `usethis docstyle numpy`
-- `usethis docstyle google`
-- `usethis docstyle pep257`
+Possible style options:
+
+- `numpy` for [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
+- `google` for [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
+- `pep257` for [PEP 257 docstring style](https://www.python.org/dev/peps/pep-0257/)
+
+Example:
+
+`usethis docstyle google`
 
 Supported options:
 

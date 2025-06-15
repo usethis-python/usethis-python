@@ -226,16 +226,16 @@ def ruff(  # noqa: PLR0913
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     linter: bool = typer.Option(
-        False, "--linter", help="Add or remove specifically the Ruff linter."
+        True,
+        "--linter/--no-linter",
+        help="Add or remove specifically the Ruff linter.",
     ),
     formatter: bool = typer.Option(
-        False, "--formatter", help="Add or remove specifically the Ruff formatter."
+        True,
+        "--formatter/--no-formatter",
+        help="Add or remove specifically the Ruff formatter.",
     ),
 ) -> None:
-    if not linter and not formatter:
-        linter = True
-        formatter = True
-
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 
+from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.file.yaml.io_ import edit_yaml
 from usethis._integrations.pre_commit.schema import JsonSchemaForPreCommitConfigYaml
@@ -40,7 +40,7 @@ class PreCommitConfigYAMLDocument:
 def edit_pre_commit_config_yaml() -> Generator[PreCommitConfigYAMLDocument, None, None]:
     """A context manager to modify '.pre-commit-config.yaml' in-place."""
     name = ".pre-commit-config.yaml"
-    path = Path.cwd() / name
+    path = usethis_config.cpd() / name
 
     if not path.exists():
         tick_print(f"Writing '{name}'.")

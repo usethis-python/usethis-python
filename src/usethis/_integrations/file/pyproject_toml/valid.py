@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from tomlkit.items import Array, Table
 
+from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.file.dir import get_project_name_from_dir
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 def ensure_pyproject_validity():
-    if not (Path.cwd() / "pyproject.toml").exists():
+    if not (usethis_config.cpd() / "pyproject.toml").exists():
         return
 
     toml_document = PyprojectTOMLManager().get()

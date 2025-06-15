@@ -29,7 +29,8 @@ class TestCallUVSubprocess:
 
         # Arrange
         # Mock the call_subprocess function to check the args passed
-        def mock_call_subprocess(args: list[str]) -> str:
+        def mock_call_subprocess(args: list[str], *, cwd: Path | None = None) -> str:
+            _ = cwd
             return " ".join(args)
 
         monkeypatch.setattr(

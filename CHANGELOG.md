@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.13.0
+
+### 🚀 New Features
+
+- New high-level interfaces have been added: `usethis init` to initialize projects including recommended tools, and `usethis lint`, `usethis format`, `usethis spellcheck`, and `usethis test` to add sets of recommended tools for different purposes. For example, `usethis lint` will add both Ruff and deptry. As recommended tooling changes in the long-term, these commands will remain the same but potentially change the specific tools they include.
+
+- Error messages are now directed to stderr instead of stdout.
+
+- The [`INP`](https://docs.astral.sh/ruff/rules/#flake8-no-pep420-inp) code Ruff rules are now enabled when adding Import Linter, since Import Linter requires `__init__.py` files to exist in the packages it analyzes.
+
+- The `usethis docstyle` possible arguments (`numpy`, `google`, and `pep257`) are now handled in a way that should lead to more readable error messages and `--help` explanations.
+
+### 🦾 Robustness
+
+- If `pre-commit install` does not run successfully (e.g. if there is not Git Repository for the project) then usethis will display a message for the user to ask them to run this command themselves, rather than the previous behaviour which was to stop with an error.
+
+- Syntax errors in TOML and INI configuration files will be handled when trying to determine whether a given tool is being used. A warning is displayed but usethis will continue under the assumption that the invalid file does not contain relevant configuration for the tool.
+
+### 🐞 Bug Fixes
+
+- Previously, when calling `usethis tool ruff --how`, any passed `--linter` or `--formatter` arguments would be ignored and instructions would be displayed for both the linter and the formatter regardless. This is no longer the case - now if either the `--linter` or `--formatter` argument is passed, just the specified arguments will be considered in terms of the messages displayed.
+
+- Previously, when adding pre-commit hook definitions, it was possible to duplicate the added definition if there was a duplicate hook ID existing in the file. This has been fixed. Similarly, when adding pre-commit hooks definitions, the intended order of hooks was violated in some circumstances. The ordering logic has been reworked to ensure consistent hook ordering (based on the hook ID).
+
+- Previously, when adding `pre-commit`, if `pyproject-fmt` or `codespell` were present, the default configuration would be added for those tools too. This is no longer the case - adding `pre-commit` will not touch the existing configuration for other tools except for the way in which they are installed and declared as dependencies.
+
+- Previously, the `usethis rule` command did not handle some error messages properly, and would dump the full stack trace. This has been resolved.
+
+### 📦 Packaging
+
+- The `typer` dependency lower bound has been bumped from version 0.6.0 to 0.12.4 to provide support for union types of Enum with `None`.
+
+### 📚 Documentation
+
+- More information has been added to the README in the Command Line Interface Table of Contents, giving a one-line summary of each command.
+
+- The GitHub Issue templates have been simplified down to make them more accessible.
+
+### 🔧 Internal Changes
+
+- The test suite on CI now runs on the lowest supported version of uv (0.5.29), rather than just the latest version.
+
+- The `ARG` Ruff rules are now enabled for development of usethis.
+
+- New `alert_only` global state has been added to allow the suppression of non-warning and non-error printing to the console.
+
+- New global state has been added to set the project directory (versus the previous default of using the current working directory in all cases).
+
+- The `requests` package version for development was bumped from 2.23.3 to 2.23.4 to address CVE-2024-47081.
+
 ## 0.12.0
 
 ### 🚀 New Features

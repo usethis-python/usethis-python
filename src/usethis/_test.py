@@ -6,6 +6,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from usethis._config import usethis_config
+
 if TYPE_CHECKING:
     from collections.abc import Generator
 
@@ -19,10 +21,9 @@ def change_cwd(new_dir: Path) -> Generator[None, None, None]:
     """
     old_dir = Path.cwd()
     os.chdir(new_dir)
-    try:
+    with usethis_config.set(project_dir=new_dir):
         yield
-    finally:
-        os.chdir(old_dir)
+    os.chdir(old_dir)
 
 
 def is_offline() -> bool:

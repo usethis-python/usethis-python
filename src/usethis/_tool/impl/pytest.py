@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._config import usethis_config
 from usethis._config_file import (
     DotPytestINIManager,
     PytestINIManager,
@@ -170,7 +171,7 @@ class PytestTool(Tool):
             relative_path,
             file_manager,
         ) in config_spec.file_manager_by_relative_path.items():
-            path = Path.cwd() / relative_path
+            path = usethis_config.cpd() / relative_path
             if path.exists() and path.is_file():
                 if isinstance(file_manager, PyprojectTOMLManager):
                     if ["tool", "pytest", "ini_options"] in file_manager:
@@ -184,7 +185,7 @@ class PytestTool(Tool):
             relative_path,
             file_manager,
         ) in config_spec.file_manager_by_relative_path.items():
-            path = Path.cwd() / relative_path
+            path = usethis_config.cpd() / relative_path
             if (
                 path.exists()
                 and path.is_file()

@@ -6,9 +6,46 @@ import pytest
 import usethis._integrations.uv.call
 from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLInitError
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.uv.errors import UVSubprocessFailedError
-from usethis._integrations.uv.init import ensure_pyproject_toml
+from usethis._integrations.uv.errors import UVInitError, UVSubprocessFailedError
+from usethis._integrations.uv.init import ensure_pyproject_toml, opinionated_uv_init
 from usethis._test import change_cwd
+
+
+class TestTestOpinionatedUVInit:
+    def test_empty_dir(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path):
+            opinionated_uv_init()
+
+        # Assert
+        assert (tmp_path / "pyproject.toml").exists()
+
+    def test_short_circuits_if_pyproject_toml_exists(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("test")
+
+        # Act (& Assert there is no error)
+        with change_cwd(tmp_path):
+            opinionated_uv_init()
+
+    def test_subprocess_failed(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Arrange
+        def mock_call_uv_subprocess(*_: Any, **__: Any) -> None:
+            raise UVSubprocessFailedError
+
+        monkeypatch.setattr(
+            usethis._integrations.uv.call,
+            "call_uv_subprocess",
+            mock_call_uv_subprocess,
+        )
+
+        # Act
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+            pytest.raises(UVInitError),
+        ):
+            opinionated_uv_init()
 
 
 class TestEnsurePyprojectTOML:

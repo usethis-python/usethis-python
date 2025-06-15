@@ -311,8 +311,8 @@ Supported options:
 
 For `usethis tool ruff`, in addition to the above options, you can also specify:
 
-- `--linter` to add or remove specifically the linter component of Ruff
-- `--formatter` to add or remove specifically the formatter component of Ruff
+- `--linter` to add or remove specifically the linter component of Ruff (default; or `--no-linter` to opt-out)
+- `--formatter` to add or remove specifically the formatter component of Ruff (default; or `--no-formatter` to opt-out)
 
 ### `usethis ci`
 
@@ -370,7 +370,9 @@ Supported options:
 
 Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
 
-Possible style options (Google is recommended):
+Defaults to the Google docstring style.
+
+Possible style options:
 
 - `numpy` for [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
 - `google` for [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)

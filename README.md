@@ -311,8 +311,8 @@ Supported options:
 
 For `usethis tool ruff`, in addition to the above options, you can also specify:
 
-- `--linter` to add or remove specifically the linter component of Ruff
-- `--formatter` to add or remove specifically the formatter component of Ruff
+- `--linter` to add or remove specifically the linter component of Ruff (default; or `--no-linter` to opt-out)
+- `--formatter` to add or remove specifically the formatter component of Ruff (default; or `--no-formatter` to opt-out)
 
 ### `usethis ci`
 

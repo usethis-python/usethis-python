@@ -20,7 +20,6 @@ class TestAddReadme:
         out, err = capfd.readouterr()
         assert not err
         assert out == (
-            "✔ Writing 'pyproject.toml'.\n"
             "✔ Writing 'README.md'.\n"
             "☐ Populate 'README.md' to help users understand the project.\n"
         )

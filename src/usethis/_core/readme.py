@@ -13,11 +13,14 @@ def add_readme() -> None:
     # Any file extension is fine, but we'll use '.md' for consistency.
 
     try:
-        get_readme_path()
+        path = get_readme_path()
     except FileNotFoundError:
         pass
     else:
-        return
+        # Check if the file is non-empty; if so, we will exist early
+        existing_content = path.read_text().strip()
+        if existing_content:
+            return
 
     ensure_pyproject_toml()
 

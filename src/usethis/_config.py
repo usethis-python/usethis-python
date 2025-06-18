@@ -19,6 +19,7 @@ class UsethisConfig(BaseModel):
         quiet: Suppress all output, regardless of any other options.
         frozen: Do not install dependencies, nor update lockfiles.
         alert_only: Suppress all output except for warnings and errors.
+        disable_uv_subprocess: Raise an error if a uv subprocess invocation is tried.
         subprocess_verbose: Verbose output for subprocesses.
         force_project_dir: Directory for the project. If None, defaults to the current
                            working directory dynamically determined at runtime.

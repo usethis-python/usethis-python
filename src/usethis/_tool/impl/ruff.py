@@ -39,7 +39,7 @@ from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 if TYPE_CHECKING:
     from usethis._integrations.ci.bitbucket.schema import Pipe as BitbucketPipe
     from usethis._io import KeyValueFileManager
-    from usethis._tool.rule import Rule
+    from usethis._tool.rule import Rule, RuleConfig
 
 
 class RuffTool(Tool):
@@ -374,6 +374,35 @@ class RuffTool(Tool):
 
         return rules
 
+    def ignore_rules_in_glob(self, rules: list[Rule], *, glob: str) -> None:
+        """Ignore Ruff rules in the project for a specific glob pattern."""
+        if not rules:
+            return
+
+        (file_manager,) = self.get_active_config_file_managers()
+        ensure_file_manager_exists(file_manager)
+        keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
+        file_manager.extend_list(keys=keys, values=rules)
+
+    def apply_rule_config(self, rule_config: RuleConfig) -> None:
+        """Apply the Ruff rules associated with a rule config to the project.
+
+        Note, this will add both managed and unmanaged config.
+        """
+        self.select_rules(rule_config.get_all_selected())
+        self.ignore_rules(rule_config.get_all_ignored())
+        self.ignore_rules_in_glob(
+            rule_config.tests_unmanaged_ignored, glob="*/tests/**"
+        )
+
+    def remove_rule_config(self, rule_config: RuleConfig) -> None:
+        """Remove the Ruff rules associated with a rule config from the project.
+
+        Note, this will not modify unmanaged config.
+        """
+        self.deselect_rules(rule_config.selected)
+        self.unignore_rules(rule_config.ignored)
+
     def set_docstyle(self, style: Literal["numpy", "google", "pep257"]) -> None:
         (file_manager,) = self.get_active_config_file_managers()
 
@@ -438,6 +467,21 @@ class RuffTool(Tool):
         else:
             msg = (
                 f"Unknown location for ignored {self.name} rules for file manager "
+                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+            )
+            raise NotImplementedError(msg)
+
+    def _get_per_file_ignore_keys(
+        self, file_manager: KeyValueFileManager, *, glob: str
+    ) -> list[str]:
+        """Get the keys for the per-file ignored rules in the given file manager."""
+        if isinstance(file_manager, PyprojectTOMLManager):
+            return ["tool", "ruff", "lint", "per-file-ignores", glob]
+        elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):
+            return ["lint", "per-file-ignores", glob]
+        else:
+            msg = (
+                f"Unknown location for per-file ignored {self.name} rules for file manager "
                 f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
             )
             raise NotImplementedError(msg)

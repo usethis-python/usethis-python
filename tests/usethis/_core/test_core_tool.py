@@ -1339,6 +1339,28 @@ root_package = "a"
                 # Assert
                 assert "INP" in RuffTool().get_selected_rules()
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_inp_rules_not_selected_for_tests_dir(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "ruff.toml").touch()
+
+            with change_cwd(tmp_path), files_manager():
+                # Act
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / "ruff.toml").read_text()
+            assert (
+                contents
+                == """\
+[lint]
+select = ["INP"]
+
+[lint.per-file-ignores]
+"*/tests/**" = ["INP"]
+"""
+            )
+
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange

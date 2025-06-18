@@ -19,6 +19,7 @@ class UsethisConfig(BaseModel):
         quiet: Suppress all output, regardless of any other options.
         frozen: Do not install dependencies, nor update lockfiles.
         alert_only: Suppress all output except for warnings and errors.
+        disable_uv_subprocess: Raise an error if a uv subprocess invocation is tried.
         subprocess_verbose: Verbose output for subprocesses.
         force_project_dir: Directory for the project. If None, defaults to the current
                            working directory dynamically determined at runtime.
@@ -28,6 +29,7 @@ class UsethisConfig(BaseModel):
     quiet: bool = False
     frozen: bool = False
     alert_only: bool = False
+    disable_uv_subprocess: bool = False
     subprocess_verbose: bool = False
     project_dir: Path | None = None
 
@@ -39,6 +41,7 @@ class UsethisConfig(BaseModel):
         quiet: bool | None = None,
         frozen: bool | None = None,
         alert_only: bool | None = None,
+        disable_uv_subprocess: bool | None = None,
         subprocess_verbose: bool | None = None,
         project_dir: Path | str | None = None,
     ) -> Generator[None, None, None]:
@@ -47,6 +50,7 @@ class UsethisConfig(BaseModel):
         old_quiet = self.quiet
         old_frozen = self.frozen
         old_alert_only = self.alert_only
+        old_disable_uv_subprocess = self.disable_uv_subprocess
         old_subprocess_verbose = self.subprocess_verbose
         old_project_dir = self.project_dir
 
@@ -58,6 +62,8 @@ class UsethisConfig(BaseModel):
             frozen = old_frozen
         if alert_only is None:
             alert_only = self.alert_only
+        if disable_uv_subprocess is None:
+            disable_uv_subprocess = old_disable_uv_subprocess
         if subprocess_verbose is None:
             subprocess_verbose = old_subprocess_verbose
         if project_dir is None:
@@ -67,6 +73,7 @@ class UsethisConfig(BaseModel):
         self.quiet = quiet
         self.frozen = frozen
         self.alert_only = alert_only
+        self.disable_uv_subprocess = disable_uv_subprocess
         self.subprocess_verbose = subprocess_verbose
         if isinstance(project_dir, str):
             project_dir = Path(project_dir)
@@ -76,6 +83,7 @@ class UsethisConfig(BaseModel):
         self.quiet = old_quiet
         self.frozen = old_frozen
         self.alert_only = old_alert_only
+        self.disable_uv_subprocess = old_disable_uv_subprocess
         self.subprocess_verbose = old_subprocess_verbose
         self.project_dir = old_project_dir
 
@@ -97,6 +105,7 @@ usethis_config = UsethisConfig(
     quiet=_QUIET_DEFAULT,
     frozen=False,
     alert_only=False,
+    disable_uv_subprocess=False,
     subprocess_verbose=False,
 )
 

@@ -1,6 +1,10 @@
 from pathlib import Path
 
-from usethis._config import UsethisConfig
+import pytest
+
+from usethis._config import UsethisConfig, usethis_config
+from usethis._integrations.uv.call import call_uv_subprocess
+from usethis._integrations.uv.errors import UVSubprocessFailedError
 from usethis._test import change_cwd
 
 
@@ -30,3 +34,23 @@ class TestUsethisConfig:
 
             # Assert
             assert project_dir == Path("42 Wallaby Way, Sydney")
+
+    class TestDisableUVSubprocess:
+        def test_raises_error_when_disabled(self):
+            # Act & Assert
+            with (
+                change_cwd(Path.cwd()),
+                usethis_config.set(disable_uv_subprocess=True),
+                pytest.raises(UVSubprocessFailedError),
+            ):
+                call_uv_subprocess(["python", "list"], change_toml=False)
+
+        def test_does_not_raise_error_when_enabled(self):
+            # Act & Assert
+            with (
+                change_cwd(Path.cwd()),
+                usethis_config.set(disable_uv_subprocess=False),
+            ):
+                output = call_uv_subprocess(["python", "list"], change_toml=False)
+
+            assert output is not None

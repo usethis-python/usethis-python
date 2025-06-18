@@ -19,6 +19,10 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
     Raises:
         UVSubprocessFailedError: If the subprocess fails.
     """
+    if usethis_config.disable_uv_subprocess:
+        msg = "The `disable_uv_subprocess` option is set."
+        raise UVSubprocessFailedError(msg)
+
     is_pyproject_toml = (usethis_config.cpd() / "pyproject.toml").exists()
 
     if change_toml and args[0] in {

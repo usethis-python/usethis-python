@@ -23,8 +23,11 @@ def add_readme() -> None:
         pass
     else:
         # Check if the file is non-empty; if so, we will exit early
-        existing_content = path.read_text().strip()
-        if existing_content:
+        try:
+            existing_content = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            return
+        if existing_content.strip():
             return
 
     project_name = get_project_name()

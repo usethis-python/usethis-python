@@ -136,7 +136,7 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
         tool.add_dev_deps()
         tool.add_configs()
         if RuffTool().is_used():
-            RuffTool().select_rules(rule_config.get_all_selected())
+            RuffTool().apply_rule_config(rule_config)
         if PreCommitTool().is_used():
             tool.add_pre_commit_config()
         else:
@@ -147,7 +147,7 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_pre_commit_repo_configs()
         tool.remove_bitbucket_steps()
         if RuffTool().is_used():
-            RuffTool().deselect_rules(rule_config.selected)
+            RuffTool().remove_rule_config(rule_config)
         tool.remove_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()
@@ -284,7 +284,7 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         tool.add_test_deps()
         tool.add_configs()
         if RuffTool().is_used():
-            RuffTool().select_rules(rule_config.get_all_selected())
+            RuffTool().apply_rule_config(rule_config)
 
         # deptry currently can't scan the tests folder for dev deps
         # https://github.com/fpgmaas/deptry/issues/302
@@ -300,7 +300,7 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         PytestTool().remove_bitbucket_steps()
 
         if RuffTool().is_used():
-            RuffTool().deselect_rules(rule_config.selected)
+            RuffTool().remove_rule_config(rule_config)
         tool.remove_configs()
         tool.remove_test_deps()
         remove_pytest_dir()  # Last, since this is a manual step
@@ -401,6 +401,8 @@ def use_ruff(
         or not tool.get_selected_rules()
     ):
         rule_config = _get_basic_rule_config()
+        for _tool in ALL_TOOLS:
+            rule_config |= _tool.get_rule_config()
     else:
         rule_config = RuleConfig()
 
@@ -439,28 +441,27 @@ def use_ruff(
 
 def _get_basic_rule_config() -> RuleConfig:
     """Get the basic rule config for Ruff."""
-    selected = [
-        "A",
-        "C4",
-        "E4",
-        "E7",
-        "E9",
-        "F",
-        "FLY",
-        "FURB",
-        "I",
-        "PLE",
-        "PLR",
-        "RUF",
-        "SIM",
-        "UP",
-    ]
-    for _tool in ALL_TOOLS:
-        additional_selected = _tool.get_rule_config().get_all_selected()
-        if additional_selected and _tool.is_used():
-            selected += additional_selected
-    ignored = [
-        "PLR2004",  # https://github.com/usethis-python/usethis-python/issues/105
-        "SIM108",  # https://github.com/usethis-python/usethis-python/issues/118
-    ]
-    return RuleConfig(selected=selected, ignored=ignored)
+    rule_config = RuleConfig(
+        selected=[
+            "A",
+            "C4",
+            "E4",
+            "E7",
+            "E9",
+            "F",
+            "FLY",
+            "FURB",
+            "I",
+            "PLE",
+            "PLR",
+            "RUF",
+            "SIM",
+            "UP",
+        ],
+        ignored=[
+            "PLR2004",  # https://github.com/usethis-python/usethis-python/issues/105
+            "SIM108",  # https://github.com/usethis-python/usethis-python/issues/118
+        ],
+    )
+
+    return rule_config

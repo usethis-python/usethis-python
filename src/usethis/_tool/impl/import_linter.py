@@ -350,7 +350,7 @@ class ImportLinterTool(Tool):
         ]
 
     def get_rule_config(self) -> RuleConfig:
-        return RuleConfig(unmanaged_selected=["INP"])
+        return RuleConfig(unmanaged_selected=["INP"], tests_unmanaged_ignored=["INP"])
 
 
 @functools.cache

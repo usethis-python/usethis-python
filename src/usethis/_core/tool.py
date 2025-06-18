@@ -402,7 +402,9 @@ def use_ruff(
     ):
         rule_config = _get_basic_rule_config()
         for _tool in ALL_TOOLS:
-            rule_config |= _tool.get_rule_config()
+            tool_rule_config = _tool.get_rule_config()
+            if not tool_rule_config.empty and _tool.is_used():
+                rule_config |= tool_rule_config
     else:
         rule_config = RuleConfig()
 

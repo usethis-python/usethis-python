@@ -47,6 +47,17 @@ class RuleConfig(BaseModel):
         """Get all (project-scope) ignored rules."""
         return self.ignored + self.unmanaged_ignored
 
+    @property
+    def empty(self) -> bool:
+        """Check if the rule config is empty."""
+        return (
+            not self.selected
+            and not self.ignored
+            and not self.unmanaged_selected
+            and not self.unmanaged_ignored
+            and not self.tests_unmanaged_ignored
+        )
+
     def __repr__(self) -> str:
         """Representation which omits empty-list fields."""
         args = []

@@ -35,6 +35,7 @@ from usethis._integrations.uv.deps import (
     get_deps_from_group,
     is_dep_satisfied_in,
 )
+from usethis._integrations.uv.link_mode import ensure_symlink_mode
 from usethis._integrations.uv.toml import UVTOMLManager
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
@@ -64,8 +65,8 @@ class TestCodespell:
             # Arrange
             with change_cwd(uv_init_dir), PyprojectTOMLManager():
                 add_deps_to_group([Dependency(name="codespell")], "dev")
+                ensure_symlink_mode()
 
-            content = (uv_init_dir / "pyproject.toml").read_text()
             capfd.readouterr()
 
             # Act
@@ -73,17 +74,21 @@ class TestCodespell:
                 use_codespell()
 
             # Assert
-            assert (uv_init_dir / "pyproject.toml").read_text() == content + "\n" + (
-                """\
+            assert (
+                (uv_init_dir / "pyproject.toml")
+                .read_text()
+                .__contains__(
+                    """\
 [tool.codespell]
 ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 """
+                )
             )
             out, err = capfd.readouterr()
             assert not err
             assert out == (
                 "✔ Adding Codespell config to 'pyproject.toml'.\n"
-                "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+                "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -108,7 +113,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 "☐ Install the dependency 'codespell'.\n"
                 "✔ Adding 'Run Codespell' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding Codespell config to 'pyproject.toml'.\n"
-                "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+                "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -134,10 +139,10 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             # Check output
             out, err = capfd.readouterr()
             assert not err
-            assert out == (
-                "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'.\n"
-                "✔ Adding Codespell config to 'pyproject.toml'.\n"
-                "☐ Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker.\n"
+            assert out.replace("\n", "") == (
+                "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'."
+                "✔ Adding Codespell config to 'pyproject.toml'."
+                "☐ Run 'uv run pre-commit run codespell --all-files' to run the Codespell spellchecker."
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -193,7 +198,9 @@ ignore-regex = [A-Za-z0-9+/]{100,}
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert out == ("☐ Run 'codespell' to run the Codespell spellchecker.\n")
+            assert out == (
+                "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
+            )
 
         def test_setup_cfg_nonempty(self, uv_init_dir: Path):
             # https://github.com/usethis-python/usethis-python/issues/542
@@ -522,7 +529,7 @@ class TestDeptry:
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'deptry'.\n"
-                "☐ Run 'deptry src' to run deptry.\n"
+                "☐ Run 'uv run deptry src' to run deptry.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -621,13 +628,13 @@ repos:
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'deptry'.\n"
-                "☐ Run 'deptry src' to run deptry.\n"
+                "☐ Run 'uv run deptry src' to run deptry.\n"
                 "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'pre-commit'.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 "☐ Run 'pre-commit install' to register pre-commit.\n"
-                "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
+                "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -715,6 +722,9 @@ ignore_missing = ["pytest"]
                 == contents
                 + """\
 
+[tool.uv]
+link-mode = "symlink"
+
 [dependency-groups]
 dev = []
 """
@@ -779,7 +789,7 @@ repos:
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'deptry'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-                "☐ Run 'deptry src' to run deptry.\n"
+                "☐ Run 'uv run deptry src' to run deptry.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -811,7 +821,7 @@ repos:
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'deptry'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-                "☐ Run 'deptry src' to run deptry.\n"
+                "☐ Run 'uv run deptry src' to run deptry.\n"
             )
 
         def test_remove(self, uv_init_repo_dir: Path):
@@ -852,7 +862,7 @@ class TestImportLinter:
                 "✔ Adding Import Linter config to 'pyproject.toml'.\n"
                 "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
                 "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001
-                "☐ Run 'lint-imports' to run Import Linter.\n"
+                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -915,7 +925,7 @@ version = "0.1.0"
 
             # Assert
             contents = (tmp_path / "pyproject.toml").read_text()
-            assert contents.endswith("""\
+            assert contents.__contains__("""\
 [tool.importlinter]
 root_packages = ["a", "b"]
 
@@ -963,7 +973,7 @@ repos:
                 "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'import-linter'.\n"
                 "✔ Adding Import Linter config to 'pyproject.toml'.\n"
-                "☐ Run 'lint-imports' to run Import Linter.\n"
+                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1272,7 +1282,7 @@ exhaustive = True
                 "✔ Adding Import Linter config to 'pyproject.toml'.\n"
                 "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
                 "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001
-                "☐ Run 'lint-imports' to run Import Linter.\n"
+                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1428,7 +1438,7 @@ repos:
                 "✔ Adding hook 'import-linter' to '.pre-commit-config.yaml'.\n"
                 "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
                 "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001
-                "☐ Run 'pre-commit run import-linter --all-files' to run Import Linter.\n"
+                "☐ Run 'uv run pre-commit run import-linter --all-files' to run Import Linter.\n"
             )
 
     class TestBitbucketIntegration:
@@ -1473,7 +1483,7 @@ class TestPreCommit:
                 "☐ Replace it with your own hooks.\n"
                 "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
                 "☐ Run 'pre-commit install' to register pre-commit.\n"
-                "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
+                "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
             )
             # Config file
             assert (uv_init_dir / ".pre-commit-config.yaml").exists()
@@ -1705,7 +1715,7 @@ repos:
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
                     "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
                     "☐ Install the dependency 'pyproject-fmt'.\n"
-                    "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+                    "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1731,7 +1741,7 @@ repos:
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
                     "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
                     "☐ Install the dependency 'codespell'.\n"
-                    "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+                    "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
                 )
 
         def test_doesnt_add_pyproject(self, uv_init_repo_dir: Path):
@@ -1870,7 +1880,6 @@ class TestPyprojectFmt:
                     usethis_config.set(quiet=True),
                 ):
                     add_deps_to_group([Dependency(name="pyproject-fmt")], "dev")
-                content = (uv_init_dir / "pyproject.toml").read_text()
 
                 # Act
                 with change_cwd(uv_init_dir), PyprojectTOMLManager():
@@ -1878,17 +1887,19 @@ class TestPyprojectFmt:
 
                 # Assert
                 assert (
-                    uv_init_dir / "pyproject.toml"
-                ).read_text() == content + "\n" + (
-                    """\
+                    (uv_init_dir / "pyproject.toml")
+                    .read_text()
+                    .__contains__(
+                        """\
 [tool.pyproject-fmt]
 keep_full_version = true
 """
+                    )
                 )
                 out, _ = capfd.readouterr()
                 assert out == (
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
-                    "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+                    "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
         class TestDeps:
@@ -1907,7 +1918,7 @@ keep_full_version = true
                     "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
                     "☐ Install the dependency 'pyproject-fmt'.\n"
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
-                    "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+                    "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
         def test_bitbucket_integration(
@@ -1933,7 +1944,7 @@ keep_full_version = true
                 "☐ Install the dependency 'pyproject-fmt'.\n"
                 "✔ Adding 'Run pyproject-fmt' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
-                "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+                "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
             )
 
     class TestRemove:
@@ -2670,8 +2681,8 @@ class TestRuff:
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
                 "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
-                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
-                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+                "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2728,8 +2739,8 @@ ignore = [ "EM", "T20", "TRY003", "S603" ]
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'ruff.toml'.\n"
-                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
-                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+                "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
             assert (uv_init_dir / "ruff.toml").read_text() == (
                 """\
@@ -2778,7 +2789,7 @@ docstring-code-format = true
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
                 "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
-                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             )
 
         def test_only_add_formatter(
@@ -2796,7 +2807,7 @@ docstring-code-format = true
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
-                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+                "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
 
     class TestRemove:

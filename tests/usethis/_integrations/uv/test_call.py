@@ -4,6 +4,7 @@ import pytest
 
 import usethis._integrations.uv.call
 from usethis._config import usethis_config
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
 from usethis._test import change_cwd
@@ -60,7 +61,7 @@ name = "example"
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             call_uv_subprocess(["add", "ruff==0.9.0"], change_toml=True)
 
         # Assert
@@ -73,6 +74,9 @@ version = "0.1.0"
 dependencies = [
     "ruff==0.9.0",
 ]
+
+[tool.uv]
+link-mode = "symlink"
 """
         )
         out, err = capfd.readouterr()

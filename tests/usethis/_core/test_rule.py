@@ -39,7 +39,7 @@ class TestSelectRules:
         assert out == (
             "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
             "☐ Install the dependency 'deptry'.\n"
-            "☐ Run 'deptry src' to run deptry.\n"
+            "☐ Run 'uv run deptry src' to run deptry.\n"
             "ℹ All deptry rules are always implicitly selected.\n"  # noqa: RUF001
         )
 

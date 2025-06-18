@@ -26,7 +26,7 @@ class TestAddReadme:
 
     def test_different_suffix(self, tmp_path: Path):
         # Arrange
-        (tmp_path / "README.rst").touch()
+        (tmp_path / "README.rst").write_text("Existing content")
 
         # Act
         with change_cwd(tmp_path), PyprojectTOMLManager():
@@ -48,10 +48,10 @@ class TestAddReadme:
 
     def test_readme_no_suffix(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
-        (tmp_path / "README").touch()
+        (tmp_path / "README").write_text("Existing content")
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), PyprojectTOMLManager():
             add_readme()
 
         # Assert

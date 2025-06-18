@@ -105,6 +105,8 @@ To start a new project from scratch with a complete set of recommended tooling, 
 ```console
 $ uvx usethis init
 ✔ Writing 'pyproject.toml' and initializing project.
+✔ Writing 'README.md'.
+☐ Populate 'README.md' to help users understand the project.
 ✔ Adding recommended linters.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run deptry src' to run deptry.

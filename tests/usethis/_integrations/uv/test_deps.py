@@ -282,8 +282,7 @@ class TestAddDepsToGroup:
             add_deps_to_group([Dependency(name="black")], "dev")
 
             # Assert
-            # Tool section shouldn't even exist in pyproject.toml
-            assert "tool" not in (uv_init_dir / "pyproject.toml").read_text()
+            assert ["tool", "uv", "default-groups"] not in PyprojectTOMLManager()
 
     def test_uv_subprocess_error(
         self, uv_init_dir: Path, monkeypatch: pytest.MonkeyPatch

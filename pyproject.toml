@@ -169,6 +169,7 @@ omit = [ "*/pytest-of-*/*" ]
 [tool.uv]
 required-version = ">=0.5.29"             # Sync with README
 default-groups = [ "test", "dev", "doc" ]
+link-mode = "symlink"
 
 [tool.importlinter]
 root_packages = [ "usethis" ]

@@ -6,6 +6,7 @@ from usethis._integrations.file.pyproject_toml.io_ import (
 )
 from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.uv.errors import UVSubprocessFailedError
+from usethis._integrations.uv.link_mode import ensure_symlink_mode
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 
 
@@ -19,6 +20,17 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         UVSubprocessFailedError: If the subprocess fails.
     """
     is_pyproject_toml = (usethis_config.cpd() / "pyproject.toml").exists()
+
+    if change_toml and args[0] in {
+        "lock",
+        "add",
+        "remove",
+        "sync",
+        "export",
+        "tree",
+        "run",
+    }:
+        ensure_symlink_mode()
 
     if is_pyproject_toml and change_toml:
         if PyprojectTOMLManager().is_locked():

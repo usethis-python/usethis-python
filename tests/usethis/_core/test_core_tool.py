@@ -1,4 +1,3 @@
-import os
 import subprocess
 import unittest
 import unittest.mock
@@ -2840,13 +2839,11 @@ select = ["A", "B", "C"]
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == contents
 
-        @pytest.mark.skipif(
-            not os.getenv("CI"),
-            reason="https://github.com/usethis-python/usethis-python/issues/45",
-        )
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_roundtrip(self, uv_init_dir: Path):
             # Arrange
+            with change_cwd(uv_init_dir), files_manager():
+                ensure_symlink_mode()
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
             # Act
@@ -2995,10 +2992,6 @@ select = ["F"]
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names
 
-        @pytest.mark.skipif(
-            not os.getenv("CI"),
-            reason="https://github.com/usethis-python/usethis-python/issues/45",
-        )
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]

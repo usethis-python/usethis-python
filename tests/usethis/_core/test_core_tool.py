@@ -632,7 +632,7 @@ repos:
                 "☐ Install the dependency 'pre-commit'.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
-                "☐ Run 'pre-commit install' to register pre-commit.\n"
+                "☐ Run 'uv run pre-commit install' to register pre-commit.\n"
                 "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
             )
 
@@ -1481,7 +1481,7 @@ class TestPreCommit:
                 "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
                 "☐ Replace it with your own hooks.\n"
                 "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
-                "☐ Run 'pre-commit install' to register pre-commit.\n"
+                "☐ Run 'uv run pre-commit install' to register pre-commit.\n"
                 "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
             )
             # Config file

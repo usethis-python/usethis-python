@@ -41,7 +41,7 @@ class RequirementsTxtTool(Tool):
                 box_print("Install uv to use 'uv export'.")
 
             box_print(
-                "Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'."
+                "Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
             )
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:

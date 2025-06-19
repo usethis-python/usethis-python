@@ -1690,7 +1690,7 @@ repos:
                     "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
-                    "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+                    "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2503,7 +2503,7 @@ class TestRequirementsTxt:
                 "✔ Writing 'pyproject.toml'.\n"
                 "✔ Writing 'uv.lock'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+                "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         def test_start_from_uv_init(
@@ -2524,7 +2524,7 @@ class TestRequirementsTxt:
             assert out == (
                 "✔ Writing 'uv.lock'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+                "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         def test_start_from_uv_locked(
@@ -2547,7 +2547,7 @@ class TestRequirementsTxt:
             assert not err
             assert out == (
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+                "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2577,7 +2577,7 @@ repos:
       - id: uv-export
         name: uv-export
         files: ^uv\\.lock$
-        entry: uv export --frozen --offline --quiet --no-dev -o=requirements.txt
+        entry: uv export --frozen --offline --quiet --no-default-groups -o=requirements.txt
         language: system
         pass_filenames: false
         require_serial: true

@@ -1,0 +1,29 @@
+from __future__ import annotations
+
+import typer
+
+from usethis._config import quiet_opt, usethis_config
+from usethis._config_file import files_manager
+from usethis._console import err_print
+from usethis._core.status import (
+    DevelopmentStatusCodeEnum,
+    DevelopmentStatusEnum,
+    use_development_status,
+)
+from usethis.errors import UsethisError
+
+
+def status(
+    status: DevelopmentStatusEnum | DevelopmentStatusCodeEnum = typer.Argument(
+        default="planning", help="Docstring style to enforce."
+    ),
+    quiet: bool = quiet_opt,
+) -> None:
+    assert isinstance(status, DevelopmentStatusEnum | DevelopmentStatusCodeEnum)
+
+    with usethis_config.set(quiet=quiet), files_manager():
+        try:
+            use_development_status(status)
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

@@ -15,6 +15,7 @@ import usethis._interface.readme
 import usethis._interface.rule
 import usethis._interface.show
 import usethis._interface.spellcheck
+import usethis._interface.status
 import usethis._interface.test
 import usethis._interface.tool
 import usethis._interface.version
@@ -75,6 +76,12 @@ app.command(
     help="Enable a lint rule for the project.", rich_help_panel=rich_help_panel
 )(
     usethis._interface.rule.rule,
+)
+app.command(
+    help="Set the development status of the project (via trove classifiers).",
+    rich_help_panel=rich_help_panel,
+)(
+    usethis._interface.status.status,
 )
 
 rich_help_panel = "Manage README"

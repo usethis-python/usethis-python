@@ -3,7 +3,8 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
-from usethis._core.docstyle import DocStyleEnum, use_docstyle
+from usethis._core.docstyle import use_docstyle
+from usethis._core.enums.docstyle import DocStyleEnum
 from usethis._core.tool import use_ruff
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._test import change_cwd

@@ -4,11 +4,16 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import typer
 from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+
+HOW_DEFAULT = False
+REMOVE_DEFAULT = False
+FROZEN_DEFAULT = False
+OFFLINE_DEFAULT = False
+QUIET_DEFAULT = False
 
 
 class UsethisConfig(BaseModel):
@@ -94,33 +99,11 @@ class UsethisConfig(BaseModel):
         return self.project_dir
 
 
-_OFFLINE_DEFAULT = False
-_QUIET_DEFAULT = False
-_HOW_DEFAULT = False
-_REMOVE_DEFAULT = False
-_FROZEN_DEFAULT = False
-
 usethis_config = UsethisConfig(
-    offline=_OFFLINE_DEFAULT,
-    quiet=_QUIET_DEFAULT,
+    offline=OFFLINE_DEFAULT,
+    quiet=QUIET_DEFAULT,
     frozen=False,
     alert_only=False,
     disable_uv_subprocess=False,
     subprocess_verbose=False,
-)
-
-offline_opt = typer.Option(_OFFLINE_DEFAULT, "--offline", help="Disable network access")
-quiet_opt = typer.Option(_QUIET_DEFAULT, "--quiet", help="Suppress output")
-how_opt = typer.Option(
-    _HOW_DEFAULT,
-    "--how",
-    help="Only print how to use tools, do not add or remove them.",
-)
-remove_opt = typer.Option(
-    _REMOVE_DEFAULT, "--remove", help="Remove tools instead of adding them."
-)
-frozen_opt = typer.Option(
-    _FROZEN_DEFAULT,
-    "--frozen",
-    help="Do not install dependencies, nor update lockfiles.",
 )

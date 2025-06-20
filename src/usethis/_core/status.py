@@ -1,27 +1,9 @@
 from __future__ import annotations
 
-from enum import Enum
-
 from usethis._console import tick_print
+from usethis._core.enums.status import DevelopmentStatusEnum
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.init import ensure_pyproject_toml
-
-
-class DevelopmentStatusEnum(Enum):
-    planning = "planning"
-    planning_code = "1"
-    prealpha = "prealpha"
-    prealpha_code = "2"
-    alpha = "alpha"
-    alpha_code = "3"
-    beta = "beta"
-    beta_code = "4"
-    production = "production"
-    production_code = "5"
-    mature = "mature"
-    mature_code = "6"
-    inactive = "inactive"
-    inactive_code = "7"
 
 
 def use_development_status(

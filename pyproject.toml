@@ -181,6 +181,7 @@ layers = [
   "_test | __main__",
   "_app",
   "_interface",
+  "_options",
   "_toolset",
   "_core",
   "_tool",
@@ -210,6 +211,7 @@ layers = [
   # docstyle uses (Ruff) tool, badge uses readme
   "badge | docstyle | list | rule",
   "author | browse | ci | readme | show | status | tool",
+  "enums",
 ]
 containers = [ "usethis._core" ]
 exhaustive = true

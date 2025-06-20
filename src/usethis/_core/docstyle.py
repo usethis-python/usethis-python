@@ -1,13 +1,12 @@
-from enum import Enum
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from usethis._core.tool import use_ruff
 from usethis._tool.impl.ruff import RuffTool
 
-
-class DocStyleEnum(Enum):
-    numpy = "numpy"
-    google = "google"
-    pep257 = "pep257"
+if TYPE_CHECKING:
+    from usethis._core.enums.docstyle import DocStyleEnum
 
 
 def use_docstyle(style: DocStyleEnum) -> None:

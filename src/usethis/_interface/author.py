@@ -2,11 +2,7 @@ from __future__ import annotations
 
 import typer
 
-from usethis._config import quiet_opt, usethis_config
-from usethis._config_file import files_manager
-from usethis._console import err_print
-from usethis._core.author import add_author
-from usethis.errors import UsethisError
+from usethis._options import quiet_opt
 
 
 def author(
@@ -17,6 +13,12 @@ def author(
     ),
     quiet: bool = quiet_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._console import err_print
+    from usethis._core.author import add_author
+    from usethis.errors import UsethisError
+
     if not email:
         email_arg = None
     else:

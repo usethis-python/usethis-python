@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from enum import Enum
-
 from usethis._console import box_print, info_print
 from usethis._integrations.ci.bitbucket.config import (
     add_bitbucket_pipeline_config,
@@ -14,10 +12,6 @@ from usethis._tool.impl.pre_commit import PreCommitTool
 from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
 from usethis._tool.impl.pytest import PytestTool
 from usethis._tool.impl.ruff import RuffTool
-
-
-class CIServiceEnum(Enum):
-    bitbucket = "bitbucket"
 
 
 def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:

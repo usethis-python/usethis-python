@@ -29,6 +29,27 @@ class TestUseDevelopmentStatus:
         assert not err
         assert out == "✔ Setting development status to '1 - Planning'.\n"
 
+    def test_planning_code(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+        # Arrange
+        status = DevelopmentStatusEnum.planning_code
+
+        # Act
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            use_development_status(status)
+
+        # Assert
+        assert (
+            "Development Status :: 1 - Planning"
+            in uv_init_dir.joinpath("pyproject.toml").read_text()
+        )
+        with PyprojectTOMLManager() as mgr:
+            assert (
+                "Development Status :: 1 - Planning" in mgr[["project", "classifiers"]]
+            )
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "✔ Setting development status to '1 - Planning'.\n"
+
     def test_prealpha(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         status = DevelopmentStatusEnum.prealpha

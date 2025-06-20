@@ -178,7 +178,7 @@ fake = bar
 [codespell]
 fake = bar
 ignore-regex = [A-Za-z0-9+/]{100,}
-ignore-words-list = []
+ignore-words-list = 
 """
             )
 

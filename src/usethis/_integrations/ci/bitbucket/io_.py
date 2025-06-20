@@ -10,6 +10,7 @@ from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.ci.bitbucket.schema import PipelinesConfiguration
 from usethis._integrations.file.yaml.io_ import edit_yaml
+from usethis.errors import FileConfigError
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -20,8 +21,13 @@ if TYPE_CHECKING:
     from usethis._integrations.file.yaml.io_ import YAMLLiteral
 
 
-class BitbucketPipelinesYAMLConfigError(Exception):
+class BitbucketPipelinesYAMLConfigError(FileConfigError):
     """Raised when there the 'bitbucket-pipelines.yml' file fails validation."""
+
+    @property
+    def name(self) -> str:
+        """The name of the file that has a configuration error."""
+        return "bitbucket-pipelines.yml"
 
 
 @dataclass

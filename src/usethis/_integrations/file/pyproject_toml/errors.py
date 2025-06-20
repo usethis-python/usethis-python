@@ -9,6 +9,7 @@ from usethis._integrations.file.toml.errors import (
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
 )
+from usethis.errors import FileConfigError
 
 
 class PyprojectTOMLError(TOMLError):
@@ -40,8 +41,13 @@ class UnexpectedPyprojectTOMLIOError(PyprojectTOMLError, UnexpectedTOMLIOError):
     """Raised when an unexpected attempt is made to read or write the pyproject.toml file."""
 
 
-class PyprojectTOMLProjectSectionError(PyprojectTOMLError):
+class PyprojectTOMLProjectSectionError(FileConfigError, PyprojectTOMLError):
     """Raised when the 'project' section is missing or invalid in 'pyproject.toml'."""
+
+    @property
+    def name(self) -> str:
+        """The name of the file that has a configuration error."""
+        return "pyproject.toml"
 
 
 class PyprojectTOMLProjectNameError(PyprojectTOMLProjectSectionError):

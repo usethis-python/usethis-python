@@ -87,6 +87,23 @@ class CodespellTool(Tool):
                         ),
                     },
                 ),
+                ConfigItem(
+                    description="Ignore Words List",
+                    root={
+                        Path(".codespellrc"): ConfigEntry(
+                            keys=["codespell", "ignore-words-list"],
+                            get_value=lambda: [],
+                        ),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["codespell", "ignore-words-list"],
+                            get_value=lambda: [],
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "codespell", "ignore-words-list"],
+                            get_value=lambda: [],
+                        ),
+                    },
+                ),
             ],
         )
 

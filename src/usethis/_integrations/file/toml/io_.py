@@ -31,7 +31,7 @@ from usethis._io import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Collection, Sequence
     from pathlib import Path
     from typing import ClassVar
 
@@ -278,7 +278,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         self.commit(toml_document)
 
-    def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+    def remove_from_list(self, *, keys: Sequence[Key], values: Collection[Any]) -> None:
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)

@@ -6,7 +6,6 @@ from usethis._config import quiet_opt, usethis_config
 from usethis._config_file import files_manager
 from usethis._console import err_print
 from usethis._core.status import (
-    DevelopmentStatusCodeEnum,
     DevelopmentStatusEnum,
     use_development_status,
 )
@@ -14,12 +13,12 @@ from usethis.errors import UsethisError
 
 
 def status(
-    status: DevelopmentStatusEnum | DevelopmentStatusCodeEnum = typer.Argument(
+    status: DevelopmentStatusEnum = typer.Argument(
         default="planning", help="Docstring style to enforce."
     ),
     quiet: bool = quiet_opt,
 ) -> None:
-    assert isinstance(status, DevelopmentStatusEnum | DevelopmentStatusCodeEnum)
+    assert isinstance(status, DevelopmentStatusEnum)
 
     with usethis_config.set(quiet=quiet), files_manager():
         try:

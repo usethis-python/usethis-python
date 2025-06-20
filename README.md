@@ -85,6 +85,7 @@ $ pipx run usethis tool ruff
 - [`usethis author`](#usethis-author) — Set new author information for the project.
 - [`usethis docstyle`](#usethis-docstyle-style) — Set new author information for the project.
 - [`usethis rule`](#usethis-rule-rulecode) — Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
+- [`usethis status`](#usethis-status-status) — Set the development status of the project (via trove classifiers).
 
 ### Manage README
 
@@ -188,6 +189,15 @@ Supported options:
   - `numpy` for [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
   - `google` for [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
   - `pep257` for [PEP 257 docstring style](https://www.python.org/dev/peps/pep-0257/)
+- `--status` to set the development status of the project. Defaults to `planning`.
+  Possible values:
+  - `planning` or `1` for "Development Status :: 1 - Planning"
+  - `pre-alpha` or `2` for "Development Status :: 2 - Pre-Alpha"
+  - `alpha` or `3` for "Development Status :: 3 - Alpha"
+  - `beta` or `4` for "Development Status :: 4 - Beta"
+  - `production` or `5` for "Development Status :: 5 - Production/Stable"
+  - `mature` or `6` for "Development Status :: 6 - Mature"
+  - `inactive` or `7` for "Development Status :: 7 - Inactive"
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
@@ -349,45 +359,6 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 
-### `usethis rule <rulecode>`
-
-Add (or manage configuration) of Ruff and Deptry rules in `pyproject.toml`.
-
-See [the Ruff documentation](https://docs.astral.sh/ruff/rules/) for a list of available
-rules, and [the Deptry documentation](https://deptry.com/rules-violations/) for a list
-of available rules.
-
-Example:
-
-`usethis rule RUF001`
-
-Supported options:
-
-- `--remove` to remove the rule selection or ignore status.
-- `--ignore` to add the rule to the ignore list (or remove it if --remove is specified).
-- `--offline` to disable network access and rely on caches
-- `--quiet` to suppress output
-
-### `usethis docstyle <style>`
-
-Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
-
-Defaults to the Google docstring style.
-
-Possible style options:
-
-- `numpy` for [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
-- `google` for [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
-- `pep257` for [PEP 257 docstring style](https://www.python.org/dev/peps/pep-0257/)
-
-Example:
-
-`usethis docstyle google`
-
-Supported options:
-
-- `--quiet` to suppress output
-
 ### `usethis readme`
 
 Add a README.md file to the project.
@@ -410,6 +381,64 @@ Other supported options:
 - `--email` to set the author email address
 - `--overwrite` to overwrite all existing author information
 - `--quiet` to suppress output
+
+### `usethis docstyle <style>`
+
+Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
+
+Defaults to the Google docstring style.
+
+Possible style options:
+
+- `numpy` for [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
+- `google` for [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
+- `pep257` for [PEP 257 docstring style](https://www.python.org/dev/peps/pep-0257/)
+
+Example:
+
+`usethis docstyle google`
+
+Supported options:
+
+- `--quiet` to suppress output
+
+### `usethis rule <rulecode>`
+
+Add (or manage configuration) of Ruff and Deptry rules in `pyproject.toml`.
+
+See [the Ruff documentation](https://docs.astral.sh/ruff/rules/) for a list of available
+rules, and [the Deptry documentation](https://deptry.com/rules-violations/) for a list
+of available rules.
+
+Example:
+
+`usethis rule RUF001`
+
+Supported options:
+
+- `--remove` to remove the rule selection or ignore status.
+- `--ignore` to add the rule to the ignore list (or remove it if --remove is specified).
+- `--offline` to disable network access and rely on caches
+- `--quiet` to suppress output
+
+### `usethis status <status>`
+
+Set the development status of the project via trove classifiers.
+
+Possible values (required):
+
+- `usethis status planning` or `usethis status 1` for "Development Status :: 1 - Planning"
+- `usethis status pre-alpha` or `usethis status 2` for "Development Status :: 2 - Pre-Alpha"
+- `usethis status alpha` or `usethis status 3` for "Development Status :: 3 - Alpha"
+- `usethis status beta` or `usethis status 4` for "Development Status :: 4 - Beta"
+- `usethis status production` or `usethis status 5` for "Development Status :: 5 - Production/Stable"
+- `usethis status mature` or `usethis status 6` for "Development Status :: 6 - Mature"
+- `usethis status inactive` or `usethis status 7` for "Development Status :: 7 - Inactive"
+
+Supported options:
+
+- `--quiet` to suppress output
+- `--badges` to add an associated badge to the README file
 
 ### `usethis list`
 

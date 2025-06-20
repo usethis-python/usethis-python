@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import typer
 from typing_extensions import assert_never
 
@@ -16,6 +18,7 @@ from usethis._core.ci import (
 )
 from usethis._core.docstyle import DocStyleEnum, use_docstyle
 from usethis._core.readme import add_readme
+from usethis._core.status import DevelopmentStatusEnum, use_development_status
 from usethis._core.tool import use_pre_commit
 from usethis._integrations.uv.init import opinionated_uv_init
 from usethis._toolset.format_ import use_formatters
@@ -25,7 +28,7 @@ from usethis._toolset.test import use_test_frameworks
 from usethis.errors import UsethisError
 
 
-def init(  # noqa: PLR0913
+def init(  # noqa: PLR0913, PLR0915
     format_: bool = typer.Option(
         True, "--format/--no-format", help="Add recommended formatters."
     ),
@@ -57,6 +60,11 @@ def init(  # noqa: PLR0913
         "--docstyle",
         help="Set a docstring style convention for the project.",
     ),
+    status: DevelopmentStatusEnum = typer.Option(
+        "planning",
+        "--status",
+        help="Set the development status of the project.",
+    ),
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
@@ -80,6 +88,9 @@ def init(  # noqa: PLR0913
 
             opinionated_uv_init()
             add_readme()
+
+            assert isinstance(status, DevelopmentStatusEnum)
+            use_development_status(status)
 
             if pre_commit:
                 tick_print("Adding the pre-commit framework.")

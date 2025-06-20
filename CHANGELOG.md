@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.14.0
+
+### 🚀 New Features
+
+- A new `usethis status` command is provided to set the Development Status classifiers for the project.
+
+- The uv link mode is now set to `symlink` by default, which can avoid issues for Windows developers relating to access permissions. [See here](https://github.com/astral-sh/uv/issues/11134#issuecomment-2940507840) for more information.
+
+- The `usethis tool ruff` command now accepts `--no-formatter` and `--no-linter` flags to opt-out of adding the formatter or linter, respectively. Previously, this behaviour was implicit in the use of the use or non-use of the `--formatter` and `--linter` flags, but now it is explicit.
+
+- Google-style docstrings are now the default in `usethis docstyle`. It remains opt-in to `usethis init`.
+
+- `usethis readme`, `usethis init` and `usethis badge` now treat empty `README.md` files as suitable for populating with sensible default content, similar to as if the file did not exist.
+
+- When using Import Linter, a message explaining that `__init__.py` files are required is now printed to the console if the user attempts to use Import Linter without Ruff. The message isn't necessary when using Ruff, since the INP rules are selected to enforce the presence of `__init__.py` files.
+
+- Codespell configuration now includes the `ignore-words-list` option (set to empty) by default for whitelisted words. This should make it easier to get started with Codespell, since there are often a few false positives in a codebase.
+
+### 🦾 Robustness
+
+- File validation errors (e.g. an invalid `.pre-commit-config.yaml` file) will no longer dump the full stack trace to the console. Instead, a more concise, user-friendly error message is displayed.
+
+### 🐞 Bug Fixes
+
+- Previously, the INP Ruff rules were enabled when using Import Linter, but this is incorrect behaviour for the `tests` directory, since `pytest` does not require `__init__.py` files in the `tests` directory, and Import Linter does not need to analyze it. The INP rules are now ignored for the `tests` directory when being added for Import Linter.
+
+- The `uv export` command was configured to use `--no-dev`, whereas it should exclude all dependency groups using the `--no-default-groups` option, which is the new behaviour.
+
+- The `usethis readme` command would create a `pyproject.toml` file, if it did not already exist. This is not necessary and this behaviour has been removed.
+
+- The `usethis tool pre-commit` command would not adapt its message explaining how to manually install pre-commit hooks based on whether the user was using uv or not. This has been fixed.
+
+### 🔧 Internal Changes
+
+- usethis has been moved from the `nathanjmcdougall` GitHub user to the `usethis-python` organization.
+
+- The codspeed Walltime runner is now used for CI benchmarks.
+
+- Configuration is now available internally to turn off the possibility of subprocessing uv. This is work towards support for non-uv based workflows, e.g. for users who use Poetry.
+
 ## 0.13.0
 
 ### 🚀 New Features

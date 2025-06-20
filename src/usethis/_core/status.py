@@ -33,7 +33,7 @@ def use_development_status(
 
     dispstatus = new_classifier.removeprefix("Development Status :: ")
 
-    tick_print(f"Setting development status to '{dispstatus}'.")
+    tick_print(f"Setting the development status to '{dispstatus}'.")
 
     mgr = PyprojectTOMLManager()
     try:

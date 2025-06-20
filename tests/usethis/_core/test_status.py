@@ -27,7 +27,7 @@ class TestUseDevelopmentStatus:
             )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '1 - Planning'.\n"
+        assert out == "✔ Setting the development status to '1 - Planning'.\n"
 
     def test_planning_code(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
@@ -48,7 +48,7 @@ class TestUseDevelopmentStatus:
             )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '1 - Planning'.\n"
+        assert out == "✔ Setting the development status to '1 - Planning'.\n"
 
     def test_prealpha(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
@@ -69,7 +69,7 @@ class TestUseDevelopmentStatus:
             )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '2 - Pre-Alpha'.\n"
+        assert out == "✔ Setting the development status to '2 - Pre-Alpha'.\n"
 
     def test_alpha(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
@@ -88,7 +88,7 @@ class TestUseDevelopmentStatus:
             assert "Development Status :: 3 - Alpha" in mgr[["project", "classifiers"]]
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '3 - Alpha'.\n"
+        assert out == "✔ Setting the development status to '3 - Alpha'.\n"
 
     def test_beta(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
@@ -107,7 +107,7 @@ class TestUseDevelopmentStatus:
             assert "Development Status :: 4 - Beta" in mgr[["project", "classifiers"]]
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '4 - Beta'.\n"
+        assert out == "✔ Setting the development status to '4 - Beta'.\n"
 
     def test_production(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
@@ -129,7 +129,7 @@ class TestUseDevelopmentStatus:
             )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '5 - Production/Stable'.\n"
+        assert out == "✔ Setting the development status to '5 - Production/Stable'.\n"
 
     def test_mature(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
@@ -148,7 +148,7 @@ class TestUseDevelopmentStatus:
             assert "Development Status :: 6 - Mature" in mgr[["project", "classifiers"]]
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '6 - Mature'.\n"
+        assert out == "✔ Setting the development status to '6 - Mature'.\n"
 
     def test_inactive(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
@@ -169,7 +169,7 @@ class TestUseDevelopmentStatus:
             )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '7 - Inactive'.\n"
+        assert out == "✔ Setting the development status to '7 - Inactive'.\n"
 
     def test_no_pyproject_toml(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
@@ -184,7 +184,7 @@ class TestUseDevelopmentStatus:
         assert not err
         assert out == (
             "✔ Writing 'pyproject.toml'.\n"
-            "✔ Setting development status to '1 - Planning'.\n"
+            "✔ Setting the development status to '1 - Planning'.\n"
         )
 
     def test_replace_existing_classifier(
@@ -219,7 +219,7 @@ classifiers = [
             )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '4 - Beta'.\n"
+        assert out == "✔ Setting the development status to '4 - Beta'.\n"
 
     def test_replace_multiple_existing_classifiers(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
@@ -259,4 +259,4 @@ classifiers = [
             )
         out, err = capfd.readouterr()
         assert not err
-        assert out == "✔ Setting development status to '5 - Production/Stable'.\n"
+        assert out == "✔ Setting the development status to '5 - Production/Stable'.\n"

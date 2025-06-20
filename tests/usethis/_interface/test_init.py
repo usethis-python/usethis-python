@@ -12,7 +12,9 @@ class TestInit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["init", "--pre-commit"])
+            result = runner.invoke(
+                app, ["init", "--pre-commit"], catch_exceptions=False
+            )
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -21,6 +23,7 @@ class TestInit:
             "✔ Writing 'pyproject.toml' and initializing project.\n"
             "✔ Writing 'README.md'.\n"
             "☐ Populate 'README.md' to help users understand the project.\n"
+            "✔ Setting the development status to '1 - Planning'.\n"
             "✔ Adding the pre-commit framework.\n"
             "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
             "✔ Adding recommended linters.\n"
@@ -71,6 +74,7 @@ class TestInit:
 ✔ Writing 'pyproject.toml' and initializing project.
 ✔ Writing 'README.md'.
 ☐ Populate 'README.md' to help users understand the project.
+✔ Setting the development status to '1 - Planning'.
 ✔ Adding recommended linters.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run deptry src' to run deptry.
@@ -110,13 +114,22 @@ class TestInit:
         # Assert
         assert result.exit_code == 0, result.output
 
-    def test_bitbucket_and_docstyle(self, tmp_path: Path):
+    def test_bitbucket_docstyle_and_status(self, tmp_path: Path):
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
             result = runner.invoke(
                 app,
-                ["init", "--ci", "bitbucket", "--docstyle", "numpy", "--pre-commit"],
+                [
+                    "init",
+                    "--ci",
+                    "bitbucket",
+                    "--docstyle",
+                    "numpy",
+                    "--pre-commit",
+                    "--status",
+                    "production",
+                ],
             )
 
         # Assert
@@ -126,6 +139,7 @@ class TestInit:
             "✔ Writing 'pyproject.toml' and initializing project.\n"
             "✔ Writing 'README.md'.\n"
             "☐ Populate 'README.md' to help users understand the project.\n"
+            "✔ Setting the development status to '5 - Production/Stable'.\n"
             "✔ Adding the pre-commit framework.\n"
             "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
             "✔ Adding recommended linters.\n"

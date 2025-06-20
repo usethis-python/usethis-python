@@ -189,6 +189,15 @@ Supported options:
   - `numpy` for [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
   - `google` for [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
   - `pep257` for [PEP 257 docstring style](https://www.python.org/dev/peps/pep-0257/)
+- `--status` to set the development status of the project. Defaults to `planning`.
+  Possible values:
+  - `planning` or `1` for "Development Status :: 1 - Planning"
+  - `pre-alpha` or `2` for "Development Status :: 2 - Pre-Alpha"
+  - `alpha` or `3` for "Development Status :: 3 - Alpha"
+  - `beta` or `4` for "Development Status :: 4 - Beta"
+  - `production` or `5` for "Development Status :: 5 - Production/Stable"
+  - `mature` or `6` for "Development Status :: 6 - Mature"
+  - `inactive` or `7` for "Development Status :: 7 - Inactive"
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
@@ -416,9 +425,7 @@ Supported options:
 
 Set the development status of the project via trove classifiers.
 
-By default, the status is set to "Development Status :: 1 - Planning".
-
-Possible values:
+Possible values (required):
 
 - `usethis status planning` or `usethis status 1` for "Development Status :: 1 - Planning"
 - `usethis status pre-alpha` or `usethis status 2` for "Development Status :: 2 - Pre-Alpha"

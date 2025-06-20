@@ -14,7 +14,7 @@ from usethis.errors import UsethisError
 
 def status(
     status: DevelopmentStatusEnum = typer.Argument(
-        default="planning", help="Docstring style to enforce."
+        default=..., help="Docstring style to enforce."
     ),
     quiet: bool = quiet_opt,
 ) -> None:

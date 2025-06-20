@@ -41,7 +41,7 @@ class RequirementsTxtTool(Tool):
                 box_print("Install uv to use 'uv export'.")
 
             box_print(
-                "Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'."
+                "Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
             )
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
@@ -60,7 +60,7 @@ class RequirementsTxtTool(Tool):
                         name="uv-export",
                         files="^uv\\.lock$",
                         pass_filenames=False,
-                        entry="uv export --frozen --offline --quiet --no-dev -o=requirements.txt",
+                        entry="uv export --frozen --offline --quiet --no-default-groups -o=requirements.txt",
                         language=Language("system"),
                         require_serial=True,
                     )

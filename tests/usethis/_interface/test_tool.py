@@ -344,7 +344,8 @@ class TestRequirementsTxt:
             result.output
             == """\
 ☐ Install uv to use 'uv export'.
-☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.
+☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 
+'requirements.txt'.
 """
         )
 

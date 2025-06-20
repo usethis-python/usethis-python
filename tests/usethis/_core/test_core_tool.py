@@ -1686,11 +1686,11 @@ repos:
 
                 # Assert
                 out, _ = capfd.readouterr()
-                assert out == (
-                    "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
-                    "✔ Removing '.pre-commit-config.yaml'.\n"
-                    "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
-                    "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+                assert out.replace("\n", "") == (
+                    "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit."
+                    "✔ Removing '.pre-commit-config.yaml'."
+                    "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'."
+                    "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2499,11 +2499,11 @@ class TestRequirementsTxt:
             assert (tmp_path / "requirements.txt").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert out == (
-                "✔ Writing 'pyproject.toml'.\n"
-                "✔ Writing 'uv.lock'.\n"
-                "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+            assert out.replace("\n", "") == (
+                "✔ Writing 'pyproject.toml'."
+                "✔ Writing 'uv.lock'."
+                "✔ Writing 'requirements.txt'."
+                "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
             )
 
         def test_start_from_uv_init(
@@ -2521,10 +2521,10 @@ class TestRequirementsTxt:
             assert (uv_init_dir / "requirements.txt").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert out == (
-                "✔ Writing 'uv.lock'.\n"
-                "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+            assert out.replace("\n", "") == (
+                "✔ Writing 'uv.lock'."
+                "✔ Writing 'requirements.txt'."
+                "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
             )
 
         def test_start_from_uv_locked(
@@ -2545,9 +2545,9 @@ class TestRequirementsTxt:
             assert (uv_init_dir / "requirements.txt").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert out == (
-                "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.\n"
+            assert out.replace("\n", "") == (
+                "✔ Writing 'requirements.txt'."
+                "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2577,7 +2577,7 @@ repos:
       - id: uv-export
         name: uv-export
         files: ^uv\\.lock$
-        entry: uv export --frozen --offline --quiet --no-dev -o=requirements.txt
+        entry: uv export --frozen --offline --quiet --no-default-groups -o=requirements.txt
         language: system
         pass_filenames: false
         require_serial: true

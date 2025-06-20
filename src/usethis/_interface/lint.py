@@ -1,17 +1,6 @@
 import typer
 
-from usethis._config import (
-    frozen_opt,
-    how_opt,
-    offline_opt,
-    quiet_opt,
-    remove_opt,
-    usethis_config,
-)
-from usethis._config_file import files_manager
-from usethis._console import err_print
-from usethis._toolset.lint import use_linters
-from usethis.errors import UsethisError
+from usethis._options import frozen_opt, how_opt, offline_opt, quiet_opt, remove_opt
 
 
 def lint(
@@ -22,6 +11,12 @@ def lint(
     frozen: bool = frozen_opt,
 ) -> None:
     """Add recommended linters to the project."""
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._console import err_print
+    from usethis._toolset.lint import use_linters
+    from usethis.errors import UsethisError
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),

@@ -1,31 +1,11 @@
 from __future__ import annotations
 
 import typer
-from typing_extensions import assert_never
 
-from usethis._config import (
-    frozen_opt,
-    offline_opt,
-    quiet_opt,
-    usethis_config,
-)
-from usethis._config_file import files_manager
-from usethis._console import box_print, err_print, tick_print
-from usethis._core.ci import (
-    CIServiceEnum,
-    print_how_to_use_ci_bitbucket,
-    use_ci_bitbucket,
-)
-from usethis._core.docstyle import DocStyleEnum, use_docstyle
-from usethis._core.readme import add_readme
-from usethis._core.status import DevelopmentStatusEnum, use_development_status
-from usethis._core.tool import use_pre_commit
-from usethis._integrations.uv.init import opinionated_uv_init
-from usethis._toolset.format_ import use_formatters
-from usethis._toolset.lint import use_linters
-from usethis._toolset.spellcheck import use_spellcheckers
-from usethis._toolset.test import use_test_frameworks
-from usethis.errors import UsethisError
+from usethis._core.enums.ci import CIServiceEnum
+from usethis._core.enums.docstyle import DocStyleEnum
+from usethis._core.enums.status import DevelopmentStatusEnum
+from usethis._options import frozen_opt, offline_opt, quiet_opt
 
 
 def init(  # noqa: PLR0913, PLR0915
@@ -74,6 +54,23 @@ def init(  # noqa: PLR0913, PLR0915
     ),
 ) -> None:
     """Initialize a new project with recommended tooling."""
+    from typing_extensions import assert_never
+
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._console import box_print, err_print, tick_print
+    from usethis._core.ci import print_how_to_use_ci_bitbucket, use_ci_bitbucket
+    from usethis._core.docstyle import use_docstyle
+    from usethis._core.readme import add_readme
+    from usethis._core.status import use_development_status
+    from usethis._core.tool import use_pre_commit
+    from usethis._integrations.uv.init import opinionated_uv_init
+    from usethis._toolset.format_ import use_formatters
+    from usethis._toolset.lint import use_linters
+    from usethis._toolset.spellcheck import use_spellcheckers
+    from usethis._toolset.test import use_test_frameworks
+    from usethis.errors import UsethisError
+
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, project_dir=path

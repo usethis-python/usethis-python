@@ -3,7 +3,7 @@ from pathlib import Path
 from typer.testing import CliRunner
 
 from usethis._app import app
-from usethis._core.docstyle import DocStyleEnum
+from usethis._core.enums.docstyle import DocStyleEnum
 from usethis._interface.docstyle import docstyle
 from usethis._test import change_cwd
 

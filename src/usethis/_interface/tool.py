@@ -1,39 +1,13 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import typer
 
-from usethis._config import (
-    frozen_opt,
-    how_opt,
-    offline_opt,
-    quiet_opt,
-    remove_opt,
-    usethis_config,
-)
-from usethis._config_file import files_manager
-from usethis._console import err_print
-from usethis._core.tool import (
-    use_codespell,
-    use_coverage_py,
-    use_deptry,
-    use_import_linter,
-    use_pre_commit,
-    use_pyproject_fmt,
-    use_pyproject_toml,
-    use_pytest,
-    use_requirements_txt,
-    use_ruff,
-)
-from usethis.errors import UsethisError
+from usethis._options import frozen_opt, how_opt, offline_opt, quiet_opt, remove_opt
 
 if TYPE_CHECKING:
-    from typing import Any
-
-    from usethis._core.tool import (
-        UseToolFunc,
-    )
+    from usethis._core.tool import UseToolFunc
 
 app = typer.Typer(help="Add and configure individual tools.", add_completion=False)
 
@@ -50,6 +24,12 @@ def codespell(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import (
+        use_codespell,
+    )
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -76,6 +56,10 @@ def coverage_py(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_coverage_py
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -95,6 +79,10 @@ def deptry(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_deptry
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -114,6 +102,10 @@ def import_linter(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_import_linter
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -133,6 +125,10 @@ def pre_commit(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_pre_commit
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -152,6 +148,10 @@ def pyproject_fmt(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_pyproject_fmt
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -171,6 +171,10 @@ def pyproject_toml(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_pyproject_toml
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -188,6 +192,10 @@ def pytest(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_pytest
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -207,6 +215,10 @@ def requirements_txt(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_requirements_txt
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -236,6 +248,10 @@ def ruff(  # noqa: PLR0913
         help="Add or remove specifically the Ruff formatter.",
     ),
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_ruff
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
@@ -244,6 +260,9 @@ def ruff(  # noqa: PLR0913
 
 
 def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: Any):
+    from usethis._console import err_print
+    from usethis.errors import UsethisError
+
     try:
         caller(remove=remove, how=how, **kwargs)
     except UsethisError as err:

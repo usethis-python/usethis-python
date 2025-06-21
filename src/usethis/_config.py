@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
-
-from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -16,7 +15,8 @@ OFFLINE_DEFAULT = False
 QUIET_DEFAULT = False
 
 
-class UsethisConfig(BaseModel):
+@dataclass
+class UsethisConfig:
     """Global-state for command options which affect low level behaviour.
 
     Attributes:

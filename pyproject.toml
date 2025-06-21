@@ -258,7 +258,7 @@ name = "usethis._integrations.file"
 type = "layers"
 layers = [
   "pyproject_toml | setup_cfg",
-  "ini | toml | yaml",
+  "ini | json | toml | yaml",
   "dir",
 ]
 containers = [ "usethis._integrations.file" ]

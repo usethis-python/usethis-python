@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.14.1
+
+### 🐞 Bug Fixes
+
+- The `usethis show sonarqube` command, which is currently undocumented and should be considered experimental, did not properly print to the console. This has been fixed.
+
+### 📚 Documentation
+
+- The `simple-modern-uv` template is now mentioned in the README. See <https://github.com/jlevy/simple-modern-uv>.
+
+### 🔧 Internal Changes
+
+- The `urllib3` package version for development was bumped from 2.3.0 to 2.5.0 to address CVE-2025-50181 and CVE-2025-50182.
+
+- `pydantic` is no longer imported for initializing the Typer application, which should provide a small performance improvement in some situations, like when using the `--help` flag.
+
+- Pyright for development now uses the `nodejs` extra, which is recommended in the Pyright docs.
+
 ## 0.14.0
 
 ### 🚀 New Features

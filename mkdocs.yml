@@ -2,6 +2,7 @@ site_name: usethis
 
 nav:
   - Home: index.md
+  - FAQ: faq.md
 
 theme:
   name: material

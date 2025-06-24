@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
+from usethis._integrations.ci.github.tags import get_github_latest_tag
+from usethis._integrations.pre_commit.schema import UriRepo
 from usethis._test import change_cwd
 from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
 
@@ -22,4 +24,12 @@ class TestPyprojectFmtTool:
             assert not err
             assert out == (
                 "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+            )
+
+        def test_latest_version(self):
+            (config,) = PyprojectFmtTool().get_pre_commit_config().repo_configs
+            repo = config.repo
+            assert isinstance(repo, UriRepo)
+            assert repo.rev == get_github_latest_tag(
+                owner="tox-dev", repo="pyproject-fmt"
             )

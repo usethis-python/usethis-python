@@ -6,11 +6,13 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
+      - 'mkdocs.yml'
   pull_request:
     branches: [ "main" ]
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
+      - 'mkdocs.yml'
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})

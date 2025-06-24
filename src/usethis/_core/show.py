@@ -14,4 +14,4 @@ def show_name() -> None:
 def show_sonarqube_config() -> None:
     with usethis_config.set(quiet=True):
         ensure_pyproject_toml()
-    get_sonar_project_properties()
+    plain_print(get_sonar_project_properties())

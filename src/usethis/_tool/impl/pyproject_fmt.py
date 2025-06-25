@@ -77,7 +77,7 @@ class PyprojectFmtTool(Tool):
         return PreCommitConfig.from_single_repo(
             UriRepo(
                 repo="https://github.com/tox-dev/pyproject-fmt",
-                rev="v2.5.0",  # Manually bump this version when necessary
+                rev="v2.6.0",  # Manually bump this version when necessary
                 hooks=[HookDefinition(id="pyproject-fmt")],
             ),
             requires_venv=False,

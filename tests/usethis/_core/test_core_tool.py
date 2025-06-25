@@ -3468,3 +3468,11 @@ select = ["A", "B", "C"]
                 "[tool.ruff.lint]" not in (uv_init_dir / "pyproject.toml").read_text()
             )
             assert not (uv_init_dir / "ruff.toml").exists()
+
+
+class TestUseTool:
+    def test_add_all_tool(self, uv_init_dir: Path):
+        # Act
+        with change_cwd(uv_init_dir), files_manager():
+            for tool in ALL_TOOLS:
+                use_tool(tool)

@@ -103,6 +103,20 @@ test=['pytest']
         # Assert
         assert result == {}
 
+    def test_invalid_dtype(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test="not a list"
+""")
+        # Act, Assert
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+            pytest.raises(UVDepGroupError),
+        ):
+            get_dep_groups()
+
 
 class TestAddDepsToGroup:
     @pytest.mark.usefixtures("_vary_network_conn")

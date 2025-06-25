@@ -1878,8 +1878,8 @@ pipelines:
                     if tool.get_pre_commit_repos():
                         use_tool(tool)
 
-                # Act
-                # Run the pre-commit hooks via subprocess
+                # Act, Assert
+                # Run the pre-commit hooks via subprocess - check it doesn't raise
                 call_uv_subprocess(
                     ["run", "pre-commit", "run", "--all-files"],
                     change_toml=False,

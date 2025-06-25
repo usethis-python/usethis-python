@@ -20,6 +20,7 @@ from usethis._core.tool import (
     use_pytest,
     use_requirements_txt,
     use_ruff,
+    use_tool,
 )
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import (
@@ -1866,6 +1867,23 @@ pipelines:
             assert "pre-commit" not in contents
             assert "deptry" in contents
             assert "ruff" in contents
+
+    class TestMultipleIntegrations:
+        def test_hooks_run_all_tools_empty_repo(self, uv_env_dir: Path):
+            # Arrange
+            with change_cwd(uv_env_dir), files_manager():
+                # Add the tools
+                use_pre_commit()
+                for tool in ALL_TOOLS:
+                    if tool.get_pre_commit_repos():
+                        use_tool(tool)
+
+                # Act
+                # Run the pre-commit hooks via subprocess
+                call_uv_subprocess(
+                    ["run", "pre-commit", "run", "--all-files"],
+                    change_toml=False,
+                )
 
 
 class TestPyprojectFmt:

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol
 
+from typing_extensions import assert_never
+
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
@@ -35,10 +37,41 @@ from usethis._tool.impl.ruff import RuffTool
 from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
+    from usethis._tool.all_ import SupportedToolType
     from usethis._tool.base import Tool
 
 # Note - all these functions invoke ensure_pyproject_toml() at the start, since
 # declaring dependencies in pyproject.toml requires that file to exist.
+
+
+def use_tool(
+    tool: SupportedToolType,
+    *,
+    remove: bool = False,
+    how: bool = False,
+) -> None:
+    if isinstance(tool, CodespellTool):
+        use_codespell(remove=remove, how=how)
+    elif isinstance(tool, CoveragePyTool):
+        use_coverage_py(remove=remove, how=how)
+    elif isinstance(tool, DeptryTool):
+        use_deptry(remove=remove, how=how)
+    elif isinstance(tool, ImportLinterTool):
+        use_import_linter(remove=remove, how=how)
+    elif isinstance(tool, PreCommitTool):
+        use_pre_commit(remove=remove, how=how)
+    elif isinstance(tool, PyprojectFmtTool):
+        use_pyproject_fmt(remove=remove, how=how)
+    elif isinstance(tool, PyprojectTOMLTool):
+        use_pyproject_toml(remove=remove, how=how)
+    elif isinstance(tool, PytestTool):
+        use_pytest(remove=remove, how=how)
+    elif isinstance(tool, RequirementsTxtTool):
+        use_requirements_txt(remove=remove, how=how)
+    elif isinstance(tool, RuffTool):
+        use_ruff(remove=remove, how=how)
+    else:
+        assert_never(tool)
 
 
 class UseToolFunc(Protocol):

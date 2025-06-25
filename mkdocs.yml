@@ -24,6 +24,12 @@ theme:
       toggle:
         icon: material/brightness-6
         name: Switch to dark mode
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/usethis-python/usethis-python
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/usethis/
 
 plugins:
   - search

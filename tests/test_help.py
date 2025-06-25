@@ -10,4 +10,5 @@ def test_help_flag():
     runner = CliRunner()
 
     # Act
-    runner.invoke(app, ["--help"])
+    result = runner.invoke(app, ["--help"])
+    assert result.exit_code == 0, result.stdout

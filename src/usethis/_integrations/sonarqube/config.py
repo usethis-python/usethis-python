@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pydantic import TypeAdapter
 
+from usethis._config import usethis_config
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._integrations.python.version import get_python_version
@@ -21,7 +22,7 @@ class _NonstandardPythonVersionError(Exception):
 
 def get_sonar_project_properties() -> str:
     """Get contents for (or from) the sonar-project.properties file."""
-    path = Path.cwd() / "sonar-project.properties"
+    path = usethis_config.cpd() / "sonar-project.properties"
     if path.exists() and path.is_file():
         return path.read_text(encoding="utf-8")
 
@@ -83,7 +84,7 @@ sonar.verbose={"true" if verbose else "false"}
 
 
 def _get_short_version(version: str) -> str:
-    match = re.match(r"^(\d+\.\d+)", version)
+    match = re.match(r"^(\d{1,2}\.\d{1,2})", version)
     if match is None:
         msg = f"Could not parse Python version from {version}"
         raise _NonstandardPythonVersionError(msg)

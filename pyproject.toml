@@ -14,7 +14,7 @@ authors = [
 ]
 requires-python = ">=3.10"
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
@@ -34,6 +34,7 @@ dynamic = [
   "version",
 ]
 dependencies = [
+  "click>=8.0.0",
   "configupdater>=3.2",
   "grimp>=2.5.0",
   "mergedeep>=1.3.4",
@@ -43,7 +44,7 @@ dependencies = [
   "rich>=9.6.1",
   "ruamel-yaml>=0.16.13",
   "tomlkit>=0.12.0",
-  "typer>=0.6.0",
+  "typer>=0.12.4",
   "typing-extensions>=3.10.0.0",
 ]
 scripts.usethis = "usethis.__main__:app"
@@ -53,8 +54,9 @@ dev = [
   "datamodel-code-generator[http]>=0.28.2",
   "deptry>=0.23.0",
   "import-linter>=2.3",
+  "jinja2>=3.1.6",
   "pre-commit>=4.2.0",
-  "pyright>=1.1.399",
+  "pyright[nodejs]>=1.1.399",
   "ruff>=0.11.5",
 ]
 test = [
@@ -75,10 +77,10 @@ doc = [
 source = "vcs"
 
 [tool.hatch.metadata.hooks.vcs.urls]
-"Source Code" = "https://github.com/nathanjmcdougall/usethis-python"
-"Bug Tracker" = "https://github.com/nathanjmcdougall/usethis-python/issues"
-"Releases" = "https://github.com/nathanjmcdougall/usethis-python/releases"
-"Source Archive" = "https://github.com/nathanjmcdougall/usethis-python/archive/{commit_hash}.zip"
+"Source Code" = "https://github.com/usethis-python/usethis-python"
+"Bug Tracker" = "https://github.com/usethis-python/usethis-python/issues"
+"Releases" = "https://github.com/usethis-python/usethis-python/releases"
+"Source Archive" = "https://github.com/usethis-python/usethis-python/archive/{commit_hash}.zip"
 
 [tool.hatch.build.hooks.vcs]
 version-file = "src/usethis/_version.py"
@@ -86,8 +88,11 @@ version-file = "src/usethis/_version.py"
 [tool.ruff]
 line-length = 88
 
+format.docstring-code-format = true
+
 lint.select = [
   "A",
+  "ARG",
   "B",
   "C4",
   "D",
@@ -106,17 +111,26 @@ lint.select = [
   "PLR",
   "PT",
   "RUF",
+  "S",
   "SIM",
   "TC",
   "UP",
 ]
-lint.ignore = [ "PLR2004", "SIM108" ]
-lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S101" ]
+lint.ignore = [ "PLR2004", "S101", "SIM108" ]
+lint.per-file-ignores."!tests/**/*.py" = [ "ARG002" ]
+lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S603", "TC" ]
+lint.flake8-bugbear.extend-immutable-calls = [ "typer.Argument", "typer.Option" ]
+
+lint.flake8-type-checking.quote-annotations = true
 lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
+lint.flake8-type-checking.strict = true
 lint.pydocstyle.convention = "google"
 
 [tool.codespell]
 ignore-words-list = [ "edn" ]
+
+[tool.deptry.per_rule_ignores]
+DEP002 = [ "click" ] # https://github.com/usethis-python/usethis-python/issues/623
 
 [tool.pyproject-fmt]
 keep_full_version = true
@@ -150,9 +164,12 @@ exclude_also = [
   "class .*\\bProtocol\\):",
   "@(abc\\.)?abstractmethod",
 ]
+omit = [ "*/pytest-of-*/*" ]
 
 [tool.uv]
+required-version = ">=0.5.29"             # Sync with README
 default-groups = [ "test", "dev", "doc" ]
+link-mode = "symlink"
 
 [tool.importlinter]
 root_packages = [ "usethis" ]
@@ -164,6 +181,8 @@ layers = [
   "_test | __main__",
   "_app",
   "_interface",
+  "_options",
+  "_toolset",
   "_core",
   "_tool",
   "_config_file",
@@ -180,7 +199,7 @@ name = "usethis._interface"
 type = "layers"
 layers = [
   # Note; if you're adding an interface, make sure it's in the README too.
-  "author | badge | browse | ci | docstyle | list | readme | show | tool | version",
+  "author | badge | browse | ci | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version",
 ]
 containers = [ "usethis._interface" ]
 exhaustive = true
@@ -190,8 +209,9 @@ name = "usethis._core"
 type = "layers"
 layers = [
   # docstyle uses (Ruff) tool, badge uses readme
-  "badge | docstyle | list",
-  "author | browse | ci | readme | show | tool",
+  "badge | docstyle | list | rule",
+  "author | browse | ci | readme | show | status | tool",
+  "enums",
 ]
 containers = [ "usethis._core" ]
 exhaustive = true
@@ -203,7 +223,7 @@ layers = [
   "all_",
   "impl",
   "base",
-  "config | rule",
+  "config | pre_commit | rule",
 ]
 containers = [ "usethis._tool" ]
 exhaustive = true
@@ -213,8 +233,9 @@ name = "usethis._tool.impl"
 type = "layers"
 layers = [
   "pyproject_toml",
-  "codespell | deptry | import_linter | pyproject_fmt | requirements_txt | ruff",
-  "pytest : coverage",
+  "codespell | deptry | import_linter | pyproject_fmt | requirements_txt",
+  "ruff",
+  "pytest : coverage_py",
   "pre_commit",
 ]
 containers = [ "usethis._tool.impl" ]

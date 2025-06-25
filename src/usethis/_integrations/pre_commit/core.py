@@ -1,22 +1,21 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from usethis._config import usethis_config
 from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.uv.call import call_uv_subprocess
 from usethis._integrations.uv.errors import UVSubprocessFailedError
+from usethis._integrations.uv.used import is_uv_used
 
 
 def remove_pre_commit_config() -> None:
     name = ".pre-commit-config.yaml"
-    if not (Path.cwd() / name).exists():
+    if not (usethis_config.cpd() / name).exists():
         # Early exit; the file already doesn't exist
         return
 
     tick_print(f"Removing '{name}'.")
-    (Path.cwd() / name).unlink()
+    (usethis_config.cpd() / name).unlink()
 
 
 def install_pre_commit_hooks() -> None:
@@ -26,7 +25,10 @@ def install_pre_commit_hooks() -> None:
     in a git repo.
     """
     if usethis_config.frozen:
-        box_print("Run 'pre-commit install' to register pre-commit.")
+        if is_uv_used():
+            box_print("Run 'uv run pre-commit install' to register pre-commit.")
+        else:
+            box_print("Run 'pre-commit install' to register pre-commit.")
         return
 
     tick_print("Ensuring pre-commit is installed to Git.")

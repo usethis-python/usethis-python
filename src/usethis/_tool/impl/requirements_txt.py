@@ -8,11 +8,11 @@ from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
     LocalRepo,
-    UriRepo,
 )
 from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.pre_commit import PreCommitConfig
 
 if TYPE_CHECKING:
     from usethis._integrations.uv.deps import (
@@ -41,7 +41,7 @@ class RequirementsTxtTool(Tool):
                 box_print("Install uv to use 'uv export'.")
 
             box_print(
-                "Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'."
+                "Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
             )
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
@@ -50,8 +50,8 @@ class RequirementsTxtTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path("requirements.txt")]
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        return [
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        return PreCommitConfig.from_single_repo(
             LocalRepo(
                 repo="local",
                 hooks=[
@@ -60,10 +60,11 @@ class RequirementsTxtTool(Tool):
                         name="uv-export",
                         files="^uv\\.lock$",
                         pass_filenames=False,
-                        entry="uv export --frozen --offline --quiet --no-dev -o=requirements.txt",
+                        entry="uv export --frozen --offline --quiet --no-default-groups -o=requirements.txt",
                         language=Language("system"),
                         require_serial=True,
                     )
                 ],
-            )
-        ]
+            ),
+            requires_venv=True,
+        )

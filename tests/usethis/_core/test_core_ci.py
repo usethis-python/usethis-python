@@ -96,7 +96,7 @@ pipelines:
                 assert (uv_init_dir / "bitbucket-pipelines.yml").read_text() == ""
 
         class TestPreCommitIntegration:
-            def test_mentioned_in_file(
+            def test_contents(
                 self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
             ):
                 # Arrange
@@ -108,7 +108,33 @@ pipelines:
 
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-                assert "pre-commit" in contents
+                assert (
+                    contents
+                    == """\
+image: atlassian/default-image:3
+definitions:
+    caches:
+        uv: ~/.cache/uv
+        pre-commit: ~/.cache/pre-commit
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Run pre-commit
+            caches:
+              - uv
+              - pre-commit
+            script:
+              - *install-uv
+              - uv run pre-commit run --all-files
+"""
+                )
+
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
@@ -199,6 +225,12 @@ pipelines:
             script:
               - *install-uv
               - uv run ruff check --fix
+      - step:
+            name: Run Ruff Formatter
+            caches:
+              - uv
+            script:
+              - *install-uv
               - uv run ruff format
 """
                 )
@@ -209,6 +241,7 @@ pipelines:
                     "✔ Writing 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                     "✔ Adding 'Run Ruff' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "✔ Adding 'Run Ruff Formatter' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                     "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
                     "☐ Run your pipeline via the Bitbucket website.\n"
                 )
@@ -348,6 +381,12 @@ pipelines:
             script:
               - *install-uv
               - uv run ruff check --fix
+      - step:
+            name: Run Ruff Formatter
+            caches:
+              - uv
+            script:
+              - *install-uv
               - uv run ruff format
       - step:
             name: Run deptry
@@ -367,6 +406,7 @@ pipelines:
                 "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding 'Run pyproject-fmt' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding 'Run Ruff' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding 'Run Ruff Formatter' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding 'Run deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
                 "☐ Run your pipeline via the Bitbucket website.\n"
@@ -466,3 +506,17 @@ pipelines:
                 # Assert
                 out, _ = capfd.readouterr()
                 assert out == "✔ Removing 'bitbucket-pipelines.yml'.\n"
+
+    class TestHow:
+        def test_message(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ci_bitbucket(how=True)
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
+                "☐ Run your pipeline via the Bitbucket website.\n"
+            )

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from functools import singledispatch
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from ruamel.yaml.comments import CommentedSeq
@@ -9,6 +8,7 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 from typing_extensions import assert_never
 
 import usethis._pipeweld.func
+from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.ci.bitbucket.cache import _add_caches_via_doc, remove_cache
@@ -155,13 +155,14 @@ def _add_step_in_default_via_doc(
 
     # N.B. Currently, we are not accounting for parallelism, whereas all these steps
     # could be parallel potentially.
-    # See https://github.com/nathanjmcdougall/usethis-python/issues/149
+    # See https://github.com/usethis-python/usethis-python/issues/149
     maj_versions = get_supported_major_python_versions()
     step_order = [
         "Run pre-commit",
         # For these tools, sync them with the pre-commit removal logic
         "Run pyproject-fmt",
         "Run Ruff",
+        "Run Ruff Formatter",
         "Run deptry",
         "Run Codespell",
         *[f"Test on 3.{maj_version}" for maj_version in maj_versions],
@@ -187,7 +188,7 @@ def remove_bitbucket_step_from_default(step: Step) -> None:
 
     If the default pipeline does not exist, or the step is not found, nothing happens.
     """
-    if not (Path.cwd() / "bitbucket-pipelines.yml").exists():
+    if not (usethis_config.cpd() / "bitbucket-pipelines.yml").exists():
         return
 
     if step.name == _PLACEHOLDER_NAME:
@@ -359,7 +360,7 @@ def get_steps_in_default() -> list[Step]:
     Raises:
         UnexpectedImportPipelineError: If the pipeline is an import pipeline.
     """
-    if not (Path.cwd() / "bitbucket-pipelines.yml").exists():
+    if not (usethis_config.cpd() / "bitbucket-pipelines.yml").exists():
         return []
 
     with edit_bitbucket_pipelines_yaml() as doc:

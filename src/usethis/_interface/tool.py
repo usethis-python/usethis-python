@@ -1,33 +1,15 @@
-from typing import Protocol
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 import typer
 
-from usethis._config import offline_opt, quiet_opt, usethis_config
-from usethis._config_file import files_manager
-from usethis._console import err_print
-from usethis._core.tool import (
-    use_codespell,
-    use_coverage,
-    use_deptry,
-    use_import_linter,
-    use_pre_commit,
-    use_pyproject_fmt,
-    use_pyproject_toml,
-    use_pytest,
-    use_requirements_txt,
-    use_ruff,
-)
-from usethis.errors import UsethisError
+from usethis._options import frozen_opt, how_opt, offline_opt, quiet_opt, remove_opt
 
-app = typer.Typer(
-    help="Add and configure development tools, e.g. linters.", add_completion=False
-)
+if TYPE_CHECKING:
+    from usethis._core.tool import UseToolFunc
 
-remove_opt = typer.Option(
-    False, "--remove", help="Remove the tool instead of adding it."
-)
-
-frozen_opt = typer.Option(False, "--frozen", help="Use the frozen dependencies.")
+app = typer.Typer(help="Add and configure individual tools.", add_completion=False)
 
 
 @app.command(
@@ -37,33 +19,52 @@ frozen_opt = typer.Option(False, "--frozen", help="Use the frozen dependencies."
 )
 def codespell(
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import (
+        use_codespell,
+    )
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_codespell, remove=remove)
+        _run_tool(use_codespell, remove=remove, how=how)
 
 
 @app.command(
-    name="coverage",
-    help="Use coverage: a code coverage measurement tool.",
+    name="coverage.py",
+    help="Use Coverage.py: a code coverage measurement tool.",
     rich_help_panel="Testing",
 )
-def coverage(
+@app.command(
+    name="coverage",
+    help="Use Coverage.py: a code coverage measurement tool.",
+    rich_help_panel="Testing",
+    hidden=True,
+    deprecated=True,
+)
+def coverage_py(
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_coverage_py
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_coverage, remove=remove)
+        _run_tool(use_coverage_py, remove=remove, how=how)
 
 
 @app.command(
@@ -73,15 +74,20 @@ def coverage(
 )
 def deptry(
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_deptry
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_deptry, remove=remove)
+        _run_tool(use_deptry, remove=remove, how=how)
 
 
 @app.command(
@@ -91,15 +97,20 @@ def deptry(
 )
 def import_linter(
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_import_linter
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_import_linter, remove=remove)
+        _run_tool(use_import_linter, remove=remove, how=how)
 
 
 @app.command(
@@ -109,15 +120,20 @@ def import_linter(
 )
 def pre_commit(
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_pre_commit
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_pre_commit, remove=remove)
+        _run_tool(use_pre_commit, remove=remove, how=how)
 
 
 @app.command(
@@ -127,15 +143,20 @@ def pre_commit(
 )
 def pyproject_fmt(
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_pyproject_fmt
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_pyproject_fmt, remove=remove)
+        _run_tool(use_pyproject_fmt, remove=remove, how=how)
 
 
 @app.command(
@@ -145,15 +166,20 @@ def pyproject_fmt(
 )
 def pyproject_toml(
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_pyproject_toml
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_pyproject_toml, remove=remove)
+        _run_tool(use_pyproject_toml, remove=remove, how=how)
 
 
 @app.command(
@@ -161,15 +187,20 @@ def pyproject_toml(
 )
 def pytest(
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_pytest
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_pytest, remove=remove)
+        _run_tool(use_pytest, remove=remove, how=how)
 
 
 @app.command(
@@ -179,15 +210,20 @@ def pytest(
 )
 def requirements_txt(
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_requirements_txt
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_requirements_txt, remove=remove)
+        _run_tool(use_requirements_txt, remove=remove, how=how)
 
 
 @app.command(
@@ -195,26 +231,40 @@ def requirements_txt(
     help="Use Ruff: an extremely fast Python linter and code formatter.",
     rich_help_panel="Code Quality Tools",
 )
-def ruff(
+def ruff(  # noqa: PLR0913
     remove: bool = remove_opt,
+    how: bool = how_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
+    linter: bool = typer.Option(
+        True,
+        "--linter/--no-linter",
+        help="Add or remove specifically the Ruff linter.",
+    ),
+    formatter: bool = typer.Option(
+        True,
+        "--formatter/--no-formatter",
+        help="Add or remove specifically the Ruff formatter.",
+    ),
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_ruff
+
     with (
         usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
         files_manager(),
     ):
-        _run_tool(use_ruff, remove=remove)
+        _run_tool(use_ruff, remove=remove, how=how, linter=linter, formatter=formatter)
 
 
-class UseToolFunc(Protocol):
-    def __call__(self, *, remove: bool) -> None: ...
+def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: Any):
+    from usethis._console import err_print
+    from usethis.errors import UsethisError
 
-
-def _run_tool(caller: UseToolFunc, *, remove: bool):
     try:
-        caller(remove=remove)
+        caller(remove=remove, how=how, **kwargs)
     except UsethisError as err:
         err_print(err)
         raise typer.Exit(code=1) from None
@@ -222,7 +272,7 @@ def _run_tool(caller: UseToolFunc, *, remove: bool):
 
 ALL_TOOL_COMMANDS: list[str] = [
     "codespell",
-    "coverage",
+    "coverage.py",
     "deptry",
     "import-linter",
     "pre-commit",

@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 
+from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.file.yaml.io_ import edit_yaml
 from usethis._integrations.pre_commit.schema import JsonSchemaForPreCommitConfigYaml
+from usethis.errors import FileConfigError
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -19,8 +20,13 @@ if TYPE_CHECKING:
     from usethis._integrations.file.yaml.io_ import YAMLLiteral
 
 
-class PreCommitConfigYAMLConfigError(Exception):
+class PreCommitConfigYAMLConfigError(FileConfigError):
     """Raised when there the 'bitbucket-pipelines.yml' file fails validation."""
+
+    @property
+    def name(self) -> str:
+        """The name of the file that has a configuration error."""
+        return ".pre-commit-config.yaml"
 
 
 @dataclass
@@ -40,7 +46,7 @@ class PreCommitConfigYAMLDocument:
 def edit_pre_commit_config_yaml() -> Generator[PreCommitConfigYAMLDocument, None, None]:
     """A context manager to modify '.pre-commit-config.yaml' in-place."""
     name = ".pre-commit-config.yaml"
-    path = Path.cwd() / name
+    path = usethis_config.cpd() / name
 
     if not path.exists():
         tick_print(f"Writing '{name}'.")

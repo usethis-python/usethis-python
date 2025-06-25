@@ -7,12 +7,13 @@ from usethis._console import box_print
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_ids
-from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo, UriRepo
+from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
 from usethis._integrations.uv.deps import Dependency, add_deps_to_group
 from usethis._io import KeyValueFileManager
 from usethis._test import change_cwd
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import RuleConfig
 
 
@@ -53,13 +54,14 @@ class MyTool(Tool):
             deps.append(Dependency(name="pytest"))
         return deps
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        return [
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        return PreCommitConfig.from_single_repo(
             UriRepo(
                 repo=f"repo for {self.name}",
                 hooks=[HookDefinition(id="deptry")],
-            )
-        ]
+            ),
+            requires_venv=False,
+        )
 
     def get_config_spec(self) -> ConfigSpec:
         return ConfigSpec(
@@ -96,16 +98,17 @@ class TwoHooksTool(Tool):
     def print_how_to_use(self) -> None:
         box_print("How to use two_hooks_tool")
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        return [
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        return PreCommitConfig.from_single_repo(
             UriRepo(
-                repo="example",
+                repo=f"repo for {self.name}",
                 hooks=[
                     HookDefinition(id="ruff"),
                     HookDefinition(id="ruff-format"),
                 ],
             ),
-        ]
+            requires_venv=False,
+        )
 
 
 class TestTool:
@@ -144,7 +147,7 @@ class TestTool:
             captured = capsys.readouterr()
             assert captured.out == "☐ How to use my_tool\n"
 
-    class TestGetPreCommitRepoConfigs:
+    class TestGetPreCommitRepos:
         def test_default(self):
             tool = DefaultTool()
             assert tool.get_pre_commit_repos() == []
@@ -312,7 +315,96 @@ class TestTool:
             # Assert
             assert not result
 
-    class TestAddPreCommitRepoConfigs:
+        def test_syntax_errors_in_pyproject_toml(
+            self, uv_init_dir: Path, capsys: pytest.CaptureFixture[str]
+        ):
+            # https://github.com/usethis-python/usethis-python/issues/483
+            # Should warn that parsing pyproject.toml failed, and print the error.
+            # But should continue, with the assumption that the pyproject.toml file
+            # does not contain any tool-specific configuration.
+
+            # Arrange
+            tool = MyTool()
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                # Create a pyproject.toml with a syntax error
+                (uv_init_dir / "pyproject.toml").write_text(
+                    """\
+[tool.my_tool
+"""
+                )
+
+                # Act
+                result = tool.is_used()
+
+            # Assert
+            assert not result
+            out, err = capsys.readouterr()
+            assert not err
+            assert out.replace("\n", " ").replace("  ", " ") == (
+                r"⚠ Failed to decode 'pyproject.toml': Unexpected character: '\n' at line 1 col 13 "
+                "⚠ Assuming 'pyproject.toml' contains no evidence of my_tool being used. "
+            )
+
+        def test_syntax_errors_in_setup_cfg(
+            self, uv_init_dir: Path, capsys: pytest.CaptureFixture[str]
+        ):
+            # A generalization of the associated test for pyproject.toml
+
+            # Arrange
+            class ThisTool(Tool):
+                @property
+                def name(self) -> str:
+                    return "my_tool"
+
+                def print_how_to_use(self) -> None:
+                    box_print("How to use my_tool")
+
+                def get_config_spec(self) -> ConfigSpec:
+                    # Should use setup.cfg instead of pyproject.toml
+                    return ConfigSpec(
+                        file_manager_by_relative_path={
+                            Path("setup.cfg"): SetupCFGManager(),
+                        },
+                        resolution="first",
+                        config_items=[
+                            ConfigItem(
+                                root={
+                                    Path("setup.cfg"): ConfigEntry(
+                                        keys=["tool", self.name, "key"],
+                                        get_value=lambda: "value",
+                                    )
+                                }
+                            )
+                        ],
+                    )
+
+                def preferred_file_manager(self) -> KeyValueFileManager:
+                    return SetupCFGManager()
+
+            tool = ThisTool()
+            with change_cwd(uv_init_dir), SetupCFGManager():
+                # Create a setup.cfg with a syntax error
+                (uv_init_dir / "setup.cfg").write_text(
+                    """\
+[tool.my_tool
+"""
+                )
+
+                # Act
+                result = tool.is_used()
+
+            # Assert
+            assert not result
+            out, err = capsys.readouterr()
+            assert not err
+            assert out == (
+                r"⚠ Failed to decode 'setup.cfg': File contains no section headers."
+                "\nfile: '<string>', line: 1\n"
+                r"'[tool.my_tool\n'"
+                "\n⚠ Assuming 'setup.cfg' contains no evidence of my_tool being used.\n"
+            )
+
+    class TestAddPreCommitConfig:
         def test_no_repo_configs(self, uv_init_dir: Path):
             # Arrange
             class NoRepoConfigsTool(Tool):
@@ -320,8 +412,10 @@ class TestTool:
                 def name(self) -> str:
                     return "no_repo_configs_tool"
 
-                def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-                    return []
+                def get_pre_commit_config(self) -> PreCommitConfig:
+                    return PreCommitConfig(
+                        repo_configs=[], inform_how_to_use_on_migrate=False
+                    )
 
                 def print_how_to_use(self) -> None:
                     box_print("How to use no_repo_configs_tool")
@@ -330,7 +424,7 @@ class TestTool:
 
             # Act
             with change_cwd(uv_init_dir):
-                nrc_tool.add_pre_commit_repo_configs()
+                nrc_tool.add_pre_commit_config()
 
                 # Assert
                 assert not (uv_init_dir / ".pre-commit-config.yaml").exists()
@@ -345,24 +439,33 @@ class TestTool:
                 def print_how_to_use(self) -> None:
                     box_print("How to use multi_repo_tool")
 
-                def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-                    return [
-                        UriRepo(
-                            repo="example",
-                            hooks=[
-                                HookDefinition(id="ruff"),
-                                HookDefinition(id="ruff-format"),
-                            ],
-                        ),
-                        UriRepo(
-                            repo="other",
-                            hooks=[
-                                HookDefinition(
-                                    id="deptry",
-                                )
-                            ],
-                        ),
-                    ]
+                def get_pre_commit_config(self) -> PreCommitConfig:
+                    return PreCommitConfig(
+                        repo_configs=[
+                            PreCommitRepoConfig(
+                                repo=UriRepo(
+                                    repo="example",
+                                    hooks=[
+                                        HookDefinition(id="ruff"),
+                                        HookDefinition(id="ruff-format"),
+                                    ],
+                                ),
+                                requires_venv=False,
+                            ),
+                            PreCommitRepoConfig(
+                                repo=UriRepo(
+                                    repo="other",
+                                    hooks=[
+                                        HookDefinition(
+                                            id="deptry",
+                                        )
+                                    ],
+                                ),
+                                requires_venv=False,
+                            ),
+                        ],
+                        inform_how_to_use_on_migrate=False,
+                    )
 
             mrt_tool = MultiRepoTool()
 
@@ -372,7 +475,7 @@ class TestTool:
                 # with-raises block can be removed and the test no longer needs to be
                 # skipped.
                 with pytest.raises(NotImplementedError):
-                    mrt_tool.add_pre_commit_repo_configs()
+                    mrt_tool.add_pre_commit_config()
                 pytest.skip("Multiple hooks in one repo not supported yet.")
 
                 # Assert
@@ -389,7 +492,7 @@ class TestTool:
 
             # Act
             with change_cwd(tmp_path):
-                tool.add_pre_commit_repo_configs()
+                tool.add_pre_commit_config()
 
                 # Assert
                 assert (tmp_path / ".pre-commit-config.yaml").exists()
@@ -400,7 +503,7 @@ class TestTool:
 
             # Act
             with change_cwd(tmp_path):
-                tool.add_pre_commit_repo_configs()
+                tool.add_pre_commit_config()
 
                 # Assert
                 assert not (tmp_path / ".pre-commit-config.yaml").exists()
@@ -413,7 +516,7 @@ class TestTool:
 
             # Act
             with change_cwd(tmp_path):
-                tool.add_pre_commit_repo_configs()
+                tool.add_pre_commit_config()
 
                 # Assert
                 out, err = capfd.readouterr()
@@ -445,7 +548,7 @@ repos:
 
             # Act
             with change_cwd(tmp_path):
-                tool.add_pre_commit_repo_configs()
+                tool.add_pre_commit_config()
 
                 # Assert
                 out, err = capfd.readouterr()
@@ -474,7 +577,7 @@ repos:
 
             # Act
             with change_cwd(tmp_path):
-                tool.add_pre_commit_repo_configs()
+                tool.add_pre_commit_config()
 
                 # Assert
                 out, err = capfd.readouterr()
@@ -505,7 +608,7 @@ repos:
                 # At the point where we do support it, this with-raises block and
                 # test skip can be removed - the rest of the test becomes valid.
                 with pytest.raises(NotImplementedError):
-                    th_tool.add_pre_commit_repo_configs()
+                    th_tool.add_pre_commit_config()
                 pytest.skip("Multiple hooks in one repo not supported yet")
 
                 # Assert
@@ -529,11 +632,7 @@ repos:
 """
             )
 
-        def test_two_hooks_one_repo(
-            self,
-            tmp_path: Path,
-            capfd: pytest.CaptureFixture[str],
-        ):
+        def test_two_hooks_one_repo(self, tmp_path: Path):
             # Arrange
             th_tool = TwoHooksTool()
 
@@ -543,7 +642,7 @@ repos:
                 # If we do ever support it, this with-raises block and
                 # test skip can be removed. Instead, we will need to write this test.
                 with pytest.raises(NotImplementedError):
-                    th_tool.add_pre_commit_repo_configs()
+                    th_tool.add_pre_commit_config()
                 pytest.skip("Multiple hooks in one repo not supported yet")
 
     class TestRemovePreCommitRepoConfigs:
@@ -647,24 +746,33 @@ repos:
                 def print_how_to_use(self) -> None:
                     box_print("How to use two_repo_tool")
 
-                def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-                    return [
-                        UriRepo(
-                            repo="example",
-                            hooks=[
-                                HookDefinition(id="ruff"),
-                                HookDefinition(id="ruff-format"),
-                            ],
-                        ),
-                        UriRepo(
-                            repo="other",
-                            hooks=[
-                                HookDefinition(
-                                    id="deptry",
-                                )
-                            ],
-                        ),
-                    ]
+                def get_pre_commit_config(self) -> PreCommitConfig:
+                    return PreCommitConfig(
+                        repo_configs=[
+                            PreCommitRepoConfig(
+                                repo=UriRepo(
+                                    repo="example",
+                                    hooks=[
+                                        HookDefinition(id="ruff"),
+                                        HookDefinition(id="ruff-format"),
+                                    ],
+                                ),
+                                requires_venv=False,
+                            ),
+                            PreCommitRepoConfig(
+                                repo=UriRepo(
+                                    repo="other",
+                                    hooks=[
+                                        HookDefinition(
+                                            id="deptry",
+                                        )
+                                    ],
+                                ),
+                                requires_venv=False,
+                            ),
+                        ],
+                        inform_how_to_use_on_migrate=False,
+                    )
 
             tr_tool = TwoRepoTool()
 
@@ -758,7 +866,7 @@ key = "value"
         def test_differing_sections(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
-            # https://github.com/nathanjmcdougall/usethis-python/issues/184
+            # https://github.com/usethis-python/usethis-python/issues/184
             # But needs the force=True argument.
 
             # Arrange

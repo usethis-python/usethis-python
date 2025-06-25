@@ -27,7 +27,7 @@ class TestSchemaJSON:
         local_schema_json = (Path(__file__).parent / "schema.json").read_text()
         try:
             online_schema_json = requests.get(
-                "https://json.schemastore.org/pre-commit-config.json"
+                "https://json.schemastore.org/pre-commit-config.json", timeout=5
             ).text
         except requests.exceptions.ConnectionError as err:
             if os.getenv("CI"):
@@ -37,6 +37,7 @@ class TestSchemaJSON:
             raise err
 
         # Compare the JSON
+        # TIP: go into debug mode to copy-and-paste into updated schema.json
         assert local_schema_json == online_schema_json.replace("\r\n", "\n\n")
 
     def test_target_python_version(self):

@@ -1,7 +1,11 @@
+from pathlib import Path
+
 import pytest
 import requests
 
 from usethis._config import usethis_config
+from usethis._config_file import files_manager
+from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.pyproject_toml import OTHER_TOOLS, PyprojectTOMLTool
 
@@ -14,6 +18,43 @@ class TestOtherTools:
 
 
 class TestPyprojectTOMLTool:
+    class TestRemoveManagedFiles:
+        def test_warning(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                PyprojectTOMLTool().remove_managed_files()
+
+                out, err = capfd.readouterr()
+                assert not err
+                assert out == (
+                    "☐ Check that important config in 'pyproject.toml' is not lost.\n"
+                    "✔ Removing 'pyproject.toml'.\n"
+                )
+
+        def test_extra_warning_when_config_exists(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_dir / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["E", "PT"]
+"""
+            )
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                PyprojectTOMLTool().remove_managed_files()
+
+                out, err = capfd.readouterr()
+                assert not err
+                assert out == (
+                    "☐ Check that important config in 'pyproject.toml' is not lost.\n"
+                    "☐ The Ruff tool was using 'pyproject.toml' for config, but that file is being \n"
+                    "removed. You will need to re-configure it.\n"
+                    "✔ Removing 'pyproject.toml'.\n"
+                )
+
     class TestPrintHowToUse:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_link_isnt_dead(self):
@@ -26,7 +67,7 @@ class TestPyprojectTOMLTool:
 
             if not usethis_config.offline:
                 # Act
-                result = requests.head(url)
+                result = requests.head(url, timeout=5)
 
                 # Assert
                 assert result.status_code == 200

@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from usethis._console import box_print, tick_print
+from usethis._console import box_print, info_print, tick_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -14,7 +14,6 @@ from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
     LocalRepo,
-    UriRepo,
 )
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._integrations.uv.deps import (
@@ -28,6 +27,7 @@ from usethis._tool.config import (
     ConfigSpec,
     ensure_file_manager_exists,
 )
+from usethis._tool.pre_commit import PreCommitConfig
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
@@ -63,9 +63,9 @@ class DeptryTool(Tool):
             ],
         )
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+    def get_pre_commit_config(self) -> PreCommitConfig:
         _dir = get_source_dir_str()
-        return [
+        return PreCommitConfig.from_single_repo(
             LocalRepo(
                 repo="local",
                 hooks=[
@@ -78,8 +78,10 @@ class DeptryTool(Tool):
                         pass_filenames=False,
                     )
                 ],
-            )
-        ]
+            ),
+            requires_venv=True,
+            inform_how_to_use_on_migrate=False,
+        )
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         _dir = get_source_dir_str()
@@ -101,6 +103,8 @@ class DeptryTool(Tool):
 
     def select_rules(self, rules: list[Rule]) -> None:
         """Does nothing for deptry - all rules are automatically enabled by default."""
+        if rules:
+            info_print(f"All {self.name} rules are always implicitly selected.")
 
     def get_selected_rules(self) -> list[Rule]:
         """No notion of selection for deptry.
@@ -129,6 +133,23 @@ class DeptryTool(Tool):
         )
         keys = self._get_ignore_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
+
+    def unignore_rules(self, rules: list[str]) -> None:
+        rules = sorted(set(rules) & set(self.get_ignored_rules()))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
+        (file_manager,) = self.get_active_config_file_managers()
+        ensure_file_manager_exists(file_manager)
+        tick_print(
+            f"No longer ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
+        keys = self._get_ignore_keys(file_manager)
+        file_manager.remove_from_list(keys=keys, values=rules)
 
     def get_ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()

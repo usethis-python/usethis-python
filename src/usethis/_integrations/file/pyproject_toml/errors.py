@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from usethis._integrations.file.toml.errors import (
+    TOMLDecodeError,
     TOMLError,
     TOMLNotFoundError,
     TOMLValueAlreadySetError,
@@ -8,6 +9,7 @@ from usethis._integrations.file.toml.errors import (
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
 )
+from usethis.errors import FileConfigError
 
 
 class PyprojectTOMLError(TOMLError):
@@ -22,8 +24,13 @@ class PyprojectTOMLInitError(PyprojectTOMLError):
     """Raised when a pyproject.toml file cannot be created."""
 
 
-class PyprojectTOMLDecodeError(PyprojectTOMLError):
+class PyprojectTOMLDecodeError(TOMLDecodeError, PyprojectTOMLError):
     """Raised when a pyproject.toml file cannot be decoded."""
+
+    @property
+    def name(self) -> str:
+        """The name of the file that could not be decoded."""
+        return "pyproject.toml"
 
 
 class UnexpectedPyprojectTOMLOpenError(PyprojectTOMLError, UnexpectedTOMLOpenError):
@@ -34,8 +41,13 @@ class UnexpectedPyprojectTOMLIOError(PyprojectTOMLError, UnexpectedTOMLIOError):
     """Raised when an unexpected attempt is made to read or write the pyproject.toml file."""
 
 
-class PyprojectTOMLProjectSectionError(PyprojectTOMLError):
+class PyprojectTOMLProjectSectionError(FileConfigError, PyprojectTOMLError):
     """Raised when the 'project' section is missing or invalid in 'pyproject.toml'."""
+
+    @property
+    def name(self) -> str:
+        """The name of the file that has a configuration error."""
+        return "pyproject.toml"
 
 
 class PyprojectTOMLProjectNameError(PyprojectTOMLProjectSectionError):

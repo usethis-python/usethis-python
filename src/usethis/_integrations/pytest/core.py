@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import shutil
-from pathlib import Path
 
+from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 
 
 def add_pytest_dir() -> None:
-    tests_dir = Path.cwd() / "tests"
+    tests_dir = usethis_config.cpd() / "tests"
 
     if not tests_dir.exists():
         tick_print("Creating '/tests'.")
@@ -24,7 +24,7 @@ def add_pytest_dir() -> None:
 
 
 def remove_pytest_dir() -> None:
-    tests_dir = Path.cwd() / "tests"
+    tests_dir = usethis_config.cpd() / "tests"
 
     if not tests_dir.exists():
         # Early exit; tests directory does not exist

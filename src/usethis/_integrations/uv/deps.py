@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import pydantic
 from packaging.requirements import Requirement
 from pydantic import BaseModel, TypeAdapter
@@ -151,7 +149,7 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
             )
         except UVSubprocessFailedError as err:
             msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
-            msg += (Path.cwd() / "pyproject.toml").read_text()
+            msg += (usethis_config.cpd() / "pyproject.toml").read_text()
             raise UVDepGroupError(msg) from None
 
     # Register the group - don't do this before adding the deps in case that step fails

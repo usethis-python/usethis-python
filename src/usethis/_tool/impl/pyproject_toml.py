@@ -7,7 +7,7 @@ from usethis._console import box_print, info_print
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool.base import Tool
 from usethis._tool.impl.codespell import CodespellTool
-from usethis._tool.impl.coverage import CoverageTool
+from usethis._tool.impl.coverage_py import CoveragePyTool
 from usethis._tool.impl.deptry import DeptryTool
 from usethis._tool.impl.import_linter import ImportLinterTool
 from usethis._tool.impl.pre_commit import PreCommitTool
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 OTHER_TOOLS: list[Tool] = [
     CodespellTool(),
-    CoverageTool(),
+    CoveragePyTool(),
     DeptryTool(),
     ImportLinterTool(),
     PreCommitTool(),
@@ -55,7 +55,7 @@ class PyprojectTOMLTool(Tool):
         ]
 
     def remove_managed_files(self) -> None:
-        # https://github.com/nathanjmcdougall/usethis-python/issues/416
+        # https://github.com/usethis-python/usethis-python/issues/416
         # We need to step through the tools and see if pyproject.toml is the active
         # config file.
         # If it isn't an active config file, no action is required.

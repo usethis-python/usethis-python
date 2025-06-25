@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from usethis.errors import UsethisError
+from usethis.errors import FileDecodeError, UsethisError
 
 
 class INIError(UsethisError):
@@ -23,7 +23,7 @@ class ININotFoundError(FileNotFoundError, INIError):
     """Raised when a INI file is unexpectedly not found."""
 
 
-class INIDecodeError(INIError):
+class INIDecodeError(FileDecodeError, INIError):
     """Raised when a INI file is unexpectedly not decodable."""
 
 

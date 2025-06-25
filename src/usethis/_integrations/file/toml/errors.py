@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from usethis.errors import UsethisError
+from usethis.errors import FileDecodeError, UsethisError
 
 
 class TOMLError(UsethisError):
@@ -19,7 +19,7 @@ class TOMLNotFoundError(FileNotFoundError, TOMLError):
     """Raised when a TOML file is unexpectedly not found."""
 
 
-class TOMLDecodeError(TOMLError):
+class TOMLDecodeError(FileDecodeError, TOMLError):
     """Raised when a TOML file is unexpectedly not decodable."""
 
 

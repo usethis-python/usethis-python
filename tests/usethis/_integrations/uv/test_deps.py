@@ -217,7 +217,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_extra_when_nonextra_already_present(self, uv_init_dir: Path):
-        # https://github.com/nathanjmcdougall/usethis-python/issues/227
+        # https://github.com/usethis-python/usethis-python/issues/227
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
             add_deps_to_group([Dependency(name="coverage")], "test")
@@ -282,14 +282,10 @@ class TestAddDepsToGroup:
             add_deps_to_group([Dependency(name="black")], "dev")
 
             # Assert
-            # Tool section shouldn't even exist in pyproject.toml
-            assert "tool" not in (uv_init_dir / "pyproject.toml").read_text()
+            assert ["tool", "uv", "default-groups"] not in PyprojectTOMLManager()
 
     def test_uv_subprocess_error(
-        self,
-        uv_init_dir: Path,
-        monkeypatch: pytest.MonkeyPatch,
-        capfd: pytest.CaptureFixture[str],
+        self, uv_init_dir: Path, monkeypatch: pytest.MonkeyPatch
     ):
         def mock_call_uv_subprocess(*_, **__):
             raise UVSubprocessFailedError
@@ -435,10 +431,7 @@ class TestRemoveDepsFromGroup:
             assert not out
 
     def test_uv_subprocess_error(
-        self,
-        uv_init_dir: Path,
-        monkeypatch: pytest.MonkeyPatch,
-        capfd: pytest.CaptureFixture[str],
+        self, uv_init_dir: Path, monkeypatch: pytest.MonkeyPatch
     ):
         with (
             change_cwd(uv_init_dir),

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol
 
+from typing_extensions import assert_never
+
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
@@ -35,6 +37,7 @@ from usethis._tool.impl.ruff import RuffTool
 from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
+    from usethis._tool.all_ import SupportedToolType
     from usethis._tool.base import Tool
 
 # Note - all these functions invoke ensure_pyproject_toml() at the start, since
@@ -467,3 +470,50 @@ def _get_basic_rule_config() -> RuleConfig:
     )
 
     return rule_config
+
+
+def use_tool(
+    tool: SupportedToolType,
+    *,
+    remove: bool = False,
+    how: bool = False,
+) -> None:
+    """General dispatch function to add or remove a tool to/from the project.
+
+    This is mostly intended for situations when the exact tool being added is not known
+    dynamically. If you know the specific tool you wish to add, it is strongly
+    recommended to call the specific function directly, e.g. `use_codespell()`, etc.
+    """
+    # One might wonder why we don't just implement a `use` method on the Tool class
+    # itself. Basically it's for architectural reasons: we want to keep a layer of
+    # abstraction between the tool and the logic to actually configure it.
+    # In the future, that might change if we can create a sufficiently generalized logic
+    # for all tools such that bespoke choices on a per-tool basis are not required, and
+    # all the logic is just deterministic based on the tool's properties/methods, etc.
+    if isinstance(tool, CodespellTool):
+        use_codespell(remove=remove, how=how)
+    elif isinstance(tool, CoveragePyTool):
+        use_coverage_py(remove=remove, how=how)
+    elif isinstance(tool, DeptryTool):
+        use_deptry(remove=remove, how=how)
+    elif isinstance(tool, ImportLinterTool):
+        use_import_linter(remove=remove, how=how)
+    elif isinstance(tool, PreCommitTool):
+        use_pre_commit(remove=remove, how=how)
+    elif isinstance(tool, PyprojectFmtTool):
+        use_pyproject_fmt(remove=remove, how=how)
+    elif isinstance(tool, PyprojectTOMLTool):
+        use_pyproject_toml(remove=remove, how=how)
+    elif isinstance(tool, PytestTool):
+        use_pytest(remove=remove, how=how)
+    elif isinstance(tool, RequirementsTxtTool):
+        use_requirements_txt(remove=remove, how=how)
+    elif isinstance(tool, RuffTool):
+        use_ruff(remove=remove, how=how)
+    else:
+        # Having the assert_never here is effectively a way of testing cases are
+        # exhaustively handled, which ensures it is kept up to date with ALL_TOOLS,
+        # together with the type annotation on ALL_TOOLS itself. That's why this
+        # function is implemented as a series of `if` statements rather than a
+        # dictionary or similar alternative.
+        assert_never(tool)

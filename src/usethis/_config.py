@@ -25,6 +25,9 @@ class UsethisConfig:
         frozen: Do not install dependencies, nor update lockfiles.
         alert_only: Suppress all output except for warnings and errors.
         disable_uv_subprocess: Raise an error if a uv subprocess invocation is tried.
+        disable_pre_commit: Disable pre-commit integrations. Assume that pre-commit is
+                            never used (unless explicitly requested via a function whose
+                            purpose is to modify pre-commit configuration).
         subprocess_verbose: Verbose output for subprocesses.
         force_project_dir: Directory for the project. If None, defaults to the current
                            working directory dynamically determined at runtime.
@@ -35,6 +38,7 @@ class UsethisConfig:
     frozen: bool = False
     alert_only: bool = False
     disable_uv_subprocess: bool = False
+    disable_pre_commit: bool = False
     subprocess_verbose: bool = False
     project_dir: Path | None = None
 
@@ -47,6 +51,7 @@ class UsethisConfig:
         frozen: bool | None = None,
         alert_only: bool | None = None,
         disable_uv_subprocess: bool | None = None,
+        disable_pre_commit: bool | None = None,
         subprocess_verbose: bool | None = None,
         project_dir: Path | str | None = None,
     ) -> Generator[None, None, None]:
@@ -56,6 +61,7 @@ class UsethisConfig:
         old_frozen = self.frozen
         old_alert_only = self.alert_only
         old_disable_uv_subprocess = self.disable_uv_subprocess
+        old_disable_pre_commit = self.disable_pre_commit
         old_subprocess_verbose = self.subprocess_verbose
         old_project_dir = self.project_dir
 
@@ -69,6 +75,8 @@ class UsethisConfig:
             alert_only = self.alert_only
         if disable_uv_subprocess is None:
             disable_uv_subprocess = old_disable_uv_subprocess
+        if disable_pre_commit is None:
+            disable_pre_commit = old_disable_pre_commit
         if subprocess_verbose is None:
             subprocess_verbose = old_subprocess_verbose
         if project_dir is None:
@@ -79,6 +87,7 @@ class UsethisConfig:
         self.frozen = frozen
         self.alert_only = alert_only
         self.disable_uv_subprocess = disable_uv_subprocess
+        self.disable_pre_commit = disable_pre_commit
         self.subprocess_verbose = subprocess_verbose
         if isinstance(project_dir, str):
             project_dir = Path(project_dir)
@@ -89,6 +98,7 @@ class UsethisConfig:
         self.frozen = old_frozen
         self.alert_only = old_alert_only
         self.disable_uv_subprocess = old_disable_uv_subprocess
+        self.disable_pre_commit = old_disable_pre_commit
         self.subprocess_verbose = old_subprocess_verbose
         self.project_dir = old_project_dir
 
@@ -102,8 +112,9 @@ class UsethisConfig:
 usethis_config = UsethisConfig(
     offline=OFFLINE_DEFAULT,
     quiet=QUIET_DEFAULT,
-    frozen=False,
+    frozen=FROZEN_DEFAULT,
     alert_only=False,
     disable_uv_subprocess=False,
+    disable_pre_commit=False,
     subprocess_verbose=False,
 )

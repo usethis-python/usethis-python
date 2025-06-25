@@ -511,4 +511,9 @@ def use_tool(
     elif isinstance(tool, RuffTool):
         use_ruff(remove=remove, how=how)
     else:
+        # Having the assert_never here is effectively a way of testing cases are
+        # exhaustively handled, which ensures it is kept up to date with ALL_TOOLS,
+        # together with the type annotation on ALL_TOOLS itself. That's why this
+        # function is implemented as a series of `if` statements rather than a
+        # dictionary or similar alternative.
         assert_never(tool)

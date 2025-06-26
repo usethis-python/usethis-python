@@ -55,7 +55,7 @@ class TestCoverage:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_runs(self, tmp_path: Path):
         # To check the config is valid
-        # https://github.com/nathanjmcdougall/usethis-python/issues/426
+        # https://github.com/usethis-python/usethis-python/issues/426
 
         # Arrange
         (tmp_path / "__main__.py").touch()
@@ -75,7 +75,7 @@ class TestCoverage:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_after_codespell(self, tmp_path: Path):
         # To check the config is valid
-        # https://github.com/nathanjmcdougall/usethis-python/issues/558
+        # https://github.com/usethis-python/usethis-python/issues/558
 
         # Arrange
         (tmp_path / "pyproject.toml").write_text("""\
@@ -190,8 +190,10 @@ class TestImportLinter:
         assert (
             result.output
             == """\
+ℹ Ensure '__init__.py' files are used in your packages.
+ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>
 ☐ Run 'lint-imports' to run Import Linter.
-"""
+"""  # noqa: RUF001
         )
 
 
@@ -296,6 +298,34 @@ class TestPreCommit:
 """
         )
 
+    def test_adds_okay_without_git(self, tmp_path: Path):
+        """Test that pre-commit runs without a git repo."""
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("[project]\nname = 'example'\n")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pre-commit"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_removes_okay_without_git(self, tmp_path: Path):
+        """Test that pre-commit removes without a git repo."""
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("[project]\nname = 'example'\n")
+        (tmp_path / ".pre-commit-config.yaml").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["pre-commit", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert not (tmp_path / ".pre-commit-config.yaml").exists()
+
 
 class TestRequirementsTxt:
     def test_runs(self, tmp_path: Path):
@@ -319,7 +349,8 @@ class TestRequirementsTxt:
             result.output
             == """\
 ☐ Install uv to use 'uv export'.
-☐ Run 'uv export --no-dev -o=requirements.txt' to write 'requirements.txt'.
+☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 
+'requirements.txt'.
 """
         )
 
@@ -334,7 +365,7 @@ class TestRuff:
             else:
                 call_subprocess(["usethis", "tool", "ruff", "--offline"])
 
-    def test_readme_example(self, tmp_path: Path):
+    def test_readme_example(self, uv_init_dir: Path):
         """This example is used the README.md file.
 
         Note carefully! If this test is updated, the README.md file must be
@@ -342,7 +373,7 @@ class TestRuff:
         """
         # Act
         runner = CliRunner()
-        with change_cwd(tmp_path):
+        with change_cwd(uv_init_dir):
             result = runner.invoke(app, ["ruff"])
 
         # Assert
@@ -353,7 +384,6 @@ class TestRuff:
             # See docstring!
             # ###################################
             == """\
-✔ Writing 'pyproject.toml'.
 ✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.
 ✔ Adding Ruff config to 'pyproject.toml'.
 ✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 
@@ -462,17 +492,25 @@ def test_several_tools_add_and_remove(tmp_path: Path):
     (tmp_path / "src" / "benchmark").mkdir(exist_ok=True)
     (tmp_path / "src" / "benchmark" / "__init__.py").touch(exist_ok=True)
 
-    # Act
     runner = CliRunner()
     with change_cwd(tmp_path):
-        runner.invoke(app, ["pytest"])
-        runner.invoke(app, ["coverage.py"])
-        runner.invoke(app, ["ruff"])
-        runner.invoke(app, ["deptry"])
-        runner.invoke(app, ["pre-commit"])
-        runner.invoke(app, ["ruff", "--remove"])
-        runner.invoke(app, ["pyproject-fmt"])
-        runner.invoke(app, ["pytest", "--remove"])
+        # Act, Assert
+        result = runner.invoke(app, ["pytest"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke(app, ["coverage"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke(app, ["ruff"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke(app, ["deptry"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke(app, ["pre-commit"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke(app, ["ruff", "--remove"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke(app, ["pyproject-fmt"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke(app, ["pytest", "--remove"])
+        assert not result.exit_code, result.stdout
 
 
 def test_tool_matches_command():

@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
+from usethis._config import usethis_config
 from usethis._console import plain_print, tick_print, warn_print
-from usethis._core.readme import add_readme, get_readme_path
+from usethis._core.readme import (
+    NonMarkdownREADMEError,
+    add_readme,
+    get_markdown_readme_path,
+)
 from usethis._integrations.project.name import get_project_name
 
 if TYPE_CHECKING:
@@ -59,7 +63,7 @@ def get_uv_badge() -> Badge:
 
 def get_usethis_badge() -> Badge:
     return Badge(
-        markdown="[![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/nathanjmcdougall/usethis-python/main/assets/badge/v1.json)](https://github.com/nathanjmcdougall/usethis-python)"
+        markdown="[![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/usethis-python/usethis-python/main/assets/badge/v1.json)](https://github.com/usethis-python/usethis-python)"
     )
 
 
@@ -104,9 +108,11 @@ def add_badge(badge: Badge) -> None:
     add_readme()
 
     try:
-        path = _get_markdown_readme_path()
-    except FileNotFoundError:
-        warn_print("README file not found, printing badge markdown instead...")
+        path = get_markdown_readme_path()
+    except NonMarkdownREADMEError:
+        warn_print(
+            "No Markdown-based README file found, printing badge markdown instead..."
+        )
         plain_print(badge.markdown)
         return
 
@@ -194,20 +200,6 @@ def _get_prerequisites(badge: Badge) -> list[Badge]:
     return prerequisites
 
 
-def _get_markdown_readme_path() -> Path:
-    path = get_readme_path()
-
-    if path.name == "README.md":
-        pass
-    elif path.name == "README":
-        warn_print("Assuming 'README' file is Markdown.")
-    else:
-        msg = f"README file '{path.name}' is not Markdown based on its extension."
-        raise FileNotFoundError(msg)
-
-    return path
-
-
 def _ensure_final_newline(content: str) -> str:
     if not content or content[-1] != "\n":
         content += "\n"
@@ -231,10 +223,10 @@ def is_badge(line: str) -> bool:
 
 
 def remove_badge(badge: Badge) -> None:
-    path = Path.cwd() / "README.md"
+    path = usethis_config.cpd() / "README.md"
 
     try:
-        path = _get_markdown_readme_path()
+        path = get_markdown_readme_path()
     except FileNotFoundError:
         # If there's no README.md, there's nothing to remove
         return

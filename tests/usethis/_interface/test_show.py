@@ -53,6 +53,7 @@ project-key = "fun"
 
         # Assert
         assert result.exit_code == 0, result.output
+        assert result.output
 
     def test_missing_key(self, tmp_path: Path):
         # Arrange

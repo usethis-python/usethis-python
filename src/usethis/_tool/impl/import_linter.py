@@ -5,10 +5,11 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from usethis._config import usethis_config
 from usethis._config_file import (
     DotImportLinterManager,
 )
-from usethis._console import box_print, warn_print
+from usethis._console import box_print, info_print, warn_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -21,7 +22,6 @@ from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
     LocalRepo,
-    UriRepo,
 )
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.imports import (
@@ -40,12 +40,18 @@ from usethis._tool.config import (
     ConfigItem,
     ConfigSpec,
     NoConfigValue,
-    ResolutionT,
 )
 from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.pre_commit import PreCommitConfig
+from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
+    from usethis._tool.config import (
+        ResolutionT,
+    )
+
 
 IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
 
@@ -57,7 +63,20 @@ class ImportLinterTool(Tool):
     def name(self) -> str:
         return "Import Linter"
 
+    def is_used(self) -> bool:
+        """Check if the Import Linter tool is used in the project."""
+        # We suppress the warning about assumptions regarding the package name.
+        # See _importlinter_warn_no_packages_found
+        with usethis_config.set(quiet=True):
+            return super().is_used()
+
     def print_how_to_use(self) -> None:
+        if not RuffTool().is_used():
+            # If Ruff is used, we enable the INP rules instead.
+            info_print("Ensure '__init__.py' files are used in your packages.")
+            info_print(
+                "For more info see <https://docs.python.org/3/tutorial/modules.html#packages>"
+            )
         if PreCommitTool().is_used():
             if is_uv_used():
                 box_print(
@@ -300,8 +319,8 @@ class ImportLinterTool(Tool):
             msg = f"Unsupported file manager: {file_manager}"
             raise NotImplementedError(msg)
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        return [
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        return PreCommitConfig.from_single_repo(
             LocalRepo(
                 repo="local",
                 hooks=[
@@ -315,8 +334,10 @@ class ImportLinterTool(Tool):
                         always_run=True,
                     )
                 ],
-            )
-        ]
+            ),
+            requires_venv=True,
+            inform_how_to_use_on_migrate=False,
+        )
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".importlinter")]
@@ -334,6 +355,9 @@ class ImportLinterTool(Tool):
                 ),
             )
         ]
+
+    def get_rule_config(self) -> RuleConfig:
+        return RuleConfig(unmanaged_selected=["INP"], tests_unmanaged_ignored=["INP"])
 
 
 @functools.cache

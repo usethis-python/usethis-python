@@ -1,13 +1,6 @@
 import typer
 
-from usethis._config import offline_opt, quiet_opt, usethis_config
-from usethis._config_file import files_manager
-from usethis._core.rule import (
-    deselect_rules,
-    ignore_rules,
-    select_rules,
-    unignore_rules,
-)
+from usethis._options import offline_opt, quiet_opt
 
 remove_opt = typer.Option(
     False, "--remove", help="Remove the rule selection or ignore status."
@@ -24,12 +17,27 @@ def rule(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
+    from usethis._config import usethis_config
+    from usethis._config_file import files_manager
+    from usethis._console import err_print
+    from usethis._core.rule import (
+        deselect_rules,
+        ignore_rules,
+        select_rules,
+        unignore_rules,
+    )
+    from usethis.errors import UsethisError
+
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
-        if remove and not ignore:
-            deselect_rules(rules)
-        elif ignore and not remove:
-            ignore_rules(rules)
-        elif remove and ignore:
-            unignore_rules(rules)
-        else:
-            select_rules(rules)
+        try:
+            if remove and not ignore:
+                deselect_rules(rules)
+            elif ignore and not remove:
+                ignore_rules(rules)
+            elif remove and ignore:
+                unignore_rules(rules)
+            else:
+                select_rules(rules)
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None

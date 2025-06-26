@@ -9,16 +9,18 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
+      - 'mkdocs.yml'
   pull_request:
     paths-ignore:
       - 'docs/**'
       - '**/*.md'
+      - 'mkdocs.yml'
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   tests:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.codspeed && 'codspeed-macro' || matrix.os }}
     env:
       PYTHONIOENCODING: utf-8
     steps:
@@ -33,7 +35,7 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
         with:
-          version: "latest"
+          version: ${{ matrix.uv-version }}
           enable-cache: true
 
       - name: Set up Python
@@ -53,6 +55,7 @@ jobs:
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
+        if: matrix.pytest
         with:
           custom-arguments: --cov --junitxml=junit.xml -o junit_family=legacy
 
@@ -80,20 +83,34 @@ jobs:
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+        uv-version: ["latest"]
         resolution: ["highest"]
         codspeed: [false]
         codecov: [false]
-        pre-commit: [false]
+        pre-commit: [true]
+        pytest: [true]
         include:
           - os: "ubuntu-latest"
             python-version: "3.10"
+            uv-version: "0.5.29" # Sync with pyproject.toml
             resolution: "lowest-direct"
             codspeed: false
             codecov: false
             pre-commit: false
+            pytest: true
           - os: "ubuntu-latest"
             python-version: "3.13"
+            uv-version: "latest"
+            resolution: "highest"
+            codspeed: false
+            codecov: true
+            pre-commit: false
+            pytest: true
+          - os: "ubuntu-latest"
+            python-version: "3.13"
+            uv-version: "latest"
             resolution: "highest"
             codspeed: true
-            codecov: true
-            pre-commit: true
+            codecov: false
+            pre-commit: false
+            pytest: false

@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._config import usethis_config
 from usethis._config_file import (
     DotPytestINIManager,
     PytestINIManager,
@@ -72,7 +73,7 @@ class PytestTool(Tool):
             "addopts": [
                 "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
                 "-ra",  # summary report of all results (sp-repo-review)
-                # Not --showlocals", because it's too verbose in some cases (https://github.com/nathanjmcdougall/usethis-python/issues/527)
+                # Not --showlocals", because it's too verbose in some cases (https://github.com/usethis-python/usethis-python/issues/527)
                 "--strict-markers",  # fail on unknown markers (sp-repo-review)
                 "--strict-config",  # fail on unknown config (sp-repo-review)
             ],
@@ -151,7 +152,9 @@ class PytestTool(Tool):
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         # This is a variant of the "first" method
         config_spec = self.get_config_spec()
-        assert config_spec.resolution == "bespoke"
+        if config_spec.resolution != "bespoke":
+            # Something has gone badly wrong, perhaps in a subclass of PytestTool.
+            raise NotImplementedError
         # As per https://docs.pytest.org/en/stable/reference/customize.html#finding-the-rootdir
         # Files will only be matched for configuration if:
         # - pytest.ini: will always match and take precedence, even if empty.
@@ -168,7 +171,7 @@ class PytestTool(Tool):
             relative_path,
             file_manager,
         ) in config_spec.file_manager_by_relative_path.items():
-            path = Path.cwd() / relative_path
+            path = usethis_config.cpd() / relative_path
             if path.exists() and path.is_file():
                 if isinstance(file_manager, PyprojectTOMLManager):
                     if ["tool", "pytest", "ini_options"] in file_manager:
@@ -182,7 +185,7 @@ class PytestTool(Tool):
             relative_path,
             file_manager,
         ) in config_spec.file_manager_by_relative_path.items():
-            path = Path.cwd() / relative_path
+            path = usethis_config.cpd() / relative_path
             if (
                 path.exists()
                 and path.is_file()

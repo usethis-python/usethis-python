@@ -80,6 +80,26 @@ class TestInstallPreCommitHooks:
                 "ℹ This may take a minute or so while the hooks are downloaded.\r"  # noqa: RUF001
             )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_frozen_message_using_uv(
+        self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # Arrange
+        with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+            add_deps_to_group([Dependency(name="pre-commit")], "dev")
+            add_placeholder_hook()
+            capfd.readouterr()
+
+            # Act
+            install_pre_commit_hooks()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Run 'uv run pre-commit install' to register pre-commit.\n"
+            )
+
     def test_err(self, tmp_path: Path):
         # Act, Assert
         with change_cwd(tmp_path), pytest.raises(PreCommitInstallationError):

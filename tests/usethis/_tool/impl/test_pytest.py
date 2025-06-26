@@ -130,7 +130,7 @@ version = "0.1.0"
             )
             (tmp_path / "pytest.ini").touch()
 
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 add_placeholder_step_in_default(report_placeholder=False)
 
                 # Act

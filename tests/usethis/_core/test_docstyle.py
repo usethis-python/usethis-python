@@ -4,6 +4,7 @@ import pytest
 
 from usethis._config_file import files_manager
 from usethis._core.docstyle import use_docstyle
+from usethis._core.enums.docstyle import DocStyleEnum
 from usethis._core.tool import use_ruff
 from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._test import change_cwd
@@ -16,7 +17,7 @@ class TestUseDocstyle:
 
         # Act
         with change_cwd(tmp_path), files_manager():
-            use_docstyle("numpy")
+            use_docstyle(DocStyleEnum.numpy)
 
         # Assert
         contents = (tmp_path / "ruff.toml").read_text()
@@ -38,7 +39,7 @@ convention = "numpy"
 
         # Act
         with change_cwd(tmp_path), files_manager():
-            use_docstyle("google")
+            use_docstyle(DocStyleEnum.google)
 
         # Assert
         contents = (tmp_path / "ruff.toml").read_text()
@@ -66,7 +67,7 @@ convention = "google"
 
         # Act
         with change_cwd(tmp_path), files_manager():
-            use_docstyle("pep257")
+            use_docstyle(DocStyleEnum.pep257)
 
         # Assert
         contents = (tmp_path / "ruff.toml").read_text()
@@ -90,7 +91,7 @@ convention = "pep257"
             ensure_pyproject_toml()
 
             # Act
-            use_docstyle("numpy")
+            use_docstyle(DocStyleEnum.numpy)
 
         # Assert
         contents = (tmp_path / "pyproject.toml").read_text()
@@ -109,7 +110,7 @@ select = ["D123"]
 
         # Act
         with change_cwd(tmp_path), files_manager():
-            use_docstyle("numpy")
+            use_docstyle(DocStyleEnum.numpy)
 
         # Assert
         contents = (tmp_path / "ruff.toml").read_text()
@@ -136,7 +137,7 @@ select = ["ALL"]
 
         # Act
         with change_cwd(tmp_path), files_manager():
-            use_docstyle("numpy")
+            use_docstyle(DocStyleEnum.numpy)
 
         # Assert
         contents = (tmp_path / "ruff.toml").read_text()
@@ -164,7 +165,7 @@ convention = "numpy"
 
         # Act
         with change_cwd(tmp_path), files_manager():
-            use_docstyle("numpy")
+            use_docstyle(DocStyleEnum.numpy)
 
         # Assert
         assert contents == (tmp_path / "ruff.toml").read_text()
@@ -175,7 +176,7 @@ convention = "numpy"
 
         # Act
         with change_cwd(tmp_path), files_manager():
-            use_docstyle("numpy")
+            use_docstyle(DocStyleEnum.numpy)
             use_ruff()
 
         # Assert
@@ -189,5 +190,8 @@ select = ["D2", "D3", "D4", "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I"
 ignore = ["PLR2004", "SIM108"]
 [lint.pydocstyle]
 convention = "numpy"
+
+[format]
+docstring-code-format = true
 """
         )

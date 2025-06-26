@@ -1,19 +1,19 @@
-from typing import Literal
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from usethis._core.tool import use_ruff
 from usethis._tool.impl.ruff import RuffTool
-from usethis.errors import UsethisError
+
+if TYPE_CHECKING:
+    from usethis._core.enums.docstyle import DocStyleEnum
 
 
-class UnknownDocstringStyleError(ValueError, UsethisError):
-    """Exception raised for unknown docstring styles."""
-
-
-def use_docstyle(style: Literal["numpy", "google", "pep257"]) -> None:
+def use_docstyle(style: DocStyleEnum) -> None:
     if not RuffTool().is_used():
         use_ruff(minimal=True)
 
-    RuffTool().set_docstyle(style)
+    RuffTool().set_docstyle(style.value)
 
     if not RuffTool()._are_pydocstyle_rules_selected():
         RuffTool().select_rules(["D2", "D3", "D4"])

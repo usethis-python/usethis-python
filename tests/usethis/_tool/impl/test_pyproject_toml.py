@@ -67,7 +67,7 @@ select = ["E", "PT"]
 
             if not usethis_config.offline:
                 # Act
-                result = requests.head(url)
+                result = requests.head(url, timeout=5)
 
                 # Assert
                 assert result.status_code == 200

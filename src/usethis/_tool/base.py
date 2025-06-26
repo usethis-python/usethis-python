@@ -1,11 +1,12 @@
+from __future__ import annotations
+
 from abc import abstractmethod
-from pathlib import Path
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
 
-from usethis._console import tick_print
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
+from usethis._config import usethis_config
+from usethis._console import tick_print, warn_print
 from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_step_in_default,
     bitbucket_steps_are_equivalent,
@@ -20,16 +21,27 @@ from usethis._integrations.pre_commit.hooks import (
     hook_ids_are_equivalent,
     remove_hook,
 )
-from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
 from usethis._integrations.uv.deps import (
-    Dependency,
     add_deps_to_group,
     is_dep_in_any_group,
     remove_deps_from_group,
 )
-from usethis._io import KeyValueFileManager
-from usethis._tool.config import ConfigSpec, NoConfigValue, ResolutionT
-from usethis._tool.rule import Rule, RuleConfig
+from usethis._tool.config import ConfigSpec, NoConfigValue
+from usethis._tool.pre_commit import PreCommitConfig
+from usethis._tool.rule import RuleConfig
+from usethis.errors import FileDecodeError
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
+    from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
+    from usethis._integrations.uv.deps import (
+        Dependency,
+    )
+    from usethis._io import KeyValueFileManager
+    from usethis._tool.config import ResolutionT
+    from usethis._tool.rule import Rule
 
 
 class Tool(Protocol):
@@ -81,9 +93,9 @@ class Tool(Protocol):
             file_manager_by_relative_path={}, resolution="first", config_items=[]
         )
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
-        """Get the pre-commit repository configurations for the tool."""
-        return []
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        """Get the pre-commit configurations for the tool."""
+        return PreCommitConfig(repo_configs=[], inform_how_to_use_on_migrate=False)
 
     def get_managed_files(self) -> list[Path]:
         """Get (relative) paths to files managed by (solely) this tool."""
@@ -97,26 +109,44 @@ class Tool(Protocol):
         2. Whether any of the tool's managed files are in the project.
         3. Whether any of the tool's managed config file sections are present.
         """
-        for file in self.get_managed_files():
-            if file.exists() and file.is_file():
-                return True
-        for dep in self.get_dev_deps(unconditional=True):
-            if is_dep_in_any_group(dep):
-                return True
-        for dep in self.get_test_deps(unconditional=True):
-            if is_dep_in_any_group(dep):
-                return True
-        config_spec = self.get_config_spec()
-        for config_item in config_spec.config_items:
-            if not config_item.managed:
-                continue
+        decode_err_by_name: dict[str, FileDecodeError] = {}
+        _is_used = False
 
-            for path, entry in config_item.root.items():
-                file_manager = config_spec.file_manager_by_relative_path[path]
-                if file_manager.__contains__(entry.keys):
-                    return True
+        _is_used = any(
+            file.exists() and file.is_file() for file in self.get_managed_files()
+        )
 
-        return False
+        if not _is_used:
+            try:
+                _is_used = any(
+                    is_dep_in_any_group(dep)
+                    for dep in self.get_dev_deps(unconditional=True)
+                )
+            except FileDecodeError as err:
+                decode_err_by_name[err.name] = err
+
+        if not _is_used:
+            try:
+                _is_used = any(
+                    is_dep_in_any_group(dep)
+                    for dep in self.get_test_deps(unconditional=True)
+                )
+            except FileDecodeError as err:
+                decode_err_by_name[err.name] = err
+
+        if not _is_used:
+            try:
+                _is_used = self.is_config_present()
+            except FileDecodeError as err:
+                decode_err_by_name[err.name] = err
+
+        for name, decode_err in decode_err_by_name.items():
+            warn_print(decode_err)
+            warn_print(
+                f"Assuming '{name}' contains no evidence of {self.name} being used."
+            )
+
+        return _is_used
 
     def add_dev_deps(self) -> None:
         add_deps_to_group(self.get_dev_deps(), "dev")
@@ -130,7 +160,11 @@ class Tool(Protocol):
     def remove_test_deps(self) -> None:
         remove_deps_from_group(self.get_test_deps(unconditional=True), "test")
 
-    def add_pre_commit_repo_configs(self) -> None:
+    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+        """Get the pre-commit repository definitions for the tool."""
+        return [c.repo for c in self.get_pre_commit_config().repo_configs]
+
+    def add_pre_commit_config(self) -> None:
         """Add the tool's pre-commit configuration."""
         repos = self.get_pre_commit_repos()
 
@@ -173,6 +207,35 @@ class Tool(Protocol):
                 if hook.id in get_hook_ids():
                     remove_hook(hook.id)
 
+    def migrate_config_to_pre_commit(self) -> None:
+        """Migrate the tool's configuration to pre-commit."""
+        if self.is_used():
+            pre_commit_config = self.get_pre_commit_config()
+            # For tools that don't require a venv for their pre-commits, we will
+            # remove the dependency as an explicit dependency, and make it
+            # pre-commit only.
+            if not pre_commit_config.any_require_venv:
+                self.remove_dev_deps()
+
+            # We're migrating, so sometimes we might need to inform the user about the
+            # new way to do things.
+            if pre_commit_config.inform_how_to_use_on_migrate:
+                self.print_how_to_use()
+
+    def migrate_config_from_pre_commit(self) -> None:
+        """Migrate the tool's configuration from pre-commit."""
+        if self.is_used():
+            pre_commit_config = self.get_pre_commit_config()
+            # For tools that don't require a venv for their pre-commits, we will
+            # need to add the dependency explicitly.
+            if not pre_commit_config.any_require_venv:
+                self.add_dev_deps()
+
+            # We're migrating, so sometimes we might need to inform the user about
+            # the new way to do things.
+            if pre_commit_config.inform_how_to_use_on_migrate:
+                self.print_how_to_use()
+
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         """Get relative paths to all active configuration files."""
         config_spec = self.get_config_spec()
@@ -195,13 +258,13 @@ class Tool(Protocol):
                 relative_path,
                 file_manager,
             ) in file_manager_by_relative_path.items():
-                path = Path.cwd() / relative_path
+                path = usethis_config.cpd() / relative_path
                 if path.exists() and path.is_file():
                     return {file_manager}
         elif resolution == "first_content":
             config_spec = self.get_config_spec()
             for relative_path, file_manager in file_manager_by_relative_path.items():
-                path = Path.cwd() / relative_path
+                path = usethis_config.cpd() / relative_path
                 if path.exists() and path.is_file():
                     # We check whether any of the managed config exists
                     for config_item in config_spec.config_items:
@@ -233,6 +296,32 @@ class Tool(Protocol):
     def preferred_file_manager(self) -> KeyValueFileManager:
         """If there is no currently active config file, this is the preferred one."""
         return PyprojectTOMLManager()
+
+    def is_config_present(self) -> bool:
+        """Whether any of the tool's managed config sections are present."""
+        return self._is_config_spec_present(self.get_config_spec())
+
+    def _is_config_spec_present(self, config_spec: ConfigSpec) -> bool:
+        """Check whether a bespoke config spec is present.
+
+        The reason for splitting this method out from the overall `is_config_present`
+        method is to allow for checking a `config_spec` different from the main
+        config_spec (e.g. a subset of it to distinguish between two different aspects
+        of a tool, e.g. Ruff's linter vs. formatter configuration sections).
+        """
+        for config_item in config_spec.config_items:
+            if not config_item.managed:
+                continue
+
+            for relative_path, entry in config_item.root.items():
+                file_manager = config_spec.file_manager_by_relative_path[relative_path]
+                if not (file_manager.path.exists() and file_manager.path.is_file()):
+                    continue
+
+                if file_manager.__contains__(entry.keys):
+                    return True
+
+        return False
 
     def add_configs(self) -> None:
         """Add the tool's configuration sections."""
@@ -322,15 +411,17 @@ class Tool(Protocol):
         Note, this does not require knowledge of the config file resolution methodology,
         since all files' configs are removed regardless of whether they are in use.
         """
+        config_spec = self.get_config_spec()
+
         first_removal = True
-        for config_item in self.get_config_spec().config_items:
+        for config_item in config_spec.config_items:
             if not config_item.managed:
                 continue
 
             for (
                 relative_path,
                 file_manager,
-            ) in self.get_config_spec().file_manager_by_relative_path.items():
+            ) in config_spec.file_manager_by_relative_path.items():
                 if file_manager.path in config_item.paths:
                     if not (file_manager.path.exists() and file_manager.path.is_file()):
                         # This is mostly for the sake of the first_removal message
@@ -355,7 +446,9 @@ class Tool(Protocol):
         If no files exist, this method has no effect.
         """
         for file in self.get_managed_files():
-            if (Path.cwd() / file).exists() and (Path.cwd() / file).is_file():
+            if (usethis_config.cpd() / file).exists() and (
+                usethis_config.cpd() / file
+            ).is_file():
                 tick_print(f"Removing '{file}'.")
                 file.unlink()
 

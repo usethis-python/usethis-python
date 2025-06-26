@@ -10,8 +10,9 @@ import tomlkit.api
 import tomlkit.items
 from pydantic import TypeAdapter
 from tomlkit import TOMLDocument
+from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
-from typing_extensions import Never, assert_never
+from typing_extensions import assert_never
 
 from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
@@ -30,13 +31,13 @@ from usethis._io import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Collection, Sequence
     from pathlib import Path
     from typing import ClassVar
 
     from tomlkit.container import Container
     from tomlkit.items import Item
-    from typing_extensions import Self
+    from typing_extensions import Never, Self
 
     from usethis._io import Key
 
@@ -214,13 +215,18 @@ class TOMLFileManager(KeyValueFileManager):
                 del d[key]
         else:
             with contextlib.suppress(KeyError):
-                # There is a strange behaviour (bug?) in tomlkit where deleting a key
-                # has two separate lines:
+                # N.B. There was a strange behaviour (bug?) in tomlkit where deleting a
+                # key has two separate lines:
                 # self._value.remove(key)  # noqa: ERA001
                 # dict.__delitem__(self, key)  # noqa: ERA001
                 # but it's not clear why there's this duplicate and it causes a KeyError
                 # in some cases.
-                d.remove(keys[-1])
+                if isinstance(d, OutOfOrderTableProxy):
+                    # N.B. this case isn't expected based on the type annotations but
+                    # it is possible in practice.
+                    d.__delitem__(keys[-1])
+                else:
+                    d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
             for idx in range(len(keys) - 1):
@@ -272,7 +278,7 @@ class TOMLFileManager(KeyValueFileManager):
 
         self.commit(toml_document)
 
-    def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+    def remove_from_list(self, *, keys: Sequence[Key], values: Collection[Any]) -> None:
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
@@ -328,7 +334,7 @@ def _set_value_in_existing(
         assert isinstance(toml_document, TOMLDocument)
     else:
         # Note that this alternative logic is just to avoid a bug:
-        # https://github.com/nathanjmcdougall/usethis-python/issues/507
+        # https://github.com/usethis-python/usethis-python/issues/507
         TypeAdapter(dict).validate_python(current_container)
         assert isinstance(current_container, dict)
 
@@ -336,7 +342,7 @@ def _set_value_in_existing(
 
         if len(current_keys) == 1:
             # In this case, we need to "seed" the section to avoid another bug:
-            # https://github.com/nathanjmcdougall/usethis-python/issues/558
+            # https://github.com/usethis-python/usethis-python/issues/558
 
             placeholder = {keys[0]: {keys[1]: {}}}
             toml_document = mergedeep.merge(toml_document, placeholder)  # type: ignore[reportArgumentType]

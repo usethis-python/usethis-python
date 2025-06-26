@@ -4,7 +4,6 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
-from usethis._core.tool import use_codespell
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._integrations.pre_commit.schema import UriRepo
@@ -15,19 +14,20 @@ from usethis._tool.impl.codespell import CodespellTool
 class TestCodespellTool:
     class TestPrintHowToUse:
         def test_pre_commit_used_but_not_configured(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # https://github.com/usethis-python/usethis-python/issues/802
 
             # Arrange
-            with change_cwd(uv_init_dir), files_manager():
-                use_codespell()
-            capfd.readouterr()
-
-            (uv_init_dir / ".pre-commit-config.yaml").touch()
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.codespell]
+"""
+            )
+            (tmp_path / ".pre-commit-config.yaml").touch()
 
             # Act
-            with change_cwd(uv_init_dir), files_manager():
+            with change_cwd(tmp_path), files_manager():
                 CodespellTool().print_how_to_use()
 
             # Assert

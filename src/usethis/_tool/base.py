@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from enum import Enum
 from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
@@ -42,6 +43,13 @@ if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ResolutionT
     from usethis._tool.rule import Rule
+
+
+class ToolInstallMethodEnum(Enum):
+    """An enum giving the method used to install a particular tool."""
+
+    dev_dependency = "dev dependency"
+    pre_commit = "pre-commit"
 
 
 class Tool(Protocol):
@@ -451,6 +459,10 @@ class Tool(Protocol):
             ).is_file():
                 tick_print(f"Removing '{file}'.")
                 file.unlink()
+
+    def get_install_method(self) -> ToolInstallMethodEnum | None:
+        """Infer the method used to install the tool, return None is uninstalled."""
+        return None
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         """Get the Bitbucket pipeline step associated with this tool."""

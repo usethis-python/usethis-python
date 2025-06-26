@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from usethis._config_file import (
-    CodespellRCManager,
-)
+from typing_extensions import assert_never
+
+from usethis._config_file import CodespellRCManager
 from usethis._console import box_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -13,17 +13,11 @@ from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
-from usethis._integrations.pre_commit.schema import (
-    HookDefinition,
-    UriRepo,
-)
-from usethis._integrations.uv.deps import (
-    Dependency,
-)
+from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
+from usethis._integrations.uv.deps import Dependency
 from usethis._integrations.uv.used import is_uv_used
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolInstallMethodEnum
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
-from usethis._tool.impl.pre_commit import PreCommitTool
 from usethis._tool.pre_commit import PreCommitConfig
 
 
@@ -34,7 +28,8 @@ class CodespellTool(Tool):
         return "Codespell"
 
     def print_how_to_use(self) -> None:
-        if PreCommitTool().is_used():
+        install_method = self.get_install_method()
+        if install_method is ToolInstallMethodEnum.pre_commit:
             if is_uv_used():
                 box_print(
                     "Run 'uv run pre-commit run codespell --all-files' to run the Codespell spellchecker."
@@ -43,10 +38,16 @@ class CodespellTool(Tool):
                 box_print(
                     "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
                 )
-        elif is_uv_used():
-            box_print("Run 'uv run codespell' to run the Codespell spellchecker.")
+        elif (
+            install_method is ToolInstallMethodEnum.dev_dependency
+            or install_method is None
+        ):
+            if is_uv_used():
+                box_print("Run 'uv run codespell' to run the Codespell spellchecker.")
+            else:
+                box_print("Run 'codespell' to run the Codespell spellchecker.")
         else:
-            box_print("Run 'codespell' to run the Codespell spellchecker.")
+            assert_never(install_method)
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="codespell")]

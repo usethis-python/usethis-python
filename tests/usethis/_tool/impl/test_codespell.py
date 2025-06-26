@@ -33,9 +33,7 @@ class TestCodespellTool:
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert out == (
-                "✔ Run 'uv run codespell' to run the Codespell spellchecker.\n"
-            )
+            assert out == ("☐ Run 'codespell' to run the Codespell spellchecker.\n")
 
     def test_latest_version(self):
         (config,) = CodespellTool().get_pre_commit_config().repo_configs

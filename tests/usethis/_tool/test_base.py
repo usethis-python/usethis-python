@@ -404,6 +404,25 @@ class TestTool:
                 "\n⚠ Assuming 'setup.cfg' contains no evidence of my_tool being used.\n"
             )
 
+    class TestIsDeclaredAsDep:
+        def test_dev_deps(self, uv_init_dir: Path):
+            # Arrange
+            tool = MyTool()
+
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                add_deps_to_group(
+                    [
+                        Dependency(name="black"),
+                    ],
+                    "dev",
+                )
+
+                # Act
+                result = tool.is_declared_as_dep()
+
+            # Assert
+            assert result
+
     class TestAddPreCommitConfig:
         def test_no_repo_configs(self, uv_init_dir: Path):
             # Arrange

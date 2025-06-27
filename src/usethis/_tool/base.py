@@ -105,7 +105,7 @@ class Tool(Protocol):
         """Whether the tool is being used in the current project.
 
         Three heuristics are used by default:
-        1. Whether any of the tool's characteristic dev dependencies are in the project.
+        1. Whether any of the tool's characteristic dependencies are in the project.
         2. Whether any of the tool's managed files are in the project.
         3. Whether any of the tool's managed config file sections are present.
         """
@@ -118,19 +118,7 @@ class Tool(Protocol):
 
         if not _is_used:
             try:
-                _is_used = any(
-                    is_dep_in_any_group(dep)
-                    for dep in self.get_dev_deps(unconditional=True)
-                )
-            except FileDecodeError as err:
-                decode_err_by_name[err.name] = err
-
-        if not _is_used:
-            try:
-                _is_used = any(
-                    is_dep_in_any_group(dep)
-                    for dep in self.get_test_deps(unconditional=True)
-                )
+                _is_used = self.is_declared_as_dep()
             except FileDecodeError as err:
                 decode_err_by_name[err.name] = err
 
@@ -147,6 +135,29 @@ class Tool(Protocol):
             )
 
         return _is_used
+
+    def is_declared_as_dep(self) -> bool:
+        """Whether the tool is declared as a dependency in the project.
+
+        This is inferred based on whether any of the tools characteristic dependencies
+        are declared in the project.
+        """
+        # N.B. currently doesn't check core dependencies nor extras.
+        # Only PEP735 dependency groups.
+        # See https://github.com/usethis-python/usethis-python/issues/809
+        _is_declared = False
+
+        _is_declared = any(
+            is_dep_in_any_group(dep) for dep in self.get_dev_deps(unconditional=True)
+        )
+
+        if not _is_declared:
+            _is_declared = any(
+                is_dep_in_any_group(dep)
+                for dep in self.get_test_deps(unconditional=True)
+            )
+
+        return _is_declared
 
     def add_dev_deps(self) -> None:
         add_deps_to_group(self.get_dev_deps(), "dev")

@@ -5,10 +5,7 @@ from typing import TYPE_CHECKING, Literal
 
 from typing_extensions import assert_never
 
-from usethis._config_file import (
-    DotRuffTOMLManager,
-    RuffTOMLManager,
-)
+from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import box_print, tick_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -23,9 +20,7 @@ from usethis._integrations.pre_commit.schema import (
     Language,
     LocalRepo,
 )
-from usethis._integrations.uv.deps import (
-    Dependency,
-)
+from usethis._integrations.uv.deps import Dependency
 from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import (
@@ -72,21 +67,44 @@ class RuffTool(Tool):
     def name(self) -> str:
         return "Ruff"
 
-    def print_how_to_use(self) -> None:
-        if is_uv_used():
-            if self.is_linter_used():
-                box_print(
-                    "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
-                )
-            if self.is_formatter_used():
-                box_print("Run 'uv run ruff format' to run the Ruff formatter.")
+    def print_how_to_use(self) -> None:  # noqa: PLR0912
+        install_method = self.get_install_method()
+        if install_method == "pre-commit":
+            if is_uv_used():
+                if self.is_linter_used():
+                    box_print(
+                        "Run 'uv run pre-commit run ruff --all-files' to run the Ruff linter."
+                    )
+                if self.is_formatter_used():
+                    box_print(
+                        "Run 'uv run pre-commit run ruff-format' to run the Ruff formatter."
+                    )
+            else:
+                if self.is_linter_used():
+                    box_print(
+                        "Run 'pre-commit run ruff --all-files' to run the Ruff linter."
+                    )
+                if self.is_formatter_used():
+                    box_print(
+                        "Run 'pre-commit run ruff-format' to run the Ruff formatter."
+                    )
+        elif install_method == "devdep" or install_method is None:
+            if is_uv_used():
+                if self.is_linter_used():
+                    box_print(
+                        "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
+                    )
+                if self.is_formatter_used():
+                    box_print("Run 'uv run ruff format' to run the Ruff formatter.")
+            else:
+                if self.is_linter_used():
+                    box_print(
+                        "Run 'ruff check --fix' to run the Ruff linter with autofixes."
+                    )
+                if self.is_formatter_used():
+                    box_print("Run 'ruff format' to run the Ruff formatter.")
         else:
-            if self.is_linter_used():
-                box_print(
-                    "Run 'ruff check --fix' to run the Ruff linter with autofixes."
-                )
-            if self.is_formatter_used():
-                box_print("Run 'ruff format' to run the Ruff formatter.")
+            assert_never(install_method)
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ruff")]

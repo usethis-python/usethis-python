@@ -37,6 +37,7 @@ from usethis._tool.rule import RuleConfig
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ResolutionT
+    from usethis._tool.rule import Rule
 
 
 IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
@@ -57,7 +58,7 @@ class ImportLinterTool(Tool):
             return super().is_used()
 
     def print_how_to_use(self) -> None:
-        if not RuffTool().is_used():
+        if not _is_inp_rule_selected():
             # If Ruff is used, we enable the INP rules instead.
             info_print("Ensure '__init__.py' files are used in your packages.")
             info_print(
@@ -354,3 +355,11 @@ class ImportLinterTool(Tool):
 def _importlinter_warn_no_packages_found(name: str) -> None:
     warn_print("Could not find any importable packages.")
     warn_print(f"Assuming the package name is {name}.")
+
+
+def _is_inp_rule_selected() -> bool:
+    return any(_is_inp_rule(rule) for rule in RuffTool().get_selected_rules())
+
+
+def _is_inp_rule(rule: Rule) -> bool:
+    return rule.startswith("INP") and (not rule[3:] or rule[3:].isdigit())

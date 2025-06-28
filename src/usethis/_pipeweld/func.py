@@ -297,7 +297,7 @@ def _flatten_partition(partition: Partition) -> Series:
         partition.postrequisite_component,
     )
     if component is None:
-        msg = "Flatten failed: no components"
+        msg = "Flatten failed: no components."
         raise ValueError(msg)
     return component
 
@@ -584,7 +584,7 @@ def get_endpoint(component: str | Series | DepGroup | Parallel) -> str:
             except ValueError:
                 pass
 
-        msg = """No endpoints are defined for a Series with no steps"""
+        msg = "No endpoints are defined for a Series with no steps."
         raise ValueError(msg)
     elif isinstance(component, Parallel):
         endpoints = []
@@ -594,7 +594,7 @@ def get_endpoint(component: str | Series | DepGroup | Parallel) -> str:
         # Any endpoint will do so choose the first one
         # alphabetically
         if not endpoints:
-            msg = """No endpoints are defined for a Parallel block with no steps"""
+            msg = "No endpoints are defined for a Parallel block with no steps."
             raise ValueError(msg)
         return sorted(endpoints)[0]
     elif isinstance(component, DepGroup):

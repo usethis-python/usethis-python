@@ -203,7 +203,7 @@ class PytestTool(Tool):
             msg = (
                 f"The preferred file manager '{preferred_file_manager}' is not "
                 f"among the file managers '{file_managers}' for the tool "
-                f"'{self.name}'"
+                f"'{self.name}'."
             )
             raise NotImplementedError(msg)
         return {preferred_file_manager}

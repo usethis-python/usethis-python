@@ -307,7 +307,7 @@ class ImportLinterTool(Tool):
         elif isinstance(file_manager, SetupCFGManager | DotImportLinterManager):
             return ["importlinter", "root_package"] in file_manager
         else:
-            msg = f"Unsupported file manager: {file_manager}"
+            msg = f"Unsupported file manager: '{file_manager}'."
             raise NotImplementedError(msg)
 
     def get_pre_commit_config(self) -> PreCommitConfig:

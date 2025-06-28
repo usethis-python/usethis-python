@@ -132,7 +132,7 @@ class UsethisFileManager(Generic[DocumentT]):
         try:
             self._content = self._parse_content(self.path.read_text())
         except FileNotFoundError:
-            msg = f"'{self.name}' not found in the current directory at '{self.path}'"
+            msg = f"'{self.name}' not found in the current directory at '{self.path}'."
             raise FileNotFoundError(msg) from None
 
     @abstractmethod
@@ -157,7 +157,7 @@ class UsethisFileManager(Generic[DocumentT]):
         if not self.is_locked():
             msg = (
                 f"The '{self.name}' file has not been opened yet. Please enter the "
-                f"context manager, e.g. 'with {self.__class__.__name__}():'"
+                f"context manager, e.g. 'with {self.__class__.__name__}():'."
             )
             raise UnexpectedFileIOError(msg)
 

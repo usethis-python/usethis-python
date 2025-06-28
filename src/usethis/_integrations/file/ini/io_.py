@@ -56,7 +56,7 @@ class INIFileManager(KeyValueFileManager):
         except UnexpectedFileIOError as err:
             raise UnexpectedINIIOError(err) from None
         except configparser.ParsingError as err:
-            msg = f"Failed to decode '{self.name}': {err}"
+            msg = f"Failed to decode '{self.name}':\n{err}"
             raise INIDecodeError(msg) from None
 
     def _dump_content(self) -> str:
@@ -142,7 +142,7 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{print_keys(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'."
             )
             raise KeyError(msg)
 
@@ -174,7 +174,7 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{print_keys(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'."
             )
             raise ININestingError(msg)
 
@@ -187,7 +187,7 @@ class INIFileManager(KeyValueFileManager):
         root_dict = value
 
         if any(root) and not exists_ok:
-            msg = "The INI file already has content at the root level"
+            msg = "The INI file already has content at the root level."
             raise INIValueAlreadySetError(msg)
 
         # We need to remove section that are not in the new dict
@@ -237,7 +237,9 @@ class INIFileManager(KeyValueFileManager):
 
         if section_key in root:
             if not exists_ok:
-                msg = f"The INI file already has content at the section '{section_key}'"
+                msg = (
+                    f"The INI file already has content at the section '{section_key}'."
+                )
                 raise INIValueAlreadySetError(msg)
 
             if not isinstance(section_key, str):
@@ -282,7 +284,7 @@ class INIFileManager(KeyValueFileManager):
         if root.has_option(section=section_key, option=option_key) and not exists_ok:
             msg = (
                 f"The INI file already has content at the section '{section_key}' "
-                f"and option '{option_key}'"
+                f"and option '{option_key}'."
             )
             raise INIValueAlreadySetError(msg)
 
@@ -371,14 +373,12 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{print_keys(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'."
             )
             raise ININestingError(msg)
 
         if not seqs:
-            msg = (
-                f"INI file '{self.name}' does not contain the keys '{print_keys(keys)}'"
-            )
+            msg = f"INI file '{self.name}' does not contain the keys '{print_keys(keys)}'."
             raise INIValueMissingError(msg)
 
         for seq in seqs:
@@ -412,12 +412,12 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{print_keys(strkeys)}'"
+                f"'{self.name}' was attempted at '{print_keys(strkeys)}'."
             )
             raise ININestingError(msg)
 
         if not removed:
-            msg = f"INI file '{self.name}' does not contain the keys '{print_keys(strkeys)}'"
+            msg = f"INI file '{self.name}' does not contain the keys '{print_keys(strkeys)}'."
             raise INIValueMissingError(msg)
 
         self.commit(root)
@@ -432,13 +432,13 @@ class INIFileManager(KeyValueFileManager):
         if len(keys) == 0:
             msg = (
                 f"INI files do not support lists at the root level, whereas access to "
-                f"'{self.name}' was attempted at '{print_keys(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'."
             )
             raise InvalidINITypeError(msg)
         elif len(keys) == 1:
             msg = (
                 f"INI files do not support lists at the section level, whereas access "
-                f"to '{self.name}' was attempted at '{print_keys(keys)}'"
+                f"to '{self.name}' was attempted at '{print_keys(keys)}'."
             )
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
@@ -449,7 +449,7 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{print_keys(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'."
             )
             raise ININestingError(msg)
 
@@ -509,13 +509,13 @@ class INIFileManager(KeyValueFileManager):
         if len(keys) == 0:
             msg = (
                 f"INI files do not support lists at the root level, whereas access to "
-                f"'{self.name}' was attempted at '{print_keys(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'."
             )
             raise InvalidINITypeError(msg)
         elif len(keys) == 1:
             msg = (
                 f"INI files do not support lists at the section level, whereas access "
-                f"to '{self.name}' was attempted at '{print_keys(keys)}'"
+                f"to '{self.name}' was attempted at '{print_keys(keys)}'."
             )
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
@@ -526,7 +526,7 @@ class INIFileManager(KeyValueFileManager):
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
-                f"'{self.name}' was attempted at '{print_keys(keys)}'"
+                f"'{self.name}' was attempted at '{print_keys(keys)}'."
             )
             raise ININestingError(msg)
 

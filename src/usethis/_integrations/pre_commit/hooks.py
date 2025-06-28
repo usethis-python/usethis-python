@@ -49,7 +49,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
         (hook_config,) = repo.hooks
 
         if hook_config.id is None:
-            msg = "Hook ID must be specified"
+            msg = "The hook ID must be specified."
             raise ValueError(msg)
 
         # Ordered list of the hooks already in the file
@@ -72,7 +72,7 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
             try:
                 hook_idx = _HOOK_ORDER.index(hook_config.id)
             except ValueError:
-                msg = f"Hook '{hook_config.id}' not recognized"
+                msg = f"Hook '{hook_config.id}' not recognized."
                 raise NotImplementedError(msg) from None
             precedents = _HOOK_ORDER[:hook_idx]
             successors = _HOOK_ORDER[hook_idx + 1 :]

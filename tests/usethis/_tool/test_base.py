@@ -398,7 +398,8 @@ class TestTool:
             out, err = capsys.readouterr()
             assert not err
             assert out == (
-                r"⚠ Failed to decode 'setup.cfg': File contains no section headers."
+                "⚠ Failed to decode 'setup.cfg':\n"
+                "File contains no section headers."
                 "\nfile: '<string>', line: 1\n"
                 r"'[tool.my_tool\n'"
                 "\n⚠ Assuming 'setup.cfg' contains no evidence of my_tool being used.\n"

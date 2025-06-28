@@ -423,6 +423,36 @@ class TestTool:
             # Assert
             assert result
 
+    class TestIsPreCommitConfigPresent:
+        def test_no_file(self, tmp_path: Path):
+            # Arrange
+            tool = MyTool()
+
+            # Act
+            with change_cwd(tmp_path):
+                result = tool.is_pre_commit_config_present()
+
+            # Assert
+            assert not result
+
+        def test_config_present(self, tmp_path: Path):
+            # Arrange
+            tool = MyTool()
+
+            # Create a pre-commit config file
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: local
+    hooks:
+      - id: deptry
+""")
+            # Act
+            with change_cwd(tmp_path):
+                result = tool.is_pre_commit_config_present()
+
+            # Assert
+            assert result
+
     class TestAddPreCommitConfig:
         def test_no_repo_configs(self, uv_init_dir: Path):
             # Arrange

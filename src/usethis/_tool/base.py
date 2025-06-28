@@ -133,7 +133,7 @@ class Tool(Protocol):
         if not _is_used:
             try:
                 _is_used = self.is_pre_commit_config_present()
-            except FileDecodeError as err:
+            except FileConfigError as err:
                 decode_err_by_name[err.name] = err
 
         for name, decode_err in decode_err_by_name.items():

@@ -3,15 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from typing_extensions import assert_never
+
 from usethis._console import box_print
-from usethis._integrations.pre_commit.schema import (
-    HookDefinition,
-    Language,
-    LocalRepo,
-)
+from usethis._integrations.pre_commit.schema import HookDefinition, Language, LocalRepo
 from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
-from usethis._tool.impl.pre_commit import PreCommitTool
 from usethis._tool.pre_commit import PreCommitConfig
 
 if TYPE_CHECKING:
@@ -28,14 +25,15 @@ class RequirementsTxtTool(Tool):
         return "requirements.txt"
 
     def print_how_to_use(self) -> None:
-        if PreCommitTool().is_used():
+        install_method = self.get_install_method()
+        if install_method == "pre-commit":
             if is_uv_used():
                 box_print(
                     "Run 'uv run pre-commit run uv-export' to write 'requirements.txt'."
                 )
             else:
                 box_print("Run 'pre-commit run uv-export' to write 'requirements.txt'.")
-        else:
+        elif install_method == "devdep" or install_method is None:
             if not is_uv_used():
                 # This is a very crude approach as a temporary measure.
                 box_print("Install uv to use 'uv export'.")
@@ -43,6 +41,8 @@ class RequirementsTxtTool(Tool):
             box_print(
                 "Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
             )
+        else:
+            assert_never(install_method)
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return []

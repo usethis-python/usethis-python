@@ -125,13 +125,14 @@ class Tool(Protocol):
 
         if not _is_used:
             try:
-                _is_used = self.is_pre_commit_config_present()
+                _is_used = self.is_config_present()
             except FileDecodeError as err:
                 decode_err_by_name[err.name] = err
 
+        # Do this last since the YAML parsing is expensive.
         if not _is_used:
             try:
-                _is_used = self.is_config_present()
+                _is_used = self.is_pre_commit_config_present()
             except FileDecodeError as err:
                 decode_err_by_name[err.name] = err
 

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from enum import Enum
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol
 
 from typing_extensions import assert_never
 
@@ -43,13 +42,6 @@ if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ResolutionT
     from usethis._tool.rule import Rule
-
-
-class ToolInstallMethodEnum(Enum):
-    """An enum giving the method used to install a particular tool."""
-
-    dev_dependency = "dev dependency"
-    pre_commit = "pre-commit"
 
 
 class Tool(Protocol):
@@ -182,6 +174,24 @@ class Tool(Protocol):
     def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
         """Get the pre-commit repository definitions for the tool."""
         return [c.repo for c in self.get_pre_commit_config().repo_configs]
+
+    def is_pre_commit_config_present(self) -> bool:
+        """Whether the tool's pre-commit configuration is present."""
+        repo_configs = self.get_pre_commit_repos()
+
+        for repo_config in repo_configs:
+            if repo_config.hooks is None:
+                continue
+
+            # Check if any of the hooks are present.
+            for hook in repo_config.hooks:
+                if any(
+                    hook_ids_are_equivalent(hook.id, hook_id)
+                    for hook_id in get_hook_ids()
+                ):
+                    return True
+
+        return False
 
     def add_pre_commit_config(self) -> None:
         """Add the tool's pre-commit configuration."""
@@ -471,8 +481,13 @@ class Tool(Protocol):
                 tick_print(f"Removing '{file}'.")
                 file.unlink()
 
-    def get_install_method(self) -> ToolInstallMethodEnum | None:
+    def get_install_method(self) -> Literal["pre-commit", "devdep"] | None:
         """Infer the method used to install the tool, return None is uninstalled."""
+        if self.is_declared_as_dep():
+            return "devdep"
+
+        if self.is_pre_commit_config_present():
+            return "pre-commit"
         return None
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:

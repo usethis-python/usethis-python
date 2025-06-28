@@ -31,7 +31,7 @@ def bitbucket_fancy_dump(
     if not isinstance(dump, dict):
         msg = (
             f"Invalid '{type(config)}' representation when dumping; expected dict, got "
-            f"{type(dump)}"
+            f"{type(dump)}."
         )
         raise TypeError(msg)
 

@@ -33,7 +33,7 @@ def update_ruamel_yaml_map(
     """
     """Update the values of a ruamel.yaml map in-place using a diff-like algorithm."""
     if not isinstance(cmap, CommentedMap):
-        msg = f"Expected CommentedMap, but got {type(cmap)}."
+        msg = f"Expected CommentedMap, but got '{type(cmap)}'."
         raise TypeError(msg)
 
     if not preserve_comments:

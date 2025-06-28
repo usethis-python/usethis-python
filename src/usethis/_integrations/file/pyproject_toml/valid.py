@@ -37,7 +37,7 @@ def _ensure_project_section(toml_document: TOMLDocument) -> Table:
 
     project = toml_document["project"]
     if not isinstance(project, Table):
-        msg = f"Expected 'project' to be a TOML Table, got {type(project)}."
+        msg = f"Expected 'project' to be a TOML Table, got '{type(project)}'."
         raise TypeError(msg)
 
     return project

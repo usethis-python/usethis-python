@@ -19,9 +19,7 @@ def get_name() -> str:
         msg = "The 'project.name' value is missing from 'pyproject.toml'."
         raise PyprojectTOMLProjectNameError(msg) from None
     except ValidationError as err:
-        msg = (
-            f"The 'project.name' value in 'pyproject.toml' is not a valid string: {err}"
-        )
+        msg = f"The 'project.name' value in 'pyproject.toml' is not a valid string:\n{err}"
         raise PyprojectTOMLProjectNameError(msg) from None
 
     return name
@@ -36,7 +34,7 @@ def get_description() -> str:
         msg = "The 'project.description' value is missing from 'pyproject.toml'."
         raise PyprojectTOMLProjectDescriptionError(msg) from None
     except ValidationError as err:
-        msg = f"The 'project.description' value in 'pyproject.toml' is not a valid string: {err}"
+        msg = f"The 'project.description' value in 'pyproject.toml' is not a valid string:\n{err}"
         raise PyprojectTOMLProjectDescriptionError(msg) from None
 
     return description

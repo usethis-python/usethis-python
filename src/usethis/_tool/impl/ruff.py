@@ -454,7 +454,7 @@ class RuffTool(Tool):
         else:
             msg = (
                 f"Unknown location for selected {self.name} rules for file manager "
-                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+                f"'{file_manager.name}' of type '{file_manager.__class__.__name__}'."
             )
             raise NotImplementedError(msg)
 
@@ -467,7 +467,7 @@ class RuffTool(Tool):
         else:
             msg = (
                 f"Unknown location for ignored {self.name} rules for file manager "
-                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+                f"'{file_manager.name}' of type '{file_manager.__class__.__name__}'."
             )
             raise NotImplementedError(msg)
 
@@ -482,7 +482,7 @@ class RuffTool(Tool):
         else:
             msg = (
                 f"Unknown location for per-file ignored {self.name} rules for file manager "
-                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+                f"'{file_manager.name}' of type '{file_manager.__class__.__name__}'."
             )
             raise NotImplementedError(msg)
 
@@ -495,7 +495,7 @@ class RuffTool(Tool):
         else:
             msg = (
                 f"Unknown location for {self.name} docstring style for file manager "
-                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
+                f"'{file_manager.name}' of type '{file_manager.__class__.__name__}'."
             )
             raise NotImplementedError(msg)
 

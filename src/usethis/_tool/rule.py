@@ -86,7 +86,7 @@ class RuleConfig(BaseModel):
         if not isinstance(other, self.__class__):
             msg = (
                 f"Cannot merge '{self.__class__.__name__}' with "
-                f"'{other.__class__.__name__}'"
+                f"'{other.__class__.__name__}'."
             )
             raise NotImplementedError(msg)
 

@@ -61,7 +61,7 @@ class TOMLFileManager(KeyValueFileManager):
         except UnexpectedFileIOError as err:
             raise UnexpectedTOMLIOError(err) from None
         except TOMLKitError as err:
-            msg = f"Failed to decode '{self.name}': {err}"
+            msg = f"Failed to decode '{self.name}':\n{err}"
             raise TOMLDecodeError(msg) from None
 
     def _dump_content(self) -> str:

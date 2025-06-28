@@ -28,7 +28,7 @@ class TestGetGitHubLatestTag:
         def mock_get(*_, **__):
             class MockResponse:
                 def raise_for_status(self):
-                    msg = "Failed to fetch tags"
+                    msg = "Failed to fetch tags."
                     raise requests.exceptions.HTTPError(msg)
 
             return MockResponse()

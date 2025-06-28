@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config_file import files_manager
 from usethis._console import box_print
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
@@ -403,6 +404,23 @@ class TestTool:
                 r"'[tool.my_tool\n'"
                 "\n⚠ Assuming 'setup.cfg' contains no evidence of my_tool being used.\n"
             )
+
+        def test_pre_commit_config(self, uv_init_dir: Path):
+            # Arrange
+            tool = MyTool()
+            with change_cwd(uv_init_dir), files_manager():
+                # Create a pre-commit config file
+                (uv_init_dir / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: local
+    hooks:
+      - id: deptry
+""")
+
+                # Act
+                result = tool.is_used()
+            # Assert
+            assert result
 
     class TestIsDeclaredAsDep:
         def test_dev_deps(self, uv_init_dir: Path):

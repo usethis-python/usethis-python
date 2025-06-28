@@ -106,8 +106,9 @@ class Tool(Protocol):
 
         Three heuristics are used by default:
         1. Whether any of the tool's characteristic dependencies are in the project.
-        2. Whether any of the tool's managed files are in the project.
-        3. Whether any of the tool's managed config file sections are present.
+        2. Whether any of the tool's characteristic pre-commit hooks are in the project.
+        3. Whether any of the tool's managed files are in the project.
+        4. Whether any of the tool's managed config file sections are present.
         """
         decode_err_by_name: dict[str, FileDecodeError] = {}
         _is_used = False
@@ -119,6 +120,12 @@ class Tool(Protocol):
         if not _is_used:
             try:
                 _is_used = self.is_declared_as_dep()
+            except FileDecodeError as err:
+                decode_err_by_name[err.name] = err
+
+        if not _is_used:
+            try:
+                _is_used = self.is_pre_commit_config_present()
             except FileDecodeError as err:
                 decode_err_by_name[err.name] = err
 

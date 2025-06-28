@@ -13,7 +13,17 @@ class TestRequirementsTxtTool:
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Arrange
-            (tmp_path / ".pre-commit-config.yaml").touch()
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: local
+    hooks:
+      - id: uv-export
+        name: uv-export
+        entry: uv export --frozen --offline --quiet -o=requirements.txt
+        language: system
+        pass_filenames: false
+        require_serial: true
+""")
 
             # Act
             with change_cwd(tmp_path), files_manager():

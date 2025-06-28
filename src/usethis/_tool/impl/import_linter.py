@@ -5,10 +5,10 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from typing_extensions import assert_never
+
 from usethis._config import usethis_config
-from usethis._config_file import (
-    DotImportLinterManager,
-)
+from usethis._config_file import DotImportLinterManager
 from usethis._console import box_print, info_print, warn_print
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -18,11 +18,7 @@ from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
-from usethis._integrations.pre_commit.schema import (
-    HookDefinition,
-    Language,
-    LocalRepo,
-)
+from usethis._integrations.pre_commit.schema import HookDefinition, Language, LocalRepo
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.imports import (
     LayeredArchitecture,
@@ -30,27 +26,17 @@ from usethis._integrations.project.imports import (
 )
 from usethis._integrations.project.name import get_project_name
 from usethis._integrations.project.packages import get_importable_packages
-from usethis._integrations.uv.deps import (
-    Dependency,
-)
+from usethis._integrations.uv.deps import Dependency
 from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
-from usethis._tool.config import (
-    ConfigEntry,
-    ConfigItem,
-    ConfigSpec,
-    NoConfigValue,
-)
-from usethis._tool.impl.pre_commit import PreCommitTool
+from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec, NoConfigValue
 from usethis._tool.impl.ruff import RuffTool
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
-    from usethis._tool.config import (
-        ResolutionT,
-    )
+    from usethis._tool.config import ResolutionT
 
 
 IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
@@ -77,7 +63,8 @@ class ImportLinterTool(Tool):
             info_print(
                 "For more info see <https://docs.python.org/3/tutorial/modules.html#packages>"
             )
-        if PreCommitTool().is_used():
+        install_method = self.get_install_method()
+        if install_method == "pre-commit":
             if is_uv_used():
                 box_print(
                     f"Run 'uv run pre-commit run import-linter --all-files' to run {self.name}."
@@ -86,10 +73,13 @@ class ImportLinterTool(Tool):
                 box_print(
                     f"Run 'pre-commit run import-linter --all-files' to run {self.name}."
                 )
-        elif is_uv_used():
-            box_print(f"Run 'uv run lint-imports' to run {self.name}.")
+        elif install_method == "devdep" or install_method is None:
+            if is_uv_used():
+                box_print(f"Run 'uv run lint-imports' to run {self.name}.")
+            else:
+                box_print(f"Run 'lint-imports' to run {self.name}.")
         else:
-            box_print(f"Run 'lint-imports' to run {self.name}.")
+            assert_never(install_method)
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         # We need to add the import-linter package itself as a dev dependency.

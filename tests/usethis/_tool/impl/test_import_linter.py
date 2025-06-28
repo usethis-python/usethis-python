@@ -14,7 +14,14 @@ class TestImportLinterTool:
         ):
             # Arrange
             (tmp_path / "uv.lock").touch()
-            (tmp_path / ".pre-commit-config.yaml").touch()
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: local
+    hooks:
+      - id: import-linter
+        name: import-linter
+        entry: uv run --frozen --offline lint-imports
+""")
             (tmp_path / "ruff.toml").touch()
 
             # Act
@@ -32,8 +39,15 @@ class TestImportLinterTool:
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Arrange
-            (tmp_path / ".pre-commit-config.yaml").touch()
-            (tmp_path / "ruff.toml").touch()
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: local
+    hooks:
+      - id: import-linter
+        name: import-linter
+        entry: uv run --frozen --offline lint-imports
+""")
+            (tmp_path / "ruff.toml").touch()  # For avoid info/hint messages
 
             # Act
             with change_cwd(tmp_path), files_manager():

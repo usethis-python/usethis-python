@@ -1439,7 +1439,7 @@ repos:
                 "✔ Adding hook 'import-linter' to '.pre-commit-config.yaml'.\n"
                 "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
                 "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001
-                "☐ Run 'uv run pre-commit run import-linter --all-files' to run Import Linter.\n"
+                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
             )
 
     class TestBitbucketIntegration:

@@ -29,7 +29,7 @@ from usethis._integrations.uv.deps import (
 from usethis._tool.config import ConfigSpec, NoConfigValue
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
-from usethis.errors import FileDecodeError
+from usethis.errors import FileConfigError
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -110,7 +110,7 @@ class Tool(Protocol):
         3. Whether any of the tool's managed files are in the project.
         4. Whether any of the tool's managed config file sections are present.
         """
-        decode_err_by_name: dict[str, FileDecodeError] = {}
+        decode_err_by_name: dict[str, FileConfigError] = {}
         _is_used = False
 
         _is_used = any(
@@ -120,13 +120,13 @@ class Tool(Protocol):
         if not _is_used:
             try:
                 _is_used = self.is_declared_as_dep()
-            except FileDecodeError as err:
+            except FileConfigError as err:
                 decode_err_by_name[err.name] = err
 
         if not _is_used:
             try:
                 _is_used = self.is_config_present()
-            except FileDecodeError as err:
+            except FileConfigError as err:
                 decode_err_by_name[err.name] = err
 
         # Do this last since the YAML parsing is expensive.

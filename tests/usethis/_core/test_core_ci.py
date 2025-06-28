@@ -100,7 +100,7 @@ pipelines:
                 self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
             ):
                 # Arrange
-                (uv_init_dir / ".pre-commit-config.yaml").touch()
+                (uv_init_dir / ".pre-commit-config.yaml").write_text("repos: []")
 
                 # Act
                 with change_cwd(uv_init_dir), files_manager():

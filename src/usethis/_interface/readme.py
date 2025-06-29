@@ -20,7 +20,7 @@ def readme(
         get_uv_badge,
     )
     from usethis._core.readme import add_readme
-    from usethis._integrations.uv.used import is_uv_used
+    from usethis._integrations.backend.uv.used import is_uv_used
     from usethis._tool.impl.pre_commit import PreCommitTool
     from usethis._tool.impl.ruff import RuffTool
     from usethis.errors import UsethisError

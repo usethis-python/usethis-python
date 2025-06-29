@@ -4,13 +4,11 @@ import pytest
 
 import usethis
 import usethis._integrations
-import usethis._integrations.uv
-import usethis._integrations.uv.deps
+import usethis._integrations.backend.uv
+import usethis._integrations.backend.uv.deps
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.uv.deps import (
-    Dependency,
+from usethis._deps import (
     add_default_groups,
     add_deps_to_group,
     get_default_groups,
@@ -21,9 +19,14 @@ from usethis._integrations.uv.deps import (
     register_default_group,
     remove_deps_from_group,
 )
-from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
-from usethis._integrations.uv.toml import UVTOMLManager
+from usethis._integrations.backend.uv.errors import (
+    UVDepGroupError,
+    UVSubprocessFailedError,
+)
+from usethis._integrations.backend.uv.toml import UVTOMLManager
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
+from usethis._types.deps import Dependency
 
 
 class TestGetDepGroups:
@@ -305,7 +308,9 @@ class TestAddDepsToGroup:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(
-            usethis._integrations.uv.deps, "call_uv_subprocess", mock_call_uv_subprocess
+            usethis._integrations.backend.uv.deps,
+            "call_uv_subprocess",
+            mock_call_uv_subprocess,
         )
 
         # Act, Assert
@@ -458,7 +463,7 @@ class TestRemoveDepsFromGroup:
                 raise UVSubprocessFailedError
 
             monkeypatch.setattr(
-                usethis._integrations.uv.deps,
+                usethis._integrations.backend.uv.deps,
                 "call_uv_subprocess",
                 mock_call_uv_subprocess,
             )

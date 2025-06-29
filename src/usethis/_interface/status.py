@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import typer
 
-from usethis._core.enums.status import DevelopmentStatusEnum
 from usethis._options import quiet_opt
+from usethis._types.status import DevelopmentStatusEnum
 
 
 def status(

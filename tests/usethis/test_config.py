@@ -3,9 +3,10 @@ from pathlib import Path
 import pytest
 
 from usethis._config import UsethisConfig, usethis_config
-from usethis._integrations.uv.call import call_uv_subprocess
-from usethis._integrations.uv.errors import UVSubprocessFailedError
+from usethis._integrations.backend.uv.call import call_uv_subprocess
+from usethis._integrations.backend.uv.errors import UVSubprocessFailedError
 from usethis._test import change_cwd
+from usethis._types.backend import BackendEnum
 
 
 class TestUsethisConfig:
@@ -40,7 +41,7 @@ class TestUsethisConfig:
             # Act & Assert
             with (
                 change_cwd(Path.cwd()),
-                usethis_config.set(disable_uv_subprocess=True),
+                usethis_config.set(backend=BackendEnum.none),
                 pytest.raises(UVSubprocessFailedError),
             ):
                 call_uv_subprocess(["python", "list"], change_toml=False)
@@ -49,7 +50,7 @@ class TestUsethisConfig:
             # Act & Assert
             with (
                 change_cwd(Path.cwd()),
-                usethis_config.set(disable_uv_subprocess=False),
+                usethis_config.set(backend=BackendEnum.uv),
             ):
                 output = call_uv_subprocess(["python", "list"], change_toml=False)
 

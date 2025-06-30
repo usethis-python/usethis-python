@@ -20,6 +20,7 @@ from usethis._integrations.backend.uv.errors import UVSubprocessFailedError
 from usethis._integrations.backend.uv.toml import UVTOMLManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
+from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 from usethis.errors import DepGroupError
 
@@ -678,6 +679,22 @@ class TestAddDefaultGroups:
 default-groups = ["test"]
 """
             )
+
+    def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # N.B. should have no effect - default groups are not really defined if we
+        # use the 'none' backend.
+        with usethis_config.set(backend=BackendEnum.none):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                add_default_groups(["test"])
+
+            # Assert
+            assert not (tmp_path / "uv.toml").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert not out
 
 
 class TestGetDefaultGroups:

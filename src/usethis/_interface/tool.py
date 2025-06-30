@@ -298,6 +298,7 @@ ALL_TOOL_COMMANDS: list[str] = [
     "coverage.py",
     "deptry",
     "import-linter",
+    "mkdocs",
     "pre-commit",
     "pyproject.toml",
     "pyproject-fmt",

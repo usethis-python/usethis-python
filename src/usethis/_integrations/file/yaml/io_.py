@@ -10,6 +10,7 @@ from ruamel.yaml.util import load_yaml_guess_indent
 
 from usethis._console import info_print
 from usethis._integrations.file.yaml.errors import InvalidYAMLError
+from usethis._io import KeyValueFileManager
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -58,6 +59,11 @@ if TYPE_CHECKING:
         | CommentedOrderedMap
         | CommentedMap
     )
+
+
+class YAMLFileManager(KeyValueFileManager):
+    def __init__(self):
+        raise NotImplementedError
 
 
 @dataclass

@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from usethis._config_file import MkDocsYMLManager
 from usethis._console import box_print
 from usethis._integrations.uv.deps import Dependency
 from usethis._integrations.uv.used import is_uv_used
@@ -41,8 +42,8 @@ class MkDocsTool(Tool):
 
         This includes the file managers and resolution methodology.
         """
-        # Implement the mkdocs.yml file manager
-        raise NotImplementedError
+        # This should be changed to include basic config
+        return super().get_config_spec()
 
     def get_managed_files(self) -> list[Path]:
         """Get (relative) paths to files managed by (solely) this tool."""
@@ -51,4 +52,4 @@ class MkDocsTool(Tool):
     def preferred_file_manager(self) -> KeyValueFileManager:
         """If there is no currently active config file, this is the preferred one."""
         # Should set the the mkdocs.yml file manager as the preferred one
-        raise NotImplementedError
+        return MkDocsYMLManager()

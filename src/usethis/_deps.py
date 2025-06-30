@@ -12,6 +12,7 @@ from usethis._integrations.backend.uv.call import add_default_groups_via_uv
 from usethis._integrations.backend.uv.deps import (
     add_dep_to_group_via_uv,
     get_default_groups_via_uv,
+    remove_dep_from_group_via_uv,
 )
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._types.backend import BackendEnum
@@ -142,7 +143,7 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
             f"Removing dependenc{ies} {deps_str} from the '{group}' group in 'pyproject.toml'."
         )
         for dep in _deps:
-            add_dep_to_group_via_uv(dep, group)
+            remove_dep_from_group_via_uv(dep, group)
     elif backend is BackendEnum.none:
         box_print(f"Remove the {group} dependenc{ies} {deps_str}.")
     else:

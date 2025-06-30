@@ -27,6 +27,7 @@ from usethis._integrations.backend.uv.toml import UVTOMLManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 from usethis._types.deps import Dependency
+from usethis.errors import DepGroupError
 
 
 class TestGetDepGroups:
@@ -116,7 +117,7 @@ test="not a list"
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
-            pytest.raises(UVDepGroupError),
+            pytest.raises(DepGroupError),
         ):
             get_dep_groups()
 

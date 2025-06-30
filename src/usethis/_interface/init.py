@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import typer
 
-from usethis._core.enums.ci import CIServiceEnum
-from usethis._core.enums.docstyle import DocStyleEnum
-from usethis._core.enums.status import DevelopmentStatusEnum
 from usethis._options import frozen_opt, offline_opt, quiet_opt
+from usethis._types.ci import CIServiceEnum
+from usethis._types.docstyle import DocStyleEnum
+from usethis._types.status import DevelopmentStatusEnum
 
 
 def init(  # noqa: PLR0913, PLR0915
@@ -64,7 +64,7 @@ def init(  # noqa: PLR0913, PLR0915
     from usethis._core.readme import add_readme
     from usethis._core.status import use_development_status
     from usethis._core.tool import use_pre_commit
-    from usethis._integrations.uv.init import opinionated_uv_init
+    from usethis._integrations.backend.uv.init import opinionated_uv_init
     from usethis._toolset.format_ import use_formatters
     from usethis._toolset.lint import use_linters
     from usethis._toolset.spellcheck import use_spellcheckers

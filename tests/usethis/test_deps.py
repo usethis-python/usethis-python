@@ -2,15 +2,10 @@ from pathlib import Path
 
 import pytest
 
-import usethis
-import usethis._integrations
-import usethis._integrations.uv
-import usethis._integrations.uv.deps
+import usethis._integrations.backend.uv.deps
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.uv.deps import (
-    Dependency,
+from usethis._deps import (
     add_default_groups,
     add_deps_to_group,
     get_default_groups,
@@ -21,9 +16,13 @@ from usethis._integrations.uv.deps import (
     register_default_group,
     remove_deps_from_group,
 )
-from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
-from usethis._integrations.uv.toml import UVTOMLManager
+from usethis._integrations.backend.uv.errors import UVSubprocessFailedError
+from usethis._integrations.backend.uv.toml import UVTOMLManager
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
+from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
+from usethis.errors import DepGroupError
 
 
 class TestGetDepGroups:
@@ -113,7 +112,7 @@ test="not a list"
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
-            pytest.raises(UVDepGroupError),
+            pytest.raises(DepGroupError),
         ):
             get_dep_groups()
 
@@ -305,13 +304,15 @@ class TestAddDepsToGroup:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(
-            usethis._integrations.uv.deps, "call_uv_subprocess", mock_call_uv_subprocess
+            usethis._integrations.backend.uv.deps,
+            "call_uv_subprocess",
+            mock_call_uv_subprocess,
         )
 
         # Act, Assert
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
             with pytest.raises(
-                UVDepGroupError,
+                DepGroupError,
                 match="Failed to add 'pytest' to the 'test' dependency group",
             ):
                 add_deps_to_group([Dependency(name="pytest")], "test")
@@ -458,14 +459,14 @@ class TestRemoveDepsFromGroup:
                 raise UVSubprocessFailedError
 
             monkeypatch.setattr(
-                usethis._integrations.uv.deps,
+                usethis._integrations.backend.uv.deps,
                 "call_uv_subprocess",
                 mock_call_uv_subprocess,
             )
 
             # Act
             with pytest.raises(
-                UVDepGroupError,
+                DepGroupError,
                 match="Failed to remove 'pytest' from the 'test' dependency group",
             ):
                 remove_deps_from_group([Dependency(name="pytest")], "test")
@@ -678,6 +679,22 @@ class TestAddDefaultGroups:
 default-groups = ["test"]
 """
             )
+
+    def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # N.B. should have no effect - default groups are not really defined if we
+        # use the 'none' backend.
+        with usethis_config.set(backend=BackendEnum.none):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                add_default_groups(["test"])
+
+            # Assert
+            assert not (tmp_path / "uv.toml").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert not out
 
 
 class TestGetDefaultGroups:

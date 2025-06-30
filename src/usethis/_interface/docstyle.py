@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import typer
 
-from usethis._core.enums.docstyle import DocStyleEnum
 from usethis._options import quiet_opt
+from usethis._types.docstyle import DocStyleEnum
 
 
 def docstyle(

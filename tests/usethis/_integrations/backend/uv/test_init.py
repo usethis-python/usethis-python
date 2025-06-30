@@ -43,11 +43,7 @@ class TestOpinionatedUVInit:
         )
 
         # Act
-        with (
-            change_cwd(tmp_path),
-            PyprojectTOMLManager(),
-            pytest.raises(UVInitError),
-        ):
+        with change_cwd(tmp_path), PyprojectTOMLManager(), pytest.raises(UVInitError):
             opinionated_uv_init()
 
 

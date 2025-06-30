@@ -14,7 +14,7 @@ from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 
 
-class TestTestOpinionatedUVInit:
+class TestOpinionatedUVInit:
     def test_empty_dir(self, tmp_path: Path):
         # Act
         with change_cwd(tmp_path):

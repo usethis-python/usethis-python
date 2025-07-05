@@ -229,7 +229,7 @@ class TOMLFileManager(KeyValueFileManager):
                     d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
-            for idx in reversed(range(len(keys) - 1)):
+            for idx in reversed(range(1, len(keys))):
                 # Navigate to the parent of the section we want to check
                 parent = toml_document
                 for key in keys[: idx - 1]:

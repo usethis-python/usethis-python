@@ -379,6 +379,25 @@ lint.pydocstyle.convention = "pep257"
                 with pytest.raises(TOMLValueMissingError):
                     del manager[["c"]]
 
+        def test_empty_sections_removed(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                manager[["outer", "inner", "key"]] = "value"
+                manager[["other"]] = "value"
+
+                # Act
+                del manager[["outer", "inner", "key"]]
+
+                # Assert
+                assert manager._content == {"other": "value"}
+
     class TestExtendList:
         def test_inplace_modifications(self, tmp_path: Path) -> None:
             # Arrange

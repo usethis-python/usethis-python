@@ -2,6 +2,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 import pytest
+import ruamel.yaml
 from ruamel.yaml.comments import (
     CommentedMap,
     CommentedOrderedMap,
@@ -24,9 +25,394 @@ from ruamel.yaml.scalarstring import (
 )
 from ruamel.yaml.timestamp import TimeStamp
 
-from usethis._integrations.file.yaml.errors import InvalidYAMLError
-from usethis._integrations.file.yaml.io_ import edit_yaml
+from usethis._integrations.file.yaml.errors import (
+    UnexpectedYAMLIOError,
+    UnexpectedYAMLOpenError,
+    YAMLDecodeError,
+    YAMLNotFoundError,
+)
+from usethis._integrations.file.yaml.io_ import YAMLDocument, YAMLFileManager, edit_yaml
 from usethis._test import change_cwd
+
+
+class TestYAMLFileManager:
+    def test_instantiate(self):
+        # Arrange
+        class MyYAMLFileManager(YAMLFileManager):
+            @property
+            def relative_path(self) -> Path:
+                return Path("my_yaml_file.yaml")
+
+        # Act
+        my_yaml_manager = MyYAMLFileManager()
+
+        # Assert
+        assert isinstance(my_yaml_manager, YAMLFileManager)
+
+    class TestEnter:
+        def test_success(self):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            # Act
+            with MyYAMLFileManager() as manager:
+                # Assert
+                assert isinstance(manager, YAMLFileManager)
+                assert manager._content is None
+
+        def test_already_locked(self):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            my_yaml_manager = MyYAMLFileManager()
+            my_yaml_manager.lock()
+
+            # Act, Assert
+            with pytest.raises(UnexpectedYAMLOpenError) as exc_info, my_yaml_manager:
+                pass
+
+            assert "already in use" in str(exc_info.value)
+
+    class TestReadFile:
+        def test_success(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            # Create a sample YAML file
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                # Act
+                manager.read_file()
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert isinstance(manager._content.content, CommentedMap)
+
+        def test_file_not_found(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("non_existent.yaml")
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyYAMLFileManager() as manager,
+                pytest.raises(YAMLNotFoundError),
+            ):
+                manager.read_file()
+
+        def test_double_read_fails(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            # Act, Assert
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+                with pytest.raises(UnexpectedYAMLIOError):
+                    manager.read_file()
+
+        def test_syntax_error(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value: extra")
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyYAMLFileManager() as manager,
+                pytest.raises(YAMLDecodeError),
+            ):
+                manager.read_file()
+
+    class TestDumpContent:
+        def test_dump_content(self):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            my_yaml_manager = MyYAMLFileManager()
+            my_yaml_manager._content = YAMLDocument(
+                content=CommentedMap({"key": "value"}),
+                roundtripper=ruamel.yaml.YAML(typ="rt"),
+            )
+
+            # Act
+            result = my_yaml_manager._dump_content()
+
+            # Assert
+            assert result == "key: value\n"
+
+        def test_none_content(self):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            my_yaml_manager = MyYAMLFileManager()
+            my_yaml_manager._content = None
+
+            # Act, Assert
+            with pytest.raises(ValueError, match="Content is None, cannot dump."):
+                my_yaml_manager._dump_content()
+
+    class TestParseContent:
+        def test_parse_content(self):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            my_yaml_manager = MyYAMLFileManager()
+            content = "key: value"
+
+            # Act
+            parsed_content = my_yaml_manager._parse_content(content)
+
+            # Assert
+            assert isinstance(parsed_content, YAMLDocument)
+            assert isinstance(parsed_content.content, CommentedMap)
+            assert parsed_content.content == {"key": "value"}
+
+    class TestContains:
+        def test_single_map(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                assert manager.__contains__(["key"])
+
+        def test_single_map_two_keys(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key1: value1")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                assert not manager.__contains__(["key1", "key2"])
+
+        def test_empty_keys(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                assert manager.__contains__([])
+
+        def test_non_existent_key(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                assert not manager.__contains__(["non_existent_key"])
+
+        def test_nested_keys(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text(
+                """\
+outer:
+    inner:
+        key: value
+"""
+            )
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                assert manager.__contains__(["outer", "inner", "key"])
+                assert not manager.__contains__(["outer", "inner", "non_existent_key"])
+
+        def test_content_is_none(self):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            my_yaml_manager = MyYAMLFileManager()
+            my_yaml_manager._content = None
+
+            # Act, Assert
+            assert not my_yaml_manager.__contains__(["key"])
+
+    class TestGetItem:
+        def test_single_item(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                value = manager[["key"]]
+
+                # Assert
+                assert value == "value"
+
+        def test_empty_keys(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                assert manager[[]] == {"key": "value"}
+
+        def test_nested_keys(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text(
+                """\
+outer:
+    inner:
+        key: value
+"""
+            )
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                value = manager[["outer", "inner", "key"]]
+
+                # Assert
+                assert value == "value"
+
+        def test_missing_key(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(KeyError):
+                    _ = manager[["non_existent_key"]]
+
+    class TestDelItem:
+        def test_delete_single_item(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value\nkey1: value1")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                del manager[["key"]]
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {"key1": "value1"}
+
+        def test_empty_sections_removed(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text(
+                """\
+outer:
+    inner:
+        key: value
+other: value
+"""
+            )
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                del manager[["outer", "inner", "key"]]
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {"other": "value"}
 
 
 class TestEditYaml:
@@ -409,7 +795,7 @@ repos:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            pytest.raises(InvalidYAMLError),
+            pytest.raises(YAMLDecodeError),
             edit_yaml(tmp_path / "x.yml") as _,
         ):
             pass
@@ -427,7 +813,7 @@ repos:
         with (
             change_cwd(tmp_path),
             pytest.raises(
-                InvalidYAMLError, match=r"mapping values are not allowed here"
+                YAMLDecodeError, match=r"mapping values are not allowed here"
             ),
             edit_yaml(tmp_path / "x.yml"),
         ):

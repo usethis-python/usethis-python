@@ -229,18 +229,19 @@ class TOMLFileManager(KeyValueFileManager):
                     d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
-            for idx in range(len(keys) - 1):
-                d, parent = toml_document, {}
-
-                for key in keys[: idx + 1]:
-                    d, parent = d[key], d
-                    TypeAdapter(dict).validate_python(d)
+            for idx in reversed(range(len(keys) - 1)):
+                # Navigate to the parent of the section we want to check
+                parent = toml_document
+                for key in keys[: idx - 1]:
                     TypeAdapter(dict).validate_python(parent)
-                    assert isinstance(d, dict)
                     assert isinstance(parent, dict)
-                assert isinstance(d, dict)
-                if not d:
-                    del parent[keys[idx]]
+                    parent = parent[key]
+
+                # If the section is empty, remove it
+                TypeAdapter(dict).validate_python(parent)
+                assert isinstance(parent, dict)
+                if not parent[keys[idx - 1]]:
+                    del parent[keys[idx - 1]]
 
         self.commit(toml_document)
 

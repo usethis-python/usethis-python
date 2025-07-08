@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from io import StringIO
 from typing import TYPE_CHECKING, Any, ClassVar
 
+import mergedeep
 import ruamel.yaml
 from pydantic import TypeAdapter
 from ruamel.yaml.comments import CommentedMap
@@ -22,6 +23,7 @@ from usethis._integrations.file.yaml.errors import (
     UnexpectedYAMLOpenError,
     YAMLDecodeError,
     YAMLNotFoundError,
+    YAMLValueAlreadySetError,
     YAMLValueMissingError,
 )
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
@@ -50,7 +52,7 @@ if TYPE_CHECKING:
     from ruamel.yaml.scalarint import BinaryInt, HexCapsInt, HexInt, OctalInt, ScalarInt
     from ruamel.yaml.scalarstring import FoldedScalarString, LiteralScalarString
     from ruamel.yaml.timestamp import TimeStamp
-    from typing_extensions import Self
+    from typing_extensions import Never, Self
 
     from usethis._io import Key
 
@@ -110,9 +112,11 @@ class YAMLFileManager(KeyValueFileManager):
             msg = "Content is None, cannot dump."
             raise ValueError(msg)
 
-        output = StringIO()
-        self._content.roundtripper.dump(self._content.content, output)
-        return output.getvalue()
+        with StringIO() as output:
+            assert isinstance(self._content, YAMLDocument)
+            self._content.roundtripper.dump(self._content.content, output)
+            content = output.getvalue()
+        return content
 
     def _parse_content(self, content: str) -> YAMLDocument:
         """Parse the content of the document."""
@@ -160,10 +164,70 @@ class YAMLFileManager(KeyValueFileManager):
     def get(self) -> YAMLDocument:
         return super().get()
 
+    def set_value(
+        self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
+    ) -> None:
+        """Set a value in the configuration file."""
+        content = copy.deepcopy(self.get().content)
+        keys = _validate_keys(keys)
+
+        if not keys:
+            # Root level config - value must be a mapping.
+            TypeAdapter(dict).validate_python(content)
+            assert isinstance(content, dict)
+            TypeAdapter(dict).validate_python(value)
+            assert isinstance(value, dict)
+            if not content or exists_ok:
+                content.update(value)
+                assert self._content is not None  # We have called .get() already.
+                update_ruamel_yaml_map(
+                    cmap=self._content.content,
+                    new_contents=content,
+                    preserve_comments=True,
+                )
+                self.commit(self._content)
+                return
+
+        d, parent = content, {}
+        shared_keys: list[str] = []
+        try:
+            # Index our way into each ID key.
+            # Eventually, we should land at a final dict, which is the one we are setting.
+            for key in keys:
+                TypeAdapter(dict).validate_python(d)
+                assert isinstance(d, dict)
+                d, parent = d[key], d
+                shared_keys.append(key)
+        except KeyError:
+            TypeAdapter(CommentedMap).validate_python(d)
+            assert isinstance(content, CommentedMap)
+            _set_value_in_existing(
+                content=content,
+                keys=keys,
+                value=value,
+            )
+        else:
+            if not exists_ok:
+                # The configuration is already present, which is not allowed.
+                _raise_already_set(keys)
+            else:
+                # The configuration is already present, but we're allowed to overwrite it.
+                TypeAdapter(dict).validate_python(parent)
+                assert isinstance(parent, dict)
+                parent[keys[-1]] = value
+
+        assert self._content is not None  # We have called .get() already.
+        update_ruamel_yaml_map(
+            cmap=self._content.content,
+            new_contents=content,
+            preserve_comments=True,
+        )
+        self.commit(self._content)
+
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Remove a value from the configuration file."""
         try:
-            content = copy.copy(self.get().content)
+            content = copy.deepcopy(self.get().content)
         except FileNotFoundError:
             return
         TypeAdapter(dict).validate_python(content)
@@ -220,6 +284,30 @@ class YAMLFileManager(KeyValueFileManager):
         )
         self.commit(self._content)
 
+    @abstractmethod
+    def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+        """Extend a list in the configuration file."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+        """Remove values from a list in the configuration file."""
+        raise NotImplementedError
+
+
+def _set_value_in_existing(
+    *, content: YAMLLiteral, keys: Sequence[Key], value: Any
+) -> None:
+    # The old configuration should be kept for all ID keys except the
+    # final/deepest one which shouldn't exist anyway since we checked as much,
+    # above.
+
+    contents = value
+    for key in reversed(keys):
+        contents = {key: contents}
+    content = mergedeep.merge(content, contents)  # type: ignore[reportAssignmentType]
+    assert isinstance(content, YAMLLiteral)
+
 
 def _validate_keys(keys: Sequence[Key]) -> list[str]:
     """Validate the keys.
@@ -245,6 +333,15 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
             assert_never(key)
 
     return so_far_keys
+
+
+def _raise_already_set(keys: Sequence[Key]) -> Never:
+    """Raise an error if the configuration is already set."""
+    if keys:
+        msg = f"Configuration value '{print_keys(keys)}' is already set."
+    else:
+        msg = "Configuration value at root level is already set."
+    raise YAMLValueAlreadySetError(msg)
 
 
 @dataclass
@@ -287,6 +384,11 @@ def _get_yaml_document(
         if "mapping values are not allowed here" in str(err):
             info_print("Hint: You may have incorrect indentation the YAML file.")
         raise err
+
+    # Replace content with {} if the file is empty, i.e. the _io stream is empty.
+    # The default in ruamel.yaml is to return None, which is not what we want.
+    if not content and _io.tell() == 0:
+        content = CommentedMap()
 
     if not guess_indent:
         sequence_ind = None

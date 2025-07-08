@@ -7,6 +7,10 @@ class YAMLError(UsethisError):
     """Base class for YAML-related errors."""
 
 
+class YAMLValueAlreadySetError(YAMLError):
+    """Raised when a value is unexpectedly already set in the YAML file."""
+
+
 class YAMLValueMissingError(KeyError, YAMLError):
     """Raised when a value is unexpectedly missing from the YAML file."""
 

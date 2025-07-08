@@ -368,6 +368,25 @@ outer:
                 with pytest.raises(KeyError):
                     _ = manager[["non_existent_key"]]
 
+    class TestSetItem:
+        def test_no_keys(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").touch()
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                # Act
+                manager.set_value(keys=[], value={"key": "value"})
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {"key": "value"}
+                assert isinstance(manager._content, YAMLDocument)
+
     class TestDelItem:
         def test_delete_single_item(self, tmp_path: Path):
             # Arrange
@@ -656,6 +675,17 @@ hello: world
                 content = yaml_document.content
                 # Assert
                 assert type(content) is TimeStamp
+
+        def test_empty_document(self, tmp_path: Path):
+            # Arrange
+            path = tmp_path / "test.yaml"
+            path.write_text("")
+
+            with edit_yaml(path) as yaml_document:  # Act
+                content = yaml_document.content
+                # Assert
+                assert isinstance(content, CommentedMap)
+                assert len(content) == 0
 
     class TestRoundTrip:
         @pytest.mark.xfail(

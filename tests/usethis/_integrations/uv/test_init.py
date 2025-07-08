@@ -11,7 +11,7 @@ from usethis._integrations.uv.init import ensure_pyproject_toml, opinionated_uv_
 from usethis._test import change_cwd
 
 
-class TestTestOpinionatedUVInit:
+class TestOpinionatedUVInit:
     def test_empty_dir(self, tmp_path: Path):
         # Act
         with change_cwd(tmp_path):

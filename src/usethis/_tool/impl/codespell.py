@@ -98,7 +98,7 @@ class CodespellTool(Tool):
                         ),
                         Path("pyproject.toml"): ConfigEntry(
                             keys=["tool", "codespell", "ignore-words-list"],
-                            get_value=lambda: [],
+                            get_value=lambda: ["..."],
                         ),
                     },
                 ),

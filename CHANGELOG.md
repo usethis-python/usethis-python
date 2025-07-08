@@ -191,13 +191,15 @@ This introduces a change in the way that Bitbucket Pipeline steps will be config
 
 - This release adds a new `--show` option to the `usethis badge` interface. This option will display the badge as markdown output without adding it to the README file.
 
-- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically support for new options available regarding artifact uploads.
-
 ### 🐞 Bug Fixes
 
 - The `--quiet` option did not properly suppress output when displaying warnings associated with failed README parsing in `usethis badge`. This has been fixed.
 
 - Due to a breaking change in Click v8.2.0, Click is now declared as a direct dependency temporarily until the ramifications can be addressed in Typer. The lower bound is declared as `>=8.0.0` and the constraint `!=8.2.0` to avoid the breaking change. For more information, see [here](https://github.com/fastapi/typer/discussions/1215).
+
+### 🧹 Maintenance
+
+- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically support for new options available regarding artifact uploads.
 
 ### 📚 Documentation
 

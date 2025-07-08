@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.14.2
+
+### 🦾 Robustness
+
+- The heuristics to determine whether a tool is used will now check the `pre-commit` configuration to see whether there is a `pre-commit` hook for the tool.
+
+- When removing an entry of TOML configuration, usethis makes some effort to remove empty tables and sections. This was previously only done to one level of nesting, but it should now occur at multiple levels of nesting.
+
+### 🐞 Bug Fixes
+
+- The Codespell configuration for `pyproject.toml` was giving invalid configuration for the `ignore-words-list` option, which was set to an empty list. Codespell requires this option to be non-empty. It is now set to `["..."]`, which is consistent with the handling for other INI-based configuration files.
+
+- Previously, using the `--how` option for `usethis tool` commands would not properly infer the way a tool was installed. For example, it would assume that a tool is installed as a pre-commit hook, simply because `pre-commit` was used for the project, without checking whether there actually are any hooks. This has been fixed, and more sophisticated heuristics are now used to determine how a tool is installed.
+
+- The message to suggest using `__init__.py` files when using Import Linter now checks explicitly whether you have the `INP` rules enabled in Ruff, rather than simply assuming that these rules would be enabled when Ruff is used. The message is only displayed if these `INP` rules are not enabled.
+
+- Error messages now use more consistent punctuation and formatting.
+
+### 🧹 Maintenance
+
+- The default version of `pyproject-fmt` when used as a pre-commit has been bumped from v2.5.0 to v2.6.0.
+
+- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically support for new options available regarding concurrency groups.
+
+### 📚 Documentation
+
+- The FAQ is now included in the MkDocs build, and information about roundtripping is now included in the FAQ.
+
+- Social Icon buttons for GitHub and PyPI have been added to the bottom of the MkDocs site.
+
+### 🔧 Internal Changes
+
+- Minor improvements to the CI configuration have been made; the CI will no longer trigger for changes to the mkdocs configuration files.
+
+- There is now global state to turn off pre-commit detection for pre-commit integrations, which is work towards having an interface to avoid adding a tool as a pre-commit.
+
+- In the previous release, the project moved to using the codspeed Walltime runner for CI benchmarks. This has been reverted back to using the GitHub-based codspeed runners, since the Walltime runner reports were not as detailed and there were usage limits.
+
 ## 0.14.1
 
 ### 🐞 Bug Fixes

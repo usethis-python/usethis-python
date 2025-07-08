@@ -32,9 +32,9 @@
 
 ### 🔧 Internal Changes
 
-- Minor improvements to the CI configuration have been made; the CI will no longer trigger for changes to the mkdocs configuration files.
+- Minor improvements to the CI configuration have been made; the CI will no longer trigger for changes to the MkDocs configuration files.
 
-- There is now global state to turn off pre-commit detection for pre-commit integrations, which is work towards having an interface to avoid adding a tool as a pre-commit.
+- There is now global state to turn off pre-commit detection for pre-commit integrations, which is a step toward providing an interface to forbid adding a tool as a pre-commit.
 
 - In the previous release, the project moved to using the codspeed Walltime runner for CI benchmarks. This has been reverted back to using the GitHub-based codspeed runners, since the Walltime runner reports were not as detailed and there were usage limits.
 

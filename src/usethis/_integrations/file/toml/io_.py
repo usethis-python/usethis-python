@@ -190,8 +190,6 @@ class TOMLFileManager(KeyValueFileManager):
                 _raise_already_set(keys)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
-                TypeAdapter(dict).validate_python(parent)
-                assert isinstance(parent, dict)
                 parent[keys[-1]] = value
 
         self.commit(toml_document)  # type: ignore[reportAssignmentType]

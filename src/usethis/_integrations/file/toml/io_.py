@@ -120,7 +120,14 @@ class TOMLFileManager(KeyValueFileManager):
 
         d = self.get()
         for key in keys:
-            TypeAdapter(dict).validate_python(d)
+            try:
+                TypeAdapter(dict).validate_python(d)
+            except ValidationError:
+                msg = (
+                    f"Configuration value '{print_keys(keys)}' is not a valid "
+                    f"mapping in the TOML file '{self.name}'."
+                )
+                raise KeyError(msg) from None
             assert isinstance(d, dict)
             d = d[key]
 

@@ -73,6 +73,25 @@ a = "b"
             with change_cwd(tmp_path), MyTOMLFileManager() as manager:
                 assert manager[[]] == {"tool": {"usethis": {"a": "b"}}}
 
+        def test_scalar_not_mapping(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").write_text("a = 'b'")
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyTOMLFileManager() as manager,
+                pytest.raises(
+                    KeyError, match="Configuration value 'a.b' is not a valid mapping"
+                ),
+            ):
+                manager[["a", "b"]]
+
     class TestContent:
         def test_content_setter(self, tmp_path: Path) -> None:
             # Arrange

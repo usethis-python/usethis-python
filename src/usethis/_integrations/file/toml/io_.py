@@ -123,13 +123,13 @@ class TOMLFileManager(KeyValueFileManager):
             try:
                 TypeAdapter(dict).validate_python(d)
             except ValidationError:
-                msg = (
-                    f"Configuration value '{print_keys(keys)}' is not a valid "
-                    f"mapping in the TOML file '{self.name}'."
-                )
-                raise KeyError(msg) from None
+                msg = f"Configuration value '{print_keys(keys)}' is missing."
+                raise TOMLValueMissingError(msg) from None
             assert isinstance(d, dict)
-            d = d[key]
+            try:
+                d = d[key]
+            except KeyError as err:
+                raise TOMLValueMissingError(err) from None
 
         return d
 

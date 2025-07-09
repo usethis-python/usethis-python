@@ -87,10 +87,28 @@ a = "b"
                 change_cwd(tmp_path),
                 MyTOMLFileManager() as manager,
                 pytest.raises(
-                    KeyError, match="Configuration value 'a.b' is not a valid mapping"
+                    TOMLValueMissingError,
+                    match="Configuration value 'a.b' is missing.",
                 ),
             ):
                 manager[["a", "b"]]
+
+        def test_value_missing(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").write_text("a = 'b'")
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyTOMLFileManager() as manager,
+                pytest.raises(TOMLValueMissingError),
+            ):
+                manager[["c"]]
 
     class TestContent:
         def test_content_setter(self, tmp_path: Path) -> None:

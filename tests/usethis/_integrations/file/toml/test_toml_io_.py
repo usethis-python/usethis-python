@@ -43,6 +43,19 @@ class TestTOMLFileManager:
             with change_cwd(tmp_path), MyTOMLFileManager() as manager:
                 assert [] in manager
 
+        def test_list_of_keys_not_in_scalar(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").write_text("a = 'b'")
+
+            # Act, Assert
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                assert ["a", "b", "c"] not in manager
+
     class TestGetItem:
         def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange

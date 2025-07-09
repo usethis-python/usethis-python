@@ -109,7 +109,7 @@ class TOMLFileManager(KeyValueFileManager):
                 TypeAdapter(dict).validate_python(container)
                 assert isinstance(container, dict)
                 container = container[key]
-        except KeyError:
+        except (KeyError, ValidationError):
             return False
 
         return True

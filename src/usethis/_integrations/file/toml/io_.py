@@ -214,7 +214,7 @@ class TOMLFileManager(KeyValueFileManager):
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d = d[key]
-        except KeyError:
+        except (KeyError, ValidationError):
             # N.B. by convention a del call should raise an error if the key is not found.
             msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise TOMLValueMissingError(msg) from None

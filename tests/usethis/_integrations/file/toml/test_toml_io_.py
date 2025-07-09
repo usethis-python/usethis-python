@@ -484,6 +484,22 @@ lint.pydocstyle.convention = "pep257"
                 # Assert
                 assert manager._content == {"other": "value"}
 
+        def test_clash_with_constant(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(TOMLValueMissingError):
+                    del manager[["key", "inner"]]
+
     class TestExtendList:
         def test_inplace_modifications(self, tmp_path: Path) -> None:
             # Arrange

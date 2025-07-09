@@ -309,6 +309,42 @@ lint.pydocstyle.convention = "pep257"
                 ):
                     manager.set_value(keys=["a"], value=["d"])
 
+        def test_constant_clash_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(TOMLValueAlreadySetError):
+                    manager.set_value(keys=["key", "inner"], value="new_value")
+
+        def test_replacing_constant_with_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(
+                    keys=["key", "inner"], value="new_value", exists_ok=True
+                )
+
+                # Assert
+                assert manager._content == {"key": {"inner": "new_value"}}
+
     class TestDelItem:
         def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange

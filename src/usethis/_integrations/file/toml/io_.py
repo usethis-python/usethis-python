@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 import mergedeep
 import tomlkit.api
 import tomlkit.items
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 from tomlkit import TOMLDocument
 from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
@@ -165,6 +165,18 @@ class TOMLFileManager(KeyValueFileManager):
                 current_keys=shared_keys,
                 value=value,
             )
+        except ValidationError:
+            if not exists_ok:
+                # The configuration is already present, which is not allowed.
+                _raise_already_set(keys)
+            else:
+                _set_value_in_existing(
+                    toml_document=toml_document,
+                    current_container=d,
+                    keys=keys,
+                    current_keys=shared_keys,
+                    value=value,
+                )
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.

@@ -39,7 +39,7 @@ class INIStructureError(INIError):
     """Raised when the INI file has an unexpected structure."""
 
 
-class InvalidINITypeError(TypeError, INIStructureError, INIValueInvalidError):
+class InvalidINITypeError(TypeError, INIValueInvalidError):
     """Raised when an invalid type is encountered in the INI file."""
 
 

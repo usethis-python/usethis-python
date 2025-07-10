@@ -659,3 +659,40 @@ lint.pydocstyle.convention = "pep257"
 
                 # Assert
                 assert manager._content == {"a": ["b", "c"]}
+
+        def test_clash_with_constant(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(TOMLValueMissingError):
+                    manager.remove_from_list(
+                        keys=["key", "inner"], values=["new_value"]
+                    )
+
+        def test_removing_a_non_list(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    TOMLValueInvalidError,
+                    match="Configuration value 'key' is not a valid list",
+                ):
+                    manager.remove_from_list(keys=["key"], values=["new_value"])

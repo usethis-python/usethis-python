@@ -327,13 +327,24 @@ class TOMLFileManager(KeyValueFileManager):
             TypeAdapter(dict).validate_python(p_parent)
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
+        except ValidationError:
+            msg = (
+                f"Configuration value '{print_keys(keys[:-1])}' is not a valid mapping in "
+                f"the TOML file '{self.name}', and does not contain the key '{keys[-1]}'."
+            )
+            raise TOMLValueMissingError(msg) from None
         except KeyError:
             # The configuration is not present - do not modify
             return
 
-        TypeAdapter(dict).validate_python(p_parent)
-        TypeAdapter(list).validate_python(p)
-        assert isinstance(p_parent, dict)
+        try:
+            TypeAdapter(list).validate_python(p)
+        except ValidationError:
+            msg = (
+                f"Configuration value '{print_keys(keys)}' is not a valid list in "
+                f"the TOML file '{self.name}'."
+            )
+            raise TOMLValueInvalidError(msg) from None
         assert isinstance(p, list)
 
         new_values = [value for value in p if value not in values]

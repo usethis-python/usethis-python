@@ -39,6 +39,7 @@ class TestInit:
             "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
             "☐ Add test functions with the format 'test_*()'.\n"
             "☐ Run 'uv run pytest' to run the tests.\n"
+            "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
         )
 
         # Check the pre-commit hooks are added in the correct order
@@ -87,6 +88,7 @@ class TestInit:
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.
 ☐ Run 'uv run pytest' to run the tests.
+☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.
 """
         )
 
@@ -156,6 +158,7 @@ class TestInit:
             "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
             "☐ Add test functions with the format 'test_*()'.\n"
             "☐ Run 'uv run pytest' to run the tests.\n"
+            "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
             "✔ Adding Bitbucket Pipelines configuration.\n"
             "☐ Run your pipeline via the Bitbucket website.\n"
         )

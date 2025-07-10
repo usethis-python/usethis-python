@@ -15,10 +15,6 @@ class INIValueMissingError(KeyError, INIError):
     """Raised when a value is unexpectedly missing from the INI file."""
 
 
-class INIValueInvalidError(INIError):
-    """Raised when a value in the INI file is unexpectedly invalid."""
-
-
 class UnexpectedINIOpenError(INIError):
     """Raised when the INI file is unexpectedly opened."""
 
@@ -39,7 +35,7 @@ class INIStructureError(INIError):
     """Raised when the INI file has an unexpected structure."""
 
 
-class InvalidINITypeError(TypeError, INIValueInvalidError):
+class InvalidINITypeError(TypeError, INIStructureError):
     """Raised when an invalid type is encountered in the INI file."""
 
 

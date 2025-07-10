@@ -12,7 +12,11 @@ class INIValueAlreadySetError(INIError):
 
 
 class INIValueMissingError(KeyError, INIError):
-    """Raised when a value is unexpectedly missing from the TOML file."""
+    """Raised when a value is unexpectedly missing from the INI file."""
+
+
+class INIValueInvalidError(INIError):
+    """Raised when a value in the INI file is unexpectedly invalid."""
 
 
 class UnexpectedINIOpenError(INIError):
@@ -35,7 +39,7 @@ class INIStructureError(INIError):
     """Raised when the INI file has an unexpected structure."""
 
 
-class InvalidINITypeError(TypeError, INIStructureError):
+class InvalidINITypeError(TypeError, INIStructureError, INIValueInvalidError):
     """Raised when an invalid type is encountered in the INI file."""
 
 

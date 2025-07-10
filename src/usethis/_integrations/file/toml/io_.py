@@ -18,6 +18,7 @@ from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
     TOMLValueAlreadySetError,
+    TOMLValueInvalidError,
     TOMLValueMissingError,
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
@@ -287,10 +288,21 @@ class TOMLFileManager(KeyValueFileManager):
             assert isinstance(contents, dict)
             toml_document = mergedeep.merge(toml_document, contents)
             assert isinstance(toml_document, TOMLDocument)
+        except ValidationError:
+            msg = (
+                f"Configuration value '{print_keys(keys[:-1])}' is not a valid mapping in "
+                f"the TOML file '{self.name}', and does not contain the key '{keys[-1]}'."
+            )
+            raise TOMLValueMissingError(msg) from None
         else:
-            TypeAdapter(dict).validate_python(p_parent)
-            TypeAdapter(list).validate_python(d)
-            assert isinstance(p_parent, dict)
+            try:
+                TypeAdapter(list).validate_python(d)
+            except ValidationError:
+                msg = (
+                    f"Configuration value '{print_keys(keys)}' is not a valid list in "
+                    f"the TOML file '{self.name}'."
+                )
+                raise TOMLValueInvalidError(msg) from None
             assert isinstance(d, list)
             p_parent[keys[-1]] = d + values
 

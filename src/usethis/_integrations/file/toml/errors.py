@@ -15,6 +15,10 @@ class TOMLValueMissingError(KeyError, TOMLError):
     """Raised when a value is unexpectedly missing from the TOML file."""
 
 
+class TOMLValueInvalidError(TOMLError):
+    """Raised when a value in the TOML file is unexpectedly invalid."""
+
+
 class TOMLNotFoundError(FileNotFoundError, TOMLError):
     """Raised when a TOML file is unexpectedly not found."""
 

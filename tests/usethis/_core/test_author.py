@@ -1,7 +1,13 @@
 from pathlib import Path
 
+import pytest
+
 from usethis._core.author import add_author
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.toml.errors import (
+    TOMLValueInvalidError,
+    TOMLValueMissingError,
+)
 from usethis._test import change_cwd
 
 
@@ -138,3 +144,41 @@ scripts.usethis = "usethis.__main__:app"
         with change_cwd(tmp_path), PyprojectTOMLManager() as manager:
             assert ["project"] in manager
             assert ["project", "scripts"] in manager
+
+    def test_project_section_not_a_mapping(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """\
+project = ["a"]
+"""
+        )
+
+        # Act
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+            pytest.raises(
+                TOMLValueMissingError,
+                match="'project' is not a valid mapping .* does not contain the key 'authors'",
+            ),
+        ):
+            add_author(name="John Cleese")
+
+    def test_authors_section_not_a_list(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """\
+[project]
+authors = { name = "Python Dev" }
+"""
+        )
+
+        # Act
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+            pytest.raises(
+                TOMLValueInvalidError, match="'project.authors' is not a valid list"
+            ),
+        ):
+            add_author(name="John Cleese")

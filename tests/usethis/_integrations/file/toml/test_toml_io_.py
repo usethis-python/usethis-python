@@ -7,6 +7,7 @@ import tomlkit.items
 
 from usethis._integrations.file.toml.errors import (
     TOMLValueAlreadySetError,
+    TOMLValueInvalidError,
     TOMLValueMissingError,
 )
 from usethis._integrations.file.toml.io_ import TOMLFileManager
@@ -43,6 +44,19 @@ class TestTOMLFileManager:
             with change_cwd(tmp_path), MyTOMLFileManager() as manager:
                 assert [] in manager
 
+        def test_list_of_keys_not_in_scalar(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").write_text("a = 'b'")
+
+            # Act, Assert
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                assert ["a", "b", "c"] not in manager
+
     class TestGetItem:
         def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange
@@ -59,6 +73,43 @@ a = "b"
             # Act, Assert
             with change_cwd(tmp_path), MyTOMLFileManager() as manager:
                 assert manager[[]] == {"tool": {"usethis": {"a": "b"}}}
+
+        def test_scalar_not_mapping(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").write_text("a = 'b'")
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyTOMLFileManager() as manager,
+                pytest.raises(
+                    TOMLValueMissingError,
+                    match="Configuration value 'a.b' is missing.",
+                ),
+            ):
+                manager[["a", "b"]]
+
+        def test_value_missing(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").write_text("a = 'b'")
+
+            # Act, Assert
+            with (
+                change_cwd(tmp_path),
+                MyTOMLFileManager() as manager,
+                pytest.raises(TOMLValueMissingError),
+            ):
+                manager[["c"]]
 
     class TestContent:
         def test_content_setter(self, tmp_path: Path) -> None:
@@ -309,6 +360,42 @@ lint.pydocstyle.convention = "pep257"
                 ):
                     manager.set_value(keys=["a"], value=["d"])
 
+        def test_constant_clash_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(TOMLValueAlreadySetError):
+                    manager.set_value(keys=["key", "inner"], value="new_value")
+
+        def test_replacing_constant_with_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(
+                    keys=["key", "inner"], value="new_value", exists_ok=True
+                )
+
+                # Assert
+                assert manager._content == {"key": {"inner": "new_value"}}
+
     class TestDelItem:
         def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange
@@ -398,6 +485,22 @@ lint.pydocstyle.convention = "pep257"
                 # Assert
                 assert manager._content == {"other": "value"}
 
+        def test_clash_with_constant(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(TOMLValueMissingError):
+                    del manager[["key", "inner"]]
+
     class TestExtendList:
         def test_inplace_modifications(self, tmp_path: Path) -> None:
             # Arrange
@@ -448,6 +551,41 @@ lint.pydocstyle.convention = "pep257"
 
                 # Assert
                 assert manager._content == {"a": ["b"]}
+
+        def test_clash_with_constant(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(TOMLValueMissingError):
+                    manager.extend_list(keys=["key", "inner"], values=["new_value"])
+
+        def test_extending_a_non_list(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    TOMLValueInvalidError,
+                    match="Configuration value 'key' is not a valid list",
+                ):
+                    manager.extend_list(keys=["key"], values=["new_value"])
 
     class TestRemoveFromList:
         def test_inplace_modifications(self, tmp_path: Path) -> None:
@@ -521,3 +659,40 @@ lint.pydocstyle.convention = "pep257"
 
                 # Assert
                 assert manager._content == {"a": ["b", "c"]}
+
+        def test_clash_with_constant(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(TOMLValueMissingError):
+                    manager.remove_from_list(
+                        keys=["key", "inner"], values=["new_value"]
+                    )
+
+        def test_removing_a_non_list(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text("key = 'value'")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    TOMLValueInvalidError,
+                    match="Configuration value 'key' is not a valid list",
+                ):
+                    manager.remove_from_list(keys=["key"], values=["new_value"])

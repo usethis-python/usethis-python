@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 import mergedeep
 import ruamel.yaml
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 from ruamel.yaml.comments import CommentedMap
 from ruamel.yaml.error import YAMLError
 from ruamel.yaml.util import load_yaml_guess_indent
@@ -81,13 +81,9 @@ if TYPE_CHECKING:
 
 
 class YAMLFileManager(KeyValueFileManager):
-    _content_by_path: ClassVar[dict[Path, YAMLDocument | None]] = {}
+    """An abstract class for managing YAML files."""
 
-    @property
-    @abstractmethod
-    def relative_path(self) -> Path:
-        """Return the relative path to the file."""
-        raise NotImplementedError
+    _content_by_path: ClassVar[dict[Path, YAMLDocument | None]] = {}
 
     def __enter__(self) -> Self:
         try:
@@ -118,6 +114,12 @@ class YAMLFileManager(KeyValueFileManager):
             content = output.getvalue()
         return content
 
+    def get(self) -> YAMLDocument:
+        return super().get()
+
+    def commit(self, document: YAMLDocument) -> None:
+        return super().commit(document)
+
     def _parse_content(self, content: str) -> YAMLDocument:
         """Parse the content of the document."""
         return _get_yaml_document(StringIO(content), guess_indent=True)
@@ -130,15 +132,24 @@ class YAMLFileManager(KeyValueFileManager):
     def _content(self, value: YAMLDocument | None) -> None:
         self._content_by_path[self.path] = value
 
+    def _validate_lock(self) -> None:
+        try:
+            super()._validate_lock()
+        except UnexpectedFileIOError as err:
+            raise UnexpectedYAMLIOError(err) from None
+
     def __contains__(self, keys: Sequence[Key]) -> bool:
-        """Check if a key exists in the configuration file."""
+        """Check if the YAML file contains a value.
+
+        An non-existent file will return False.
+        """
         keys = _validate_keys(keys)
 
-        # Check if the keys exist in the content.
         try:
             current = self.get().content
         except FileNotFoundError:
             return False
+
         try:
             for key in keys:
                 if isinstance(current, CommentedMap):
@@ -147,27 +158,35 @@ class YAMLFileManager(KeyValueFileManager):
                     return False
         except KeyError:
             return False
+
         return True
 
-    def __getitem__(self, keys: Sequence[Key]) -> Any:
-        """Get a value from the configuration file."""
+    def __getitem__(self, item: Sequence[Key]) -> Any:
+        keys = item
         keys = _validate_keys(keys)
 
         d = self.get().content
         for key in keys:
-            TypeAdapter(dict).validate_python(d)
+            try:
+                TypeAdapter(dict).validate_python(d)
+            except ValidationError:
+                msg = f"Configuration value '{print_keys(keys)}' is missing."
+                raise YAMLValueMissingError(msg) from None
             assert isinstance(d, dict)
-            d = d[key]
+            try:
+                d = d[key]
+            except KeyError as err:
+                raise YAMLValueMissingError(err) from None
 
         return d
-
-    def get(self) -> YAMLDocument:
-        return super().get()
 
     def set_value(
         self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
-        """Set a value in the configuration file."""
+        """Set a value in the YAML file.
+
+        An empty list of keys corresponds to the root of the document.
+        """
         content = copy.deepcopy(self.get().content)
         keys = _validate_keys(keys)
 
@@ -206,14 +225,24 @@ class YAMLFileManager(KeyValueFileManager):
                 keys=keys,
                 value=value,
             )
+        except ValidationError:
+            if not exists_ok:
+                # The configuration is already present, which is not allowed.
+                _raise_already_set(keys)
+            else:
+                TypeAdapter(CommentedMap).validate_python(d)
+                assert isinstance(content, CommentedMap)
+                _set_value_in_existing(
+                    content=content,
+                    keys=keys,
+                    value=value,
+                )
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
                 _raise_already_set(keys)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
-                TypeAdapter(dict).validate_python(parent)
-                assert isinstance(parent, dict)
                 parent[keys[-1]] = value
 
         assert self._content is not None  # We have called .get() already.
@@ -225,12 +254,21 @@ class YAMLFileManager(KeyValueFileManager):
         self.commit(self._content)
 
     def __delitem__(self, keys: Sequence[Key]) -> None:
-        """Remove a value from the configuration file."""
+        """Delete a value in the TOML file.
+
+        An empty list of keys corresponds to the root of the document.
+
+        Trying to delete a key from a document that doesn't exist will pass silently.
+        """
         try:
             content = copy.deepcopy(self.get().content)
         except FileNotFoundError:
             return
-        TypeAdapter(dict).validate_python(content)
+        try:
+            TypeAdapter(dict).validate_python(content)
+        except ValidationError:
+            msg = f"Configuration value '{print_keys(keys)}' is missing."
+            raise YAMLValueMissingError(msg) from None
         assert isinstance(content, dict)
         keys = _validate_keys(keys)
 
@@ -241,7 +279,7 @@ class YAMLFileManager(KeyValueFileManager):
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d = d[key]
-        except KeyError:
+        except (KeyError, ValidationError):
             # N.B. by convention a del call should raise an error if the key is not found.
             msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise YAMLValueMissingError(msg) from None

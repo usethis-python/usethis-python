@@ -401,7 +401,9 @@ Example:
 
 Supported options:
 
+- `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
+- `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
 
 ### `usethis rule <rulecode>`
 

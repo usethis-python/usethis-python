@@ -12,17 +12,8 @@ from ruamel.yaml.comments import (
 )
 from ruamel.yaml.scalarbool import ScalarBoolean
 from ruamel.yaml.scalarfloat import ScalarFloat
-from ruamel.yaml.scalarint import (
-    BinaryInt,
-    HexCapsInt,
-    HexInt,
-    OctalInt,
-    ScalarInt,
-)
-from ruamel.yaml.scalarstring import (
-    FoldedScalarString,
-    LiteralScalarString,
-)
+from ruamel.yaml.scalarint import BinaryInt, HexCapsInt, HexInt, OctalInt, ScalarInt
+from ruamel.yaml.scalarstring import FoldedScalarString, LiteralScalarString
 from ruamel.yaml.timestamp import TimeStamp
 
 from usethis._integrations.file.yaml.errors import (

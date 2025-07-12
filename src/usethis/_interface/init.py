@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import typer
 
-from usethis._options import frozen_opt, offline_opt, quiet_opt
+from usethis._options import backend_opt, frozen_opt, offline_opt, quiet_opt
+from usethis._types.backend import BackendEnum
 from usethis._types.ci import CIServiceEnum
 from usethis._types.docstyle import DocStyleEnum
 from usethis._types.status import DevelopmentStatusEnum
@@ -48,6 +49,7 @@ def init(  # noqa: PLR0913, PLR0915
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
+    backend: BackendEnum = backend_opt,
     path: str | None = typer.Argument(
         None,
         help="The path to use for the project. Defaults to the current working directory.",
@@ -71,9 +73,15 @@ def init(  # noqa: PLR0913, PLR0915
     from usethis._toolset.test import use_test_frameworks
     from usethis.errors import UsethisError
 
+    assert isinstance(backend, BackendEnum)
+
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, project_dir=path
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            project_dir=path,
         ),
         files_manager(),
     ):

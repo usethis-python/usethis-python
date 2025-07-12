@@ -25,9 +25,6 @@ usethis gives detailed messages about what it is doing (and what you need to do 
 
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html), this package brings a similar experience to the Python ecosystem as a CLI tool.
 
-> [!TIP]
-> usethis is great for fresh projects using [uv](https://docs.astral.sh/uv), but also supports updating existing projects. However, this should be considered experimental. If you encounter problems or have feedback, please [open an issue](https://github.com/usethis-python/usethis-python/issues/new?template=idea.md).
-
 ## Highlights
 
 - 🧰 First-class support for state-of-the-practice tooling: uv, Ruff, pytest, pre-commit, and many more.
@@ -202,6 +199,11 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 ### `usethis format`
 
@@ -220,6 +222,11 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 See [`usethis tool`](#usethis-tool) for more information.
 
@@ -240,6 +247,11 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 See [`usethis tool`](#usethis-tool) for more information.
 
@@ -260,6 +272,11 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 See [`usethis tool`](#usethis-tool) for more information.
 
@@ -280,6 +297,11 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 See [`usethis tool`](#usethis-tool) for more information.
 
@@ -321,6 +343,11 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 For `usethis tool ruff`, in addition to the above options, you can also specify:
 
@@ -340,6 +367,11 @@ Supported options:
 - `--remove` to remove the CI configuration instead of adding it
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 ### `usethis badge`
 
@@ -366,8 +398,13 @@ Add a README.md file to the project.
 
 Supported options:
 
-- `--quiet` to suppress output
 - `--badges` to also add badges to the README.md file
+- `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 ### `usethis author`
 
@@ -382,6 +419,11 @@ Other supported options:
 - `--email` to set the author email address
 - `--overwrite` to overwrite all existing author information
 - `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 ### `usethis docstyle <style>`
 
@@ -402,6 +444,11 @@ Example:
 Supported options:
 
 - `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 ### `usethis rule <rulecode>`
 
@@ -421,6 +468,11 @@ Supported options:
 - `--ignore` to add the rule to the ignore list (or remove it if --remove is specified).
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
 
 ### `usethis status <status>`
 
@@ -438,8 +490,8 @@ Possible values (required):
 
 Supported options:
 
-- `--quiet` to suppress output
 - `--badges` to add an associated badge to the README file
+- `--quiet` to suppress output
 
 ### `usethis list`
 

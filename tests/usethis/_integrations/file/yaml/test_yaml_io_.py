@@ -19,6 +19,7 @@ from ruamel.yaml.timestamp import TimeStamp
 from usethis._integrations.file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
+    UnexpectedYAMLValueError,
     YAMLDecodeError,
     YAMLNotFoundError,
 )
@@ -359,7 +360,7 @@ outer:
                 with pytest.raises(KeyError):
                     _ = manager[["non_existent_key"]]
 
-    class TestSetItem:
+    class TestSetValue:
         def test_no_keys(self, tmp_path: Path):
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
@@ -377,6 +378,25 @@ outer:
                 assert isinstance(manager._content, YAMLDocument)
                 assert manager._content.content == {"key": "value"}
                 assert isinstance(manager._content, YAMLDocument)
+
+        def test_root_level_is_not_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("[1,2,3]")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    UnexpectedYAMLValueError,
+                    match="Root level configuration must be a mapping.",
+                ):
+                    manager.set_value(keys=["key"], value="value")
 
     class TestDelItem:
         def test_delete_single_item(self, tmp_path: Path):
@@ -423,6 +443,122 @@ other: value
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
                 assert manager._content.content == {"other": "value"}
+
+    class TestExtendList:
+        def test_success(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("items:\n  - item1\n  - item2")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(keys=["items"], values=["item3", "item4"])
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {
+                    "items": ["item1", "item2", "item3", "item4"]
+                }
+
+        def test_root_level_is_not_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("[1,2,3]")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    UnexpectedYAMLValueError,
+                    match="Root level configuration must be a mapping.",
+                ):
+                    manager.extend_list(keys=["key"], values=["value"])
+
+        def test_no_keys_raises(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("items:\n  - item1\n  - item2")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    ValueError, match="At least one ID key must be provided."
+                ):
+                    manager.extend_list(keys=[], values=["item3", "item4"])
+
+        def test_non_existent_key(self, tmp_path: Path):
+            """What happens when the key does not exist? We should just create the list."""
+
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("items:\n  - item1\n  - item2")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(
+                    keys=["non_existent_key"], values=["item3", "item4"]
+                )
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager.get().content == {
+                    "items": ["item1", "item2"],
+                    "non_existent_key": ["item3", "item4"],
+                }
+
+        def test_nested_keys(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text(
+                """\
+outer:
+    inner:
+        items:
+            - item1
+            - item2
+"""
+            )
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(
+                    keys=["outer", "inner", "items"], values=["item3", "item4"]
+                )
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {
+                    "outer": {"inner": {"items": ["item1", "item2", "item3", "item4"]}}
+                }
 
 
 class TestEditYaml:

@@ -21,6 +21,7 @@ from usethis._console import info_print
 from usethis._integrations.file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
+    UnexpectedYAMLValueError,
     YAMLDecodeError,
     YAMLNotFoundError,
     YAMLValueAlreadySetError,
@@ -190,10 +191,15 @@ class YAMLFileManager(KeyValueFileManager):
         content = copy.deepcopy(self.get().content)
         keys = _validate_keys(keys)
 
-        if not keys:
-            # Root level config - value must be a mapping.
+        # Root level config - value must be a mapping.
+        try:
             TypeAdapter(dict).validate_python(content)
-            assert isinstance(content, dict)
+        except ValidationError:
+            msg = "Root level configuration must be a mapping."
+            raise UnexpectedYAMLValueError(msg) from None
+        assert isinstance(content, dict)
+
+        if not keys:
             TypeAdapter(dict).validate_python(value)
             assert isinstance(value, dict)
             if not content or exists_ok:
@@ -322,10 +328,53 @@ class YAMLFileManager(KeyValueFileManager):
         )
         self.commit(self._content)
 
-    @abstractmethod
     def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
         """Extend a list in the configuration file."""
-        raise NotImplementedError
+        if not keys:
+            msg = "At least one ID key must be provided."
+            raise ValueError(msg)
+        keys = _validate_keys(keys)
+
+        content = copy.deepcopy(self.get().content)
+        # Root level config - value must be a mapping.
+        try:
+            TypeAdapter(dict).validate_python(content)
+        except ValidationError:
+            msg = "Root level configuration must be a mapping."
+            raise UnexpectedYAMLValueError(msg) from None
+        assert isinstance(content, dict)
+
+        try:
+            d = content
+            for key in keys[:-1]:
+                TypeAdapter(dict).validate_python(d)
+                assert isinstance(d, dict)
+                d = d[key]
+            p_parent = d
+            TypeAdapter(dict).validate_python(p_parent)
+            assert isinstance(p_parent, dict)
+            d = p_parent[keys[-1]]
+        except KeyError:
+            new_content = values
+            for key in reversed(keys):
+                new_content = {key: new_content}
+            assert isinstance(new_content, dict)
+            content = mergedeep.merge(content, new_content)
+            assert isinstance(content, dict)
+        else:
+            TypeAdapter(dict).validate_python(p_parent)
+            TypeAdapter(list).validate_python(d)
+            assert isinstance(p_parent, dict)
+            assert isinstance(d, list)
+            p_parent[keys[-1]] = d + values
+
+        assert self._content is not None  # We have called .get() already.
+        update_ruamel_yaml_map(
+            cmap=self._content.content,
+            new_contents=content,
+            preserve_comments=True,
+        )
+        self.commit(self._content)
 
     @abstractmethod
     def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:

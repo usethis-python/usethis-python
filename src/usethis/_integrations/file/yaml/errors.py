@@ -11,6 +11,10 @@ class YAMLValueAlreadySetError(YAMLError):
     """Raised when a value is unexpectedly already set in the YAML file."""
 
 
+class UnexpectedYAMLValueError(YAMLError):
+    """Raised when an unexpected value is encountered in the YAML file."""
+
+
 class YAMLValueMissingError(KeyError, YAMLError):
     """Raised when a value is unexpectedly missing from the YAML file."""
 

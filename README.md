@@ -120,6 +120,7 @@ $ uvx usethis init
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.
 ☐ Run 'uv run pytest' to run the tests.
+☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.
 ```
 
 To use Ruff on an existing project, run:

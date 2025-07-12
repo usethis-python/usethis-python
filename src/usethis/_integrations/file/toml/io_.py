@@ -18,6 +18,7 @@ from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
     TOMLValueAlreadySetError,
+    TOMLValueInvalidError,
     TOMLValueMissingError,
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
@@ -109,7 +110,7 @@ class TOMLFileManager(KeyValueFileManager):
                 TypeAdapter(dict).validate_python(container)
                 assert isinstance(container, dict)
                 container = container[key]
-        except KeyError:
+        except (KeyError, ValidationError):
             return False
 
         return True
@@ -120,9 +121,16 @@ class TOMLFileManager(KeyValueFileManager):
 
         d = self.get()
         for key in keys:
-            TypeAdapter(dict).validate_python(d)
+            try:
+                TypeAdapter(dict).validate_python(d)
+            except ValidationError:
+                msg = f"Configuration value '{print_keys(keys)}' is missing."
+                raise TOMLValueMissingError(msg) from None
             assert isinstance(d, dict)
-            d = d[key]
+            try:
+                d = d[key]
+            except KeyError as err:
+                raise TOMLValueMissingError(err) from None
 
         return d
 
@@ -165,14 +173,24 @@ class TOMLFileManager(KeyValueFileManager):
                 current_keys=shared_keys,
                 value=value,
             )
+        except ValidationError:
+            if not exists_ok:
+                # The configuration is already present, which is not allowed.
+                _raise_already_set(keys)
+            else:
+                _set_value_in_existing(
+                    toml_document=toml_document,
+                    current_container=d,
+                    keys=keys,
+                    current_keys=shared_keys,
+                    value=value,
+                )
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
                 _raise_already_set(keys)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
-                TypeAdapter(dict).validate_python(parent)
-                assert isinstance(parent, dict)
                 parent[keys[-1]] = value
 
         self.commit(toml_document)  # type: ignore[reportAssignmentType]
@@ -197,7 +215,7 @@ class TOMLFileManager(KeyValueFileManager):
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d = d[key]
-        except KeyError:
+        except (KeyError, ValidationError):
             # N.B. by convention a del call should raise an error if the key is not found.
             msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise TOMLValueMissingError(msg) from None
@@ -229,18 +247,19 @@ class TOMLFileManager(KeyValueFileManager):
                     d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
-            for idx in range(len(keys) - 1):
-                d, parent = toml_document, {}
-
-                for key in keys[: idx + 1]:
-                    d, parent = d[key], d
-                    TypeAdapter(dict).validate_python(d)
+            for idx in reversed(range(1, len(keys))):
+                # Navigate to the parent of the section we want to check
+                parent = toml_document
+                for key in keys[: idx - 1]:
                     TypeAdapter(dict).validate_python(parent)
-                    assert isinstance(d, dict)
                     assert isinstance(parent, dict)
-                assert isinstance(d, dict)
-                if not d:
-                    del parent[keys[idx]]
+                    parent = parent[key]
+
+                # If the section is empty, remove it
+                TypeAdapter(dict).validate_python(parent)
+                assert isinstance(parent, dict)
+                if not parent[keys[idx - 1]]:
+                    del parent[keys[idx - 1]]
 
         self.commit(toml_document)
 
@@ -269,10 +288,21 @@ class TOMLFileManager(KeyValueFileManager):
             assert isinstance(contents, dict)
             toml_document = mergedeep.merge(toml_document, contents)
             assert isinstance(toml_document, TOMLDocument)
+        except ValidationError:
+            msg = (
+                f"Configuration value '{print_keys(keys[:-1])}' is not a valid mapping in "
+                f"the TOML file '{self.name}', and does not contain the key '{keys[-1]}'."
+            )
+            raise TOMLValueMissingError(msg) from None
         else:
-            TypeAdapter(dict).validate_python(p_parent)
-            TypeAdapter(list).validate_python(d)
-            assert isinstance(p_parent, dict)
+            try:
+                TypeAdapter(list).validate_python(d)
+            except ValidationError:
+                msg = (
+                    f"Configuration value '{print_keys(keys)}' is not a valid list in "
+                    f"the TOML file '{self.name}'."
+                )
+                raise TOMLValueInvalidError(msg) from None
             assert isinstance(d, list)
             p_parent[keys[-1]] = d + values
 

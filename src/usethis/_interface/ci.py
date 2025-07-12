@@ -1,6 +1,6 @@
 import typer
 
-from usethis._options import offline_opt, quiet_opt
+from usethis._options import frozen_opt, offline_opt, quiet_opt
 
 app = typer.Typer(
     help="Add config for Continuous Integration (CI) pipelines.", add_completion=False
@@ -14,6 +14,7 @@ def bitbucket(
     ),
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    frozen: bool = frozen_opt,
 ) -> None:
     from usethis._config import usethis_config
     from usethis._config_file import files_manager
@@ -21,7 +22,10 @@ def bitbucket(
     from usethis._core.ci import use_ci_bitbucket
     from usethis.errors import UsethisError
 
-    with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+    with (
+        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        files_manager(),
+    ):
         try:
             use_ci_bitbucket(remove=remove)
         except UsethisError as err:

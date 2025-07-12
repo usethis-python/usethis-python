@@ -12,7 +12,7 @@ class INIValueAlreadySetError(INIError):
 
 
 class INIValueMissingError(KeyError, INIError):
-    """Raised when a value is unexpectedly missing from the TOML file."""
+    """Raised when a value is unexpectedly missing from the INI file."""
 
 
 class UnexpectedINIOpenError(INIError):

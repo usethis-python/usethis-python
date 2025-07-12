@@ -177,7 +177,7 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
             f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
         )
     elif backend is BackendEnum.none:
-        box_print(f"Install the {group} dependenc{ies} {deps_str}.")
+        box_print(f"Add the {group} dependenc{ies} {deps_str}.")
     else:
         assert_never(backend)
 

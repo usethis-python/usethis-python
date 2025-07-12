@@ -322,6 +322,26 @@ class TestAddDepsToGroup:
             default_groups = get_default_groups()
             assert "test" not in default_groups
 
+    def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = []
+""")
+
+        # Act
+        with (
+            usethis_config.set(backend=BackendEnum.none),
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+        ):
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "☐ Add the test dependency 'pytest'.\n"
+
 
 class TestRemoveDepsFromGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -470,6 +490,26 @@ class TestRemoveDepsFromGroup:
                 match="Failed to remove 'pytest' from the 'test' dependency group",
             ):
                 remove_deps_from_group([Dependency(name="pytest")], "test")
+
+    def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = ["pytest"]
+""")
+
+        # Act
+        with (
+            usethis_config.set(backend=BackendEnum.none),
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+        ):
+            remove_deps_from_group([Dependency(name="pytest")], "test")
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "☐ Remove the test dependency 'pytest'.\n"
 
 
 class TestIsDepInAnyGroup:
@@ -752,6 +792,21 @@ default-groups = ["doc"]
         with change_cwd(tmp_path), files_manager():
             # Act
             result = get_default_groups()
+
+            # Assert
+            assert result == []
+
+    def test_none_backend(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[tool.uv]
+default-groups = ["test"]
+""")
+
+        with usethis_config.set(backend=BackendEnum.none):
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = get_default_groups()
 
             # Assert
             assert result == []

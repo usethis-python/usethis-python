@@ -21,6 +21,7 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
 
     Raises:
         UVSubprocessFailedError: If the subprocess fails.
+        ForbiddenBackendError: If the current backend is not uv (or auto).
     """
     if usethis_config.backend not in {BackendEnum.uv, BackendEnum.auto}:
         msg = f"The '{usethis_config.backend.value}' backend is enabled, but a uv subprocess was invoked."

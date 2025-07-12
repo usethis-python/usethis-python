@@ -43,7 +43,7 @@ def _parse_python_version_from_uv_output(version: str) -> str:
     if match:
         return match.group(1)
     else:
-        msg = f"Could not parse version from {version}"
+        msg = f"Could not parse version from '{version}'."
         raise UVUnparsedPythonVersionError(msg)
 
 

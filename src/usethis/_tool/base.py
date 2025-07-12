@@ -348,7 +348,7 @@ class Tool(Protocol):
             msg = (
                 f"The preferred file manager '{preferred_file_manager}' is not "
                 f"among the file managers '{file_managers}' for the tool "
-                f"'{self.name}'"
+                f"'{self.name}'."
             )
             raise NotImplementedError(msg)
         return {preferred_file_manager}
@@ -408,7 +408,7 @@ class Tool(Protocol):
 
             if not file_managers:
                 if config_item.applies_to_all:
-                    msg = f"No active config file managers found for one of the '{self.name}' config items"
+                    msg = f"No active config file managers found for one of the '{self.name}' config items."
                     raise NotImplementedError(msg)
                 else:
                     # Early exist; this config item is not managed by any active files
@@ -422,9 +422,7 @@ class Tool(Protocol):
                 in {file_manager.relative_path for file_manager in file_managers}
             ]
             if not config_entries:
-                msg = (
-                    f"No config entries found for one of the '{self.name}' config items"
-                )
+                msg = f"No config entries found for one of the '{self.name}' config items."
                 raise NotImplementedError(msg)
             if len(config_entries) != 1:
                 msg = (

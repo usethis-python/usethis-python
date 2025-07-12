@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import copy
 import re
 from typing import TYPE_CHECKING, Any
@@ -8,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 import mergedeep
 import tomlkit.api
 import tomlkit.items
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 from tomlkit import TOMLDocument
 from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
@@ -18,6 +17,7 @@ from usethis._integrations.file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
     TOMLValueAlreadySetError,
+    TOMLValueInvalidError,
     TOMLValueMissingError,
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
@@ -61,7 +61,7 @@ class TOMLFileManager(KeyValueFileManager):
         except UnexpectedFileIOError as err:
             raise UnexpectedTOMLIOError(err) from None
         except TOMLKitError as err:
-            msg = f"Failed to decode '{self.name}': {err}"
+            msg = f"Failed to decode '{self.name}':\n{err}"
             raise TOMLDecodeError(msg) from None
 
     def _dump_content(self) -> str:
@@ -109,7 +109,7 @@ class TOMLFileManager(KeyValueFileManager):
                 TypeAdapter(dict).validate_python(container)
                 assert isinstance(container, dict)
                 container = container[key]
-        except KeyError:
+        except (KeyError, ValidationError):
             return False
 
         return True
@@ -120,9 +120,16 @@ class TOMLFileManager(KeyValueFileManager):
 
         d = self.get()
         for key in keys:
-            TypeAdapter(dict).validate_python(d)
+            try:
+                TypeAdapter(dict).validate_python(d)
+            except ValidationError:
+                msg = f"Configuration value '{print_keys(keys)}' is missing."
+                raise TOMLValueMissingError(msg) from None
             assert isinstance(d, dict)
-            d = d[key]
+            try:
+                d = d[key]
+            except KeyError as err:
+                raise TOMLValueMissingError(err) from None
 
         return d
 
@@ -165,14 +172,24 @@ class TOMLFileManager(KeyValueFileManager):
                 current_keys=shared_keys,
                 value=value,
             )
+        except ValidationError:
+            if not exists_ok:
+                # The configuration is already present, which is not allowed.
+                _raise_already_set(shared_keys)
+            else:
+                _set_value_in_existing(
+                    toml_document=toml_document,
+                    current_container=d,
+                    keys=keys,
+                    current_keys=shared_keys,
+                    value=value,
+                )
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
                 _raise_already_set(keys)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
-                TypeAdapter(dict).validate_python(parent)
-                assert isinstance(parent, dict)
                 parent[keys[-1]] = value
 
         self.commit(toml_document)  # type: ignore[reportAssignmentType]
@@ -197,7 +214,7 @@ class TOMLFileManager(KeyValueFileManager):
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d = d[key]
-        except KeyError:
+        except (KeyError, ValidationError):
             # N.B. by convention a del call should raise an error if the key is not found.
             msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise TOMLValueMissingError(msg) from None
@@ -214,33 +231,33 @@ class TOMLFileManager(KeyValueFileManager):
             for key in list(d.keys()):
                 del d[key]
         else:
-            with contextlib.suppress(KeyError):
-                # N.B. There was a strange behaviour (bug?) in tomlkit where deleting a
-                # key has two separate lines:
-                # self._value.remove(key)  # noqa: ERA001
-                # dict.__delitem__(self, key)  # noqa: ERA001
-                # but it's not clear why there's this duplicate and it causes a KeyError
-                # in some cases.
-                if isinstance(d, OutOfOrderTableProxy):
-                    # N.B. this case isn't expected based on the type annotations but
-                    # it is possible in practice.
-                    d.__delitem__(keys[-1])
-                else:
-                    d.remove(keys[-1])
+            # N.B. There was a strange behaviour (bug?) in tomlkit where deleting a
+            # key has two separate lines:
+            # self._value.remove(key)  # noqa: ERA001
+            # dict.__delitem__(self, key)  # noqa: ERA001
+            # but it's not clear why there's this duplicate and it causes a KeyError
+            # in some cases.
+            if isinstance(d, OutOfOrderTableProxy):
+                # N.B. this case isn't expected based on the type annotations but
+                # it is possible in practice.
+                d.__delitem__(keys[-1])
+            else:
+                d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
-            for idx in range(len(keys) - 1):
-                d, parent = toml_document, {}
-
-                for key in keys[: idx + 1]:
-                    d, parent = d[key], d
-                    TypeAdapter(dict).validate_python(d)
+            for idx in reversed(range(1, len(keys))):
+                # Navigate to the parent of the section we want to check
+                parent = toml_document
+                for key in keys[: idx - 1]:
                     TypeAdapter(dict).validate_python(parent)
-                    assert isinstance(d, dict)
                     assert isinstance(parent, dict)
-                assert isinstance(d, dict)
-                if not d:
-                    del parent[keys[idx]]
+                    parent = parent[key]
+
+                # If the section is empty, remove it
+                TypeAdapter(dict).validate_python(parent)
+                assert isinstance(parent, dict)
+                if not parent[keys[idx - 1]]:
+                    del parent[keys[idx - 1]]
 
         self.commit(toml_document)
 
@@ -269,16 +286,32 @@ class TOMLFileManager(KeyValueFileManager):
             assert isinstance(contents, dict)
             toml_document = mergedeep.merge(toml_document, contents)
             assert isinstance(toml_document, TOMLDocument)
+        except ValidationError:
+            msg = (
+                f"Configuration value '{print_keys(keys[:-1])}' is not a valid mapping in "
+                f"the TOML file '{self.name}', and does not contain the key '{keys[-1]}'."
+            )
+            raise TOMLValueMissingError(msg) from None
         else:
-            TypeAdapter(dict).validate_python(p_parent)
-            TypeAdapter(list).validate_python(d)
-            assert isinstance(p_parent, dict)
+            try:
+                TypeAdapter(list).validate_python(d)
+            except ValidationError:
+                msg = (
+                    f"Configuration value '{print_keys(keys)}' is not a valid list in "
+                    f"the TOML file '{self.name}'."
+                )
+                raise TOMLValueInvalidError(msg) from None
             assert isinstance(d, list)
             p_parent[keys[-1]] = d + values
 
         self.commit(toml_document)
 
     def remove_from_list(self, *, keys: Sequence[Key], values: Collection[Any]) -> None:
+        """Remove values from a list in the TOML file.
+
+        If the list is not present, or the key at which is is found does not correspond
+        to a list, pass silently.
+        """
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
@@ -297,13 +330,14 @@ class TOMLFileManager(KeyValueFileManager):
             TypeAdapter(dict).validate_python(p_parent)
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
-        except KeyError:
+        except (KeyError, ValidationError):
             # The configuration is not present - do not modify
             return
 
-        TypeAdapter(dict).validate_python(p_parent)
-        TypeAdapter(list).validate_python(p)
-        assert isinstance(p_parent, dict)
+        try:
+            TypeAdapter(list).validate_python(p)
+        except ValidationError:
+            return
         assert isinstance(p, list)
 
         new_values = [value for value in p if value not in values]

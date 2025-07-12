@@ -126,7 +126,7 @@ def _add_step_in_default_via_doc(
                 try:
                     script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
                 except KeyError:
-                    msg = f"Unrecognized script item anchor: {script_item.name}"
+                    msg = f"Unrecognized script item anchor: '{script_item.name}'."
                     raise NotImplementedError(msg) from None
 
                 if config.definitions is None:

@@ -105,6 +105,8 @@ ignore_missing = ["pytest"]
             assert result is True
 
         def test_no_numbers(self):
+            # N.B. Deptry does not accept rules without number codes, unlike Ruff.
+
             # Arrange
             rule = "DEP"
 

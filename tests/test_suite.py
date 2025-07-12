@@ -49,5 +49,7 @@ def test_uv_init_not_git_repo(uv_init_dir: Path):
         pass
     else:
         path = repo.working_tree_dir
-        msg = f"{path} is a git repository, but it shouldn't be for uv_init_dir fixture"
+        msg = (
+            f"{path} is a git repository, but it shouldn't be for uv_init_dir fixture."
+        )
         raise PytestSuiteConfigurationError(msg)

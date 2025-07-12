@@ -22,7 +22,7 @@ def get_project_dict() -> dict[str, Any]:
         msg = "The 'project' section is missing from 'pyproject.toml'."
         raise PyprojectTOMLProjectSectionError(msg) from None
     except ValidationError as err:
-        msg = f"The 'project' section in 'pyproject.toml' is not a valid map: {err}"
+        msg = f"The 'project' section in 'pyproject.toml' is not a valid map:\n{err}"
         raise PyprojectTOMLProjectSectionError(msg) from None
 
     return project

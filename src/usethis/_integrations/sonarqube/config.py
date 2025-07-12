@@ -86,7 +86,7 @@ sonar.verbose={"true" if verbose else "false"}
 def _get_short_version(version: str) -> str:
     match = re.match(r"^(\d{1,2}\.\d{1,2})", version)
     if match is None:
-        msg = f"Could not parse Python version from {version}"
+        msg = f"Could not parse Python version from '{version}'."
         raise _NonstandardPythonVersionError(msg)
 
     return match.group(1)
@@ -109,5 +109,5 @@ def _validate_project_key(project_key: str) -> None:
     """
     _RE = r"^[a-zA-Z0-9\-_:.]+$"
     if re.match(_RE, project_key) is None or project_key.isdigit():
-        msg = f"Invalid SonarQube project key: {project_key}"
+        msg = f"Invalid SonarQube project key: '{project_key}'."
         raise InvalidSonarQubeProjectKeyError(msg)

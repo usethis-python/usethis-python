@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import copy
 import re
 from typing import TYPE_CHECKING, Any
@@ -176,7 +175,7 @@ class TOMLFileManager(KeyValueFileManager):
         except ValidationError:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
-                _raise_already_set(keys)
+                _raise_already_set(shared_keys)
             else:
                 _set_value_in_existing(
                     toml_document=toml_document,
@@ -232,19 +231,18 @@ class TOMLFileManager(KeyValueFileManager):
             for key in list(d.keys()):
                 del d[key]
         else:
-            with contextlib.suppress(KeyError):
-                # N.B. There was a strange behaviour (bug?) in tomlkit where deleting a
-                # key has two separate lines:
-                # self._value.remove(key)  # noqa: ERA001
-                # dict.__delitem__(self, key)  # noqa: ERA001
-                # but it's not clear why there's this duplicate and it causes a KeyError
-                # in some cases.
-                if isinstance(d, OutOfOrderTableProxy):
-                    # N.B. this case isn't expected based on the type annotations but
-                    # it is possible in practice.
-                    d.__delitem__(keys[-1])
-                else:
-                    d.remove(keys[-1])
+            # N.B. There was a strange behaviour (bug?) in tomlkit where deleting a
+            # key has two separate lines:
+            # self._value.remove(key)  # noqa: ERA001
+            # dict.__delitem__(self, key)  # noqa: ERA001
+            # but it's not clear why there's this duplicate and it causes a KeyError
+            # in some cases.
+            if isinstance(d, OutOfOrderTableProxy):
+                # N.B. this case isn't expected based on the type annotations but
+                # it is possible in practice.
+                d.__delitem__(keys[-1])
+            else:
+                d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
             for idx in reversed(range(1, len(keys))):
@@ -309,6 +307,11 @@ class TOMLFileManager(KeyValueFileManager):
         self.commit(toml_document)
 
     def remove_from_list(self, *, keys: Sequence[Key], values: Collection[Any]) -> None:
+        """Remove values from a list in the TOML file.
+
+        If the list is not present, or the key at which is is found does not correspond
+        to a list, pass silently.
+        """
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
@@ -327,24 +330,14 @@ class TOMLFileManager(KeyValueFileManager):
             TypeAdapter(dict).validate_python(p_parent)
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
-        except ValidationError:
-            msg = (
-                f"Configuration value '{print_keys(keys[:-1])}' is not a valid mapping in "
-                f"the TOML file '{self.name}', and does not contain the key '{keys[-1]}'."
-            )
-            raise TOMLValueMissingError(msg) from None
-        except KeyError:
+        except (KeyError, ValidationError):
             # The configuration is not present - do not modify
             return
 
         try:
             TypeAdapter(list).validate_python(p)
         except ValidationError:
-            msg = (
-                f"Configuration value '{print_keys(keys)}' is not a valid list in "
-                f"the TOML file '{self.name}'."
-            )
-            raise TOMLValueInvalidError(msg) from None
+            return
         assert isinstance(p, list)
 
         new_values = [value for value in p if value not in values]

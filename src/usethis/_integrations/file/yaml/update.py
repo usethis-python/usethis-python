@@ -44,6 +44,8 @@ def update_ruamel_yaml_map(
         if key not in cmap:
             cmap[key] = value
         elif isinstance(value, dict):
+            if not isinstance(cmap[key], CommentedMap):
+                cmap[key] = CommentedMap()
             update_ruamel_yaml_map(
                 cmap[key],
                 value,

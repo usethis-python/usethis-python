@@ -1,6 +1,6 @@
 import typer
 
-from usethis._options import backend_opt, offline_opt, quiet_opt
+from usethis._options import backend_opt, frozen_opt, offline_opt, quiet_opt
 from usethis._types.backend import BackendEnum
 
 app = typer.Typer(
@@ -15,6 +15,7 @@ def bitbucket(
     ),
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
     from usethis._config import usethis_config
@@ -26,7 +27,9 @@ def bitbucket(
     assert isinstance(backend, BackendEnum)
 
     with (
-        usethis_config.set(offline=offline, quiet=quiet, backend=backend),
+        usethis_config.set(
+            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+        ),
         files_manager(),
     ):
         try:

@@ -364,6 +364,7 @@ Supported options:
 - `--remove` to remove the CI configuration instead of adding it
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
+- `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
 Possible values:
   - `auto` to auto-detect the backend (default)

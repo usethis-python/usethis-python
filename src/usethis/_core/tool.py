@@ -512,6 +512,8 @@ def use_tool(
         use_deptry(remove=remove, how=how)
     elif isinstance(tool, ImportLinterTool):
         use_import_linter(remove=remove, how=how)
+    elif isinstance(tool, MkDocsTool):
+        use_mkdocs(remove=remove, how=how)
     elif isinstance(tool, PreCommitTool):
         use_pre_commit(remove=remove, how=how)
     elif isinstance(tool, PyprojectFmtTool):

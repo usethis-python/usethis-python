@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any
 import mergedeep
 import tomlkit.api
 import tomlkit.items
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 from tomlkit import TOMLDocument
 from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
@@ -279,6 +279,11 @@ class TOMLFileManager(KeyValueFileManager):
         self.commit(toml_document)
 
     def remove_from_list(self, *, keys: Sequence[Key], values: Collection[Any]) -> None:
+        """Remove values from a list in the TOML file.
+
+        If the list is not present, or the key at which is is found does not correspond
+        to a list, pass silently.
+        """
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
@@ -297,13 +302,14 @@ class TOMLFileManager(KeyValueFileManager):
             TypeAdapter(dict).validate_python(p_parent)
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
-        except KeyError:
+        except (KeyError, ValidationError):
             # The configuration is not present - do not modify
             return
 
-        TypeAdapter(dict).validate_python(p_parent)
-        TypeAdapter(list).validate_python(p)
-        assert isinstance(p_parent, dict)
+        try:
+            TypeAdapter(list).validate_python(p)
+        except ValidationError:
+            return
         assert isinstance(p, list)
 
         new_values = [value for value in p if value not in values]

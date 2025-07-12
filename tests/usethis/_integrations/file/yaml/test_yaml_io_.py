@@ -560,6 +560,164 @@ outer:
                     "outer": {"inner": {"items": ["item1", "item2", "item3", "item4"]}}
                 }
 
+    class TestRemoveFromList:
+        def test_success(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text(
+                """\
+items:
+    - item1
+    - item2
+    - item3
+"""
+            )
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.remove_from_list(keys=["items"], values=["item2"])
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {"items": ["item1", "item3"]}
+
+        def test_root_level_is_not_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("[1,2,3]")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    UnexpectedYAMLValueError,
+                    match="Root level configuration must be a mapping.",
+                ):
+                    manager.remove_from_list(keys=["key"], values=["value"])
+
+        def test_no_keys_raises(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text(
+                """\
+items:
+    - item1
+    - item2
+    - item3
+"""
+            )
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    ValueError, match="At least one ID key must be provided."
+                ):
+                    manager.remove_from_list(keys=[], values=["item2"])
+
+        def test_non_existent_key(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text(
+                """\
+items:
+    - item1
+    - item2
+    - item3
+"""
+            )
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.remove_from_list(keys=["non_existent_key"], values=["item2"])
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {
+                    "items": ["item1", "item2", "item3"]
+                }
+
+        def test_nested_keys(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text(
+                """\
+outer:
+    inner:
+        items:
+            - item1
+            - item2
+            - item3
+"""
+            )
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.remove_from_list(
+                    keys=["outer", "inner", "items"], values=["item2"]
+                )
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {
+                    "outer": {"inner": {"items": ["item1", "item3"]}}
+                }
+
+        def test_key_does_correspond_to_list(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text(
+                """\
+outer:
+    inner:
+        items: item1
+"""
+            )
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.remove_from_list(
+                    keys=["outer", "inner", "items"], values=["other_item"]
+                )
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {
+                    "outer": {"inner": {"items": "item1"}}
+                }
+
 
 class TestEditYaml:
     class TestLiterals:

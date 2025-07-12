@@ -502,3 +502,21 @@ lint.pydocstyle.convention = "pep257"
 
                 # Assert
                 assert manager._content == {"a": ["b", "c"]}
+
+        def test_not_a_list(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                manager[["a"]] = "b"
+
+                # Act
+                manager.remove_from_list(keys=["a"], values=["c"])
+
+                # Assert
+                assert manager._content == {"a": "b"}

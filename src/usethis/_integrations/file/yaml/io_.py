@@ -3,7 +3,6 @@ from __future__ import annotations
 import contextlib
 import copy
 import re
-from abc import abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass
 from io import StringIO
@@ -376,10 +375,53 @@ class YAMLFileManager(KeyValueFileManager):
         )
         self.commit(self._content)
 
-    @abstractmethod
     def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
         """Remove values from a list in the configuration file."""
-        raise NotImplementedError
+        if not keys:
+            msg = "At least one ID key must be provided."
+            raise ValueError(msg)
+        keys = _validate_keys(keys)
+
+        content = copy.deepcopy(self.get()).content
+        # Root level config - value must be a mapping.
+        try:
+            TypeAdapter(dict).validate_python(content)
+        except ValidationError:
+            msg = "Root level configuration must be a mapping."
+            raise UnexpectedYAMLValueError(msg) from None
+        assert isinstance(content, dict)
+
+        try:
+            p = content
+            for key in keys[:-1]:
+                TypeAdapter(dict).validate_python(p)
+                assert isinstance(p, dict)
+                p = p[key]
+
+            p_parent = p
+            TypeAdapter(dict).validate_python(p_parent)
+            assert isinstance(p_parent, dict)
+            p = p_parent[keys[-1]]
+        except (KeyError, ValidationError):
+            # The configuration is not present - do not modify
+            return
+
+        try:
+            TypeAdapter(list).validate_python(p)
+        except ValidationError:
+            return
+        assert isinstance(p, list)
+
+        new_values = [value for value in p if value not in values]
+        p_parent[keys[-1]] = new_values
+
+        assert self._content is not None  # We have called .get() already.
+        update_ruamel_yaml_map(
+            cmap=self._content.content,
+            new_contents=content,
+            preserve_comments=True,
+        )
+        self.commit(self._content)
 
 
 def _set_value_in_existing(

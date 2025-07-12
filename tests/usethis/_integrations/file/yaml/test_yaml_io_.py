@@ -22,6 +22,7 @@ from usethis._integrations.file.yaml.errors import (
     UnexpectedYAMLValueError,
     YAMLDecodeError,
     YAMLNotFoundError,
+    YAMLValueAlreadySetError,
 )
 from usethis._integrations.file.yaml.io_ import YAMLDocument, YAMLFileManager, edit_yaml
 from usethis._test import change_cwd
@@ -189,6 +190,24 @@ class TestYAMLFileManager:
             assert isinstance(parsed_content, YAMLDocument)
             assert isinstance(parsed_content.content, CommentedMap)
             assert parsed_content.content == {"key": "value"}
+
+    class TestValidateLock:
+        def test_unexpected_io(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            with (
+                change_cwd(tmp_path),
+                MyYAMLFileManager() as my_yaml_manager,
+            ):
+                my_yaml_manager.unlock()
+
+                # Act, Assert
+                with pytest.raises(UnexpectedYAMLIOError):
+                    my_yaml_manager._validate_lock()
 
     class TestContains:
         def test_single_map(self, tmp_path: Path):
@@ -360,6 +379,22 @@ outer:
                 with pytest.raises(KeyError):
                     _ = manager[["non_existent_key"]]
 
+        def test_key_missing(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(KeyError):
+                    _ = manager[["key", "non_existent_key"]]
+
     class TestSetValue:
         def test_no_keys(self, tmp_path: Path):
             # Arrange
@@ -397,6 +432,98 @@ outer:
                     match="Root level configuration must be a mapping.",
                 ):
                     manager.set_value(keys=["key"], value="value")
+
+        def test_success(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(keys=["key"], value="new_value", exists_ok=True)
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {"key": "new_value"}
+
+        def test_key_doesnt_exist_yet(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(keys=["new_key"], value="new_value", exists_ok=True)
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.content == {
+                    "key": "value",
+                    "new_key": "new_value",
+                }
+
+        def test_clash_with_non_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("""\
+outer:
+    inner: value
+""")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueAlreadySetError,
+                    match="Configuration value 'outer.inner.value' is already set.",
+                ):
+                    manager.set_value(
+                        keys=["outer", "inner", "value"],
+                        value="new_value",
+                        exists_ok=False,
+                    )
+
+        def test_already_exists_clash(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("""\
+outer: ["inner"]
+""")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueAlreadySetError,
+                    match="Configuration value 'outer' is already set.",
+                ):
+                    manager.set_value(
+                        keys=["outer", "inner", "value"],
+                        value="new_value",
+                        exists_ok=False,
+                    )
 
     class TestDelItem:
         def test_delete_single_item(self, tmp_path: Path):

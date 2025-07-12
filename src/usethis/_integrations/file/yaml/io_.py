@@ -196,7 +196,8 @@ class YAMLFileManager(KeyValueFileManager):
         except ValidationError:
             msg = "Root level configuration must be a mapping."
             raise UnexpectedYAMLValueError(msg) from None
-        assert isinstance(content, dict)
+        if not isinstance(content, CommentedMap):
+            raise AssertionError
 
         if not keys:
             TypeAdapter(dict).validate_python(value)
@@ -223,25 +224,13 @@ class YAMLFileManager(KeyValueFileManager):
                 d, parent = d[key], d
                 shared_keys.append(key)
         except KeyError:
-            TypeAdapter(CommentedMap).validate_python(d)
-            assert isinstance(content, CommentedMap)
-            _set_value_in_existing(
-                content=content,
-                keys=keys,
-                value=value,
-            )
+            _set_value_in_existing(content=content, keys=keys, value=value)
         except ValidationError:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
-                _raise_already_set(keys)
+                _raise_already_set(shared_keys)
             else:
-                TypeAdapter(CommentedMap).validate_python(d)
-                assert isinstance(content, CommentedMap)
-                _set_value_in_existing(
-                    content=content,
-                    keys=keys,
-                    value=value,
-                )
+                _set_value_in_existing(content=content, keys=keys, value=value)
         else:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
@@ -252,9 +241,7 @@ class YAMLFileManager(KeyValueFileManager):
 
         assert self._content is not None  # We have called .get() already.
         update_ruamel_yaml_map(
-            cmap=self._content.content,
-            new_contents=content,
-            preserve_comments=True,
+            cmap=self._content.content, new_contents=content, preserve_comments=True
         )
         self.commit(self._content)
 
@@ -435,7 +422,6 @@ def _set_value_in_existing(
     for key in reversed(keys):
         contents = {key: contents}
     content = mergedeep.merge(content, contents)  # type: ignore[reportAssignmentType]
-    assert isinstance(content, YAMLLiteral)
 
 
 def _validate_keys(keys: Sequence[Key]) -> list[str]:

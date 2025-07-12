@@ -349,6 +349,23 @@ class TestRequirementsTxt:
 """
         )
 
+    def test_none_backend(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["requirements.txt", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Install uv to use 'uv export'.
+☐ Run 'uv export --no-default-groups -o=requirements.txt' to write
+'requirements.txt'.
+"""
+        )
+
 
 class TestRuff:
     @pytest.mark.usefixtures("_vary_network_conn")

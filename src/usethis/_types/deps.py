@@ -11,3 +11,6 @@ class Dependency(BaseModel):
 
     def __hash__(self) -> int:
         return hash((self.__class__.__name__, self.name, self.extras))
+
+    def to_requirement_string(self) -> str:
+        raise NotImplementedError

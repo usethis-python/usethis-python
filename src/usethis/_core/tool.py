@@ -8,6 +8,7 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
+from usethis._deps import get_project_dependencies
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.backend.uv.init import ensure_pyproject_toml
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
@@ -35,6 +36,7 @@ from usethis._tool.impl.pytest import PytestTool
 from usethis._tool.impl.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.ruff import RuffTool
 from usethis._tool.rule import RuleConfig
+from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
     from usethis._tool.all_ import SupportedToolType
@@ -331,25 +333,35 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
             tool.add_pre_commit_config()
 
         if not path.exists():
-            # N.B. this is where a task runner would come in handy, to reduce duplication.
-            if (
-                not (usethis_config.cpd() / "uv.lock").exists()
-                and not usethis_config.frozen
-            ):
-                tick_print("Writing 'uv.lock'.")
-                call_uv_subprocess(["lock"], change_toml=False)
+            if usethis_config.backend is BackendEnum.uv:
+                if (
+                    not (usethis_config.cpd() / "uv.lock").exists()
+                    and not usethis_config.frozen
+                ):
+                    tick_print("Writing 'uv.lock'.")
+                    call_uv_subprocess(["lock"], change_toml=False)
 
-            if not usethis_config.frozen:
+                if not usethis_config.frozen:
+                    tick_print("Writing 'requirements.txt'.")
+                    call_uv_subprocess(
+                        [
+                            "export",
+                            "--frozen",
+                            "--no-default-groups",
+                            "--output-file=requirements.txt",
+                        ],
+                        change_toml=False,
+                    )
+            elif usethis_config.backend is BackendEnum.none:
+                # Simply dump the dependencies list to requirements.txt as-is
                 tick_print("Writing 'requirements.txt'.")
-                call_uv_subprocess(
-                    [
-                        "export",
-                        "--frozen",
-                        "--no-default-groups",
-                        "--output-file=requirements.txt",
-                    ],
-                    change_toml=False,
-                )
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(
+                        "\n".join(
+                            dep.to_requirement_string()
+                            for dep in get_project_dependencies()
+                        )
+                    )
 
         tool.print_how_to_use()
 

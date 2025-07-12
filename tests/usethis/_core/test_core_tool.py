@@ -32,6 +32,7 @@ from usethis._integrations.python.version import get_python_version
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.ruff import RuffTool
+from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 
@@ -2601,6 +2602,40 @@ repos:
                 "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
                 "✔ Writing 'requirements.txt'.\n"
                 "☐ Run 'uv run pre-commit run uv-export' to write 'requirements.txt'.\n"
+            )
+
+        def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+project.dependencies = [ "ruff", "typer-slim[standard]" ]
+""")
+
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            assert (
+                (tmp_path / "requirements.txt").read_text()
+                == """\
+-e .
+ruff
+typer-slim[standard]
+"""
+            )
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out.replace("\n", "") == (
+                "ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies."  # noqa: RUF001
+                "ℹ Consider the 'uv' backend for pinned, cross-platform, full requirements files."  # noqa: RUF001
+                "✔ Writing 'requirements.txt'."
+                "☐ Run 'usethis tool requirements.txt' to re-write 'requirements.txt'."
             )
 
     class TestRemove:

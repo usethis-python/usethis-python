@@ -20,6 +20,10 @@ from usethis._types.deps import Dependency
 from usethis.errors import DepGroupError
 
 
+def get_project_dependencies() -> list[Dependency]:
+    raise NotImplementedError
+
+
 def get_dep_groups() -> dict[str, list[Dependency]]:
     try:
         pyproject = PyprojectTOMLManager().get()

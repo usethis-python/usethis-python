@@ -373,7 +373,10 @@ lint.pydocstyle.convention = "pep257"
                 manager.read_file()
 
                 # Act, Assert
-                with pytest.raises(TOMLValueAlreadySetError):
+                with pytest.raises(
+                    TOMLValueAlreadySetError,
+                    match="Configuration value 'key' is already set.",
+                ):
                     manager.set_value(keys=["key", "inner"], value="new_value")
 
         def test_replacing_constant_with_mapping(self, tmp_path: Path):

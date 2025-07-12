@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import copy
 import re
 from contextlib import contextmanager
@@ -52,7 +51,7 @@ if TYPE_CHECKING:
     from ruamel.yaml.scalarint import BinaryInt, HexCapsInt, HexInt, OctalInt, ScalarInt
     from ruamel.yaml.scalarstring import FoldedScalarString, LiteralScalarString
     from ruamel.yaml.timestamp import TimeStamp
-    from typing_extensions import Never, Self
+    from typing_extensions import Self
 
     from usethis._io import Key
 
@@ -227,14 +226,14 @@ class YAMLFileManager(KeyValueFileManager):
             _set_value_in_existing(content=content, keys=keys, value=value)
         except ValidationError:
             if not exists_ok:
-                # The configuration is already present, which is not allowed.
-                _raise_already_set(shared_keys)
+                msg = f"Configuration value '{print_keys(shared_keys)}' is already set."
+                raise YAMLValueAlreadySetError(msg) from None
             else:
                 _set_value_in_existing(content=content, keys=keys, value=value)
         else:
             if not exists_ok:
-                # The configuration is already present, which is not allowed.
-                _raise_already_set(keys)
+                msg = f"Configuration value '{print_keys(keys)}' is already set."
+                raise YAMLValueAlreadySetError(msg)
             else:
                 # The configuration is already present, but we're allowed to overwrite it.
                 parent[keys[-1]] = value
@@ -259,6 +258,7 @@ class YAMLFileManager(KeyValueFileManager):
         try:
             TypeAdapter(dict).validate_python(content)
         except ValidationError:
+            # N.B. by convention a del call should raise an error if the key is not found.
             msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise YAMLValueMissingError(msg) from None
         assert isinstance(content, dict)
@@ -288,8 +288,7 @@ class YAMLFileManager(KeyValueFileManager):
             for key in list(d.keys()):
                 del d[key]
         else:
-            with contextlib.suppress(KeyError):
-                d.__delitem__(keys[-1])
+            d.__delitem__(keys[-1])
 
             # Cleanup: any empty sections should be removed.
             for idx in reversed(range(1, len(keys))):
@@ -448,15 +447,6 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
             assert_never(key)
 
     return so_far_keys
-
-
-def _raise_already_set(keys: Sequence[Key]) -> Never:
-    """Raise an error if the configuration is already set."""
-    if keys:
-        msg = f"Configuration value '{print_keys(keys)}' is already set."
-    else:
-        msg = "Configuration value at root level is already set."
-    raise YAMLValueAlreadySetError(msg)
 
 
 @dataclass

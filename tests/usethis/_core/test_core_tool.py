@@ -14,6 +14,7 @@ from usethis._core.tool import (
     use_coverage_py,
     use_deptry,
     use_import_linter,
+    use_mkdocs,
     use_pre_commit,
     use_pyproject_fmt,
     use_pyproject_toml,
@@ -1459,6 +1460,44 @@ image: atlassian/default-image:3
             assert "Import Linter" in contents
             assert "lint-imports" in contents
             assert "placeholder" not in contents
+
+
+class TestMkDocs:
+    class TestAdd:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_config_contents(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "my-project"
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_mkdocs()
+
+            # Assert
+            assert (tmp_path / "mkdocs.yml").exists()
+            contents = (tmp_path / "mkdocs.yml").read_text()
+            assert contents == (
+                """\
+site_name: my-project
+nav:
+  - Home: index.md
+"""
+            )
+
+        def test_successful_build(self, tmp_path: Path):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_mkdocs()
+                # ... close/save file via context manager
+
+            # Assert
+            with change_cwd(tmp_path), files_manager():
+                call_uv_subprocess(
+                    ["run", "mkdocs", "build", "--strict"], change_toml=False
+                )
 
 
 class TestPreCommit:

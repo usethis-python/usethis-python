@@ -10,6 +10,7 @@ from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity
+from usethis._integrations.mkdocs.core import add_docs_dir
 from usethis._integrations.pre_commit.core import (
     install_pre_commit_hooks,
     remove_pre_commit_config,
@@ -165,7 +166,19 @@ def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
         return
 
     if not remove:
-        raise NotImplementedError
+        ensure_pyproject_toml()
+        (usethis_config.cpd() / "mkdocs.yml").touch()
+
+        add_docs_dir()
+
+        tool.add_doc_deps()
+        tool.add_configs()
+        if PreCommitTool().is_used():
+            tool.add_pre_commit_config()
+        else:
+            tool.update_bitbucket_steps()
+
+        tool.print_how_to_use()
     else:
         raise NotImplementedError
 

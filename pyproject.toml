@@ -249,7 +249,7 @@ name = "usethis._integrations"
 type = "layers"
 layers = [
   "ci | pre_commit",
-  "uv | pytest | pydantic | sonarqube",
+  "uv | mkdocs | pytest | pydantic | sonarqube",
   "project | python",
   "file",
 ]

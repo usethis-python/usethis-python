@@ -5,13 +5,14 @@ from typing import TYPE_CHECKING
 
 from usethis._config_file import MkDocsYMLManager
 from usethis._console import box_print
+from usethis._integrations.project.name import get_project_name
 from usethis._integrations.uv.deps import Dependency
 from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
+from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
-    from usethis._tool.config import ConfigSpec
 
 
 class MkDocsTool(Tool):
@@ -42,8 +43,32 @@ class MkDocsTool(Tool):
 
         This includes the file managers and resolution methodology.
         """
-        # This should be changed to include basic config
-        return super().get_config_spec()
+        return ConfigSpec.from_flat(
+            file_managers=[
+                MkDocsYMLManager(),
+            ],
+            resolution="first_content",
+            config_items=[
+                ConfigItem(
+                    description="Site Name",
+                    root={
+                        Path("mkdocs.yml"): ConfigEntry(
+                            keys=["site_name"],
+                            get_value=lambda: get_project_name(),
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Navigation",
+                    root={
+                        Path("mkdocs.yml"): ConfigEntry(
+                            keys=["nav"],
+                            get_value=lambda: [{"Home": "index.md"}],
+                        ),
+                    },
+                ),
+            ],
+        )
 
     def get_managed_files(self) -> list[Path]:
         """Get (relative) paths to files managed by (solely) this tool."""

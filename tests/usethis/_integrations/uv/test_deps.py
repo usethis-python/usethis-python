@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from packaging.requirements import InvalidRequirement
 
 import usethis
 import usethis._integrations
@@ -16,6 +17,7 @@ from usethis._integrations.uv.deps import (
     get_default_groups,
     get_dep_groups,
     get_deps_from_group,
+    get_project_deps,
     is_dep_in_any_group,
     is_dep_satisfied_in,
     register_default_group,
@@ -24,6 +26,274 @@ from usethis._integrations.uv.deps import (
 from usethis._integrations.uv.errors import UVDepGroupError, UVSubprocessFailedError
 from usethis._integrations.uv.toml import UVTOMLManager
 from usethis._test import change_cwd
+
+
+class TestGetProjectDeps:
+    def test_no_pyproject(self, tmp_path: Path):
+        # Arrange - No pyproject.toml file exists
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == []
+
+    def test_empty_pyproject(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").touch()
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == []
+
+    def test_no_project_section(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[build-system]
+requires = ["setuptools"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == []
+
+    def test_invalid_project_section(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+project = "not a table but a string"
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == []
+
+    def test_no_dependencies_section(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == []
+
+    def test_empty_dependencies_section(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = []
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == []
+
+    def test_single_dependency(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = ["requests"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == [Dependency(name="requests")]
+
+    def test_multiple_dependencies(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = ["requests", "click", "pydantic"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == [
+            Dependency(name="requests"),
+            Dependency(name="click"),
+            Dependency(name="pydantic"),
+        ]
+
+    def test_dependency_with_extras(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = ["pydantic[email]"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == [Dependency(name="pydantic", extras=frozenset({"email"}))]
+
+    def test_dependency_with_multiple_extras(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = ["pydantic[email,dotenv]"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == [
+            Dependency(name="pydantic", extras=frozenset({"email", "dotenv"}))
+        ]
+
+    def test_mixed_dependencies_with_and_without_extras(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = ["requests", "pydantic[email]", "click"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == [
+            Dependency(name="requests"),
+            Dependency(name="pydantic", extras=frozenset({"email"})),
+            Dependency(name="click"),
+        ]
+
+    def test_dependency_with_version_constraint(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = ["requests>=2.28.0", "click~=8.0"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == [
+            Dependency(name="requests"),
+            Dependency(name="click"),
+        ]
+
+    def test_invalid_dependencies_section_not_list(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = "not a list"
+""")
+
+        # Act, Assert
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+            pytest.raises(
+                UVDepGroupError,
+                match="Failed to parse the 'project.dependencies' section",
+            ),
+        ):
+            get_project_deps()
+
+    def test_invalid_dependencies_section_invalid_requirement(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = ["invalid requirement string !!!"]
+""")
+
+        # Act, Assert
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+            pytest.raises(InvalidRequirement),
+        ):
+            get_project_deps()
+
+    def test_ignores_optional_dependency_groups_and_build_deps(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[build-system]
+requires = ["setuptools>=45", "wheel", "build-dep"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "test-project"
+version = "0.1.0"
+dependencies = ["requests", "click"]
+
+[project.optional-dependencies]
+dev = ["pytest", "black"]
+docs = ["sphinx", "mkdocs"]
+extra = ["optional-package"]
+
+[dependency-groups]
+test = ["pytest-cov", "pytest-mock"]
+qa = ["flake8", "mypy"]
+lint = ["ruff"]
+
+[tool.uv]
+dev-dependencies = ["old-style-dev-dep"]
+""")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            result = get_project_deps()
+
+        # Assert
+        # Should only return the core project dependencies, ignoring:
+        # - build-system.requires (build dependencies)
+        # - project.optional-dependencies (optional dependencies)
+        # - dependency-groups (development dependency groups)
+        # - tool.uv.dev-dependencies (old-style dev dependencies)
+        assert result == [
+            Dependency(name="requests"),
+            Dependency(name="click"),
+        ]
 
 
 class TestGetDepGroups:

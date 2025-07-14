@@ -75,11 +75,10 @@ class ConfigEntry(BaseModel):
 
     Attributes:
         keys: A sequentially nested sequence of keys giving a single configuration item.
-        value: The default value to be placed at the under the key sequence. By default,
-               no configuration will be added, which is most appropriate for top-level
-               configuration sections like [tool.usethis] under which the entire tool's
-               config gets placed.
-
+        get_value: A callable returning the default value to be placed at the under the
+                   key sequence. By default, no configuration will be added, which is
+                   most appropriate for top-level configuration sections like
+                   [tool.usethis] under which the entire tool's config gets placed.
     """
 
     keys: list[Key]

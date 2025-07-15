@@ -26,6 +26,9 @@ class TestInit:
             "✔ Setting the development status to '1 - Planning'.\n"
             "✔ Adding the pre-commit framework.\n"
             "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
+            "✔ Adding recommended documentation tools.\n"
+            "☐ Run 'uv run mkdocs build' to build the documentation.\n"
+            "☐ Run 'uv run mkdocs serve' to serve the documentation locally.\n"
             "✔ Adding recommended linters.\n"
             "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'uv run deptry src' to run deptry.\n"
@@ -76,6 +79,9 @@ class TestInit:
 ✔ Writing 'README.md'.
 ☐ Populate 'README.md' to help users understand the project.
 ✔ Setting the development status to '1 - Planning'.
+✔ Adding recommended documentation tools.
+☐ Run 'uv run mkdocs build' to build the documentation.
+☐ Run 'uv run mkdocs serve' to serve the documentation locally.
 ✔ Adding recommended linters.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run deptry src' to run deptry.
@@ -144,6 +150,9 @@ class TestInit:
             "✔ Setting the development status to '5 - Production/Stable'.\n"
             "✔ Adding the pre-commit framework.\n"
             "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
+            "✔ Adding recommended documentation tools.\n"
+            "☐ Run 'uv run mkdocs build' to build the documentation.\n"
+            "☐ Run 'uv run mkdocs serve' to serve the documentation locally.\n"
             "✔ Adding recommended linters.\n"
             "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'uv run deptry src' to run deptry.\n"

@@ -202,7 +202,7 @@ name = "usethis._interface"
 type = "layers"
 layers = [
   # Note; if you're adding an interface, make sure it's in the README too.
-  "author | badge | browse | ci | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version",
+  "author | badge | browse | ci | doc | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version",
 ]
 containers = [ "usethis._interface" ]
 exhaustive = true

@@ -115,7 +115,7 @@ def import_linter(
 
 @app.command(
     name="mkdocs",
-    help="Use MkDocs: project documentation sites with Markdown.",
+    help="Use MkDocs: Generate project documentation sites with Markdown.",
     rich_help_panel="Documentation",
 )
 def mkdocs(

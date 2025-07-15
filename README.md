@@ -90,8 +90,8 @@ $ pipx run usethis tool ruff
 
 ### Manage README
 
-- [`usethis badge`](#usethis-badge) — Set new author information for the project.
-- [`usethis readme`](#usethis-readme) — Add badges to the README file.
+- [`usethis badge`](#usethis-badge) — Add badges to the README file.
+- [`usethis readme`](#usethis-readme) — Add a new README file.
 
 ### Information
 

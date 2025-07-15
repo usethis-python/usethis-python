@@ -180,7 +180,11 @@ def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
 
         tool.print_how_to_use()
     else:
-        raise NotImplementedError
+        tool.remove_bitbucket_steps()
+        tool.remove_doc_deps()
+        tool.remove_configs()
+        tool.remove_pre_commit_repo_configs()
+        tool.remove_bitbucket_steps()
 
 
 def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:

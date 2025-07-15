@@ -10,7 +10,7 @@ def doc(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
 ) -> None:
-    """Add a recommended testing framework to the project."""
+    """Add a recommended documentation framework to the project."""
     from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._console import err_print

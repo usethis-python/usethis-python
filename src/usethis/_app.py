@@ -6,6 +6,7 @@ import usethis._interface.author
 import usethis._interface.badge
 import usethis._interface.browse
 import usethis._interface.ci
+import usethis._interface.doc
 import usethis._interface.docstyle
 import usethis._interface.format_
 import usethis._interface.init
@@ -38,6 +39,12 @@ app.command(
 )
 
 rich_help_panel = "Manage Tooling"
+app.command(
+    help="Add or configure recommended documentation tools.",
+    rich_help_panel=rich_help_panel,
+)(
+    usethis._interface.doc.doc,
+)
 app.command(
     name="format",
     help="Add or configure recommended formatters.",

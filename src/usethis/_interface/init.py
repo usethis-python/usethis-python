@@ -6,9 +6,13 @@ from usethis._core.enums.ci import CIServiceEnum
 from usethis._core.enums.docstyle import DocStyleEnum
 from usethis._core.enums.status import DevelopmentStatusEnum
 from usethis._options import frozen_opt, offline_opt, quiet_opt
+from usethis._toolset.doc import use_doc_frameworks
 
 
 def init(  # noqa: PLR0913, PLR0915
+    doc: bool = typer.Option(
+        True, "--doc/--no-doc", help="Add a recommended documentation framework."
+    ),
     format_: bool = typer.Option(
         True, "--format/--no-format", help="Add recommended formatters."
     ),
@@ -95,6 +99,11 @@ def init(  # noqa: PLR0913, PLR0915
                     use_pre_commit()
                 use_pre_commit(how=True)
 
+            if doc:
+                tick_print("Adding recommended documentation tools.")
+                with usethis_config.set(alert_only=True):
+                    use_doc_frameworks()
+                use_doc_frameworks(how=True)
             if lint:
                 tick_print("Adding recommended linters.")
                 with usethis_config.set(alert_only=True):

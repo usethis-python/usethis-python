@@ -73,6 +73,7 @@ $ pipx run usethis tool ruff
 
 ### Manage Tooling
 
+- [`usethis doc`](#usethis-doc) — Add/Configure recommended documentation tools (namely, [MkDocs](https://www.mkdocs.org/)).
 - [`usethis format`](#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
 - [`usethis lint`](#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
 - [`usethis spellcheck`](#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
@@ -108,6 +109,9 @@ $ uvx usethis init
 ✔ Writing 'pyproject.toml' and initializing project.
 ✔ Writing 'README.md'.
 ☐ Populate 'README.md' to help users understand the project.
+✔ Adding recommended documentation tools.
+☐ Run 'uv run mkdocs build' to build the documentation.
+☐ Run 'uv run mkdocs serve' to serve the documentation locally.
 ✔ Adding recommended linters.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run deptry src' to run deptry.
@@ -177,6 +181,7 @@ Initialize a new Python project with recommended defaults, including:
 
 Supported options:
 
+- `--doc` to add recommended documentation tools (default; or `--no-doc` to opt-out)
 - `--format` to add recommended formatters (default; or `--no-format` to opt-out)
 - `--lint` to add recommended linters (default; or `--no-lint` to opt-out)
 - `--spellcheck` to add a recommended spellchecker (default; or `--no-spellcheck` to opt-out)
@@ -202,6 +207,26 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
+
+### `usethis doc`
+
+Add recommended documentation tools to the project (namely, [MkDocs](https://www.mkdocs.org/)), including:
+
+- declared & installed dependencies via `uv add`,
+- relevant `pyproject.toml` configuration, and
+- any other relevant directories or tool-bespoke configuration files.
+
+Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies via `uv add`.
+
+Supported options:
+
+- `--remove` to remove the tool instead of adding it
+- `--how` to only print how to use the tool, with no other side effects
+- `--offline` to disable network access and rely on caches
+- `--frozen` to leave the virtual environment and lockfile unchanged
+- `--quiet` to suppress output
+
+See [`usethis tool`](#usethis-tool) for more information.
 
 ### `usethis format`
 
@@ -311,7 +336,7 @@ declaring dependencies with `uv add`.
 
 #### Documentation
 
-- `usethis tool mkdocs` - Use [MkDocs](https://www.mkdocs.org/): project documentation sites with Markdown.
+- `usethis tool mkdocs` - Use [MkDocs](https://www.mkdocs.org/): Generate project documentation sites with Markdown.
 
 #### Configuration Files
 

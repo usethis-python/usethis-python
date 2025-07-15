@@ -10,6 +10,7 @@ from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity
+from usethis._integrations.mkdocs.core import add_docs_dir
 from usethis._integrations.pre_commit.core import (
     install_pre_commit_hooks,
     remove_pre_commit_config,
@@ -28,6 +29,7 @@ from usethis._tool.impl.codespell import CodespellTool
 from usethis._tool.impl.coverage_py import CoveragePyTool
 from usethis._tool.impl.deptry import DeptryTool
 from usethis._tool.impl.import_linter import ImportLinterTool
+from usethis._tool.impl.mkdocs import MkDocsTool
 from usethis._tool.impl.pre_commit import PreCommitTool
 from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
 from usethis._tool.impl.pyproject_toml import PyprojectTOMLTool
@@ -153,6 +155,30 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
             RuffTool().remove_rule_config(rule_config)
         tool.remove_configs()
         tool.remove_dev_deps()
+        tool.remove_managed_files()
+
+
+def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
+    tool = MkDocsTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
+
+    if not remove:
+        ensure_pyproject_toml()
+        (usethis_config.cpd() / "mkdocs.yml").touch()
+
+        add_docs_dir()
+
+        tool.add_doc_deps()
+        tool.add_configs()
+
+        tool.print_how_to_use()
+    else:
+        # N.B. no need to remove configs because they all lie in managed files.
+
+        tool.remove_doc_deps()
         tool.remove_managed_files()
 
 
@@ -498,6 +524,8 @@ def use_tool(
         use_deptry(remove=remove, how=how)
     elif isinstance(tool, ImportLinterTool):
         use_import_linter(remove=remove, how=how)
+    elif isinstance(tool, MkDocsTool):
+        use_mkdocs(remove=remove, how=how)
     elif isinstance(tool, PreCommitTool):
         use_pre_commit(remove=remove, how=how)
     elif isinstance(tool, PyprojectFmtTool):

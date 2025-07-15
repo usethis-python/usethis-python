@@ -309,6 +309,10 @@ declaring dependencies with `uv add`.
 - `usethis tool coverage.py` - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
 - `usethis tool pytest` - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
 
+#### Documentation
+
+- `usethis tool mkdocs` - Use [MkDocs](https://www.mkdocs.org/): project documentation sites with Markdown.
+
 #### Configuration Files
 
 - `usethis tool pyproject.toml` - Use a [pyproject.toml](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#writing-your-pyproject-toml) file to configure the project.
@@ -497,9 +501,8 @@ If you're using Cookiecutter, then you can update to a latest version of a templ
 Major features planned for later in 2025 are:
 
 - Support for users who aren't using uv, e.g. poetry users,
-- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)),
-- Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)), and
-- Support for documentation pages (likely using mkdocs, [#188](https://github.com/usethis-python/usethis-python/issues/188)).
+- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)), and
+- Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)).
 
 Other features are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.
 

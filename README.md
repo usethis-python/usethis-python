@@ -84,8 +84,8 @@ $ pipx run usethis tool ruff
 ### Manage Configuration
 
 - [`usethis author`](#usethis-author) — Set new author information for the project.
-- [`usethis docstyle`](#usethis-docstyle-style) — Set new author information for the project.
-- [`usethis rule`](#usethis-rule-rulecode) — Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
+- [`usethis docstyle`](#usethis-docstyle-style) — Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
+- [`usethis rule`](#usethis-rule-rulecode) — Set linter rule configuration for specific rules across the project.
 - [`usethis status`](#usethis-status-status) — Set the development status of the project (via trove classifiers).
 
 ### Manage README

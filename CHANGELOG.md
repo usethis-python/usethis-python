@@ -8,9 +8,9 @@
 
 - The `--doc` option for `usethis init` has been implemented to initialize MkDocs documentation sites by default. The old behaviour can be restored by passing `--no-doc`.
 
-- Coverage.py for measuring test coverage is now included by default when using `usethis test` or `usethis init` with the default `--test` option.
+- Coverage.py for measuring test coverage is now included by default when using `usethis test` or `usethis init` with the default `--test` option. This provides out-of-the-box test coverage reporting.
 
-- The `--frozen` option is now supported in thr `usethis ci` and `usethis docstyle` commands. Similar to other commands, this will leave the virtual environment and lockfile unchanged.
+- The `--frozen` option is now supported in the `usethis ci` and `usethis docstyle` commands. Similar to other commands, this will leave the virtual environment and lockfile unchanged.
 
 - The `--offline` option is now supported in the `usethis docstyle` command. This will run the command without network access.
 
@@ -20,13 +20,13 @@
 
 ### 📦 Packaging
 
-- Bounds are now placed in the build dependencies for usethis (i.e. `hatch-vcs>=0.5.0,<0.6.0` and `hatchling>=1.27.0,<1.28.0`), which should improve reproducibility of builds in the long run.
+- Bounds are now placed on the build dependencies for usethis (i.e. `hatch-vcs>=0.5.0,<0.6.0` and `hatchling>=1.27.0,<1.28.0`), which should improve reproducibility of builds in the long run.
 
 ### 🔧 Internal Changes
 
 - A `YAMLFileManager` has been implemented to manage YAML files, which is used for the MkDocs configuration file `mkdocs.yml`.
 
-- A method `get_project_deps` has been added to retrieve the core project dependencies from the `pyproject.toml` file. This will be used in a future release to support non-uv based backends, such as Poetry.
+- A new `get_project_deps` method has been added to retrieve core project dependencies from the `pyproject.toml` file, specifically from the `project.dependencies` section. This will be used in a future release to support non-uv based backends, such as Poetry.
 
 ## 0.14.2
 

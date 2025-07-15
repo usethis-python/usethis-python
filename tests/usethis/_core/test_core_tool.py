@@ -1530,6 +1530,27 @@ nav:
                 # Assert
                 assert get_deps_from_group("doc") == [Dependency(name="sphinx")]
 
+    class TestHow:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_how_to_use(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_repo_dir / "mkdocs.yml").touch()
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_mkdocs(how=True)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                """\
+☐ Run 'mkdocs build' to build the documentation.
+☐ Run 'mkdocs serve' to serve the documentation locally.
+"""
+            )
+
 
 class TestPreCommit:
     class TestAdd:

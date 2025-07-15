@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.15.0
+
+### 🚀 New Features
+
+- The `usethis tool mkdocs` command has been implemented to manage MkDocs documentation sites. Also, the higher-level `usethis doc` command has been added, which has the same effect.
+
+- The `--doc` option for `usethis init` has been implemented to initialize MkDocs documentation sites by default. The old behaviour can be restored by passing `--no-doc`.
+
+- Coverage.py for measuring test coverage is now included by default when using `usethis test` or `usethis init` with the default `--test` option.
+
+- The `--frozen` option is now supported in thr `usethis ci` and `usethis docstyle` commands. Similar to other commands, this will leave the virtual environment and lockfile unchanged.
+
+- The `--offline` option is now supported in the `usethis docstyle` command. This will run the command without network access.
+
+### 🦾 Robustness
+
+- Incorrectly structured TOML files will emit better messages and in some cases will be handled gracefully, specifically in cases where a non-mapping value is encountered where a mapping is expected.
+
+### 📦 Packaging
+
+- Bounds are now placed in the build dependencies for usethis (i.e. `hatch-vcs>=0.5.0,<0.6.0` and `hatchling>=1.27.0,<1.28.0`), which should improve reproducibility of builds in the long run.
+
+### 🔧 Internal Changes
+
+- A `YAMLFileManager` has been implemented to manage YAML files, which is used for the MkDocs configuration file `mkdocs.yml`.
+
+- A method `get_project_deps` has been added to retrieve the core project dependencies from the `pyproject.toml` file. This will be used in a future release to support non-uv based backends, such as Poetry.
+
 ## 0.14.2
 
 ### 🦾 Robustness

@@ -1499,6 +1499,37 @@ nav:
                     ["run", "mkdocs", "build", "--strict"], change_toml=False
                 )
 
+    class TestRemove:
+        def test_config(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "mkdocs.yml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_mkdocs(remove=True)
+
+            # Assert
+            assert not (tmp_path / "mkdocs.yml").exists()
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_doc_deps_removed(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                add_deps_to_group(
+                    [
+                        Dependency(name="mkdocs"),
+                        Dependency(name="sphinx"),
+                        Dependency(name="mkdocs-material"),
+                    ],
+                    "doc",
+                )
+
+                # Act
+                use_mkdocs(remove=True)
+
+                # Assert
+                assert get_deps_from_group("doc") == [Dependency(name="sphinx")]
+
 
 class TestPreCommit:
     class TestAdd:

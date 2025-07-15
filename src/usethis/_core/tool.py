@@ -173,18 +173,13 @@ def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
 
         tool.add_doc_deps()
         tool.add_configs()
-        if PreCommitTool().is_used():
-            tool.add_pre_commit_config()
-        else:
-            tool.update_bitbucket_steps()
 
         tool.print_how_to_use()
     else:
-        tool.remove_bitbucket_steps()
+        # N.B. no need to remove configs because they all lie in managed files.
+
         tool.remove_doc_deps()
-        tool.remove_configs()
-        tool.remove_pre_commit_repo_configs()
-        tool.remove_bitbucket_steps()
+        tool.remove_managed_files()
 
 
 def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:

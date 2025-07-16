@@ -67,6 +67,48 @@ def get_project_deps() -> list[Dependency]:
     return deps
 
 
+def get_project_deps() -> list[Dependency]:
+    """Get all project dependencies.
+
+    This does not include development dependencies, e.g. not those in the
+    dependency-groups section, not extras/optional dependencies, not build dependencies.
+
+    Usually this is just the dependencies in the `project.dependencies` section
+    of the `pyproject.toml` file.
+    """
+    try:
+        pyproject = PyprojectTOMLManager().get()
+    except FileNotFoundError:
+        return []
+
+    try:
+        project_section = pyproject["project"]
+    except KeyError:
+        return []
+
+    if not isinstance(project_section, dict):
+        return []
+
+    try:
+        dep_section = project_section["dependencies"]
+    except KeyError:
+        return []
+
+    try:
+        req_strs = TypeAdapter(list[str]).validate_python(dep_section)
+    except pydantic.ValidationError as err:
+        msg = (
+            "Failed to parse the 'project.dependencies' section in 'pyproject.toml':\n"
+            f"{err}\n\n"
+            "Please check the section and try again."
+        )
+        raise UVDepGroupError(msg) from None
+
+    reqs = [Requirement(req_str) for req_str in req_strs]
+    deps = [Dependency(name=req.name, extras=frozenset(req.extras)) for req in reqs]
+    return deps
+
+
 def get_dep_groups() -> dict[str, list[Dependency]]:
     try:
         pyproject = PyprojectTOMLManager().get()

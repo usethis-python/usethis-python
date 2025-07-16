@@ -28,6 +28,21 @@ from usethis._integrations.uv.toml import UVTOMLManager
 from usethis._test import change_cwd
 
 
+class TestDependency:
+    class TestToRequirementsString:
+        def test_no_extras(self):
+            dep = Dependency(name="requests")
+            assert dep.to_requirements_string() == "requests"
+
+        def test_single_extra(self):
+            dep = Dependency(name="requests", extras=frozenset({"security"}))
+            assert dep.to_requirements_string() == "requests[security]"
+
+        def test_multiple_extras(self):
+            dep = Dependency(name="requests", extras=frozenset({"security", "socks"}))
+            assert dep.to_requirements_string() == "requests[security,socks]"
+
+
 class TestGetProjectDeps:
     def test_no_pyproject(self, tmp_path: Path):
         # Arrange - No pyproject.toml file exists

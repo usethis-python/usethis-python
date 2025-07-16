@@ -1,24 +1,18 @@
 from __future__ import annotations
 
 from usethis._config import usethis_config
-from usethis._console import tick_print
 from usethis._integrations.backend.uv import (  # Use this style to allow test mocking
     call,
 )
 from usethis._integrations.backend.uv.errors import UVInitError, UVSubprocessFailedError
 from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLInitError
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 
 
 def opinionated_uv_init() -> None:
     """Subprocess `uv init` with opinionated arguments.
 
-    Pass silently if a `pyproject.toml` file already exists.
+    It is assumed that the pyproject.toml file doesn't already exist.
     """
-    if (usethis_config.cpd() / "pyproject.toml").exists():
-        return
-
-    tick_print("Writing 'pyproject.toml' and initializing project.")
     try:
         call.call_uv_subprocess(
             ["init", "--lib", usethis_config.cpd().as_posix()],
@@ -29,15 +23,14 @@ def opinionated_uv_init() -> None:
         raise UVInitError(msg) from None
 
 
-def ensure_pyproject_toml(*, author: bool = True) -> None:
-    """Create a pyproject.toml file using `uv init --bare`."""
-    if (usethis_config.cpd() / "pyproject.toml").exists():
-        return
+def ensure_pyproject_toml_via_uv(*, author: bool = True) -> None:
+    """Create a pyproject.toml file using `uv init --bare`.
 
-    tick_print("Writing 'pyproject.toml'.")
+    It is assumed that the pyproject.toml file doesn't already exist.
+    """
+    author_from = "auto" if author else "none"
+
     try:
-        author_from = "auto" if author else "none"
-
         call.call_uv_subprocess(
             [
                 "init",
@@ -53,13 +46,3 @@ def ensure_pyproject_toml(*, author: bool = True) -> None:
     except UVSubprocessFailedError as err:
         msg = f"Failed to create a pyproject.toml file:\n{err}"
         raise PyprojectTOMLInitError(msg) from None
-
-    if not (
-        (usethis_config.cpd() / "src").exists()
-        and (usethis_config.cpd() / "src").is_dir()
-    ):
-        # hatch needs to know where to find the package
-        PyprojectTOMLManager().set_value(
-            keys=["tool", "hatch", "build", "targets", "wheel", "packages"],
-            value=["."],
-        )

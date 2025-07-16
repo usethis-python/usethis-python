@@ -3,7 +3,6 @@ from __future__ import annotations
 import typer
 
 from usethis._options import backend_opt, frozen_opt, offline_opt, quiet_opt
-from usethis._toolset.doc import use_doc_frameworks
 from usethis._types.backend import BackendEnum
 from usethis._types.ci import CIServiceEnum
 from usethis._types.docstyle import DocStyleEnum
@@ -70,7 +69,8 @@ def init(  # noqa: PLR0913, PLR0915
     from usethis._core.readme import add_readme
     from usethis._core.status import use_development_status
     from usethis._core.tool import use_pre_commit
-    from usethis._integrations.backend.uv.init import opinionated_uv_init
+    from usethis._init import project_init
+    from usethis._toolset.doc import use_doc_frameworks
     from usethis._toolset.format_ import use_formatters
     from usethis._toolset.lint import use_linters
     from usethis._toolset.spellcheck import use_spellcheckers
@@ -95,7 +95,7 @@ def init(  # noqa: PLR0913, PLR0915
                     "Change the current working directory to the project directory."
                 )
 
-            opinionated_uv_init()
+            project_init()
             add_readme()
 
             assert isinstance(status, DevelopmentStatusEnum)

@@ -4,21 +4,19 @@ from typing import Any
 import pytest
 
 import usethis._integrations.backend.uv.call
+from usethis._config_file import files_manager
+from usethis._init import ensure_pyproject_toml, project_init
 from usethis._integrations.backend.uv.errors import UVInitError, UVSubprocessFailedError
-from usethis._integrations.backend.uv.init import (
-    ensure_pyproject_toml,
-    opinionated_uv_init,
-)
 from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLInitError
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 
 
-class TestOpinionatedUVInit:
+class TestProjectInit:
     def test_empty_dir(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path):
-            opinionated_uv_init()
+        with change_cwd(tmp_path), files_manager():
+            project_init()
 
         # Assert
         assert (tmp_path / "pyproject.toml").exists()
@@ -29,7 +27,7 @@ class TestOpinionatedUVInit:
 
         # Act (& Assert there is no error)
         with change_cwd(tmp_path):
-            opinionated_uv_init()
+            project_init()
 
     def test_subprocess_failed(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
@@ -44,7 +42,7 @@ class TestOpinionatedUVInit:
 
         # Act
         with change_cwd(tmp_path), PyprojectTOMLManager(), pytest.raises(UVInitError):
-            opinionated_uv_init()
+            project_init()
 
 
 class TestEnsurePyprojectTOML:

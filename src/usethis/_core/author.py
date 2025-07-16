@@ -1,4 +1,4 @@
-from usethis._integrations.backend.uv.init import ensure_pyproject_toml
+from usethis._init import ensure_pyproject_toml
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 
 

@@ -343,7 +343,6 @@ class TestRequirementsTxt:
         assert (
             result.output
             == """\
-☐ Install uv to use 'uv export'.
 ☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 
 'requirements.txt'.
 """
@@ -360,9 +359,7 @@ class TestRequirementsTxt:
         assert (
             result.output
             == """\
-☐ Install uv to use 'uv export'.
-☐ Run 'uv export --no-default-groups -o=requirements.txt' to write
-'requirements.txt'.
+☐ Run 'usethis tool requirements.txt' to write 'requirements.txt'.
 """
         )
 

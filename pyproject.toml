@@ -191,13 +191,15 @@ layers = [
   "_core",
   "_tool",
   # Specific config file and backend implementations
-  "_deps",
+  "_deps | _init",
   "_config_file | _backend",
   "_integrations",
-  "_io | _pipeweld | _subprocess | _console",
+  "_io | _subprocess | _console",
   # Global state and constants
   "_config",
   "_types | errors",
+  # Completely independent helper modules
+  "_pipeweld",
 ]
 containers = [ "usethis" ]
 exhaustive = true

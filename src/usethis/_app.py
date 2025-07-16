@@ -91,7 +91,7 @@ app.command(
     usethis._interface.status.status,
 )
 
-rich_help_panel = "Manage a README"
+rich_help_panel = "Manage the README"
 app.add_typer(
     usethis._interface.badge.app, name="badge", rich_help_panel=rich_help_panel
 )

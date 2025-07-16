@@ -15,7 +15,7 @@
 
 Automate Python project setup and development tasks that are otherwise performed manually.
 
-usethis knows about popular Python tools, workflows and frameworks, and knows how they interact. It can declaratively add and remove tools, configure them, and set up the project for you. It does this all in a way that won't break your existing configuration and will make the necessary adjustments to your project configuration files.
+usethis is a command-line interface to automate the configuration of popular Python tools, workflows, and frameworks. You can use it to declaratively add, remove, and configure tools in an existing project, as well as set up a new project from scratch. It won't break your existing configuration, and ensures all tools work together smoothly.
 
 usethis gives detailed messages about what it is doing (and what you need to do next).
 
@@ -78,14 +78,14 @@ $ pipx run usethis tool ruff
 ### Manage Configuration
 
 - [`usethis author`](#usethis-author) — Set new author information for the project.
-- [`usethis docstyle`](#usethis-docstyle-style) — Set new author information for the project.
-- [`usethis rule`](#usethis-rule-rulecode) — Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
+- [`usethis docstyle`](#usethis-docstyle-style) — Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
+- [`usethis rule`](#usethis-rule-rulecode) — Set linter rule configuration for specific rules across the project.
 - [`usethis status`](#usethis-status-status) — Set the development status of the project (via trove classifiers).
 
-### Manage README
+### Manage the README
 
-- [`usethis badge`](#usethis-badge) — Set new author information for the project.
-- [`usethis readme`](#usethis-readme) — Add badges to the README file.
+- [`usethis badge`](#usethis-badge) — Add badges to the README file.
+- [`usethis readme`](#usethis-readme) — Add a new README file.
 
 ### Information
 

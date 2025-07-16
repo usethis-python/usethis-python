@@ -182,10 +182,7 @@ name = "usethis"
 type = "layers"
 layers = [
   "_test | __main__",
-  # UI
-  "_app",
-  "_interface",
-  "_options",
+  "_ui",
   # Tool implementations
   "_toolset",
   "_core",
@@ -206,13 +203,14 @@ exhaustive = true
 exhaustive_ignores = [ "_version" ]
 
 [[tool.importlinter.contracts]]
-name = "usethis._interface"
+name = "usethis._ui"
 type = "layers"
 layers = [
-  # Note; if you're adding an interface, make sure it's in the README too.
-  "author | badge | browse | ci | doc | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version",
+  "app",
+  "interface",
+  "options",
 ]
-containers = [ "usethis._interface" ]
+containers = [ "usethis._ui" ]
 exhaustive = true
 
 [[tool.importlinter.contracts]]
@@ -272,6 +270,16 @@ layers = [
   "dir",
 ]
 containers = [ "usethis._integrations.file" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "usethis._ui.interface"
+type = "layers"
+layers = [
+  # Note; if you're adding an interface, make sure it's in the README too.
+  "author | badge | browse | ci | doc | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version",
+]
+containers = [ "usethis._ui.interface" ]
 exhaustive = true
 
 [[tool.importlinter.contracts]]

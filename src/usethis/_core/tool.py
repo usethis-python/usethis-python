@@ -384,11 +384,9 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
                 # Simply dump the dependencies list to requirements.txt as-is
                 tick_print("Writing 'requirements.txt'.")
                 with open(path, "w", encoding="utf-8") as f:
-                    f.write(
-                        "\n".join(
-                            dep.to_requirement_string() for dep in get_project_deps()
-                        )
-                    )
+                    f.write("-e .\n")
+                    for dep in get_project_deps():
+                        f.write(dep.to_requirement_string() + "\n")
             else:
                 assert_never(backend)
 

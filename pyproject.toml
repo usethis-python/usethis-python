@@ -208,7 +208,7 @@ name = "usethis._interface"
 type = "layers"
 layers = [
   # Note; if you're adding an interface, make sure it's in the README too.
-  "author | badge | browse | ci | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version",
+  "author | badge | browse | ci | doc | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version",
 ]
 containers = [ "usethis._interface" ]
 exhaustive = true
@@ -244,7 +244,7 @@ layers = [
   "codespell | deptry | import_linter | pyproject_fmt | requirements_txt",
   "ruff",
   "pytest : coverage_py",
-  "pre_commit",
+  "pre_commit | mkdocs",
 ]
 containers = [ "usethis._tool.impl" ]
 exhaustive = true
@@ -254,7 +254,7 @@ name = "usethis._integrations"
 type = "layers"
 layers = [
   "ci | pre_commit",
-  "backend | pytest | pydantic | sonarqube",
+  "backend | mkdocs | pytest | pydantic | sonarqube",
   "project | python",
   "file",
 ]

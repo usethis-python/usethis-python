@@ -67,6 +67,7 @@ $ pipx run usethis tool ruff
 
 ### Manage Tooling
 
+- [`usethis doc`](#usethis-doc) — Add/Configure recommended documentation tools (namely, [MkDocs](https://www.mkdocs.org/)).
 - [`usethis format`](#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
 - [`usethis lint`](#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
 - [`usethis spellcheck`](#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
@@ -102,6 +103,9 @@ $ uvx usethis init
 ✔ Writing 'pyproject.toml' and initializing project.
 ✔ Writing 'README.md'.
 ☐ Populate 'README.md' to help users understand the project.
+✔ Adding recommended documentation tools.
+☐ Run 'uv run mkdocs build' to build the documentation.
+☐ Run 'uv run mkdocs serve' to serve the documentation locally.
 ✔ Adding recommended linters.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run deptry src' to run deptry.
@@ -171,6 +175,7 @@ Initialize a new Python project with recommended defaults, including:
 
 Supported options:
 
+- `--doc` to add recommended documentation tools (default; or `--no-doc` to opt-out)
 - `--format` to add recommended formatters (default; or `--no-format` to opt-out)
 - `--lint` to add recommended linters (default; or `--no-lint` to opt-out)
 - `--spellcheck` to add a recommended spellchecker (default; or `--no-spellcheck` to opt-out)
@@ -201,6 +206,26 @@ Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
+
+### `usethis doc`
+
+Add recommended documentation tools to the project (namely, [MkDocs](https://www.mkdocs.org/)), including:
+
+- declared & installed dependencies via `uv add`,
+- relevant `pyproject.toml` configuration, and
+- any other relevant directories or tool-bespoke configuration files.
+
+Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies via `uv add`.
+
+Supported options:
+
+- `--remove` to remove the tool instead of adding it
+- `--how` to only print how to use the tool, with no other side effects
+- `--offline` to disable network access and rely on caches
+- `--frozen` to leave the virtual environment and lockfile unchanged
+- `--quiet` to suppress output
+
+See [`usethis tool`](#usethis-tool) for more information.
 
 ### `usethis format`
 
@@ -327,6 +352,10 @@ declaring dependencies with `uv add`.
 
 - `usethis tool coverage.py` - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
 - `usethis tool pytest` - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
+
+#### Documentation
+
+- `usethis tool mkdocs` - Use [MkDocs](https://www.mkdocs.org/): Generate project documentation sites with Markdown.
 
 #### Configuration Files
 
@@ -547,7 +576,6 @@ Major features planned for later in 2025 are:
 
 - Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)),
 - Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)), and
-- Support for documentation pages (likely using mkdocs, [#188](https://github.com/usethis-python/usethis-python/issues/188)).
 
 Other features are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.
 

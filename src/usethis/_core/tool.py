@@ -8,7 +8,7 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
-from usethis._deps import get_project_dependencies
+from usethis._deps import get_project_deps
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.backend.uv.init import ensure_pyproject_toml
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
@@ -384,8 +384,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(
                         "\n".join(
-                            dep.to_requirement_string()
-                            for dep in get_project_dependencies()
+                            dep.to_requirement_string() for dep in get_project_deps()
                         )
                     )
 

@@ -5,8 +5,8 @@ from typer.testing import CliRunner
 from usethis._app import app
 from usethis._config_file import files_manager
 from usethis._deps import get_deps_from_group
-from usethis._integrations.backend.uv.deps import Dependency
 from usethis._test import change_cwd
+from usethis._types.deps import Dependency
 
 
 class TestDoc:

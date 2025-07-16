@@ -15,7 +15,7 @@
 
 Automate Python project setup and development tasks that are otherwise performed manually.
 
-usethis is a command-line interface to automate the configuration of popular Python tools, workflows and frameworks. It can declaratively add and remove tools, to an existing project, configure them, and set up a new project from scratch. It won't break your existing configuration, and ensures all tools are working smoothly together.
+usethis is a command-line interface to automate the configuration of popular Python tools, workflows, and frameworks. You can use it to declaratively add, remove, and configure tools in an existing project, as well as set up a new project from scratch. It won't break your existing configuration, and ensures all tools work together smoothly.
 
 usethis gives detailed messages about what it is doing (and what you need to do next).
 

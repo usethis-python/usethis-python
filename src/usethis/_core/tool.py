@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
 
+from usethis._backend import get_backend
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
 from usethis._deps import get_project_deps
@@ -359,7 +360,8 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
             tool.add_pre_commit_config()
 
         if not path.exists():
-            if usethis_config.backend is BackendEnum.uv:
+            backend = get_backend()
+            if backend is BackendEnum.uv:
                 if (
                     not (usethis_config.cpd() / "uv.lock").exists()
                     and not usethis_config.frozen
@@ -378,7 +380,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
                         ],
                         change_toml=False,
                     )
-            elif usethis_config.backend is BackendEnum.none:
+            elif backend is BackendEnum.none:
                 # Simply dump the dependencies list to requirements.txt as-is
                 tick_print("Writing 'requirements.txt'.")
                 with open(path, "w", encoding="utf-8") as f:
@@ -387,6 +389,8 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
                             dep.to_requirement_string() for dep in get_project_deps()
                         )
                     )
+            else:
+                assert_never(backend)
 
         tool.print_how_to_use()
 

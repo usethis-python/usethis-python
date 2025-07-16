@@ -2724,7 +2724,7 @@ typer-slim[standard]
             assert not err
             assert out.replace("\n", "") == (
                 "ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies."  # noqa: RUF001
-                "ℹ Consider the 'uv' backend for pinned, cross-platform, full requirements files."  # noqa: RUF001
+                "ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files."  # noqa: RUF001
                 "✔ Writing 'requirements.txt'."
                 "☐ Run 'usethis tool requirements.txt' to re-write 'requirements.txt'."
             )

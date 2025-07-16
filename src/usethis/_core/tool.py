@@ -8,7 +8,7 @@ from typing_extensions import assert_never
 
 from usethis._backend import get_backend
 from usethis._config import usethis_config
-from usethis._console import box_print, tick_print
+from usethis._console import box_print, info_print, tick_print
 from usethis._deps import get_project_deps
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.backend.uv.init import ensure_pyproject_toml
@@ -381,7 +381,13 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
                         change_toml=False,
                     )
             elif backend is BackendEnum.none:
-                # Simply dump the dependencies list to requirements.txt as-is
+                # Simply dump the dependencies list to requirements.txt as-
+                info_print(
+                    "Generating 'requirements.txt' with un-pinned, abstract dependencies."
+                )
+                info_print(
+                    "Consider installing 'uv' for pinned, cross-platform, full requirements files."
+                )
                 tick_print("Writing 'requirements.txt'.")
                 with open(path, "w", encoding="utf-8") as f:
                     f.write("-e .\n")

@@ -88,7 +88,7 @@ $ pipx run usethis tool ruff
 - [`usethis rule`](#usethis-rule-rulecode) — Set linter rule configuration for specific rules across the project.
 - [`usethis status`](#usethis-status-status) — Set the development status of the project (via trove classifiers).
 
-### Manage README
+### Manage the README
 
 - [`usethis badge`](#usethis-badge) — Add badges to the README file.
 - [`usethis readme`](#usethis-readme) — Add a new README file.

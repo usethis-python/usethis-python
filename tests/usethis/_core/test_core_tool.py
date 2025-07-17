@@ -1373,6 +1373,20 @@ select = ["INP"]
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_passes(self, tmp_path: Path):
+            with change_cwd(tmp_path), files_manager():
+                # Arrange
+                use_ruff()
+                use_pytest()
+
+                # Act
+                use_import_linter()
+
+            # Assert
+            with change_cwd(tmp_path), files_manager():
+                call_uv_subprocess(["run", "ruff", "check", "."], change_toml=False)
+
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange
@@ -2418,6 +2432,21 @@ def test_foo():
             with change_cwd(tmp_path):
                 # Assert (that this doesn't raise an error)
                 call_uv_subprocess(["run", "pytest"], change_toml=False)
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_import_linter_inp_rules(self, tmp_path: Path):
+            with change_cwd(tmp_path), files_manager():
+                # Arrange
+                use_import_linter()
+
+                # Act
+                (tmp_path / "ruff.toml").touch()
+                use_ruff()
+
+            # Assert
+            with change_cwd(tmp_path), files_manager():
+                contents = (tmp_path / "ruff.toml").read_text()
+                assert """"tests/**" = ["INP"]""" in contents
 
     class TestRemove:
         class TestRuffIntegration:

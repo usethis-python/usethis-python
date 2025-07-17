@@ -1369,7 +1369,7 @@ root_package = "a"
 select = ["INP"]
 
 [lint.per-file-ignores]
-"*/tests/**" = ["INP"]
+"tests/**" = ["INP"]
 """
             )
 

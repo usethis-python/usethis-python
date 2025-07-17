@@ -1373,6 +1373,35 @@ select = ["INP"]
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_inp_rules_dont_break_config(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "ruff.toml").write_text("""\
+[tool.ruff]
+line-length = 88
+format.docstring-code-format = true
+lint.select = [ "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I", "INP", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
+lint.ignore = [ "PLR2004", "SIM108" ]
+""")
+
+            with change_cwd(tmp_path), files_manager():
+                # Act
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / "ruff.toml").read_text()
+            assert (
+                contents
+                == """\
+[tool.ruff]
+line-length = 88
+format.docstring-code-format = true
+lint.select = [ "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I", "INP", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
+lint.ignore = [ "PLR2004", "SIM108" ]
+lint.per-file-ignores."tests/**" = ["INP"]
+"""
+            )
+
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
             # Arrange

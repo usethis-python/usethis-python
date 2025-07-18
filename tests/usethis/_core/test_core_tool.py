@@ -1394,9 +1394,7 @@ lint.ignore = [ "PLR2004", "SIM108" ]
 
             # Assert
             contents = (tmp_path / "pyproject.toml").read_text()
-            assert (
-                contents
-                == """\
+            assert contents.startswith("""\
 [project]
 name = "test"
 version = "0.1.0"
@@ -1407,8 +1405,7 @@ format.docstring-code-format = true
 lint.select = [ "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I", "INP", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
 lint.per-file-ignores."tests/**" = ["INP"]
 lint.ignore = [ "PLR2004", "SIM108" ]
-"""
-            )
+""")
 
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):

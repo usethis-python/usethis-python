@@ -1374,9 +1374,9 @@ select = ["INP"]
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_inp_rules_dont_break_config(self, tmp_path: Path):
+        def test_inp_rules_dont_break_config(self, uv_init_dir: Path):
             # Arrange
-            (tmp_path / "pyproject.toml").write_text("""\
+            (uv_init_dir / "pyproject.toml").write_text("""\
 [project]
 name = "test"
 version = "0.1.0"
@@ -1388,12 +1388,12 @@ lint.select = [ "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I", "INP", "PL
 lint.ignore = [ "PLR2004", "SIM108" ]
 """)
 
-            with change_cwd(tmp_path), files_manager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Act
                 use_import_linter()
 
             # Assert
-            contents = (tmp_path / "pyproject.toml").read_text()
+            contents = (uv_init_dir / "pyproject.toml").read_text()
             assert contents.startswith("""\
 [project]
 name = "test"

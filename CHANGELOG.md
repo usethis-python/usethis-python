@@ -16,7 +16,7 @@
 
 ### 🔧 Internal Changes
 
-- Changes to the `CI` and the test suite have been undertaken to support `uv` v0.8.0. Newer features of `uv` are now required in the CI configuration, meaning the lowest tested version of `uv` is now v0.6.8. Going forward, it is not recommended to use older versions of `uv` with `usethis`.
+- Changes to the `CI` and the test suite have been made to support `uv` v0.8.0. Newer features of `uv` are now required in the CI configuration, meaning the lowest tested version of `uv` is now v0.6.8. Going forward, it is not recommended to use older versions of `uv` with `usethis`.
 
 ## 0.15.0
 

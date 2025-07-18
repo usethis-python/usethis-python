@@ -27,7 +27,7 @@ from usethis._tool.config import (
     ConfigEntry,
     ConfigItem,
     ConfigSpec,
-    ensure_file_manager_exists,
+    ensure_managed_file_exists,
 )
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 
@@ -308,7 +308,7 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        ensure_file_manager_exists(file_manager)
+        ensure_managed_file_exists(file_manager)
         tick_print(
             f"Selecting {self.name} rule{s} {rules_str} in '{file_manager.name}'."
         )
@@ -326,7 +326,7 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        ensure_file_manager_exists(file_manager)
+        ensure_managed_file_exists(file_manager)
         tick_print(
             f"Ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
         )
@@ -344,7 +344,7 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        ensure_file_manager_exists(file_manager)
+        ensure_managed_file_exists(file_manager)
         tick_print(
             f"No longer ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
         )
@@ -362,7 +362,7 @@ class RuffTool(Tool):
         s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
-        ensure_file_manager_exists(file_manager)
+        ensure_managed_file_exists(file_manager)
         tick_print(
             f"Deselecting {self.name} rule{s} {rules_str} in '{file_manager.name}'."
         )
@@ -398,7 +398,7 @@ class RuffTool(Tool):
             return
 
         (file_manager,) = self.get_active_config_file_managers()
-        ensure_file_manager_exists(file_manager)
+        ensure_managed_file_exists(file_manager)
         keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
         file_manager.extend_list(keys=keys, values=rules)
 

@@ -4,6 +4,10 @@ from pathlib import Path
 import pytest
 import requests
 
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.pyproject_toml.requires_python import (
+    get_requires_python,
+)
 from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo
 from usethis._test import is_offline
 
@@ -42,4 +46,5 @@ class TestSchemaJSON:
 
     def test_target_python_version(self):
         # If this test fails, we should bump the version in the command in schema.py
-        assert Path(".python-version").read_text().startswith("3.10")
+        with PyprojectTOMLManager():
+            assert get_requires_python() == ">=3.10"

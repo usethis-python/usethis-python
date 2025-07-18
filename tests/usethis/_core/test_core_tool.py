@@ -1405,8 +1405,8 @@ version = "0.1.0"
 line-length = 88
 format.docstring-code-format = true
 lint.select = [ "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I", "INP", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
-lint.ignore = [ "PLR2004", "SIM108" ]
 lint.per-file-ignores."tests/**" = ["INP"]
+lint.ignore = [ "PLR2004", "SIM108" ]
 """
             )
 

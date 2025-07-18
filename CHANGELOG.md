@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.15.1
+
+### 🐞 Bug Fixes
+
+- Previously, when using Import Linter with Ruff, the `INP` rule would be ignored in the `tests` directory via an incorrect glob pattern of `"*/tests/**"`; this has been fixed to `"tests/**"`.
+
+- A TOML integration problem caused broken config on some versions of the dependency `tomlkit` before v0.13.3. This could occur on deeply nested keys, such as the per-file-ignores for Ruff directories in `pyproject.toml` when using Import Linter. This has now been fixed.
+
+### 📚 Documentation
+
+- Some issues with mismatched bullet points in the CLI docs section of the README have been addressed.
+
+- The opening paragraph of the README has been reworded for clarity, and various other minor changes have been made.
+
+### 🔧 Internal Changes
+
+- Changes to the `CI` and the test suite have been made to support `uv` v0.8.0. Newer features of `uv` are now required in the CI configuration, meaning the lowest tested version of `uv` is now v0.6.8. Going forward, it is not recommended to use older versions of `uv` with `usethis`.
+
 ## 0.15.0
 
 ### 🚀 New Features

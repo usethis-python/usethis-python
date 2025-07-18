@@ -14,9 +14,8 @@ class RuleConfig(BaseModel):
     """Configuration for linter rules associated with a tool.
 
     There is a distinction between selected and ignored rules. Selected rules are those
-    which are enabled and will be run by the tool unless ignored. Ignored rules are
-    those which are not run by the tool, even if they are selected. This follows the
-    Ruff paradigm.
+    which are enabled for the tool and will be used unless ignored. Ignored rules are
+    those which are not run, even if they are selected. This follows the Ruff paradigm.
 
     There is also a distinction between managed and unmanaged rule config. Managed
     selections (and ignores) are those which are managed exclusively by the one tool,

@@ -9,7 +9,7 @@ from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.pyproject_toml.requires_python import (
     get_requires_python,
 )
-from usethis._test import is_offline
+from usethis._test import change_cwd, is_offline
 
 
 class TestStep2:
@@ -42,7 +42,7 @@ class TestSchemaJSON:
         # TIP: go into debug mode to copy-and-paste into updated schema.json
         assert local_schema_json == online_schema_json
 
-    def test_target_python_version(self):
+    def test_target_python_version(self, usethis_dev_dir: Path):
         # If this test fails, we should bump the version in the command in schema.py
-        with PyprojectTOMLManager():
+        with change_cwd(usethis_dev_dir), PyprojectTOMLManager():
             assert get_requires_python() == ">=3.10"

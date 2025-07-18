@@ -24,5 +24,5 @@ class TestLint:
 
         # Check Ruff formatter is not added
         txt = (tmp_path / "pyproject.toml").read_text()
-        assert "ruff.format" not in txt
-        assert "ruff.lint" in txt
+        assert "format" not in txt
+        assert "lint" in txt

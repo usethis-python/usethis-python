@@ -1363,9 +1363,57 @@ root_package = "a"
 select = ["INP"]
 
 [lint.per-file-ignores]
-"*/tests/**" = ["INP"]
+"tests/**" = ["INP"]
 """
             )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_inp_rules_dont_break_config(self, uv_init_dir: Path):
+            # Arrange
+            (uv_init_dir / "pyproject.toml").write_text("""\
+[project]
+name = "test"
+version = "0.1.0"
+
+[tool.ruff]
+line-length = 88
+format.docstring-code-format = true
+lint.select = [ "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I", "INP", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
+lint.ignore = [ "PLR2004", "SIM108" ]
+""")
+
+            with change_cwd(uv_init_dir), files_manager():
+                # Act
+                use_import_linter()
+
+            # Assert
+            contents = (uv_init_dir / "pyproject.toml").read_text()
+            assert contents.startswith("""\
+[project]
+name = "test"
+version = "0.1.0"
+
+[tool.ruff]
+line-length = 88
+format.docstring-code-format = true
+lint.select = [ "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I", "INP", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
+lint.per-file-ignores."tests/**" = ["INP"]
+lint.ignore = [ "PLR2004", "SIM108" ]
+""")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_passes(self, tmp_path: Path):
+            with change_cwd(tmp_path), files_manager():
+                # Arrange
+                use_ruff()
+                use_pytest()
+
+                # Act
+                use_import_linter()
+
+            # Assert
+            with change_cwd(tmp_path), files_manager():
+                call_uv_subprocess(["run", "ruff", "check", "."], change_toml=False)
 
     class TestRemove:
         def test_config_file(self, uv_init_repo_dir: Path):
@@ -2412,6 +2460,21 @@ def test_foo():
             with change_cwd(tmp_path):
                 # Assert (that this doesn't raise an error)
                 call_uv_subprocess(["run", "pytest"], change_toml=False)
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_import_linter_inp_rules(self, tmp_path: Path):
+            with change_cwd(tmp_path), files_manager():
+                # Arrange
+                use_import_linter()
+
+                # Act
+                (tmp_path / "ruff.toml").touch()
+                use_ruff()
+
+            # Assert
+            with change_cwd(tmp_path), files_manager():
+                contents = (tmp_path / "ruff.toml").read_text()
+                assert """"tests/**" = ["INP"]""" in contents
 
     class TestRemove:
         class TestRuffIntegration:

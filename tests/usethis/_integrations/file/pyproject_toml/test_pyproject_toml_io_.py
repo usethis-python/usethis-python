@@ -394,3 +394,30 @@ key = ["value1"]
 key = ["value1", "value2"]
 """
             )
+
+        def test_deep_nesting_doesnt_break_config(self, tmp_path: Path):
+            # https://github.com/usethis-python/usethis-python/issues/862
+            # The issue is basically the same as this one though:
+            # https://github.com/usethis-python/usethis-python/issues/507
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.ruff]
+lint.select = [ "INP" ]
+""")
+
+            with change_cwd(tmp_path), PyprojectTOMLManager() as mgr:
+                # Act
+                mgr.extend_list(
+                    keys=["tool", "ruff", "lint", "per-file-ignores", "tests/**"],
+                    values=["INP"],
+                )
+
+            # Assert
+            contents = (tmp_path / "pyproject.toml").read_text()
+            assert (
+                contents
+                == """\
+[tool.ruff]
+lint.select = [ "INP" ]
+lint.per-file-ignores."tests/**" = ["INP"]
+"""
+            )

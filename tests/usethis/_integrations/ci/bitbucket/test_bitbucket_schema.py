@@ -5,7 +5,11 @@ import pytest
 import requests
 
 from usethis._integrations.ci.bitbucket.schema import Script, Step, Step2, StepBase
-from usethis._test import is_offline
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.file.pyproject_toml.requires_python import (
+    get_requires_python,
+)
+from usethis._test import change_cwd, is_offline
 
 
 class TestStep2:
@@ -40,4 +44,5 @@ class TestSchemaJSON:
 
     def test_target_python_version(self, usethis_dev_dir: Path):
         # If this test fails, we should bump the version in the command in schema.py
-        assert (usethis_dev_dir / ".python-version").read_text().startswith("3.10")
+        with change_cwd(usethis_dev_dir), PyprojectTOMLManager():
+            assert get_requires_python() == ">=3.10"

@@ -418,6 +418,20 @@ class TestRuff:
 """
         )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_passes_using_all_tools(self, uv_init_dir: Path):
+        """Test that pytest runs with all tools installed."""
+        with change_cwd(uv_init_dir):
+            # Arrange, Act
+            for cmd in ALL_TOOL_COMMANDS:
+                if not usethis_config.offline:
+                    call_subprocess(["usethis", "tool", cmd])
+                else:
+                    call_subprocess(["usethis", "tool", cmd, "--offline"])
+
+            # Act, Assert
+            call_uv_subprocess(["run", "ruff", "check", "."], change_toml=False)
+
 
 class TestPytest:
     @pytest.mark.usefixtures("_vary_network_conn")

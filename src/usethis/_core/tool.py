@@ -468,8 +468,7 @@ def use_ruff(
         tool.add_configs()
 
         if linter:
-            tool.select_rules(rule_config.get_all_selected())
-            tool.ignore_rules(rule_config.get_all_ignored())
+            tool.apply_rule_config(rule_config)
         if PreCommitTool().is_used():
             tool.add_pre_commit_config()
         else:

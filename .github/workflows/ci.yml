@@ -45,7 +45,8 @@ jobs:
         
       - name: Setup dependencies
         run: |
-          uv export --resolution ${{ matrix.resolution }} > ci-requirements.txt 
+          uv python pin ${{ matrix.python-version }}
+          uv export --no-managed-python --resolution ${{ matrix.resolution }} > ci-requirements.txt 
           uv pip install --system -r ci-requirements.txt
 
       - name: Run pre-commit
@@ -92,7 +93,7 @@ jobs:
         include:
           - os: "ubuntu-latest"
             python-version: "3.10"
-            uv-version: "0.5.29" # Sync with pyproject.toml
+            uv-version: "0.6.8" # Sync with pyproject.toml
             resolution: "lowest-direct"
             codspeed: false
             codecov: false

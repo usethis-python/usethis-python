@@ -124,8 +124,8 @@ class ConfigItem(BaseModel):
         return {(usethis_config.cpd() / path).resolve() for path in self.root}
 
 
-def ensure_file_manager_exists(file_manager: UsethisFileManager) -> None:
-    """Ensure the file manager exists."""
+def ensure_managed_file_exists(file_manager: UsethisFileManager) -> None:
+    """Ensure a file manager's managed file exists."""
     if isinstance(file_manager, PyprojectTOMLManager):
         ensure_pyproject_toml()
     elif not file_manager.path.exists():

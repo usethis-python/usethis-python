@@ -409,9 +409,7 @@ class RuffTool(Tool):
         """
         self.select_rules(rule_config.get_all_selected())
         self.ignore_rules(rule_config.get_all_ignored())
-        self.ignore_rules_in_glob(
-            rule_config.tests_unmanaged_ignored, glob="*/tests/**"
-        )
+        self.ignore_rules_in_glob(rule_config.tests_unmanaged_ignored, glob="tests/**")
 
     def remove_rule_config(self, rule_config: RuleConfig) -> None:
         """Remove the Ruff rules associated with a rule config from the project.

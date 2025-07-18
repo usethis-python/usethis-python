@@ -167,9 +167,9 @@ class TOMLFileManager(KeyValueFileManager):
         except KeyError:
             _set_value_in_existing(
                 toml_document=toml_document,
-                current_container=d,
+                shared_container=d,
+                shared_keys=shared_keys,
                 keys=keys,
-                current_keys=shared_keys,
                 value=value,
             )
         except ValidationError:
@@ -179,9 +179,9 @@ class TOMLFileManager(KeyValueFileManager):
             else:
                 _set_value_in_existing(
                     toml_document=toml_document,
-                    current_container=d,
+                    shared_keys=shared_keys,
+                    shared_container=d,
                     keys=keys,
-                    current_keys=shared_keys,
                     value=value,
                 )
         else:
@@ -269,12 +269,14 @@ class TOMLFileManager(KeyValueFileManager):
 
         toml_document = copy.copy(self.get())
 
+        shared_keys: list[str] = []
+        d = toml_document
         try:
-            d = toml_document
             for key in keys[:-1]:
                 TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d = d[key]
+                shared_keys.append(key)
             p_parent = d
             TypeAdapter(dict).validate_python(p_parent)
             assert isinstance(p_parent, dict)
@@ -284,7 +286,13 @@ class TOMLFileManager(KeyValueFileManager):
             for key in reversed(keys):
                 contents = {key: contents}
             assert isinstance(contents, dict)
-            toml_document = mergedeep.merge(toml_document, contents)
+            _set_value_in_existing(
+                toml_document=toml_document,
+                shared_keys=shared_keys,
+                shared_container=d,
+                keys=keys,
+                value=values,
+            )
             assert isinstance(toml_document, TOMLDocument)
         except ValidationError:
             msg = (
@@ -349,11 +357,20 @@ class TOMLFileManager(KeyValueFileManager):
 def _set_value_in_existing(
     *,
     toml_document: TOMLDocument,
-    current_container: TOMLDocument | Item | Container,
+    shared_keys: Sequence[Key],
+    shared_container: TOMLDocument | Item | Container,
     keys: Sequence[Key],
-    current_keys: Sequence[Key],
     value: Any,
 ) -> None:
+    """Set a new value in an existing container.
+
+    Args:
+        toml_document: The overall document.
+        shared_keys: Keys to the deepest container that actually exists.
+        shared_container: The shared container itself that needs new contents.
+        keys: Keys to the new value from the root of the document.
+        value: The value at the keys.
+    """
     # The old configuration should be kept for all ID keys except the
     # final/deepest one which shouldn't exist anyway since we checked as much,
     # above. For example, if there is [tool.ruff] then we shouldn't overwrite it
@@ -369,12 +386,12 @@ def _set_value_in_existing(
     else:
         # Note that this alternative logic is just to avoid a bug:
         # https://github.com/usethis-python/usethis-python/issues/507
-        TypeAdapter(dict).validate_python(current_container)
-        assert isinstance(current_container, dict)
+        TypeAdapter(dict).validate_python(shared_container)
+        assert isinstance(shared_container, dict)
 
-        unshared_keys = keys[len(current_keys) :]
+        unshared_keys = keys[len(shared_keys) :]
 
-        if len(current_keys) == 1:
+        if len(shared_keys) == 1:
             # In this case, we need to "seed" the section to avoid another bug:
             # https://github.com/usethis-python/usethis-python/issues/558
 
@@ -385,9 +402,9 @@ def _set_value_in_existing(
             for key in reversed(unshared_keys[1:]):
                 contents = {key: contents}
 
-            current_container[keys[1]] = contents  # type: ignore[reportAssignmentType]
+            shared_container[keys[1]] = contents  # type: ignore[reportAssignmentType]
         else:
-            current_container[_get_unified_key(unshared_keys)] = value
+            shared_container[_get_unified_key(unshared_keys)] = value
 
 
 def _validate_keys(keys: Sequence[Key]) -> list[str]:

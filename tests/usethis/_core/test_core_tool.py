@@ -1369,14 +1369,18 @@ root_package = "a"
 select = ["INP"]
 
 [lint.per-file-ignores]
-"*/tests/**" = ["INP"]
+"tests/**" = ["INP"]
 """
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_inp_rules_dont_break_config(self, tmp_path: Path):
             # Arrange
-            (tmp_path / "ruff.toml").write_text("""\
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test"
+version = "0.1.0"
+
 [tool.ruff]
 line-length = 88
 format.docstring-code-format = true
@@ -1389,10 +1393,14 @@ lint.ignore = [ "PLR2004", "SIM108" ]
                 use_import_linter()
 
             # Assert
-            contents = (tmp_path / "ruff.toml").read_text()
+            contents = (tmp_path / "pyproject.toml").read_text()
             assert (
                 contents
                 == """\
+[project]
+name = "test"
+version = "0.1.0"
+
 [tool.ruff]
 line-length = 88
 format.docstring-code-format = true

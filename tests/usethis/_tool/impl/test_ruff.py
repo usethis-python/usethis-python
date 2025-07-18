@@ -312,3 +312,29 @@ select = ["A"]
             # Act
             with change_cwd(tmp_path), DotRuffTOMLManager():
                 assert RuffTool().is_formatter_used()
+
+    class TestIgnoreRulesInGlob:
+        def test_dont_break_config(self, tmp_path: Path):
+            # https://github.com/usethis-python/usethis-python/issues/862
+            # The issue is basically the same as this one though:
+            # https://github.com/usethis-python/usethis-python/issues/509
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.ruff]
+lint.select = [ "INP" ]
+""")
+
+            with change_cwd(tmp_path), files_manager():
+                # Act
+                RuffTool().ignore_rules_in_glob(["INP"], glob="tests/**")
+
+            # Assert
+            contents = (tmp_path / "pyproject.toml").read_text()
+            assert (
+                contents
+                == """\
+[tool.ruff]
+lint.select = [ "INP" ]
+lint.per-file-ignores."tests/**" = ["INP"]
+"""
+            )

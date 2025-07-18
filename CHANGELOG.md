@@ -6,7 +6,7 @@
 
 - Previously, when using Import Linter with Ruff, the `INP` rule would be ignored in the `tests` directory via an incorrect glob pattern of `"*/tests/**"`; this has been fixed to `"tests/**"`.
 
-- A TOML integration problem caused broken config on some versions of the dependency `tomlkit` before v0.13.3. This could occur on deeply nested keys, such as the per-file-ignores for Ruff directories in `pyproject.toml` when using Import Linter. This has now been fixed.
+- A TOML integration problem could cause broken configuration in some cases. This could occur on deeply nested keys, such as the per-file-ignores for Ruff directories in `pyproject.toml` when using Import Linter. This has now been fixed.
 
 ### 📚 Documentation
 

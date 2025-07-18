@@ -398,7 +398,7 @@ key = ["value1", "value2"]
         def test_deep_nesting_doesnt_break_config(self, tmp_path: Path):
             # https://github.com/usethis-python/usethis-python/issues/862
             # The issue is basically the same as this one though:
-            # https://github.com/usethis-python/usethis-python/issues/509
+            # https://github.com/usethis-python/usethis-python/issues/507
             (tmp_path / "pyproject.toml").write_text("""\
 [tool.ruff]
 lint.select = [ "INP" ]

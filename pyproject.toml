@@ -156,7 +156,7 @@ minversion = "7"
 
 [tool.coverage.run]
 source = [ "src" ]
-omit = [ "*/pytest-of-*/*", "*/_temp/*" ]
+omit = [ "*/pytest-of-*/*" ]
 
 [tool.coverage.report]
 exclude_also = [
@@ -167,7 +167,7 @@ exclude_also = [
   "class .*\\bProtocol\\):",
   "@(abc\\.)?abstractmethod",
 ]
-omit = [ "*/pytest-of-*/*", "*/_temp/*" ]
+omit = [ "*/pytest-of-*/*" ]
 
 [tool.uv]
 required-version = ">=0.6.8"              # Sync with README

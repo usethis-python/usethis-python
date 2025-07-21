@@ -78,7 +78,7 @@ $ pipx run usethis tool ruff
 - [`usethis lint`](#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
 - [`usethis spellcheck`](#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
 - [`usethis test`](#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest)).
-- [`usethis ci`](#usethis-ci) — Add/Configure a recommended CI service.
+- [`usethis ci`](#usethis-ci) — Add/Configure a specified CI service.
 - [`usethis tool`](#usethis-tool) — Add/Configure specific tools individually.
 
 ### Manage Configuration

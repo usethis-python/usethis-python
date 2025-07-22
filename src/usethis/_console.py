@@ -35,9 +35,7 @@ def tick_print(msg: str | Exception) -> None:
     msg = str(msg)
 
     if not (usethis_config.quiet or usethis_config.alert_only):
-        console.print(
-            f"{'✔'.encode('utf-8', 'ignore').decode('utf-8')} {msg}", style="green"
-        )
+        console.print(f"✔ {msg}", style="green")
 
 
 def box_print(msg: str | Exception) -> None:

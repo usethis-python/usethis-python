@@ -110,10 +110,11 @@ class DeptryTool(Tool):
     def is_managed_rule(self, rule: Rule) -> bool:
         return rule.startswith("DEP") and rule[3:].isdigit()
 
-    def select_rules(self, rules: list[Rule]) -> None:
+    def select_rules(self, rules: list[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
         if rules:
             info_print(f"All {self.name} rules are always implicitly selected.")
+        return False
 
     def get_selected_rules(self) -> list[Rule]:
         """No notion of selection for deptry.
@@ -123,14 +124,15 @@ class DeptryTool(Tool):
         """
         return []
 
-    def deselect_rules(self, rules: list[Rule]) -> None:
+    def deselect_rules(self, rules: list[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
+        return False
 
-    def ignore_rules(self, rules: list[Rule]) -> None:
+    def ignore_rules(self, rules: list[Rule]) -> bool:
         rules = sorted(set(rules) - set(self.get_ignored_rules()))
 
         if not rules:
-            return
+            return False
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
@@ -143,11 +145,13 @@ class DeptryTool(Tool):
         keys = self._get_ignore_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
-    def unignore_rules(self, rules: list[str]) -> None:
+        return True
+
+    def unignore_rules(self, rules: list[str]) -> bool:
         rules = sorted(set(rules) & set(self.get_ignored_rules()))
 
         if not rules:
-            return
+            return False
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
@@ -159,6 +163,8 @@ class DeptryTool(Tool):
         )
         keys = self._get_ignore_keys(file_manager)
         file_manager.remove_from_list(keys=keys, values=rules)
+
+        return True
 
     def get_ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()

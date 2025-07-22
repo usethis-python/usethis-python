@@ -1346,16 +1346,18 @@ root_package = "a"
                 assert "INP" in RuffTool().get_selected_rules()
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_inp_rules_not_selected_for_tests_dir(self, tmp_path: Path):
+        def test_inp_rules_not_selected_for_tests_dir(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
             # Arrange
-            (tmp_path / "ruff.toml").touch()
+            (uv_init_dir / "ruff.toml").touch()
 
-            with change_cwd(tmp_path), files_manager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Act
                 use_import_linter()
 
             # Assert
-            contents = (tmp_path / "ruff.toml").read_text()
+            contents = (uv_init_dir / "ruff.toml").read_text()
             assert (
                 contents
                 == """\
@@ -1365,6 +1367,51 @@ select = ["INP"]
 [lint.per-file-ignores]
 "tests/**" = ["INP"]
 """
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rule 'INP' in 'ruff.toml'.\n"
+                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_message_for_already_selected_but_needs_ignoring(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_dir / "ruff.toml").write_text("""\
+[lint]
+select = ["INP"]
+""")
+
+            with change_cwd(uv_init_dir), files_manager():
+                # Act
+                use_import_linter()
+
+            # Assert
+            contents = (uv_init_dir / "ruff.toml").read_text()
+            assert (
+                contents
+                == """\
+[lint]
+select = ["INP"]
+
+[lint.per-file-ignores]
+"tests/**" = ["INP"]
+"""
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "✔ Ignoring Ruff rule 'INP' for 'tests/**' in 'ruff.toml'.\n"
+                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")

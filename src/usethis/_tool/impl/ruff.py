@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Literal
 
 from typing_extensions import assert_never
 
+from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import box_print, tick_print
 from usethis._integrations.backend.uv.used import is_uv_used
@@ -297,12 +298,12 @@ class RuffTool(Tool):
 
         return steps
 
-    def select_rules(self, rules: list[Rule]) -> None:
+    def select_rules(self, rules: list[Rule]) -> bool:
         """Add Ruff rules to the project."""
         rules = sorted(set(rules) - set(self.get_selected_rules()))
 
         if not rules:
-            return
+            return False
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
@@ -315,12 +316,14 @@ class RuffTool(Tool):
         keys = self._get_select_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
-    def ignore_rules(self, rules: list[Rule]) -> None:
+        return True
+
+    def ignore_rules(self, rules: list[Rule]) -> bool:
         """Ignore Ruff rules in the project."""
         rules = sorted(set(rules) - set(self.get_ignored_rules()))
 
         if not rules:
-            return
+            return False
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
@@ -333,12 +336,14 @@ class RuffTool(Tool):
         keys = self._get_ignore_keys(file_manager)
         file_manager.extend_list(keys=keys, values=rules)
 
-    def unignore_rules(self, rules: list[str]) -> None:
+        return True
+
+    def unignore_rules(self, rules: list[str]) -> bool:
         """Unignore Ruff rules in the project."""
         rules = list(set(rules) & set(self.get_ignored_rules()))
 
         if not rules:
-            return
+            return False
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
@@ -350,13 +355,14 @@ class RuffTool(Tool):
         )
         keys = self._get_ignore_keys(file_manager)
         file_manager.remove_from_list(keys=keys, values=rules)
+        return True
 
-    def deselect_rules(self, rules: list[Rule]) -> None:
+    def deselect_rules(self, rules: list[Rule]) -> bool:
         """Ensure Ruff rules are not selected in the project."""
         rules = list(set(rules) & set(self.get_selected_rules()))
 
         if not rules:
-            return
+            return False
 
         rules_str = ", ".join([f"'{rule}'" for rule in rules])
         s = "" if len(rules) == 1 else "s"
@@ -368,6 +374,7 @@ class RuffTool(Tool):
         )
         keys = self._get_select_keys(file_manager)
         file_manager.remove_from_list(keys=keys, values=rules)
+        return True
 
     def get_selected_rules(self) -> list[Rule]:
         """Get the Ruff rules selected in the project."""
@@ -397,8 +404,14 @@ class RuffTool(Tool):
         if not rules:
             return
 
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
         (file_manager,) = self.get_active_config_file_managers()
         ensure_managed_file_exists(file_manager)
+        tick_print(
+            f"Ignoring {self.name} rule{s} {rules_str} for '{glob}' in '{file_manager.name}'."
+        )
         keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
         file_manager.extend_list(keys=keys, values=rules)
 
@@ -407,9 +420,19 @@ class RuffTool(Tool):
 
         Note, this will add both managed and unmanaged config.
         """
-        self.select_rules(rule_config.get_all_selected())
-        self.ignore_rules(rule_config.get_all_ignored())
-        self.ignore_rules_in_glob(rule_config.tests_unmanaged_ignored, glob="tests/**")
+        is_selected = self.select_rules(rule_config.get_all_selected())
+        is_ignored = self.ignore_rules(rule_config.get_all_ignored())
+
+        # We don't want to spam the user with verbose messages about per-file ignores.
+        # On the other hand, if we haven't displayed any messages at all, we need to
+        # avoid a misleading silence, which would imply we haven't modified a file.
+        # This is probably a workaround until there is more sophisticated support for
+        # verbosity control.
+        # https://github.com/usethis-python/usethis-python/issues/884
+        with usethis_config.set(alert_only=is_selected or is_ignored):
+            self.ignore_rules_in_glob(
+                rule_config.tests_unmanaged_ignored, glob="tests/**"
+            )
 
     def remove_rule_config(self, rule_config: RuleConfig) -> None:
         """Remove the Ruff rules associated with a rule config from the project.

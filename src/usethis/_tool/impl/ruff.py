@@ -423,15 +423,11 @@ class RuffTool(Tool):
         is_selected = self.select_rules(rule_config.get_all_selected())
         is_ignored = self.ignore_rules(rule_config.get_all_ignored())
 
-        # It's a bit spammy to go into detail about per-file level config, but if we
-        # haven't mentioned anything yet then we definitely need at least one message to
-        # avoid a misleading silence which wouldn't draw attention to the modified file.
-        # https://github.com/usethis-python/usethis-python/issues/881
-        # Arguably this is questionably behaviour and we should just always display the
-        # message but I think let's wait for user feedback. I am already concerned
-        # that we are displaying too many messages about rather trivial changes. It's a
-        # balancing act and I think basically we need a way to control verbosity at a more
-        # granular level. See
+        # We don't want to spam the user with verbose messages about per-file ignores.
+        # On the other hand, if we haven't displayed any messages at all, we need to
+        # avoid a misleading silence, which would imply we haven't modified a file.
+        # This is probably a workaround until there is more sophisticated support for
+        # verbosity control.
         # https://github.com/usethis-python/usethis-python/issues/884
         with usethis_config.set(alert_only=is_selected or is_ignored):
             self.ignore_rules_in_glob(

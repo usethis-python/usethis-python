@@ -102,7 +102,7 @@ class TestInit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["init", "myproject"])
+            result = runner.invoke(app, ["init", "myproject"], catch_exceptions=False)
 
         # Assert
         assert result.exit_code == 0, result.output

@@ -567,18 +567,26 @@ class Tool(Protocol):
         """Determine if a rule is managed by this tool."""
         return False
 
-    def select_rules(self, rules: list[Rule]) -> None:
+    def select_rules(self, rules: list[Rule]) -> bool:
         """Select the rules managed by the tool.
 
         These rules are not validated; it is assumed they are valid rules for the tool,
         and that the tool will be able to manage them.
+
+        Args:
+            rules: The rules to select. If any of these rules are already selected, they
+                   will be skipped.
+
+        Returns:
+            True if any rules were selected, False if no rules were selected.
         """
+        return False
 
     def get_selected_rules(self) -> list[Rule]:
         """Get the rules managed by the tool that are currently selected."""
         return []
 
-    def ignore_rules(self, rules: list[Rule]) -> None:
+    def ignore_rules(self, rules: list[Rule]) -> bool:
         """Ignore rules managed by the tool.
 
         Ignoring a rule is different from deselecting it - it means that even if it
@@ -587,21 +595,45 @@ class Tool(Protocol):
 
         These rules are not validated; it is assumed they are valid rules for the tool,
         and that the tool will be able to manage them.
-        """
 
-    def unignore_rules(self, rules: list[str]) -> None:
+        Args:
+            rules: The rules to ignore. If any of these rules are already ignored, they
+                   will be skipped.
+
+        Returns:
+            True if any rules were ignored, False if no rules were ignored.
+        """
+        return False
+
+    def unignore_rules(self, rules: list[str]) -> bool:
         """Stop ignoring rules managed by the tool.
 
         These rules are not validated; it is assumed they are valid rules for the tool,
         and that the tool will be able to manage them.
+
+        Args:
+            rules: The rules to unignore. If any of these rules are not ignored, they
+                   will be skipped.
+
+        Returns:
+            True if any rules were unignored, False if no rules were unignored.
         """
+        return False
 
     def get_ignored_rules(self) -> list[Rule]:
         """Get the ignored rules managed by the tool."""
         return []
 
-    def deselect_rules(self, rules: list[Rule]) -> None:
+    def deselect_rules(self, rules: list[Rule]) -> bool:
         """Deselect the rules managed by the tool.
 
         Any rules that aren't already selected are ignored.
+
+        Args:
+            rules: The rules to deselect. If any of these rules are not selected, they
+                   will be skipped.
+
+        Returns:
+            True if any rules were deselected, False if no rules were deselected.
         """
+        return False

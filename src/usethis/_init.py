@@ -8,6 +8,7 @@ from usethis._integrations.backend.uv.init import (
     opinionated_uv_init,
 )
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.project.name import get_project_name
 from usethis._types.backend import BackendEnum
 
 
@@ -35,7 +36,18 @@ def ensure_pyproject_toml(*, author: bool = True) -> None:
     if backend is BackendEnum.uv:
         ensure_pyproject_toml_via_uv(author=author)
     elif backend is BackendEnum.none:
-        raise NotImplementedError
+        (usethis_config.cpd() / "pyproject.toml").write_text(
+            f"""\
+[project]
+name = "{get_project_name()}"
+version = "0.1.0"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+"""
+        )
     else:
         assert_never(backend)
 

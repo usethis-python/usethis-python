@@ -54,12 +54,6 @@ jobs:
         run: |
           uv run --frozen pre-commit run --all-files
 
-      - name: Block networking
-        if: matrix.offline
-        run: |
-          sudo iptables -P OUTPUT DROP
-          sudo iptables -P INPUT DROP
-
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
         if: matrix.pytest

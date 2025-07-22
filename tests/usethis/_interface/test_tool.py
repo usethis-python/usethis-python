@@ -153,7 +153,10 @@ class TestDeptry:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["deptry"])
+            if not usethis_config.offline:
+                result = runner.invoke(app, ["deptry"])
+            else:
+                result = runner.invoke(app, ["deptry", "--offline"])
 
             # Assert
             assert result.exit_code == 0, result.output

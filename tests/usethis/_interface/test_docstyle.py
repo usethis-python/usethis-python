@@ -1,8 +1,10 @@
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from usethis._app import app
+from usethis._config import usethis_config
 from usethis._core.enums.docstyle import DocStyleEnum
 from usethis._interface.docstyle import docstyle
 from usethis._test import change_cwd
@@ -27,6 +29,7 @@ class TestDocstyle:
         # Assert
         assert result.exit_code == 1, result.output
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_pyproject_toml_success(self, tmp_path: Path):
         # https://github.com/usethis-python/usethis-python/issues/507
 
@@ -37,7 +40,10 @@ class TestDocstyle:
         # Act
         with change_cwd(tmp_path):
             runner = CliRunner()
-            result = runner.invoke(app, ["docstyle", "numpy"])
+            if not usethis_config.offline:
+                result = runner.invoke(app, ["docstyle", "numpy"])
+            else:
+                result = runner.invoke(app, ["docstyle", "numpy", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -81,6 +87,7 @@ lint.select = [ "A" ]
         content = existing_pyproject_toml.read_text()
         assert "[lint.pydocstyle]" not in content  # Wrong section name
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_default(self, tmp_path: Path):
         # Arrange
         default_pyproject_toml = tmp_path / "pyproject.toml"
@@ -89,7 +96,10 @@ lint.select = [ "A" ]
         # Act
         with change_cwd(tmp_path):
             runner = CliRunner()
-            result = runner.invoke(app, ["docstyle"])
+            if not usethis_config.offline:
+                result = runner.invoke(app, ["docstyle"])
+            else:
+                result = runner.invoke(app, ["docstyle", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output

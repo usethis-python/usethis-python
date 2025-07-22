@@ -54,10 +54,17 @@ jobs:
         run: |
           uv run --frozen pre-commit run --all-files
 
+      - name: Block networking
+        if: matrix.offline
+        run: |
+          sudo iptables -P OUTPUT DROP
+          sudo iptables -P INPUT DROP
+
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
         if: matrix.pytest
         with:
+          custom-pytest: ${{ matrix.offline && 'unshare --net -- pytest' || 'pytest' }}
           custom-arguments: --cov --junitxml=junit.xml -o junit_family=legacy
 
       - name: Run benchmarks
@@ -90,6 +97,7 @@ jobs:
         codecov: [false]
         pre-commit: [true]
         pytest: [true]
+        offline: [false]
         include:
           - os: "ubuntu-latest"
             python-version: "3.10"
@@ -99,6 +107,7 @@ jobs:
             codecov: false
             pre-commit: false
             pytest: true
+            offline: false
           - os: "ubuntu-latest"
             python-version: "3.13"
             uv-version: "latest"
@@ -107,6 +116,7 @@ jobs:
             codecov: true
             pre-commit: false
             pytest: true
+            offline: false
           - os: "ubuntu-latest"
             python-version: "3.13"
             uv-version: "latest"
@@ -115,3 +125,14 @@ jobs:
             codecov: false
             pre-commit: false
             pytest: false
+            offline: false
+          - os: "ubuntu-latest"
+            python-version: "3.13"
+            uv-version: "latest"
+            resolution: "highest"
+            codspeed: false
+            codecov: false
+            pre-commit: false
+            pytest: true
+            offline: true
+

@@ -83,6 +83,7 @@ convention = "pep257"
 """
         )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_pyproject_toml_numpy(self, tmp_path: Path):
         # Also tests the case that ruff isn't used yet.
 
@@ -170,6 +171,7 @@ convention = "numpy"
         # Assert
         assert contents == (tmp_path / "ruff.toml").read_text()
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_adding_ruff_afterwards_allows_default_rules(self, tmp_path: Path):
         # Arrange
         (tmp_path / "ruff.toml").touch()

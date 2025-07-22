@@ -46,7 +46,7 @@ jobs:
       - name: Setup dependencies
         run: |
           uv python pin ${{ matrix.python-version }}
-          uv export --no-managed-python --resolution ${{ matrix.resolution }} > ci-requirements.txt 
+          uv export --no-managed-python --no-group doc --resolution ${{ matrix.resolution }} > ci-requirements.txt 
           uv pip install --system -r ci-requirements.txt
 
       - name: Run pre-commit

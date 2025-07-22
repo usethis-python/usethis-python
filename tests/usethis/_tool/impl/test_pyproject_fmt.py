@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
@@ -28,6 +29,7 @@ class TestPyprojectFmtTool:
                 "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_latest_version(self):
             (config,) = PyprojectFmtTool().get_pre_commit_config().repo_configs
             repo = config.repo
@@ -37,7 +39,11 @@ class TestPyprojectFmtTool:
                     owner="tox-dev", repo="pyproject-fmt"
                 )
             except GitHubTagError as err:
-                if os.getenv("CI") or "rate limit exceeded for url" in str(err):
+                if (
+                    os.getenv("CI")
+                    or usethis_config.offline
+                    or "rate limit exceeded for url" in str(err)
+                ):
                     pytest.skip(
                         "Failed to fetch GitHub tags (connection issues); skipping test"
                     )

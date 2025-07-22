@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
@@ -98,6 +99,7 @@ repos:
             assert not err
             assert out == ("☐ Run 'codespell' to run the Codespell spellchecker.\n")
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_latest_version(self):
         (config,) = CodespellTool().get_pre_commit_config().repo_configs
         repo = config.repo
@@ -107,7 +109,11 @@ repos:
                 owner="codespell-project", repo="codespell"
             )
         except GitHubTagError as err:
-            if os.getenv("CI") or "rate limit exceeded for url" in str(err):
+            if (
+                os.getenv("CI")
+                or usethis_config.offline
+                or "rate limit exceeded for url" in str(err)
+            ):
                 pytest.skip(
                     "Failed to fetch GitHub tags (connection issues); skipping test"
                 )

@@ -1012,6 +1012,7 @@ exhaustive = True
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_cyclic_excluded(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
             # Arrange
             (tmp_path / ".importlinter").touch()
@@ -1047,6 +1048,7 @@ exhaustive_ignores =
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_existing_ini_match(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").write_text(
@@ -1075,6 +1077,7 @@ root_packages =
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_existing_ini_differs(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").write_text(
@@ -1103,6 +1106,7 @@ root_packages =
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_numbers_in_layer_names(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").touch()
@@ -1134,6 +1138,7 @@ exhaustive = True
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_nesting(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").touch()
@@ -1177,6 +1182,7 @@ exhaustive = True
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_multiple_packages_with_nesting(self, tmp_path: Path):
             # The logic here is that we want to have the minimum number of nesting
             # levels required to reach the minimum number of modules which is 3.
@@ -1533,6 +1539,7 @@ repos:
             )
 
     class TestBitbucketIntegration:
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, tmp_path: Path):
             # Arrange
             (tmp_path / "bitbucket-pipelines.yml").write_text("""\
@@ -1576,6 +1583,7 @@ nav:
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_successful_build(self, tmp_path: Path):
             # Act
             with change_cwd(tmp_path), files_manager():
@@ -2049,6 +2057,7 @@ pipelines:
             assert "ruff" in contents
 
     class TestMultipleIntegrations:
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_hooks_run_all_tools_empty_repo(self, uv_env_dir: Path):
             # Arrange
             with change_cwd(uv_env_dir), files_manager():
@@ -2480,6 +2489,7 @@ foo = "bar"
             # Assert
             assert (uv_init_repo_dir / "setup.cfg").read_text()
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_pythonpath_needed(self, tmp_path: Path):
             # https://github.com/usethis-python/usethis-python/issues/347
 
@@ -2945,6 +2955,7 @@ class TestRuff:
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_creates_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -3512,6 +3523,7 @@ repos:
             )
 
     class TestBitbucketIntegration:
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_add_linter_only(self, tmp_path: Path):
             # Arrange
             (tmp_path / "bitbucket-pipelines.yml").write_text("""\
@@ -3528,6 +3540,7 @@ image: atlassian/default-image:3
             assert "ruff check" in contents
             assert "ruff format" not in contents
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_add_formatter_only(self, tmp_path: Path):
             # Arrange
             (tmp_path / "bitbucket-pipelines.yml").write_text("""\

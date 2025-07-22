@@ -1,20 +1,28 @@
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner
 
 from usethis._app import app
+from usethis._config import usethis_config
 from usethis._integrations.pre_commit.hooks import get_hook_ids
 from usethis._test import change_cwd
 
 
 class TestInit:
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_pre_commit_included(self, tmp_path: Path):
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(
-                app, ["init", "--pre-commit"], catch_exceptions=False
-            )
+            if not usethis_config.offline:
+                result = runner.invoke(
+                    app, ["init", "--pre-commit"], catch_exceptions=False
+                )
+            else:
+                result = runner.invoke(
+                    app, ["init", "--pre-commit", "--offline"], catch_exceptions=False
+                )
 
         # Assert
         assert result.exit_code == 0, result.output

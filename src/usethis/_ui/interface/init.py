@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import typer
 
 from usethis._types.backend import BackendEnum
@@ -9,7 +11,7 @@ from usethis._types.status import DevelopmentStatusEnum
 from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
 
 
-def init(  # noqa: PLR0913, PLR0915
+def init(  # noqa: PLR0912, PLR0913, PLR0915
     doc: bool = typer.Option(
         True, "--doc/--no-doc", help="Add a recommended documentation framework."
     ),
@@ -78,6 +80,11 @@ def init(  # noqa: PLR0913, PLR0915
     from usethis.errors import UsethisError
 
     assert isinstance(backend, BackendEnum)
+
+    if path is not None:
+        path_ = Path(path)
+        if not path_.exists():
+            path_.mkdir(parents=True, exist_ok=True)
 
     with (
         usethis_config.set(

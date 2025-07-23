@@ -53,7 +53,7 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
 
 [![Commits since latest release](https://img.shields.io/github/commits-since/usethis-python/usethis-python/latest.svg)](https://github.com/usethis-python/usethis-python/releases)
 [![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/usethis-python/usethis-python)
-                 
+
 ### Roadmap
 
 Major features planned for later in 2025 are:

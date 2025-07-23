@@ -58,9 +58,8 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
 
 Major features planned for later in 2025 are:
 
-- Support for users who aren't using uv, e.g. poetry users,
-- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)), and
-- Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)).
+- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)),
+- Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)), and
 
 Other features are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.
 

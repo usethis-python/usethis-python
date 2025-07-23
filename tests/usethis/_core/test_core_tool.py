@@ -236,6 +236,24 @@ foo = bar
             assert (uv_init_dir / "setup.cfg").read_text() == ""
             assert "[tool.codespell]" in (uv_init_dir / "pyproject.toml").read_text()
 
+        def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                usethis_config.set(backend=BackendEnum.none),
+                PyprojectTOMLManager(),
+            ):
+                use_codespell()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Add the dev dependency 'codespell'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+            )
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(
@@ -2275,15 +2293,17 @@ foo = "bar"
 
 class TestPyprojectTOML:
     class TestRemove:
-        def test_doesnt_invoke_ensure_pyproject_toml(self, tmp_path: Path):
+        def test_doesnt_invoke_ensure_dep_declaration_file(self, tmp_path: Path):
             # Arrange
-            # Mock the ensure_pyproject_toml function to raise an error
+            # Mock the ensure_dep_declaration_file function to raise an error
 
             mock = MagicMock()
 
             # Act
             with (
-                unittest.mock.patch("usethis._core.tool.ensure_pyproject_toml", mock),
+                unittest.mock.patch(
+                    "usethis._core.tool.ensure_dep_declaration_file", mock
+                ),
                 change_cwd(tmp_path),
                 files_manager(),
             ):

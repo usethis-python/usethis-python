@@ -379,8 +379,11 @@ class Tool(Protocol):
 
         return False
 
-    def add_configs(self) -> None:
-        """Add the tool's configuration sections."""
+    def add_configs(self) -> None:  # noqa: PLR0912
+        """Add the tool's configuration sections.
+
+        If the config file does not exist, it will be created.
+        """
         # Principles:
         # 1. We will never add configuration to a config file that is not active.
         # 2. We will never add a child key to a new parent when an existing parent
@@ -410,6 +413,11 @@ class Tool(Protocol):
                     # Early exist; this config item is not managed by any active files
                     # so it's optional, effectively.
                     continue
+
+            for file_manager in file_managers:
+                if not (file_manager.path.exists() and file_manager.path.is_file()):
+                    # If the file doesn't exist, we will create it
+                    file_manager.path.touch(exist_ok=True)
 
             config_entries = [
                 config_item

@@ -64,6 +64,18 @@ def _regularize_package_name(project_name: str) -> str:
     return project_name.lower()
 
 
+def ensure_dep_declaration_file() -> None:
+    """Ensure that the file where dependencies are declared exists, if necessary."""
+    backend = get_backend()
+    if backend is BackendEnum.uv:
+        ensure_pyproject_toml()
+    elif backend is BackendEnum.none:
+        # No dependencies are interacted with; we just display messages.
+        pass
+    else:
+        assert_never(backend)
+
+
 def ensure_pyproject_toml(*, author: bool = True) -> None:
     if (usethis_config.cpd() / "pyproject.toml").exists():
         return

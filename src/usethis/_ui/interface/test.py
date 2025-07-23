@@ -29,7 +29,9 @@ def test(  # noqa: PLR0913
     assert isinstance(backend, BackendEnum)
 
     with (
-        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        usethis_config.set(
+            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+        ),
         files_manager(),
     ):
         try:

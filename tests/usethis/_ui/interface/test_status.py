@@ -39,3 +39,16 @@ class TestStatus:
 
         # Assert
         assert result.exit_code == 2, result.output
+
+    def test_none_backend(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["status", "beta", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert result.output == (
+            "✔ Writing 'pyproject.toml'.\n"
+            "✔ Setting the development status to '4 - Beta'.\n"
+        )

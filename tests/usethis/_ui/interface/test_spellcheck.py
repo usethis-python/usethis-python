@@ -49,3 +49,19 @@ class TestSpellcheck:
         assert result.exit_code == 0, result.output
         with change_cwd(tmp_path), files_manager():
             assert Dependency(name="codespell") not in get_deps_from_group("dev")
+
+    def test_none_backend(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["spellcheck", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (tmp_path / "pyproject.toml").exists()
+        assert result.output == (
+            "✔ Writing 'pyproject.toml'.\n"
+            "☐ Add the dev dependency 'codespell'.\n"
+            "✔ Adding Codespell config to 'pyproject.toml'.\n"
+            "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+        )

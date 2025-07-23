@@ -32,3 +32,22 @@ class TestFormat:
         txt = (tmp_path / "pyproject.toml").read_text()
         assert "ruff.lint" not in txt
         assert "ruff.format" in txt
+
+    def test_none_backend(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["format", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (tmp_path / "pyproject.toml").exists()
+        assert result.output == (
+            "✔ Writing 'pyproject.toml'.\n"
+            "☐ Add the dev dependency 'ruff'.\n"
+            "✔ Adding Ruff config to 'pyproject.toml'.\n"
+            "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            "☐ Add the dev dependency 'pyproject-fmt'.\n"
+            "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+            "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+        )

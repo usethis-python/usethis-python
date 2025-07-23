@@ -28,7 +28,7 @@ def author(
     else:
         email_arg = email
 
-    with usethis_config.set(quiet=quiet), files_manager():
+    with usethis_config.set(quiet=quiet, backend=backend), files_manager():
         try:
             add_author(name=name, email=email_arg, overwrite=overwrite)
         except UsethisError as err:

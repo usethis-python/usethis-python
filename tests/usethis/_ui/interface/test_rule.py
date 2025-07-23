@@ -87,3 +87,22 @@ ignore = ["RUF001"]
 
             # Assert (that deptry runs without error)
             call_subprocess(["deptry", "."])
+
+    def test_none_backend(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["rule", "FAKE", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert result.output.replace("\n", "") == (
+            "✔ Writing 'pyproject.toml'.\n"
+            "☐ Add the dev dependency 'ruff'.\n"
+            "✔ Adding Ruff config to 'pyproject.toml'.\n"
+            "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+            "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
+            "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+            "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            "✔ Selecting Ruff rule 'FAKE' in 'pyproject.toml'.\n"
+        ).replace("\n", "")

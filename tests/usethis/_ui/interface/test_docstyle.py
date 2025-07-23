@@ -109,3 +109,21 @@ lint.select = [ "A" ]
 
         content = default_pyproject_toml.read_text()
         assert "google" in content
+
+    def test_none_backend(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["docstyle", "numpy", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert result.output == (
+            "✔ Writing 'pyproject.toml'.\n"
+            "☐ Add the dev dependency 'ruff'.\n"
+            "✔ Adding Ruff config to 'pyproject.toml'.\n"
+            "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+            "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            "✔ Setting docstring style to 'numpy' in 'pyproject.toml'.\n"
+            "✔ Selecting Ruff rules 'D2', 'D3', 'D4' in 'pyproject.toml'.\n"
+        )

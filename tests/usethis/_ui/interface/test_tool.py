@@ -123,6 +123,22 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 """
         )
 
+    def test_none_backend(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["coverage.py", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (tmp_path / "pyproject.toml").exists()
+        assert result.output == (
+            "✔ Writing 'pyproject.toml'.\n"
+            "☐ Add the test dependency 'coverage'.\n"
+            "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
+            "☐ Run 'coverage help' to see available Coverage.py commands.\n"
+        )
+
 
 class TestDeptry:
     @pytest.mark.usefixtures("_vary_network_conn")

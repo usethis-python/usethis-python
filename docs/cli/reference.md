@@ -1,4 +1,3 @@
-
 # 🖥️ Command Reference
 
 ## `usethis init`

@@ -272,7 +272,7 @@ Possible values:
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
 
-### `usethis author`
+## `usethis author`
 
 Set new author information for the project.
 

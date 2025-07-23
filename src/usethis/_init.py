@@ -1,3 +1,5 @@
+import re
+
 from typing_extensions import assert_never
 
 from usethis._backend import get_backend
@@ -22,9 +24,44 @@ def project_init():
     if backend is BackendEnum.uv:
         opinionated_uv_init()
     elif backend is BackendEnum.none:
-        raise NotImplementedError
+        # pyproject.toml
+        with usethis_config.set(alert_only=True):
+            ensure_pyproject_toml()
+
+        # README.md
+        (usethis_config.cpd() / "README.md").touch(exist_ok=True)
+
+        # src/
+        src_dir = usethis_config.cpd() / "src"
+        src_dir.mkdir(exist_ok=True)
+        project_name = get_project_name()
+        pkg_name = _regularize_package_name(project_name)
+        (src_dir / pkg_name).mkdir(exist_ok=True)
+        init_path = src_dir / pkg_name / "__init__.py"
+        if not init_path.exists():
+            init_path.write_text(
+                f"""\
+def hello() -> str:
+    return "Hello from {project_name}!"
+"""
+            )
+        (src_dir / pkg_name / "py.typed").touch(exist_ok=True)
     else:
         assert_never(backend)
+
+
+def _regularize_package_name(project_name: str) -> str:
+    """Regularize the package name to be suitable for Python packaging."""
+    # https://peps.python.org/pep-0008/#package-and-module-names
+    # Replace non-alphanumeric characters with underscores
+    # Conjoin consecutive underscores
+    # Add leading underscore if it starts with a digit
+
+    project_name = re.sub(r"\W+", "_", project_name)
+    project_name = re.sub(r"_+", "_", project_name)
+    if project_name[0].isdigit():
+        project_name = "_" + project_name
+    return project_name.lower()
 
 
 def ensure_pyproject_toml(*, author: bool = True) -> None:

@@ -46,14 +46,28 @@ class TestProjectInit:
         with change_cwd(tmp_path), PyprojectTOMLManager(), pytest.raises(UVInitError):
             project_init()
 
-    def test_none_backend(self, tmp_path: Path):
+    def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Arrange
+        path = tmp_path / "myproj"
+        path.mkdir()
+
         with usethis_config.set(backend=BackendEnum.none):
             # Act
-            with change_cwd(tmp_path), files_manager():
+            with change_cwd(path), files_manager():
                 project_init()
 
             # Assert
-            assert (tmp_path / "pyproject.toml").exists()
+            assert (path / "pyproject.toml").exists()
+            assert (path / "README.md").exists()
+            assert (path / "src").exists()
+            assert (path / "src").is_dir()
+            assert (path / "src" / "myproj").exists()
+            assert (path / "src" / "myproj").is_dir()
+            assert (path / "src" / "myproj" / "__init__.py").exists()
+            assert (path / "src" / "myproj" / "py.typed").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Writing 'pyproject.toml' and initializing project.\n"
 
 
 class TestEnsurePyprojectTOML:

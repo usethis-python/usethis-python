@@ -183,6 +183,7 @@ If you're using Cookiecutter, then you can update to a latest version of a templ
 ## 🚀 Development
 
 [![Commits since latest release](https://img.shields.io/github/commits-since/usethis-python/usethis-python/latest.svg)](https://github.com/usethis-python/usethis-python/releases)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/usethis-python/usethis-python)
 
 ### Roadmap
 

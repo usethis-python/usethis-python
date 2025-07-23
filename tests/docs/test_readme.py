@@ -25,9 +25,9 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
 ![PyPI License](https://img.shields.io/pypi/l/usethis.svg)
 [![PyPI Supported Versions](https://img.shields.io/pypi/pyversions/usethis.svg)](https://pypi.python.org/pypi/usethis)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/usethis-python/usethis-python)
 [![codecov](https://codecov.io/gh/usethis-python/usethis-python/graph/badge.svg?token=MU1AZS0KHV)](https://codecov.io/gh/usethis-python/usethis-python)
 [![GitHub Actions Status](https://github.com/usethis-python/usethis-python/workflows/CI/badge.svg)](https://github.com/usethis-python/usethis-python/actions)
+[![Docs](https://app.readthedocs.org/projects/usethis/badge/?version=stable)](https://usethis.readthedocs.io/en/stable/)
 """)
 
     # Main sections
@@ -52,7 +52,8 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
 ## 🚀 Development
 
 [![Commits since latest release](https://img.shields.io/github/commits-since/usethis-python/usethis-python/latest.svg)](https://github.com/usethis-python/usethis-python/releases)
-
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/usethis-python/usethis-python)
+                 
 ### Roadmap
 
 Major features planned for later in 2025 are:

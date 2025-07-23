@@ -48,8 +48,8 @@ class TestOpinionatedUVInit:
             opinionated_uv_init()
 
     def test_build_backend_is_hatch(self, tmp_path: Path):
-        # Act
         with change_cwd(tmp_path), PyprojectTOMLManager() as manager:
+            # Act
             opinionated_uv_init()
 
             # Assert

@@ -1,7 +1,13 @@
 site_name: usethis
 
 nav:
-  - Home: index.md
+  - Introduction: index.md
+  - Getting Started: getting-started.md
+  - Example Usage: example-usage.md
+  - CLI Reference:
+    - Overview: cli/overview.md
+    - Reference: cli/reference.md
+  - Similar Projects: similar-projects.md
   - FAQ: faq.md
 
 theme:

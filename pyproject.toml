@@ -81,6 +81,7 @@ source = "vcs"
 
 [tool.hatch.metadata.hooks.vcs.urls]
 "Source Code" = "https://github.com/usethis-python/usethis-python"
+"Documentation" = "https://usethis.readthedocs.io/en/stable/"
 "Bug Tracker" = "https://github.com/usethis-python/usethis-python/issues"
 "Releases" = "https://github.com/usethis-python/usethis-python/releases"
 "Source Archive" = "https://github.com/usethis-python/usethis-python/archive/{commit_hash}.zip"

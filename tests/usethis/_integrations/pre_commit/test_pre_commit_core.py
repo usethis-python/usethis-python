@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
+from usethis._config_file import files_manager
 from usethis._deps import add_deps_to_group
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.core import (
@@ -105,7 +106,11 @@ class TestInstallPreCommitHooks:
 
     def test_err(self, tmp_path: Path):
         # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(PreCommitInstallationError):
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            pytest.raises(PreCommitInstallationError),
+        ):
             # Will fail because pre-commit isn't installed.
             install_pre_commit_hooks()
 
@@ -146,7 +151,11 @@ class TestUninstallPreCommitHooks:
 
     def test_err(self, tmp_path: Path):
         # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(PreCommitInstallationError):
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            pytest.raises(PreCommitInstallationError),
+        ):
             # Will fail because pre-commit isn't installed.
             uninstall_pre_commit_hooks()
 

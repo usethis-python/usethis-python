@@ -19,7 +19,13 @@ def opinionated_uv_init() -> None:
     tick_print("Writing 'pyproject.toml' and initializing project.")
     try:
         call.call_uv_subprocess(
-            ["init", "--lib", usethis_config.cpd().as_posix()],
+            [
+                "init",
+                "--lib",
+                "--build-backend",
+                "hatch",
+                usethis_config.cpd().as_posix(),
+            ],
             change_toml=True,
         )
     except UVSubprocessFailedError as err:

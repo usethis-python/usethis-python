@@ -12,7 +12,7 @@ def status(
         default=..., help="Docstring style to enforce."
     ),
     quiet: bool = quiet_opt,
-    backend_opt: BackendEnum = backend_opt,
+    backend: BackendEnum = backend_opt,
 ) -> None:
     from usethis._config import usethis_config
     from usethis._config_file import files_manager
@@ -21,9 +21,9 @@ def status(
     from usethis.errors import UsethisError
 
     assert isinstance(status, DevelopmentStatusEnum)
-    assert isinstance(backend_opt, BackendEnum)
+    assert isinstance(backend, BackendEnum)
 
-    with usethis_config.set(quiet=quiet), files_manager():
+    with usethis_config.set(quiet=quiet, backend=backend), files_manager():
         try:
             use_development_status(status)
         except UsethisError as err:

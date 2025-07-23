@@ -69,6 +69,14 @@ class TestProjectInit:
             assert not err
             assert out == "✔ Writing 'pyproject.toml' and initializing project.\n"
 
+    def test_build_backend_is_hatch(self, tmp_path: Path):
+        with change_cwd(tmp_path), PyprojectTOMLManager() as manager:
+            # Act
+            opinionated_uv_init()
+
+            # Assert
+            assert manager[["build-system", "build-backend"]] == "hatchling.build"
+
 
 class TestEnsurePyprojectTOML:
     def test_created(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):

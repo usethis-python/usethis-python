@@ -69,10 +69,14 @@ class TestProjectInit:
             assert not err
             assert out == "✔ Writing 'pyproject.toml' and initializing project.\n"
 
-    def test_build_backend_is_hatch(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager() as manager:
+    def test_build_backend_is_hatch_for_none_backend(self, tmp_path: Path):
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager() as manager,
+            usethis_config.set(backend=BackendEnum.none),
+        ):
             # Act
-            opinionated_uv_init()
+            project_init()
 
             # Assert
             assert manager[["build-system", "build-backend"]] == "hatchling.build"

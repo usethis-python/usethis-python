@@ -14,7 +14,7 @@ from usethis._integrations.python.version import (
 )
 
 
-def get_available_python_versions() -> set[str]:
+def get_available_uv_python_versions() -> set[str]:
     output = call_uv_subprocess(["python", "list", "--all-versions"], change_toml=False)
 
     return {
@@ -22,14 +22,14 @@ def get_available_python_versions() -> set[str]:
     }
 
 
-def get_supported_major_python_versions() -> list[int]:
+def get_supported_uv_major_python_versions() -> list[int]:
     try:
         requires_python = get_requires_python()
     except MissingRequiresPythonError:
         return [extract_major_version(get_python_version())]
 
     versions = set()
-    for version in get_available_python_versions():
+    for version in get_available_uv_python_versions():
         # N.B. a standard range won't include alpha versions.
         if requires_python.contains(version):
             versions.add(version)
@@ -47,5 +47,5 @@ def _parse_python_version_from_uv_output(version: str) -> str:
         raise UVUnparsedPythonVersionError(msg)
 
 
-def python_pin(version: str) -> None:
+def uv_python_pin(version: str) -> None:
     call_uv_subprocess(["python", "pin", version], change_toml=False)

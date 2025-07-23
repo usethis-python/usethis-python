@@ -13,7 +13,9 @@ from usethis._config_file import (
     ToxINIManager,
 )
 from usethis._console import box_print
-from usethis._integrations.backend.uv.python import get_supported_major_python_versions
+from usethis._integrations.backend.uv.python import (
+    get_supported_uv_major_python_versions,
+)
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -207,7 +209,7 @@ class PytestTool(Tool):
         return {preferred_file_manager}
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        versions = get_supported_major_python_versions()
+        versions = get_supported_uv_major_python_versions()
 
         steps = []
         for version in versions:

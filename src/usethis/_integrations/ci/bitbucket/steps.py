@@ -10,7 +10,9 @@ from typing_extensions import assert_never
 import usethis._pipeweld.func
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
-from usethis._integrations.backend.uv.python import get_supported_major_python_versions
+from usethis._integrations.backend.uv.python import (
+    get_supported_uv_major_python_versions,
+)
 from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.ci.bitbucket.cache import _add_caches_via_doc, remove_cache
 from usethis._integrations.ci.bitbucket.dump import bitbucket_fancy_dump
@@ -156,7 +158,7 @@ def _add_step_in_default_via_doc(
     # N.B. Currently, we are not accounting for parallelism, whereas all these steps
     # could be parallel potentially.
     # See https://github.com/usethis-python/usethis-python/issues/149
-    maj_versions = get_supported_major_python_versions()
+    maj_versions = get_supported_uv_major_python_versions()
     step_order = [
         "Run pre-commit",
         # For these tools, sync them with the pre-commit removal logic

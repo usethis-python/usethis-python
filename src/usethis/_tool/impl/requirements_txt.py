@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
-from usethis._backend import get_backend
 from usethis._console import box_print
+from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.pre_commit.schema import HookDefinition, Language, LocalRepo
 from usethis._tool.base import Tool
 from usethis._tool.pre_commit import PreCommitConfig

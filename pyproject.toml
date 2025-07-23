@@ -190,7 +190,7 @@ layers = [
   "_tool",
   # Specific config file and backend implementations
   "_deps | _init",
-  "_config_file | _backend",
+  "_config_file",
   "_integrations",
   "_io | _subprocess | _console",
   # Global state and constants

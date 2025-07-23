@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._deps import add_deps_to_group
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.core import (
@@ -12,6 +13,7 @@ from usethis._integrations.pre_commit.core import (
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook
 from usethis._test import change_cwd
+from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 
@@ -105,6 +107,14 @@ class TestInstallPreCommitHooks:
         # Act, Assert
         with change_cwd(tmp_path), pytest.raises(PreCommitInstallationError):
             # Will fail because pre-commit isn't installed.
+            install_pre_commit_hooks()
+
+    def test_none_backend(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").touch()
+
+        # Act, Assert there is no error
+        with change_cwd(tmp_path), usethis_config.set(backend=BackendEnum.none):
             install_pre_commit_hooks()
 
 

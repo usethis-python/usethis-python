@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
 
-from usethis._backend import get_backend
 from usethis._config import usethis_config
 from usethis._console import box_print, info_print, tick_print
 from usethis._deps import get_project_deps
 from usethis._init import ensure_pyproject_toml
+from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity

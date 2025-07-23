@@ -5,9 +5,9 @@ from packaging.requirements import Requirement
 from pydantic import TypeAdapter
 from typing_extensions import assert_never
 
-from usethis._backend import get_backend
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
+from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.call import add_default_groups_via_uv
 from usethis._integrations.backend.uv.deps import (
     add_dep_to_group_via_uv,

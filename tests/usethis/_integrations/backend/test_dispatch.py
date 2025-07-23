@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 
 import usethis._integrations.backend.uv.available
-from usethis._backend import get_backend
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
+from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.errors import UVSubprocessFailedError
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum

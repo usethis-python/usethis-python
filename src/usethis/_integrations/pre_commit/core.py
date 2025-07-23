@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from typing_extensions import assert_never
+
 from usethis._config import usethis_config
 from usethis._console import box_print, info_print, tick_print
+from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.backend.uv.errors import UVSubprocessFailedError
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
+from usethis._types.backend import BackendEnum
 
 
 def remove_pre_commit_config() -> None:
@@ -31,21 +35,31 @@ def install_pre_commit_hooks() -> None:
             box_print("Run 'pre-commit install' to register pre-commit.")
         return
 
-    tick_print("Ensuring pre-commit is installed to Git.")
-    try:
-        call_uv_subprocess(["run", "pre-commit", "install"], change_toml=False)
-    except UVSubprocessFailedError as err:
-        msg = f"Failed to install pre-commit in the Git repository:\n{err}"
-        raise PreCommitInstallationError(msg) from None
-    tick_print("Ensuring pre-commit hooks are installed.")
-    info_print(
-        "This may take a minute or so while the hooks are downloaded.", temporary=True
-    )
-    try:
-        call_uv_subprocess(["run", "pre-commit", "install-hooks"], change_toml=False)
-    except UVSubprocessFailedError as err:
-        msg = f"Failed to install pre-commit hooks:\n{err}"
-        raise PreCommitInstallationError(msg) from None
+    backend = get_backend()
+    if backend is BackendEnum.uv:
+        tick_print("Ensuring pre-commit is installed to Git.")
+        try:
+            call_uv_subprocess(["run", "pre-commit", "install"], change_toml=False)
+        except UVSubprocessFailedError as err:
+            msg = f"Failed to install pre-commit in the Git repository:\n{err}"
+            raise PreCommitInstallationError(msg) from None
+        tick_print("Ensuring pre-commit hooks are installed.")
+        info_print(
+            "This may take a minute or so while the hooks are downloaded.",
+            temporary=True,
+        )
+        try:
+            call_uv_subprocess(
+                ["run", "pre-commit", "install-hooks"], change_toml=False
+            )
+        except UVSubprocessFailedError as err:
+            msg = f"Failed to install pre-commit hooks:\n{err}"
+            raise PreCommitInstallationError(msg) from None
+    elif backend is BackendEnum.none:
+        # Can't install anything without a backend.
+        pass
+    else:
+        assert_never(backend)
 
 
 def uninstall_pre_commit_hooks() -> None:

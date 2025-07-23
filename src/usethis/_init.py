@@ -2,9 +2,9 @@ import re
 
 from typing_extensions import assert_never
 
-from usethis._backend import get_backend
 from usethis._config import usethis_config
 from usethis._console import tick_print
+from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.init import (
     ensure_pyproject_toml_via_uv,
     opinionated_uv_init,

@@ -18,6 +18,26 @@ from usethis._test import change_cwd
 
 class TestBitBucket:
     class TestAdd:
+        def test_empty_start(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ci_bitbucket()
+
+            # Assert
+            assert (tmp_path / "bitbucket-pipelines.yml").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                "☐ Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.\n"
+                "☐ Replace it with your own pipeline steps.\n"
+                "☐ Alternatively, use 'usethis tool' to add other tools and their steps.\n"
+                "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
+                "☐ Run your pipeline via the Bitbucket website.\n"
+            )
+
         def test_unused_cache_removed(self, uv_init_repo_dir: Path):
             # Arrange
             (uv_init_repo_dir / "bitbucket-pipelines.yml").write_text("""\

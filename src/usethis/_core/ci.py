@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from usethis._console import box_print, info_print
-from usethis._init import ensure_pyproject_toml
 from usethis._integrations.ci.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
@@ -15,8 +14,6 @@ from usethis._tool.impl.ruff import RuffTool
 
 
 def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:
-    ensure_pyproject_toml()
-
     if how:
         print_how_to_use_ci_bitbucket()
         return

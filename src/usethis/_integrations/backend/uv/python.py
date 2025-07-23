@@ -4,6 +4,7 @@ import re
 
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.backend.uv.errors import UVUnparsedPythonVersionError
+from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._integrations.file.pyproject_toml.requires_python import (
     MissingRequiresPythonError,
     get_requires_python,
@@ -25,7 +26,7 @@ def get_available_uv_python_versions() -> set[str]:
 def get_supported_uv_major_python_versions() -> list[int]:
     try:
         requires_python = get_requires_python()
-    except MissingRequiresPythonError:
+    except (MissingRequiresPythonError, PyprojectTOMLNotFoundError):
         return [extract_major_version(get_python_version())]
 
     versions = set()

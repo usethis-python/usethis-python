@@ -56,8 +56,7 @@ def install_pre_commit_hooks() -> None:
             msg = f"Failed to install pre-commit hooks:\n{err}"
             raise PreCommitInstallationError(msg) from None
     elif backend is BackendEnum.none:
-        # Can't install anything without a backend.
-        pass
+        box_print("Run 'pre-commit install' to install pre-commit to Git.")
     else:
         assert_never(backend)
 
@@ -73,12 +72,18 @@ def uninstall_pre_commit_hooks() -> None:
         )
         return
 
-    tick_print("Ensuring pre-commit hooks are uninstalled.")
-    try:
-        call_uv_subprocess(
-            ["run", "--with", "pre-commit", "pre-commit", "uninstall"],
-            change_toml=False,
-        )
-    except UVSubprocessFailedError as err:
-        msg = f"Failed to uninstall pre-commit hooks:\n{err}"
-        raise PreCommitInstallationError(msg) from None
+    backend = get_backend()
+    if backend is BackendEnum.uv:
+        tick_print("Ensuring pre-commit hooks are uninstalled.")
+        try:
+            call_uv_subprocess(
+                ["run", "--with", "pre-commit", "pre-commit", "uninstall"],
+                change_toml=False,
+            )
+        except UVSubprocessFailedError as err:
+            msg = f"Failed to uninstall pre-commit hooks:\n{err}"
+            raise PreCommitInstallationError(msg) from None
+    elif backend is BackendEnum.none:
+        box_print("Run 'pre-commit uninstall' to deregister pre-commit.")
+    else:
+        assert_never(backend)

@@ -149,3 +149,11 @@ class TestUninstallPreCommitHooks:
         with change_cwd(tmp_path), pytest.raises(PreCommitInstallationError):
             # Will fail because pre-commit isn't installed.
             uninstall_pre_commit_hooks()
+
+    def test_none_backend(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").touch()
+
+        # Act, Assert there is no error
+        with change_cwd(tmp_path), usethis_config.set(backend=BackendEnum.none):
+            uninstall_pre_commit_hooks()

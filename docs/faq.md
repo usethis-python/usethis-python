@@ -8,7 +8,7 @@ One major difference is that `usethis-python` provides a Command Line Interface 
 
 ## If I add a tool which is already configured, why does additional configuration get added?
 
-Some configuration is necessary to ensure smooth integrations with other tools. However, usethis will never overwrite existing configuration options, only add new ones, i.e. override defaults. If you want to rely on default values and prevent usethis from overwriting them, you can set it explicitly to the default value in your configuration file.
+Some configuration is necessary to ensure smooth integrations with other tools. However, usethis will never overwrite existing configuration options, only add new ones, i.e. override defaults. If you want to rely on default values and prevent usethis from overwriting them, you can set a configuration entry explicitly to the default value in your configuration file.
 
 ## Why does usethis make formatting changes to my config files?
 

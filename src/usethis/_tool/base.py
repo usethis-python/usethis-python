@@ -397,7 +397,9 @@ class Tool(Protocol):
 
         already_added = False  # Only print messages for the first added config item.
         for config_item in self.get_config_spec().config_items:
-            with usethis_config.set(alert_only=already_added):
+            with usethis_config.set(
+                alert_only=already_added | usethis_config.alert_only
+            ):
                 already_added |= self._add_config_item(
                     config_item, file_managers=active_config_file_managers
                 )

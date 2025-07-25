@@ -429,7 +429,9 @@ class RuffTool(Tool):
         # This is probably a workaround until there is more sophisticated support for
         # verbosity control.
         # https://github.com/usethis-python/usethis-python/issues/884
-        with usethis_config.set(alert_only=is_selected or is_ignored):
+        with usethis_config.set(
+            alert_only=(is_selected or is_ignored) | usethis_config.alert_only
+        ):
             self.ignore_rules_in_glob(
                 rule_config.tests_unmanaged_ignored, glob="tests/**"
             )

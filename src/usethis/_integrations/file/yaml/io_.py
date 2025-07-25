@@ -474,7 +474,12 @@ def edit_yaml(
         except YAMLError as err:
             msg = f"Error reading '{yaml_path}':\n{err}"
             raise YAMLDecodeError(msg) from None
+
+    start_empty = not yaml_document.content
     yield yaml_document
+    if start_empty and not yaml_document.content:
+        # No change
+        return
     yaml_document.roundtripper.dump(yaml_document.content, stream=yaml_path)
 
 

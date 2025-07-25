@@ -1,11 +1,6 @@
 from pathlib import Path
 
-import pytest
-
-from usethis._integrations.pre_commit.io_ import (
-    PreCommitConfigYAMLConfigError,
-    edit_pre_commit_config_yaml,
-)
+from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
 from usethis._test import change_cwd
 
 
@@ -35,14 +30,16 @@ repos:
         # Assert
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == content_str
 
-    def test_empty_is_invalid(self, tmp_path: Path):
+    def test_empty_is_valid(self, tmp_path: Path):
         # Arrange
         (tmp_path / ".pre-commit-config.yaml").write_text("")
 
-        # Act, Assert
+        # Act
         with (
             change_cwd(tmp_path),
-            pytest.raises(PreCommitConfigYAMLConfigError),
-            edit_pre_commit_config_yaml(),
+            edit_pre_commit_config_yaml() as doc,
         ):
-            pass
+            doc.content["repos"] = []
+
+        # Assert
+        assert (tmp_path / ".pre-commit-config.yaml").read_text() == "repos: []\n"

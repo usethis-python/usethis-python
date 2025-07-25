@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
+from ruamel.yaml.comments import CommentedMap
 
 from usethis._config import usethis_config
 from usethis._console import tick_print
@@ -14,8 +15,6 @@ from usethis.errors import FileConfigError
 
 if TYPE_CHECKING:
     from collections.abc import Generator
-
-    from ruamel.yaml.comments import CommentedMap
 
     from usethis._integrations.file.yaml.io_ import YAMLLiteral
 
@@ -62,6 +61,9 @@ def edit_pre_commit_config_yaml() -> Generator[PreCommitConfigYAMLDocument, None
 
 
 def _validate_config(ruamel_content: YAMLLiteral) -> JsonSchemaForPreCommitConfigYaml:
+    if isinstance(ruamel_content, CommentedMap) and not ruamel_content:
+        ruamel_content["repos"] = []
+
     try:
         return JsonSchemaForPreCommitConfigYaml.model_validate(ruamel_content)
     except ValidationError as err:

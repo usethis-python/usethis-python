@@ -62,7 +62,7 @@ def edit_pre_commit_config_yaml() -> Generator[PreCommitConfigYAMLDocument, None
 
 def _validate_config(ruamel_content: YAMLLiteral) -> JsonSchemaForPreCommitConfigYaml:
     if isinstance(ruamel_content, CommentedMap) and not ruamel_content:
-        ruamel_content["repos"] = []
+        ruamel_content = CommentedMap({"repos": []})
 
     try:
         return JsonSchemaForPreCommitConfigYaml.model_validate(ruamel_content)

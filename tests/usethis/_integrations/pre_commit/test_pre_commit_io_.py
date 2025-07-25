@@ -30,7 +30,7 @@ repos:
         # Assert
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == content_str
 
-    def test_empty_is_valid(self, tmp_path: Path):
+    def test_start_with_empty_file(self, tmp_path: Path):
         # Arrange
         (tmp_path / ".pre-commit-config.yaml").write_text("")
 
@@ -43,3 +43,14 @@ repos:
 
         # Assert
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == "repos: []\n"
+
+    def test_empty_valid_but_unchanged(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").write_text("")
+
+        # Act
+        with change_cwd(tmp_path), edit_pre_commit_config_yaml():
+            pass
+
+        # Assert
+        assert (tmp_path / ".pre-commit-config.yaml").read_text() == ""

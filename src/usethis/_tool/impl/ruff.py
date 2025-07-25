@@ -8,6 +8,7 @@ from typing_extensions import assert_never
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import box_print, tick_print
+from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -21,8 +22,6 @@ from usethis._integrations.pre_commit.schema import (
     Language,
     LocalRepo,
 )
-from usethis._integrations.uv.deps import Dependency
-from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import (
     ConfigEntry,
@@ -31,6 +30,7 @@ from usethis._tool.config import (
     ensure_managed_file_exists,
 )
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
+from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._integrations.ci.bitbucket.schema import Pipe as BitbucketPipe
@@ -429,7 +429,9 @@ class RuffTool(Tool):
         # This is probably a workaround until there is more sophisticated support for
         # verbosity control.
         # https://github.com/usethis-python/usethis-python/issues/884
-        with usethis_config.set(alert_only=is_selected or is_ignored):
+        with usethis_config.set(
+            alert_only=(is_selected or is_ignored) | usethis_config.alert_only
+        ):
             self.ignore_rules_in_glob(
                 rule_config.tests_unmanaged_ignored, glob="tests/**"
             )

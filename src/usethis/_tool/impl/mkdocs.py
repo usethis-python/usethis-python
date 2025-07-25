@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING
 
 from usethis._config_file import MkDocsYMLManager
 from usethis._console import box_print
+from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.project.name import get_project_name
-from usethis._integrations.uv.deps import Dependency
-from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager

@@ -12,8 +12,6 @@ usethis gives detailed messages about what it is doing (and what you need to do 
 
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html), this package brings a similar experience to the Python ecosystem as a CLI tool.
 
-usethis is great for fresh projects using [uv](https://docs.astral.sh/uv), but also supports updating existing projects. However, this should be considered experimental. If you encounter problems or have feedback, please [open an issue](https://github.com/usethis-python/usethis-python/issues/new?template=idea.md).
-
 ## Highlights
 
 - 🧰 First-class support for state-of-the-practice tooling: uv, Ruff, pytest, pre-commit, and many more.

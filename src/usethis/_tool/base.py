@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
     from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
     from usethis._io import KeyValueFileManager
-    from usethis._tool.config import ResolutionT
+    from usethis._tool.config import ConfigItem, ResolutionT
     from usethis._tool.rule import Rule
 
 
@@ -379,7 +379,7 @@ class Tool(Protocol):
 
         return False
 
-    def add_configs(self) -> None:  # noqa: PLR0912
+    def add_configs(self) -> None:
         """Add the tool's configuration sections.
 
         If the config file does not exist, it will be created.
@@ -395,77 +395,86 @@ class Tool(Protocol):
 
         active_config_file_managers = self.get_active_config_file_managers()
 
-        first_addition = True
+        already_added = False  # Only print messages for the first added config item.
         for config_item in self.get_config_spec().config_items:
-            # Filter to just those active config file managers which can manage this
-            # config
-            file_managers = [
+            with usethis_config.set(alert_only=already_added):
+                already_added |= self._add_config_item(
+                    config_item, file_managers=active_config_file_managers
+                )
+
+    def _add_config_item(
+        self, config_item: ConfigItem, *, file_managers: set[KeyValueFileManager]
+    ) -> bool:
+        """Add a specific configuration item using specified file managers."""
+        # This is mostly a helper method for `add_configs`.
+
+        # Filter to just those active config file managers which can manage this
+        # config
+        used_file_managers = [
+            file_manager
+            for file_manager in file_managers
+            if file_manager.path in config_item.paths
+        ]
+
+        if not used_file_managers:
+            if config_item.applies_to_all:
+                msg = f"No active config file managers found for one of the '{self.name}' config items."
+                raise NotImplementedError(msg)
+            else:
+                # Early exist; this config item is not managed by any active files
+                # so it's optional, effectively.
+                return False
+
+        for file_manager in used_file_managers:
+            if not (file_manager.path.exists() and file_manager.path.is_file()):
+                # If the file doesn't exist, we will create it
+                file_manager.path.touch(exist_ok=True)
+
+        config_entries = [
+            config_item
+            for relative_path, config_item in config_item.root.items()
+            if relative_path
+            in {file_manager.relative_path for file_manager in used_file_managers}
+        ]
+        if not config_entries:
+            msg = f"No config entries found for one of the '{self.name}' config items."
+            raise NotImplementedError(msg)
+        if len(config_entries) != 1:
+            msg = (
+                "Adding config is not yet supported for the case of multiple "
+                "active config files."
+            )
+            raise NotImplementedError(msg)
+
+        (entry,) = config_entries
+
+        if isinstance(entry.get_value(), NoConfigValue):
+            # No value to add, so skip this config item.
+            return False
+
+        shared_keys = []
+        for key in entry.keys:
+            shared_keys.append(key)
+            new_file_managers = [
                 file_manager
-                for file_manager in active_config_file_managers
-                if file_manager.path in config_item.paths
+                for file_manager in used_file_managers
+                if shared_keys in file_manager
             ]
+            if not new_file_managers:
+                break
+            used_file_managers = new_file_managers
 
-            if not file_managers:
-                if config_item.applies_to_all:
-                    msg = f"No active config file managers found for one of the '{self.name}' config items."
-                    raise NotImplementedError(msg)
-                else:
-                    # Early exist; this config item is not managed by any active files
-                    # so it's optional, effectively.
-                    continue
+        # Now, use the highest-prority file manager to add the config
+        (used_file_manager, *_) = used_file_managers
 
-            for file_manager in file_managers:
-                if not (file_manager.path.exists() and file_manager.path.is_file()):
-                    # If the file doesn't exist, we will create it
-                    file_manager.path.touch(exist_ok=True)
+        if not config_item.force and entry.keys in used_file_manager:
+            # We won't overwrite, so skip if there is already a value set.
+            return False
 
-            config_entries = [
-                config_item
-                for relative_path, config_item in config_item.root.items()
-                if relative_path
-                in {file_manager.relative_path for file_manager in file_managers}
-            ]
-            if not config_entries:
-                msg = f"No config entries found for one of the '{self.name}' config items."
-                raise NotImplementedError(msg)
-            if len(config_entries) != 1:
-                msg = (
-                    "Adding config is not yet supported for the case of multiple "
-                    "active config files."
-                )
-                raise NotImplementedError(msg)
+        tick_print(f"Adding {self.name} config to '{used_file_manager.relative_path}'.")
+        used_file_manager[entry.keys] = entry.get_value()
 
-            (entry,) = config_entries
-
-            if isinstance(entry.get_value(), NoConfigValue):
-                # No value to add, so skip this config item.
-                continue
-
-            shared_keys = []
-            for key in entry.keys:
-                shared_keys.append(key)
-                new_file_managers = [
-                    file_manager
-                    for file_manager in file_managers
-                    if shared_keys in file_manager
-                ]
-                if not new_file_managers:
-                    break
-                file_managers = new_file_managers
-
-            # Now, use the highest-prority file manager to add the config
-            (used_file_manager,) = file_managers
-
-            if not config_item.force and entry.keys in used_file_manager:
-                # We won't overwrite, so skip if there is already a value set.
-                continue
-
-            if first_addition:
-                tick_print(
-                    f"Adding {self.name} config to '{used_file_manager.relative_path}'."
-                )
-                first_addition = False
-            used_file_manager[entry.keys] = entry.get_value()
+        return True
 
     def remove_configs(self) -> None:
         """Remove the tool's configuration sections.

@@ -54,7 +54,7 @@ PRs should ideally include tests for any new features or bug fixes.
 
 ## Documentation
 
-Documentation is hosted at <https://usethis.readthedocs.io/en/latest/>. It can be served
+Documentation is hosted at <https://usethis.readthedocs.io/en/stable/>. It can be served
 locally with:
 
 ```shell

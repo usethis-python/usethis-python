@@ -511,7 +511,7 @@ class Tool(Protocol):
                 file.unlink()
 
     def get_install_method(self) -> Literal["pre-commit", "devdep"] | None:
-        """Infer the method used to install the tool, return None is uninstalled."""
+        """Infer the method used to install the tool, return None if uninstalled."""
         if self.is_declared_as_dep():
             return "devdep"
 

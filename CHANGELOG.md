@@ -10,7 +10,7 @@
 
 - When subprocessing `uv`, the `usethis init` command will no longer use the default for `--build-backend`, and instead will always explicitly use `hatch`. This may change in the future if the default supported build backend for `usethis` becomes `uv_build`, which is the new default for `uv` v0.8.0. This change avoids creating broken config which mixes `uv_build` with `hatch` config.
 
-- When adding Import Linter while using Ruff, the `INP` rules are selected, but ignored for the tests directory. However, not message would be displayed in cases where those rules were already selected but not already ignored. Now, a message will be displayed in this case.
+- When adding Import Linter while using Ruff, the `INP` rules are selected, but ignored for the tests directory. However, no message would be displayed in cases where those rules were already selected but not already ignored. Now, a message will be displayed in this case.
 
 ### 📚 Documentation
 

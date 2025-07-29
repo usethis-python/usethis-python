@@ -60,8 +60,8 @@ class TestSpellcheck:
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()
         assert result.output == (
-            "✔ Writing 'pyproject.toml'.\n"
             "☐ Add the dev dependency 'codespell'.\n"
+            "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding Codespell config to 'pyproject.toml'.\n"
             "☐ Run 'codespell' to run the Codespell spellchecker.\n"
         )

@@ -133,8 +133,8 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()
         assert result.output == (
-            "✔ Writing 'pyproject.toml'.\n"
             "☐ Add the test dependency 'coverage'.\n"
+            "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
             "☐ Run 'coverage help' to see available Coverage.py commands.\n"
         )
@@ -380,7 +380,6 @@ class TestRequirementsTxt:
         assert (
             result.output
             == """\
-✔ Writing 'pyproject.toml'.
 ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies.
 ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files.
 ✔ Writing 'requirements.txt'.

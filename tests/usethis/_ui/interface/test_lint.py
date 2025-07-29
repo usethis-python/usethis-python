@@ -37,8 +37,8 @@ class TestLint:
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()
         assert result.output.replace("\n", "") == (
-            "✔ Writing 'pyproject.toml'.\n"
             "☐ Add the dev dependency 'ruff'.\n"
+            "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding Ruff config to 'pyproject.toml'.\n"
             "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
             "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"

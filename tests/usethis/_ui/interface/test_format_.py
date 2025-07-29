@@ -43,8 +43,8 @@ class TestFormat:
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()
         assert result.output == (
-            "✔ Writing 'pyproject.toml'.\n"
             "☐ Add the dev dependency 'ruff'.\n"
+            "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding Ruff config to 'pyproject.toml'.\n"
             "☐ Run 'ruff format' to run the Ruff formatter.\n"
             "☐ Add the dev dependency 'pyproject-fmt'.\n"

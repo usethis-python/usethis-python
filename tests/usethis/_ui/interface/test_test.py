@@ -31,8 +31,8 @@ class TestTest:
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()
         assert result.output == (
-            "✔ Writing 'pyproject.toml'.\n"
             "☐ Add the test dependency 'pytest'.\n"
+            "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding pytest config to 'pyproject.toml'.\n"
             "✔ Creating '/tests'.\n"
             "✔ Writing '/tests/conftest.py'.\n"

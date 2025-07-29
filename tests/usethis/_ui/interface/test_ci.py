@@ -55,7 +55,6 @@ requires-python = ">=3.12"
         assert result.exit_code == 0, result.output
         assert (tmp_path / "bitbucket-pipelines.yml").exists()
         assert result.output == (
-            "✔ Writing 'pyproject.toml'.\n"
             "✔ Writing 'bitbucket-pipelines.yml'.\n"
             "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
             "✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.\n"

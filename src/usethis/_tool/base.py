@@ -429,7 +429,7 @@ class Tool(Protocol):
 
         for file_manager in used_file_managers:
             if not (file_manager.path.exists() and file_manager.path.is_file()):
-                # If the file doesn't exist, we will create it
+                tick_print(f"Writing '{file_manager.relative_path}'.")
                 file_manager.path.touch(exist_ok=True)
 
         config_entries = [

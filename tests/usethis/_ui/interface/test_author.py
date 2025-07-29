@@ -62,4 +62,9 @@ class TestAuthor:
 
         # Assert
         assert result.exit_code == 0, result.output
-        assert result.output == ("✔ Writing 'pyproject.toml'.\n")
+        assert result.output == (
+            """\
+✔ Writing 'pyproject.toml'.
+✔ Setting 'John Doe' as an author.
+"""
+        )

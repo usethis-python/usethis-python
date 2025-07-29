@@ -250,6 +250,7 @@ foo = bar
             assert not err
             assert out == (
                 "☐ Add the dev dependency 'codespell'.\n"
+                "✔ Writing 'pyproject.toml'.\n"
                 "✔ Adding Codespell config to 'pyproject.toml'.\n"
                 "☐ Run 'codespell' to run the Codespell spellchecker.\n"
             )

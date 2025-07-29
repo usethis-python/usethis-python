@@ -119,8 +119,8 @@ lint.select = [ "A" ]
         # Assert
         assert result.exit_code == 0, result.output
         assert result.output == (
-            "✔ Writing 'pyproject.toml'.\n"
             "☐ Add the dev dependency 'ruff'.\n"
+            "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding Ruff config to 'pyproject.toml'.\n"
             "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'ruff format' to run the Ruff formatter.\n"

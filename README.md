@@ -63,36 +63,36 @@ $ pipx run usethis tool ruff
 
 ### Start a New Project
 
-- [`usethis init`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-init) — Initialize a new project with recommended defaults.
+- [`usethis init`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-init) — Initialize a new project with recommended defaults.
 
 ### Manage Tooling
 
-- [`usethis doc`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-doc) — Add/Configure recommended documentation tools (namely, [MkDocs](https://www.mkdocs.org/)).
-- [`usethis format`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
-- [`usethis lint`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
-- [`usethis spellcheck`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
-- [`usethis test`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest) with [Coverage.py](https://github.com/nedbat/coveragepy)).
-- [`usethis ci`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-ci) — Add/Configure a specified CI service.
-- [`usethis tool`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-tool) — Add/Configure specific tools individually.
+- [`usethis doc`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-doc) — Add/Configure recommended documentation tools (namely, [MkDocs](https://www.mkdocs.org/)).
+- [`usethis format`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
+- [`usethis lint`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
+- [`usethis spellcheck`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
+- [`usethis test`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest) with [Coverage.py](https://github.com/nedbat/coveragepy)).
+- [`usethis ci`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-ci) — Add/Configure a specified CI service.
+- [`usethis tool`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-tool) — Add/Configure specific tools individually.
 
 ### Manage Configuration
 
-- [`usethis author`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-author) — Set new author information for the project.
-- [`usethis docstyle`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-docstyle-style) — Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
-- [`usethis rule`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-rule-rulecode) — Set linter rule configuration for specific rules across the project.
-- [`usethis status`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-status-status) — Set the development status of the project (via trove classifiers).
+- [`usethis author`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-author) — Set new author information for the project.
+- [`usethis docstyle`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-docstyle-style) — Set a docstring style convention for the project, and [enforce it with Ruff](https://docs.astral.sh/ruff/rules/#pydocstyle-d).
+- [`usethis rule`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-rule-rulecode) — Set linter rule configuration for specific rules across the project.
+- [`usethis status`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-status-status) — Set the development status of the project (via trove classifiers).
 
 ### Manage the README
 
-- [`usethis badge`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-badge) — Add badges to the README file.
-- [`usethis readme`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-readme) — Add a new README file.
+- [`usethis badge`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-badge) — Add badges to the README file.
+- [`usethis readme`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-readme) — Add a new README file.
 
 ### Information
 
-- [`usethis list`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-list) — Display a table of all available tools and their current usage status.
-- [`usethis version`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-version) — Display the current version of usethis.
-- [`usethis browse pypi`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-browse-pypi-package) — Display or open the PyPI landing page associated with another project.
-- [`usethis show`](https://usethis.readthedocs.io/en/latest/cli/reference#usethis-show) — Show a specific piece of information about the project.
+- [`usethis list`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-list) — Display a table of all available tools and their current usage status.
+- [`usethis version`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-version) — Display the current version of usethis.
+- [`usethis browse pypi`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-browse-pypi-package) — Display or open the PyPI landing page associated with another project.
+- [`usethis show`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) — Show a specific piece of information about the project.
 
 ## 💡 Example Usage
 

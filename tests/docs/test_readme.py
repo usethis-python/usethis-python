@@ -41,7 +41,7 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
         usethis_dev_dir / "docs" / "cli" / "overview.md",
     ).replace(  # README uses absolute links, docs use relative links
         "`](reference.md#",
-        "`](https://usethis.readthedocs.io/en/latest/cli/reference#",
+        "`](https://usethis.readthedocs.io/en/stable/cli/reference#",
     )
     parts.append(cli_overview_content)
     parts.append(_get_doc_file(usethis_dev_dir / "docs" / "example-usage.md"))

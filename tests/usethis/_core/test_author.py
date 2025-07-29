@@ -12,7 +12,7 @@ from usethis._test import change_cwd
 
 
 class TestAddAuthor:
-    def test_no_authors_yet(self, tmp_path: Path):
+    def test_no_authors_yet(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         (tmp_path / "pyproject.toml").touch()
 
@@ -32,6 +32,9 @@ name = "John Cleese"
 email = "jc@example.com"
 """
         )
+        out, err = capfd.readouterr()
+        assert out == "✔ Setting 'John Cleese' as an author.\n"
+        assert not err
 
     def test_append(self, tmp_path: Path):
         # Arrange

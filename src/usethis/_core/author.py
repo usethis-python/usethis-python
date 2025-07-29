@@ -1,3 +1,4 @@
+from usethis._console import tick_print
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.uv.init import ensure_pyproject_toml
 
@@ -10,6 +11,8 @@ def add_author(
     overwrite: bool = False,
 ):
     ensure_pyproject_toml(author=False)
+
+    tick_print(f"Setting '{name}' as an author.")
 
     if email is not None:
         values = [{"name": name, "email": email}]

@@ -1,13 +1,10 @@
 from pathlib import Path
 
-import pytest
-
 from usethis._integrations.backend.uv.python import (
     _parse_python_version_from_uv_output,
     get_available_uv_python_versions,
     get_supported_uv_major_python_versions,
 )
-from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import (
     extract_major_version,
@@ -59,12 +56,10 @@ requires-python = ">=3.9,<3.12"
         assert supported_major_python == [9, 10, 11]
 
     def test_no_pyproject(self, tmp_path: Path):
-        with (
-            change_cwd(tmp_path),
-            PyprojectTOMLManager(),
-            pytest.raises(PyprojectTOMLNotFoundError),
-        ):
-            get_supported_uv_major_python_versions()
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            assert get_supported_uv_major_python_versions() == [
+                extract_major_version(get_python_version())
+            ]
 
     def test_no_requires_python(self, tmp_path: Path):
         # Arrange

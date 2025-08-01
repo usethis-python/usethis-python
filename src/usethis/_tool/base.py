@@ -400,9 +400,11 @@ class Tool(Protocol):
             with usethis_config.set(
                 alert_only=already_added or usethis_config.alert_only
             ):
-                already_added = already_added or self._add_config_item(
+                added = self._add_config_item(
                     config_item, file_managers=active_config_file_managers
                 )
+                if added:
+                    already_added = True
 
     def _add_config_item(
         self, config_item: ConfigItem, *, file_managers: set[KeyValueFileManager]

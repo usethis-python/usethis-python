@@ -28,14 +28,16 @@ def install_pre_commit_hooks() -> None:
     Note that this requires pre-commit to be installed. It also requires the user to be
     in a git repo.
     """
+    backend = get_backend()
+
     if usethis_config.frozen:
-        if is_uv_used():
+        if backend is BackendEnum.uv and is_uv_used():
             box_print("Run 'uv run pre-commit install' to register pre-commit.")
         else:
+            assert backend in (BackendEnum.none, BackendEnum.uv)
             box_print("Run 'pre-commit install' to register pre-commit.")
         return
 
-    backend = get_backend()
     if backend is BackendEnum.uv:
         tick_print("Ensuring pre-commit is installed to Git.")
         try:

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing_extensions import assert_never
 
 from usethis._console import box_print
+from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -16,6 +17,7 @@ from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
+from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 
@@ -27,21 +29,24 @@ class PyprojectFmtTool(Tool):
 
     def print_how_to_use(self) -> None:
         install_method = self.get_install_method()
+        backend = get_backend()
         if install_method == "pre-commit":
-            if is_uv_used():
+            if backend is BackendEnum.uv and is_uv_used():
                 box_print(
                     f"Run 'uv run pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
             else:
+                assert backend in (BackendEnum.none, BackendEnum.uv)
                 box_print(
                     f"Run 'pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
-            if is_uv_used():
+            if backend is BackendEnum.uv and is_uv_used():
                 box_print(
                     f"Run 'uv run pyproject-fmt pyproject.toml' to run {self.name}."
                 )
             else:
+                assert backend in (BackendEnum.none, BackendEnum.uv)
                 box_print(f"Run 'pyproject-fmt pyproject.toml' to run {self.name}.")
         else:
             assert_never(install_method)

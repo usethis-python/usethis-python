@@ -4,6 +4,7 @@ from pathlib import Path
 
 from usethis._config import usethis_config
 from usethis._console import box_print
+from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -11,6 +12,7 @@ from usethis._integrations.ci.bitbucket.anchor import (
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._tool.base import Tool
+from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 
@@ -26,11 +28,13 @@ class PreCommitTool(Tool):
         return super().is_used()
 
     def print_how_to_use(self) -> None:
-        if is_uv_used():
+        backend = get_backend()
+        if backend is BackendEnum.uv and is_uv_used():
             box_print(
                 "Run 'uv run pre-commit run --all-files' to run the hooks manually."
             )
         else:
+            assert backend in (BackendEnum.none, BackendEnum.uv)
             box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:

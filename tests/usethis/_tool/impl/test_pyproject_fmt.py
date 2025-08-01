@@ -39,7 +39,11 @@ class TestPyprojectFmtTool:
                     owner="tox-dev", repo="pyproject-fmt"
                 )
             except GitHubTagError as err:
-                if os.getenv("CI") or usethis_config.offline:
+                if (
+                    os.getenv("CI")
+                    or usethis_config.offline
+                    or "rate limit exceeded for url" in str(err)
+                ):
                     pytest.skip(
                         "Failed to fetch GitHub tags (connection issues); skipping test"
                     )

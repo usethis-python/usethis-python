@@ -13,6 +13,11 @@ from usethis._config_file import (
     ToxINIManager,
 )
 from usethis._console import box_print
+from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.backend.uv.python import (
+    get_supported_uv_major_python_versions,
+)
+from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -25,14 +30,11 @@ from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.uv.deps import (
-    Dependency,
-)
-from usethis._integrations.uv.python import get_supported_major_python_versions
-from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.rule import RuleConfig
+from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
@@ -49,9 +51,12 @@ class PytestTool(Tool):
             "Add test files to the '/tests' directory with the format 'test_*.py'."
         )
         box_print("Add test functions with the format 'test_*()'.")
-        if is_uv_used():
+
+        backend = get_backend()
+        if backend is BackendEnum.uv and is_uv_used():
             box_print("Run 'uv run pytest' to run the tests.")
         else:
+            assert backend in (BackendEnum.none, BackendEnum.uv)
             box_print("Run 'pytest' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
@@ -209,7 +214,7 @@ class PytestTool(Tool):
         return {preferred_file_manager}
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        versions = get_supported_major_python_versions()
+        versions = get_supported_uv_major_python_versions()
 
         steps = []
         for version in versions:

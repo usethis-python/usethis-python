@@ -7,7 +7,11 @@ from typing import TYPE_CHECKING, Protocol
 from typing_extensions import assert_never
 
 from usethis._config import usethis_config
-from usethis._console import box_print, tick_print
+from usethis._console import box_print, info_print, tick_print
+from usethis._deps import get_project_deps
+from usethis._init import ensure_dep_declaration_file
+from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.mkdocs.core import add_docs_dir
@@ -17,13 +21,8 @@ from usethis._integrations.pre_commit.core import (
     uninstall_pre_commit_hooks,
 )
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
-from usethis._integrations.pre_commit.hooks import (
-    add_placeholder_hook,
-    get_hook_ids,
-)
+from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_ids
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
-from usethis._integrations.uv.call import call_uv_subprocess
-from usethis._integrations.uv.init import ensure_pyproject_toml
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._tool.impl.coverage_py import CoveragePyTool
@@ -37,12 +36,13 @@ from usethis._tool.impl.pytest import PytestTool
 from usethis._tool.impl.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.ruff import RuffTool
 from usethis._tool.rule import RuleConfig
+from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
     from usethis._tool.all_ import SupportedToolType
     from usethis._tool.base import Tool
 
-# Note - all these functions invoke ensure_pyproject_toml() at the start, since
+# Note - all these functions invoke ensure_dep_declaratiom_file() at the start, since
 # declaring dependencies in pyproject.toml requires that file to exist.
 
 
@@ -64,7 +64,7 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
         return
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         if not PreCommitTool().is_used():
             tool.add_dev_deps()
@@ -90,7 +90,7 @@ def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
         return
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         tool.add_test_deps()
         tool.add_configs()
@@ -109,7 +109,7 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
         return
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         tool.add_dev_deps()
         if PreCommitTool().is_used():
@@ -136,7 +136,7 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
     rule_config = tool.get_rule_config()
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         tool.add_dev_deps()
         tool.add_configs()
@@ -166,7 +166,7 @@ def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
         return
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
         (usethis_config.cpd() / "mkdocs.yml").touch()
 
         add_docs_dir()
@@ -190,7 +190,7 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
         return
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         tool.add_dev_deps()
         _add_all_tools_pre_commit_configs()
@@ -264,7 +264,7 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
         return
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         if not PreCommitTool().is_used():
             tool.add_dev_deps()
@@ -290,7 +290,7 @@ def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
         return
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         ensure_pyproject_validity()
         tool.print_how_to_use()
@@ -308,7 +308,7 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
     rule_config = tool.get_rule_config()
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         tool.add_test_deps()
         tool.add_configs()
@@ -349,7 +349,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
     path = usethis_config.cpd() / "requirements.txt"
 
     if not remove:
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         is_pre_commit = PreCommitTool().is_used()
 
@@ -357,25 +357,41 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
             tool.add_pre_commit_config()
 
         if not path.exists():
-            # N.B. this is where a task runner would come in handy, to reduce duplication.
-            if (
-                not (usethis_config.cpd() / "uv.lock").exists()
-                and not usethis_config.frozen
-            ):
-                tick_print("Writing 'uv.lock'.")
-                call_uv_subprocess(["lock"], change_toml=False)
+            backend = get_backend()
+            if backend is BackendEnum.uv:
+                if (
+                    not (usethis_config.cpd() / "uv.lock").exists()
+                    and not usethis_config.frozen
+                ):
+                    tick_print("Writing 'uv.lock'.")
+                    call_uv_subprocess(["lock"], change_toml=False)
 
-            if not usethis_config.frozen:
-                tick_print("Writing 'requirements.txt'.")
-                call_uv_subprocess(
-                    [
-                        "export",
-                        "--frozen",
-                        "--no-default-groups",
-                        "--output-file=requirements.txt",
-                    ],
-                    change_toml=False,
+                if not usethis_config.frozen:
+                    tick_print("Writing 'requirements.txt'.")
+                    call_uv_subprocess(
+                        [
+                            "export",
+                            "--frozen",
+                            "--no-default-groups",
+                            "--output-file=requirements.txt",
+                        ],
+                        change_toml=False,
+                    )
+            elif backend is BackendEnum.none:
+                # Simply dump the dependencies list to requirements.txt as-
+                info_print(
+                    "Generating 'requirements.txt' with un-pinned, abstract dependencies."
                 )
+                info_print(
+                    "Consider installing 'uv' for pinned, cross-platform, full requirements files."
+                )
+                tick_print("Writing 'requirements.txt'.")
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write("-e .\n")
+                    for dep in get_project_deps():
+                        f.write(dep.to_requirement_string() + "\n")
+            else:
+                assert_never(backend)
 
         tool.print_how_to_use()
 
@@ -443,7 +459,7 @@ def use_ruff(
             formatter_detection="always" if formatter else "auto",
         )
 
-        ensure_pyproject_toml()
+        ensure_dep_declaration_file()
 
         tool.add_dev_deps()
         tool.add_configs()

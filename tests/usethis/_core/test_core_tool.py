@@ -23,24 +23,18 @@ from usethis._core.tool import (
     use_ruff,
     use_tool,
 )
+from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
+from usethis._integrations.backend.uv.call import call_uv_subprocess
+from usethis._integrations.backend.uv.link_mode import ensure_symlink_mode
+from usethis._integrations.backend.uv.toml import UVTOMLManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.hooks import (
-    _HOOK_ORDER,
-    get_hook_ids,
-)
+from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
 from usethis._integrations.python.version import get_python_version
-from usethis._integrations.uv.call import call_uv_subprocess
-from usethis._integrations.uv.deps import (
-    Dependency,
-    add_deps_to_group,
-    get_deps_from_group,
-    is_dep_satisfied_in,
-)
-from usethis._integrations.uv.link_mode import ensure_symlink_mode
-from usethis._integrations.uv.toml import UVTOMLManager
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.ruff import RuffTool
+from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
 
 
 class TestAllHooksList:
@@ -241,6 +235,25 @@ foo = bar
             # Assert
             assert (uv_init_dir / "setup.cfg").read_text() == ""
             assert "[tool.codespell]" in (uv_init_dir / "pyproject.toml").read_text()
+
+        def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                usethis_config.set(backend=BackendEnum.none),
+                PyprojectTOMLManager(),
+            ):
+                use_codespell()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Add the dev dependency 'codespell'.\n"
+                "✔ Writing 'pyproject.toml'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+            )
 
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2281,15 +2294,17 @@ foo = "bar"
 
 class TestPyprojectTOML:
     class TestRemove:
-        def test_doesnt_invoke_ensure_pyproject_toml(self, tmp_path: Path):
+        def test_doesnt_invoke_ensure_dep_declaration_file(self, tmp_path: Path):
             # Arrange
-            # Mock the ensure_pyproject_toml function to raise an error
+            # Mock the ensure_dep_declaration_file function to raise an error
 
             mock = MagicMock()
 
             # Act
             with (
-                unittest.mock.patch("usethis._core.tool.ensure_pyproject_toml", mock),
+                unittest.mock.patch(
+                    "usethis._core.tool.ensure_dep_declaration_file", mock
+                ),
                 change_cwd(tmp_path),
                 files_manager(),
             ):
@@ -2819,6 +2834,40 @@ repos:
                 "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
                 "✔ Writing 'requirements.txt'.\n"
                 "☐ Run 'uv run pre-commit run uv-export' to write 'requirements.txt'.\n"
+            )
+
+        def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+project.dependencies = [ "ruff", "typer-slim[standard]" ]
+""")
+
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            assert (
+                (tmp_path / "requirements.txt").read_text()
+                == """\
+-e .
+ruff
+typer-slim[standard]
+"""
+            )
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out.replace("\n", "") == (
+                "ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies."  # noqa: RUF001
+                "ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files."  # noqa: RUF001
+                "✔ Writing 'requirements.txt'."
+                "☐ Run 'usethis tool requirements.txt' to re-write 'requirements.txt'."
             )
 
     class TestRemove:

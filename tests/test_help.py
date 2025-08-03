@@ -1,7 +1,7 @@
 import pytest
 from typer.testing import CliRunner
 
-from usethis._interface.tool import app
+from usethis._ui.interface.tool import app
 
 
 @pytest.mark.benchmark

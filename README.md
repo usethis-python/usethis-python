@@ -25,9 +25,6 @@ usethis gives detailed messages about what it is doing (and what you need to do 
 
 Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.html), this package brings a similar experience to the Python ecosystem as a CLI tool.
 
-> [!TIP]
-> usethis is great for fresh projects using [uv](https://docs.astral.sh/uv), but also supports updating existing projects. However, this should be considered experimental. If you encounter problems or have feedback, please [open an issue](https://github.com/usethis-python/usethis-python/issues/new?template=idea.md).
-
 ## Highlights
 
 - 🧰 First-class support for state-of-the-practice tooling: uv, Ruff, pytest, pre-commit, and many more.
@@ -40,10 +37,7 @@ Inspired by an [**R** package of the same name](https://usethis.r-lib.org/index.
 ## 🧭 Getting Started
 
 First, it is strongly recommended you [install the uv package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process. If you're already using uv, make sure you're using at least
-version v0.6.8. To check this, run `uv self version` to check (if available, otherwise `uv version`), and run `uv self update` to upgrade.
-
-> [!TIP]
-> At the moment, usethis assumes you will have uv installed in some circumstances. Support for projects that don't use uv is planned for late 2025.
+version v0.6.8 (run `uv --version` to check, and `uv self update` to upgrade).
 
 You can install usethis directly into the project environment:
 
@@ -189,9 +183,8 @@ If you're using Cookiecutter, then you can update to a latest version of a templ
 
 Major features planned for later in 2025 are:
 
-- Support for users who aren't using uv, e.g. poetry users,
-- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)), and
-- Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)).
+- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)),
+- Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)), and
 
 Other features are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.
 

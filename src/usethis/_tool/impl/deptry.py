@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 from typing_extensions import assert_never
 
 from usethis._console import box_print, info_print, tick_print
+from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -14,8 +16,6 @@ from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.schema import HookDefinition, Language, LocalRepo
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.uv.deps import Dependency
-from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import (
     ConfigEntry,
@@ -24,6 +24,8 @@ from usethis._tool.config import (
     ensure_managed_file_exists,
 )
 from usethis._tool.pre_commit import PreCommitConfig
+from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
@@ -39,19 +41,22 @@ class DeptryTool(Tool):
     def print_how_to_use(self) -> None:
         _dir = get_source_dir_str()
         install_method = self.get_install_method()
+        backend = get_backend()
         if install_method == "pre-commit":
-            if is_uv_used():
+            if backend is BackendEnum.uv and is_uv_used():
                 box_print(
                     f"Run 'uv run pre-commit run deptry --all-files' to run {self.name}."
                 )
             else:
+                assert backend in (BackendEnum.none, BackendEnum.uv)
                 box_print(
                     f"Run 'pre-commit run deptry --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
-            if is_uv_used():
+            if backend is BackendEnum.uv and is_uv_used():
                 box_print(f"Run 'uv run deptry {_dir}' to run deptry.")
             else:
+                assert backend in (BackendEnum.none, BackendEnum.uv)
                 box_print(f"Run 'deptry {_dir}' to run deptry.")
         else:
             assert_never(install_method)

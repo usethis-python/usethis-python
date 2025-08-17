@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._config import usethis_config
 from usethis._config_file import CodespellRCManager
 from usethis._console import box_print
 from usethis._integrations.backend.dispatch import get_backend
@@ -21,6 +23,9 @@ from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
+
+if TYPE_CHECKING:
+    from usethis._io import KeyValueFileManager
 
 
 class CodespellTool(Tool):
@@ -53,6 +58,11 @@ class CodespellTool(Tool):
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="codespell")]
+
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        if (usethis_config.cpd() / "pyproject.toml").exists():
+            return PyprojectTOMLManager()
+        return CodespellRCManager()
 
     def get_config_spec(self) -> ConfigSpec:
         # https://github.com/codespell-project/codespell?tab=readme-ov-file#using-a-config-file

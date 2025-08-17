@@ -132,6 +132,30 @@ repos:
                 "☐ Run 'lint-imports' to run Import Linter.\n"
             )
 
+    class TestAddConfig:
+        def test_empty_dir(self, tmp_path: Path):
+            # Expect .importlinter to be preferred
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                ImportLinterTool().add_configs()
+
+            # Assert
+            assert (tmp_path / ".importlinter").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+
+        def test_pyproject_toml_exists(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                ImportLinterTool().add_configs()
+
+            # Assert
+            assert not (tmp_path / ".importlinter").exists()
+            assert (tmp_path / "pyproject.toml").exists()
+
 
 class TestIsINPRule:
     def test_inp_rule(self):

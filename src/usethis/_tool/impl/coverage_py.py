@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+from usethis._config import usethis_config
 from usethis._config_file import (
     CoverageRCManager,
     ToxINIManager,
@@ -16,6 +18,9 @@ from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
+
+if TYPE_CHECKING:
+    from usethis._io import KeyValueFileManager
 
 
 class CoveragePyTool(Tool):
@@ -53,6 +58,11 @@ class CoveragePyTool(Tool):
         if unconditional or PytestTool().is_used():
             deps += [Dependency(name="pytest-cov")]
         return deps
+
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        if (usethis_config.cpd() / "pyproject.toml").exists():
+            return PyprojectTOMLManager()
+        return CoverageRCManager()
 
     def get_config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference

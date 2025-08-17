@@ -36,3 +36,27 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             with change_cwd(tmp_path), files_manager():
                 assert ["tool", "coverage"] in PyprojectTOMLManager()
             assert "[tool.coverage]" in (tmp_path / "pyproject.toml").read_text()
+
+    class TestAddConfig:
+        def test_empty_dir(self, tmp_path: Path):
+            # Expect .coveragerc to be preferred
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                CoveragePyTool().add_configs()
+
+            # Assert
+            assert (tmp_path / ".coveragerc").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+
+        def test_pyproject_toml_exists(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                CoveragePyTool().add_configs()
+
+            # Assert
+            assert not (tmp_path / ".coveragerc").exists()
+            assert (tmp_path / "pyproject.toml").exists()

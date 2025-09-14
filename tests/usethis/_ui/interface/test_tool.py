@@ -123,7 +123,26 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 """
         )
 
-    def test_none_backend(self, tmp_path: Path):
+    def test_none_backend_no_pyproject_toml(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["coverage.py", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert not (tmp_path / "pyproject.toml").exists()
+        assert result.output == (
+            "☐ Add the test dependency 'coverage'.\n"
+            "✔ Writing '.coveragerc'.\n"
+            "✔ Adding Coverage.py config to '.coveragerc'.\n"
+            "☐ Run 'coverage help' to see available Coverage.py commands.\n"
+        )
+
+    def test_none_backend_pyproject_toml(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").touch()
+
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
@@ -134,7 +153,6 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         assert (tmp_path / "pyproject.toml").exists()
         assert result.output == (
             "☐ Add the test dependency 'coverage'.\n"
-            "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
             "☐ Run 'coverage help' to see available Coverage.py commands.\n"
         )

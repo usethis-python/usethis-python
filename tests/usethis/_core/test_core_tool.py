@@ -259,7 +259,7 @@ foo = bar
                 "☐ Run 'codespell' to run the Codespell spellchecker.\n"
             )
 
-        def test_none_backend_no_pyproject(
+        def test_none_backend_no_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
@@ -2343,7 +2343,9 @@ class TestPyprojectTOML:
 class TestPytest:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_no_pyproject(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        def test_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
             with change_cwd(tmp_path), files_manager():
                 # Act
                 use_pytest()

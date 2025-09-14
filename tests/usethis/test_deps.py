@@ -31,7 +31,7 @@ from usethis.errors import DepGroupError
 
 
 class TestGetProjectDeps:
-    def test_no_pyproject(self, tmp_path: Path):
+    def test_no_pyproject_toml(self, tmp_path: Path):
         # Arrange - No pyproject.toml file exists
 
         # Act
@@ -367,7 +367,7 @@ test=['pytest']
                 ],
             }
 
-    def test_no_pyproject(self, tmp_path: Path):
+    def test_no_pyproject_toml(self, tmp_path: Path):
         # Act
         with change_cwd(tmp_path), PyprojectTOMLManager():
             result = get_dep_groups()

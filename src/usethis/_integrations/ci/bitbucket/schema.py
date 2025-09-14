@@ -387,6 +387,11 @@ class StepBase(BaseModel):
         max_length=50,
         title="Concurrency group",
     )
+    custom: str | None = Field(
+        default=None,
+        description="The name of the custom pipeline to run, if the step type is pipeline.",
+        title="Custom",
+    )
     deployment: str | None = Field(
         default=None,
         description="The deployment environment for the step.",
@@ -435,6 +440,9 @@ class StepBase(BaseModel):
         default=None,
         description="The trigger used for the pipeline step.",
         title="Step Trigger",
+    )
+    type: Literal["inline", "pipeline"] | None = Field(
+        default="shared", description="The type of the step.", title="Step Type"
     )
 
 

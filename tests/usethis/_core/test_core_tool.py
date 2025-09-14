@@ -236,12 +236,17 @@ foo = bar
             assert (uv_init_dir / "setup.cfg").read_text() == ""
             assert "[tool.codespell]" in (uv_init_dir / "pyproject.toml").read_text()
 
-        def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        def test_none_backend_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / "pyproject.toml").touch()
+
             # Act
             with (
                 change_cwd(tmp_path),
                 usethis_config.set(backend=BackendEnum.none),
-                PyprojectTOMLManager(),
+                files_manager(),
             ):
                 use_codespell()
 
@@ -250,8 +255,28 @@ foo = bar
             assert not err
             assert out == (
                 "☐ Add the dev dependency 'codespell'.\n"
-                "✔ Writing 'pyproject.toml'.\n"
                 "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+            )
+
+        def test_none_backend_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                usethis_config.set(backend=BackendEnum.none),
+                files_manager(),
+            ):
+                use_codespell()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Add the dev dependency 'codespell'.\n"
+                "✔ Writing '.codespellrc'.\n"
+                "✔ Adding Codespell config to '.codespellrc'.\n"
                 "☐ Run 'codespell' to run the Codespell spellchecker.\n"
             )
 
@@ -2318,7 +2343,9 @@ class TestPyprojectTOML:
 class TestPytest:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_no_pyproject(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        def test_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
             with change_cwd(tmp_path), files_manager():
                 # Act
                 use_pytest()

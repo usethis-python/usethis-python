@@ -110,7 +110,10 @@ lint.select = [ "A" ]
         content = default_pyproject_toml.read_text()
         assert "google" in content
 
-    def test_none_backend(self, tmp_path: Path):
+    def test_none_backend_pyproject_toml(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").touch()
+
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
@@ -120,10 +123,27 @@ lint.select = [ "A" ]
         assert result.exit_code == 0, result.output
         assert result.output == (
             "☐ Add the dev dependency 'ruff'.\n"
-            "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding Ruff config to 'pyproject.toml'.\n"
             "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'ruff format' to run the Ruff formatter.\n"
             "✔ Setting docstring style to 'numpy' in 'pyproject.toml'.\n"
             "✔ Selecting Ruff rules 'D2', 'D3', 'D4' in 'pyproject.toml'.\n"
+        )
+
+    def test_none_backend_no_pyproject_toml(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["docstyle", "numpy", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert result.output == (
+            "☐ Add the dev dependency 'ruff'.\n"
+            "✔ Writing 'ruff.toml'.\n"
+            "✔ Adding Ruff config to 'ruff.toml'.\n"
+            "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+            "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            "✔ Setting docstring style to 'numpy' in 'ruff.toml'.\n"
+            "✔ Selecting Ruff rules 'D2', 'D3', 'D4' in 'ruff.toml'.\n"
         )

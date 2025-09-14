@@ -30,9 +30,7 @@ from usethis.errors import FileConfigError
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from usethis._integrations.backend.uv.deps import (
-        Dependency,
-    )
+    from usethis._integrations.backend.uv.deps import Dependency
     from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
     from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
     from usethis._io import KeyValueFileManager
@@ -409,7 +407,11 @@ class Tool(Protocol):
     def _add_config_item(
         self, config_item: ConfigItem, *, file_managers: set[KeyValueFileManager]
     ) -> bool:
-        """Add a specific configuration item using specified file managers."""
+        """Add a specific configuration item using specified file managers.
+
+        Returns whether any config was added. Config might not be added in some cases
+        where it's conditional and not applicable based on the current project state.
+        """
         # This is mostly a helper method for `add_configs`.
 
         # Filter to just those active config file managers which can manage this
@@ -425,14 +427,9 @@ class Tool(Protocol):
                 msg = f"No active config file managers found for one of the '{self.name}' config items."
                 raise NotImplementedError(msg)
             else:
-                # Early exist; this config item is not managed by any active files
+                # Early exit; this config item is not managed by any active files
                 # so it's optional, effectively.
                 return False
-
-        for file_manager in used_file_managers:
-            if not (file_manager.path.exists() and file_manager.path.is_file()):
-                tick_print(f"Writing '{file_manager.relative_path}'.")
-                file_manager.path.touch(exist_ok=True)
 
         config_entries = [
             config_item
@@ -455,6 +452,13 @@ class Tool(Protocol):
         if isinstance(entry.get_value(), NoConfigValue):
             # No value to add, so skip this config item.
             return False
+
+        # N.B. we wait to create files until after all `return False` lines to avoid
+        # creating empty files unnecessarily.
+        for file_manager in used_file_managers:
+            if not (file_manager.path.exists() and file_manager.path.is_file()):
+                tick_print(f"Writing '{file_manager.relative_path}'.")
+                file_manager.path.touch(exist_ok=True)
 
         shared_keys = []
         for key in entry.keys:

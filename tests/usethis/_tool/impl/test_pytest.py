@@ -233,3 +233,27 @@ pipelines:
               - echo 'Hello, world!'
 """
             )
+
+    class TestAddConfig:
+        def test_empty_dir(self, tmp_path: Path):
+            # Expect pytest.ini to be preferred
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                PytestTool().add_configs()
+
+            # Assert
+            assert (tmp_path / "pytest.ini").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+
+        def test_pyproject_toml_exists(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                PytestTool().add_configs()
+
+            # Assert
+            assert not (tmp_path / "pytest.ini").exists()
+            assert (tmp_path / "pyproject.toml").exists()

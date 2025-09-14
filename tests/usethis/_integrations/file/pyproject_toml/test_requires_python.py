@@ -28,7 +28,7 @@ requires-python = ">=3.7"
         # Assert
         assert requires_python == SpecifierSet(">=3.7")
 
-    def test_no_pyproject(self, tmp_path: Path):
+    def test_no_pyproject_toml(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),

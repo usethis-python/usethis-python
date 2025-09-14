@@ -11,6 +11,7 @@
 # plus manually forbid Step1.step from being None
 # plus manually forbid ParallelItem.parallel from being None
 # plus manually forbid StageItem.stage from being None
+# plus manually add "shared" to the Literal annotation in `StepBase.type` to match default
 
 from __future__ import annotations
 
@@ -441,7 +442,7 @@ class StepBase(BaseModel):
         description="The trigger used for the pipeline step.",
         title="Step Trigger",
     )
-    type: Literal["inline", "pipeline"] | None = Field(
+    type: Literal["inline", "pipeline", "shared"] | None = Field(
         default="shared", description="The type of the step.", title="Step Type"
     )
 

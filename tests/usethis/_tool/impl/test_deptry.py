@@ -251,14 +251,12 @@ ignore = ["DEP003"]
 
     class TestAddConfig:
         def test_empty_dir(self, tmp_path: Path):
-            # Expect ruff.toml to be preferred
-
             # Act
             with change_cwd(tmp_path), files_manager():
                 DeptryTool().add_configs()
 
             # Assert
-            assert "[project]" in (tmp_path / "pyproject.toml").read_text()
+            assert not (tmp_path / "pyproject.toml").exists()
 
         def test_pyproject_toml_exists(self, tmp_path: Path):
             # Arrange

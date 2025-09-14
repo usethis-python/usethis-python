@@ -342,7 +342,11 @@ lint.per-file-ignores."tests/**" = ["INP"]
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                RuffTool().add_configs()
+                RuffTool(
+                    # Needed to ensure the config is non-null (and so `ruff.toml` is
+                    # written)
+                    linter_detection="always",
+                ).add_configs()
 
             # Assert
             assert not (tmp_path / ".ruff.toml").exists()

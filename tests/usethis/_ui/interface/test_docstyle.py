@@ -144,6 +144,6 @@ lint.select = [ "A" ]
             "✔ Adding Ruff config to 'ruff.toml'.\n"
             "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'ruff format' to run the Ruff formatter.\n"
-            "✔ Setting docstring style to 'numpy' in 'pyproject.toml'.\n"
-            "✔ Selecting Ruff rules 'D2', 'D3', 'D4' in 'pyproject.toml'.\n"
+            "✔ Setting docstring style to 'numpy' in 'ruff.toml'.\n"
+            "✔ Selecting Ruff rules 'D2', 'D3', 'D4' in 'ruff.toml'.\n"
         )

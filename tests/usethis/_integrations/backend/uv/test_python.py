@@ -7,8 +7,7 @@ from usethis._integrations.backend.uv.python import (
 )
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import (
-    extract_major_version,
-    get_python_version,
+    get_python_major_version,
 )
 from usethis._test import change_cwd
 
@@ -58,7 +57,7 @@ requires-python = ">=3.9,<3.12"
     def test_no_pyproject(self, tmp_path: Path):
         with change_cwd(tmp_path), PyprojectTOMLManager():
             assert get_supported_uv_major_python_versions() == [
-                extract_major_version(get_python_version())
+                get_python_major_version()
             ]
 
     def test_no_requires_python(self, tmp_path: Path):
@@ -78,7 +77,7 @@ name = "foo"
             versions = get_supported_uv_major_python_versions()
 
         # Assert
-        assert versions == [extract_major_version(get_python_version())]
+        assert versions == [get_python_major_version()]
 
 
 class TestParsePythonVersionFromUVOutput:

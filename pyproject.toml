@@ -255,6 +255,7 @@ name = "usethis._integrations"
 type = "layers"
 layers = [
   "ci | pre_commit",
+  "environ",
   "backend | mkdocs | pytest | pydantic | sonarqube",
   "project | python",
   "file",

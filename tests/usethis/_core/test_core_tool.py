@@ -1964,7 +1964,7 @@ repos:
             # Assert
             assert not (uv_init_repo_dir / "pyproject.toml").exists()
 
-    class TestBitbucketCIIntegration:
+    class TestBitbucketIntegration:
         def test_prexisting(self, uv_init_repo_dir: Path):
             # Arrange
             (uv_init_repo_dir / "bitbucket-pipelines.yml").write_text(

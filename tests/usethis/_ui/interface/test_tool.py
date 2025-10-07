@@ -380,11 +380,9 @@ class TestRequirementsTxt:
         assert (
             result.output
             == """\
-ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies.
-ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files.
 ✔ Writing 'requirements.txt'.
 ☐ Run 'usethis tool requirements.txt' to re-write 'requirements.txt'.
-"""  # noqa: RUF001
+"""
         )
 
 

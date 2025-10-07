@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+import usethis._integrations.backend.dispatch
 from usethis._config import usethis_config
 from usethis._config_file import RuffTOMLManager, files_manager
 from usethis._core.ci import use_ci_bitbucket
@@ -2945,18 +2946,28 @@ repos:
                 "☐ Run 'uv run pre-commit run uv-export' to write 'requirements.txt'.\n"
             )
 
-        def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        def test_none_backend(
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+            monkeypatch: pytest.MonkeyPatch,
+        ):
             # Arrange
             (tmp_path / "pyproject.toml").write_text("""\
 project.dependencies = [ "ruff", "typer-slim[standard]" ]
 """)
 
-            # Act
+            monkeypatch.setattr(  # Do this rather than set Backend.none to test the auto behaviour messages
+                usethis._integrations.backend.dispatch,
+                "is_uv_available",
+                lambda *_, **__: False,
+            )
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
-                usethis_config.set(backend=BackendEnum.none),
+                usethis_config.set(backend=BackendEnum.auto),
             ):
+                # Act
                 use_requirements_txt()
 
             # Assert

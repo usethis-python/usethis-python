@@ -2571,17 +2571,22 @@ def test_foo():
                     use_pytest()
 
                 # Assert
-                assert (tmp_path / "requirements.txt").exists()
                 assert (tmp_path / "bitbucket-pipelines.yml").read_text() == (
                     """\
 image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &ensure-venv |
+        python -m venv .venv
+        source .venv/bin/activate
 pipelines:
     default:
       - step:
             name: Test on 3.10
             script:
-              - python -m pip install -r requirements-dev.txt
-              - python -m pytest -x --junitxml=test-reports/report.xml
+              - *ensure-venv
+              - pip install pytest
+              - pytest -x --junitxml=test-reports/report.xml
             image: python:3.10
 """
                 )
@@ -2594,8 +2599,6 @@ pipelines:
 ☐ Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.
 ☐ Replace it with your own pipeline steps.
 ☐ Alternatively, use 'usethis tool' to add other tools and their steps.
-✔ Writing 'requirements.txt'.
-☐ Run 'usethis tool requirements.txt --group test' to re-write 'requirements-test.txt'.
 ℹ Consider `usethis tool pytest` to test your code for the pipeline.
 ☐ Run your pipeline via the Bitbucket website.
 ☐ Add the test dependency 'pytest'.
@@ -2604,6 +2607,8 @@ pipelines:
 ✔ Creating '/tests'.
 ✔ Writing '/tests/conftest.py'.
 ✔ Adding 'Test on 3.10' to default pipeline in 'bitbucket-pipelines.yml'.
+☐ Declare your test dependencies in 'bitbucket-pipelines.yml'.
+ℹ Add test dependencies to this line: 'pip install pytest'
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.
 ☐ Run 'pytest' to run the tests.

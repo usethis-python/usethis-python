@@ -435,7 +435,10 @@ pipelines:
     def test_script_items_canonical_order_ensure_venv_after_install_uv(
         self, uv_init_dir: Path
     ):
-        """Test that ensure-venv is inserted after install-uv when both are added."""
+        """Test that ensure-venv is inserted after install-uv when both are added.
+
+        This refers to the anchors, not the steps themselves.
+        """
         # Arrange - start with install-uv already in the file
         (uv_init_dir / "bitbucket-pipelines.yml").write_text(
             """\

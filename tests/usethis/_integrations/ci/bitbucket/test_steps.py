@@ -391,11 +391,11 @@ pipelines:
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_step_in_default(
                 Step(
-                    name="Install UV",
+                    name="Install uv",
                     script=Script(
                         [
                             ScriptItemAnchor(name="install-uv"),
-                            "echo 'UV installed!'",
+                            "echo 'uv installed!'",
                         ]
                     ),
                 )
@@ -420,10 +420,10 @@ definitions:
 pipelines:
     default:
       - step:
-            name: Install UV
+            name: Install uv
             script:
               - *install-uv
-              - echo 'UV installed!'
+              - echo 'uv installed!'
       - step:
             name: Setup venv
             script:
@@ -450,10 +450,10 @@ definitions:
 pipelines:
     default:
       - step:
-            name: Install UV
+            name: Install uv
             script:
               - *install-uv
-              - echo 'UV installed!'
+              - echo 'uv installed!'
 """
         )
 
@@ -495,10 +495,10 @@ pipelines:
               - *ensure-venv
               - echo 'Environment ready!'
       - step:
-            name: Install UV
+            name: Install uv
             script:
               - *install-uv
-              - echo 'UV installed!'
+              - echo 'uv installed!'
 """
         )
 
@@ -531,11 +531,11 @@ pipelines: {}
             # Add install-uv second (should end up first)
             add_bitbucket_step_in_default(
                 Step(
-                    name="Install UV",
+                    name="Install uv",
                     script=Script(
                         [
                             ScriptItemAnchor(name="install-uv"),
-                            "echo 'UV installed!'",
+                            "echo 'uv installed!'",
                         ]
                     ),
                 )
@@ -560,10 +560,10 @@ definitions:
 pipelines:
     default:
       - step:
-            name: Install UV
+            name: Install uv
             script:
               - *install-uv
-              - echo 'UV installed!'
+              - echo 'uv installed!'
       - step:
             name: Setup venv
             script:
@@ -601,11 +601,11 @@ pipelines:
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
             add_bitbucket_step_in_default(
                 Step(
-                    name="Install UV",
+                    name="Install uv",
                     script=Script(
                         [
                             ScriptItemAnchor(name="install-uv"),
-                            "echo 'UV installed!'",
+                            "echo 'uv installed!'",
                         ]
                     ),
                 )
@@ -634,10 +634,10 @@ definitions:
 pipelines:
     default:
       - step:
-            name: Install UV
+            name: Install uv
             script:
               - *install-uv
-              - echo 'UV installed!'
+              - echo 'uv installed!'
       - step:
             name: Custom step
             script:

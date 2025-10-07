@@ -2581,7 +2581,7 @@ pipelines:
             script:
               - python -m pip install -r requirements-dev.txt
               - python -m pytest -x --junitxml=test-reports/report.xml
-            image: python:3.10.8
+            image: python:3.10
 """
                 )
                 out, err = capfd.readouterr()
@@ -2771,7 +2771,7 @@ pipelines:
     default:
       - step:
             name: Test on 3.10
-            image: python:3.10.8
+            image: python:3.10
             script:
               - pytest -x --junitxml=test-reports/report.xml
 """

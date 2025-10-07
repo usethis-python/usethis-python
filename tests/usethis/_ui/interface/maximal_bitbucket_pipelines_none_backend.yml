@@ -32,4 +32,4 @@ pipelines:
               - *ensure-venv
               - pip install pytest
               - pytest -x --junitxml=test-reports/report.xml
-            image: python:3.10.8
+            image: python:3.10

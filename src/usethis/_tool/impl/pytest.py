@@ -230,7 +230,7 @@ class PytestTool(Tool):
             elif backend is BackendEnum.none:
                 step = BitbucketStep(
                     name=f"Test on 3.{version}",
-                    image=Image(ImageName("python:3.10.8")),
+                    image=Image(ImageName(f"python:3.{version}")),
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),

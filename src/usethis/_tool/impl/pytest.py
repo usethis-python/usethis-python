@@ -260,7 +260,7 @@ class PytestTool(Tool):
         return sorted(names)
 
     def update_bitbucket_steps(self) -> None:
-        """Update the pytest-related BitBitbucket pipelines steps.
+        """Update the pytest-related Bitbucket pipelines steps.
 
         A bespoke function is needed here to ensure we inform the user about the need
         to manually add the dependencies if they are not using a backend.

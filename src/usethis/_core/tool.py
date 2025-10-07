@@ -378,13 +378,14 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
                         change_toml=False,
                     )
             elif backend is BackendEnum.none:
-                # Simply dump the dependencies list to requirements.txt as-
-                info_print(
-                    "Generating 'requirements.txt' with un-pinned, abstract dependencies."
-                )
-                info_print(
-                    "Consider installing 'uv' for pinned, cross-platform, full requirements files."
-                )
+                # Simply dump the dependencies list to requirements.txt
+                if usethis_config.backend is BackendEnum.auto:
+                    info_print(
+                        "Generating 'requirements.txt' with un-pinned, abstract dependencies."
+                    )
+                    info_print(
+                        "Consider installing 'uv' for pinned, cross-platform, full requirements files."
+                    )
                 tick_print("Writing 'requirements.txt'.")
                 with open(path, "w", encoding="utf-8") as f:
                     f.write("-e .\n")

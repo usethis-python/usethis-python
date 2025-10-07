@@ -2554,6 +2554,61 @@ def test_foo():
                 contents = (tmp_path / "ruff.toml").read_text()
                 assert """"tests/**" = ["INP"]""" in contents
 
+        class TestBitbucketIntegration:
+            def test_no_backend(
+                self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+            ):
+                # Arrange
+                with (
+                    change_cwd(tmp_path),
+                    files_manager(),
+                    usethis_config.set(backend=BackendEnum.none),
+                ):
+                    use_ci_bitbucket()
+
+                    # Act
+                    use_pytest()
+
+                # Assert
+                assert (tmp_path / "requirements.txt").exists()
+                assert (tmp_path / "bitbucket-pipelines.yml").read_text() == (
+                    """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Test on 3.10
+            script:
+              - python -m pip install -r requirements-dev.txt
+              - python -m pytest -x --junitxml=test-reports/report.xml
+            image: python:3.10.8
+"""
+                )
+                out, err = capfd.readouterr()
+                assert not err
+                assert out == (
+                    """\
+✔ Writing 'bitbucket-pipelines.yml'.
+✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.
+☐ Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.
+☐ Replace it with your own pipeline steps.
+☐ Alternatively, use 'usethis tool' to add other tools and their steps.
+✔ Writing 'requirements.txt'.
+☐ Run 'usethis tool requirements.txt --group test' to re-write 'requirements-test.txt'.
+ℹ Consider `usethis tool pytest` to test your code for the pipeline.
+☐ Run your pipeline via the Bitbucket website.
+☐ Add the test dependency 'pytest'.
+✔ Writing 'pyproject.toml'.
+✔ Adding pytest config to 'pyproject.toml'.
+✔ Creating '/tests'.
+✔ Writing '/tests/conftest.py'.
+✔ Adding 'Test on 3.10' to default pipeline in 'bitbucket-pipelines.yml'.
+☐ Add test files to the '/tests' directory with the format 'test_*.py'.
+☐ Add test functions with the format 'test_*()'.
+☐ Run 'pytest' to run the tests.
+"""  # noqa: RUF001
+                )
+
     class TestRemove:
         class TestRuffIntegration:
             def test_deselected(self, uv_init_dir: Path):
@@ -2695,6 +2750,60 @@ pipelines:
                     "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
                     "✔ Removing pytest config from 'pyproject.toml'.\n"
                     "✔ Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'.\n"
+                    "✔ Removing '/tests'.\n"
+                ).replace("\n", "").replace(" ", "")
+
+            def test_remove_no_backend(
+                self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+            ):
+                # Arrange
+                with (
+                    change_cwd(tmp_path),
+                    files_manager(),
+                    usethis_config.set(quiet=True, backend=BackendEnum.none),
+                ):
+                    use_pytest()
+
+                (tmp_path / "bitbucket-pipelines.yml").write_text(
+                    """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Test on 3.10
+            image: python:3.10.8
+            script:
+              - pytest -x --junitxml=test-reports/report.xml
+"""
+                )
+
+                # Act
+                with (
+                    change_cwd(tmp_path),
+                    files_manager(),
+                    usethis_config.set(backend=BackendEnum.none),
+                ):
+                    use_pytest(remove=True)
+
+                # Assert
+                contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+                assert (
+                    contents
+                    == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            script:
+              - echo 'Hello, world!'
+"""
+                )
+                out, err = capfd.readouterr()
+                assert not err
+                assert out.replace("\n", "").replace(" ", "") == (
+                    "✔ Removing 'Test on 3.10' from default pipeline in 'bitbucket-pipelines.yml'.\n"
+                    "✔ Removing pytest config from 'pyproject.toml'.\n"
                     "✔ Removing '/tests'.\n"
                 ).replace("\n", "").replace(" ", "")
 

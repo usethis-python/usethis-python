@@ -7,25 +7,19 @@ from typing import TYPE_CHECKING
 from typing_extensions import assert_never
 
 from usethis._config import usethis_config
-from usethis._config_file import (
-    DotPytestINIManager,
-    PytestINIManager,
-    ToxINIManager,
-)
-from usethis._console import box_print
+from usethis._config_file import DotPytestINIManager, PytestINIManager, ToxINIManager
+from usethis._console import box_print, info_print
 from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.python import (
-    get_supported_uv_major_python_versions,
-)
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
+from usethis._integrations.ci.bitbucket.schema import Image, ImageName
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
-from usethis._integrations.ci.bitbucket.steps import (
-    get_steps_in_default,
-)
+from usethis._integrations.ci.bitbucket.steps import get_steps_in_default
+from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
+from usethis._integrations.environ.python import get_supported_major_python_versions
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
@@ -38,6 +32,8 @@ from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
+
+_PYTEST_PIP_CMD = "pip install pytest"
 
 
 class PytestTool(Tool):
@@ -214,12 +210,14 @@ class PytestTool(Tool):
         return {preferred_file_manager}
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        versions = get_supported_uv_major_python_versions()
+        versions = get_supported_major_python_versions()
+
+        backend = get_backend()
 
         steps = []
         for version in versions:
-            steps.append(
-                BitbucketStep(
+            if backend is BackendEnum.uv:
+                step = BitbucketStep(
                     name=f"Test on 3.{version}",
                     caches=["uv"],
                     script=BitbucketScript(
@@ -229,7 +227,22 @@ class PytestTool(Tool):
                         ]
                     ),
                 )
-            )
+            elif backend is BackendEnum.none:
+                step = BitbucketStep(
+                    name=f"Test on 3.{version}",
+                    image=Image(ImageName("python:3.10.8")),
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="ensure-venv"),
+                            _PYTEST_PIP_CMD,
+                            "pytest -x --junitxml=test-reports/report.xml",
+                        ]
+                    ),
+                )
+            else:
+                assert_never(backend)
+
+            steps.append(step)
         return steps
 
     def get_managed_bitbucket_step_names(self) -> list[str]:
@@ -245,3 +258,32 @@ class PytestTool(Tool):
                 names.add(step.name)
 
         return sorted(names)
+
+    def update_bitbucket_steps(self) -> None:
+        """Update the pytest-related BitBitbucket pipelines steps.
+
+        A bespoke function is needed here to ensure we inform the user about the need
+        to manually add the dependencies if they are not using a backend.
+        """
+        # Same early exit as the wrapped super() function
+        if not is_bitbucket_used() or not self.is_used():
+            return
+
+        # But otherwise if not early exiting, we are going to add steps so we might
+        # need to inform the user
+        super().update_bitbucket_steps()
+
+        backend = get_backend()
+
+        if backend is BackendEnum.uv:
+            pass
+        elif backend is BackendEnum.none:
+            if usethis_config.backend is BackendEnum.auto:
+                info_print(
+                    "Consider installing 'uv' to readily manage test dependencies."
+                )
+            box_print("Declare your test dependencies in 'bitbucket-pipelines.yml'.")
+            info_print(f"Add test dependencies to this line: '{_PYTEST_PIP_CMD}'")
+            pass
+        else:
+            assert_never(backend)

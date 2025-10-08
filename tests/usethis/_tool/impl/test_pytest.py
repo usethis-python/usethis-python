@@ -16,6 +16,7 @@ class TestPytestTool:
         def test_new_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
+                PyprojectTOMLManager()[["project"]]["requires-python"] = ">=3.12,<3.14"
                 add_placeholder_step_in_default(report_placeholder=False)
                 (uv_init_dir / "pytest.ini").touch()
 

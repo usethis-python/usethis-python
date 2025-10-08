@@ -58,7 +58,7 @@ $ uvx usethis ci bitbucket
 ✔ Writing 'bitbucket-pipelines.yml'.
 ✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.
 ✔ Adding 'Run Ruff' to default pipeline in 'bitbucket-pipelines.yml'.
-✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.
 ✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
+✔ Adding 'Test on 3.14' to default pipeline in 'bitbucket-pipelines.yml'.
 ☐ Run your pipeline via the Bitbucket website.
 ```

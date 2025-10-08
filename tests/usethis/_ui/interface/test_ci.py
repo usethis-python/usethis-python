@@ -21,7 +21,7 @@ class TestBitbucket:
         (tmp_path / "pyproject.toml").write_text(
             """\
 [project]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 """
         )
 
@@ -39,8 +39,8 @@ requires-python = ">=3.12"
 ✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.
 ✔ Adding 'Run Ruff' to default pipeline in 'bitbucket-pipelines.yml'.
 ✔ Adding 'Run Ruff Formatter' to default pipeline in 'bitbucket-pipelines.yml'.
-✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.
 ✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
+✔ Adding 'Test on 3.14' to default pipeline in 'bitbucket-pipelines.yml'.
 ☐ Run your pipeline via the Bitbucket website.
 """
         )

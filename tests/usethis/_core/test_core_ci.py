@@ -473,7 +473,7 @@ pipelines:
                 (uv_init_dir / "pyproject.toml").write_text(
                     """\
 [project]
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.13,<3.14"
 """
                 )
                 (uv_init_dir / "bitbucket-pipelines.yml").write_text(
@@ -482,11 +482,11 @@ image: atlassian/default-image:3
 pipelines:
     default:
       - step:
-            name: Test on 3.11
+            name: Test on 3.12
             script:
                 - echo 'Hello, world!'
       - step:
-            name: Test on 3.12
+            name: Test on 3.13
             script:
                 - echo 'Hello, world!'
 """
@@ -498,7 +498,7 @@ pipelines:
 
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-                assert "Test on 3.11" not in contents
+                assert "Test on 3.12" not in contents
 
     class TestRemove:
         class TestPyproject:

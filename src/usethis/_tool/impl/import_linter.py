@@ -92,6 +92,11 @@ class ImportLinterTool(Tool):
         # This is because it needs to run from within the virtual environment.
         return [Dependency(name="import-linter")]
 
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        if (usethis_config.cpd() / "pyproject.toml").exists():
+            return PyprojectTOMLManager()
+        return DotImportLinterManager()
+
     def get_config_spec(self) -> ConfigSpec:
         # https://import-linter.readthedocs.io/en/stable/usage.html
 

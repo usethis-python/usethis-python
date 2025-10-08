@@ -27,7 +27,30 @@ class TestLint:
         assert "format" not in txt
         assert "lint" in txt
 
-    def test_none_backend(self, tmp_path: Path):
+    def test_none_backend_no_pyproject_toml(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke(app, ["lint", "--backend", "none"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert not (tmp_path / "pyproject.toml").exists()
+        assert result.output.replace("\n", "") == (
+            "☐ Add the dev dependency 'ruff'.\n"
+            "✔ Writing 'ruff.toml'.\n"
+            "✔ Adding Ruff config to 'ruff.toml'.\n"
+            "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'ruff.toml'.\n"
+            "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'ruff.toml'.\n"
+            "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+            "☐ Add the dev dependency 'deptry'.\n"
+            "☐ Run 'deptry .' to run deptry.\n"
+        ).replace("\n", "")
+
+    def test_none_backend_pyproject_toml(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").touch()
+
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
@@ -38,7 +61,6 @@ class TestLint:
         assert (tmp_path / "pyproject.toml").exists()
         assert result.output.replace("\n", "") == (
             "☐ Add the dev dependency 'ruff'.\n"
-            "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding Ruff config to 'pyproject.toml'.\n"
             "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
             "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"

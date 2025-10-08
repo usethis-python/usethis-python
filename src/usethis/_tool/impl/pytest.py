@@ -63,6 +63,11 @@ class PytestTool(Tool):
             deps += [Dependency(name="pytest-cov")]
         return deps
 
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        if (usethis_config.cpd() / "pyproject.toml").exists():
+            return PyprojectTOMLManager()
+        return PytestINIManager()
+
     def get_config_spec(self) -> ConfigSpec:
         # https://docs.pytest.org/en/stable/reference/customize.html#configuration-file-formats
         # "Options from multiple configfiles candidates are never merged - the first match wins."

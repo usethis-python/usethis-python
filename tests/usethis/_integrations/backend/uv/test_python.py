@@ -54,7 +54,7 @@ requires-python = ">=3.9,<3.12"
         # Assert
         assert supported_major_python == [9, 10, 11]
 
-    def test_no_pyproject(self, tmp_path: Path):
+    def test_no_pyproject_toml(self, tmp_path: Path):
         with change_cwd(tmp_path), PyprojectTOMLManager():
             assert get_supported_uv_major_python_versions() == [
                 get_python_major_version()

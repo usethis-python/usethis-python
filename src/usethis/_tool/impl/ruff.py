@@ -129,6 +129,11 @@ class RuffTool(Tool):
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ruff")]
 
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        if (usethis_config.cpd() / "pyproject.toml").exists():
+            return PyprojectTOMLManager()
+        return RuffTOMLManager()
+
     def get_config_spec(self) -> ConfigSpec:
         # https://docs.astral.sh/ruff/configuration/#config-file-discovery
 

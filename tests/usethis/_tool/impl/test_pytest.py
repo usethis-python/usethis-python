@@ -16,6 +16,7 @@ class TestPytestTool:
         def test_new_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
+                PyprojectTOMLManager()[["project"]]["requires-python"] = ">=3.12,<3.14"
                 add_placeholder_step_in_default(report_placeholder=False)
                 (uv_init_dir / "pytest.ini").touch()
 
@@ -41,19 +42,19 @@ definitions:
 pipelines:
     default:
       - step:
+            name: Test on 3.12
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - uv run --python 3.12 pytest -x --junitxml=test-reports/report.xml
+      - step:
             name: Test on 3.13
             caches:
               - uv
             script:
               - *install-uv
               - uv run --python 3.13 pytest -x --junitxml=test-reports/report.xml
-      - step:
-            name: Test on 3.14
-            caches:
-              - uv
-            script:
-              - *install-uv
-              - uv run --python 3.14 pytest -x --junitxml=test-reports/report.xml
 """
             )
 
@@ -62,8 +63,8 @@ pipelines:
             assert out == (
                 "✔ Writing 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-                "✔ Adding 'Test on 3.14' to default pipeline in 'bitbucket-pipelines.yml'.\n"
             )
 
         def test_remove_old_steps(

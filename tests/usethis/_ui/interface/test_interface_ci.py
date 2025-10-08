@@ -4,6 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from usethis._config import usethis_config
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 from usethis._ui.app import app as main_app
 from usethis._ui.interface.ci import app
@@ -46,6 +47,9 @@ class TestBitbucket:
         runner = CliRunner()
         with change_cwd(uv_init_repo_dir):
             # Arrange
+            with PyprojectTOMLManager() as mgr:
+                mgr[["project"]]["requires-python"] = ">=3.12,<3.14"
+
             for tool_command in ALL_TOOL_COMMANDS:
                 if not usethis_config.offline:
                     result = runner.invoke(main_app, ["tool", tool_command])

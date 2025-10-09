@@ -34,7 +34,7 @@ class TestGetSonarProjectProperties:
         # Assert
         assert result == contents
 
-    def test_file_not_exists(self, uv_init_dir: Path):
+    def test_file_doesnt_exist(self, uv_init_dir: Path):
         # If the file does not exist, we should construct based on information in
         # the repo.
 
@@ -46,7 +46,7 @@ class TestGetSonarProjectProperties:
             PyprojectTOMLManager().set_value(
                 keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
             )
-            uv_python_pin("3.12")
+            uv_python_pin("3.13")
         content = (uv_init_dir / "pyproject.toml").read_text()
         assert "xml" in content
 
@@ -60,7 +60,7 @@ class TestGetSonarProjectProperties:
             == """\
 sonar.projectKey=foobar
 sonar.language=py
-sonar.python.version=3.12
+sonar.python.version=3.13
 sonar.sources=./src
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml

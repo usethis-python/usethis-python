@@ -21,7 +21,7 @@ class TestBitbucket:
         (tmp_path / "pyproject.toml").write_text(
             """\
 [project]
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
 """
         )
 

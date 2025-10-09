@@ -170,7 +170,7 @@ def _(
 
     d = {}
     for key, value in model:
-        default_value = model.model_fields[key].default
+        default_value = model.__class__.model_fields[key].default
 
         # The reference for the value (for recursion)
         if isinstance(reference, dict | BaseModel):
@@ -197,7 +197,7 @@ def _(
             continue
 
         # Find the key for display - there might be an alias
-        display_key = model.model_fields[key].alias
+        display_key = model.__class__.model_fields[key].alias
         if display_key is None:
             display_key = key
 

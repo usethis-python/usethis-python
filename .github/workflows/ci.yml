@@ -61,9 +61,10 @@ jobs:
           custom-arguments: --cov --junitxml=junit.xml -o junit_family=legacy
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@513a19673a831f139e8717bf45ead67e47f00044 # v3.2.0
+        uses: CodSpeedHQ/action@6b43a0cd438f6ca5ad26f9ed03ed159ed2df7da9 # v4.1.1
         if: matrix.codspeed
         with:
+          mode: instrumentation
           token: ${{ secrets.CODSPEED_TOKEN }}
           run: pytest --codspeed
 

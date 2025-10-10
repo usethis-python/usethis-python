@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   tests:
-    name: ${{ (matrix.codecov && 'Codecov') || (matrix.codspeed && 'CodSpeed') || format('Test Python {0} on {1}{2}', matrix.python_version, matrix.os, (matrix.dependencies == 'min' || matrix.dependencies == 'max') && format(' with {0} dependencies', matrix.dependencies) || '') }}
+    name: ${{ (matrix.codecov == 'true' && 'Codecov') || (matrix.codspeed == 'true' && 'CodSpeed') || format('Test Python {0} on {1}{2}', matrix.python_version, matrix.os, (matrix.dependencies == 'min' || matrix.dependencies == 'max') && format(' with {0} dependencies', matrix.dependencies) || '') }}
     runs-on: ${{ matrix.os && matrix.os || 'ubuntu-latest' }}
     env:
       PYTHONIOENCODING: utf-8
@@ -55,20 +55,20 @@ jobs:
           uv sync --resolution ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
 
       - name: Run pre-commit
-        if: ${{ matrix.pre_commit == null || matrix.pre_commit == true }}
+        if: ${{ matrix.pre_commit == null || matrix.pre_commit == 'true' }}
         run: |
           uv run --frozen pre-commit run --all-files
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
-        if: ${{ matrix.pytest == null || matrix.pytest == true }}
+        if: ${{ matrix.pytest == null || matrix.pytest == 'true' }}
         with:
           custom-pytest: uv run --frozen pytest
           custom-arguments: --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
 
       - name: Run benchmarks
         uses: CodSpeedHQ/action@6b43a0cd438f6ca5ad26f9ed03ed159ed2df7da9 # v4.1.1
-        if: ${{ matrix.codspeed != null && matrix.codspeed == true }}
+        if: ${{ matrix.codspeed != null && matrix.codspeed == 'true' }}
         with:
           mode: instrumentation
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -76,7 +76,7 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
-        if: ${{ matrix.codecov != null && matrix.codecov == true }}
+        if: ${{ matrix.codecov != null && matrix.codecov == 'true' }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -84,7 +84,7 @@ jobs:
       - name: Upload test results to Codecov
 
         uses: codecov/test-results-action@47f89e9acb64b76debcd5ea40642d25a4adced9f # v1.1.1
-        if: ${{ matrix.codecov != null && matrix.codecov == true }} && !cancelled()
+        if: ${{ matrix.codecov != null && matrix.codecov == 'true' }} && !cancelled()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -95,27 +95,27 @@ jobs:
         python_version: ["3.10", "3.14"]
         dependencies: ["lockfile"]
         uv_version: ["latest"]
-        codecov: [false]
-        codspeed: [false]
-        pre_commit: [true]
-        pytest: [true]
+        codecov: ["false"]
+        codspeed: ["false"]
+        pre_commit: ["true"]
+        pytest: ["true"]
 
         include:
           - dependencies: "min"
             python_version: "3.10"
             uv_version: "0.6.8"
-            pre_commit: false
+            pre_commit: "false"
           - python_version: "3.11"
           - python_version: "3.12"
           - python_version: "3.13"
           - dependencies: "max"
             python_version: "3.14"
-          - codecov: true
+          - codecov: "true"
             python_version: "3.14"
 
-            pre_commit: false
-          - codspeed: true
+            pre_commit: "false"
+          - codspeed: "true"
             python_version: "3.13"
 
-            pre_commit: false
-            pytest: false
+            pre_commit: "false"
+            pytest: "false"

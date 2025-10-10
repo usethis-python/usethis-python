@@ -5,16 +5,16 @@ permissions:
 on:
   workflow_dispatch:
   push:
-    branches: ['main']
+    branches: ["main"]
     paths-ignore:
-      - 'docs/**'
-      - '**/*.md'
-      - 'mkdocs.yml'
+      - "docs/**"
+      - "**/*.md"
+      - "mkdocs.yml"
   pull_request:
     paths-ignore:
-      - 'docs/**'
-      - '**/*.md'
-      - 'mkdocs.yml'
+      - "docs/**"
+      - "**/*.md"
+      - "mkdocs.yml"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -42,7 +42,7 @@ jobs:
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: ${{ matrix.python-version }}
-        
+
       - name: Setup dependencies
         run: |
           uv python pin ${{ matrix.python-version }}
@@ -61,9 +61,10 @@ jobs:
           custom-arguments: --cov --junitxml=junit.xml -o junit_family=legacy
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@513a19673a831f139e8717bf45ead67e47f00044 # v3.2.0
+        uses: CodSpeedHQ/action@6b43a0cd438f6ca5ad26f9ed03ed159ed2df7da9 # v4.1.1
         if: matrix.codspeed
         with:
+          mode: instrumentation
           token: ${{ secrets.CODSPEED_TOKEN }}
           run: pytest --codspeed
 
@@ -83,7 +84,7 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         uv-version: ["latest"]
         resolution: ["highest"]
         codspeed: [false]
@@ -91,7 +92,7 @@ jobs:
         pre-commit: [true]
         pytest: [true]
         include:
-          - os: "ubuntu-latest"
+          - os: "ubuntu-latest" # Minimum dependency versions
             python-version: "3.10"
             uv-version: "0.6.8" # Sync with pyproject.toml
             resolution: "lowest-direct"
@@ -99,16 +100,16 @@ jobs:
             codecov: false
             pre-commit: false
             pytest: true
-          - os: "ubuntu-latest"
-            python-version: "3.13"
+          - os: "ubuntu-latest" # Codecov run
+            python-version: "3.14"
             uv-version: "latest"
             resolution: "highest"
             codspeed: false
             codecov: true
             pre-commit: false
             pytest: true
-          - os: "ubuntu-latest"
-            python-version: "3.13"
+          - os: "ubuntu-latest" # Codspeed run
+            python-version: "3.13" # 3.14 support not available yet
             uv-version: "latest"
             resolution: "highest"
             codspeed: true

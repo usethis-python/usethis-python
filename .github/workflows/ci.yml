@@ -20,6 +20,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   tests:
+    name: ${{ (matrix.codecov && 'Codecov') || (matrix.codspeed && 'CodSpeed') || format('Test Python {0} on {1} with {2} dependencies', matrix.python_version, matrix.os, matrix.dependencies) }}
     runs-on: ${{ matrix.os && matrix.os || 'ubuntu-latest' }}
     env:
       PYTHONIOENCODING: utf-8

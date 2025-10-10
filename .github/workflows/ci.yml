@@ -43,6 +43,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Re-lock
+        if: matrix.bump-deps
+        run: |
+          uv sync --upgrade
+
       - name: Setup dependencies
         run: |
           uv python pin ${{ matrix.python-version }}
@@ -86,35 +91,34 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        uv-version: ["latest"]
-        resolution: ["highest"]
-        codspeed: [false]
-        codecov: [false]
-        pre-commit: [true]
-        pytest: [true]
+        python-version: ["3.10", "3.14"]
         include:
-          - os: "ubuntu-latest" # Minimum dependency versions
-            python-version: "3.10"
-            uv-version: "0.6.8" # Sync with pyproject.toml
-            resolution: "lowest-direct"
-            codspeed: false
-            codecov: false
-            pre-commit: false
-            pytest: true
-          - os: "ubuntu-latest" # Codecov run
+          - os: "ubuntu-latest"
+            python-version: "3.11"
+          - os: "ubuntu-latest"
+            python-version: "3.12"
+          - os: "ubuntu-latest"
+            python-version: "3.13"
+          - os: "ubuntu-latest"
             python-version: "3.14"
-            uv-version: "latest"
-            resolution: "highest"
-            codspeed: false
             codecov: true
             pre-commit: false
-            pytest: true
-          - os: "ubuntu-latest" # Codspeed run
+          - os: "ubuntu-latest"
             python-version: "3.13" # 3.14 support not available yet
-            uv-version: "latest"
-            resolution: "highest"
             codspeed: true
-            codecov: false
             pre-commit: false
             pytest: false
+          - uv-version: "latest"
+          - bump-deps: false
+          - resolution: "highest"
+          - os: "ubuntu-latest"
+            python-version: "3.10"
+            uv-version: "0.6.8"
+            resolution: "lowest-direct"
+          - os: "ubuntu-latest"
+            python-version: "3.14"
+            bump-deps: true
+          - codspeed: false
+          - codecov: false
+          - pre-commit: true
+          - pytest: true

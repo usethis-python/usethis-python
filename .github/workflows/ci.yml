@@ -51,7 +51,7 @@ jobs:
       - name: Setup dependencies
         run: |
           uv python pin ${{ matrix.python-version }}
-          uv sync --resolution ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'latest' }}
+          uv sync --resolution ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
 
       - name: Run pre-commit
         if: ${{ matrix.pre-commit == null || matrix.pre-commit }}
@@ -92,7 +92,14 @@ jobs:
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         python-version: ["3.10", "3.14"]
+
         include:
+          - dependencies: "lockfile"
+          - uv-version: "latest"
+          - codecov: false
+          - codspeed: false
+          - pre-commit: true
+          - pytest: true
           - dependencies: "min"
             python-version: "3.10"
             uv-version: "0.6.8"

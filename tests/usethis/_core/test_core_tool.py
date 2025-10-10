@@ -2607,6 +2607,7 @@ def test_foo():
                     use_ci_bitbucket()
 
                     # Act
+                    assert not (tmp_path / "pytest.ini").exists()  # Mostly to debug CI
                     use_pytest()
 
                 # Assert

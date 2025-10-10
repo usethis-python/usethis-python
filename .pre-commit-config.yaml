@@ -1,21 +1,17 @@
 repos:
-  - repo: local
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: v0.4.0
+    hooks:
+      - id: sync-with-uv
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.9.1
     hooks:
       - id: uv-lock
-        name: uv-lock
-        entry: uv lock --offline
-        files: ^(uv\.lock|pyproject\.toml|uv\.toml)$
-        language: system
-        always_run: true
-        pass_filenames: false
+      - id: uv-export
+      - id: uv-export
+        name: uv-export-docs
+        args: [--only-group, doc, -o=docs/requirements.txt]
       - id: uv-sync
-        name: uv-sync
-        entry: uv sync --no-active --offline
-        args: [--locked]
-        language: system
-        always_run: true
-        pass_filenames: false
-        stages: [manual, pre-commit, pre-push, post-checkout, post-merge, post-rewrite]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -31,47 +27,17 @@ repos:
     rev: v0.23
     hooks:
       - id: validate-pyproject
-  - repo: local
-    hooks:
-      - id: uv-export
-        name: uv-export
-        files: ^uv\.lock$
-        entry: uv export --frozen --offline --quiet -o=requirements.txt
-        language: system
-        pass_filenames: false
-        require_serial: true
-  - repo: local
-    hooks:
-      - id: uv-export-docs
-        name: uv-export-docs
-        files: ^uv\.lock$
-        entry: uv export --frozen --offline --quiet --only-group doc -o='docs/requirements.txt'
-        language: system
-        pass_filenames: false
-        require_serial: true
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.5.0
     hooks:
       - id: pyproject-fmt
         args: [--max-supported-python=3.14]
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.5
     hooks:
       - id: ruff
-        name: ruff
-        entry: uv run --frozen --offline ruff check --fix --force-exclude
-        types_or: [python, pyi, jupyter]
-        language: system
-        always_run: true
-        require_serial: true
-  - repo: local
-    hooks:
+        args: [ --fix ]
       - id: ruff-format
-        name: ruff-format
-        entry: uv run --frozen --offline ruff format --force-exclude
-        types_or: [python, pyi, jupyter]
-        language: system
-        always_run: true
-        require_serial: true
   - repo: local
     hooks:
       - id: deptry

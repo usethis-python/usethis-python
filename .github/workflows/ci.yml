@@ -13,6 +13,8 @@ on:
       - "docs/**"
       - "**/*.md"
       - "mkdocs.yml"
+  schedule:
+    - cron: "0 0 * * *"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -67,7 +69,7 @@ jobs:
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
-        if: ${{ matrix.pytest == null || matrix.pytest == 'true' }}
+        if: ${{ (matrix.pytest == null || matrix.pytest == 'true') && (github.event_name == 'schedule' || matrix.dependencies != 'max') }}
         with:
           custom-pytest: uv run --frozen pytest
           custom-arguments: --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
@@ -114,7 +116,7 @@ jobs:
             python_version: "3.10"
             uv_version: "0.6.8"
             pre_commit: "false"
-          - dependencies: "max"
+          - dependencies: "max" # Cron only (Pytest skipped)
             python_version: "3.14"
             pre_commit: "false"
           - codecov: "true"

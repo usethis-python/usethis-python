@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import usethis._integrations.backend.dispatch
+import usethis._integrations.python.version
 from usethis._config import usethis_config
 from usethis._config_file import RuffTOMLManager, files_manager
 from usethis._core.ci import use_ci_bitbucket
@@ -2584,9 +2585,20 @@ def test_foo():
 
         class TestBitbucketIntegration:
             def test_no_backend(
-                self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+                self,
+                tmp_path: Path,
+                capfd: pytest.CaptureFixture[str],
+                monkeypatch: pytest.MonkeyPatch,
             ):
                 # Arrange
+
+                # Set the Python version to 3.10
+                monkeypatch.setattr(
+                    usethis._integrations.python.version,
+                    "get_python_version",
+                    lambda: "3.10.0",
+                )
+
                 with (
                     change_cwd(tmp_path),
                     files_manager(),
@@ -2787,8 +2799,18 @@ pipelines:
                 ).replace("\n", "").replace(" ", "")
 
             def test_remove_no_backend(
-                self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+                self,
+                tmp_path: Path,
+                capfd: pytest.CaptureFixture[str],
+                monkeypatch: pytest.MonkeyPatch,
             ):
+                # Set the Python version to 3.10
+                monkeypatch.setattr(
+                    usethis._integrations.python.version,
+                    "get_python_version",
+                    lambda: "3.10.0",
+                )
+
                 # Arrange
                 with (
                     change_cwd(tmp_path),

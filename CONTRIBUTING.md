@@ -24,13 +24,13 @@ Then with the current working directory set to the project root, run:
 uv sync
 ```
 
-### Pre-commit Hooks
+### Git Hooks
 
-This project uses the `pre-commit` framework to manage Git hooks. To install the hooks,
+This project uses the `prek` framework (similar to `pre-commit`) to manage Git hooks. To install the hooks,
 run:
 
 ```shell
-uv run pre-commit install
+uv run prek install
 ```
 
 ## Testing

@@ -203,7 +203,10 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
 
     @abstractmethod
     def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
-        """Extend a list in the configuration file."""
+        """Extend a list in the configuration file.
+
+        This method will always extend the list, even if it results in duplicates.
+        """
         raise NotImplementedError
 
     @abstractmethod

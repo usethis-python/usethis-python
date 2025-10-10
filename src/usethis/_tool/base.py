@@ -7,6 +7,7 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._console import tick_print, warn_print
+from usethis._deps import add_deps_to_group, is_dep_in_any_group, remove_deps_from_group
 from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_step_in_default,
     bitbucket_steps_are_equivalent,
@@ -21,11 +22,6 @@ from usethis._integrations.pre_commit.hooks import (
     hook_ids_are_equivalent,
     remove_hook,
 )
-from usethis._integrations.uv.deps import (
-    add_deps_to_group,
-    is_dep_in_any_group,
-    remove_deps_from_group,
-)
 from usethis._tool.config import ConfigSpec, NoConfigValue
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
@@ -34,13 +30,11 @@ from usethis.errors import FileConfigError
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from usethis._integrations.backend.uv.deps import Dependency
     from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
     from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
-    from usethis._integrations.uv.deps import (
-        Dependency,
-    )
     from usethis._io import KeyValueFileManager
-    from usethis._tool.config import ResolutionT
+    from usethis._tool.config import ConfigItem, ResolutionT
     from usethis._tool.rule import Rule
 
 
@@ -384,7 +378,10 @@ class Tool(Protocol):
         return False
 
     def add_configs(self) -> None:
-        """Add the tool's configuration sections."""
+        """Add the tool's configuration sections.
+
+        If the config file does not exist, it will be created.
+        """
         # Principles:
         # 1. We will never add configuration to a config file that is not active.
         # 2. We will never add a child key to a new parent when an existing parent
@@ -396,72 +393,96 @@ class Tool(Protocol):
 
         active_config_file_managers = self.get_active_config_file_managers()
 
-        first_addition = True
+        already_added = False  # Only print messages for the first added config item.
         for config_item in self.get_config_spec().config_items:
-            # Filter to just those active config file managers which can manage this
-            # config
-            file_managers = [
+            with usethis_config.set(
+                alert_only=already_added or usethis_config.alert_only
+            ):
+                added = self._add_config_item(
+                    config_item, file_managers=active_config_file_managers
+                )
+                if added:
+                    already_added = True
+
+    def _add_config_item(
+        self, config_item: ConfigItem, *, file_managers: set[KeyValueFileManager]
+    ) -> bool:
+        """Add a specific configuration item using specified file managers.
+
+        Returns whether any config was added. Config might not be added in some cases
+        where it's conditional and not applicable based on the current project state.
+        """
+        # This is mostly a helper method for `add_configs`.
+
+        # Filter to just those active config file managers which can manage this
+        # config
+        used_file_managers = [
+            file_manager
+            for file_manager in file_managers
+            if file_manager.path in config_item.paths
+        ]
+
+        if not used_file_managers:
+            if config_item.applies_to_all:
+                msg = f"No active config file managers found for one of the '{self.name}' config items."
+                raise NotImplementedError(msg)
+            else:
+                # Early exit; this config item is not managed by any active files
+                # so it's optional, effectively.
+                return False
+
+        config_entries = [
+            config_item
+            for relative_path, config_item in config_item.root.items()
+            if relative_path
+            in {file_manager.relative_path for file_manager in used_file_managers}
+        ]
+        if not config_entries:
+            msg = f"No config entries found for one of the '{self.name}' config items."
+            raise NotImplementedError(msg)
+        if len(config_entries) != 1:
+            msg = (
+                "Adding config is not yet supported for the case of multiple "
+                "active config files."
+            )
+            raise NotImplementedError(msg)
+
+        (entry,) = config_entries
+
+        if isinstance(entry.get_value(), NoConfigValue):
+            # No value to add, so skip this config item.
+            return False
+
+        # N.B. we wait to create files until after all `return False` lines to avoid
+        # creating empty files unnecessarily.
+        for file_manager in used_file_managers:
+            if not (file_manager.path.exists() and file_manager.path.is_file()):
+                tick_print(f"Writing '{file_manager.relative_path}'.")
+                file_manager.path.touch(exist_ok=True)
+
+        shared_keys = []
+        for key in entry.keys:
+            shared_keys.append(key)
+            new_file_managers = [
                 file_manager
-                for file_manager in active_config_file_managers
-                if file_manager.path in config_item.paths
+                for file_manager in used_file_managers
+                if shared_keys in file_manager
             ]
+            if not new_file_managers:
+                break
+            used_file_managers = new_file_managers
 
-            if not file_managers:
-                if config_item.applies_to_all:
-                    msg = f"No active config file managers found for one of the '{self.name}' config items."
-                    raise NotImplementedError(msg)
-                else:
-                    # Early exist; this config item is not managed by any active files
-                    # so it's optional, effectively.
-                    continue
+        # Now, use the highest-prority file manager to add the config
+        (used_file_manager, *_) = used_file_managers
 
-            config_entries = [
-                config_item
-                for relative_path, config_item in config_item.root.items()
-                if relative_path
-                in {file_manager.relative_path for file_manager in file_managers}
-            ]
-            if not config_entries:
-                msg = f"No config entries found for one of the '{self.name}' config items."
-                raise NotImplementedError(msg)
-            if len(config_entries) != 1:
-                msg = (
-                    "Adding config is not yet supported for the case of multiple "
-                    "active config files."
-                )
-                raise NotImplementedError(msg)
+        if not config_item.force and entry.keys in used_file_manager:
+            # We won't overwrite, so skip if there is already a value set.
+            return False
 
-            (entry,) = config_entries
+        tick_print(f"Adding {self.name} config to '{used_file_manager.relative_path}'.")
+        used_file_manager[entry.keys] = entry.get_value()
 
-            if isinstance(entry.get_value(), NoConfigValue):
-                # No value to add, so skip this config item.
-                continue
-
-            shared_keys = []
-            for key in entry.keys:
-                shared_keys.append(key)
-                new_file_managers = [
-                    file_manager
-                    for file_manager in file_managers
-                    if shared_keys in file_manager
-                ]
-                if not new_file_managers:
-                    break
-                file_managers = new_file_managers
-
-            # Now, use the highest-prority file manager to add the config
-            (used_file_manager,) = file_managers
-
-            if not config_item.force and entry.keys in used_file_manager:
-                # We won't overwrite, so skip if there is already a value set.
-                continue
-
-            if first_addition:
-                tick_print(
-                    f"Adding {self.name} config to '{used_file_manager.relative_path}'."
-                )
-                first_addition = False
-            used_file_manager[entry.keys] = entry.get_value()
+        return True
 
     def remove_configs(self) -> None:
         """Remove the tool's configuration sections.
@@ -511,7 +532,7 @@ class Tool(Protocol):
                 file.unlink()
 
     def get_install_method(self) -> Literal["pre-commit", "devdep"] | None:
-        """Infer the method used to install the tool, return None is uninstalled."""
+        """Infer the method used to install the tool, return None if uninstalled."""
         if self.is_declared_as_dep():
             return "devdep"
 
@@ -567,18 +588,26 @@ class Tool(Protocol):
         """Determine if a rule is managed by this tool."""
         return False
 
-    def select_rules(self, rules: list[Rule]) -> None:
+    def select_rules(self, rules: list[Rule]) -> bool:
         """Select the rules managed by the tool.
 
         These rules are not validated; it is assumed they are valid rules for the tool,
         and that the tool will be able to manage them.
+
+        Args:
+            rules: The rules to select. If any of these rules are already selected, they
+                   will be skipped.
+
+        Returns:
+            True if any rules were selected, False if no rules were selected.
         """
+        return False
 
     def get_selected_rules(self) -> list[Rule]:
         """Get the rules managed by the tool that are currently selected."""
         return []
 
-    def ignore_rules(self, rules: list[Rule]) -> None:
+    def ignore_rules(self, rules: list[Rule]) -> bool:
         """Ignore rules managed by the tool.
 
         Ignoring a rule is different from deselecting it - it means that even if it
@@ -587,21 +616,45 @@ class Tool(Protocol):
 
         These rules are not validated; it is assumed they are valid rules for the tool,
         and that the tool will be able to manage them.
-        """
 
-    def unignore_rules(self, rules: list[str]) -> None:
+        Args:
+            rules: The rules to ignore. If any of these rules are already ignored, they
+                   will be skipped.
+
+        Returns:
+            True if any rules were ignored, False if no rules were ignored.
+        """
+        return False
+
+    def unignore_rules(self, rules: list[str]) -> bool:
         """Stop ignoring rules managed by the tool.
 
         These rules are not validated; it is assumed they are valid rules for the tool,
         and that the tool will be able to manage them.
+
+        Args:
+            rules: The rules to unignore. If any of these rules are not ignored, they
+                   will be skipped.
+
+        Returns:
+            True if any rules were unignored, False if no rules were unignored.
         """
+        return False
 
     def get_ignored_rules(self) -> list[Rule]:
         """Get the ignored rules managed by the tool."""
         return []
 
-    def deselect_rules(self, rules: list[Rule]) -> None:
+    def deselect_rules(self, rules: list[Rule]) -> bool:
         """Deselect the rules managed by the tool.
 
         Any rules that aren't already selected are ignored.
+
+        Args:
+            rules: The rules to deselect. If any of these rules are not selected, they
+                   will be skipped.
+
+        Returns:
+            True if any rules were deselected, False if no rules were deselected.
         """
+        return False

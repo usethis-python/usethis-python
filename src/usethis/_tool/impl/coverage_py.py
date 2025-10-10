@@ -1,21 +1,26 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+from usethis._config import usethis_config
 from usethis._config_file import (
     CoverageRCManager,
     ToxINIManager,
 )
 from usethis._console import box_print
+from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.uv.deps import (
-    Dependency,
-)
-from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
+
+if TYPE_CHECKING:
+    from usethis._io import KeyValueFileManager
 
 
 class CoveragePyTool(Tool):
@@ -28,18 +33,22 @@ class CoveragePyTool(Tool):
     def print_how_to_use(self) -> None:
         from usethis._tool.impl.pytest import PytestTool
 
+        backend = get_backend()
+
         if PytestTool().is_used():
-            if is_uv_used():
+            if backend is BackendEnum.uv and is_uv_used():
                 box_print(
                     f"Run 'uv run pytest --cov' to run your tests with {self.name}."
                 )
             else:
+                assert backend in (BackendEnum.none, BackendEnum.uv)
                 box_print(f"Run 'pytest --cov' to run your tests with {self.name}.")
-        elif is_uv_used():
+        elif backend is BackendEnum.uv and is_uv_used():
             box_print(
                 f"Run 'uv run coverage help' to see available {self.name} commands."
             )
         else:
+            assert backend in (BackendEnum.none, BackendEnum.uv)
             box_print(f"Run 'coverage help' to see available {self.name} commands.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
@@ -49,6 +58,11 @@ class CoveragePyTool(Tool):
         if unconditional or PytestTool().is_used():
             deps += [Dependency(name="pytest-cov")]
         return deps
+
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        if (usethis_config.cpd() / "pyproject.toml").exists():
+            return PyprojectTOMLManager()
+        return CoverageRCManager()
 
     def get_config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference

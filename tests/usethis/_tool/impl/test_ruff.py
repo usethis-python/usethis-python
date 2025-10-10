@@ -26,10 +26,7 @@ class TestRuffTool:
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert out == (
-                "✔ Writing 'pyproject.toml'.\n"
-                "✔ Selecting Ruff rules 'A', 'B', 'C' in 'pyproject.toml'.\n"
-            )
+            assert out == ("✔ Selecting Ruff rules 'A', 'B', 'C' in 'ruff.toml'.\n")
 
         def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
@@ -338,3 +335,33 @@ lint.select = [ "INP" ]
 lint.per-file-ignores."tests/**" = ["INP"]
 """
             )
+
+    class TestAddConfig:
+        def test_empty_dir(self, tmp_path: Path):
+            # Expect ruff.toml to be preferred
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                RuffTool(
+                    # Needed to ensure the config is non-null (and so `ruff.toml` is
+                    # written)
+                    linter_detection="always",
+                ).add_configs()
+
+            # Assert
+            assert not (tmp_path / ".ruff.toml").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+            assert (tmp_path / "ruff.toml").exists()
+
+        def test_pyproject_toml_exists(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                RuffTool().add_configs()
+
+            # Assert
+            assert not (tmp_path / ".ruff.toml").exists()
+            assert (tmp_path / "pyproject.toml").exists()
+            assert not (tmp_path / "ruff.toml").exists()

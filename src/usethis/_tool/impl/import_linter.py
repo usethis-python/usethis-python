@@ -10,6 +10,8 @@ from typing_extensions import assert_never
 from usethis._config import usethis_config
 from usethis._config_file import DotImportLinterManager
 from usethis._console import box_print, info_print, warn_print
+from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
@@ -26,13 +28,13 @@ from usethis._integrations.project.imports import (
 )
 from usethis._integrations.project.name import get_project_name
 from usethis._integrations.project.packages import get_importable_packages
-from usethis._integrations.uv.deps import Dependency
-from usethis._integrations.uv.used import is_uv_used
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec, NoConfigValue
 from usethis._tool.impl.ruff import RuffTool
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
+from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
@@ -65,19 +67,22 @@ class ImportLinterTool(Tool):
                 "For more info see <https://docs.python.org/3/tutorial/modules.html#packages>"
             )
         install_method = self.get_install_method()
+        backend = get_backend()
         if install_method == "pre-commit":
-            if is_uv_used():
+            if backend is BackendEnum.uv and is_uv_used():
                 box_print(
                     f"Run 'uv run pre-commit run import-linter --all-files' to run {self.name}."
                 )
             else:
+                assert backend in (BackendEnum.none, BackendEnum.uv)
                 box_print(
                     f"Run 'pre-commit run import-linter --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
-            if is_uv_used():
+            if backend is BackendEnum.uv and is_uv_used():
                 box_print(f"Run 'uv run lint-imports' to run {self.name}.")
             else:
+                assert backend in (BackendEnum.none, BackendEnum.uv)
                 box_print(f"Run 'lint-imports' to run {self.name}.")
         else:
             assert_never(install_method)
@@ -86,6 +91,11 @@ class ImportLinterTool(Tool):
         # We need to add the import-linter package itself as a dev dependency.
         # This is because it needs to run from within the virtual environment.
         return [Dependency(name="import-linter")]
+
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        if (usethis_config.cpd() / "pyproject.toml").exists():
+            return PyprojectTOMLManager()
+        return DotImportLinterManager()
 
     def get_config_spec(self) -> ConfigSpec:
         # https://import-linter.readthedocs.io/en/stable/usage.html

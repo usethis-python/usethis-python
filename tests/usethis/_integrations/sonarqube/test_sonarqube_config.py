@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from usethis._init import ensure_pyproject_toml
+from usethis._integrations.backend.uv.python import uv_python_pin
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import get_python_version
 from usethis._integrations.sonarqube.config import (
@@ -13,8 +15,6 @@ from usethis._integrations.sonarqube.errors import (
     InvalidSonarQubeProjectKeyError,
     MissingProjectKeyError,
 )
-from usethis._integrations.uv.init import ensure_pyproject_toml
-from usethis._integrations.uv.python import python_pin
 from usethis._test import change_cwd
 
 
@@ -34,7 +34,7 @@ class TestGetSonarProjectProperties:
         # Assert
         assert result == contents
 
-    def test_file_not_exists(self, uv_init_dir: Path):
+    def test_file_doesnt_exist(self, uv_init_dir: Path):
         # If the file does not exist, we should construct based on information in
         # the repo.
 
@@ -46,7 +46,7 @@ class TestGetSonarProjectProperties:
             PyprojectTOMLManager().set_value(
                 keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
             )
-            python_pin("3.12")
+            uv_python_pin("3.13")
         content = (uv_init_dir / "pyproject.toml").read_text()
         assert "xml" in content
 
@@ -60,7 +60,7 @@ class TestGetSonarProjectProperties:
             == """\
 sonar.projectKey=foobar
 sonar.language=py
-sonar.python.version=3.12
+sonar.python.version=3.13
 sonar.sources=./src
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
@@ -74,7 +74,7 @@ sonar.verbose=false
         with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
             assert get_python_version()
-            python_pin("3.10")
+            uv_python_pin("3.10")
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
@@ -134,7 +134,7 @@ sonar.verbose=false
     def test_different_project_key(self, tmp_path: Path):
         with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
-            python_pin("3.12")
+            uv_python_pin("3.12")
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "project-key"], value="different"
@@ -163,7 +163,7 @@ sonar.verbose=false
     def test_set_verbose_true(self, tmp_path: Path):
         with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
-            python_pin("3.12")
+            uv_python_pin("3.12")
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
@@ -212,7 +212,7 @@ sonar.verbose=true
     def test_patch_version_ignored(self, tmp_path: Path):
         with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
-            python_pin("3.12.1")
+            uv_python_pin("3.12.1")
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
@@ -241,7 +241,7 @@ sonar.verbose=false
     def test_exclusions(self, tmp_path: Path):
         with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
-            python_pin("3.12")
+            uv_python_pin("3.12")
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
@@ -278,7 +278,7 @@ sonar.exclusions=**/Dockerfile, src/notebooks/**/*
     def test_different_coverage_file_location(self, tmp_path: Path):
         with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
-            python_pin("3.12")
+            uv_python_pin("3.12")
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
@@ -308,7 +308,7 @@ sonar.verbose=false
     def test_missing_coverage_file_location_error(self, tmp_path: Path):
         with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
-            python_pin("3.12")
+            uv_python_pin("3.12")
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"

@@ -16,6 +16,7 @@ class TestPytestTool:
         def test_new_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
+                PyprojectTOMLManager()[["project"]]["requires-python"] = ">=3.12,<3.14"
                 add_placeholder_step_in_default(report_placeholder=False)
                 (uv_init_dir / "pytest.ini").touch()
 
@@ -233,3 +234,27 @@ pipelines:
               - echo 'Hello, world!'
 """
             )
+
+    class TestAddConfig:
+        def test_empty_dir(self, tmp_path: Path):
+            # Expect pytest.ini to be preferred
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                PytestTool().add_configs()
+
+            # Assert
+            assert (tmp_path / "pytest.ini").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+
+        def test_pyproject_toml_exists(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                PytestTool().add_configs()
+
+            # Assert
+            assert not (tmp_path / "pytest.ini").exists()
+            assert (tmp_path / "pyproject.toml").exists()

@@ -45,7 +45,7 @@ def get_pre_commit_badge() -> Badge:
 def get_pypi_badge() -> Badge:
     name = get_project_name()
     return Badge(
-        markdown=f"[![PyPI Version](https://img.shields.io/pypi/v/{name}.svg)](<https://pypi.python.org/pypi/{name})"
+        markdown=f"[![PyPI Version](https://img.shields.io/pypi/v/{name}.svg)](https://pypi.python.org/pypi/{name})"
     )
 
 

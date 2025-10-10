@@ -23,24 +23,18 @@ from usethis._core.tool import (
     use_ruff,
     use_tool,
 )
+from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
+from usethis._integrations.backend.uv.call import call_uv_subprocess
+from usethis._integrations.backend.uv.link_mode import ensure_symlink_mode
+from usethis._integrations.backend.uv.toml import UVTOMLManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.hooks import (
-    _HOOK_ORDER,
-    get_hook_ids,
-)
+from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
 from usethis._integrations.python.version import get_python_version
-from usethis._integrations.uv.call import call_uv_subprocess
-from usethis._integrations.uv.deps import (
-    Dependency,
-    add_deps_to_group,
-    get_deps_from_group,
-    is_dep_satisfied_in,
-)
-from usethis._integrations.uv.link_mode import ensure_symlink_mode
-from usethis._integrations.uv.toml import UVTOMLManager
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.ruff import RuffTool
+from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
 
 
 class TestAllHooksList:
@@ -241,6 +235,50 @@ foo = bar
             # Assert
             assert (uv_init_dir / "setup.cfg").read_text() == ""
             assert "[tool.codespell]" in (uv_init_dir / "pyproject.toml").read_text()
+
+        def test_none_backend_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act
+            with (
+                change_cwd(tmp_path),
+                usethis_config.set(backend=BackendEnum.none),
+                files_manager(),
+            ):
+                use_codespell()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Add the dev dependency 'codespell'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+            )
+
+        def test_none_backend_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                usethis_config.set(backend=BackendEnum.none),
+                files_manager(),
+            ):
+                use_codespell()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Add the dev dependency 'codespell'.\n"
+                "✔ Writing '.codespellrc'.\n"
+                "✔ Adding Codespell config to '.codespellrc'.\n"
+                "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+            )
 
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1018,6 +1056,7 @@ exhaustive = True
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_cyclic_excluded(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
             # Arrange
             (tmp_path / ".importlinter").touch()
@@ -1053,6 +1092,7 @@ exhaustive_ignores =
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_existing_ini_match(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").write_text(
@@ -1081,6 +1121,7 @@ root_packages =
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_existing_ini_differs(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").write_text(
@@ -1109,6 +1150,7 @@ root_packages =
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_numbers_in_layer_names(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").touch()
@@ -1140,6 +1182,7 @@ exhaustive = True
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_nesting(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").touch()
@@ -1183,6 +1226,7 @@ exhaustive = True
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_multiple_packages_with_nesting(self, tmp_path: Path):
             # The logic here is that we want to have the minimum number of nesting
             # levels required to reach the minimum number of modules which is 3.
@@ -1352,16 +1396,18 @@ root_package = "a"
                 assert "INP" in RuffTool().get_selected_rules()
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_inp_rules_not_selected_for_tests_dir(self, tmp_path: Path):
+        def test_inp_rules_not_selected_for_tests_dir(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
             # Arrange
-            (tmp_path / "ruff.toml").touch()
+            (uv_init_dir / "ruff.toml").touch()
 
-            with change_cwd(tmp_path), files_manager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Act
                 use_import_linter()
 
             # Assert
-            contents = (tmp_path / "ruff.toml").read_text()
+            contents = (uv_init_dir / "ruff.toml").read_text()
             assert (
                 contents
                 == """\
@@ -1371,6 +1417,51 @@ select = ["INP"]
 [lint.per-file-ignores]
 "tests/**" = ["INP"]
 """
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rule 'INP' in 'ruff.toml'.\n"
+                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_message_for_already_selected_but_needs_ignoring(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_dir / "ruff.toml").write_text("""\
+[lint]
+select = ["INP"]
+""")
+
+            with change_cwd(uv_init_dir), files_manager():
+                # Act
+                use_import_linter()
+
+            # Assert
+            contents = (uv_init_dir / "ruff.toml").read_text()
+            assert (
+                contents
+                == """\
+[lint]
+select = ["INP"]
+
+[lint.per-file-ignores]
+"tests/**" = ["INP"]
+"""
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'import-linter'.\n"
+                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
+                "✔ Ignoring Ruff rule 'INP' for 'tests/**' in 'ruff.toml'.\n"
+                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1492,6 +1583,7 @@ repos:
             )
 
     class TestBitbucketIntegration:
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, tmp_path: Path):
             # Arrange
             (tmp_path / "bitbucket-pipelines.yml").write_text("""\
@@ -1535,6 +1627,7 @@ nav:
 """
             )
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_successful_build(self, tmp_path: Path):
             # Act
             with change_cwd(tmp_path), files_manager():
@@ -2008,6 +2101,7 @@ pipelines:
             assert "ruff" in contents
 
     class TestMultipleIntegrations:
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_hooks_run_all_tools_empty_repo(self, uv_env_dir: Path):
             # Arrange
             with change_cwd(uv_env_dir), files_manager():
@@ -2225,15 +2319,17 @@ foo = "bar"
 
 class TestPyprojectTOML:
     class TestRemove:
-        def test_doesnt_invoke_ensure_pyproject_toml(self, tmp_path: Path):
+        def test_doesnt_invoke_ensure_dep_declaration_file(self, tmp_path: Path):
             # Arrange
-            # Mock the ensure_pyproject_toml function to raise an error
+            # Mock the ensure_dep_declaration_file function to raise an error
 
             mock = MagicMock()
 
             # Act
             with (
-                unittest.mock.patch("usethis._core.tool.ensure_pyproject_toml", mock),
+                unittest.mock.patch(
+                    "usethis._core.tool.ensure_dep_declaration_file", mock
+                ),
                 change_cwd(tmp_path),
                 files_manager(),
             ):
@@ -2247,7 +2343,9 @@ class TestPyprojectTOML:
 class TestPytest:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_no_pyproject(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        def test_no_pyproject_toml(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
             with change_cwd(tmp_path), files_manager():
                 # Act
                 use_pytest()
@@ -2439,6 +2537,7 @@ foo = "bar"
             # Assert
             assert (uv_init_repo_dir / "setup.cfg").read_text()
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_pythonpath_needed(self, tmp_path: Path):
             # https://github.com/usethis-python/usethis-python/issues/347
 
@@ -2764,6 +2863,40 @@ repos:
                 "☐ Run 'uv run pre-commit run uv-export' to write 'requirements.txt'.\n"
             )
 
+        def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+project.dependencies = [ "ruff", "typer-slim[standard]" ]
+""")
+
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            assert (
+                (tmp_path / "requirements.txt").read_text()
+                == """\
+-e .
+ruff
+typer-slim[standard]
+"""
+            )
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert out.replace("\n", "") == (
+                "ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies."  # noqa: RUF001
+                "ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files."  # noqa: RUF001
+                "✔ Writing 'requirements.txt'."
+                "☐ Run 'usethis tool requirements.txt' to re-write 'requirements.txt'."
+            )
+
     class TestRemove:
         def test_file_gone(self, tmp_path: Path):
             # Arrange
@@ -2870,6 +3003,7 @@ class TestRuff:
             assert "ruff-format" in hook_names
             assert "ruff" in hook_names
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_creates_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -3437,6 +3571,7 @@ repos:
             )
 
     class TestBitbucketIntegration:
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_add_linter_only(self, tmp_path: Path):
             # Arrange
             (tmp_path / "bitbucket-pipelines.yml").write_text("""\
@@ -3453,6 +3588,7 @@ image: atlassian/default-image:3
             assert "ruff check" in contents
             assert "ruff format" not in contents
 
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_add_formatter_only(self, tmp_path: Path):
             # Arrange
             (tmp_path / "bitbucket-pipelines.yml").write_text("""\

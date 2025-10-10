@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
@@ -98,6 +99,7 @@ repos:
             assert not err
             assert out == ("☐ Run 'codespell' to run the Codespell spellchecker.\n")
 
+    @pytest.mark.usefixtures("_vary_network_conn")
     def test_latest_version(self):
         (config,) = CodespellTool().get_pre_commit_config().repo_configs
         repo = config.repo
@@ -107,8 +109,38 @@ repos:
                 owner="codespell-project", repo="codespell"
             )
         except GitHubTagError as err:
-            if os.getenv("CI"):
+            if (
+                os.getenv("CI")
+                or usethis_config.offline
+                or "rate limit exceeded for url" in str(err)
+            ):
                 pytest.skip(
                     "Failed to fetch GitHub tags (connection issues); skipping test"
                 )
             raise err
+
+    class TestAddConfig:
+        def test_empty_dir(self, tmp_path: Path):
+            # Expect ruff.toml to be preferred
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                CodespellTool().add_configs()
+
+            # Assert
+            assert (tmp_path / ".codespellrc").exists()
+            assert not (tmp_path / "setup.cfg").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+
+        def test_pyproject_toml_exists(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                CodespellTool().add_configs()
+
+            # Assert
+            assert not (tmp_path / ".codespellrc").exists()
+            assert not (tmp_path / "setup.cfg").exists()
+            assert (tmp_path / "pyproject.toml").exists()

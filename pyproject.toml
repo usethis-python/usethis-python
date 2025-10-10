@@ -27,6 +27,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Software Development",
   "Topic :: Software Development :: Quality Assurance",
   "Topic :: Software Development :: Testing",
@@ -81,6 +82,7 @@ source = "vcs"
 
 [tool.hatch.metadata.hooks.vcs.urls]
 "Source Code" = "https://github.com/usethis-python/usethis-python"
+"Documentation" = "https://usethis.readthedocs.io/en/stable/"
 "Bug Tracker" = "https://github.com/usethis-python/usethis-python/issues"
 "Releases" = "https://github.com/usethis-python/usethis-python/releases"
 "Source Archive" = "https://github.com/usethis-python/usethis-python/archive/{commit_hash}.zip"
@@ -182,29 +184,35 @@ name = "usethis"
 type = "layers"
 layers = [
   "_test | __main__",
-  "_app",
-  "_interface",
-  "_options",
+  "_ui",
+  # Tool implementations
   "_toolset",
   "_core",
   "_tool",
+  # Specific config file and backend implementations
+  "_deps | _init",
   "_config_file",
   "_integrations",
-  "_io | _pipeweld | _subprocess | _console",
-  "_config | errors",
+  "_io | _subprocess | _console",
+  # Global state and constants
+  "_config",
+  "_types | errors",
+  # Completely independent helper modules
+  "_pipeweld",
 ]
 containers = [ "usethis" ]
 exhaustive = true
 exhaustive_ignores = [ "_version" ]
 
 [[tool.importlinter.contracts]]
-name = "usethis._interface"
+name = "usethis._ui"
 type = "layers"
 layers = [
-  # Note; if you're adding an interface, make sure it's in the README too.
-  "author | badge | browse | ci | doc | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version",
+  "app",
+  "interface",
+  "options",
 ]
-containers = [ "usethis._interface" ]
+containers = [ "usethis._ui" ]
 exhaustive = true
 
 [[tool.importlinter.contracts]]
@@ -214,7 +222,6 @@ layers = [
   # docstyle uses (Ruff) tool, badge uses readme
   "badge | docstyle | list | rule",
   "author | browse | ci | readme | show | status | tool",
-  "enums",
 ]
 containers = [ "usethis._core" ]
 exhaustive = true
@@ -249,7 +256,7 @@ name = "usethis._integrations"
 type = "layers"
 layers = [
   "ci | pre_commit",
-  "uv | mkdocs | pytest | pydantic | sonarqube",
+  "backend | mkdocs | pytest | pydantic | sonarqube",
   "project | python",
   "file",
 ]
@@ -265,6 +272,16 @@ layers = [
   "dir",
 ]
 containers = [ "usethis._integrations.file" ]
+exhaustive = true
+
+[[tool.importlinter.contracts]]
+name = "usethis._ui.interface"
+type = "layers"
+layers = [
+  # Note; if you're adding an interface, make sure it's in the README too.
+  "author | badge | browse | ci | doc | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version",
+]
+containers = [ "usethis._ui.interface" ]
 exhaustive = true
 
 [[tool.importlinter.contracts]]

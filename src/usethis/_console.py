@@ -12,8 +12,12 @@ if TYPE_CHECKING:
     from rich.table import Table
 
 # Unicode support - but we need to be able to write bytes
-sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
-sys.stderr = codecs.getwriter("utf-8")(sys.stderr.buffer)
+try:
+    sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer)
+    sys.stderr = codecs.getwriter("utf-8")(sys.stderr.buffer)
+except AttributeError:
+    # e.g. in Jupyter
+    pass
 
 console = Console()
 err_console = Console(stderr=True)
@@ -35,9 +39,7 @@ def tick_print(msg: str | Exception) -> None:
     msg = str(msg)
 
     if not (usethis_config.quiet or usethis_config.alert_only):
-        console.print(
-            f"{'✔'.encode('utf-8', 'ignore').decode('utf-8')} {msg}", style="green"
-        )
+        console.print(f"✔ {msg}", style="green")
 
 
 def box_print(msg: str | Exception) -> None:

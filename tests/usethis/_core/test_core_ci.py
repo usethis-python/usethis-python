@@ -18,6 +18,26 @@ from usethis._test import change_cwd
 
 class TestBitBucket:
     class TestAdd:
+        def test_empty_start(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ci_bitbucket()
+
+            # Assert
+            assert (tmp_path / "bitbucket-pipelines.yml").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                "☐ Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.\n"
+                "☐ Replace it with your own pipeline steps.\n"
+                "☐ Alternatively, use 'usethis tool' to add other tools and their steps.\n"
+                "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
+                "☐ Run your pipeline via the Bitbucket website.\n"
+            )
+
         def test_unused_cache_removed(self, uv_init_repo_dir: Path):
             # Arrange
             (uv_init_repo_dir / "bitbucket-pipelines.yml").write_text("""\
@@ -420,8 +440,12 @@ pipelines:
                 (uv_init_dir / "tests").mkdir()
                 (uv_init_dir / "tests" / "conftest.py").touch()
 
-                # Act
                 with change_cwd(uv_init_dir), files_manager():
+                    PyprojectTOMLManager()[["project"]]["requires-python"] = (
+                        ">=3.12,<3.14"
+                    )
+
+                    # Act
                     use_ci_bitbucket()
 
                 # Assert
@@ -453,7 +477,7 @@ pipelines:
                 (uv_init_dir / "pyproject.toml").write_text(
                     """\
 [project]
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.13,<3.14"
 """
                 )
                 (uv_init_dir / "bitbucket-pipelines.yml").write_text(
@@ -462,11 +486,11 @@ image: atlassian/default-image:3
 pipelines:
     default:
       - step:
-            name: Test on 3.11
+            name: Test on 3.12
             script:
                 - echo 'Hello, world!'
       - step:
-            name: Test on 3.12
+            name: Test on 3.13
             script:
                 - echo 'Hello, world!'
 """
@@ -478,7 +502,7 @@ pipelines:
 
                 # Assert
                 contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-                assert "Test on 3.11" not in contents
+                assert "Test on 3.12" not in contents
 
     class TestRemove:
         class TestPyproject:

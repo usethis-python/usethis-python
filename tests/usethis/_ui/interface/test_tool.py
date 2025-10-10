@@ -1,14 +1,13 @@
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner
 
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._subprocess import SubprocessFailedError, call_subprocess
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._ui.interface.tool import ALL_TOOL_COMMANDS, app
 
@@ -20,9 +19,9 @@ class TestCodespell:
         runner = CliRunner()
         with change_cwd(tmp_path):
             if not usethis_config.offline:
-                result = runner.invoke(app, ["codespell"])
+                result = runner.invoke_safe(app, ["codespell"])
             else:
-                result = runner.invoke(app, ["codespell", "--offline"])
+                result = runner.invoke_safe(app, ["codespell", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -31,7 +30,7 @@ class TestCodespell:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["codespell", "--how"])
+            result = runner.invoke_safe(app, ["codespell", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -64,9 +63,9 @@ class TestCoverage:
         runner = CliRunner()
         with change_cwd(tmp_path):
             if not usethis_config.offline:
-                result = runner.invoke(app, ["coverage.py"])
+                result = runner.invoke_safe(app, ["coverage.py"])
             else:
-                result = runner.invoke(app, ["coverage.py", "--offline"])
+                result = runner.invoke_safe(app, ["coverage.py", "--offline"])
 
             # Assert
             assert result.exit_code == 0, result.output
@@ -97,9 +96,9 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         with change_cwd(tmp_path):
             # Act
             if not usethis_config.offline:
-                result = runner.invoke(app, ["coverage.py"])
+                result = runner.invoke_safe(app, ["coverage.py"])
             else:
-                result = runner.invoke(app, ["coverage.py", "--offline"])
+                result = runner.invoke_safe(app, ["coverage.py", "--offline"])
 
             # Assert
             assert result.exit_code == 0, result.output
@@ -112,7 +111,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["coverage.py", "--how"])
+            result = runner.invoke_safe(app, ["coverage.py", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -127,7 +126,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["coverage.py", "--backend", "none"])
+            result = runner.invoke_safe(app, ["coverage.py", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -146,7 +145,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["coverage.py", "--backend", "none"])
+            result = runner.invoke_safe(app, ["coverage.py", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -188,9 +187,9 @@ class TestDeptry:
         runner = CliRunner()
         with change_cwd(tmp_path):
             if not usethis_config.offline:
-                result = runner.invoke(app, ["deptry"])
+                result = runner.invoke_safe(app, ["deptry"])
             else:
-                result = runner.invoke(app, ["deptry", "--offline"])
+                result = runner.invoke_safe(app, ["deptry", "--offline"])
 
             # Assert
             assert result.exit_code == 0, result.output
@@ -200,7 +199,7 @@ class TestDeptry:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["deptry", "--how"])
+            result = runner.invoke_safe(app, ["deptry", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -217,7 +216,7 @@ class TestImportLinter:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["import-linter", "--how"])
+            result = runner.invoke_safe(app, ["import-linter", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -236,7 +235,7 @@ class TestPyprojectTOML:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pyproject.toml"])
+            result = runner.invoke_safe(app, ["pyproject.toml"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -245,7 +244,7 @@ class TestPyprojectTOML:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pyproject.toml", "--remove"])
+            result = runner.invoke_safe(app, ["pyproject.toml", "--remove"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -254,7 +253,7 @@ class TestPyprojectTOML:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pyproject.toml", "--how"])
+            result = runner.invoke_safe(app, ["pyproject.toml", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -273,7 +272,7 @@ class TestPyprojectFmt:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pyproject-fmt", "--how"])
+            result = runner.invoke_safe(app, ["pyproject-fmt", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -319,7 +318,7 @@ class TestPreCommit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pre-commit", "--how"])
+            result = runner.invoke_safe(app, ["pre-commit", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -338,7 +337,7 @@ class TestPreCommit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pre-commit"])
+            result = runner.invoke_safe(app, ["pre-commit"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -352,7 +351,7 @@ class TestPreCommit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pre-commit", "--remove"])
+            result = runner.invoke_safe(app, ["pre-commit", "--remove"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -364,7 +363,7 @@ class TestRequirementsTxt:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["requirements.txt"])
+            result = runner.invoke_safe(app, ["requirements.txt"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -373,7 +372,7 @@ class TestRequirementsTxt:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["requirements.txt", "--how"])
+            result = runner.invoke_safe(app, ["requirements.txt", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -389,9 +388,7 @@ class TestRequirementsTxt:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(
-                app, ["requirements.txt", "--backend", "none"], catch_exceptions=False
-            )
+            result = runner.invoke_safe(app, ["requirements.txt", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -422,7 +419,7 @@ class TestRuff:
         # Act
         runner = CliRunner()
         with change_cwd(uv_init_dir):
-            result = runner.invoke(app, ["ruff"])
+            result = runner.invoke_safe(app, ["ruff"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -446,7 +443,7 @@ class TestRuff:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["ruff", "--how"])
+            result = runner.invoke_safe(app, ["ruff", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -480,9 +477,9 @@ class TestPytest:
         runner = CliRunner()
         with change_cwd(tmp_path):
             if not usethis_config.offline:
-                result = runner.invoke(app, ["pytest"])
+                result = runner.invoke_safe(app, ["pytest"])
             else:
-                result = runner.invoke(app, ["pytest", "--offline"])
+                result = runner.invoke_safe(app, ["pytest", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -507,7 +504,7 @@ line-length = 88
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pytest"])
+            result = runner.invoke_safe(app, ["pytest"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -529,7 +526,7 @@ line-length = 88
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pytest", "--how"])
+            result = runner.invoke_safe(app, ["pytest", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -557,21 +554,21 @@ def test_several_tools_add_and_remove(tmp_path: Path):
     runner = CliRunner()
     with change_cwd(tmp_path):
         # Act, Assert
-        result = runner.invoke(app, ["pytest"])
+        result = runner.invoke_safe(app, ["pytest"])
         assert not result.exit_code, result.stdout
-        result = runner.invoke(app, ["coverage"])
+        result = runner.invoke_safe(app, ["coverage"])
         assert not result.exit_code, result.stdout
-        result = runner.invoke(app, ["ruff"])
+        result = runner.invoke_safe(app, ["ruff"])
         assert not result.exit_code, result.stdout
-        result = runner.invoke(app, ["deptry"])
+        result = runner.invoke_safe(app, ["deptry"])
         assert not result.exit_code, result.stdout
-        result = runner.invoke(app, ["pre-commit"])
+        result = runner.invoke_safe(app, ["pre-commit"])
         assert not result.exit_code, result.stdout
-        result = runner.invoke(app, ["ruff", "--remove"])
+        result = runner.invoke_safe(app, ["ruff", "--remove"])
         assert not result.exit_code, result.stdout
-        result = runner.invoke(app, ["pyproject-fmt"])
+        result = runner.invoke_safe(app, ["pyproject-fmt"])
         assert not result.exit_code, result.stdout
-        result = runner.invoke(app, ["pytest", "--remove"])
+        result = runner.invoke_safe(app, ["pytest", "--remove"])
         assert not result.exit_code, result.stdout
 
 

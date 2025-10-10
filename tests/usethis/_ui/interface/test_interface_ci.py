@@ -1,12 +1,11 @@
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner
 
 import usethis._integrations.python.version
 from usethis._config import usethis_config
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app as main_app
 from usethis._ui.interface.ci import app
 from usethis._ui.interface.tool import ALL_TOOL_COMMANDS
@@ -17,7 +16,7 @@ class TestBitbucket:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(
+            result = runner.invoke_safe(
                 app,  # The CI menu only has 1 command (bitbucket
                 # pipelines) so we skip the subcommand here
             )
@@ -33,7 +32,7 @@ class TestBitbucket:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(
+            result = runner.invoke_safe(
                 app, ["--remove"]
             )  # The CI menu only has 1 command (bitbucket
             # pipelines) so we skip the subcommand here
@@ -53,15 +52,17 @@ class TestBitbucket:
 
             for tool_command in ALL_TOOL_COMMANDS:
                 if not usethis_config.offline:
-                    result = runner.invoke(main_app, ["tool", tool_command])
+                    result = runner.invoke_safe(main_app, ["tool", tool_command])
                 else:
-                    result = runner.invoke(
+                    result = runner.invoke_safe(
                         main_app, ["tool", tool_command, "--offline"]
                     )
                 assert not result.exit_code, f"{tool_command=}: {result.stdout}"
 
             # Act
-            result = runner.invoke(app)  # The CI menu only has 1 command (bitbucket
+            result = runner.invoke_safe(
+                app
+            )  # The CI menu only has 1 command (bitbucket
             # pipelines) so we skip the subcommand here
             assert not result.exit_code, result.stdout
 
@@ -99,17 +100,17 @@ class TestBitbucket:
                     continue
 
                 if not usethis_config.offline:
-                    result = runner.invoke(
+                    result = runner.invoke_safe(
                         main_app, ["tool", tool_command, "--backend=none"]
                     )
                 else:
-                    result = runner.invoke(
+                    result = runner.invoke_safe(
                         main_app, ["tool", tool_command, "--offline", "--backend=none"]
                     )
                 assert not result.exit_code, f"{tool_command=}: {result.stdout}"
 
             # Act
-            result = runner.invoke(
+            result = runner.invoke_safe(
                 app, "--backend=none"
             )  # The CI menu only has 1 command (bitbucket pipelines) so we skip the
             # subcommand here
@@ -130,7 +131,7 @@ class TestBitbucket:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app)
+            result = runner.invoke_safe(app)
 
         # Assert
         assert result.exit_code == 1, result.output

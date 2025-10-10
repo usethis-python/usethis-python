@@ -110,6 +110,7 @@ jobs:
           - python_version: "3.13"
           - dependencies: "max"
             python_version: "3.14"
+            pre_commit: "false"
           - codecov: "true"
             python_version: "3.14"
 

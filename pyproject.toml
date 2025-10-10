@@ -71,6 +71,7 @@ test = [
   "pytest-cov>=6.0.0",
   "pytest-emoji>=0.2.0",
   "pytest-md>=0.2.0",
+  "pytest-sugar>=1.1.1",
 ]
 doc = [
   "mkdocs>=1.6.1",

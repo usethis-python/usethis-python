@@ -54,20 +54,20 @@ jobs:
           uv sync --resolution ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
 
       - name: Run pre-commit
-        if: ${{ matrix.pre_commit == null || matrix.pre_commit }}
+        if: ${{ matrix.pre_commit != false }}
         run: |
           uv run --frozen pre-commit run --all-files
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
-        if: ${{ matrix.pytest == null || matrix.pytest }}
+        if: ${{ matrix.pytest != false }}
         with:
           custom-pytest: uv run --frozen pytest
           custom-arguments: --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
 
       - name: Run benchmarks
         uses: CodSpeedHQ/action@6b43a0cd438f6ca5ad26f9ed03ed159ed2df7da9 # v4.1.1
-        if: ${{ matrix.codspeed == null || matrix.codspeed }}
+        if: ${{ matrix.codspeed != false }}
         with:
           mode: instrumentation
           token: ${{ secrets.CODSPEED_TOKEN }}

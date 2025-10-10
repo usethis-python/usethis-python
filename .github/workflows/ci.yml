@@ -35,13 +35,13 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
         with:
-          version: ${{ matrix.uv-version }}
+          version: ${{ matrix.uv_version }}
           enable-cache: true
 
       - name: Set up Python
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python_version }}
 
       - name: Bump dependencies
         if: ${{ matrix.dependencies == 'max' }}
@@ -50,11 +50,11 @@ jobs:
 
       - name: Setup dependencies
         run: |
-          uv python pin ${{ matrix.python-version }}
+          uv python pin ${{ matrix.python_version }}
           uv sync --resolution ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
 
       - name: Run pre-commit
-        if: ${{ matrix.pre-commit == null || matrix.pre-commit }}
+        if: ${{ matrix.pre_commit == null || matrix.pre_commit }}
         run: |
           uv run --frozen pre-commit run --all-files
 
@@ -91,30 +91,30 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
-        python-version: ["3.10", "3.14"]
+        python_version: ["3.10", "3.14"]
         dependencies: ["lockfile"]
-        uv-version: ["latest"]
+        uv_version: ["latest"]
         codecov: [false]
         codspeed: [false]
-        pre-commit: [true]
+        pre_commit: [true]
         pytest: [true]
 
         include:
           - dependencies: "min"
-            python-version: "3.10"
-            uv-version: "0.6.8"
-            pre-commit: false
-          - python-version: "3.11"
-          - python-version: "3.12"
-          - python-version: "3.13"
+            python_version: "3.10"
+            uv_version: "0.6.8"
+            pre_commit: false
+          - python_version: "3.11"
+          - python_version: "3.12"
+          - python_version: "3.13"
           - dependencies: "max"
-            python-version: "3.14"
+            python_version: "3.14"
           - codecov: true
-            python-version: "3.14"
+            python_version: "3.14"
 
-            pre-commit: false
+            pre_commit: false
           - codspeed: true
-            python-version: "3.13"
+            python_version: "3.13"
 
-            pre-commit: false
+            pre_commit: false
             pytest: false

@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   tests:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os && matrix.os || 'ubuntu-latest' }}
     env:
       PYTHONIOENCODING: utf-8
     steps:
@@ -43,31 +43,31 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Re-lock
-        if: matrix.bump-deps
+      - name: Bump dependencies
+        if: ${{ matrix.dependencies == 'max' }}
         run: |
           uv sync --upgrade
 
       - name: Setup dependencies
         run: |
           uv python pin ${{ matrix.python-version }}
-          uv sync --resolution ${{ matrix.resolution }}
+          uv sync --resolution ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'latest' }}
 
       - name: Run pre-commit
-        if: matrix.pre-commit
+        if: ${{ matrix.pre-commit == null || matrix.pre-commit }}
         run: |
           uv run --frozen pre-commit run --all-files
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
-        if: matrix.pytest
+        if: ${{ matrix.pytest == null || matrix.pytest }}
         with:
           custom-pytest: uv run --frozen pytest
           custom-arguments: --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
 
       - name: Run benchmarks
         uses: CodSpeedHQ/action@6b43a0cd438f6ca5ad26f9ed03ed159ed2df7da9 # v4.1.1
-        if: matrix.codspeed
+        if: ${{ matrix.codspeed == null || matrix.codspeed }}
         with:
           mode: instrumentation
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -93,32 +93,20 @@ jobs:
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         python-version: ["3.10", "3.14"]
         include:
-          - os: "ubuntu-latest"
-            python-version: "3.11"
-          - os: "ubuntu-latest"
-            python-version: "3.12"
-          - os: "ubuntu-latest"
-            python-version: "3.13"
-          - os: "ubuntu-latest"
-            python-version: "3.14"
-            codecov: true
-            pre-commit: false
-          - os: "ubuntu-latest"
-            python-version: "3.13" # 3.14 support not available yet
-            codspeed: true
-            pre-commit: false
-            pytest: false
-          - uv-version: "latest"
-          - bump-deps: false
-          - resolution: "highest"
-          - os: "ubuntu-latest"
+          - dependencies: "min"
             python-version: "3.10"
             uv-version: "0.6.8"
-            resolution: "lowest-direct"
-          - os: "ubuntu-latest"
+          - python-version: "3.11"
+          - python-version: "3.12"
+          - python-version: "3.13"
+          - dependencies: "max"
             python-version: "3.14"
-            bump-deps: true
-          - codspeed: false
-          - codecov: false
-          - pre-commit: true
-          - pytest: true
+          - codecov: true
+            python-version: "3.14"
+
+            pre-commit: false
+          - codspeed: true
+            python-version: "3.13"
+
+            pre-commit: false
+            pytest: false

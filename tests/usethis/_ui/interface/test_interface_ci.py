@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
+import usethis._integrations.python.version
 from usethis._config import usethis_config
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
@@ -75,12 +76,21 @@ class TestBitbucket:
         ).read_text() == expected_yml
 
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_maximal_config_none_backend(self, bare_dir: Path):
+    def test_maximal_config_none_backend(
+        self, bare_dir: Path, monkeypatch: pytest.MonkeyPatch
+    ):
         """Expected contents of a maximal config file using no backend.
 
         We don't use pre-commit for this test. This is mostly just to expand test
         coverage since the uv-based test does use pre-commit.
         """
+
+        monkeypatch.setattr(
+            usethis._integrations.python.version,
+            "get_python_version",
+            lambda: "3.10.0",
+        )
+
         runner = CliRunner()
         with change_cwd(bare_dir):
             # Arrange

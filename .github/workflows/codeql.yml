@@ -1,40 +1,41 @@
 name: "CodeQL"
-
+permissions: {}
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths-ignore:
-      - 'docs/**'
-      - '**/*.md'
-      - 'mkdocs.yml'
+      - "docs/**"
+      - "**/*.md"
+      - "mkdocs.yml"
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
     paths-ignore:
-      - 'docs/**'
-      - '**/*.md'
-      - 'mkdocs.yml'
+      - "docs/**"
+      - "**/*.md"
+      - "mkdocs.yml"
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     permissions:
-      # required for all workflows
-      security-events: write
+      security-events: write # Required for all workflows
     strategy:
       fail-fast: false
       matrix:
         include:
-        - language: actions
-        - language: python
+          - language: actions
+          - language: python
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
-      with:
-        languages: ${{ matrix.language }}
-        build-mode: none
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
-      with:
-        category: "/language:${{matrix.language}}"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"

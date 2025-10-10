@@ -1,7 +1,5 @@
 name: CI
-permissions:
-  contents: read
-  pull-requests: write
+permissions: {}
 on:
   workflow_dispatch:
   push:
@@ -20,6 +18,9 @@ concurrency:
   cancel-in-progress: true
 jobs:
   tests:
+    permissions:
+      contents: read
+      pull-requests: write # Needed to add Codecov and CodSpeed comments
     name: ${{ (matrix.codecov == 'true' && 'Codecov') || (matrix.codspeed == 'true' && 'CodSpeed') || format('Test Python {0} {1}', matrix.python_version, ((matrix.dependencies == 'min' || matrix.dependencies == 'max') && format('{0} dependencies', matrix.dependencies)) || (matrix.os || 'ubuntu-latest')) }}
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     env:
@@ -27,6 +28,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
       - name: Setup git user config
         run: |
@@ -51,8 +54,11 @@ jobs:
 
       - name: Setup dependencies
         run: |
-          uv python pin ${{ matrix.python_version }}
-          uv sync --resolution ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
+          uv python pin $CI_PYTHON_VERSION
+          uv sync
+        env:
+          UV_RESOLUTION: ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
+          CI_PYTHON_VERSION: ${{ matrix.python_version }}
 
       - name: Run prek
         if: ${{ matrix.pre_commit == null || matrix.pre_commit == 'true' }}

@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import (
@@ -14,6 +15,7 @@ from usethis._core.tool import (
 from usethis._integrations.ci.bitbucket.steps import get_steps_in_default
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
+from usethis._types.backend import BackendEnum
 
 
 class TestBitBucket:
@@ -430,6 +432,44 @@ pipelines:
                 "✔ Adding 'Run deptry' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
                 "☐ Run your pipeline via the Bitbucket website.\n"
+            )
+
+        def test_no_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                usethis_config.set(backend=BackendEnum.none),
+                files_manager(),
+            ):
+                use_ci_bitbucket()
+
+            # Assert
+            assert (tmp_path / "bitbucket-pipelines.yml").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Writing 'bitbucket-pipelines.yml'.\n"
+                "✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.\n"
+                "☐ Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.\n"
+                "☐ Replace it with your own pipeline steps.\n"
+                "☐ Alternatively, use 'usethis tool' to add other tools and their steps.\n"
+                "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
+                "☐ Run your pipeline via the Bitbucket website.\n"
+            )
+
+            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
+
+            assert (
+                contents
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Placeholder - add your own steps!
+            script:
+              - echo 'Hello, world!'
+"""
             )
 
         class TestPytestIntegration:

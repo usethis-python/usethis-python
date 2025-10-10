@@ -1,12 +1,11 @@
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner
 
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._deps import get_deps_from_group
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._types.deps import Dependency
 from usethis._ui.app import app
 
@@ -18,9 +17,9 @@ class TestFormat:
         runner = CliRunner()
         with change_cwd(tmp_path):
             if not usethis_config.offline:
-                result = runner.invoke(app, ["format"])
+                result = runner.invoke_safe(app, ["format"])
             else:
-                result = runner.invoke(app, ["format", "--offline"])
+                result = runner.invoke_safe(app, ["format", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -40,7 +39,7 @@ class TestFormat:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["format", "--backend", "none"])
+            result = runner.invoke_safe(app, ["format", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -58,7 +57,7 @@ class TestFormat:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["format", "--backend", "none"])
+            result = runner.invoke_safe(app, ["format", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output

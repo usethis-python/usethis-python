@@ -1,6 +1,6 @@
 import pytest
-from typer.testing import CliRunner
 
+from usethis._test import CliRunner
 from usethis._ui.interface.tool import app
 
 
@@ -10,5 +10,5 @@ def test_help_flag():
     runner = CliRunner()
 
     # Act
-    result = runner.invoke(app, ["--help"])
+    result = runner.invoke_safe(app, ["--help"])
     assert result.exit_code == 0, result.stdout

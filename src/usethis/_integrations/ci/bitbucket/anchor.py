@@ -1,13 +1,21 @@
 from __future__ import annotations
 
-from typing import Literal, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 from pydantic import BaseModel
+from ruamel.yaml.scalarstring import LiteralScalarString
 
-# N.B. at the point where we support more than one script item, we should create a
-# canonical sort order for them and enforce it when we add them to the pipeline.
-ScriptItemName: TypeAlias = Literal["install-uv"]
+ScriptItemName: TypeAlias = Literal["install-uv", "ensure-venv"]
 
 
 class ScriptItemAnchor(BaseModel):
     name: ScriptItemName
+
+
+def anchor_name_from_script_item(item: Any) -> str | None:
+    """Extract the anchor name from a script item, if it has one."""
+    if isinstance(item, LiteralScalarString):
+        anchor = item.yaml_anchor()
+        if anchor is not None:
+            return anchor.value
+    return None

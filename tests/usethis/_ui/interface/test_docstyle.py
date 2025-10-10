@@ -1,10 +1,9 @@
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner
 
 from usethis._config import usethis_config
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app
 
 
@@ -12,7 +11,7 @@ class TestDocstyle:
     def test_google_runs(self, tmp_path: Path):
         with change_cwd(tmp_path):
             runner = CliRunner()
-            runner.invoke(app, ["docstyle", "google"])
+            runner.invoke_safe(app, ["docstyle", "google"])
 
     def test_invalid_pyproject_toml(self, tmp_path: Path):
         # Arrange
@@ -23,7 +22,7 @@ class TestDocstyle:
         with change_cwd(tmp_path):
             runner = CliRunner()
             with change_cwd(tmp_path):
-                result = runner.invoke(app, ["docstyle", "google"])
+                result = runner.invoke_safe(app, ["docstyle", "google"])
 
         # Assert
         assert result.exit_code == 1, result.output
@@ -40,9 +39,9 @@ class TestDocstyle:
         with change_cwd(tmp_path):
             runner = CliRunner()
             if not usethis_config.offline:
-                result = runner.invoke(app, ["docstyle", "numpy"])
+                result = runner.invoke_safe(app, ["docstyle", "numpy"])
             else:
-                result = runner.invoke(app, ["docstyle", "numpy", "--offline"])
+                result = runner.invoke_safe(app, ["docstyle", "numpy", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -79,7 +78,7 @@ lint.select = [ "A" ]
         # Act
         with change_cwd(tmp_path):
             runner = CliRunner()
-            result = runner.invoke(app, ["docstyle", "pep257"])
+            result = runner.invoke_safe(app, ["docstyle", "pep257"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -96,9 +95,9 @@ lint.select = [ "A" ]
         with change_cwd(tmp_path):
             runner = CliRunner()
             if not usethis_config.offline:
-                result = runner.invoke(app, ["docstyle"])
+                result = runner.invoke_safe(app, ["docstyle"])
             else:
-                result = runner.invoke(app, ["docstyle", "--offline"])
+                result = runner.invoke_safe(app, ["docstyle", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -117,7 +116,7 @@ lint.select = [ "A" ]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["docstyle", "numpy", "--backend", "none"])
+            result = runner.invoke_safe(app, ["docstyle", "numpy", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -134,7 +133,7 @@ lint.select = [ "A" ]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["docstyle", "numpy", "--backend", "none"])
+            result = runner.invoke_safe(app, ["docstyle", "numpy", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output

@@ -1,11 +1,10 @@
 from pathlib import Path
 
 import pytest
-from typer.testing import CliRunner
 
 from usethis._config import usethis_config
 from usethis._integrations.pre_commit.hooks import get_hook_ids
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app
 
 
@@ -16,13 +15,9 @@ class TestInit:
         runner = CliRunner()
         with change_cwd(tmp_path):
             if not usethis_config.offline:
-                result = runner.invoke(
-                    app, ["init", "--pre-commit"], catch_exceptions=False
-                )
+                result = runner.invoke_safe(app, ["init", "--pre-commit"])
             else:
-                result = runner.invoke(
-                    app, ["init", "--pre-commit", "--offline"], catch_exceptions=False
-                )
+                result = runner.invoke_safe(app, ["init", "--pre-commit", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -73,7 +68,7 @@ class TestInit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["init"])
+            result = runner.invoke_safe(app, ["init"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -110,7 +105,7 @@ class TestInit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["init", "myproject"], catch_exceptions=False)
+            result = runner.invoke_safe(app, ["init", "myproject"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -125,7 +120,7 @@ class TestInit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["init"])
+            result = runner.invoke_safe(app, ["init"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -134,7 +129,7 @@ class TestInit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(
+            result = runner.invoke_safe(
                 app,
                 [
                     "init",
@@ -184,7 +179,7 @@ class TestInit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["init", "--backend", "none"])
+            result = runner.invoke_safe(app, ["init", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output

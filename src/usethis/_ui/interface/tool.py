@@ -152,13 +152,16 @@ def mkdocs(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
+    backend: BackendEnum = backend_opt,
 ) -> None:
     from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_mkdocs
 
     with (
-        usethis_config.set(offline=offline, quiet=quiet, frozen=frozen),
+        usethis_config.set(
+            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+        ),
         files_manager(),
     ):
         _run_tool(use_mkdocs, remove=remove, how=how)

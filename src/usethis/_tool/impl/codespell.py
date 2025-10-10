@@ -136,15 +136,32 @@ class CodespellTool(Tool):
         )
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        return [
-            BitbucketStep(
-                name=f"Run {self.name}",
-                caches=["uv"],
-                script=BitbucketScript(
-                    [
-                        BitbucketScriptItemAnchor(name="install-uv"),
-                        "uv run codespell",
-                    ]
-                ),
-            )
-        ]
+        backend = get_backend()
+
+        if backend is BackendEnum.uv:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    caches=["uv"],
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="install-uv"),
+                            "uv run codespell",
+                        ]
+                    ),
+                )
+            ]
+        elif backend is BackendEnum.none:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="ensure-venv"),
+                            "codespell",
+                        ]
+                    ),
+                )
+            ]
+        else:
+            assert_never(backend)

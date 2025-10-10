@@ -366,6 +366,288 @@ pipelines:
         )
         assert not err
 
+    def test_script_items_canonical_order_install_uv_first(self, uv_init_dir: Path):
+        """Test that script items are inserted in canonical order with install-uv first."""
+        # Arrange - start with ensure-venv already in the file
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &ensure-venv |
+        python -m venv .venv
+        source .venv/bin/activate
+pipelines:
+    default:
+      - step:
+            name: Setup venv
+            script:
+              - *ensure-venv
+              - echo 'Environment ready!'
+"""
+        )
+
+        # Act - add a step that uses install-uv
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            add_bitbucket_step_in_default(
+                Step(
+                    name="Install uv",
+                    script=Script(
+                        [
+                            ScriptItemAnchor(name="install-uv"),
+                            "echo 'uv installed!'",
+                        ]
+                    ),
+                )
+            )
+
+        # Assert - install-uv should come before ensure-venv in canonical order
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+      - &ensure-venv |
+        python -m venv .venv
+        source .venv/bin/activate
+pipelines:
+    default:
+      - step:
+            name: Install uv
+            script:
+              - *install-uv
+              - echo 'uv installed!'
+      - step:
+            name: Setup venv
+            script:
+              - *ensure-venv
+              - echo 'Environment ready!'
+"""
+        )
+
+    def test_script_items_canonical_order_ensure_venv_after_install_uv(
+        self, uv_init_dir: Path
+    ):
+        """Test that ensure-venv is inserted after install-uv when both are added.
+
+        This refers to the anchors, not the steps themselves.
+        """
+        # Arrange - start with install-uv already in the file
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+pipelines:
+    default:
+      - step:
+            name: Install uv
+            script:
+              - *install-uv
+              - echo 'uv installed!'
+"""
+        )
+
+        # Act - add a step that uses ensure-venv
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            add_bitbucket_step_in_default(
+                Step(
+                    name="Setup venv",
+                    script=Script(
+                        [
+                            ScriptItemAnchor(name="ensure-venv"),
+                            "echo 'Environment ready!'",
+                        ]
+                    ),
+                )
+            )
+
+        # Assert - ensure-venv should come after install-uv in canonical order
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+      - &ensure-venv |
+        python -m venv .venv
+        source .venv/bin/activate
+pipelines:
+    default:
+      - step:
+            name: Setup venv
+            script:
+              - *ensure-venv
+              - echo 'Environment ready!'
+      - step:
+            name: Install uv
+            script:
+              - *install-uv
+              - echo 'uv installed!'
+"""
+        )
+
+    def test_script_items_canonical_order_multiple_items_reverse_order(
+        self, uv_init_dir: Path
+    ):
+        """Test adding multiple script items in reverse canonical order."""
+        # Arrange - empty file
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines: {}
+"""
+        )
+
+        # Act - add steps with script items in reverse canonical order
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            # Add ensure-venv first (should end up second)
+            add_bitbucket_step_in_default(
+                Step(
+                    name="Setup venv",
+                    script=Script(
+                        [
+                            ScriptItemAnchor(name="ensure-venv"),
+                            "echo 'Environment ready!'",
+                        ]
+                    ),
+                )
+            )
+            # Add install-uv second (should end up first)
+            add_bitbucket_step_in_default(
+                Step(
+                    name="Install uv",
+                    script=Script(
+                        [
+                            ScriptItemAnchor(name="install-uv"),
+                            "echo 'uv installed!'",
+                        ]
+                    ),
+                )
+            )
+
+        # Assert - script items should be in canonical order regardless of addition order
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+      - &ensure-venv |
+        python -m venv .venv
+        source .venv/bin/activate
+pipelines:
+    default:
+      - step:
+            name: Install uv
+            script:
+              - *install-uv
+              - echo 'uv installed!'
+      - step:
+            name: Setup venv
+            script:
+              - *ensure-venv
+              - echo 'Environment ready!'
+"""
+        )
+
+    def test_script_items_canonical_order_with_existing_non_canonical_items(
+        self, uv_init_dir: Path
+    ):
+        """Test that canonical items are inserted correctly even with existing non-canonical items."""
+        # Arrange - file with a custom script item not in canonical order
+        (uv_init_dir / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &custom-script |
+        echo 'This is a custom script'
+        echo 'Not in canonical order'
+      - &ensure-venv |
+        python -m venv .venv
+        source .venv/bin/activate
+pipelines:
+    default:
+      - step:
+            name: Custom step
+            script:
+              - *custom-script
+"""
+        )
+
+        # Act - add a step that uses install-uv
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            add_bitbucket_step_in_default(
+                Step(
+                    name="Install uv",
+                    script=Script(
+                        [
+                            ScriptItemAnchor(name="install-uv"),
+                            "echo 'uv installed!'",
+                        ]
+                    ),
+                )
+            )
+
+        # Assert - install-uv should be inserted before ensure-venv, but after custom-script
+        # since custom-script is not in canonical order and stays where it was
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        assert (
+            contents
+            == """\
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &custom-script |
+        echo 'This is a custom script'
+        echo 'Not in canonical order'
+      - &install-uv |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        source $HOME/.local/bin/env
+        export UV_LINK_MODE=copy
+        uv --version
+      - &ensure-venv |
+        python -m venv .venv
+        source .venv/bin/activate
+pipelines:
+    default:
+      - step:
+            name: Install uv
+            script:
+              - *install-uv
+              - echo 'uv installed!'
+      - step:
+            name: Custom step
+            script:
+              - *custom-script
+"""
+        )
+
 
 class TestRemoveBitbucketStepFromDefault:
     def test_remove_remove_one_step(self, tmp_path: Path):

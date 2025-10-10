@@ -3,12 +3,14 @@ from sysconfig import get_python_version
 
 import pytest
 
+import usethis._tool.impl.pytest
 from usethis._config_file import files_manager
 from usethis._integrations.ci.bitbucket.steps import add_placeholder_step_in_default
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.python.version import extract_major_version
 from usethis._test import change_cwd
 from usethis._tool.impl.pytest import PytestTool
+from usethis._types.backend import BackendEnum
 
 
 class TestPytestTool:
@@ -163,6 +165,42 @@ pipelines:
               - *install-uv
               - uv run --python 3.{version} pytest -x --junitxml=test-reports/report.xml
 """
+            )
+
+        def test_no_backend_auto(
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+            monkeypatch: pytest.MonkeyPatch,
+        ):
+            # Arrange
+            monkeypatch.setattr(
+                usethis._tool.impl.pytest, "get_backend", lambda: BackendEnum.none
+            )
+            (tmp_path / "bitbucket-pipelines.yml").touch()
+            (tmp_path / "pytest.ini").touch()
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[project]
+requires-python = ">=3.13,<3.14"
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                PytestTool().update_bitbucket_steps()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert (
+                out
+                == """\
+✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
+ℹ Consider installing 'uv' to readily manage test dependencies.
+☐ Declare your test dependencies in 'bitbucket-pipelines.yml'.
+ℹ Add test dependencies to this line: 'pip install pytest'
+"""  # noqa: RUF001
             )
 
     class TestRemoveBitbucketSteps:

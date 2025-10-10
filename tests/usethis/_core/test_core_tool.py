@@ -2607,7 +2607,6 @@ def test_foo():
                     use_ci_bitbucket()
 
                     # Act
-                    assert not (tmp_path / "pytest.ini").exists()  # Mostly to debug CI
                     use_pytest()
 
                 # Assert
@@ -2642,8 +2641,8 @@ pipelines:
 ℹ Consider `usethis tool pytest` to test your code for the pipeline.
 ☐ Run your pipeline via the Bitbucket website.
 ☐ Add the test dependency 'pytest'.
-✔ Writing 'pyproject.toml'.
-✔ Adding pytest config to 'pyproject.toml'.
+✔ Writing 'pytest.ini'.
+✔ Adding pytest config to 'pytest.ini'.
 ✔ Creating '/tests'.
 ✔ Writing '/tests/conftest.py'.
 ✔ Adding 'Test on 3.10' to default pipeline in 'bitbucket-pipelines.yml'.
@@ -2859,8 +2858,9 @@ pipelines:
                 assert not err
                 assert out.replace("\n", "").replace(" ", "") == (
                     "✔ Removing 'Test on 3.10' from default pipeline in 'bitbucket-pipelines.yml'.\n"
-                    "✔ Removing pytest config from 'pyproject.toml'.\n"
+                    "✔ Removing pytest config from 'pytest.ini'.\n"
                     "✔ Removing '/tests'.\n"
+                    "✔ Removing 'pytest.ini'.\n"
                 ).replace("\n", "").replace(" ", "")
 
         def test_coverage_integration(

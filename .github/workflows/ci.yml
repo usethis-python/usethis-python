@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   tests:
-    name: ${{ (matrix.codecov && 'Codecov') || (matrix.codspeed && 'CodSpeed') || format('Test Python {0} on {1} with {2} dependencies', matrix.python_version, matrix.os, matrix.dependencies) }}
+    name: ${{ (matrix.codecov && 'Codecov') || (matrix.codspeed && 'CodSpeed') || format('Test Python {0} on {1}{2}', matrix.python_version, matrix.os, (matrix.dependencies == 'min' || matrix.dependencies == 'max') && format(' with {0} dependencies', matrix.dependencies) || '') }}
     runs-on: ${{ matrix.os && matrix.os || 'ubuntu-latest' }}
     env:
       PYTHONIOENCODING: utf-8

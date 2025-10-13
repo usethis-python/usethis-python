@@ -1,3 +1,4 @@
+import os
 import shutil
 from collections.abc import Generator
 from enum import Enum
@@ -8,6 +9,11 @@ import pytest
 from usethis._config import usethis_config
 from usethis._integrations.backend.uv.call import call_subprocess, call_uv_subprocess
 from usethis._test import change_cwd, is_offline
+
+if "UV_PYTHON" in os.environ:
+    # To allow test subprocesses to use different versions of Python than the one
+    # running the tests.
+    del os.environ["UV_PYTHON"]
 
 
 @pytest.fixture(scope="session")

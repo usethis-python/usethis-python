@@ -1,8 +1,6 @@
 from pathlib import Path
 
-from typer.testing import CliRunner
-
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._ui.interface.badge import app
 
 
@@ -11,7 +9,7 @@ class TestPyPI:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pypi"])
+            result = runner.invoke_safe(app, ["pypi"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -23,7 +21,7 @@ class TestPyPI:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pypi", "--remove"])
+            result = runner.invoke_safe(app, ["pypi", "--remove"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -35,7 +33,7 @@ class TestPyPI:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pypi", "--show"])
+            result = runner.invoke_safe(app, ["pypi", "--show"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -46,7 +44,7 @@ class TestRuff:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["ruff"])
+            result = runner.invoke_safe(app, ["ruff"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -58,7 +56,7 @@ class TestRuff:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["ruff", "--remove"])
+            result = runner.invoke_safe(app, ["ruff", "--remove"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -70,7 +68,7 @@ class TestRuff:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["ruff"])
+            result = runner.invoke_safe(app, ["ruff"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -82,7 +80,7 @@ class TestRuff:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["ruff", "--show"])
+            result = runner.invoke_safe(app, ["ruff", "--show"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -93,7 +91,7 @@ class TestPreCommit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pre-commit"])
+            result = runner.invoke_safe(app, ["pre-commit"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -105,7 +103,7 @@ class TestPreCommit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pre-commit", "--remove"])
+            result = runner.invoke_safe(app, ["pre-commit", "--remove"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -117,7 +115,7 @@ class TestPreCommit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["pre-commit", "--show"])
+            result = runner.invoke_safe(app, ["pre-commit", "--show"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -128,7 +126,7 @@ class TestUsethis:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["usethis"])
+            result = runner.invoke_safe(app, ["usethis"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -140,7 +138,7 @@ class TestUsethis:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["usethis", "--remove"])
+            result = runner.invoke_safe(app, ["usethis", "--remove"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -152,7 +150,7 @@ class TestUsethis:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["usethis", "--show"])
+            result = runner.invoke_safe(app, ["usethis", "--show"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -167,7 +165,7 @@ class TestUV:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["uv"])
+            result = runner.invoke_safe(app, ["uv"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -179,7 +177,7 @@ class TestUV:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["uv", "--remove"])
+            result = runner.invoke_safe(app, ["uv", "--remove"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -191,7 +189,7 @@ class TestUV:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["uv", "--show"])
+            result = runner.invoke_safe(app, ["uv", "--show"])
 
         # Assert
         assert result.exit_code == 0, result.output

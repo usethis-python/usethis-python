@@ -1,0 +1,45 @@
+image: atlassian/default-image:3
+definitions:
+    script_items:
+      - &ensure-venv |
+        python -m venv .venv
+        source .venv/bin/activate
+pipelines:
+    default:
+      - step:
+            name: Run pyproject-fmt
+            script:
+              - *ensure-venv
+              - pyproject-fmt pyproject.toml
+      - step:
+            name: Run Ruff
+            script:
+              - *ensure-venv
+              - ruff check --fix
+      - step:
+            name: Run Ruff Formatter
+            script:
+              - *ensure-venv
+              - ruff format
+      - step:
+            name: Run deptry
+            script:
+              - *ensure-venv
+              - deptry .
+      - step:
+            name: Run Import Linter
+            script:
+              - *ensure-venv
+              - lint-imports
+      - step:
+            name: Run Codespell
+            script:
+              - *ensure-venv
+              - codespell
+      - step:
+            name: Test on 3.10
+            script:
+              - *ensure-venv
+              - pip install pytest
+              - pytest -x --junitxml=test-reports/report.xml
+            image: python:3.10

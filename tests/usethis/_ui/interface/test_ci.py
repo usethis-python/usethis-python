@@ -1,8 +1,6 @@
 from pathlib import Path
 
-from typer.testing import CliRunner
-
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._ui.interface.ci import app
 
 
@@ -28,7 +26,7 @@ requires-python = ">=3.12,<3.14"
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, [])
+            result = runner.invoke_safe(app, [])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -49,14 +47,13 @@ requires-python = ">=3.12,<3.14"
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["--backend", "none"])
+            result = runner.invoke_safe(app, ["--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output
         assert (tmp_path / "bitbucket-pipelines.yml").exists()
         assert result.output == (
             "✔ Writing 'bitbucket-pipelines.yml'.\n"
-            "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
             "✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.\n"
             "☐ Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.\n"
             "☐ Replace it with your own pipeline steps.\n"

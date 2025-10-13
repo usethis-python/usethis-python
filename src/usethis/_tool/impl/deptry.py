@@ -107,19 +107,37 @@ class DeptryTool(Tool):
         )
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
+        backend = get_backend()
+
         _dir = get_source_dir_str()
-        return [
-            BitbucketStep(
-                name=f"Run {self.name}",
-                caches=["uv"],
-                script=BitbucketScript(
-                    [
-                        BitbucketScriptItemAnchor(name="install-uv"),
-                        f"uv run deptry {_dir}",
-                    ]
-                ),
-            )
-        ]
+
+        if backend is BackendEnum.uv:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    caches=["uv"],
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="install-uv"),
+                            f"uv run deptry {_dir}",
+                        ]
+                    ),
+                )
+            ]
+        elif backend is BackendEnum.none:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="ensure-venv"),
+                            f"deptry {_dir}",
+                        ]
+                    ),
+                )
+            ]
+        else:
+            assert_never(backend)
 
     def is_managed_rule(self, rule: Rule) -> bool:
         return rule.startswith("DEP") and rule[3:].isdigit()

@@ -35,7 +35,6 @@ from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._integrations.ci.bitbucket.schema import Pipe as BitbucketPipe
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule, RuleConfig
 
@@ -299,27 +298,66 @@ class RuffTool(Tool):
         )
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        shared_lines: list[str | BitbucketPipe | BitbucketScriptItemAnchor] = [
-            BitbucketScriptItemAnchor(name="install-uv")
-        ]
+        backend = get_backend()
 
         steps = []
         if self.is_linter_used():
-            lines = [*shared_lines, "uv run ruff check --fix"]
-            step = BitbucketStep(
-                name=f"Run {self.name}",
-                caches=["uv"],
-                script=BitbucketScript(lines),
-            )
-            steps.append(step)
+            if backend is BackendEnum.uv:
+                steps.append(
+                    BitbucketStep(
+                        name=f"Run {self.name}",
+                        caches=["uv"],
+                        script=BitbucketScript(
+                            [
+                                BitbucketScriptItemAnchor(name="install-uv"),
+                                "uv run ruff check --fix",
+                            ]
+                        ),
+                    )
+                )
+            elif backend is BackendEnum.none:
+                steps.append(
+                    BitbucketStep(
+                        name=f"Run {self.name}",
+                        script=BitbucketScript(
+                            [
+                                BitbucketScriptItemAnchor(name="ensure-venv"),
+                                "ruff check --fix",
+                            ]
+                        ),
+                    )
+                )
+            else:
+                assert_never(backend)
+
         if self.is_formatter_used():
-            lines = [*shared_lines, "uv run ruff format"]
-            step = BitbucketStep(
-                name=f"Run {self.name} Formatter",
-                caches=["uv"],
-                script=BitbucketScript(lines),
-            )
-            steps.append(step)
+            if backend is BackendEnum.uv:
+                steps.append(
+                    BitbucketStep(
+                        name=f"Run {self.name} Formatter",
+                        caches=["uv"],
+                        script=BitbucketScript(
+                            [
+                                BitbucketScriptItemAnchor(name="install-uv"),
+                                "uv run ruff format",
+                            ]
+                        ),
+                    )
+                )
+            elif backend is BackendEnum.none:
+                steps.append(
+                    BitbucketStep(
+                        name=f"Run {self.name} Formatter",
+                        script=BitbucketScript(
+                            [
+                                BitbucketScriptItemAnchor(name="ensure-venv"),
+                                "ruff format",
+                            ]
+                        ),
+                    )
+                )
+            else:
+                assert_never(backend)
 
         return steps
 

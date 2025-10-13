@@ -117,6 +117,7 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
         else:
             tool.update_bitbucket_steps()
 
+        tool.add_configs()
         tool.print_how_to_use()
     else:
         tool.remove_pre_commit_repo_configs()

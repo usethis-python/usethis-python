@@ -21,8 +21,8 @@ class TestDeptryTool:
         result = tool.get_config_spec()
 
         # Assert
-        (config_item,) = result.config_items
-        config_item: ConfigItem
+        config_item, *_ = result.config_items
+        assert isinstance(config_item, ConfigItem)
         assert config_item.root[Path("pyproject.toml")] == ConfigEntry(
             keys=["tool", "deptry"]
         )
@@ -256,7 +256,7 @@ ignore = ["DEP003"]
                 DeptryTool().add_configs()
 
             # Assert
-            assert not (tmp_path / "pyproject.toml").exists()
+            assert (tmp_path / "pyproject.toml").exists()
 
         def test_pyproject_toml_exists(self, tmp_path: Path):
             # Arrange

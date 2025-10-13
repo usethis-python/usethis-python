@@ -210,9 +210,11 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
         tool.update_bitbucket_steps()
         if is_bitbucket_used():
             _remove_bitbucket_linter_steps_from_default()
+        tool.add_pre_commit_config()
 
         tool.print_how_to_use()
     else:
+        tool.remove_pre_commit_repo_configs()
         tool.remove_bitbucket_steps()
         if is_bitbucket_used():
             _add_bitbucket_linter_steps_to_default()

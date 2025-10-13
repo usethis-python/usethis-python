@@ -234,7 +234,10 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
 
 
 def _add_all_tools_pre_commit_configs():
+    PreCommitTool().add_pre_commit_config()
     for _tool in ALL_TOOLS:
+        if isinstance(_tool, PreCommitTool):
+            continue
         if _tool.is_used():
             _tool.add_pre_commit_config()
 

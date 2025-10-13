@@ -29,6 +29,7 @@ SupportedToolType: TypeAlias = (
 )
 
 ALL_TOOLS: list[SupportedToolType] = [
+    # Alphabetical order
     CodespellTool(),
     CoveragePyTool(),
     DeptryTool(),

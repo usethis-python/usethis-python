@@ -29,23 +29,23 @@ class TestPyprojectFmtTool:
                 "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
             )
 
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_latest_version(self):
-            if os.getenv("CI"):
-                pytest.skip(
-                    "Avoid flaky pipelines by testing pyproject-fmt version bumps manually"
-                )
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_latest_version(self):
+        if os.getenv("CI"):
+            pytest.skip(
+                "Avoid flaky pipelines by testing pyproject-fmt version bumps manually"
+            )
 
-            (config,) = PyprojectFmtTool().get_pre_commit_config().repo_configs
-            repo = config.repo
-            assert isinstance(repo, UriRepo)
-            try:
-                assert repo.rev == get_github_latest_tag(
-                    owner="tox-dev", repo="pyproject-fmt"
+        (config,) = PyprojectFmtTool().get_pre_commit_config().repo_configs
+        repo = config.repo
+        assert isinstance(repo, UriRepo)
+        try:
+            assert repo.rev == get_github_latest_tag(
+                owner="tox-dev", repo="pyproject-fmt"
+            )
+        except GitHubTagError as err:
+            if usethis_config.offline or "rate limit exceeded for url" in str(err):
+                pytest.skip(
+                    "Failed to fetch GitHub tags (connection issues); skipping test"
                 )
-            except GitHubTagError as err:
-                if usethis_config.offline or "rate limit exceeded for url" in str(err):
-                    pytest.skip(
-                        "Failed to fetch GitHub tags (connection issues); skipping test"
-                    )
-                raise err
+            raise err

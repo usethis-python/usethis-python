@@ -13,9 +13,13 @@ from usethis._integrations.ci.bitbucket.anchor import (
 )
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
+from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
 from usethis._tool.base import Tool
+from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
+
+_SYNC_WITH_UV_VERSION = "v0.4.0"  # Manually bump this version when necessary
 
 
 class PreCommitTool(Tool):
@@ -23,6 +27,25 @@ class PreCommitTool(Tool):
     @property
     def name(self) -> str:
         return "pre-commit"
+
+    def get_pre_commit_config(self) -> PreCommitConfig:
+        """Get the pre-commit configurations for the tool."""
+        backend = get_backend()
+
+        if backend is BackendEnum.uv:
+            return PreCommitConfig.from_single_repo(
+                UriRepo(
+                    repo="https://github.com/tsvikas/sync-with-uv",
+                    rev=_SYNC_WITH_UV_VERSION,
+                    hooks=[HookDefinition(id="sync-with-uv")],
+                ),
+                requires_venv=False,
+                inform_how_to_use_on_migrate=False,
+            )
+        elif backend is BackendEnum.none:
+            return super().get_pre_commit_config()
+        else:
+            assert_never(backend)
 
     def is_used(self) -> bool:
         if usethis_config.disable_pre_commit:

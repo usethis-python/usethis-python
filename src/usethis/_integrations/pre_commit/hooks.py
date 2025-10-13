@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     )
 
 _HOOK_ORDER = [
+    "sync-with-uv",
     "validate-pyproject",
     "uv-export",
     "pyproject-fmt",

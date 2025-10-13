@@ -1810,12 +1810,8 @@ repos:
             assert (uv_init_dir / ".pre-commit-config.yaml").exists()
             contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
             assert contents == (
-                f"""\
+                """\
 repos:
-  - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
-    hooks:
-      - id: sync-with-uv
   - repo: local
     hooks:
       - id: placeholder

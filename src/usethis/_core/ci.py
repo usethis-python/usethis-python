@@ -7,6 +7,7 @@ from usethis._integrations.ci.bitbucket.config import (
 )
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._tool.impl.deptry import DeptryTool
+from usethis._tool.impl.import_linter import ImportLinterTool
 from usethis._tool.impl.pre_commit import PreCommitTool
 from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
 from usethis._tool.impl.pytest import PytestTool
@@ -23,6 +24,7 @@ def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:
         use_pytest = PytestTool().is_used()
         use_ruff = RuffTool().is_used()
         use_deptry = DeptryTool().is_used()
+        use_import_linter = ImportLinterTool().is_used()
         use_pyproject_fmt = PyprojectFmtTool().is_used()
         use_codespell = CodespellTool().is_used()
         use_any_tool = (
@@ -30,6 +32,7 @@ def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:
             or use_pytest
             or use_ruff
             or use_deptry
+            or use_import_linter
             or use_pyproject_fmt
             or use_codespell
         )
@@ -39,11 +42,12 @@ def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:
         if use_pre_commit:
             PreCommitTool().update_bitbucket_steps()
         else:
-            # This order should match the canonical order in the function which add
+            # This order should match the canonical order in the function which adds
             # steps
             PyprojectFmtTool().update_bitbucket_steps()
             RuffTool().update_bitbucket_steps()
             DeptryTool().update_bitbucket_steps()
+            ImportLinterTool().update_bitbucket_steps()
             CodespellTool().update_bitbucket_steps()
 
         PytestTool().update_bitbucket_steps()

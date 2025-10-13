@@ -55,6 +55,29 @@ class TestAllHooksList:
                     assert hook_name in _HOOK_ORDER
 
 
+class TestAllBitbucketCompatibleSteps:
+    def test_names_regression(self, tmp_path: Path):
+        # See https://github.com/usethis-python/usethis-python/issues/981
+        with change_cwd(tmp_path), files_manager():
+            names = set()
+            for tool in ALL_TOOLS:
+                steps = tool.get_bitbucket_steps()
+                if steps:
+                    names.add(tool.name)
+
+        # Until https://github.com/usethis-python/usethis-python/issues/981 is resolved,
+        # if this test changes, make sure to update `use_ci_bitbucket`.
+        assert names == {
+            "Codespell",
+            "deptry",
+            "Import Linter",
+            "pre-commit",
+            "pyproject-fmt",
+            "pytest",
+            "Ruff",
+        }
+
+
 class TestCodespell:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")

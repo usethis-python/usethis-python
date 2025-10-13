@@ -43,24 +43,14 @@ jobs:
         with:
           version: ${{ matrix.uv_version || 'latest' }}
           enable-cache: true
-
-      - name: Set up Python
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
-        with:
           python-version: ${{ matrix.python_version }}
-
-      - name: Bump dependencies
-        if: ${{ matrix.dependencies == 'max' }}
-        run: |
-          uv sync --upgrade
 
       - name: Setup dependencies
         run: |
-          uv python pin $CI_PYTHON_VERSION
-          uv sync
+          uv sync $CI_UV_UPGRADE_ARG
         env:
+          CI_UV_UPGRADE_ARG: ${{ matrix.dependencies == 'max' && '--upgrade' || '' }}
           UV_RESOLUTION: ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
-          CI_PYTHON_VERSION: ${{ matrix.python_version }}
 
       - name: Run prek
         if: ${{ matrix.pre_commit == null || matrix.pre_commit == 'true' }}

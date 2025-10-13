@@ -34,6 +34,7 @@ from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
 from usethis._integrations.python.version import get_python_version
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.impl.pre_commit import _SYNC_WITH_UV_VERSION
 from usethis._tool.impl.ruff import RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -689,8 +690,12 @@ class TestDeptry:
 
             # 3. Test file contents
             assert (uv_init_dir / ".pre-commit-config.yaml").read_text() == (
-                """\
+                f"""\
 repos:
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
   - repo: local
     hooks:
       - id: deptry
@@ -712,6 +717,7 @@ repos:
                 "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'pre-commit'.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
+                "✔ Adding hook 'sync-with-uv' to '.pre-commit-config.yaml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 "☐ Run 'uv run pre-commit install' to register pre-commit.\n"
                 "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
@@ -850,8 +856,12 @@ dev = []
 
             # 3. Test file contents
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
-                """\
+                f"""\
 repos:
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
   - repo: local
     hooks:
       - id: deptry
@@ -1753,10 +1763,7 @@ class TestPreCommit:
                 "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'pre-commit'.\n"
                 "✔ Writing '.pre-commit-config.yaml'.\n"
-                "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
-                "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
-                "☐ Replace it with your own hooks.\n"
-                "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
+                "✔ Adding hook 'sync-with-uv' to '.pre-commit-config.yaml'.\n"
                 "☐ Run 'uv run pre-commit install' to register pre-commit.\n"
                 "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
             )
@@ -1764,8 +1771,51 @@ class TestPreCommit:
             assert (uv_init_dir / ".pre-commit-config.yaml").exists()
             contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
             assert contents == (
-                """\
+                f"""\
 repos:
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
+"""
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_fresh_no_backend(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(uv_init_dir),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
+                use_pre_commit()
+
+            # Assert
+            # Correct stdout
+            out, _ = capfd.readouterr()
+            assert out == (
+                "☐ Add the dev dependency 'pre-commit'.\n"
+                "☐ Install the dependency 'pre-commit'.\n"
+                "✔ Writing '.pre-commit-config.yaml'.\n"
+                "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"
+                "☐ Remove the placeholder hook in '.pre-commit-config.yaml'.\n"
+                "☐ Replace it with your own hooks.\n"
+                "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
+                "☐ Run 'pre-commit install' to register pre-commit.\n"
+                "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
+            )
+            # Config file
+            assert (uv_init_dir / ".pre-commit-config.yaml").exists()
+            contents = (uv_init_dir / ".pre-commit-config.yaml").read_text()
+            assert contents == (
+                f"""\
+repos:
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
   - repo: local
     hooks:
       - id: placeholder
@@ -1797,7 +1847,7 @@ repos:
             # Assert
             contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
             assert contents == (
-                """\
+                f"""\
 repos:
   - repo: local
     hooks:
@@ -1805,6 +1855,10 @@ repos:
         name: Its mine
         entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
 """
             )
 
@@ -3020,8 +3074,12 @@ class TestRequirementsTxt:
             assert (uv_init_repo_dir / "requirements.txt").exists()
             content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
             assert content == (
-                """\
+                f"""\
 repos:
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
   - repo: local
     hooks:
       - id: uv-export
@@ -3536,8 +3594,12 @@ select = ["F"]
 
             # 3. Test file contents
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
-                """\
+                f"""\
 repos:
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
   - repo: local
     hooks:
       - id: ruff
@@ -3578,8 +3640,12 @@ repos:
 
             # 3. Test file contents
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
-                """\
+                f"""\
 repos:
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
   - repo: local
     hooks:
       - id: ruff
@@ -3631,8 +3697,12 @@ repos:
 
             # 3. Test file contents
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
-                """\
+                f"""\
 repos:
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
   - repo: local
     hooks:
       - id: ruff-format
@@ -3673,8 +3743,12 @@ repos:
 
             # 3. Test file contents
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").read_text() == (
-                """\
+                f"""\
 repos:
+  - repo: https://github.com/tsvikas/sync-with-uv
+    rev: {_SYNC_WITH_UV_VERSION}
+    hooks:
+      - id: sync-with-uv
   - repo: local
     hooks:
       - id: ruff-format

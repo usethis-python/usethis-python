@@ -19,6 +19,8 @@ from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
+_SYNC_WITH_UV_VERSION = "v0.4.0"  # Manually bump this version when necessary
+
 
 class PreCommitTool(Tool):
     # https://github.com/pre-commit/pre-commit
@@ -34,7 +36,7 @@ class PreCommitTool(Tool):
             return PreCommitConfig.from_single_repo(
                 UriRepo(
                     repo="https://github.com/tsvikas/sync-with-uv",
-                    rev="v0.4.0",  # Manually bump this version when necessary
+                    rev=_SYNC_WITH_UV_VERSION,
                     hooks=[HookDefinition(id="sync-with-uv")],
                 ),
                 requires_venv=False,

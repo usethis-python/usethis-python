@@ -52,6 +52,7 @@ class TestInit:
         with change_cwd(tmp_path):
             hook_ids = get_hook_ids()
             assert hook_ids == [
+                "sync-with-uv",
                 "pyproject-fmt",
                 "ruff",
                 "ruff-format",

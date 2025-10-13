@@ -20,6 +20,8 @@ from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
+_PYPROJECT_FMT_VERSION = "v2.10.0"  # Manually bump this version when necessary
+
 
 class PyprojectFmtTool(Tool):
     # https://github.com/tox-dev/pyproject-fmt
@@ -84,7 +86,7 @@ class PyprojectFmtTool(Tool):
         return PreCommitConfig.from_single_repo(
             UriRepo(
                 repo="https://github.com/tox-dev/pyproject-fmt",
-                rev="v2.10.0",  # Manually bump this version when necessary
+                rev=_PYPROJECT_FMT_VERSION,
                 hooks=[HookDefinition(id="pyproject-fmt")],
             ),
             requires_venv=False,

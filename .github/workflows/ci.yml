@@ -71,8 +71,9 @@ jobs:
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
         if: ${{ matrix.pytest == null || matrix.pytest == 'true' }}
         with:
+          emoji: false
           custom-pytest: uv run --frozen pytest
-          custom-arguments: --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
+          custom-arguments: --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy --forcesugar --old-summary
 
       - name: Run benchmarks
         uses: CodSpeedHQ/action@6b43a0cd438f6ca5ad26f9ed03ed159ed2df7da9 # v4.1.1

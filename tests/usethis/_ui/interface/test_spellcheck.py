@@ -1,10 +1,8 @@
 from pathlib import Path
 
-from typer.testing import CliRunner
-
 from usethis._config_file import files_manager
 from usethis._deps import get_deps_from_group
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._types.deps import Dependency
 from usethis._ui.app import app
 
@@ -14,7 +12,7 @@ class TestSpellcheck:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["spellcheck"])
+            result = runner.invoke_safe(app, ["spellcheck"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -25,7 +23,7 @@ class TestSpellcheck:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["spellcheck", "--how"])
+            result = runner.invoke_safe(app, ["spellcheck", "--how"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -37,13 +35,11 @@ class TestSpellcheck:
 
         with change_cwd(tmp_path):
             # Act: Add spellcheck
-            result = runner.invoke(app, ["spellcheck"], catch_exceptions=False)
+            result = runner.invoke_safe(app, ["spellcheck"])
             assert result.exit_code == 0, result.output
 
             # Act: Remove spellcheck
-            result = runner.invoke(
-                app, ["spellcheck", "--remove"], catch_exceptions=False
-            )
+            result = runner.invoke_safe(app, ["spellcheck", "--remove"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -54,7 +50,7 @@ class TestSpellcheck:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["spellcheck", "--backend", "none"])
+            result = runner.invoke_safe(app, ["spellcheck", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -73,7 +69,7 @@ class TestSpellcheck:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["spellcheck", "--backend", "none"])
+            result = runner.invoke_safe(app, ["spellcheck", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from typing_extensions import assert_never
+
 from usethis._config import usethis_config
 from usethis._console import box_print
 from usethis._integrations.backend.dispatch import get_backend
@@ -44,18 +46,35 @@ class PreCommitTool(Tool):
         return [Path(".pre-commit-config.yaml")]
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        return [
-            BitbucketStep(
-                name=f"Run {self.name}",
-                caches=["uv", "pre-commit"],
-                script=BitbucketScript(
-                    [
-                        BitbucketScriptItemAnchor(name="install-uv"),
-                        "uv run pre-commit run --all-files",
-                    ]
-                ),
-            )
-        ]
+        backend = get_backend()
+
+        if backend is BackendEnum.uv:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    caches=["uv", "pre-commit"],
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="install-uv"),
+                            "uv run pre-commit run --all-files",
+                        ]
+                    ),
+                )
+            ]
+        elif backend is BackendEnum.none:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="ensure-venv"),
+                            "pre-commit run --all-files",
+                        ]
+                    ),
+                )
+            ]
+        else:
+            assert_never(backend)
 
     def migrate_config_to_pre_commit(self) -> None:
         pass

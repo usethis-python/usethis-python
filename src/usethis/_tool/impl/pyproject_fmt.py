@@ -91,15 +91,32 @@ class PyprojectFmtTool(Tool):
         )
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        return [
-            BitbucketStep(
-                name=f"Run {self.name}",
-                caches=["uv"],
-                script=BitbucketScript(
-                    [
-                        BitbucketScriptItemAnchor(name="install-uv"),
-                        "uv run pyproject-fmt pyproject.toml",
-                    ]
-                ),
-            )
-        ]
+        backend = get_backend()
+
+        if backend is BackendEnum.uv:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    caches=["uv"],
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="install-uv"),
+                            "uv run pyproject-fmt pyproject.toml",
+                        ]
+                    ),
+                )
+            ]
+        elif backend is BackendEnum.none:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="ensure-venv"),
+                            "pyproject-fmt pyproject.toml",
+                        ]
+                    ),
+                )
+            ]
+        else:
+            assert_never(backend)

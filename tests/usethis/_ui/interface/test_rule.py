@@ -1,12 +1,10 @@
 from pathlib import Path
 
-from typer.testing import CliRunner
-
 from usethis._config_file import files_manager
 from usethis._core.rule import ignore_rules
 from usethis._core.tool import use_deptry
 from usethis._subprocess import call_subprocess
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app
 
 
@@ -18,7 +16,7 @@ class TestRule:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["rule", "RUF001"])
+            result = runner.invoke_safe(app, ["rule", "RUF001"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -36,7 +34,7 @@ select = ["RUF001"]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["rule", "RUF001", "--remove"])
+            result = runner.invoke_safe(app, ["rule", "RUF001", "--remove"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -49,7 +47,7 @@ select = ["RUF001"]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["rule", "RUF001", "--ignore"])
+            result = runner.invoke_safe(app, ["rule", "RUF001", "--ignore"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -67,7 +65,7 @@ ignore = ["RUF001"]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["rule", "RUF001", "--remove", "--ignore"])
+            result = runner.invoke_safe(app, ["rule", "RUF001", "--remove", "--ignore"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -92,7 +90,7 @@ ignore = ["RUF001"]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["rule", "FAKE", "--backend", "none"])
+            result = runner.invoke_safe(app, ["rule", "FAKE", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -115,7 +113,7 @@ ignore = ["RUF001"]
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["rule", "FAKE", "--backend", "none"])
+            result = runner.invoke_safe(app, ["rule", "FAKE", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output

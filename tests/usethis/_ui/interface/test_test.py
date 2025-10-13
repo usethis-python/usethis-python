@@ -1,10 +1,8 @@
 from pathlib import Path
 
-from typer.testing import CliRunner
-
 from usethis._config_file import files_manager
 from usethis._deps import get_deps_from_group
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._types.deps import Dependency
 from usethis._ui.app import app
 
@@ -14,7 +12,7 @@ class TestTest:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["test"])
+            result = runner.invoke_safe(app, ["test"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -25,7 +23,7 @@ class TestTest:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["test", "--backend", "none"])
+            result = runner.invoke_safe(app, ["test", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -52,7 +50,7 @@ class TestTest:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["test", "--backend", "none"])
+            result = runner.invoke_safe(app, ["test", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output

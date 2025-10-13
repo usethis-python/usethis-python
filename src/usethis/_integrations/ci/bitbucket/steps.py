@@ -10,10 +10,11 @@ from typing_extensions import assert_never
 import usethis._pipeweld.func
 from usethis._config import usethis_config
 from usethis._console import box_print, tick_print
-from usethis._integrations.backend.uv.python import (
-    get_supported_uv_major_python_versions,
+from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.ci.bitbucket.anchor import (
+    ScriptItemAnchor,
+    anchor_name_from_script_item,
 )
-from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.ci.bitbucket.cache import _add_caches_via_doc, remove_cache
 from usethis._integrations.ci.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.ci.bitbucket.errors import UnexpectedImportPipelineError
@@ -37,7 +38,9 @@ from usethis._integrations.ci.bitbucket.schema import (
     StepItem,
 )
 from usethis._integrations.ci.bitbucket.schema_utils import step1tostep
+from usethis._integrations.environ.python import get_supported_major_python_versions
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
+from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
     from ruamel.yaml.anchor import Anchor
@@ -60,7 +63,11 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 export UV_LINK_MODE=copy
 uv --version
-""")
+"""),
+    "ensure-venv": LiteralScalarString("""\
+python -m venv .venv
+source .venv/bin/activate
+"""),
 }
 for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
     script_item.yaml_set_anchor(value=name, always_dump=True)
@@ -125,6 +132,7 @@ def _add_step_in_default_via_doc(
 
             # If our anchor doesn't have a definition yet, we need to add it.
             if script_item.name not in defined_script_item_by_name:
+                script_item_name = script_item.name
                 try:
                     script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
                 except KeyError:
@@ -134,17 +142,19 @@ def _add_step_in_default_via_doc(
                 if config.definitions is None:
                     config.definitions = Definitions()
 
-                script_items = config.definitions.script_items
+                existing_script_items = config.definitions.script_items
 
-                if script_items is None:
-                    script_items = CommentedSeq()
-                    config.definitions.script_items = script_items
+                if existing_script_items is None:
+                    existing_script_items = CommentedSeq()
+                    config.definitions.script_items = existing_script_items
 
-                # N.B. Once we support multiple different types of script items, we will
-                # probably want to enforce a canonical order rather than just append.
-                # See also anchor.py.
-                script_items.append(script_item)
-                script_items = CommentedSeq(script_items)
+                # Insert script item in canonical order based on _SCRIPT_ITEM_LOOKUP
+                insertion_index = _get_script_item_insertion_index(
+                    script_item_name=script_item_name,
+                    doc=doc,
+                )
+                existing_script_items.insert(insertion_index, script_item)
+                existing_script_items = CommentedSeq(existing_script_items)
             else:
                 # Otherwise, if the anchor is already defined, we need to use the
                 # reference
@@ -158,7 +168,7 @@ def _add_step_in_default_via_doc(
     # N.B. Currently, we are not accounting for parallelism, whereas all these steps
     # could be parallel potentially.
     # See https://github.com/usethis-python/usethis-python/issues/149
-    maj_versions = get_supported_uv_major_python_versions()
+    maj_versions = get_supported_major_python_versions()
     step_order = [
         "Run pre-commit",
         # For these tools, sync them with the pre-commit removal logic
@@ -184,6 +194,33 @@ def _add_step_in_default_via_doc(
         apply_pipeweld_instruction_via_doc(
             instruction=instruction, new_step=step, doc=doc
         )
+
+
+def _get_script_item_insertion_index(
+    *, script_item_name: ScriptItemName, doc: BitbucketPipelinesYAMLDocument
+) -> int:
+    """Get the correct insertion index for a script item to maintain canonical order."""
+    # Check if we have existing script items in the raw YAML content
+    if not (
+        dict(doc.content).get("definitions")
+        and dict(doc.content["definitions"]).get("script_items")
+    ):
+        return 0
+
+    existing_script_items = doc.content["definitions"]["script_items"]
+    canonical_order = list(_SCRIPT_ITEM_LOOKUP.keys())
+
+    for i, existing_item in enumerate(existing_script_items):
+        existing_name = anchor_name_from_script_item(existing_item)
+        if (
+            existing_name is not None
+            and existing_name in canonical_order
+            and canonical_order.index(script_item_name)
+            < canonical_order.index(existing_name)
+        ):
+            return i
+
+    return len(existing_script_items)  # Default to end
 
 
 def remove_bitbucket_step_from_default(step: Step) -> None:
@@ -437,16 +474,30 @@ def add_placeholder_step_in_default(report_placeholder: bool = True) -> None:
 
 
 def _get_placeholder_step() -> Step:
-    return Step(
-        name=_PLACEHOLDER_NAME,
-        script=Script(
-            [
-                ScriptItemAnchor(name="install-uv"),
-                "echo 'Hello, world!'",
-            ]
-        ),
-        caches=["uv"],
-    )
+    backend = get_backend()
+
+    if backend is BackendEnum.uv:
+        return Step(
+            name=_PLACEHOLDER_NAME,
+            script=Script(
+                [
+                    ScriptItemAnchor(name="install-uv"),
+                    "echo 'Hello, world!'",
+                ]
+            ),
+            caches=["uv"],
+        )
+    elif backend is BackendEnum.none:
+        return Step(
+            name=_PLACEHOLDER_NAME,
+            script=Script(
+                [
+                    "echo 'Hello, world!'",
+                ]
+            ),
+        )
+    else:
+        assert_never(backend)
 
 
 def get_defined_script_items_via_doc(

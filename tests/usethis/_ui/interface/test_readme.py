@@ -1,8 +1,6 @@
 from pathlib import Path
 
-from typer.testing import CliRunner
-
-from usethis._test import change_cwd
+from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app
 
 
@@ -11,7 +9,7 @@ class TestREADME:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke(app, ["readme", "--backend", "none"])
+            result = runner.invoke_safe(app, ["readme", "--backend", "none"])
 
         # Assert
         assert result.exit_code == 0, result.output

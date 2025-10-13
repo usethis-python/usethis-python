@@ -1486,7 +1486,6 @@ wheels = [
 name = "usethis"
 source = { editable = "." }
 dependencies = [
-    { name = "click" },
     { name = "configupdater" },
     { name = "grimp" },
     { name = "mergedeep" },
@@ -1516,6 +1515,7 @@ doc = [
     { name = "mkdocs-material" },
 ]
 test = [
+    { name = "click" },
     { name = "coverage", extra = ["toml"] },
     { name = "gitpython" },
     { name = "pytest" },
@@ -1527,7 +1527,6 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "click", specifier = ">=8.0.0" },
     { name = "configupdater", specifier = ">=3.2" },
     { name = "grimp", specifier = ">=2.5.0" },
     { name = "mergedeep", specifier = ">=1.3.4" },
@@ -1557,6 +1556,7 @@ doc = [
     { name = "mkdocs-material", specifier = ">=9.6.10" },
 ]
 test = [
+    { name = "click", specifier = ">=8.1.8" },
     { name = "coverage", extras = ["toml"], specifier = ">=7.7.1" },
     { name = "gitpython", specifier = ">=3.1.44" },
     { name = "pytest", specifier = ">=8.3.5" },

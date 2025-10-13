@@ -166,6 +166,7 @@ def _add_step_in_default_via_doc(
         "Run Ruff",
         "Run Ruff Formatter",
         "Run deptry",
+        "Run Import Linter",
         "Run Codespell",
         *[f"Test on 3.{maj_version}" for maj_version in maj_versions],
     ]

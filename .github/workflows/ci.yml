@@ -39,7 +39,7 @@ jobs:
           git config --global user.email placeholder@example.com
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
+        uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d # v7.1.0
         with:
           version: ${{ matrix.uv_version || 'latest' }}
           enable-cache: true

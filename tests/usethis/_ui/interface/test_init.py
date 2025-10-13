@@ -39,7 +39,6 @@ class TestInit:
             "☐ Run 'uv run mkdocs serve' to serve the documentation locally.\n"
             "✔ Adding recommended linters.\n"
             "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
-            "✔ Adding deptry config to 'pyproject.toml'.\n"
             "☐ Run 'uv run deptry src' to run deptry.\n"
             "✔ Adding recommended formatters.\n"
             "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
@@ -93,7 +92,6 @@ class TestInit:
 ☐ Run 'uv run mkdocs serve' to serve the documentation locally.
 ✔ Adding recommended linters.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
-✔ Adding deptry config to 'pyproject.toml'.
 ☐ Run 'uv run deptry src' to run deptry.
 ✔ Adding recommended formatters.
 ☐ Run 'uv run ruff format' to run the Ruff formatter.
@@ -165,7 +163,6 @@ class TestInit:
             "☐ Run 'uv run mkdocs serve' to serve the documentation locally.\n"
             "✔ Adding recommended linters.\n"
             "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
-            "✔ Adding deptry config to 'pyproject.toml'.\n"
             "☐ Run 'uv run deptry src' to run deptry.\n"
             "✔ Adding recommended formatters.\n"
             "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"

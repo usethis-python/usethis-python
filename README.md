@@ -108,7 +108,6 @@ $ uvx usethis init
 ☐ Run 'uv run mkdocs serve' to serve the documentation locally.
 ✔ Adding recommended linters.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
-✔ Adding deptry config to 'pyproject.toml'.
 ☐ Run 'uv run deptry src' to run deptry.
 ✔ Adding recommended formatters.
 ☐ Run 'uv run ruff format' to run the Ruff formatter.

@@ -581,6 +581,7 @@ class TestDeptry:
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'deptry'.\n"
+                "✔ Adding deptry config to 'pyproject.toml'.\n"
                 "☐ Run 'uv run deptry src' to run deptry.\n"
             )
 
@@ -604,6 +605,7 @@ class TestDeptry:
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
+                "✔ Adding deptry config to 'pyproject.toml'.\n"
                 "☐ Run 'uv run deptry src' to run deptry.\n"
             )
 
@@ -680,6 +682,7 @@ repos:
             assert out == (
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'deptry'.\n"
+                "✔ Adding deptry config to 'pyproject.toml'.\n"
                 "☐ Run 'uv run deptry src' to run deptry.\n"
                 "✔ Adding dependency 'pre-commit' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'pre-commit'.\n"
@@ -841,6 +844,7 @@ repos:
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'deptry'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding deptry config to 'pyproject.toml'.\n"
                 "☐ Run 'uv run deptry src' to run deptry.\n"
             )
 
@@ -873,6 +877,7 @@ repos:
                 "✔ Adding dependency 'deptry' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'deptry'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding deptry config to 'pyproject.toml'.\n"
                 "☐ Run 'uv run deptry src' to run deptry.\n"
             )
 

@@ -73,7 +73,16 @@ class DeptryTool(Tool):
                 ConfigItem(
                     description="Overall config",
                     root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])},
-                )
+                ),
+                ConfigItem(
+                    description="Ignore notebooks",
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "deptry", "ignore_notebooks"],
+                            get_value=lambda: False,
+                        )
+                    },
+                ),
             ],
         )
 

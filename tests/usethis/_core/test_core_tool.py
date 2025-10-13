@@ -555,6 +555,18 @@ class TestDeptry:
             assert dev_dep == Dependency(name="deptry")
 
         @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ignore_notebooks(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                use_deptry()
+
+                # Assert
+                assert (
+                    PyprojectTOMLManager()[["tool", "deptry", "ignore_notebooks"]]
+                    is False
+                )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_stdout(
             self,
             uv_init_dir: Path,

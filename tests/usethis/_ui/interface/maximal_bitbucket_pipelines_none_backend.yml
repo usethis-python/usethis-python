@@ -25,7 +25,7 @@ pipelines:
             name: Run deptry
             script:
               - *ensure-venv
-              - deptry src
+              - deptry .
       - step:
             name: Run Import Linter
             script:

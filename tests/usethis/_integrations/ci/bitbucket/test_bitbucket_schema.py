@@ -31,7 +31,7 @@ class TestSchemaJSON:
             online_schema_json = requests.get(
                 "https://api.bitbucket.org/schemas/pipelines-configuration", timeout=5
             ).text
-        except requests.exceptions.ConnectionError as err:
+        except requests.exceptions.RequestException as err:
             if os.getenv("CI"):
                 pytest.skip(
                     "Failed to fetch JSON schema (connection issues); skipping test"

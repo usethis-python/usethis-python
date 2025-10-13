@@ -33,8 +33,8 @@ class TestInit:
             "☐ Run 'uv run mkdocs build' to build the documentation.\n"
             "☐ Run 'uv run mkdocs serve' to serve the documentation locally.\n"
             "✔ Adding recommended linters.\n"
-            "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'uv run deptry src' to run deptry.\n"
+            "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             "✔ Adding recommended formatters.\n"
             "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             "☐ Run 'uv run pre-commit run pyproject-fmt --all-files' to run pyproject-fmt.\n"
@@ -86,8 +86,8 @@ class TestInit:
 ☐ Run 'uv run mkdocs build' to build the documentation.
 ☐ Run 'uv run mkdocs serve' to serve the documentation locally.
 ✔ Adding recommended linters.
-☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run deptry src' to run deptry.
+☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ✔ Adding recommended formatters.
 ☐ Run 'uv run ruff format' to run the Ruff formatter.
 ☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.
@@ -157,8 +157,8 @@ class TestInit:
             "☐ Run 'uv run mkdocs build' to build the documentation.\n"
             "☐ Run 'uv run mkdocs serve' to serve the documentation locally.\n"
             "✔ Adding recommended linters.\n"
-            "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'uv run deptry src' to run deptry.\n"
+            "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             "✔ Adding recommended formatters.\n"
             "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             "☐ Run 'uv run pre-commit run pyproject-fmt --all-files' to run pyproject-fmt.\n"
@@ -193,8 +193,8 @@ class TestInit:
             "☐ Run 'mkdocs build' to build the documentation.\n"
             "☐ Run 'mkdocs serve' to serve the documentation locally.\n"
             "✔ Adding recommended linters.\n"
-            "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'deptry src' to run deptry.\n"
+            "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
             "✔ Adding recommended formatters.\n"
             "☐ Run 'ruff format' to run the Ruff formatter.\n"
             "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"

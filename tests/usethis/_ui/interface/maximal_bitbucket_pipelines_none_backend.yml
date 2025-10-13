@@ -22,6 +22,16 @@ pipelines:
               - *ensure-venv
               - ruff format
       - step:
+            name: Run deptry
+            script:
+              - *ensure-venv
+              - deptry src
+      - step:
+            name: Run Import Linter
+            script:
+              - *ensure-venv
+              - lint-imports
+      - step:
             name: Run Codespell
             script:
               - *ensure-venv

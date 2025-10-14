@@ -17,11 +17,8 @@ from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.schema import (
-    FileType,
-    FileTypes,
     HookDefinition,
-    Language,
-    LocalRepo,
+    UriRepo,
 )
 from usethis._tool.base import Tool
 from usethis._tool.config import (
@@ -37,6 +34,8 @@ from usethis._types.deps import Dependency
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule, RuleConfig
+
+_RUFF_VERSION = "v0.14.0"  # Manually bump this version when necessary
 
 
 class RuffTool(Tool):
@@ -243,54 +242,24 @@ class RuffTool(Tool):
         if self.is_linter_used():
             repo_configs.append(
                 PreCommitRepoConfig(
-                    repo=LocalRepo(
-                        repo="local",
-                        hooks=[
-                            HookDefinition(
-                                id="ruff",
-                                name="ruff",
-                                entry="uv run --frozen --offline ruff check --fix --force-exclude",
-                                language=Language("system"),
-                                types_or=FileTypes(
-                                    [
-                                        FileType("python"),
-                                        FileType("pyi"),
-                                        FileType("jupyter"),
-                                    ]
-                                ),
-                                always_run=True,
-                                require_serial=True,
-                            ),
-                        ],
+                    repo=UriRepo(
+                        repo="https://github.com/astral-sh/ruff-pre-commit",
+                        rev=_RUFF_VERSION,
+                        hooks=[HookDefinition(id="ruff-check")],
                     ),
-                    requires_venv=True,
-                )
+                    requires_venv=False,
+                ),
             )
         if self.is_formatter_used():
             repo_configs.append(
                 PreCommitRepoConfig(
-                    repo=LocalRepo(
-                        repo="local",
-                        hooks=[
-                            HookDefinition(
-                                id="ruff-format",
-                                name="ruff-format",
-                                entry="uv run --frozen --offline ruff format --force-exclude",
-                                language=Language("system"),
-                                types_or=FileTypes(
-                                    [
-                                        FileType("python"),
-                                        FileType("pyi"),
-                                        FileType("jupyter"),
-                                    ]
-                                ),
-                                always_run=True,
-                                require_serial=True,
-                            ),
-                        ],
+                    repo=UriRepo(
+                        repo="https://github.com/astral-sh/ruff-pre-commit",
+                        rev=_RUFF_VERSION,
+                        hooks=[HookDefinition(id="ruff-format")],
                     ),
-                    requires_venv=True,
-                )
+                    requires_venv=False,
+                ),
             )
         return PreCommitConfig(
             repo_configs=repo_configs,

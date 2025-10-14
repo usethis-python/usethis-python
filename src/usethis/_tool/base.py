@@ -258,8 +258,11 @@ class Tool(Protocol):
 
             # Remove the config for this specific tool.
             for hook in repo_config.hooks:
-                if hook.id in get_hook_ids():
-                    remove_hook(hook.id)
+                for other_hook_id in get_hook_ids():
+                    if hook.id is not None and hook_ids_are_equivalent(
+                        hook.id, other_hook_id
+                    ):
+                        remove_hook(hook.id)
 
     def migrate_config_to_pre_commit(self) -> None:
         """Migrate the tool's configuration to pre-commit."""

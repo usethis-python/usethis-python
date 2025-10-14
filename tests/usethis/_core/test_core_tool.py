@@ -35,7 +35,7 @@ from usethis._integrations.python.version import get_python_version
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.pre_commit import _SYNC_WITH_UV_VERSION
-from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.impl.ruff import _RUFF_VERSION, RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
@@ -3243,7 +3243,7 @@ class TestRuff:
                 hook_names = get_hook_ids()
 
             assert "ruff-format" in hook_names
-            assert "ruff" in hook_names
+            assert "ruff-check" in hook_names
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_creates_pyproject_toml(
@@ -3524,7 +3524,7 @@ select = ["F"]
                 hook_names = get_hook_ids()
 
             assert "ruff-format" in hook_names
-            assert "ruff" in hook_names
+            assert "ruff-check" in hook_names
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_after(self, uv_init_repo_dir: Path):
@@ -3539,7 +3539,7 @@ select = ["F"]
                 hook_names = get_hook_ids()
 
             assert "ruff-format" in hook_names
-            assert "ruff" in hook_names
+            assert "ruff-check" in hook_names
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove(
@@ -3560,10 +3560,9 @@ select = ["F"]
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Removing hook 'ruff' from '.pre-commit-config.yaml'.\n"
+                "✔ Removing hook 'ruff-check' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing Ruff config from 'pyproject.toml'.\n"
-                "✔ Removing dependency 'ruff' from the 'dev' group in 'pyproject.toml'.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -3585,7 +3584,7 @@ select = ["F"]
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
 
             # 2. Hook is in the file
-            assert "ruff" in hook_names
+            assert "ruff-check" in hook_names
             assert "ruff-format" not in hook_names
 
             # 3. Test file contents
@@ -3596,18 +3595,10 @@ repos:
     rev: {_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: {_RUFF_VERSION}
     hooks:
-      - id: ruff
-        name: ruff
-        types_or:
-          - python
-          - pyi
-          - jupyter
-        always_run: true
-        entry: uv run --frozen --offline ruff check --fix --force-exclude
-        language: system
-        require_serial: true
+      - id: ruff-check
 """
             )
 
@@ -3631,7 +3622,7 @@ repos:
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
 
             # 2. Hook is in the file
-            assert "ruff" in hook_names
+            assert "ruff-check" in hook_names
             assert "ruff-format" in hook_names
 
             # 3. Test file contents
@@ -3642,30 +3633,14 @@ repos:
     rev: {_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: {_RUFF_VERSION}
     hooks:
-      - id: ruff
-        name: ruff
-        types_or:
-          - python
-          - pyi
-          - jupyter
-        always_run: true
-        entry: uv run --frozen --offline ruff check --fix --force-exclude
-        language: system
-        require_serial: true
-  - repo: local
+      - id: ruff-check
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: {_RUFF_VERSION}
     hooks:
       - id: ruff-format
-        name: ruff-format
-        types_or:
-          - python
-          - pyi
-          - jupyter
-        always_run: true
-        entry: uv run --frozen --offline ruff format --force-exclude
-        language: system
-        require_serial: true
 """
             )
 
@@ -3699,18 +3674,10 @@ repos:
     rev: {_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: {_RUFF_VERSION}
     hooks:
       - id: ruff-format
-        name: ruff-format
-        types_or:
-          - python
-          - pyi
-          - jupyter
-        always_run: true
-        entry: uv run --frozen --offline ruff format --force-exclude
-        language: system
-        require_serial: true
 """
             )
 
@@ -3745,18 +3712,10 @@ repos:
     rev: {_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: {_RUFF_VERSION}
     hooks:
       - id: ruff-format
-        name: ruff-format
-        types_or:
-          - python
-          - pyi
-          - jupyter
-        always_run: true
-        entry: uv run --frozen --offline ruff format --force-exclude
-        language: system
-        require_serial: true
 """
             )
 
@@ -3807,6 +3766,7 @@ repos:
 
             # 2. Hook is in the file
             assert "ruff" not in hook_names
+            assert "ruff-check" not in hook_names
             assert "ruff-format" in hook_names
 
             # 3. Test file contents

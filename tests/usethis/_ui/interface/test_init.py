@@ -54,7 +54,7 @@ class TestInit:
             assert hook_ids == [
                 "sync-with-uv",
                 "pyproject-fmt",
-                "ruff",
+                "ruff-check",
                 "ruff-format",
                 "deptry",
                 "codespell",

@@ -247,7 +247,7 @@ def extract_hook_ids(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
     return hook_ids
 
 
-def _hooks_are_equivalent(hook: HookDefinition, other: HookDefinition) -> bool:
+def hooks_are_equivalent(hook: HookDefinition, other: HookDefinition) -> bool:
     """Check if two hooks are equivalent."""
     if hook_ids_are_equivalent(hook.id, other.id):
         return True

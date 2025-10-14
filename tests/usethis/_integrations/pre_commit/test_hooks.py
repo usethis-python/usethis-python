@@ -4,10 +4,10 @@ import pytest
 
 from usethis._integrations.pre_commit.hooks import (
     _get_placeholder_repo_config,
-    _hooks_are_equivalent,
     add_placeholder_hook,
     add_repo,
     get_hook_ids,
+    hooks_are_equivalent,
     insert_repo,
     remove_hook,
 )
@@ -558,7 +558,7 @@ class TestHooksAreEquivalent:
         )
 
         # Act
-        result = _hooks_are_equivalent(hook, other)
+        result = hooks_are_equivalent(hook, other)
 
         # Assert
         assert result is True
@@ -579,7 +579,7 @@ class TestHooksAreEquivalent:
         )
 
         # Act
-        result = _hooks_are_equivalent(hook, other)
+        result = hooks_are_equivalent(hook, other)
 
         # Assert
         assert result is False
@@ -600,7 +600,7 @@ class TestHooksAreEquivalent:
         )
 
         # Act
-        result = _hooks_are_equivalent(hook, other)
+        result = hooks_are_equivalent(hook, other)
 
         # Assert
         assert result is True
@@ -619,7 +619,7 @@ class TestHooksAreEquivalent:
         )
 
         # Act
-        result = _hooks_are_equivalent(hook, other)
+        result = hooks_are_equivalent(hook, other)
 
         # Assert
         assert result is True
@@ -640,18 +640,18 @@ class TestHooksAreEquivalent:
         )
 
         # Act
-        result = _hooks_are_equivalent(hook, other)
+        result = hooks_are_equivalent(hook, other)
 
         # Assert
         assert result is False
 
     def test_aliases(self):
         # Arrange / Act / Assert
-        assert _hooks_are_equivalent(
+        assert hooks_are_equivalent(
             HookDefinition(id="ruff"),
             HookDefinition(id="ruff-check"),
         )
-        assert _hooks_are_equivalent(
+        assert hooks_are_equivalent(
             HookDefinition(id="ruff-check"),
             HookDefinition(id="ruff"),
         )

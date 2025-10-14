@@ -644,3 +644,14 @@ class TestHooksAreEquivalent:
 
         # Assert
         assert result is False
+
+    def test_aliases(self):
+        # Arrange / Act / Assert
+        assert _hooks_are_equivalent(
+            HookDefinition(id="ruff"),
+            HookDefinition(id="ruff-check"),
+        )
+        assert _hooks_are_equivalent(
+            HookDefinition(id="ruff-check"),
+            HookDefinition(id="ruff"),
+        )

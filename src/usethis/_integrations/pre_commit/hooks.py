@@ -27,7 +27,8 @@ _HOOK_ORDER = [
     "validate-pyproject",
     "uv-export",
     "pyproject-fmt",
-    "ruff",  # ruff followed by ruff-format seems to be the recommended way by Astral
+    "ruff",  # Alias used for ruff-check
+    "ruff-check",  # ruff-check followed by ruff-format seems to be the recommended way by Astral
     "ruff-format",
     "deptry",
     "import-linter",
@@ -265,6 +266,11 @@ def hook_ids_are_equivalent(hook_id: str | None, other: str | None) -> bool:
 
     # Same name up to case differences
     if isinstance(hook_id, str) and isinstance(other, str):
-        return hook_id.lower() == other.lower()
+        hook_id_str = hook_id.lower()
+        other_str = other.lower()
+        if hook_id_str == other_str:
+            return True
+        if {hook_id_str, other_str} == {"ruff", "ruff-check"}:
+            return True
 
     return False

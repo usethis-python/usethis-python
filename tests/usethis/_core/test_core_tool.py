@@ -3539,7 +3539,7 @@ select = ["F"]
                 hook_names = get_hook_ids()
 
             assert "ruff-format" in hook_names
-            assert "ruff" in hook_names
+            assert "ruff-check" in hook_names
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove(
@@ -3584,7 +3584,7 @@ select = ["F"]
             assert (uv_init_repo_dir / ".pre-commit-config.yaml").exists()
 
             # 2. Hook is in the file
-            assert "ruff" in hook_names
+            assert "ruff-check" in hook_names
             assert "ruff-format" not in hook_names
 
             # 3. Test file contents
@@ -3595,18 +3595,10 @@ repos:
     rev: {_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: {_RUFF_VERSION}
     hooks:
-      - id: ruff
-        name: ruff
-        types_or:
-          - python
-          - pyi
-          - jupyter
-        always_run: true
-        entry: uv run --frozen --offline ruff check --fix --force-exclude
-        language: system
-        require_serial: true
+      - id: ruff-check
 """
             )
 

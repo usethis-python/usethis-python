@@ -38,9 +38,7 @@ class TestPreCommitTool:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_latest_version(self):
         if os.getenv("CI"):
-            pytest.skip(
-                "Avoid flaky pipelines by testing pyproject-fmt version bumps manually"
-            )
+            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
 
         (config,) = PreCommitTool().get_pre_commit_config().repo_configs
         repo = config.repo

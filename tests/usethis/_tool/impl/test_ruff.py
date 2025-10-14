@@ -1,9 +1,15 @@
+import os
 from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
+from usethis._core.tool import use_ruff
+from usethis._integrations.ci.github.errors import GitHubTagError
+from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.pre_commit.schema import UriRepo
 from usethis._test import change_cwd
 from usethis._tool.impl.ruff import RuffTool
 
@@ -365,3 +371,27 @@ lint.per-file-ignores."tests/**" = ["INP"]
             assert not (tmp_path / ".ruff.toml").exists()
             assert (tmp_path / "pyproject.toml").exists()
             assert not (tmp_path / "ruff.toml").exists()
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_latest_version(self, tmp_path: Path):
+        if os.getenv("CI"):
+            pytest.skip("Avoid flaky pipelines by testing  version bumps manually")
+
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            use_ruff(formatter=False)
+
+            # Act
+            (config,) = RuffTool().get_pre_commit_config().repo_configs
+        repo = config.repo
+        assert isinstance(repo, UriRepo)
+        try:
+            assert repo.rev == get_github_latest_tag(
+                owner="astral-sh", repo="ruff-pre-commit"
+            )
+        except GitHubTagError as err:
+            if usethis_config.offline or "rate limit exceeded for url" in str(err):
+                pytest.skip(
+                    "Failed to fetch GitHub tags (connection issues); skipping test"
+                )
+            raise err

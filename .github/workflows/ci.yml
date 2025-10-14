@@ -21,7 +21,6 @@ concurrency:
 jobs:
   tests:
     permissions:
-      contents: read
       pull-requests: write # Needed to add Codecov and CodSpeed comments
     name: ${{ (matrix.codecov == 'true' && 'Codecov') || (matrix.codspeed == 'true' && 'CodSpeed') || format('Test Python {0} {1}', matrix.python_version, ((matrix.dependencies == 'min' || matrix.dependencies == 'max') && format('{0} dependencies', matrix.dependencies)) || (matrix.os || 'ubuntu-latest')) }}
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}

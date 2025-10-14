@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: read
       id-token: write # Needed for trusted publishing
     steps:
       - name: Checkout code

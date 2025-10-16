@@ -87,24 +87,47 @@ class DeptryTool(Tool):
         )
 
     def get_pre_commit_config(self) -> PreCommitConfig:
+        backend = get_backend()
+
         _dir = get_source_dir_str()
-        return PreCommitConfig.from_single_repo(
-            LocalRepo(
-                repo="local",
-                hooks=[
-                    HookDefinition(
-                        id="deptry",
-                        name="deptry",
-                        entry=f"uv run --frozen --offline deptry {_dir}",
-                        language=Language("system"),
-                        always_run=True,
-                        pass_filenames=False,
-                    )
-                ],
-            ),
-            requires_venv=True,
-            inform_how_to_use_on_migrate=False,
-        )
+        if backend is BackendEnum.uv:
+            return PreCommitConfig.from_single_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="deptry",
+                            name="deptry",
+                            entry=f"uv run --frozen --offline deptry {_dir}",
+                            language=Language("system"),
+                            always_run=True,
+                            pass_filenames=False,
+                        )
+                    ],
+                ),
+                requires_venv=True,
+                inform_how_to_use_on_migrate=False,
+            )
+        elif backend is BackendEnum.none:
+            return PreCommitConfig.from_single_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="deptry",
+                            name="deptry",
+                            entry=f"deptry {_dir}",
+                            language=Language("system"),
+                            always_run=True,
+                            pass_filenames=False,
+                        )
+                    ],
+                ),
+                requires_venv=True,
+                inform_how_to_use_on_migrate=False,
+            )
+        else:
+            assert_never(backend)
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         backend = get_backend()

@@ -321,24 +321,46 @@ class ImportLinterTool(Tool):
             raise NotImplementedError(msg)
 
     def get_pre_commit_config(self) -> PreCommitConfig:
-        return PreCommitConfig.from_single_repo(
-            LocalRepo(
-                repo="local",
-                hooks=[
-                    HookDefinition(
-                        id="import-linter",
-                        name="import-linter",
-                        pass_filenames=False,
-                        entry="uv run --frozen --offline lint-imports",
-                        language=Language("system"),
-                        require_serial=True,
-                        always_run=True,
-                    )
-                ],
-            ),
-            requires_venv=True,
-            inform_how_to_use_on_migrate=False,
-        )
+        backend = get_backend()
+
+        if backend is BackendEnum.uv:
+            return PreCommitConfig.from_single_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="import-linter",
+                            name="Lint Imports",
+                            pass_filenames=False,
+                            entry="uv run --frozen --offline lint-imports",
+                            language=Language("system"),
+                            require_serial=True,
+                            always_run=True,
+                        )
+                    ],
+                ),
+                requires_venv=True,
+                inform_how_to_use_on_migrate=False,
+            )
+        elif backend is BackendEnum.none:
+            return PreCommitConfig.from_single_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="import-linter",
+                            name="Lint Imports",
+                            pass_filenames=False,
+                            entry="uv run --frozen --offline lint-imports",
+                            language=Language("system"),
+                        )
+                    ],
+                ),
+                requires_venv=True,
+                inform_how_to_use_on_migrate=False,
+            )
+        else:
+            assert_never(backend)
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".importlinter")]

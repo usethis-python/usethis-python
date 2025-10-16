@@ -330,7 +330,7 @@ class ImportLinterTool(Tool):
                     hooks=[
                         HookDefinition(
                             id="import-linter",
-                            name="Lint Imports",
+                            name="import-linter",
                             pass_filenames=False,
                             entry="uv run --frozen --offline lint-imports",
                             language=Language("system"),
@@ -349,9 +349,9 @@ class ImportLinterTool(Tool):
                     hooks=[
                         HookDefinition(
                             id="import-linter",
-                            name="Lint Imports",
+                            name="import-linter",
                             pass_filenames=False,
-                            entry="uv run --frozen --offline lint-imports",
+                            entry="lint-imports",
                             language=Language("system"),
                         )
                     ],

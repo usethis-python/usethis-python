@@ -20,7 +20,7 @@ from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
-_PYPROJECT_FMT_VERSION = "v2.10.0"  # Manually bump this version when necessary
+_PYPROJECT_FMT_VERSION = "v2.11.0"  # Manually bump this version when necessary
 
 
 class PyprojectFmtTool(Tool):

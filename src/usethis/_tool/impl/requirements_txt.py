@@ -58,20 +58,28 @@ class RequirementsTxtTool(Tool):
         return [Path("requirements.txt")]
 
     def get_pre_commit_config(self) -> PreCommitConfig:
-        return PreCommitConfig.from_single_repo(
-            LocalRepo(
-                repo="local",
-                hooks=[
-                    HookDefinition(
-                        id="uv-export",
-                        name="uv-export",
-                        files="^uv\\.lock$",
-                        pass_filenames=False,
-                        entry="uv export --frozen --offline --quiet --no-default-groups -o=requirements.txt",
-                        language=Language("system"),
-                        require_serial=True,
-                    )
-                ],
-            ),
-            requires_venv=True,
-        )
+        backend = get_backend()
+
+        if backend is BackendEnum.uv:
+            return PreCommitConfig.from_single_repo(
+                LocalRepo(
+                    repo="local",
+                    hooks=[
+                        HookDefinition(
+                            id="uv-export",
+                            name="uv-export",
+                            files="^uv\\.lock$",
+                            pass_filenames=False,
+                            entry="uv export --frozen --offline --quiet --no-default-groups -o=requirements.txt",
+                            language=Language("system"),
+                            require_serial=True,
+                        )
+                    ],
+                ),
+                requires_venv=True,
+            )
+        elif backend is BackendEnum.none:
+            # Need a backend to generate requirements.txt files
+            return PreCommitConfig(repo_configs=[], inform_how_to_use_on_migrate=False)
+        else:
+            assert_never(backend)

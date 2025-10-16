@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.16.0
+
+### 🚀 New Features
+
+- Most commands now accept a `--backend` option to specify the package manager backend to use. Up to this point, `uv` was the only supported backend. Now, a `--backend=none` option is available to use usethis without `uv`. This is a step toward supporting other backends such as Poetry in the future. When unspecified, heuristics will be used to determine the backend.
+
+- The use of `pyproject.toml` in a project is no longer assumed or imposed on a project when not using the `uv` backend.
+
+- `pre-commit` configurations are now more conventional, preferring URL-based repo configuration instead of local repos with `language: system`. The previous behaviour was designed to ensure synchronization of versions between the `uv` lockfile and the `pre-commit` configuration, but this is now provided by the `sync-with-uv` pre-commit hook, which is added automatically when using `pre-commit` with `uv`.
+
+- When using `usethis author`, a message with the author's name is now outputted in the console.
+
+### 🦾 Robustness
+
+- Pydantic warnings relating to deprecated access to the `model_fields` attribute on an instance should no longer occur.
+
+- The `tool.deptry.ignore_notebooks` configuration for deptry is set explicitly to the default value of `false` to hint that deptry is being used, and to hint on how to configure it.
+
+### 🐞 Bug Fixes
+
+- Previously, the `usethis ci bitbucket` command would fail to add Import Linter configuration to the CI pipeline when `import-linter` was detected. This has been fixed.
+
+- The `usethis badge pypi` command would generate markdown with invalid syntax due to a stray `<` character. This has been fixed.
+
+### 🧹 Maintenance
+
+- The default version of `pyproject-fmt` when used as a pre-commit has been bumped from v2.6.0 to v2.11.0.
+
+- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically inline and custom pipeline step types; the `input_variables` configuration for steps, and the new name `scoped` for the artifacts upload type option `unshared`.
+
+### 📚 Documentation
+
+- Hyperlinks in the README and CONTRIBUTING.md files now point to the stable documentation site (rather than the latest site).
+
+- The [configurator](https://github.com/jamesbraza/configurator) project is now documented as a similar project in the README.
+
+### 📦 Packaging
+
+- Python 3.14 is now formally supported.
+
+- `click` is no longer a direct dependency.
+
+### 🔧 Internal Changes
+
+- The CI configuration has been overhauled. `uv` is used in more conventional ways. A runner has been added for bleeding edge dependency versions. The CI now runs on a cron schedule. `zizmor` has been added for security scanning. Permissions are more tightly scoped and explained. All actions have been bumped to their latest versions.
+
+- The pre-commit hooks have been migrated to use `prek` rather than `pre-commit` for development.
+
+- `pytest-sugar` has been added for a more user-friendly test suite output, and `pytest-emoji` has been removed.
+
 ## 0.15.2
 
 ### 🦾 Robustness

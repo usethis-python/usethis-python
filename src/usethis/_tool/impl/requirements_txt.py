@@ -66,8 +66,8 @@ class RequirementsTxtTool(Tool):
                     repo="local",
                     hooks=[
                         HookDefinition(
-                            id="export-requirements-txt",
-                            name="Export requirements.txt",
+                            id="uv-export",
+                            name="uv-export",
                             files="^uv\\.lock$",
                             pass_filenames=False,
                             entry="uv export --frozen --offline --quiet --no-default-groups -o=requirements.txt",

@@ -77,7 +77,7 @@ repos:
   - repo: local
     hooks:
       - id: import-linter
-        name: import-linter
+        name: Import Linter
         entry: uv run --frozen --offline lint-imports
         language: system
         always_run: true

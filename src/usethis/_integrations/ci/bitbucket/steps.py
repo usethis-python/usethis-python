@@ -18,7 +18,10 @@ from usethis._integrations.ci.bitbucket.anchor import (
 from usethis._integrations.ci.bitbucket.cache import _add_caches_via_doc, remove_cache
 from usethis._integrations.ci.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.ci.bitbucket.errors import UnexpectedImportPipelineError
-from usethis._integrations.ci.bitbucket.io_ import edit_bitbucket_pipelines_yaml
+from usethis._integrations.ci.bitbucket.io_ import (
+    edit_bitbucket_pipelines_yaml,
+    read_bitbucket_pipelines_yaml,
+)
 from usethis._integrations.ci.bitbucket.pipeweld import (
     apply_pipeweld_instruction_via_doc,
     get_pipeweld_pipeline_from_default,
@@ -403,7 +406,7 @@ def get_steps_in_default() -> list[Step]:
     if not (usethis_config.cpd() / "bitbucket-pipelines.yml").exists():
         return []
 
-    with edit_bitbucket_pipelines_yaml() as doc:
+    with read_bitbucket_pipelines_yaml() as doc:
         config = doc.model
 
     if config.pipelines is None:

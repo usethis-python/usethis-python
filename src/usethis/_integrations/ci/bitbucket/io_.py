@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.ci.bitbucket.schema import PipelinesConfiguration
-from usethis._integrations.file.yaml.io_ import edit_yaml
+from usethis._integrations.file.yaml.io_ import edit_yaml, read_yaml
 from usethis.errors import FileConfigError
 
 if TYPE_CHECKING:
@@ -61,6 +61,20 @@ def edit_bitbucket_pipelines_yaml() -> Generator[
         guess_indent = _has_indentation(path)
 
     with edit_yaml(path, guess_indent=guess_indent) as doc:
+        config = _validate_config(doc.content)
+        yield BitbucketPipelinesYAMLDocument(content=doc.content, model=config)
+        _validate_config(doc.content)
+
+
+@contextmanager
+def read_bitbucket_pipelines_yaml() -> Generator[
+    BitbucketPipelinesYAMLDocument, None, None
+]:
+    """A context manager to read 'bitbucket-pipelines.yml'."""
+    name = "bitbucket-pipelines.yml"
+    path = usethis_config.cpd() / name
+
+    with read_yaml(path) as doc:
         config = _validate_config(doc.content)
         yield BitbucketPipelinesYAMLDocument(content=doc.content, model=config)
         _validate_config(doc.content)

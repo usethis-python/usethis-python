@@ -26,26 +26,33 @@ def get_sonar_project_properties() -> str:
     if path.exists() and path.is_file():
         return path.read_text(encoding="utf-8")
 
+    # Get Python version
     try:
         python_version = _get_short_version(Path(".python-version").read_text().strip())
     except (FileNotFoundError, _NonstandardPythonVersionError):
         python_version = get_python_version()
 
+    # Get Project key
     try:
         project_key = PyprojectTOMLManager()[
             ["tool", "usethis", "sonarqube", "project-key"]
         ]
-    except (FileNotFoundError, KeyError):
+    except KeyError:
         msg = "Could not find SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
+        raise MissingProjectKeyError(msg) from None
+    except FileNotFoundError:
+        msg = "Could not find 'pyproject.toml' for SonarQube project key at 'tool.usethis.sonarqube.project-key'."
         raise MissingProjectKeyError(msg) from None
     _validate_project_key(project_key)
 
+    # Get verbosity setting
     try:
         verbose = PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]]
     except (FileNotFoundError, KeyError):
         verbose = False
     verbose = TypeAdapter(bool).validate_python(verbose)
 
+    # Get exclusions
     try:
         exclusions = PyprojectTOMLManager()[
             ["tool", "usethis", "sonarqube", "exclusions"]
@@ -56,10 +63,14 @@ def get_sonar_project_properties() -> str:
     for exclusion in exclusions:
         TypeAdapter(str).validate_python(exclusion)
 
+    # Get coverage report output path
     try:
         coverage_output = PyprojectTOMLManager()[["tool", "coverage", "xml", "output"]]
-    except (FileNotFoundError, KeyError):
+    except KeyError:
         msg = "XML coverage report file path not found at 'tool.coverage.xml.output' in 'pyproject.toml'."
+        raise CoverageReportConfigNotFoundError(msg) from None
+    except FileNotFoundError:
+        msg = "Could not find 'pyproject.toml' for coverage report file path at 'tool.coverage.xml.output'."
         raise CoverageReportConfigNotFoundError(msg) from None
 
     # No file, so construct the contents

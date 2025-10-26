@@ -5,6 +5,7 @@ import pytest
 from usethis._integrations.ci.bitbucket.io_ import (
     BitbucketPipelinesYAMLConfigError,
     edit_bitbucket_pipelines_yaml,
+    read_bitbucket_pipelines_yaml,
 )
 from usethis._test import change_cwd
 
@@ -147,3 +148,24 @@ awfpah28yqh2an ran  2rqa0-2 }[
             edit_bitbucket_pipelines_yaml() as _,
         ):
             pass
+
+
+class TestReadBitbucketPipelinesYAML:
+    def test_quote_style_preserved(self, tmp_path: Path):
+        # Arrange
+        content_str = """\
+pipelines:
+    default:
+      - step:
+            script:
+              - 'echo'
+"""
+
+        (tmp_path / "bitbucket-pipelines.yml").write_text(content_str)
+
+        # Act
+        with change_cwd(tmp_path), read_bitbucket_pipelines_yaml():
+            pass
+
+        # Assert
+        assert (tmp_path / "bitbucket-pipelines.yml").read_text() == content_str

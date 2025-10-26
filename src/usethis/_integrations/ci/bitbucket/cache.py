@@ -6,6 +6,7 @@ from usethis._console import tick_print
 from usethis._integrations.ci.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.ci.bitbucket.io_ import (
     edit_bitbucket_pipelines_yaml,
+    read_bitbucket_pipelines_yaml,
 )
 from usethis._integrations.ci.bitbucket.schema import Definitions
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 
 def get_cache_by_name() -> dict[str, Cache]:
-    with edit_bitbucket_pipelines_yaml() as doc:
+    with read_bitbucket_pipelines_yaml() as doc:
         config = doc.model
 
     if config.definitions is None:

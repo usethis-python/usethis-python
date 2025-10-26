@@ -6,7 +6,10 @@ from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._integrations.pre_commit.dump import pre_commit_fancy_dump
-from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
+from usethis._integrations.pre_commit.io_ import (
+    edit_pre_commit_config_yaml,
+    read_pre_commit_config_yaml,
+)
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
@@ -234,7 +237,7 @@ def get_hook_ids() -> list[str]:
     if not path.exists():
         return []
 
-    with edit_pre_commit_config_yaml() as doc:
+    with read_pre_commit_config_yaml() as doc:
         return extract_hook_ids(doc.model)
 
 

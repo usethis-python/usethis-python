@@ -9,7 +9,7 @@ from ruamel.yaml.comments import CommentedMap
 
 from usethis._config import usethis_config
 from usethis._console import tick_print
-from usethis._integrations.file.yaml.io_ import edit_yaml
+from usethis._integrations.file.yaml.io_ import edit_yaml, read_yaml
 from usethis._integrations.pre_commit.schema import JsonSchemaForPreCommitConfigYaml
 from usethis.errors import FileConfigError
 
@@ -55,6 +55,18 @@ def edit_pre_commit_config_yaml() -> Generator[PreCommitConfigYAMLDocument, None
         guess_indent = True
 
     with edit_yaml(path, guess_indent=guess_indent) as doc:
+        config = _validate_config(doc.content)
+        yield PreCommitConfigYAMLDocument(content=doc.content, model=config)
+        _validate_config(doc.content)
+
+
+@contextmanager
+def read_pre_commit_config_yaml() -> Generator[PreCommitConfigYAMLDocument, None, None]:
+    """A context manager to read '.pre-commit-config.yaml'."""
+    name = ".pre-commit-config.yaml"
+    path = usethis_config.cpd() / name
+
+    with read_yaml(path) as doc:
         config = _validate_config(doc.content)
         yield PreCommitConfigYAMLDocument(content=doc.content, model=config)
         _validate_config(doc.content)

@@ -476,7 +476,7 @@ class StepBase(BaseModel):
         title="Input Variables",
     )
     max_time: MaxTime | None = Field(
-        None,
+        default=None,
         alias="max-time",
         title="Step Maximum Time",
     )
@@ -506,7 +506,7 @@ class StepBase(BaseModel):
     )
     size: Size | None = None
     trigger: Trigger | None = Field(
-        None,
+        default=None,
         description="The trigger used for the pipeline step.",
         title="Step Trigger",
     )
@@ -558,7 +558,7 @@ class Stage(BaseModel):
         title="Stage Steps",
     )
     trigger: Trigger | None = Field(
-        None,
+        default=None,
         description="The trigger used for the pipeline stage.",
         title="Stage Trigger",
     )

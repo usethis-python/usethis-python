@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from usethis._config import usethis_config
-from usethis._console import box_print, tick_print, warn_print
+from usethis._console import how_print, tick_print, warn_print
 from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLError
 from usethis._integrations.file.pyproject_toml.name import get_description
 from usethis._integrations.project.name import get_project_name
@@ -56,7 +56,7 @@ def add_readme() -> None:
 
     tick_print("Writing 'README.md'.")
     (usethis_config.cpd() / "README.md").write_text(content, encoding="utf-8")
-    box_print("Populate 'README.md' to help users understand the project.")
+    how_print("Populate 'README.md' to help users understand the project.")
 
 
 def get_readme_path():

@@ -9,7 +9,7 @@ from typing_extensions import assert_never
 
 import usethis._pipeweld.func
 from usethis._config import usethis_config
-from usethis._console import box_print, tick_print
+from usethis._console import instruct_print, tick_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor,
@@ -466,9 +466,11 @@ def add_placeholder_step_in_default(report_placeholder: bool = True) -> None:
         tick_print(
             "Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'."
         )
-        box_print("Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.")
-        box_print("Replace it with your own pipeline steps.")
-        box_print(
+        instruct_print(
+            "Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'."
+        )
+        instruct_print("Replace it with your own pipeline steps.")
+        instruct_print(
             "Alternatively, use 'usethis tool' to add other tools and their steps."
         )
 

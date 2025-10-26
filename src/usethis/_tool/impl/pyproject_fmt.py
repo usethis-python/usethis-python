@@ -4,7 +4,7 @@ from pathlib import Path
 
 from typing_extensions import assert_never
 
-from usethis._console import box_print
+from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -34,22 +34,22 @@ class PyprojectFmtTool(Tool):
         backend = get_backend()
         if install_method == "pre-commit":
             if backend is BackendEnum.uv and is_uv_used():
-                box_print(
+                how_print(
                     f"Run 'uv run pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print(
+                how_print(
                     f"Run 'pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv and is_uv_used():
-                box_print(
+                how_print(
                     f"Run 'uv run pyproject-fmt pyproject.toml' to run {self.name}."
                 )
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print(f"Run 'pyproject-fmt pyproject.toml' to run {self.name}.")
+                how_print(f"Run 'pyproject-fmt pyproject.toml' to run {self.name}.")
         else:
             assert_never(install_method)
 

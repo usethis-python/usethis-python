@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from usethis._console import box_print, info_print
+from usethis._console import how_print, info_print
 from usethis._integrations.ci.bitbucket.config import (
     add_bitbucket_pipeline_config,
     remove_bitbucket_pipeline_config,
@@ -62,4 +62,4 @@ def print_how_to_use_ci_bitbucket() -> None:
     if not PytestTool().is_used():
         info_print("Consider `usethis tool pytest` to test your code for the pipeline.")
 
-    box_print("Run your pipeline via the Bitbucket website.")
+    how_print("Run your pipeline via the Bitbucket website.")

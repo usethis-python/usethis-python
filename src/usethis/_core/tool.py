@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Protocol
 from typing_extensions import assert_never
 
 from usethis._config import usethis_config
-from usethis._console import box_print, info_print, tick_print
+from usethis._console import info_print, instruct_print, tick_print
 from usethis._deps import get_project_deps
 from usethis._init import ensure_dep_declaration_file
 from usethis._integrations.backend.dispatch import get_backend
@@ -205,7 +205,9 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
         try:
             install_pre_commit_hooks()
         except PreCommitInstallationError:
-            box_print("Run 'uv run pre-commit install' to install pre-commit to Git.")
+            instruct_print(
+                "Run 'uv run pre-commit install' to install pre-commit to Git."
+            )
 
         tool.update_bitbucket_steps()
         if is_bitbucket_used():
@@ -220,7 +222,7 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
         try:
             uninstall_pre_commit_hooks()
         except PreCommitInstallationError:
-            box_print(
+            instruct_print(
                 "Run 'uv run pre-commit uninstall' to uninstall pre-commit from Git."
             )
 

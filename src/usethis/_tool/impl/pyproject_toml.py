@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from usethis._console import box_print, info_print
+from usethis._console import how_print, info_print, instruct_print
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool.base import Tool
 from usethis._tool.impl.codespell import CodespellTool
@@ -46,7 +46,7 @@ class PyprojectTOMLTool(Tool):
         return []
 
     def print_how_to_use(self) -> None:
-        box_print("Populate 'pyproject.toml' with the project configuration.")
+        how_print("Populate 'pyproject.toml' with the project configuration.")
         info_print(
             "Learn more at https://packaging.python.org/en/latest/guides/writing-pyproject-toml/"
         )
@@ -65,7 +65,7 @@ class PyprojectTOMLTool(Tool):
         # them that the active config is being removed and they need to re-configure
         # the tool
 
-        box_print("Check that important config in 'pyproject.toml' is not lost.")
+        instruct_print("Check that important config in 'pyproject.toml' is not lost.")
 
         for tool in OTHER_TOOLS:
             if (
@@ -73,7 +73,7 @@ class PyprojectTOMLTool(Tool):
                 and PyprojectTOMLManager() in tool.get_active_config_file_managers()
             ):
                 # Warn the user
-                box_print(
+                instruct_print(
                     f"The {tool.name} tool was using 'pyproject.toml' for config, "
                     f"but that file is being removed. You will need to re-configure it."
                 )

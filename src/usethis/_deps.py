@@ -6,7 +6,7 @@ from pydantic import TypeAdapter
 from typing_extensions import assert_never
 
 from usethis._config import usethis_config
-from usethis._console import box_print, tick_print
+from usethis._console import instruct_print, tick_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.call import add_default_groups_via_uv
 from usethis._integrations.backend.uv.deps import (
@@ -188,7 +188,7 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
         for dep in _deps:
             remove_dep_from_group_via_uv(dep, group)
     elif backend is BackendEnum.none:
-        box_print(f"Remove the {group} dependenc{ies} {deps_str}.")
+        instruct_print(f"Remove the {group} dependenc{ies} {deps_str}.")
     else:
         assert_never(backend)
 
@@ -220,14 +220,14 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
             f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
         )
     elif backend is BackendEnum.none:
-        box_print(f"Add the {group} dependenc{ies} {deps_str}.")
+        instruct_print(f"Add the {group} dependenc{ies} {deps_str}.")
     else:
         assert_never(backend)
 
     # Installation of the dependencies, and declaration if the package manager supports
     # a combined workflow.
     if usethis_config.frozen:
-        box_print(f"Install the dependenc{ies} {deps_str}.")
+        instruct_print(f"Install the dependenc{ies} {deps_str}.")
     for dep in to_add_deps:
         if backend is BackendEnum.uv:
             add_dep_to_group_via_uv(dep, group)

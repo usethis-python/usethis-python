@@ -28,6 +28,8 @@ class UsethisConfig:
         quiet: Suppress all output, regardless of any other options.
         frozen: Do not install dependencies, nor update lockfiles.
         alert_only: Suppress all output except for warnings and errors.
+        instruct_only: Suppress all success and info output; do not suppress
+                       instructions, warnings, or errors.
         backend: The package manager backend to use. Attempted subprocesses to other
                  backends will raise an error.
         disable_pre_commit: Disable pre-commit integrations. Assume that pre-commit is
@@ -42,6 +44,7 @@ class UsethisConfig:
     quiet: bool = QUIET_DEFAULT
     frozen: bool = FROZEN_DEFAULT
     alert_only: bool = False
+    instruct_only: bool = False
     backend: BackendEnum = BackendEnum(BACKEND_DEFAULT)  # noqa: RUF009
     disable_pre_commit: bool = False
     subprocess_verbose: bool = False
@@ -55,6 +58,7 @@ class UsethisConfig:
         quiet: bool | None = None,
         frozen: bool | None = None,
         alert_only: bool | None = None,
+        instruct_only: bool | None = None,
         backend: BackendEnum | None = None,
         disable_pre_commit: bool | None = None,
         subprocess_verbose: bool | None = None,
@@ -65,6 +69,7 @@ class UsethisConfig:
         old_quiet = self.quiet
         old_frozen = self.frozen
         old_alert_only = self.alert_only
+        old_instruct_only = self.instruct_only
         old_backend = self.backend
         old_disable_pre_commit = self.disable_pre_commit
         old_subprocess_verbose = self.subprocess_verbose
@@ -78,6 +83,8 @@ class UsethisConfig:
             frozen = old_frozen
         if alert_only is None:
             alert_only = self.alert_only
+        if instruct_only is None:
+            instruct_only = self.instruct_only
         if backend is None:
             backend = self.backend
         if disable_pre_commit is None:
@@ -91,6 +98,7 @@ class UsethisConfig:
         self.quiet = quiet
         self.frozen = frozen
         self.alert_only = alert_only
+        self.instruct_only = instruct_only
         self.backend = backend
         self.disable_pre_commit = disable_pre_commit
         self.subprocess_verbose = subprocess_verbose
@@ -102,6 +110,7 @@ class UsethisConfig:
         self.quiet = old_quiet
         self.frozen = old_frozen
         self.alert_only = old_alert_only
+        self.instruct_only = old_instruct_only
         self.backend = old_backend
         self.disable_pre_commit = old_disable_pre_commit
         self.subprocess_verbose = old_subprocess_verbose

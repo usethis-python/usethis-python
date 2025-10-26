@@ -4,6 +4,7 @@ from pathlib import Path
 
 import typer
 
+from usethis._console import instruct_print
 from usethis._types.backend import BackendEnum
 from usethis._types.ci import CIServiceEnum
 from usethis._types.docstyle import DocStyleEnum
@@ -63,13 +64,13 @@ def init(  # noqa: PLR0913
     """Initialize a new project with recommended tooling."""
     from usethis._config import usethis_config
     from usethis._config_file import files_manager
-    from usethis._console import box_print, err_print
+    from usethis._console import err_print
     from usethis.errors import UsethisError
 
     assert isinstance(backend, BackendEnum)
 
     if path is not None:
-        box_print("Change the current working directory to the project directory.")
+        instruct_print("Change the current working directory to the project directory.")
 
     if path is not None:
         path_ = Path(path)
@@ -139,38 +140,38 @@ def _init(  # noqa: PLR0913, PLR0915
 
     if pre_commit:
         tick_print("Adding the pre-commit framework.")
-        with usethis_config.set(alert_only=True):
+        with usethis_config.set(instruct_only=True):
             use_pre_commit()
         use_pre_commit(how=True)
 
     if doc:
         tick_print("Adding recommended documentation tools.")
-        with usethis_config.set(alert_only=True):
+        with usethis_config.set(instruct_only=True):
             use_doc_frameworks()
         use_doc_frameworks(how=True)
     if lint:
         tick_print("Adding recommended linters.")
-        with usethis_config.set(alert_only=True):
+        with usethis_config.set(instruct_only=True):
             use_linters()
         use_linters(how=True)
     if format_:
         tick_print("Adding recommended formatters.")
-        with usethis_config.set(alert_only=True):
+        with usethis_config.set(instruct_only=True):
             use_formatters()
         use_formatters(how=True)
     if docstyle is not None:
         tick_print(f"Setting docstring style to {docstyle.value}.")
         assert isinstance(docstyle, DocStyleEnum)
-        with usethis_config.set(alert_only=True):
+        with usethis_config.set(instruct_only=True):
             use_docstyle(style=docstyle)
     if spellcheck:
         tick_print("Adding recommended spellcheckers.")
-        with usethis_config.set(alert_only=True):
+        with usethis_config.set(instruct_only=True):
             use_spellcheckers()
         use_spellcheckers(how=True)
     if test:
         tick_print("Adding recommended test frameworks.")
-        with usethis_config.set(alert_only=True):
+        with usethis_config.set(instruct_only=True):
             use_test_frameworks()
         use_test_frameworks(how=True)
 
@@ -178,7 +179,7 @@ def _init(  # noqa: PLR0913, PLR0915
         assert isinstance(ci, CIServiceEnum)
         if ci is CIServiceEnum.bitbucket:
             tick_print("Adding Bitbucket Pipelines configuration.")
-            with usethis_config.set(alert_only=True):
+            with usethis_config.set(instruct_only=True):
                 use_ci_bitbucket()
             print_how_to_use_ci_bitbucket()
         else:

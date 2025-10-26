@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from usethis._config import usethis_config
-from usethis._console import box_print, tick_print
+from usethis._console import instruct_print, tick_print
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._integrations.pre_commit.dump import pre_commit_fancy_dump
 from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
@@ -176,9 +176,11 @@ def _report_adding_repo(repo: LocalRepo | UriRepo | MetaRepo) -> None:
 
 def add_placeholder_hook() -> None:
     add_repo(_get_placeholder_repo_config())
-    box_print("Remove the placeholder hook in '.pre-commit-config.yaml'.")
-    box_print("Replace it with your own hooks.")
-    box_print("Alternatively, use 'usethis tool' to add other tools and their hooks.")
+    instruct_print("Remove the placeholder hook in '.pre-commit-config.yaml'.")
+    instruct_print("Replace it with your own hooks.")
+    instruct_print(
+        "Alternatively, use 'usethis tool' to add other tools and their hooks."
+    )
 
 
 def _get_placeholder_repo_config() -> LocalRepo:

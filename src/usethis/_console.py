@@ -26,33 +26,60 @@ err_console = Console(stderr=True)
 def plain_print(msg: str | Exception) -> None:
     msg = str(msg)
 
-    if not (usethis_config.quiet or usethis_config.alert_only):
+    if not (
+        usethis_config.quiet
+        or usethis_config.alert_only
+        or usethis_config.instruct_only
+    ):
         console.print(msg)
 
 
 def table_print(table: Table) -> None:
-    if not (usethis_config.quiet or usethis_config.alert_only):
+    if not (
+        usethis_config.quiet
+        or usethis_config.alert_only
+        or usethis_config.instruct_only
+    ):
         console.print(table, justify="left", overflow="fold", soft_wrap=True)
 
 
 def tick_print(msg: str | Exception) -> None:
     msg = str(msg)
 
-    if not (usethis_config.quiet or usethis_config.alert_only):
+    if not (
+        usethis_config.quiet
+        or usethis_config.alert_only
+        or usethis_config.instruct_only
+    ):
         console.print(f"✔ {msg}", style="green")
 
 
-def box_print(msg: str | Exception) -> None:
+def instruct_print(msg: str | Exception) -> None:
     msg = str(msg)
 
     if not (usethis_config.quiet or usethis_config.alert_only):
         console.print(f"☐ {msg}", style="red")
 
 
+def how_print(msg: str | Exception) -> None:
+    msg = str(msg)
+
+    if not (
+        usethis_config.quiet
+        or usethis_config.alert_only
+        or usethis_config.instruct_only
+    ):
+        console.print(f"☐ {msg}", style="red")
+
+
 def info_print(msg: str | Exception, temporary: bool = False) -> None:
     msg = str(msg)
 
-    if not (usethis_config.quiet or usethis_config.alert_only):
+    if not (
+        usethis_config.quiet
+        or usethis_config.alert_only
+        or usethis_config.instruct_only
+    ):
         if temporary:
             end = "\r"
         else:

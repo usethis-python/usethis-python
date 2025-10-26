@@ -9,7 +9,7 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._config_file import DotImportLinterManager
-from usethis._console import box_print, info_print, warn_print
+from usethis._console import how_print, info_print, warn_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -70,20 +70,20 @@ class ImportLinterTool(Tool):
         backend = get_backend()
         if install_method == "pre-commit":
             if backend is BackendEnum.uv and is_uv_used():
-                box_print(
+                how_print(
                     f"Run 'uv run pre-commit run import-linter --all-files' to run {self.name}."
                 )
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print(
+                how_print(
                     f"Run 'pre-commit run import-linter --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv and is_uv_used():
-                box_print(f"Run 'uv run lint-imports' to run {self.name}.")
+                how_print(f"Run 'uv run lint-imports' to run {self.name}.")
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print(f"Run 'lint-imports' to run {self.name}.")
+                how_print(f"Run 'lint-imports' to run {self.name}.")
         else:
             assert_never(install_method)
 

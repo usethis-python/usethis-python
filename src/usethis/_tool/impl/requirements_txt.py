@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
-from usethis._console import box_print
+from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.pre_commit.schema import HookDefinition, Language, LocalRepo
 from usethis._tool.base import Tool
@@ -30,20 +30,20 @@ class RequirementsTxtTool(Tool):
         backend = get_backend()
         if install_method == "pre-commit":
             if backend is BackendEnum.uv:
-                box_print(
+                how_print(
                     "Run 'uv run pre-commit run uv-export' to write 'requirements.txt'."
                 )
             elif backend is BackendEnum.none:
-                box_print("Run 'pre-commit run uv-export' to write 'requirements.txt'.")
+                how_print("Run 'pre-commit run uv-export' to write 'requirements.txt'.")
             else:
                 assert_never(backend)
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv:
-                box_print(
+                how_print(
                     "Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
                 )
             elif backend is BackendEnum.none:
-                box_print(
+                how_print(
                     "Run 'usethis tool requirements.txt' to re-write 'requirements.txt'."
                 )
             else:

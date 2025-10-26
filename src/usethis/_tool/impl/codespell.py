@@ -7,7 +7,7 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._config_file import CodespellRCManager
-from usethis._console import box_print
+from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -41,20 +41,20 @@ class CodespellTool(Tool):
         install_method = self.get_install_method()
         if install_method == "pre-commit":
             if backend is BackendEnum.uv and is_uv_used():
-                box_print(
+                how_print(
                     "Run 'uv run pre-commit run codespell --all-files' to run the Codespell spellchecker."
                 )
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print(
+                how_print(
                     "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
                 )
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv and is_uv_used():
-                box_print("Run 'uv run codespell' to run the Codespell spellchecker.")
+                how_print("Run 'uv run codespell' to run the Codespell spellchecker.")
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print("Run 'codespell' to run the Codespell spellchecker.")
+                how_print("Run 'codespell' to run the Codespell spellchecker.")
         else:
             assert_never(install_method)
 

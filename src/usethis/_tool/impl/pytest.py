@@ -8,7 +8,7 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._config_file import DotPytestINIManager, PytestINIManager, ToxINIManager
-from usethis._console import box_print, info_print
+from usethis._console import how_print, info_print, instruct_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -43,17 +43,17 @@ class PytestTool(Tool):
         return "pytest"
 
     def print_how_to_use(self) -> None:
-        box_print(
+        how_print(
             "Add test files to the '/tests' directory with the format 'test_*.py'."
         )
-        box_print("Add test functions with the format 'test_*()'.")
+        how_print("Add test functions with the format 'test_*()'.")
 
         backend = get_backend()
         if backend is BackendEnum.uv and is_uv_used():
-            box_print("Run 'uv run pytest' to run the tests.")
+            how_print("Run 'uv run pytest' to run the tests.")
         else:
             assert backend in (BackendEnum.none, BackendEnum.uv)
-            box_print("Run 'pytest' to run the tests.")
+            how_print("Run 'pytest' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         from usethis._tool.impl.coverage_py import CoveragePyTool
@@ -287,7 +287,9 @@ class PytestTool(Tool):
                 info_print(
                     "Consider installing 'uv' to readily manage test dependencies."
                 )
-            box_print("Declare your test dependencies in 'bitbucket-pipelines.yml'.")
+            instruct_print(
+                "Declare your test dependencies in 'bitbucket-pipelines.yml'."
+            )
             info_print(f"Add test dependencies to this line: '{_PYTEST_PIP_CMD}'")
             pass
         else:

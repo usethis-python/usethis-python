@@ -1,6 +1,9 @@
 from pathlib import Path
 
+import pytest
+
 from usethis._integrations.pre_commit.io_ import (
+    PreCommitConfigYAMLConfigError,
     edit_pre_commit_config_yaml,
     read_pre_commit_config_yaml,
 )
@@ -58,6 +61,24 @@ repos:
         # Assert
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == ""
 
+    def test_extra_config(self, tmp_path: Path):
+        # Arrange
+        content_str = """\
+repos:
+    - repo: https://github.com/abravalheri/validate-pyproject
+      rev: v0.23
+extra:
+    - something
+"""
+
+        (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
+
+        # Act / Assert
+        with change_cwd(tmp_path), edit_pre_commit_config_yaml():
+            pass
+
+        assert (tmp_path / ".pre-commit-config.yaml").read_text() == content_str
+
 
 class TestReadPreCommitConfigYAML:
     def test_quote_style_preserved(self, tmp_path: Path):
@@ -76,3 +97,42 @@ repos:
 
         # Assert
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == content_str
+
+    def test_invalid_config_raises(self, tmp_path: Path):
+        # Arrange
+        content_str = """\
+repos:
+    - invalid_entry
+"""
+
+        (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
+
+        # Act / Assert
+        with (
+            change_cwd(tmp_path),
+            pytest.raises(
+                PreCommitConfigYAMLConfigError,
+                match="Invalid '.pre-commit-config.yaml' file:",
+            ),
+            read_pre_commit_config_yaml(),
+        ):
+            pass
+
+    def test_extra_config(self, tmp_path: Path):
+        # Arrange
+        content_str = """\
+repos:
+    - repo: https://github.com/abravalheri/validate-pyproject
+      rev: v0.23
+extra:
+    - something
+"""
+
+        (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
+
+        # Act / Assert
+        with (
+            change_cwd(tmp_path),
+            read_pre_commit_config_yaml() as doc,
+        ):
+            assert doc.content["extra"] == ["something"]

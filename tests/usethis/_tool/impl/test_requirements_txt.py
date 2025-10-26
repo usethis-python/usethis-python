@@ -39,5 +39,5 @@ repos:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "☐ Run 'usethis tool requirements.txt' to re-write 'requirements.txt'.\n"
+                "☐ Run 'usethis tool requirements.txt' to write 'requirements.txt'.\n"
             )

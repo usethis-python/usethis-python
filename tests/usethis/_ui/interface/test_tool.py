@@ -396,7 +396,6 @@ class TestRequirementsTxt:
             result.output
             == """\
 ✔ Writing 'requirements.txt'.
-☐ Run 'usethis tool requirements.txt' to re-write 'requirements.txt'.
 """
         )
 

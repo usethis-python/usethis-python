@@ -180,6 +180,7 @@ If you're not interested in templating automations, then [configurator](https://
 [![codecov](https://codecov.io/gh/usethis-python/usethis-python/graph/badge.svg?token=0QW539GSP9)](https://codecov.io/gh/usethis-python/usethis-python)
 [![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/usethis-python/usethis-python)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 ### Roadmap
 

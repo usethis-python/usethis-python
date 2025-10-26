@@ -433,6 +433,8 @@ class RuffTool(Tool):
 
     def ignore_rules_in_glob(self, rules: list[Rule], *, glob: str) -> None:
         """Ignore Ruff rules in the project for a specific glob pattern."""
+        rules = sorted(set(rules) - set(self.get_ignored_rules_in_glob(glob)))
+
         if not rules:
             return
 
@@ -446,6 +448,17 @@ class RuffTool(Tool):
         )
         keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
         file_manager.extend_list(keys=keys, values=rules)
+
+    def get_ignored_rules_in_glob(self, glob: str) -> list[Rule]:
+        """Get the Ruff rules ignored in the project for a specific glob pattern."""
+        (file_manager,) = self.get_active_config_file_managers()
+        keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
+        try:
+            rules: list[Rule] = file_manager[keys]
+        except (KeyError, FileNotFoundError):
+            rules = []
+
+        return rules
 
     def apply_rule_config(self, rule_config: RuleConfig) -> None:
         """Apply the Ruff rules associated with a rule config to the project.

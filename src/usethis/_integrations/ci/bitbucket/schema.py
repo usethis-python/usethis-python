@@ -11,6 +11,7 @@
 # plus manually forbid Step1.step from being None
 # plus manually forbid ParallelItem.parallel from being None
 # plus manually forbid StageItem.stage from being None
+# plus manually forbid StepBase.script from being None
 # plus manually add "shared" to the Literal annotation in `StepBase.type` to match default
 
 from __future__ import annotations
@@ -492,8 +493,8 @@ class StepBase(BaseModel):
     )
     runs_on: RunsOn | None = Field(default=None, alias="runs-on")
     runtime: Runtime | None = None
-    script: Script | None = Field(
-        default=None,
+    script: Script = Field(
+        ...,
         description="List of commands that are executed in sequence.",
         title="Step Script",
     )

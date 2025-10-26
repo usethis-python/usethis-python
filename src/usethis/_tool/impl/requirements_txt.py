@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._config import usethis_config
 from usethis._console import box_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.pre_commit.schema import HookDefinition, Language, LocalRepo
@@ -43,9 +44,10 @@ class RequirementsTxtTool(Tool):
                     "Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
                 )
             elif backend is BackendEnum.none:
-                box_print(
-                    "Run 'usethis tool requirements.txt' to re-write 'requirements.txt'."
-                )
+                if not (usethis_config.cpd() / "requirements.txt").exists():
+                    box_print(
+                        "Run 'usethis tool requirements.txt' to write 'requirements.txt'."
+                    )
             else:
                 assert_never(backend)
         else:

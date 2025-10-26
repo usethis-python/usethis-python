@@ -3164,7 +3164,6 @@ typer-slim[standard]
                 "ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies."  # noqa: RUF001
                 "ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files."  # noqa: RUF001
                 "✔ Writing 'requirements.txt'."
-                "☐ Run 'usethis tool requirements.txt' to re-write 'requirements.txt'."
             )
 
     class TestRemove:

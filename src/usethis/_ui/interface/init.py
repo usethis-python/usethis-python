@@ -70,12 +70,11 @@ def init(  # noqa: PLR0913
     assert isinstance(backend, BackendEnum)
 
     if path is not None:
-        instruct_print("Change the current working directory to the project directory.")
-
-    if path is not None:
         path_ = Path(path)
         if not path_.exists():
             path_.mkdir(parents=True, exist_ok=True)
+
+        instruct_print("Change the current working directory to the project directory.")
 
     with (
         usethis_config.set(

@@ -1448,6 +1448,34 @@ root_package = "a"
                 assert "INP" in RuffTool().get_selected_rules()
 
         @pytest.mark.usefixtures("_vary_network_conn")
+        def test_no_duplicate_inp_rules(self, tmp_path: Path):
+            # https://github.com/usethis-python/usethis-python/issues/935
+
+            # Arrange
+            (tmp_path / "ruff.toml").touch()
+
+            with change_cwd(tmp_path), files_manager():
+                # ... preparing for duplicate call
+                use_import_linter()
+
+                # Act - duplicate
+                use_import_linter()
+
+                # Assert
+                assert (
+                    len(
+                        [
+                            rule
+                            for rule in RuffTOMLManager()[
+                                ["lint", "per-file-ignores", "tests/**"]
+                            ]
+                            if rule == "INP"
+                        ]
+                    )
+                    == 1
+                )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_inp_rules_not_selected_for_tests_dir(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):

@@ -13,6 +13,7 @@
 # plus manually forbid StageItem.stage from being None
 # plus manually forbid StepBase.script from being None
 # plus manually add "shared" to the Literal annotation in `StepBase.type` to match default
+# plus manually use None defaults for Options.size, Options.max_time, StepBase.size, StepBase.max_time, StepBase.trigger, and Stage.trigger instead of default_factory
 
 from __future__ import annotations
 
@@ -378,11 +379,9 @@ class Options(BaseModel):
     docker: bool | None = Field(
         default=False, description="Enables Docker service for every step."
     )
-    max_time: MaxTime | None = Field(
-        default_factory=lambda: MaxTime.model_validate(120), alias="max-time"
-    )
+    max_time: MaxTime | None = None
     runtime: Runtime | None = None
-    size: Size | None = Field(default_factory=lambda: Size.model_validate("1x"))
+    size: Size | None = None
 
 
 class Cache(RootModel[CachePath | CacheExpanded]):
@@ -477,7 +476,7 @@ class StepBase(BaseModel):
         title="Input Variables",
     )
     max_time: MaxTime | None = Field(
-        default_factory=lambda: MaxTime.model_validate(120),
+        None,
         alias="max-time",
         title="Step Maximum Time",
     )
@@ -505,9 +504,9 @@ class StepBase(BaseModel):
         min_length=1,
         title="Step Services",
     )
-    size: Size | None = Field(default_factory=lambda: Size.model_validate("1x"))
+    size: Size | None = None
     trigger: Trigger | None = Field(
-        default_factory=lambda: Trigger.model_validate("automatic"),
+        None,
         description="The trigger used for the pipeline step.",
         title="Step Trigger",
     )
@@ -559,7 +558,7 @@ class Stage(BaseModel):
         title="Stage Steps",
     )
     trigger: Trigger | None = Field(
-        default_factory=lambda: Trigger.model_validate("automatic"),
+        None,
         description="The trigger used for the pipeline stage.",
         title="Stage Trigger",
     )

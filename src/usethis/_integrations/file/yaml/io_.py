@@ -468,6 +468,22 @@ def edit_yaml(
     guess_indent: bool = True,
 ) -> Generator[YAMLDocument, None, None]:
     """A context manager to modify a YAML file in-place, with managed read and write."""
+    with read_yaml(yaml_path, guess_indent=guess_indent) as yaml_document:
+        yield yaml_document
+        start_empty = not yaml_document.content
+        if start_empty and not yaml_document.content:
+            # No change
+            return
+        yaml_document.roundtripper.dump(yaml_document.content, stream=yaml_path)
+
+
+@contextmanager
+def read_yaml(
+    yaml_path: Path,
+    *,
+    guess_indent: bool = True,
+) -> Generator[YAMLDocument, None, None]:
+    """A context manager to read a YAML file."""
     with yaml_path.open(mode="r") as f:
         try:
             yaml_document = _get_yaml_document(f, guess_indent=guess_indent)
@@ -475,12 +491,7 @@ def edit_yaml(
             msg = f"Error reading '{yaml_path}':\n{err}"
             raise YAMLDecodeError(msg) from None
 
-    start_empty = not yaml_document.content
     yield yaml_document
-    if start_empty and not yaml_document.content:
-        # No change
-        return
-    yaml_document.roundtripper.dump(yaml_document.content, stream=yaml_path)
 
 
 def _get_yaml_document(

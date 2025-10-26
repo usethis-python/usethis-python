@@ -1,6 +1,9 @@
 from pathlib import Path
 
-from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
+from usethis._integrations.pre_commit.io_ import (
+    edit_pre_commit_config_yaml,
+    read_pre_commit_config_yaml,
+)
 from usethis._test import change_cwd
 
 
@@ -54,3 +57,22 @@ repos:
 
         # Assert
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == ""
+
+
+class TestReadPreCommitConfigYAML:
+    def test_quote_style_preserved(self, tmp_path: Path):
+        # Arrange
+        content_str = """\
+repos:
+    - repo: 'https://github.com/abravalheri/validate-pyproject'
+      rev: 'v0.23'
+"""
+
+        (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
+
+        # Act
+        with change_cwd(tmp_path), read_pre_commit_config_yaml():
+            pass
+
+        # Assert
+        assert (tmp_path / ".pre-commit-config.yaml").read_text() == content_str

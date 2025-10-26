@@ -5,7 +5,7 @@ from pathlib import Path
 from typing_extensions import assert_never
 
 from usethis._config import usethis_config
-from usethis._console import box_print
+from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -55,12 +55,12 @@ class PreCommitTool(Tool):
     def print_how_to_use(self) -> None:
         backend = get_backend()
         if backend is BackendEnum.uv and is_uv_used():
-            box_print(
+            how_print(
                 "Run 'uv run pre-commit run --all-files' to run the hooks manually."
             )
         else:
             assert backend in (BackendEnum.none, BackendEnum.uv)
-            box_print("Run 'pre-commit run --all-files' to run the hooks manually.")
+            how_print("Run 'pre-commit run --all-files' to run the hooks manually.")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pre-commit")]

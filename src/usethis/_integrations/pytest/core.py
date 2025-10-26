@@ -3,7 +3,7 @@ from __future__ import annotations
 import shutil
 
 from usethis._config import usethis_config
-from usethis._console import box_print, tick_print
+from usethis._console import instruct_print, tick_print
 
 
 def add_pytest_dir() -> None:
@@ -35,5 +35,5 @@ def remove_pytest_dir() -> None:
         tick_print("Removing '/tests'.")
         shutil.rmtree(tests_dir)
     else:
-        box_print("Reconfigure the '/tests' directory to run without pytest.")
+        instruct_print("Reconfigure the '/tests' directory to run without pytest.")
         # Note we don't actually remove the directory, just explain what needs to be done.

@@ -25,7 +25,7 @@ def project_init():
         opinionated_uv_init()
     elif backend is BackendEnum.none:
         # pyproject.toml
-        with usethis_config.set(alert_only=True):
+        with usethis_config.set(instruct_only=True):
             ensure_pyproject_toml()
 
         # README.md

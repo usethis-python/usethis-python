@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typer
 
-from usethis._console import box_print
+from usethis._console import how_print
 
 
 def browse_pypi(*, package: str, browser: bool = False) -> None:
@@ -10,4 +10,4 @@ def browse_pypi(*, package: str, browser: bool = False) -> None:
     if browser:
         typer.launch(url)
     else:
-        box_print(f"Open URL <{url}>.")
+        how_print(f"Open URL <{url}>.")

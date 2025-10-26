@@ -7,7 +7,7 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
-from usethis._console import box_print, tick_print
+from usethis._console import how_print, tick_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -81,22 +81,22 @@ class RuffTool(Tool):
         backend = get_backend()
         if install_method == "pre-commit":
             if backend is BackendEnum.uv and is_uv_used():
-                box_print(
+                how_print(
                     "Run 'uv run pre-commit run ruff --all-files' to run the Ruff linter."
                 )
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print(
+                how_print(
                     "Run 'pre-commit run ruff --all-files' to run the Ruff linter."
                 )
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv and is_uv_used():
-                box_print(
+                how_print(
                     "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
                 )
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print(
+                how_print(
                     "Run 'ruff check --fix' to run the Ruff linter with autofixes."
                 )
         else:
@@ -110,18 +110,18 @@ class RuffTool(Tool):
         backend = get_backend()
         if install_method == "pre-commit":
             if backend is BackendEnum.uv and is_uv_used():
-                box_print(
+                how_print(
                     "Run 'uv run pre-commit run ruff-format' to run the Ruff formatter."
                 )
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print("Run 'pre-commit run ruff-format' to run the Ruff formatter.")
+                how_print("Run 'pre-commit run ruff-format' to run the Ruff formatter.")
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv and is_uv_used():
-                box_print("Run 'uv run ruff format' to run the Ruff formatter.")
+                how_print("Run 'uv run ruff format' to run the Ruff formatter.")
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print("Run 'ruff format' to run the Ruff formatter.")
+                how_print("Run 'ruff format' to run the Ruff formatter.")
         else:
             assert_never(install_method)
 
@@ -475,7 +475,8 @@ class RuffTool(Tool):
         # verbosity control.
         # https://github.com/usethis-python/usethis-python/issues/884
         with usethis_config.set(
-            alert_only=(is_selected or is_ignored) or usethis_config.alert_only
+            alert_only=(is_selected or is_ignored) or usethis_config.alert_only,
+            instruct_only=(is_selected or is_ignored) or usethis_config.instruct_only,
         ):
             self.ignore_rules_in_glob(
                 rule_config.tests_unmanaged_ignored, glob="tests/**"

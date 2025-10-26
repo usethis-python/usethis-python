@@ -8,7 +8,7 @@ from usethis._config_file import (
     CoverageRCManager,
     ToxINIManager,
 )
-from usethis._console import box_print
+from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -37,19 +37,19 @@ class CoveragePyTool(Tool):
 
         if PytestTool().is_used():
             if backend is BackendEnum.uv and is_uv_used():
-                box_print(
+                how_print(
                     f"Run 'uv run pytest --cov' to run your tests with {self.name}."
                 )
             else:
                 assert backend in (BackendEnum.none, BackendEnum.uv)
-                box_print(f"Run 'pytest --cov' to run your tests with {self.name}.")
+                how_print(f"Run 'pytest --cov' to run your tests with {self.name}.")
         elif backend is BackendEnum.uv and is_uv_used():
-            box_print(
+            how_print(
                 f"Run 'uv run coverage help' to see available {self.name} commands."
             )
         else:
             assert backend in (BackendEnum.none, BackendEnum.uv)
-            box_print(f"Run 'coverage help' to see available {self.name} commands.")
+            how_print(f"Run 'coverage help' to see available {self.name} commands.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         from usethis._tool.impl.pytest import PytestTool

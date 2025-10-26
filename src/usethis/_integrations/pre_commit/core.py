@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing_extensions import assert_never
 
 from usethis._config import usethis_config
-from usethis._console import box_print, info_print, tick_print
+from usethis._console import info_print, instruct_print, tick_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.backend.uv.errors import UVSubprocessFailedError
@@ -32,10 +32,10 @@ def install_pre_commit_hooks() -> None:
 
     if usethis_config.frozen:
         if backend is BackendEnum.uv and is_uv_used():
-            box_print("Run 'uv run pre-commit install' to register pre-commit.")
+            instruct_print("Run 'uv run pre-commit install' to register pre-commit.")
         else:
             assert backend in (BackendEnum.none, BackendEnum.uv)
-            box_print("Run 'pre-commit install' to register pre-commit.")
+            instruct_print("Run 'pre-commit install' to register pre-commit.")
         return
 
     if backend is BackendEnum.uv:
@@ -58,7 +58,7 @@ def install_pre_commit_hooks() -> None:
             msg = f"Failed to install pre-commit hooks:\n{err}"
             raise PreCommitInstallationError(msg) from None
     elif backend is BackendEnum.none:
-        box_print("Run 'pre-commit install' to install pre-commit to Git.")
+        instruct_print("Run 'pre-commit install' to install pre-commit to Git.")
     else:
         assert_never(backend)
 
@@ -69,7 +69,7 @@ def uninstall_pre_commit_hooks() -> None:
     Note that this requires the user to be in a git repo.
     """
     if usethis_config.frozen:
-        box_print(
+        instruct_print(
             "Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit."
         )
         return
@@ -86,6 +86,6 @@ def uninstall_pre_commit_hooks() -> None:
             msg = f"Failed to uninstall pre-commit hooks:\n{err}"
             raise PreCommitInstallationError(msg) from None
     elif backend is BackendEnum.none:
-        box_print("Run 'pre-commit uninstall' to deregister pre-commit.")
+        instruct_print("Run 'pre-commit uninstall' to deregister pre-commit.")
     else:
         assert_never(backend)

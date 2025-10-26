@@ -3,9 +3,10 @@ from rich.table import Table
 
 from usethis._config import usethis_config
 from usethis._console import (
-    box_print,
     err_print,
+    how_print,
     info_print,
+    instruct_print,
     plain_print,
     table_print,
     tick_print,
@@ -60,15 +61,55 @@ class TestTickPrint:
         assert not err
         assert not out
 
+    def test_instruct_only_suppresses(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Act
+        with usethis_config.set(instruct_only=True):
+            tick_print("Hello")
 
-class TestBoxPrint:
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert not out
+
+
+class TestInstructPrint:
     def test_out(self, capfd: pytest.CaptureFixture[str]) -> None:
         # Act
-        box_print("Hello")
+        instruct_print("Hello")
 
         # Assert
         out, _ = capfd.readouterr()
         assert out == "☐ Hello\n"
+
+    def test_instruct_only_does_not_suppress(
+        self, capfd: pytest.CaptureFixture[str]
+    ) -> None:
+        # Act
+        with usethis_config.set(instruct_only=True):
+            instruct_print("Hello")
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == "☐ Hello\n"
+
+
+class TestHowPrint:
+    def test_out(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Act
+        how_print("Hello")
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == "☐ Hello\n"
+
+    def test_instruct_only_suppresses(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Act
+        with usethis_config.set(instruct_only=True):
+            how_print("Hello")
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert not out
 
 
 class TestInfoPrint:

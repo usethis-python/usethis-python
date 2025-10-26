@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
-from usethis._console import box_print
+from usethis._console import how_print
 from usethis._deps import add_deps_to_group
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
@@ -30,7 +30,7 @@ class DefaultTool(Tool):
         return "default_tool"
 
     def print_how_to_use(self) -> None:
-        box_print("How to use default_tool")
+        how_print("How to use default_tool")
 
 
 class MyTool(Tool):
@@ -44,7 +44,7 @@ class MyTool(Tool):
         return "my_tool"
 
     def print_how_to_use(self) -> None:
-        box_print("How to use my_tool")
+        how_print("How to use my_tool")
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [
@@ -98,7 +98,7 @@ class TwoHooksTool(Tool):
         return "two_hooks_tool"
 
     def print_how_to_use(self) -> None:
-        box_print("How to use two_hooks_tool")
+        how_print("How to use two_hooks_tool")
 
     def get_pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
@@ -359,7 +359,7 @@ class TestTool:
                     return "my_tool"
 
                 def print_how_to_use(self) -> None:
-                    box_print("How to use my_tool")
+                    how_print("How to use my_tool")
 
                 def get_config_spec(self) -> ConfigSpec:
                     # Should use setup.cfg instead of pyproject.toml
@@ -487,7 +487,7 @@ repos:
                     )
 
                 def print_how_to_use(self) -> None:
-                    box_print("How to use no_repo_configs_tool")
+                    how_print("How to use no_repo_configs_tool")
 
             nrc_tool = NoRepoConfigsTool()
 
@@ -506,7 +506,7 @@ repos:
                     return "multi_repo_tool"
 
                 def print_how_to_use(self) -> None:
-                    box_print("How to use multi_repo_tool")
+                    how_print("How to use multi_repo_tool")
 
                 def get_pre_commit_config(self) -> PreCommitConfig:
                     return PreCommitConfig(
@@ -813,7 +813,7 @@ repos:
                     return "two_repo_tool"
 
                 def print_how_to_use(self) -> None:
-                    box_print("How to use two_repo_tool")
+                    how_print("How to use two_repo_tool")
 
                 def get_pre_commit_config(self) -> PreCommitConfig:
                     return PreCommitConfig(
@@ -875,7 +875,7 @@ repos:
                     return "no_config_tool"
 
                 def print_how_to_use(self) -> None:
-                    box_print("How to use no_config_tool")
+                    how_print("How to use no_config_tool")
 
             nc_tool = NoConfigTool()
 
@@ -894,7 +894,7 @@ repos:
                     return "mytool"
 
                 def print_how_to_use(self) -> None:
-                    box_print("How to use this_tool")
+                    how_print("How to use this_tool")
 
                 def get_config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
@@ -945,7 +945,7 @@ key = "value"
                     return "mytool"
 
                 def print_how_to_use(self) -> None:
-                    box_print("How to use this_tool")
+                    how_print("How to use this_tool")
 
                 def get_config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
@@ -1001,7 +1001,7 @@ root_packages = ["example"]
                     return "mytool"
 
                 def print_how_to_use(self) -> None:
-                    box_print("How to use this_tool")
+                    how_print("How to use this_tool")
 
                 def get_config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
@@ -1041,7 +1041,7 @@ root_packages = ["example"]
                     return "mytool"
 
                 def print_how_to_use(self) -> None:
-                    box_print("How to use this_tool")
+                    how_print("How to use this_tool")
 
                 def get_config_spec(self) -> ConfigSpec:
                     return ConfigSpec(

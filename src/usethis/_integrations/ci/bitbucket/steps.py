@@ -195,7 +195,7 @@ def _add_step_in_default_via_doc(
     ).add()
     for instruction in weld_result.instructions:
         apply_pipeweld_instruction_via_doc(
-            instruction=instruction, new_step=step, doc=doc
+            instruction=instruction, step_to_insert=step, doc=doc
         )
 
 

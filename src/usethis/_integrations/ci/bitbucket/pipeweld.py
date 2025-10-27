@@ -188,13 +188,13 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
 
 def _extract_step_from_items(
     items: list[StepItem | ParallelItem | StageItem], step_name: str
-) -> "Step":
+) -> Step:
     """Find and remove a step from the items list.
 
     This function searches for a step with the given name, removes it from the
     items list, and returns the step. If the step is found in a parallel block
     with other steps, only that step is removed from the parallel block.
-    
+
     Raises:
         MissingStepError: If the step cannot be found in the pipeline.
     """

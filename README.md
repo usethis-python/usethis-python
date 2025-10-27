@@ -56,6 +56,12 @@ $ uvx usethis tool ruff
 $ pipx run usethis tool ruff
 ```
 
+## 📜 Documentation
+
+The usethis documentation is available at <usethis.readthedocs.io>.
+
+Additionally, the command line reference documentation can be viewed with `usethis --help`.
+
 ## 🖥️ Command Line Interface
 
 ### Start a New Project

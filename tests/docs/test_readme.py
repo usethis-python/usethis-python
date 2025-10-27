@@ -40,6 +40,13 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
         "`](reference.md#",
         "`](https://usethis.readthedocs.io/en/stable/cli/reference#",
     )
+    parts.append("""\
+## 📜 Documentation
+
+The usethis documentation is available at [usethis.readthedocs.io](https://usethis.readthedocs.io/en/stable/).
+
+Additionally, the command line reference documentation can be viewed with `usethis --help`.
+""")
     parts.append(cli_overview_content)
     parts.append(_get_doc_file(usethis_dev_dir / "docs" / "example-usage.md"))
     parts.append(_get_doc_file(usethis_dev_dir / "docs" / "similar-projects.md"))

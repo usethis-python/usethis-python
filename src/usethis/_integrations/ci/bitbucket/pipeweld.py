@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 def get_pipeweld_step(step: Step) -> str:
     if step.name is not None:
         return step.name
-    return step.model_dump_json(exclude_defaults=True)
+    return step.model_dump_json(exclude_defaults=True, by_alias=True)
 
 
 def get_pipeweld_pipeline_from_default(

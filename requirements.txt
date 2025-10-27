@@ -234,9 +234,9 @@ coverage==7.7.1 \
     --hash=sha256:eff187177d8016ff6addf789dcc421c3db0d014e4946c1cc3fbf697f7852459d \
     --hash=sha256:fbba59022e7c20124d2f520842b75904c7b9f16c854233fa46575c69949fb5b9
     # via pytest-cov
-datamodel-code-generator==0.28.2 \
-    --hash=sha256:5f16fe4d6acee79c1366f9ee68016eeec544fc0a2fec25ce47d35f7b7767e0fe \
-    --hash=sha256:a2c425386c3f836c618ae276be57e460df323ac78f911b1b12d927ddffd70e73
+datamodel-code-generator==0.35.0 \
+    --hash=sha256:46805fa2515d3871f6bfafce9aa63128e735a7a6a4cfcbf9c27b3794ee4ea846 \
+    --hash=sha256:c356d1e4a555f86667a4262db03d4598a30caeda8f51786555fd269c8abb806b
 deptry==0.23.0 \
     --hash=sha256:04afae204654542406318fd3dd6f4a6697579597f37195437daf84a53ee0ebbf \
     --hash=sha256:1cfa4b3a46ee8a026eaa38e4b9ba43fe6036a07fe16bf0a663cb611b939f6af8 \

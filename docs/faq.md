@@ -36,3 +36,9 @@ projects, for example Poetry.
 There is another reason to use uv, which is to provide the uvx command for running
 usethis. This provides an easy way to use usethis without needing to know technical
 details about Python virtual environments.
+
+## What if I'm using Poetry for my project?
+
+If you're using Poetry, usethis will automatically detect this and avoid using the uv
+backend to install packages. You'll get instructions in the console about which
+steps to take manually using Poetry. First-class support for Poetry is planned.

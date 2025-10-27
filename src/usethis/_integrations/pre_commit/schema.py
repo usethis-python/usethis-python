@@ -7,6 +7,7 @@
 # pyright: reportGeneralTypeIssues=false
 # plus manually remove default for LocalRepo.repo
 # plus manually add HookDefinition.require_serial for type hinting
+# plus manually set default to None for for roundtripping
 
 
 from __future__ import annotations
@@ -21,23 +22,23 @@ class Ci(BaseModel):
         extra="allow",
     )
     autofix_commit_msg: str | None = Field(
-        default="[pre-commit.ci] auto fixes from pre-commit.com hooks\n\nfor more information, see https://pre-commit.ci",
+        default=None,
         description="A commit message for pull request autofixes\nhttps://pre-commit.ci/#configuration",
     )
     autofix_prs: bool | None = Field(
-        default=True,
+        default=None,
         description="Whether to autofix pull requests\nhttps://pre-commit.ci/#configuration",
     )
     autoupdate_branch: str | None = Field(
-        default="",
+        default=None,
         description="A branch to send pull request's autoupdate to\nhttps://pre-commit.ci/#configuration",
     )
     autoupdate_commit_msg: str | None = Field(
-        default="[pre-commit.ci] pre-commit autoupdate",
+        default=None,
         description="A commit message for autoupdate pull requests\nhttps://pre-commit.ci/#configuration",
     )
     autoupdate_schedule: Literal["weekly", "monthly", "quarterly"] | None = Field(
-        default="weekly",
+        default=None,
         description="An autoupdate frequency\nhttps://pre-commit.ci/#configuration",
     )
     skip: list[str] | None = Field(
@@ -45,7 +46,7 @@ class Ci(BaseModel):
         description="List of skipped hook's ids\nhttps://pre-commit.ci/#configuration",
     )
     submodules: bool | None = Field(
-        default=False,
+        default=None,
         description="Whether to recursively check out submodules\nhttps://pre-commit.ci/#configuration",
     )
 
@@ -741,11 +742,11 @@ class HookDefinition(BaseModel):
         description="A language the current hook is written in\nhttps://pre-commit.com/#pre-commit-configyaml---hooks",
     )
     pass_filenames: bool | None = Field(
-        default=True,
+        default=None,
         description="Whether to pass filenames to the current hook or not\nhttps://pre-commit.com/#pre-commit-configyaml---hooks",
     )
     require_serial: bool | None = Field(
-        default=False,
+        default=None,
         description="Whether to run the current hook in serial or not\nhttps://pre-commit.com/#pre-commit-configyaml---hooks",
     )
 
@@ -793,7 +794,7 @@ class JsonSchemaForPreCommitConfigYaml(BaseModel):
         description="Repository mappings of the current project\nhttps://pre-commit.com/#pre-commit-configyaml---top-level",
     )
     default_install_hook_types: list | None = Field(
-        default=["pre-commit"],
+        default=None,
         description="A list of hook types which will be used by default when running `pre-commit install`\nhttps://pre-commit.com/#pre-commit-configyaml---top-level",
     )
     default_language_version: dict[str, str] | None = Field(
@@ -805,18 +806,18 @@ class JsonSchemaForPreCommitConfigYaml(BaseModel):
         description="The default stages of the current project\nhttps://pre-commit.com/#pre-commit-configyaml---top-level",
     )
     files: str | None = Field(
-        default="",
+        default=None,
         description="A file include pattern of the current project\nhttps://pre-commit.com/#pre-commit-configyaml---top-level",
     )
     exclude: str | None = Field(
-        default="^$",
+        default=None,
         description="A file exclude pattern of the current project\nhttps://pre-commit.com/#pre-commit-configyaml---top-level",
     )
     fail_fast: bool | None = Field(
-        default=False,
+        default=None,
         description="Whether stop running hooks after a first failure\nhttps://pre-commit.com/#pre-commit-configyaml---top-level",
     )
     minimum_pre_commit_version: str | None = Field(
-        default="0",
+        default=None,
         description="A minimum version of pre-commit\nhttps://pre-commit.com/#pre-commit-configyaml---top-level",
     )

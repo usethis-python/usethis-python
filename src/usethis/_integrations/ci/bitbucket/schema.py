@@ -13,7 +13,7 @@
 # plus manually forbid StageItem.stage from being None
 # plus manually forbid StepBase.script from being None
 # plus manually add "shared" to the Literal annotation in `StepBase.type` to match default
-# plus manually use None defaults for Options.size, Options.max_time, StepBase.size, StepBase.max_time, StepBase.trigger, and Stage.trigger instead of default_factory
+# plus manually set default to None for for roundtripping
 
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ class Clone(BaseModel):
         extra="allow",
     )
     depth: Depth | Literal["full"] | None = Field(
-        default=50,
+        default=None,
         description='The depth argument of Git clone operation. It can be either number or "full" value',
         examples=["full"],
         title="Git Clone Depth",
@@ -48,11 +48,11 @@ class Clone(BaseModel):
         default=True, description="Enables cloning of the repository."
     )
     lfs: bool | None = Field(
-        default=False,
+        default=None,
         description="Enables the download of files from LFS storage when cloning.",
     )
     skip_ssl_verify: bool | None = Field(
-        default=False,
+        default=None,
         alias="skip-ssl-verify",
         description="Disables SSL verification during Git clone operation, allowing the use of self-signed certificates.",
     )
@@ -102,7 +102,7 @@ class Cloud(BaseModel):
         default="x86", description="Architecture type used to run the step."
     )
     atlassian_ip_ranges: bool | None = Field(
-        default=False,
+        default=None,
         alias="atlassian-ip-ranges",
         description="Whether it uses Atlassian ip ranges.",
     )
@@ -166,7 +166,7 @@ class ImageBase(BaseModel):
     )
     name: ImageName
     run_as_user: int | None = Field(
-        default=0,
+        default=None,
         alias="run-as-user",
         description="The UID of a user in the docker image to run as. Overrides image's default user, specified user UID must be an existing user in the image with a valid home directory.",
         title="User ID",
@@ -398,7 +398,7 @@ class Service(BaseModel):
     )
     image: Image | None = None
     memory: int | None = Field(
-        default=1024,
+        default=None,
         description="Memory limit for the service container, in megabytes.",
         ge=128,
         title="Service Memory",
@@ -463,7 +463,7 @@ class StepBase(BaseModel):
         title="Step Environment",
     )
     fail_fast: FailFast | None = Field(
-        default=False,
+        default=None,
         alias="fail-fast",
         description="Stop the parent parallel group in case this step fails.",
     )
@@ -510,7 +510,7 @@ class StepBase(BaseModel):
         description="The trigger used for the pipeline step.",
         title="Step Trigger",
     )
-    type: Literal["inline", "pipeline"] | None = Field(
+    type: Literal["inline", "pipeline", "shared"] | None = Field(
         default="shared", description="The type of the step.", title="Step Type"
     )
 
@@ -603,7 +603,7 @@ class ParallelExpanded(BaseModel):
         extra="allow",
     )
     fail_fast: FailFast | None = Field(
-        default=False,
+        default=None,
         alias="fail-fast",
         description="Stop the whole parallel group in case one of its steps fails.",
     )
@@ -721,7 +721,7 @@ class PipelinesConfiguration(BaseModel):
         title="Global Definitions",
     )
     export: bool | None = Field(
-        default=False,
+        default=None,
         description="Allows other Bitbucket repositories to import pipeline definitions from this file. A shared pipeline definition can't contain another `import` property.",
         title="Enables shared pipelines definitions.",
     )

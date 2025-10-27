@@ -426,6 +426,58 @@ pipelines:
 """
             )
 
+        def test_add_to_existing_parallel_expanded_format(self, tmp_path: Path):
+            # Arrange: Pipeline with an existing parallel block using expanded format
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            steps:
+              - step:
+                    name: bar
+                    script:
+                      - echo bar
+              - step:
+                    name: baz
+                    script:
+                      - echo baz
+"""
+            )
+
+            # Act: Insert foo in parallel to bar (expanded format)
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertParallel(step="foo", after="bar"),
+                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert: Should add to the existing parallel block
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            steps:
+              - step:
+                    name: bar
+                    script:
+                      - echo bar
+              - step:
+                    name: baz
+                    script:
+                      - echo baz
+              - step:
+                    name: foo
+                    script:
+                      - echo foo
+"""
+            )
+
 
 class TestBreakUpParallelism:
     """Test breaking up an existing parallel block to satisfy dependencies."""
@@ -489,6 +541,51 @@ pipelines:
             name: C
             script:
               - echo C
+      - step:
+            name: B
+            script:
+              - echo B
+"""
+        )
+
+    def test_extract_last_step_from_parallel(self, tmp_path: Path):
+        # Arrange: Parallel block with a single step
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: A
+                script:
+                  - echo A
+      - step:
+            name: B
+            script:
+              - echo B
+"""
+        )
+
+        # Act: Extract the only step from the parallel block
+        with change_cwd(tmp_path):
+            apply_pipeweld_instruction(
+                InsertSuccessor(step="A", after=None),
+                step_to_insert=Step(name="C", script=Script(["echo C"])),
+            )
+
+        # Assert: Parallel block should be removed entirely, leaving A and B
+        content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            content
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: A
+            script:
+              - echo A
       - step:
             name: B
             script:

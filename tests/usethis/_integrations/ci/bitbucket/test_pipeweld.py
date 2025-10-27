@@ -496,6 +496,10 @@ pipelines:
 
         with change_cwd(tmp_path):
             # Simulate pipeweld instructions for: series("A", "C", "B")
+            # Note: new_step is always C (the actual new step being added)
+            # but instruction.step varies (A, B, or C) to indicate which step
+            # the instruction is about (existing or new)
+            
             # Step 1: Move A to beginning
             apply_pipeweld_instruction(
                 InsertSuccessor(step="A", after=None),

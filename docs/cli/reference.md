@@ -21,14 +21,17 @@ Supported options:
 - `--test` to add a recommended testing framework (default; or `--no-test` to opt-out)
 - `--pre-commit` to add the pre-commit framework for git hooks (but the default is `--no-pre-commit`)
 - `--ci` to add a CI service configuration
+
   Possible values:
   - `bitbucket` for [Bitbucket Pipelines](https://bitbucket.org/product/features/pipelines)
-- `--docstyle` to set a docstring style convention for the project
+- `--docstyle` to set a docstring style convention for the project.
+
   Possible values:
   - `numpy` for [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
   - `google` for [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
   - `pep257` for [PEP 257 docstring style](https://www.python.org/dev/peps/pep-0257/)
 - `--status` to set the development status of the project. Defaults to `planning`.
+
   Possible values:
   - `planning` or `1` for "Development Status :: 1 - Planning"
   - `pre-alpha` or `2` for "Development Status :: 2 - Pre-Alpha"
@@ -41,7 +44,8 @@ Supported options:
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -84,7 +88,8 @@ Supported options:
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -109,7 +114,8 @@ Supported options:
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -209,7 +215,8 @@ Supported options:
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -234,7 +241,8 @@ Supported options:
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -267,7 +275,8 @@ Supported options:
 - `--badges` to also add badges to the README.md file
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -286,7 +295,8 @@ Other supported options:
 - `--overwrite` to overwrite all existing author information
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -313,7 +323,8 @@ Supported options:
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -337,7 +348,9 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+
+  Possible values:
+
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.

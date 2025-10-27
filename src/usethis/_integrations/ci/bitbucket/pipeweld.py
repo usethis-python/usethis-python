@@ -160,24 +160,27 @@ def apply_pipeweld_instruction_via_doc(
     #   block so "lint" can be inserted between "build" and "test")
     try:
         # Try to extract an existing step with this name
-        step = _extract_step_from_items(items, instruction.step)
+        step = _extract_step_from_items(items, step_name=instruction.step)
     except MissingStepError:
         # Step not found in pipeline, so this must be the new step being added
         step = step_to_insert
 
-    _apply_instruction_to_items(instruction, items, step)
+    _apply_instruction_to_items(
+        instruction=instruction, items=items, step_to_insert=step
+    )
 
     if default is None and items:
         pipelines.default = Pipeline(Items(items))
 
 
 def _apply_instruction_to_items(
+    *,
     instruction: Instruction,
     items: list[StepItem | ParallelItem | StageItem],
     step_to_insert: Step,
 ) -> None:
     """Apply an instruction to insert a step into the items list.
-    
+
     Args:
         instruction: The instruction specifying how to insert the step.
         items: The list of pipeline items to modify.
@@ -208,7 +211,7 @@ def _apply_instruction_to_items(
 
 
 def _extract_step_from_items(
-    items: list[StepItem | ParallelItem | StageItem], step_name: str
+    items: list[StepItem | ParallelItem | StageItem], *, step_name: str
 ) -> Step:
     """Find and remove a step from the items list.
 
@@ -220,7 +223,9 @@ def _extract_step_from_items(
         MissingStepError: If the step cannot be found in the pipeline.
     """
     for idx, item in enumerate(items):
-        extracted = _extract_step_from_item(item, step_name, items, idx)
+        extracted = _extract_step_from_item(
+            item, step_name=step_name, items=items, idx=idx
+        )
         if extracted is not None:
             return extracted
     msg = f"Step '{step_name}' not found in pipeline"
@@ -230,6 +235,7 @@ def _extract_step_from_items(
 @singledispatch
 def _extract_step_from_item(
     item: StepItem | ParallelItem | StageItem,
+    *,
     step_name: str,
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
@@ -241,6 +247,7 @@ def _extract_step_from_item(
 @_extract_step_from_item.register
 def _(
     item: StepItem,
+    *,
     step_name: str,
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
@@ -255,6 +262,7 @@ def _(
 @_extract_step_from_item.register
 def _(
     item: ParallelItem,
+    *,
     step_name: str,
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
@@ -288,6 +296,7 @@ def _(
 def _(
     # https://github.com/astral-sh/ruff/issues/18654
     item: StageItem,  # noqa: ARG001
+    *,
     step_name: str,  # noqa: ARG001
     items: list[StepItem | ParallelItem | StageItem],  # noqa: ARG001
     idx: int,  # noqa: ARG001

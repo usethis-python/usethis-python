@@ -502,19 +502,19 @@ pipelines:
                 new_step=Step(name="C", script=Script(["echo C"])),
             )
 
-            # Step 2: Insert C after A
-            apply_pipeweld_instruction(
-                InsertSuccessor(step="C", after="A"),
-                new_step=Step(name="C", script=Script(["echo C"])),
-            )
-
-            # Step 3: Move B after A
+            # Step 2: Move B after A
             apply_pipeweld_instruction(
                 InsertSuccessor(step="B", after="A"),
                 new_step=Step(name="C", script=Script(["echo C"])),
             )
 
-        # Assert: Should result in A, then B, then C in series
+            # Step 3: Insert C after A (C will go between A and B)
+            apply_pipeweld_instruction(
+                InsertSuccessor(step="C", after="A"),
+                new_step=Step(name="C", script=Script(["echo C"])),
+            )
+
+        # Assert: Should result in A, then C, then B in series
         content = (tmp_path / "bitbucket-pipelines.yml").read_text()
         assert (
             content
@@ -527,13 +527,13 @@ pipelines:
             script:
               - echo A
       - step:
-            name: B
-            script:
-              - echo B
-      - step:
             name: C
             script:
               - echo C
+      - step:
+            name: B
+            script:
+              - echo B
 """
         )
 

@@ -22,6 +22,7 @@ from usethis._integrations.ci.bitbucket.schema import (
     Pipeline,
     Pipelines,
     StageItem,
+    Step,
     StepItem,
 )
 from usethis._integrations.ci.bitbucket.schema_utils import step1tostep
@@ -29,13 +30,8 @@ from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._pipeweld.ops import InsertParallel, InsertSuccessor, Instruction
 
 if TYPE_CHECKING:
-    from usethis._integrations.ci.bitbucket.io_ import (
-        BitbucketPipelinesYAMLDocument,
-    )
-    from usethis._integrations.ci.bitbucket.schema import (
-        PipelinesConfiguration,
-        Step,
-    )
+    from usethis._integrations.ci.bitbucket.io_ import BitbucketPipelinesYAMLDocument
+    from usethis._integrations.ci.bitbucket.schema import PipelinesConfiguration
 
 
 def get_pipeweld_step(step: Step) -> str:
@@ -124,7 +120,7 @@ def apply_pipeweld_instruction(instruction: Instruction, *, new_step: Step) -> N
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 
-def apply_pipeweld_instruction_via_doc(
+def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
     instruction: Instruction,
     *,
     new_step: Step,
@@ -149,7 +145,7 @@ def apply_pipeweld_instruction_via_doc(
 
     # Check if this instruction is for a new step or an existing step
     is_new_step = get_pipeweld_step(new_step) == instruction.step
-    
+
     if is_new_step:
         step_to_insert = new_step
     else:
@@ -177,7 +173,9 @@ def apply_pipeweld_instruction_via_doc(
         # Insert in parallel with the specified step
         for idx, item in enumerate(items):
             if _is_insertion_necessary(item, instruction=instruction):
-                _insert_parallel_step(item, items=items, idx=idx, new_step=step_to_insert)
+                _insert_parallel_step(
+                    item, items=items, idx=idx, new_step=step_to_insert
+                )
                 break
 
     if default is None and items:
@@ -186,9 +184,9 @@ def apply_pipeweld_instruction_via_doc(
 
 def _extract_step_from_items(
     items: list[StepItem | ParallelItem | StageItem], step_name: str
-) -> "Step | None":
+) -> Step | None:
     """Find and remove a step from the items list.
-    
+
     This function searches for a step with the given name, removes it from the
     items list, and returns the step. If the step is found in a parallel block
     with other steps, only that step is removed from the parallel block.
@@ -206,7 +204,7 @@ def _extract_step_from_item(
     step_name: str,
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
-) -> "Step | None":
+) -> Step | None:
     """Extract a step from an item, potentially modifying the items list."""
     raise NotImplementedError
 
@@ -231,28 +229,28 @@ def _(item: ParallelItem, step_name, items, idx):
             step_items = item.parallel.root.steps.root
         else:
             assert_never(item.parallel.root)
-        
+
         for step_idx, step_item in enumerate(step_items):
             if get_pipeweld_step(step_item.step) == step_name:
                 # Found it - remove from the parallel block
                 extracted_step = step_item.step
                 step_items.pop(step_idx)
-                
+
                 # If only one step remains in the parallel, convert to a simple step
                 if len(step_items) == 1:
                     items[idx] = step_items[0]
                 elif len(step_items) == 0:
                     # No steps left, remove the parallel item
                     items.pop(idx)
-                    
+
                 return extracted_step
     return None
 
 
 @_extract_step_from_item.register
-def _(item: StageItem, step_name, items, idx):
+def _(item: StageItem):  # noqa: ARG001
     """Extract from a StageItem.
-    
+
     We don't extract steps from within stages as they represent deployment
     stages and their internal structure should be preserved.
     """
@@ -265,10 +263,10 @@ def _insert_parallel_step(
     *,
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
-    new_step: "Step",
+    new_step: Step,
 ) -> None:
     """Insert a step in parallel with an existing item.
-    
+
     This function handles the logic of converting a single step to a parallel block
     or adding to an existing parallel block.
     """
@@ -276,22 +274,34 @@ def _insert_parallel_step(
 
 
 @_insert_parallel_step.register
-def _(item: StepItem, *, items, idx, new_step):
+def _(
+    item: StepItem,
+    *,
+    items: list[StepItem | ParallelItem | StageItem],
+    idx: int,
+    new_step: Step,
+) -> None:
     """Convert a single StepItem to a ParallelItem with both steps."""
     # Replace the single step with a parallel block containing both steps
     parallel_item = ParallelItem(
         parallel=Parallel(
-            ParallelSteps([
-                StepItem(step=item.step),
-                StepItem(step=new_step),
-            ])
+            ParallelSteps(
+                [
+                    StepItem(step=item.step),
+                    StepItem(step=new_step),
+                ]
+            )
         )
     )
     items[idx] = parallel_item
 
 
 @_insert_parallel_step.register
-def _(item: ParallelItem, *, items, idx, new_step):
+def _(
+    item: ParallelItem,
+    *,
+    new_step: Step,
+) -> None:
     """Add a new step to an existing ParallelItem."""
     if item.parallel is not None:
         if isinstance(item.parallel.root, ParallelSteps):
@@ -305,23 +315,17 @@ def _(item: ParallelItem, *, items, idx, new_step):
 
 
 @_insert_parallel_step.register
-def _(item: StageItem, *, items, idx, new_step):
-    """Insert parallel step after a stage item.
-    
-    Since we found the target step within a stage, we can't insert in parallel
-    with it (stages don't support parallelism within them). Instead, we insert
-    a new step in parallel with the entire stage.
-    """
-    # Create a parallel block with the stage and the new step
-    parallel_item = ParallelItem(
-        parallel=Parallel(
-            ParallelSteps([
-                item,  # The entire stage
-                StepItem(step=new_step),
-            ])
-        )
-    )
-    items[idx] = parallel_item
+def _(
+    item: StageItem,
+    *,
+    items: list[StepItem | ParallelItem | StageItem],
+    idx: int,
+    new_step: Step,
+) -> None:
+    # StageItems are trickier since they aren't supported in ParallelSteps. But we
+    # never need to add them in practice anyway. The only reason this is really here
+    # is for type safety.
+    raise NotImplementedError
 
 
 @singledispatch

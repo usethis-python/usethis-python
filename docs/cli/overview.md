@@ -13,6 +13,17 @@
 - [`usethis test`](reference.md#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest) with [Coverage.py](https://github.com/nedbat/coveragepy)).
 - [`usethis ci`](reference.md#usethis-ci) — Add/Configure a specified CI service.
 - [`usethis tool`](reference.md#usethis-tool) — Add/Configure specific tools individually.
+  - [`usethis tool codespell`](reference.md#code-quality-tools) - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.
+  - [`usethis tool deptry`](reference.md#code-quality-tools) - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.
+  - [`usethis tool import-linter`](reference.md#code-quality-tools) - Use [Import Linter](https://import-linter.readthedocs.io/en/stable/): enforce a self-imposed architecture on imports.
+  - [`usethis tool pre-commit`](reference.md#code-quality-tools) - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
+  - [`usethis tool pyproject-fmt`](reference.md#code-quality-tools) - Use the [pyproject-fmt linter](https://github.com/tox-dev/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
+  - [`usethis tool ruff`](reference.md#code-quality-tools) - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+  - [`usethis tool coverage.py`](reference.md#testing) - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
+  - [`usethis tool pytest`](reference.md#testing) - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
+  - [`usethis tool mkdocs`](reference.md#documentation) - Use [MkDocs](https://www.mkdocs.org/): Generate project documentation sites with Markdown.
+  - [`usethis tool pyproject.toml`](reference.md#testing) - Use a [pyproject.toml](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#writing-your-pyproject-toml) file to configure the project.
+  - [`usethis tool requirements.txt`](reference.md#testing) - Use a [requirements.txt](https://pip.pypa.io/en/stable/reference/requirements-file-format/) file exported from the uv lockfile.
 
 ## Manage Configuration
 

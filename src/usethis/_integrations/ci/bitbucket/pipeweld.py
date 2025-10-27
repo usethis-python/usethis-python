@@ -140,7 +140,7 @@ def apply_pipeweld_instruction_via_doc(
         items = []
     elif isinstance(default.root, ImportPipeline):
         msg = (
-            f"Cannot add step to default pipeline in "
+            f"Cannot add step '{new_step.name}' to default pipeline in "
             f"'bitbucket-pipelines.yml' because it is an import pipeline."
         )
         raise UnexpectedImportPipelineError(msg)

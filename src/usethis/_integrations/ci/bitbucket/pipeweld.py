@@ -210,7 +210,12 @@ def _extract_step_from_item(
 
 
 @_extract_step_from_item.register
-def _(item: StepItem, step_name, items, idx):
+def _(
+    item: StepItem,
+    step_name: str,
+    items: list[StepItem | ParallelItem | StageItem],
+    idx: int,
+) -> Step | None:
     """Extract from a StepItem."""
     if get_pipeweld_step(item.step) == step_name:
         # Remove this item from the list
@@ -220,7 +225,12 @@ def _(item: StepItem, step_name, items, idx):
 
 
 @_extract_step_from_item.register
-def _(item: ParallelItem, step_name, items, idx):
+def _(
+    item: ParallelItem,
+    step_name: str,
+    items: list[StepItem | ParallelItem | StageItem],
+    idx: int,
+) -> Step | None:
     """Extract from a ParallelItem."""
     if item.parallel is not None:
         if isinstance(item.parallel.root, ParallelSteps):
@@ -248,7 +258,13 @@ def _(item: ParallelItem, step_name, items, idx):
 
 
 @_extract_step_from_item.register
-def _(item: StageItem):  # noqa: ARG001
+def _(
+    # https://github.com/astral-sh/ruff/issues/18654
+    item: StageItem,  # noqa: ARG001
+    step_name: str,  # noqa: ARG001
+    items: list[StepItem | ParallelItem | StageItem],  # noqa: ARG001
+    idx: int,  # noqa: ARG001
+) -> Step | None:
     """Extract from a StageItem.
 
     We don't extract steps from within stages as they represent deployment
@@ -300,6 +316,9 @@ def _(
 def _(
     item: ParallelItem,
     *,
+    # https://github.com/astral-sh/ruff/issues/18654
+    items: list[StepItem | ParallelItem | StageItem],  # noqa: ARG001
+    idx: int,  # noqa: ARG001
     new_step: Step,
 ) -> None:
     """Add a new step to an existing ParallelItem."""

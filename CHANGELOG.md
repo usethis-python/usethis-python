@@ -42,6 +42,8 @@
 
 - `click` is no longer a direct dependency.
 
+- Version 0.18.13 of `ruamel.yaml` introduced a regression relating to indentation. This version, along with 0.18.14 and 0.18.15, are now excluded as dependency versions to avoid this issue until it is addressed in a future release.
+
 ### 🔧 Internal Changes
 
 - The CI configuration has been overhauled. `uv` is used in more conventional ways. A runner has been added for bleeding edge dependency versions. The CI now runs on a cron schedule. `zizmor` has been added for security scanning. Permissions are more tightly scoped and explained. All actions have been bumped to their latest versions.

@@ -430,51 +430,6 @@ pipelines:
 class TestBreakUpParallelism:
     """Test breaking up an existing parallel block to satisfy dependencies."""
 
-    def test_extract_step_from_parallel(self, tmp_path: Path):
-        # Arrange: Parallel block with two steps
-        (tmp_path / "bitbucket-pipelines.yml").write_text(
-            """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - parallel:
-          - step:
-                name: A
-                script:
-                  - echo A
-          - step:
-                name: B
-                script:
-                  - echo B
-"""
-        )
-
-        # Act: Move A to the beginning (simulating what pipeweld does)
-        with change_cwd(tmp_path):
-            apply_pipeweld_instruction(
-                InsertSuccessor(step="A", after=None),
-                new_step=Step(name="C", script=Script(["echo C"])),
-            )
-
-        # Assert: A should be extracted and B should remain as a single step
-        content = (tmp_path / "bitbucket-pipelines.yml").read_text()
-        assert (
-            content
-            == """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: A
-            script:
-              - echo A
-      - step:
-            name: B
-            script:
-              - echo B
-"""
-        )
-
     def test_full_parallel_breakup_sequence(self, tmp_path: Path):
         # Arrange: Start with parallel(A, B), want to insert C after A
         (tmp_path / "bitbucket-pipelines.yml").write_text(

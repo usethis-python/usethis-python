@@ -116,17 +116,21 @@ def _(item: StageItem):
     )
 
 
-def apply_pipeweld_instruction(instruction: Instruction, *, new_step: Step) -> None:
+def apply_pipeweld_instruction(
+    instruction: Instruction, *, step_to_insert: Step
+) -> None:
     with edit_bitbucket_pipelines_yaml() as doc:
-        apply_pipeweld_instruction_via_doc(instruction, doc=doc, new_step=new_step)
+        apply_pipeweld_instruction_via_doc(
+            instruction, doc=doc, step_to_insert=step_to_insert
+        )
         dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
 
 
-def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
+def apply_pipeweld_instruction_via_doc(
     instruction: Instruction,
     *,
-    new_step: Step,
+    step_to_insert: Step,
     doc: BitbucketPipelinesYAMLDocument,
 ) -> None:
     if doc.model.pipelines is None:
@@ -139,7 +143,7 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
         items = []
     elif isinstance(default.root, ImportPipeline):
         msg = (
-            f"Cannot add step '{new_step.name}' to default pipeline in "
+            f"Cannot add step '{step_to_insert.name}' to default pipeline in "
             f"'bitbucket-pipelines.yml' because it is an import pipeline."
         )
         raise UnexpectedImportPipelineError(msg)
@@ -156,11 +160,29 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
     #   block so "lint" can be inserted between "build" and "test")
     try:
         # Try to extract an existing step with this name
-        step_to_insert = _extract_step_from_items(items, instruction.step)
+        step = _extract_step_from_items(items, instruction.step)
     except MissingStepError:
         # Step not found in pipeline, so this must be the new step being added
-        step_to_insert = new_step
+        step = step_to_insert
 
+    _apply_instruction_to_items(instruction, items, step)
+
+    if default is None and items:
+        pipelines.default = Pipeline(Items(items))
+
+
+def _apply_instruction_to_items(
+    instruction: Instruction,
+    items: list[StepItem | ParallelItem | StageItem],
+    step_to_insert: Step,
+) -> None:
+    """Apply an instruction to insert a step into the items list.
+    
+    Args:
+        instruction: The instruction specifying how to insert the step.
+        items: The list of pipeline items to modify.
+        step_to_insert: The step to insert.
+    """
     if instruction.after is None:
         # Insert at the beginning - always as a simple step
         items.insert(0, StepItem(step=step_to_insert))
@@ -178,12 +200,11 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
         for idx, item in enumerate(items):
             if _is_insertion_necessary(item, instruction=instruction):
                 _insert_parallel_step(
-                    item, items=items, idx=idx, new_step=step_to_insert
+                    item, items=items, idx=idx, step_to_insert=step_to_insert
                 )
                 break
-
-    if default is None and items:
-        pipelines.default = Pipeline(Items(items))
+    else:
+        assert_never(instruction)
 
 
 def _extract_step_from_items(
@@ -282,7 +303,7 @@ def _insert_parallel_step(
     *,
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
-    new_step: Step,
+    step_to_insert: Step,
 ) -> None:
     """Insert a step in parallel with an existing item.
 
@@ -298,7 +319,7 @@ def _(
     *,
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
-    new_step: Step,
+    step_to_insert: Step,
 ) -> None:
     # Replace the single step with a parallel block containing both steps
     parallel_item = ParallelItem(
@@ -306,7 +327,7 @@ def _(
             ParallelSteps(
                 [
                     StepItem(step=item.step),
-                    StepItem(step=new_step),
+                    StepItem(step=step_to_insert),
                 ]
             )
         )
@@ -321,15 +342,15 @@ def _(
     # https://github.com/astral-sh/ruff/issues/18654
     items: list[StepItem | ParallelItem | StageItem],  # noqa: ARG001
     idx: int,  # noqa: ARG001
-    new_step: Step,
+    step_to_insert: Step,
 ) -> None:
     if item.parallel is not None:
         if isinstance(item.parallel.root, ParallelSteps):
             # Add to the existing list of parallel steps
-            item.parallel.root.root.append(StepItem(step=new_step))
+            item.parallel.root.root.append(StepItem(step=step_to_insert))
         elif isinstance(item.parallel.root, ParallelExpanded):
             # Add to the expanded parallel steps
-            item.parallel.root.steps.root.append(StepItem(step=new_step))
+            item.parallel.root.steps.root.append(StepItem(step=step_to_insert))
         else:
             assert_never(item.parallel.root)
 
@@ -340,7 +361,7 @@ def _(
     *,
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
-    new_step: Step,
+    step_to_insert: Step,
 ) -> None:
     # StageItems are trickier since they aren't supported in ParallelSteps. But we
     # never need to add them in practice anyway. The only reason this is really here

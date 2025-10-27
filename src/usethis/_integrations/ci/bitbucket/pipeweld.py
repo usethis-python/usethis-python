@@ -167,7 +167,7 @@ def apply_pipeweld_instruction_via_doc(
         # Insert in parallel with the specified step
         for idx, item in enumerate(items):
             if _is_insertion_necessary(item, instruction=instruction):
-                _insert_parallel_step(items, idx, item, new_step)
+                _insert_parallel_step(item, items=items, idx=idx, new_step=new_step)
                 break
 
     if default is None and items:
@@ -176,9 +176,10 @@ def apply_pipeweld_instruction_via_doc(
 
 @singledispatch
 def _insert_parallel_step(
+    item: StepItem | ParallelItem | StageItem,
+    *,
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
-    item: StepItem | ParallelItem | StageItem,
     new_step: "Step",
 ) -> None:
     """Insert a step in parallel with an existing item.
@@ -190,7 +191,7 @@ def _insert_parallel_step(
 
 
 @_insert_parallel_step.register
-def _(items, idx, item: StepItem, new_step):
+def _(item: StepItem, *, items, idx, new_step):
     """Convert a single StepItem to a ParallelItem with both steps."""
     # Replace the single step with a parallel block containing both steps
     parallel_item = ParallelItem(
@@ -205,7 +206,7 @@ def _(items, idx, item: StepItem, new_step):
 
 
 @_insert_parallel_step.register
-def _(items, idx, item: ParallelItem, new_step):
+def _(item: ParallelItem, *, items, idx, new_step):
     """Add a new step to an existing ParallelItem."""
     if item.parallel is not None:
         if isinstance(item.parallel.root, ParallelSteps):
@@ -219,7 +220,7 @@ def _(items, idx, item: ParallelItem, new_step):
 
 
 @_insert_parallel_step.register
-def _(items, idx, item: StageItem, new_step):
+def _(item: StageItem, *, items, idx, new_step):
     """Insert parallel step after a stage item.
     
     Since we found the target step within a stage, we can't insert in parallel

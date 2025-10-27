@@ -41,7 +41,7 @@ class TestApplyPipeweldInstruction:
         with change_cwd(tmp_path):
             apply_pipeweld_instruction(
                 InsertSuccessor(step="foo", after=None),
-                new_step=Step(name="foo", script=Script(["echo foo"])),
+                step_to_insert=Step(name="foo", script=Script(["echo foo"])),
             )
 
         # Assert
@@ -74,7 +74,7 @@ pipelines:
         with change_cwd(tmp_path), pytest.raises(UnexpectedImportPipelineError):
             apply_pipeweld_instruction(
                 InsertSuccessor(step="foo", after=None),
-                new_step=Step(name="foo", script=Script(["echo foo"])),
+                step_to_insert=Step(name="foo", script=Script(["echo foo"])),
             )
 
     def test_existing_pipeline(self, tmp_path: Path):
@@ -95,7 +95,7 @@ pipelines:
         with change_cwd(tmp_path):
             apply_pipeweld_instruction(
                 InsertSuccessor(step="foo", after=None),
-                new_step=Step(name="foo", script=Script(["echo foo"])),
+                step_to_insert=Step(name="foo", script=Script(["echo foo"])),
             )
 
         # Assert
@@ -136,7 +136,7 @@ pipelines:
             with change_cwd(tmp_path):
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="bar"),
-                    new_step=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
                 )
 
             # Assert
@@ -181,7 +181,7 @@ pipelines:
             with change_cwd(tmp_path):
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="qux"),
-                    new_step=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
                 )
 
             # Assert
@@ -232,7 +232,7 @@ pipelines:
             with change_cwd(tmp_path):
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="qux"),
-                    new_step=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
                 )
 
             # Assert
@@ -280,7 +280,7 @@ pipelines:
             with change_cwd(tmp_path):
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="baz"),
-                    new_step=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
                 )
 
             # Assert
@@ -303,6 +303,295 @@ pipelines:
               - echo foo
 """
             )
+
+    class TestInsertParallel:
+        def test_simple_step(self, tmp_path: Path):
+            # Arrange: Pipeline with a single step
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: bar
+            script:
+              - echo bar
+"""
+            )
+
+            # Act: Insert foo in parallel to bar
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertParallel(step="foo", after="bar"),
+                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert: Should create a parallel block with both steps
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: bar
+                script:
+                  - echo bar
+          - step:
+                name: foo
+                script:
+                  - echo foo
+"""
+            )
+
+        def test_add_to_existing_parallel(self, tmp_path: Path):
+            # Arrange: Pipeline with an existing parallel block
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: bar
+                script:
+                  - echo bar
+          - step:
+                name: baz
+                script:
+                  - echo baz
+"""
+            )
+
+            # Act: Insert foo in parallel to bar (which is already in a parallel block)
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertParallel(step="foo", after="bar"),
+                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert: Should add to the existing parallel block
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: bar
+                script:
+                  - echo bar
+          - step:
+                name: baz
+                script:
+                  - echo baz
+          - step:
+                name: foo
+                script:
+                  - echo foo
+"""
+            )
+
+        def test_parallel_after_none(self, tmp_path: Path):
+            # Arrange: Empty pipeline
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+"""
+            )
+
+            # Act: Insert foo in parallel at the beginning (after=None)
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertParallel(step="foo", after=None),
+                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert: Should just add the step (parallel with no other steps is just a step)
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: foo
+            script:
+              - echo foo
+"""
+            )
+
+        def test_add_to_existing_parallel_expanded_format(self, tmp_path: Path):
+            # Arrange: Pipeline with an existing parallel block using expanded format
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            steps:
+              - step:
+                    name: bar
+                    script:
+                      - echo bar
+              - step:
+                    name: baz
+                    script:
+                      - echo baz
+"""
+            )
+
+            # Act: Insert foo in parallel to bar (expanded format)
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertParallel(step="foo", after="bar"),
+                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert: Should add to the existing parallel block
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+            steps:
+              - step:
+                    name: bar
+                    script:
+                      - echo bar
+              - step:
+                    name: baz
+                    script:
+                      - echo baz
+              - step:
+                    name: foo
+                    script:
+                      - echo foo
+"""
+            )
+
+
+class TestBreakUpParallelism:
+    """Test breaking up an existing parallel block to satisfy dependencies."""
+
+    def test_full_parallel_breakup_sequence(self, tmp_path: Path):
+        # Arrange: Start with parallel(A, B), want to insert C after A
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: A
+                script:
+                  - echo A
+          - step:
+                name: B
+                script:
+                  - echo B
+"""
+        )
+
+        with change_cwd(tmp_path):
+            # Simulate pipeweld instructions for: series("A", "C", "B")
+            # Note: step_to_insert is always C (the actual new step being added)
+            # but instruction.step varies (A, B, or C) to indicate which step
+            # the instruction is about (existing or new)
+
+            # Step 1: Move A to beginning
+            apply_pipeweld_instruction(
+                InsertSuccessor(step="A", after=None),
+                step_to_insert=Step(name="C", script=Script(["echo C"])),
+            )
+
+            # Step 2: Move B after A
+            apply_pipeweld_instruction(
+                InsertSuccessor(step="B", after="A"),
+                step_to_insert=Step(name="C", script=Script(["echo C"])),
+            )
+
+            # Step 3: Insert C after A (C will go between A and B)
+            apply_pipeweld_instruction(
+                InsertSuccessor(step="C", after="A"),
+                step_to_insert=Step(name="C", script=Script(["echo C"])),
+            )
+
+        # Assert: Should result in A, then C, then B in series
+        content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            content
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: A
+            script:
+              - echo A
+      - step:
+            name: C
+            script:
+              - echo C
+      - step:
+            name: B
+            script:
+              - echo B
+"""
+        )
+
+    def test_extract_last_step_from_parallel(self, tmp_path: Path):
+        # Arrange: Parallel block with a single step
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: A
+                script:
+                  - echo A
+      - step:
+            name: B
+            script:
+              - echo B
+"""
+        )
+
+        # Act: Extract the only step from the parallel block
+        with change_cwd(tmp_path):
+            apply_pipeweld_instruction(
+                InsertSuccessor(step="A", after=None),
+                step_to_insert=Step(name="C", script=Script(["echo C"])),
+            )
+
+        # Assert: Parallel block should be removed entirely, leaving A and B
+        content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+        assert (
+            content
+            == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: A
+            script:
+              - echo A
+      - step:
+            name: B
+            script:
+              - echo B
+"""
+        )
 
 
 class TestGetInstructionsForInsertion:

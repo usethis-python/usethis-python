@@ -77,6 +77,17 @@ Additionally, the command line reference documentation can be viewed with `useth
 - [`usethis test`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest) with [Coverage.py](https://github.com/nedbat/coveragepy)).
 - [`usethis ci`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-ci) — Add/Configure a specified CI service.
 - [`usethis tool`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-tool) — Add/Configure specific tools individually.
+  - [`usethis tool codespell`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.
+  - [`usethis tool deptry`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.
+  - [`usethis tool import-linter`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use [Import Linter](https://import-linter.readthedocs.io/en/stable/): enforce a self-imposed architecture on imports.
+  - [`usethis tool pre-commit`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
+  - [`usethis tool pyproject-fmt`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [pyproject-fmt linter](https://github.com/tox-dev/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
+  - [`usethis tool ruff`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+  - [`usethis tool coverage.py`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
+  - [`usethis tool pytest`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
+  - [`usethis tool mkdocs`](https://usethis.readthedocs.io/en/stable/cli/reference#documentation) - Use [MkDocs](https://www.mkdocs.org/): Generate project documentation sites with Markdown.
+  - [`usethis tool pyproject.toml`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use a [pyproject.toml](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#writing-your-pyproject-toml) file to configure the project.
+  - [`usethis tool requirements.txt`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use a [requirements.txt](https://pip.pypa.io/en/stable/reference/requirements-file-format/) file exported from the uv lockfile.
 
 ### Manage Configuration
 

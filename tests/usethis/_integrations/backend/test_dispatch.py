@@ -65,3 +65,23 @@ class TestGetBackend:
 
         # Assert
         assert result == BackendEnum.none
+
+    def test_poetry_used(self, tmp_path: Path, capfd: pytest.CaptureFixture):
+        # Arrange
+        (tmp_path / "poetry.lock").touch()
+
+        # Act
+        with change_cwd(tmp_path), usethis_config.set(backend=BackendEnum.auto):
+            result = get_backend()
+
+        # Assert
+        # N.B. poetry is not fully supported, so we use the none backend for now.
+        # Later, this might change to a poetry backend.
+        assert result == BackendEnum.none
+
+        out, err = capfd.readouterr()
+        assert not err
+        assert (
+            out
+            == "⚠ This project is using Poetry, which is not fully supported by usethis.\n"
+        )

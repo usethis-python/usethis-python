@@ -149,12 +149,12 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
     if is_new_step:
         step_to_insert = new_step
     else:
-        # This is an instruction to move an existing step
+        # This instruction applies to an existing step (e.g., to break up parallelism)
         # Find and extract the step from the pipeline
         extracted_step = _extract_step_from_items(items, instruction.step)
         if extracted_step is None:
-            # Step not found in pipeline, skip this instruction
-            return
+            msg = f"Step '{instruction.step}' not found in pipeline"
+            raise AssertionError(msg)
         step_to_insert = extracted_step
 
     if instruction.after is None:

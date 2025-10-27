@@ -21,3 +21,18 @@ some known limitations. If you find that usethis has modified your files in a wa
 that you did not expect, please open an issue on the usethis GitHub repository, and
 if necessary the issue can be escalated to the `ruamel.yaml` repository on SourceForge,
 or other appropriate repository.
+
+## Is uv absolutely necessary to use usethis?
+
+No, although it is highly recommended for new projects, since it is a modern and
+easy-to-use tool for managing Python projects. If you don't have uv installed, usethis
+will automatically avoid using it.
+
+If you have uv installed but you want to avoid using it for a specific project, you
+should use the `--backend=none` option when running usethis commands. In the future,
+it is planned that usethis will support additional backends for managing Python
+projects, for example Poetry.
+
+There is another reason to use uv, which is to provide the uvx command for running
+usethis. This provides an easy way to use usethis without needing to know technical
+details about Python virtual environments.

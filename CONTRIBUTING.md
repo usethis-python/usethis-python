@@ -52,6 +52,17 @@ to find the tests for a specific module or function.
 
 PRs should ideally include tests for any new features or bug fixes.
 
+To diagnose slow test speeds, you can run
+
+```shell
+uv run pyinstrument -m pytest
+```
+
+With any `pytest` options you wish to include, e.g. `-k` to run specific tests, or
+`--collect-only` to only profile test collection time. This will generate a CLI-friendly
+report of where time is being spent. For an interactive HTML report, you can run
+`pyinstrument` with the `-r=html` option before the `-m pytest` part.
+
 ## Documentation
 
 Documentation is hosted at <https://usethis.readthedocs.io/en/stable/>. It can be served

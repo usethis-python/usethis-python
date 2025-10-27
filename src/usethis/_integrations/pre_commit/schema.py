@@ -7,7 +7,7 @@
 # pyright: reportGeneralTypeIssues=false
 # plus manually remove default for LocalRepo.repo
 # plus manually add HookDefinition.require_serial for type hinting
-# plus manually set default to None for for roundtripping
+# plus manually set default to None for roundtripping
 
 
 from __future__ import annotations

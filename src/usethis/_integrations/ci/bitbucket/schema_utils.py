@@ -19,5 +19,5 @@ def step1tostep(step1: Step1) -> Step:
     """
     step2 = step1.step
 
-    step = Step(**step2.model_dump())
+    step = Step(**step2.model_dump(by_alias=True))
     return step

@@ -130,10 +130,6 @@ def apply_pipeweld_instruction_via_doc(
     new_step: Step,
     doc: BitbucketPipelinesYAMLDocument,
 ) -> None:
-    if get_pipeweld_step(new_step) != instruction.step:
-        # N.B. This doesn't currently handle moving existing steps
-        return
-
     if doc.model.pipelines is None:
         doc.model.pipelines = Pipelines()
 
@@ -144,34 +140,123 @@ def apply_pipeweld_instruction_via_doc(
         items = []
     elif isinstance(default.root, ImportPipeline):
         msg = (
-            f"Cannot add step '{new_step.name}' to default pipeline in "
+            f"Cannot add step to default pipeline in "
             f"'bitbucket-pipelines.yml' because it is an import pipeline."
         )
         raise UnexpectedImportPipelineError(msg)
     else:
         items = default.root.root
 
+    # Check if this instruction is for a new step or an existing step
+    is_new_step = get_pipeweld_step(new_step) == instruction.step
+    
+    if is_new_step:
+        step_to_insert = new_step
+    else:
+        # This is an instruction to move an existing step
+        # Find and extract the step from the pipeline
+        extracted_step = _extract_step_from_items(items, instruction.step)
+        if extracted_step is None:
+            # Step not found in pipeline, skip this instruction
+            return
+        step_to_insert = extracted_step
+
     if instruction.after is None:
         # Insert at the beginning - always as a simple step
-        items.insert(0, StepItem(step=new_step))
+        items.insert(0, StepItem(step=step_to_insert))
     elif isinstance(instruction, InsertSuccessor):
         # Insert in series after the specified step
         for item in items:
             if _is_insertion_necessary(item, instruction=instruction):
                 items.insert(
                     items.index(item) + 1,
-                    StepItem(step=new_step),
+                    StepItem(step=step_to_insert),
                 )
                 break
     elif isinstance(instruction, InsertParallel):
         # Insert in parallel with the specified step
         for idx, item in enumerate(items):
             if _is_insertion_necessary(item, instruction=instruction):
-                _insert_parallel_step(item, items=items, idx=idx, new_step=new_step)
+                _insert_parallel_step(item, items=items, idx=idx, new_step=step_to_insert)
                 break
 
     if default is None and items:
         pipelines.default = Pipeline(Items(items))
+
+
+def _extract_step_from_items(
+    items: list[StepItem | ParallelItem | StageItem], step_name: str
+) -> "Step | None":
+    """Find and remove a step from the items list.
+    
+    This function searches for a step with the given name, removes it from the
+    items list, and returns the step. If the step is found in a parallel block
+    with other steps, only that step is removed from the parallel block.
+    """
+    for idx, item in enumerate(items):
+        extracted = _extract_step_from_item(item, step_name, items, idx)
+        if extracted is not None:
+            return extracted
+    return None
+
+
+@singledispatch
+def _extract_step_from_item(
+    item: StepItem | ParallelItem | StageItem,
+    step_name: str,
+    items: list[StepItem | ParallelItem | StageItem],
+    idx: int,
+) -> "Step | None":
+    """Extract a step from an item, potentially modifying the items list."""
+    raise NotImplementedError
+
+
+@_extract_step_from_item.register
+def _(item: StepItem, step_name, items, idx):
+    """Extract from a StepItem."""
+    if get_pipeweld_step(item.step) == step_name:
+        # Remove this item from the list
+        items.pop(idx)
+        return item.step
+    return None
+
+
+@_extract_step_from_item.register
+def _(item: ParallelItem, step_name, items, idx):
+    """Extract from a ParallelItem."""
+    if item.parallel is not None:
+        if isinstance(item.parallel.root, ParallelSteps):
+            step_items = item.parallel.root.root
+        elif isinstance(item.parallel.root, ParallelExpanded):
+            step_items = item.parallel.root.steps.root
+        else:
+            assert_never(item.parallel.root)
+        
+        for step_idx, step_item in enumerate(step_items):
+            if get_pipeweld_step(step_item.step) == step_name:
+                # Found it - remove from the parallel block
+                extracted_step = step_item.step
+                step_items.pop(step_idx)
+                
+                # If only one step remains in the parallel, convert to a simple step
+                if len(step_items) == 1:
+                    items[idx] = step_items[0]
+                elif len(step_items) == 0:
+                    # No steps left, remove the parallel item
+                    items.pop(idx)
+                    
+                return extracted_step
+    return None
+
+
+@_extract_step_from_item.register
+def _(item: StageItem, step_name, items, idx):
+    """Extract from a StageItem.
+    
+    We don't extract steps from within stages as they represent deployment
+    stages and their internal structure should be preserved.
+    """
+    return None
 
 
 @singledispatch

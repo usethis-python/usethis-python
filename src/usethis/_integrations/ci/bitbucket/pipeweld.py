@@ -144,6 +144,13 @@ def apply_pipeweld_instruction_via_doc(  # noqa: PLR0912
         items = default.root.root
 
     # Check if this instruction is for a new step or an existing step
+    # When pipeweld determines we need to add a step (e.g., adding "lint" step to a pipeline),
+    # it generates instructions for how to insert it. If the pipeline already has steps in
+    # parallel that need to be rearranged to satisfy dependencies, pipeweld also generates
+    # instructions to move those existing steps. So:
+    # - is_new_step=True: inserting the actual new step being added (e.g., "lint")
+    # - is_new_step=False: rearranging an existing step (e.g., moving "build" from a parallel
+    #   block so "lint" can be inserted between "build" and "test")
     is_new_step = get_pipeweld_step(new_step) == instruction.step
 
     if is_new_step:
@@ -216,7 +223,6 @@ def _(
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
 ) -> Step | None:
-    """Extract from a StepItem."""
     if get_pipeweld_step(item.step) == step_name:
         # Remove this item from the list
         items.pop(idx)
@@ -231,7 +237,6 @@ def _(
     items: list[StepItem | ParallelItem | StageItem],
     idx: int,
 ) -> Step | None:
-    """Extract from a ParallelItem."""
     if item.parallel is not None:
         if isinstance(item.parallel.root, ParallelSteps):
             step_items = item.parallel.root.root
@@ -265,11 +270,8 @@ def _(
     items: list[StepItem | ParallelItem | StageItem],  # noqa: ARG001
     idx: int,  # noqa: ARG001
 ) -> Step | None:
-    """Extract from a StageItem.
-
-    We don't extract steps from within stages as they represent deployment
-    stages and their internal structure should be preserved.
-    """
+    # We don't extract steps from within stages as they represent deployment
+    # stages and their internal structure should be preserved.
     return None
 
 
@@ -297,7 +299,6 @@ def _(
     idx: int,
     new_step: Step,
 ) -> None:
-    """Convert a single StepItem to a ParallelItem with both steps."""
     # Replace the single step with a parallel block containing both steps
     parallel_item = ParallelItem(
         parallel=Parallel(
@@ -321,7 +322,6 @@ def _(
     idx: int,  # noqa: ARG001
     new_step: Step,
 ) -> None:
-    """Add a new step to an existing ParallelItem."""
     if item.parallel is not None:
         if isinstance(item.parallel.root, ParallelSteps):
             # Add to the existing list of parallel steps

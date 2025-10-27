@@ -379,7 +379,7 @@ class Options(BaseModel):
     docker: bool | None = Field(
         default=False, description="Enables Docker service for every step."
     )
-    max_time: MaxTime | None = Field(default=None, alias='max-time')
+    max_time: MaxTime | None = Field(default=None, alias="max-time")
     runtime: Runtime | None = None
     size: Size | None = None
 

@@ -58,7 +58,7 @@ $ pipx run usethis tool ruff
 
 ## 📜 Documentation
 
-The usethis documentation is available at <usethis.readthedocs.io>.
+The usethis documentation is available at [usethis.readthedocs.io](https://usethis.readthedocs.io/en/stable/).
 
 Additionally, the command line reference documentation can be viewed with `usethis --help`.
 

@@ -43,7 +43,7 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
     parts.append("""\
 ## 📜 Documentation
 
-The usethis documentation is available at <usethis.readthedocs.io>.
+The usethis documentation is available at [usethis.readthedocs.io](https://usethis.readthedocs.io/en/stable/).
 
 Additionally, the command line reference documentation can be viewed with `usethis --help`.
 """)

@@ -304,6 +304,128 @@ pipelines:
 """
             )
 
+    class TestInsertParallel:
+        def test_simple_step(self, tmp_path: Path):
+            # Arrange: Pipeline with a single step
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: bar
+            script:
+              - echo bar
+"""
+            )
+
+            # Act: Insert foo in parallel to bar
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertParallel(step="foo", after="bar"),
+                    new_step=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert: Should create a parallel block with both steps
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: bar
+                script:
+                  - echo bar
+          - step:
+                name: foo
+                script:
+                  - echo foo
+"""
+            )
+
+        def test_add_to_existing_parallel(self, tmp_path: Path):
+            # Arrange: Pipeline with an existing parallel block
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: bar
+                script:
+                  - echo bar
+          - step:
+                name: baz
+                script:
+                  - echo baz
+"""
+            )
+
+            # Act: Insert foo in parallel to bar (which is already in a parallel block)
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertParallel(step="foo", after="bar"),
+                    new_step=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert: Should add to the existing parallel block
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - parallel:
+          - step:
+                name: bar
+                script:
+                  - echo bar
+          - step:
+                name: baz
+                script:
+                  - echo baz
+          - step:
+                name: foo
+                script:
+                  - echo foo
+"""
+            )
+
+        def test_parallel_after_none(self, tmp_path: Path):
+            # Arrange: Empty pipeline
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+"""
+            )
+
+            # Act: Insert foo in parallel at the beginning (after=None)
+            with change_cwd(tmp_path):
+                apply_pipeweld_instruction(
+                    InsertParallel(step="foo", after=None),
+                    new_step=Step(name="foo", script=Script(["echo foo"])),
+                )
+
+            # Assert: Should just add the step (parallel with no other steps is just a step)
+            content = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert (
+                content
+                == """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: foo
+            script:
+              - echo foo
+"""
+            )
+
 
 class TestGetInstructionsForInsertion:
     class TestStr:

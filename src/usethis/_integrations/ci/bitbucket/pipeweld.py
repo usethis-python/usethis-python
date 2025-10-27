@@ -15,6 +15,7 @@ from usethis._integrations.ci.bitbucket.io_ import (
 from usethis._integrations.ci.bitbucket.schema import (
     ImportPipeline,
     Items,
+    Parallel,
     ParallelExpanded,
     ParallelItem,
     ParallelSteps,
@@ -25,7 +26,7 @@ from usethis._integrations.ci.bitbucket.schema import (
 )
 from usethis._integrations.ci.bitbucket.schema_utils import step1tostep
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
-from usethis._pipeweld.ops import Instruction
+from usethis._pipeweld.ops import InsertParallel, InsertSuccessor, Instruction
 
 if TYPE_CHECKING:
     from usethis._integrations.ci.bitbucket.io_ import (
@@ -151,19 +152,90 @@ def apply_pipeweld_instruction_via_doc(
         items = default.root.root
 
     if instruction.after is None:
+        # Insert at the beginning - always as a simple step
         items.insert(0, StepItem(step=new_step))
-    else:
+    elif isinstance(instruction, InsertSuccessor):
+        # Insert in series after the specified step
         for item in items:
             if _is_insertion_necessary(item, instruction=instruction):
-                # N.B. This doesn't currently handle InsertParallel properly
                 items.insert(
                     items.index(item) + 1,
                     StepItem(step=new_step),
                 )
                 break
+    elif isinstance(instruction, InsertParallel):
+        # Insert in parallel with the specified step
+        for idx, item in enumerate(items):
+            if _is_insertion_necessary(item, instruction=instruction):
+                _insert_parallel_step(items, idx, item, new_step)
+                break
 
     if default is None and items:
         pipelines.default = Pipeline(Items(items))
+
+
+@singledispatch
+def _insert_parallel_step(
+    items: list[StepItem | ParallelItem | StageItem],
+    idx: int,
+    item: StepItem | ParallelItem | StageItem,
+    new_step: "Step",
+) -> None:
+    """Insert a step in parallel with an existing item.
+    
+    This function handles the logic of converting a single step to a parallel block
+    or adding to an existing parallel block.
+    """
+    raise NotImplementedError
+
+
+@_insert_parallel_step.register
+def _(items, idx, item: StepItem, new_step):
+    """Convert a single StepItem to a ParallelItem with both steps."""
+    # Replace the single step with a parallel block containing both steps
+    parallel_item = ParallelItem(
+        parallel=Parallel(
+            ParallelSteps([
+                StepItem(step=item.step),
+                StepItem(step=new_step),
+            ])
+        )
+    )
+    items[idx] = parallel_item
+
+
+@_insert_parallel_step.register
+def _(items, idx, item: ParallelItem, new_step):
+    """Add a new step to an existing ParallelItem."""
+    if item.parallel is not None:
+        if isinstance(item.parallel.root, ParallelSteps):
+            # Add to the existing list of parallel steps
+            item.parallel.root.root.append(StepItem(step=new_step))
+        elif isinstance(item.parallel.root, ParallelExpanded):
+            # Add to the expanded parallel steps
+            item.parallel.root.steps.root.append(StepItem(step=new_step))
+        else:
+            assert_never(item.parallel.root)
+
+
+@_insert_parallel_step.register
+def _(items, idx, item: StageItem, new_step):
+    """Insert parallel step after a stage item.
+    
+    Since we found the target step within a stage, we can't insert in parallel
+    with it (stages don't support parallelism within them). Instead, we insert
+    a new step in parallel with the entire stage.
+    """
+    # Create a parallel block with the stage and the new step
+    parallel_item = ParallelItem(
+        parallel=Parallel(
+            ParallelSteps([
+                item,  # The entire stage
+                StepItem(step=new_step),
+            ])
+        )
+    )
+    items[idx] = parallel_item
 
 
 @singledispatch

@@ -214,6 +214,12 @@ See the
 [CONTRIBUTING.md](https://github.com/usethis-python/usethis-python/blob/main/CONTRIBUTING.md)
 file.
 
+## Acknowledgements
+
+Special thanks to the [Posit](https://posit.co/) team for creating the original [usethis package for **R**](https://usethis.r-lib.org/index.html) , which inspired this project.
+
+Additional thanks are due to the maintainers of the various tools which usethis integrates with, especially [Astral](https://astral.sh/) who created [uv](https://github.com/astral-sh/uv).
+
 ## License
 
 usethis is licensed under the MIT license ([LICENSE](https://github.com/usethis-python/usethis-python/blob/main/LICENSE) or <https://opensource.org/licenses/MIT>)

@@ -76,7 +76,7 @@ Other features are tracked in the [GitHub Issues](https://github.com/usethis-pyt
 See the
 [CONTRIBUTING.md](https://github.com/usethis-python/usethis-python/blob/main/CONTRIBUTING.md)
 file.
-                 
+
 ## Acknowledgements
 
 Special thanks to the [Posit](https://posit.co/) team for creating the original [usethis package for **R**](https://usethis.r-lib.org/index.html) , which inspired this project.

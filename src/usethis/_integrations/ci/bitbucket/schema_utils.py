@@ -12,7 +12,7 @@ def step1tostep(step1: Step1) -> Step:
     """Promoting Step1 to a standard Step.
 
     This is necessary because there is some unusual inconsistency in the JSON Schema
-    for Bitbucket pipelines that means conditions are not constrained by type when
+    for Bitbucket Pipelines that means conditions are not constrained by type when
     occurring in a stage, whereas at time of writing they are constrained in all other
     circumstances. This gives rise to strange naming in the output of
     datamodel-code-generator (which is repeated here for consistency).

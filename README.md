@@ -161,7 +161,7 @@ $ uvx usethis tool pytest
 ☐ Run 'uv run pytest' to run the tests.
 ```
 
-To configure Bitbucket pipelines, run:
+To configure Bitbucket Pipelines, run:
 
 ```console
 $ uvx usethis ci bitbucket

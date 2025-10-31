@@ -8,10 +8,10 @@ app = typer.Typer(
 )
 
 
-@app.command(help="Use Bitbucket pipelines for CI.")
+@app.command(help="Use Bitbucket Pipelines for CI.")
 def bitbucket(
     remove: bool = typer.Option(
-        False, "--remove", help="Remove Bitbucket pipelines CI instead of adding it."
+        False, "--remove", help="Remove Bitbucket Pipelines CI instead of adding it."
     ),
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,

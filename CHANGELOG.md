@@ -273,7 +273,7 @@
 - The Ruff linter and formatter can now be configured independently. When using the `usethis tool ruff` command, you can now specify whether to add or remove the linter or formatter independently using the `--linter` and `--formatter` options. This allows for more granular control over which components of Ruff are used in your project. By default, as before, both the linter and formatter will be added or removed together.
 This introduces a change in the way that Bitbucket Pipeline steps will be configured for Ruff, by having the linter and formatter as separate steps.
 
-- Integrations with Ruff for pre-commit and Bitbucket pipelines will determine whether the linter or formatter is being used based on the presence of the `ruff.lint` and `ruff.format` keys the active Ruff configuration file.
+- Integrations with Ruff for pre-commit and Bitbucket Pipelines will determine whether the linter or formatter is being used based on the presence of the `ruff.lint` and `ruff.format` keys the active Ruff configuration file.
 
 ### 🐞 Bug Fixes
 

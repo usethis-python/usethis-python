@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from usethis._console import how_print, info_print
 from usethis._integrations.ci.bitbucket.config import (
-    add_bitbucket_pipeline_config,
-    remove_bitbucket_pipeline_config,
+    add_bitbucket_pipelines_config,
+    remove_bitbucket_pipelines_config,
 )
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._tool.impl.deptry import DeptryTool
@@ -37,7 +37,7 @@ def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:
             or use_codespell
         )
 
-        add_bitbucket_pipeline_config(report_placeholder=not use_any_tool)
+        add_bitbucket_pipelines_config(report_placeholder=not use_any_tool)
 
         if use_pre_commit:
             PreCommitTool().update_bitbucket_steps()
@@ -54,7 +54,7 @@ def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:
 
         print_how_to_use_ci_bitbucket()
     else:
-        remove_bitbucket_pipeline_config()
+        remove_bitbucket_pipelines_config()
 
 
 def print_how_to_use_ci_bitbucket() -> None:

@@ -7,7 +7,7 @@ from usethis._integrations.ci.bitbucket.cache import (
     get_cache_by_name,
     remove_cache,
 )
-from usethis._integrations.ci.bitbucket.config import add_bitbucket_pipeline_config
+from usethis._integrations.ci.bitbucket.config import add_bitbucket_pipelines_config
 from usethis._integrations.ci.bitbucket.schema import Cache, CachePath
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
@@ -19,7 +19,7 @@ class TestAddCaches:
         cache_by_name = {"example": Cache(CachePath("~/.cache/example"))}
 
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
-            add_bitbucket_pipeline_config()
+            add_bitbucket_pipelines_config()
             capfd.readouterr()
 
             # Act
@@ -42,7 +42,7 @@ class TestAddCaches:
 
         # Act
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
-            add_bitbucket_pipeline_config()
+            add_bitbucket_pipelines_config()
             add_caches(cache_by_name)
 
             # Assert
@@ -125,7 +125,7 @@ pipelines:
     def test_roundtrip(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
             # Arrange
-            add_bitbucket_pipeline_config()
+            add_bitbucket_pipelines_config()
             add_caches({"mycache": Cache(CachePath("~/.cache/mytool"))})
 
             # Act

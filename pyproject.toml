@@ -135,6 +135,7 @@ lint.flake8-type-checking.strict = true
 lint.pydocstyle.convention = "google"
 
 [tool.codespell]
+skip = "*.json"
 ignore-words-list = [ "edn" ]
 
 [tool.pyproject-fmt]

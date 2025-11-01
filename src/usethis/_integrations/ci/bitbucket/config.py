@@ -4,7 +4,7 @@ from usethis._integrations.ci.bitbucket.steps import add_placeholder_step_in_def
 
 
 def add_bitbucket_pipelines_config(report_placeholder: bool = True) -> None:
-    """Add a Bitbucket pipeline configuration.
+    """Add a Bitbucket Pipelines configuration.
 
     Note that the pipeline is empty and will need steps added to it to run successfully.
     """

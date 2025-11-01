@@ -2,8 +2,8 @@ from pathlib import Path
 
 from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.ci.bitbucket.config import (
-    add_bitbucket_pipeline_config,
-    remove_bitbucket_pipeline_config,
+    add_bitbucket_pipelines_config,
+    remove_bitbucket_pipelines_config,
 )
 from usethis._integrations.ci.bitbucket.schema import Model, Script
 from usethis._integrations.ci.bitbucket.steps import (
@@ -18,7 +18,7 @@ from usethis._test import change_cwd
 class TestAddBitbucketPipelineConfig:
     def test_blank_slate(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
-            add_bitbucket_pipeline_config()
+            add_bitbucket_pipelines_config()
 
         assert (uv_init_dir / "bitbucket-pipelines.yml").exists()
         content = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -50,7 +50,7 @@ pipelines:
         (tmp_path / "bitbucket-pipelines.yml").write_text("existing content")
 
         with change_cwd(tmp_path):
-            add_bitbucket_pipeline_config()
+            add_bitbucket_pipelines_config()
 
         assert (tmp_path / "bitbucket-pipelines.yml").exists()
         content = (tmp_path / "bitbucket-pipelines.yml").read_text()
@@ -59,7 +59,7 @@ pipelines:
     def test_satisfies_schema(self, uv_init_dir: Path):
         # Act
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
-            add_bitbucket_pipeline_config()
+            add_bitbucket_pipelines_config()
             add_bitbucket_step_in_default(
                 Step(
                     name="Example step",
@@ -77,7 +77,7 @@ pipelines:
 class TestRemoveBitbucketPipelineConfig:
     def test_blank_slate(self, tmp_path: Path):
         with change_cwd(tmp_path):
-            remove_bitbucket_pipeline_config()
+            remove_bitbucket_pipelines_config()
 
         assert not (tmp_path / "bitbucket-pipelines.yml").exists()
 
@@ -85,6 +85,6 @@ class TestRemoveBitbucketPipelineConfig:
         (tmp_path / "bitbucket-pipelines.yml").touch()
 
         with change_cwd(tmp_path):
-            remove_bitbucket_pipeline_config()
+            remove_bitbucket_pipelines_config()
 
         assert not (tmp_path / "bitbucket-pipelines.yml").exists()

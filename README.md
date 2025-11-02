@@ -218,7 +218,7 @@ file.
 
 Special thanks to the [Posit](https://posit.co/) team for creating the original [usethis package for **R**](https://usethis.r-lib.org/index.html) , which inspired this project.
 
-Additional thanks are due to the maintainers of the various tools which usethis integrates with, especially [Astral](https://astral.sh/) who created [uv](https://github.com/astral-sh/uv).
+Additional thanks are due to the maintainers of the various tools which usethis integrates with, especially the people with [Astral](https://astral.sh/) who created [uv](https://github.com/astral-sh/uv).
 
 ## License
 

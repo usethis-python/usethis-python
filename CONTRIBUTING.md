@@ -95,3 +95,24 @@ in `pyproject.toml` to understand the structure of the project.
 
 To ensure the `--quiet` flag is always effective, avoid using simple `print` statements.
 Instead, use the purpose-built `usethis._console.plain_print` function.
+
+## Guides
+
+### Adding a new badge
+
+To add a new `usethis badge` interface, follow these steps:
+
+- Define a `get_<badge_name>_badge` function in <src\usethis\_core\badge.py>. Try to
+  keep the definitions in alphabetical order.
+- Declare the interface in <src\usethis\_ui\interface\badge.py>. Again, keep the
+  declarations in alphabetical order. The pattern is basically just boilerplate with
+  the other interfaces, but you need to give a description of your command for the
+  `--help` option.
+- Add a test for your badge in <tests\usethis\_ui\interface\test_interface_badge.py>.
+  Follow the pattern of the existing tests, although you only need the `test_add` case,
+  which simply tests that the command runs without error.
+- Declare a recommended badge placement in the `get_badge_order` function in
+  <src\usethis\_core\badge.py>. This helps ensure the badges are arranged in an
+  opinionated way relative to existing badges.
+
+Finally, run the command on this project, to make sure the badge gets inserted correctly with valid Markdown syntax. Check it renders successfully and that any hyperlink works as expected.

@@ -62,7 +62,9 @@ class PytestTool(Tool):
         how_print(f"Run '{cmd}' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.coverage_py import CoveragePyTool
+        from usethis._tool.impl.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
+            CoveragePyTool,
+        )
 
         deps = [Dependency(name="pytest")]
         if unconditional or CoveragePyTool().is_used():

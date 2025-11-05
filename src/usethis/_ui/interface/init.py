@@ -3,8 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import typer
+from typing_extensions import assert_never
 
-from usethis._console import instruct_print
+from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._types.ci import CIServiceEnum
 from usethis._types.docstyle import DocStyleEnum
@@ -62,9 +63,8 @@ def init(  # noqa: PLR0913
     ),
 ) -> None:
     """Initialize a new project with recommended tooling."""
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
-    from usethis._console import err_print
+    from usethis._console import err_print, instruct_print
     from usethis.errors import UsethisError
 
     assert isinstance(backend, BackendEnum)
@@ -115,9 +115,6 @@ def _init(  # noqa: PLR0913, PLR0915
     docstyle: DocStyleEnum | None,
     status: DevelopmentStatusEnum,
 ):
-    from typing_extensions import assert_never
-
-    from usethis._config import usethis_config
     from usethis._console import tick_print
     from usethis._core.ci import print_how_to_use_ci_bitbucket, use_ci_bitbucket
     from usethis._core.docstyle import use_docstyle

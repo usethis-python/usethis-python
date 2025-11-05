@@ -1,5 +1,6 @@
 import typer
 
+from usethis._config import usethis_config
 from usethis._ui.options import offline_opt, quiet_opt
 
 app = typer.Typer(
@@ -17,7 +18,6 @@ def pypi(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._console import err_print
     from usethis._core.browse import browse_pypi
     from usethis.errors import UsethisError

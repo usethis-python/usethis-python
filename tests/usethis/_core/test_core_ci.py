@@ -620,12 +620,11 @@ pipelines:
             with (
                 change_cwd(uv_init_dir),
                 files_manager(),
-                usethis_config.set(matrix_python=False),
             ):
                 PyprojectTOMLManager()[["project"]]["requires-python"] = ">=3.12,<3.14"
 
                 # Act
-                use_ci_bitbucket()
+                use_ci_bitbucket(matrix_python=False)
 
             # Assert
             contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
@@ -651,10 +650,10 @@ pipelines:
             with (
                 change_cwd(bare_dir),
                 files_manager(),
-                usethis_config.set(backend=BackendEnum.none, matrix_python=False),
+                usethis_config.set(backend=BackendEnum.none),
             ):
                 # Act
-                use_ci_bitbucket()
+                use_ci_bitbucket(matrix_python=False)
 
             # Assert
             contents = (bare_dir / "bitbucket-pipelines.yml").read_text()

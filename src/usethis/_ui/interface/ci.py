@@ -16,7 +16,7 @@ def bitbucket(  # noqa: PLR0913
     matrix_python: bool = typer.Option(
         True,
         "--matrix-python/--no-matrix-python",
-        help="Test against multiple Python versions (matrix) or just the current development version.",
+        help="Test against multiple Python versions.",
     ),
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
@@ -37,12 +37,11 @@ def bitbucket(  # noqa: PLR0913
             quiet=quiet,
             frozen=frozen,
             backend=backend,
-            matrix_python=matrix_python,
         ),
         files_manager(),
     ):
         try:
-            use_ci_bitbucket(remove=remove)
+            use_ci_bitbucket(remove=remove, matrix_python=matrix_python)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

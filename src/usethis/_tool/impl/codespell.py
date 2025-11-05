@@ -10,11 +10,6 @@ from usethis._config_file import CodespellRCManager
 from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
-from usethis._integrations.ci.bitbucket.anchor import (
-    ScriptItemAnchor as BitbucketScriptItemAnchor,
-)
-from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
@@ -143,38 +138,3 @@ class CodespellTool(Tool):
             ),
             requires_venv=False,
         )
-
-    def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        backend = get_backend()
-        cmd = self.default_command()
-        
-        if not cmd:
-            return []
-
-        if backend is BackendEnum.uv:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    caches=["uv"],
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="install-uv"),
-                            cmd,
-                        ]
-                    ),
-                )
-            ]
-        elif backend is BackendEnum.none:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="ensure-venv"),
-                            cmd,
-                        ]
-                    ),
-                )
-            ]
-        else:
-            assert_never(backend)

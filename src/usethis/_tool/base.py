@@ -563,8 +563,52 @@ class Tool(Protocol):
         return None
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        """Get the Bitbucket pipeline step associated with this tool."""
-        return []
+        """Get the Bitbucket pipeline step associated with this tool.
+        
+        By default, this creates a single step using the tool's default_command().
+        Tools can override this method for more complex step requirements (e.g., pytest
+        with multiple Python versions, or Ruff with separate linter/formatter steps).
+        """
+        from usethis._integrations.backend.dispatch import get_backend
+        from usethis._integrations.ci.bitbucket.anchor import (
+            ScriptItemAnchor as BitbucketScriptItemAnchor,
+        )
+        from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
+        from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
+        from usethis._types.backend import BackendEnum
+        
+        cmd = self.default_command()
+        if not cmd:
+            return []
+        
+        backend = get_backend()
+        if backend is BackendEnum.uv:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    caches=["uv"],
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="install-uv"),
+                            cmd,
+                        ]
+                    ),
+                )
+            ]
+        elif backend is BackendEnum.none:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="ensure-venv"),
+                            cmd,
+                        ]
+                    ),
+                )
+            ]
+        else:
+            assert_never(backend)
 
     def get_managed_bitbucket_step_names(self) -> list[str]:
         """These are the names of the Bitbucket steps that are managed by this tool.

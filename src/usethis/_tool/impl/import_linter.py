@@ -12,11 +12,6 @@ from usethis._config_file import DotImportLinterManager
 from usethis._console import how_print, info_print, warn_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
-from usethis._integrations.ci.bitbucket.anchor import (
-    ScriptItemAnchor as BitbucketScriptItemAnchor,
-)
-from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
@@ -371,41 +366,6 @@ class ImportLinterTool(Tool):
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".importlinter")]
-
-    def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        backend = get_backend()
-        cmd = self.default_command()
-        
-        if not cmd:
-            return []
-
-        if backend is BackendEnum.uv:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    caches=["uv"],
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="install-uv"),
-                            cmd,
-                        ]
-                    ),
-                )
-            ]
-        elif backend is BackendEnum.none:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="ensure-venv"),
-                            cmd,
-                        ]
-                    ),
-                )
-            ]
-        else:
-            assert_never(backend)
 
     def get_rule_config(self) -> RuleConfig:
         return RuleConfig(unmanaged_selected=["INP"], tests_unmanaged_ignored=["INP"])

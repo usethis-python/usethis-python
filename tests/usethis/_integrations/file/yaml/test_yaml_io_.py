@@ -170,7 +170,7 @@ class TestYAMLFileManager:
             my_yaml_manager._content = None
 
             # Act, Assert
-            with pytest.raises(ValueError, match="Content is None, cannot dump."):
+            with pytest.raises(ValueError, match=r"Content is None, cannot dump."):
                 my_yaml_manager._dump_content()
 
     class TestParseContent:
@@ -430,7 +430,7 @@ outer:
                 # Act, Assert
                 with pytest.raises(
                     UnexpectedYAMLValueError,
-                    match="Root level configuration must be a mapping.",
+                    match=r"Root level configuration must be a mapping.",
                 ):
                     manager.set_value(keys=["key"], value="value")
 
@@ -493,7 +493,7 @@ outer:
                 # Act, Assert
                 with pytest.raises(
                     YAMLValueAlreadySetError,
-                    match="Configuration value 'outer.inner' is already set.",
+                    match=r"Configuration value 'outer.inner' is already set.",
                 ):
                     manager.set_value(
                         keys=["outer", "inner", "value"],
@@ -518,7 +518,7 @@ outer: ["inner"]
                 # Act, Assert
                 with pytest.raises(
                     YAMLValueAlreadySetError,
-                    match="Configuration value 'outer' is already set.",
+                    match=r"Configuration value 'outer' is already set.",
                 ):
                     manager.set_value(
                         keys=["outer", "inner", "value"],
@@ -563,7 +563,7 @@ outer: value
                 # Act, Assert
                 with pytest.raises(
                     YAMLValueAlreadySetError,
-                    match="Configuration value 'key' is already set.",
+                    match=r"Configuration value 'key' is already set.",
                 ):
                     manager.set_value(keys=["key"], value="new_value", exists_ok=False)
 
@@ -642,7 +642,7 @@ other: value
                 # Act, Assert
                 with pytest.raises(
                     YAMLValueMissingError,
-                    match="Configuration value 'key' is missing.",
+                    match=r"Configuration value 'key' is missing.",
                 ):
                     del manager[["key"]]
 
@@ -661,7 +661,7 @@ other: value
                 # Act, Assert
                 with pytest.raises(
                     YAMLValueMissingError,
-                    match="Configuration value 'non_existent_key' is missing.",
+                    match=r"Configuration value 'non_existent_key' is missing.",
                 ):
                     del manager[["non_existent_key"]]
 
@@ -682,7 +682,7 @@ outer: value
                 # Act, Assert
                 with pytest.raises(
                     YAMLValueMissingError,
-                    match="Configuration value 'outer.key' is missing.",
+                    match=r"Configuration value 'outer.key' is missing.",
                 ):
                     del manager[["outer", "key"]]
 
@@ -742,7 +742,7 @@ outer: value
                 # Act, Assert
                 with pytest.raises(
                     UnexpectedYAMLValueError,
-                    match="Root level configuration must be a mapping.",
+                    match=r"Root level configuration must be a mapping.",
                 ):
                     manager.extend_list(keys=["key"], values=["value"])
 
@@ -760,7 +760,7 @@ outer: value
 
                 # Act, Assert
                 with pytest.raises(
-                    ValueError, match="At least one ID key must be provided."
+                    ValueError, match=r"At least one ID key must be provided."
                 ):
                     manager.extend_list(keys=[], values=["item3", "item4"])
 
@@ -862,7 +862,7 @@ items:
                 # Act, Assert
                 with pytest.raises(
                     UnexpectedYAMLValueError,
-                    match="Root level configuration must be a mapping.",
+                    match=r"Root level configuration must be a mapping.",
                 ):
                     manager.remove_from_list(keys=["key"], values=["value"])
 
@@ -886,7 +886,7 @@ items:
 
                 # Act, Assert
                 with pytest.raises(
-                    ValueError, match="At least one ID key must be provided."
+                    ValueError, match=r"At least one ID key must be provided."
                 ):
                     manager.remove_from_list(keys=[], values=["item2"])
 

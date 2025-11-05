@@ -566,7 +566,7 @@ class Tool(Protocol):
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         """Get the Bitbucket pipeline step associated with this tool.
-        
+
         By default, this creates a single step using the tool's default_command().
         Tools can override this method for more complex step requirements (e.g., pytest
         with multiple Python versions, or Ruff with separate linter/formatter steps).
@@ -578,12 +578,12 @@ class Tool(Protocol):
         from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
         from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
         from usethis._types.backend import BackendEnum
-        
+
         try:
             cmd = self.default_command()
         except NoDefaultToolCommand:
             return []
-        
+
         backend = get_backend()
         if backend is BackendEnum.uv:
             return [

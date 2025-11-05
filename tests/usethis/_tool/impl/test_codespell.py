@@ -18,33 +18,35 @@ class TestCodespellTool:
         def test_uv_backend_with_uv_lock(self, tmp_path: Path):
             # Arrange
             (tmp_path / "uv.lock").touch()
-            
+
             # Act
             with change_cwd(tmp_path), files_manager():
                 cmd = CodespellTool().default_command()
-            
+
             # Assert
             assert cmd == "uv run codespell"
-        
+
         def test_uv_backend_without_uv_lock(self, tmp_path: Path):
             # Arrange - no uv.lock file
-            
+
             # Act
             with change_cwd(tmp_path), files_manager():
                 cmd = CodespellTool().default_command()
-            
+
             # Assert
             assert cmd == "codespell"
-        
+
         def test_none_backend(self, tmp_path: Path):
             # Arrange
-            
+
             # Act
-            with change_cwd(tmp_path), files_manager(), usethis_config.set(
-                backend=BackendEnum.none
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.none),
             ):
                 cmd = CodespellTool().default_command()
-            
+
             # Assert
             assert cmd == "codespell"
 

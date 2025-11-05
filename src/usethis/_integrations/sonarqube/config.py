@@ -20,7 +20,7 @@ class _NonstandardPythonVersionError(Exception):
     """Raised when a non-standard Python version is detected."""
 
 
-def get_sonar_project_properties() -> str:
+def get_sonar_project_properties() -> str:  # noqa: PLR0912
     """Get contents for (or from) the sonar-project.properties file."""
     path = usethis_config.cpd() / "sonar-project.properties"
     if path.exists() and path.is_file():
@@ -59,6 +59,7 @@ def get_sonar_project_properties() -> str:
         ]
     except (FileNotFoundError, KeyError):
         exclusions = []
+    # TypeAdapter(list).validate_python() ensures we have a list and returns a new list
     exclusions = TypeAdapter(list).validate_python(exclusions)
     for exclusion in exclusions:
         TypeAdapter(str).validate_python(exclusion)
@@ -77,6 +78,9 @@ def get_sonar_project_properties() -> str:
     source_dir_str = get_source_dir_str()
     if source_dir_str == ".":
         sources = "./"
+        # When using flat layout, exclude tests directory to avoid double indexing
+        if "tests/*" not in exclusions:
+            exclusions.insert(0, "tests/*")
     else:
         sources = f"./{source_dir_str}"
 

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 import typer
 
+from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._ui.options import (
     backend_opt,
@@ -35,7 +36,6 @@ def codespell(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_codespell
 
@@ -70,7 +70,6 @@ def coverage_py(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_coverage_py
 
@@ -98,7 +97,6 @@ def deptry(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_deptry
 
@@ -126,7 +124,6 @@ def import_linter(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_import_linter
 
@@ -154,7 +151,6 @@ def mkdocs(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_mkdocs
 
@@ -180,7 +176,6 @@ def pre_commit(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pre_commit
 
@@ -208,7 +203,6 @@ def pyproject_fmt(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_fmt
 
@@ -236,7 +230,6 @@ def pyproject_toml(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_toml
 
@@ -262,7 +255,6 @@ def pytest(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pytest
 
@@ -290,7 +282,6 @@ def requirements_txt(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_requirements_txt
 
@@ -328,7 +319,6 @@ def ruff(
         help="Add or remove specifically the Ruff formatter.",
     ),
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ruff
 

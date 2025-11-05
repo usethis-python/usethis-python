@@ -60,7 +60,7 @@ dev = [
   "jinja2>=3.1.6",
   "prek>=0.2.4",
   "pyright[nodejs]>=1.1.399",
-  "ruff>=0.11.5",
+  "ruff>=0.14.3",
 ]
 test = [
   "click>=8.1.8",
@@ -79,6 +79,11 @@ doc = [
 
 [tool.hatch.version]
 source = "vcs"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "ruff.toml",
+]
 
 [tool.hatch.metadata.hooks.vcs.urls]
 "Source Code" = "https://github.com/usethis-python/usethis-python"
@@ -112,6 +117,7 @@ lint.select = [
   "FURB",
   "I",
   "INP",
+  "PLC0415",
   "PLE",
   "PLR",
   "PT",
@@ -123,7 +129,7 @@ lint.select = [
   "UP",
 ]
 lint.ignore = [ "PLR2004", "S101", "SIM108" ]
-lint.per-file-ignores."!tests/**/*.py" = [ "ARG002" ]
+lint.per-file-ignores."!tests/**/*.py" = [ "ARG002", "PT" ]
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S603", "TC" ]
 lint.flake8-bugbear.extend-immutable-calls = [ "typer.Argument", "typer.Option" ]
 

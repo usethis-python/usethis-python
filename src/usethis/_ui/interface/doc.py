@@ -1,5 +1,6 @@
 import typer
 
+from usethis._config import usethis_config
 from usethis._ui.options import frozen_opt, how_opt, offline_opt, quiet_opt, remove_opt
 
 
@@ -11,7 +12,6 @@ def doc(
     frozen: bool = frozen_opt,
 ) -> None:
     """Add a recommended documentation framework to the project."""
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._toolset.doc import use_doc_frameworks

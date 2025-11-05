@@ -1,5 +1,6 @@
 import typer
 
+from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._ui.options import (
     backend_opt,
@@ -20,7 +21,6 @@ def spellcheck(  # noqa: PLR0913
     backend: BackendEnum = backend_opt,
 ) -> None:
     """Add a recommended spellchecker to the project."""
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._toolset.spellcheck import use_spellcheckers

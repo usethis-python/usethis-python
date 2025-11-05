@@ -1,0 +1,13 @@
+extend = "../../../pyproject.toml"
+
+lint.flake8-tidy-imports.banned-module-level-imports = [
+    "usethis._config_file",
+    "usethis._console",
+    "usethis._core",
+    "usethis._init",
+    "usethis._integrations",
+    "usethis._tool",
+    "usethis._toolset",
+    "usethis._version",
+    "usethis.errors",
+]

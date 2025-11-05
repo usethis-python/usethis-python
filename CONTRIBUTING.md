@@ -52,6 +52,8 @@ uv run pyinstrument -m pytest
 
 With any `pytest` options you wish to include, e.g. `-k` to run specific tests, or `--collect-only` to only profile test collection time. This will generate a CLI-friendly report of where time is being spent. For an interactive HTML report, you can run `pyinstrument` with the `-r=html` option before the `-m pytest` part.
 
+A common pattern in the test suite is to use a [pytest fixture](https://docs.pytest.org/en/7.1.x/how-to/fixtures.html) to get a temporary directory, and then use the `usethis._test.change_cwd` context manager in the test to simulate running usethis from within a project. If you're writing a new test and noticing unexpected creations or modifications of files, it's a sign that the working directory has not been properly configured for the test.
+
 ## Documentation
 
 Documentation is hosted at <https://usethis.readthedocs.io/en/stable/>. It can be served locally with:
@@ -71,6 +73,18 @@ It is recommended that you use signed commits, although this is not a requiremen
 ## Architecture
 
 This project uses [Import Linter](https://import-linter.readthedocs.io/en/stable/) to enforce a software architecture. Refer to the `[[tool.importlinter.contracts]]` sections in `pyproject.toml` to understand the structure of the project.
+
+### Global Configuration State
+
+The `usethis._config.usethis_config` object manages global application state that affects behavior across the entire application. This design avoids the need for pass-through variables that would otherwise need to be threaded through many layers of function calls. It provides a context manager, `usethis_config.set()`, which temporarily overrides global settings:
+
+```python
+# Temporarily suppress all output except warnings and errors
+with usethis_config.set(alert_only=True):
+    # Code here runs with modified config
+    do_something()
+# Original settings are automatically restored
+```
 
 ## Python Version Support
 

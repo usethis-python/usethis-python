@@ -564,7 +564,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 
             # Assert
             assert not (tmp_path / "pyproject.toml").exists()
-            out, err = capfd.readouterr()
+            out, _err = capfd.readouterr()
             assert not out
 
 

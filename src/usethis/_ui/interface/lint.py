@@ -1,5 +1,6 @@
 import typer
 
+from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._ui.options import (
     backend_opt,
@@ -11,7 +12,7 @@ from usethis._ui.options import (
 )
 
 
-def lint(  # noqa: PLR0913
+def lint(
     remove: bool = remove_opt,
     how: bool = how_opt,
     offline: bool = offline_opt,
@@ -20,7 +21,6 @@ def lint(  # noqa: PLR0913
     backend: BackendEnum = backend_opt,
 ) -> None:
     """Add recommended linters to the project."""
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._toolset.lint import use_linters

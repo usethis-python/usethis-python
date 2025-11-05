@@ -43,21 +43,29 @@ class PytestTool(Tool):
     def name(self) -> str:
         return "pytest"
 
+    def default_command(self) -> str:
+        """Get the default command for running pytest."""
+        backend = get_backend()
+        if backend is BackendEnum.uv and is_uv_used():
+            return "uv run pytest"
+        elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            return "pytest"
+        else:
+            assert_never(backend)
+
     def print_how_to_use(self) -> None:
         how_print(
             "Add test files to the '/tests' directory with the format 'test_*.py'."
         )
         how_print("Add test functions with the format 'test_*()'.")
 
-        backend = get_backend()
-        if backend is BackendEnum.uv and is_uv_used():
-            how_print("Run 'uv run pytest' to run the tests.")
-        else:
-            assert backend in (BackendEnum.none, BackendEnum.uv)
-            how_print("Run 'pytest' to run the tests.")
+        cmd = self.default_command()
+        how_print(f"Run '{cmd}' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.coverage_py import CoveragePyTool
+        from usethis._tool.impl.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
+            CoveragePyTool,
+        )
 
         deps = [Dependency(name="pytest")]
         if unconditional or CoveragePyTool().is_used():

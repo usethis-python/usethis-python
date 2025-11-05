@@ -1,5 +1,6 @@
 import typer
 
+from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
 
@@ -23,7 +24,6 @@ def bitbucket(  # noqa: PLR0913
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.ci import use_ci_bitbucket

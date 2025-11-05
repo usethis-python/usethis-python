@@ -12,11 +12,6 @@ from usethis._config_file import DotImportLinterManager
 from usethis._console import how_print, info_print, warn_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
-from usethis._integrations.ci.bitbucket.anchor import (
-    ScriptItemAnchor as BitbucketScriptItemAnchor,
-)
-from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
@@ -59,6 +54,15 @@ class ImportLinterTool(Tool):
         with usethis_config.set(quiet=True):
             return super().is_used()
 
+    def default_command(self) -> str:
+        backend = get_backend()
+        if backend is BackendEnum.uv and is_uv_used():
+            return "uv run lint-imports"
+        elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            return "lint-imports"
+        else:
+            assert_never(backend)
+
     def print_how_to_use(self) -> None:
         if not _is_inp_rule_selected():
             # If Ruff is used, we enable the INP rules instead.
@@ -79,11 +83,8 @@ class ImportLinterTool(Tool):
                     f"Run 'pre-commit run import-linter --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(f"Run 'uv run lint-imports' to run {self.name}.")
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
-                how_print(f"Run 'lint-imports' to run {self.name}.")
+            cmd = self.default_command()
+            how_print(f"Run '{cmd}' to run {self.name}.")
         else:
             assert_never(install_method)
 
@@ -364,37 +365,6 @@ class ImportLinterTool(Tool):
 
     def get_managed_files(self) -> list[Path]:
         return [Path(".importlinter")]
-
-    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
-        backend = get_backend()
-
-        if backend is BackendEnum.uv:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    caches=["uv"],
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="install-uv"),
-                            "uv run lint-imports",
-                        ]
-                    ),
-                )
-            ]
-        elif backend is BackendEnum.none:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="ensure-venv"),
-                            "lint-imports",
-                        ]
-                    ),
-                )
-            ]
-        else:
-            assert_never(backend)
 
     def get_rule_config(self) -> RuleConfig:
         return RuleConfig(unmanaged_selected=["INP"], tests_unmanaged_ignored=["INP"])

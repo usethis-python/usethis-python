@@ -7,11 +7,6 @@ from typing_extensions import assert_never
 from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
-from usethis._integrations.ci.bitbucket.anchor import (
-    ScriptItemAnchor as BitbucketScriptItemAnchor,
-)
-from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
 from usethis._tool.base import Tool
@@ -29,6 +24,15 @@ class PyprojectFmtTool(Tool):
     def name(self) -> str:
         return "pyproject-fmt"
 
+    def default_command(self) -> str:
+        backend = get_backend()
+        if backend is BackendEnum.uv and is_uv_used():
+            return "uv run pyproject-fmt pyproject.toml"
+        elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            return "pyproject-fmt pyproject.toml"
+        else:
+            assert_never(backend)
+
     def print_how_to_use(self) -> None:
         install_method = self.get_install_method()
         backend = get_backend()
@@ -43,13 +47,8 @@ class PyprojectFmtTool(Tool):
                     f"Run 'pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    f"Run 'uv run pyproject-fmt pyproject.toml' to run {self.name}."
-                )
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
-                how_print(f"Run 'pyproject-fmt pyproject.toml' to run {self.name}.")
+            cmd = self.default_command()
+            how_print(f"Run '{cmd}' to run {self.name}.")
         else:
             assert_never(install_method)
 
@@ -91,34 +90,3 @@ class PyprojectFmtTool(Tool):
             ),
             requires_venv=False,
         )
-
-    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
-        backend = get_backend()
-
-        if backend is BackendEnum.uv:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    caches=["uv"],
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="install-uv"),
-                            "uv run pyproject-fmt pyproject.toml",
-                        ]
-                    ),
-                )
-            ]
-        elif backend is BackendEnum.none:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="ensure-venv"),
-                            "pyproject-fmt pyproject.toml",
-                        ]
-                    ),
-                )
-            ]
-        else:
-            assert_never(backend)

@@ -44,6 +44,32 @@ Tests are usually organized into classes centred around the objects being tested
 
 PRs should ideally include tests for any new features or bug fixes.
 
+#### Test Side-Effects
+
+**Tests must not have side-effects in the repository itself.** This means tests should not modify, create, or delete files in the repository directory. Instead:
+
+- Use pytest's `tmp_path` fixture to create temporary directories for test operations
+- Use the `usethis._test.change_cwd` context manager when testing code that operates on the current working directory
+
+For example:
+
+```python
+from usethis._test import change_cwd
+
+def test_example(tmp_path: Path):
+    # Arrange - create files in temporary directory
+    (tmp_path / "example.txt").write_text("test")
+    
+    # Act - change to temp directory for operations
+    with change_cwd(tmp_path):
+        do_something()
+    
+    # Assert
+    assert (tmp_path / "output.txt").exists()
+```
+
+If you find a test is modifying files in the repository, it's a sign that the current working directory is not properly set using the `change_cwd` context manager.
+
 To diagnose slow test speeds, you can run
 
 ```shell

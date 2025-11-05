@@ -48,6 +48,11 @@ uv run pytest -k "test_help" -v
 - Use arrange-act-assert structure with comments separating sections
 - Only one contiguous block of assertions in assert section
 - Tests organized into classes: `TestMyClass` containing `TestMyMethod` for nested method tests
+- **No side-effects**: Tests must not modify, create, or delete files in the repository directory
+  - Always use pytest's `tmp_path` fixture for file operations
+  - Always use `usethis._test.change_cwd` context manager when testing code that operates on the current working directory
+  - Example: `with change_cwd(tmp_path): do_something()`
+  - If a test modifies repo files, it's a sign the CWD is not properly set with `change_cwd`
 
 ## Validation Pipeline (Pre-Commit Checks)
 

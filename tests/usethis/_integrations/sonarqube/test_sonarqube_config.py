@@ -100,7 +100,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
-sonar.exclusions=./tests
+sonar.exclusions=tests/*
 """
         )
 
@@ -129,7 +129,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
-sonar.exclusions=./tests
+sonar.exclusions=tests/*
 """
         )
 
@@ -159,7 +159,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
-sonar.exclusions=./tests
+sonar.exclusions=tests/*
 """
         )
 
@@ -192,7 +192,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=true
-sonar.exclusions=./tests
+sonar.exclusions=tests/*
 """
         )
 
@@ -239,7 +239,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
-sonar.exclusions=./tests
+sonar.exclusions=tests/*
 """
         )
 
@@ -276,7 +276,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
-sonar.exclusions=./tests, **/Dockerfile, src/notebooks/**/*
+sonar.exclusions=tests/*, **/Dockerfile, src/notebooks/**/*
 """
         )
 
@@ -307,7 +307,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=./test-reports/cov.xml
 sonar.verbose=false
-sonar.exclusions=./tests
+sonar.exclusions=tests/*
 """
         )
 
@@ -325,7 +325,7 @@ sonar.exclusions=./tests
                 get_sonar_project_properties()
 
     def test_flat_layout_exclusions_already_has_tests(self, tmp_path: Path):
-        # When using flat layout and ./tests is already in exclusions,
+        # When using flat layout and tests/* is already in exclusions,
         # it should not be added again.
 
         with change_cwd(tmp_path), PyprojectTOMLManager():
@@ -337,7 +337,7 @@ sonar.exclusions=./tests
             )
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "exclusions"],
-                value=["./tests", "**/Dockerfile"],
+                value=["tests/*", "**/Dockerfile"],
             )
             PyprojectTOMLManager().set_value(
                 keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
@@ -357,7 +357,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
-sonar.exclusions=./tests, **/Dockerfile
+sonar.exclusions=tests/*, **/Dockerfile
 """
         )
 

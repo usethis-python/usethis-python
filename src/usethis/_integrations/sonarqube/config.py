@@ -79,8 +79,8 @@ def get_sonar_project_properties() -> str:  # noqa: PLR0912
     if source_dir_str == ".":
         sources = "./"
         # When using flat layout, exclude tests directory to avoid double indexing
-        if "./tests" not in exclusions:
-            exclusions.insert(0, "./tests")
+        if "tests/*" not in exclusions:
+            exclusions.insert(0, "tests/*")
     else:
         sources = f"./{source_dir_str}"
 

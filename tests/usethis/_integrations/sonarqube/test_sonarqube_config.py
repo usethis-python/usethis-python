@@ -100,6 +100,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
+sonar.exclusions=./tests
 """
         )
 
@@ -128,6 +129,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
+sonar.exclusions=./tests
 """
         )
 
@@ -157,6 +159,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
+sonar.exclusions=./tests
 """
         )
 
@@ -189,6 +192,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=true
+sonar.exclusions=./tests
 """
         )
 
@@ -235,6 +239,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
+sonar.exclusions=./tests
 """
         )
 
@@ -271,7 +276,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
-sonar.exclusions=**/Dockerfile, src/notebooks/**/*
+sonar.exclusions=**/Dockerfile, src/notebooks/**/*, ./tests
 """
         )
 
@@ -302,6 +307,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=./test-reports/cov.xml
 sonar.verbose=false
+sonar.exclusions=./tests
 """
         )
 
@@ -317,6 +323,43 @@ sonar.verbose=false
             # Act, Assert
             with pytest.raises(CoverageReportConfigNotFoundError):
                 get_sonar_project_properties()
+
+    def test_flat_layout_exclusions_already_has_tests(self, tmp_path: Path):
+        # When using flat layout and ./tests is already in exclusions,
+        # it should not be added again.
+
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "exclusions"],
+                value=["./tests", "**/Dockerfile"],
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+
+            # Act
+            result = get_sonar_project_properties()
+
+        # Assert
+        assert (
+            result
+            == """\
+sonar.projectKey=foobar
+sonar.language=py
+sonar.python.version=3.12
+sonar.sources=./
+sonar.tests=./tests
+sonar.python.coverage.reportPaths=coverage.xml
+sonar.verbose=false
+sonar.exclusions=./tests, **/Dockerfile
+"""
+        )
 
 
 class TestValidateProjectKey:

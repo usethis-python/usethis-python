@@ -20,7 +20,7 @@ class _NonstandardPythonVersionError(Exception):
     """Raised when a non-standard Python version is detected."""
 
 
-def get_sonar_project_properties() -> str:
+def get_sonar_project_properties() -> str:  # noqa: PLR0912
     """Get contents for (or from) the sonar-project.properties file."""
     path = usethis_config.cpd() / "sonar-project.properties"
     if path.exists() and path.is_file():
@@ -63,6 +63,9 @@ def get_sonar_project_properties() -> str:
     for exclusion in exclusions:
         TypeAdapter(str).validate_python(exclusion)
 
+    # Convert to list for manipulation if needed
+    exclusions = list(exclusions)
+
     # Get coverage report output path
     try:
         coverage_output = PyprojectTOMLManager()[["tool", "coverage", "xml", "output"]]
@@ -77,6 +80,9 @@ def get_sonar_project_properties() -> str:
     source_dir_str = get_source_dir_str()
     if source_dir_str == ".":
         sources = "./"
+        # When using flat layout, exclude tests directory to avoid double indexing
+        if "./tests" not in exclusions:
+            exclusions.append("./tests")
     else:
         sources = f"./{source_dir_str}"
 

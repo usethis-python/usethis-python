@@ -221,6 +221,13 @@ Follow the guide in CONTRIBUTING.md:
 - Avoid suppressions unless absolutely necessary
 - Format: `# ruff: noqa: RULE1, RULE2` (not `# ruff noqa:`)
 
+**Repository Files:**
+- **NEVER modify `.gitignore`** unless explicitly instructed to do so
+  - The `.gitignore` file is carefully curated for Python projects
+  - It includes all necessary patterns for build artifacts, dependencies, and temporary files
+  - Modifying it could lead to accidentally committing files that shouldn't be in version control
+  - If you need to exclude temporary files, create them in `/tmp` instead
+
 ## Trust These Instructions
 
 These instructions have been validated by running actual commands and inspecting the full codebase. Only search for additional information if:

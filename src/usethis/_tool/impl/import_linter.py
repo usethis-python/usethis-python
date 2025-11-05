@@ -59,6 +59,15 @@ class ImportLinterTool(Tool):
         with usethis_config.set(quiet=True):
             return super().is_used()
 
+    def default_command(self) -> str | None:
+        backend = get_backend()
+        if backend is BackendEnum.uv and is_uv_used():
+            return "uv run lint-imports"
+        elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            return "lint-imports"
+        else:
+            assert_never(backend)
+
     def print_how_to_use(self) -> None:
         if not _is_inp_rule_selected():
             # If Ruff is used, we enable the INP rules instead.
@@ -79,11 +88,9 @@ class ImportLinterTool(Tool):
                     f"Run 'pre-commit run import-linter --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(f"Run 'uv run lint-imports' to run {self.name}.")
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
-                how_print(f"Run 'lint-imports' to run {self.name}.")
+            cmd = self.default_command()
+            if cmd:
+                how_print(f"Run '{cmd}' to run {self.name}.")
         else:
             assert_never(install_method)
 
@@ -367,6 +374,10 @@ class ImportLinterTool(Tool):
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         backend = get_backend()
+        cmd = self.default_command()
+        
+        if not cmd:
+            return []
 
         if backend is BackendEnum.uv:
             return [
@@ -376,7 +387,7 @@ class ImportLinterTool(Tool):
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="install-uv"),
-                            "uv run lint-imports",
+                            cmd,
                         ]
                     ),
                 )
@@ -388,7 +399,7 @@ class ImportLinterTool(Tool):
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),
-                            "lint-imports",
+                            cmd,
                         ]
                     ),
                 )

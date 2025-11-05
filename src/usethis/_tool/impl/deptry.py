@@ -38,6 +38,16 @@ class DeptryTool(Tool):
     def name(self) -> str:
         return "deptry"
 
+    def default_command(self) -> str | None:
+        backend = get_backend()
+        _dir = get_source_dir_str()
+        if backend is BackendEnum.uv and is_uv_used():
+            return f"uv run deptry {_dir}"
+        elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            return f"deptry {_dir}"
+        else:
+            assert_never(backend)
+
     def print_how_to_use(self) -> None:
         _dir = get_source_dir_str()
         install_method = self.get_install_method()
@@ -53,11 +63,9 @@ class DeptryTool(Tool):
                     f"Run 'pre-commit run deptry --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(f"Run 'uv run deptry {_dir}' to run deptry.")
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
-                how_print(f"Run 'deptry {_dir}' to run deptry.")
+            cmd = self.default_command()
+            if cmd:
+                how_print(f"Run '{cmd}' to run deptry.")
         else:
             assert_never(install_method)
 
@@ -131,8 +139,10 @@ class DeptryTool(Tool):
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         backend = get_backend()
-
-        _dir = get_source_dir_str()
+        cmd = self.default_command()
+        
+        if not cmd:
+            return []
 
         if backend is BackendEnum.uv:
             return [
@@ -142,7 +152,7 @@ class DeptryTool(Tool):
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="install-uv"),
-                            f"uv run deptry {_dir}",
+                            cmd,
                         ]
                     ),
                 )
@@ -154,7 +164,7 @@ class DeptryTool(Tool):
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),
-                            f"deptry {_dir}",
+                            cmd,
                         ]
                     ),
                 )

@@ -68,6 +68,34 @@ class RuffTool(Tool):
     def name(self) -> str:
         return "Ruff"
 
+    def default_command(self) -> str | None:
+        """Get the default command for the linter.
+        
+        For Ruff, this returns the linter command by default.
+        Use default_formatter_command() for the formatter.
+        """
+        return self.default_linter_command()
+    
+    def default_linter_command(self) -> str | None:
+        """Get the default command for running the Ruff linter."""
+        backend = get_backend()
+        if backend is BackendEnum.uv and is_uv_used():
+            return "uv run ruff check --fix"
+        elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            return "ruff check --fix"
+        else:
+            assert_never(backend)
+    
+    def default_formatter_command(self) -> str | None:
+        """Get the default command for running the Ruff formatter."""
+        backend = get_backend()
+        if backend is BackendEnum.uv and is_uv_used():
+            return "uv run ruff format"
+        elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            return "ruff format"
+        else:
+            assert_never(backend)
+
     def print_how_to_use(self) -> None:
         """Print how to use the Ruff tool."""
         self.print_how_to_use_linter()
@@ -90,14 +118,10 @@ class RuffTool(Tool):
                     "Run 'pre-commit run ruff --all-files' to run the Ruff linter."
                 )
         elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
+            cmd = self.default_linter_command()
+            if cmd:
                 how_print(
-                    "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
-                )
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
-                how_print(
-                    "Run 'ruff check --fix' to run the Ruff linter with autofixes."
+                    f"Run '{cmd}' to run the Ruff linter with autofixes."
                 )
         else:
             assert_never(install_method)
@@ -117,11 +141,9 @@ class RuffTool(Tool):
                 assert backend in (BackendEnum.none, BackendEnum.uv)
                 how_print("Run 'pre-commit run ruff-format' to run the Ruff formatter.")
         elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print("Run 'uv run ruff format' to run the Ruff formatter.")
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
-                how_print("Run 'ruff format' to run the Ruff formatter.")
+            cmd = self.default_formatter_command()
+            if cmd:
+                how_print(f"Run '{cmd}' to run the Ruff formatter.")
         else:
             assert_never(install_method)
 
@@ -271,62 +293,66 @@ class RuffTool(Tool):
 
         steps = []
         if self.is_linter_used():
-            if backend is BackendEnum.uv:
-                steps.append(
-                    BitbucketStep(
-                        name=f"Run {self.name}",
-                        caches=["uv"],
-                        script=BitbucketScript(
-                            [
-                                BitbucketScriptItemAnchor(name="install-uv"),
-                                "uv run ruff check --fix",
-                            ]
-                        ),
+            cmd = self.default_linter_command()
+            if cmd:
+                if backend is BackendEnum.uv:
+                    steps.append(
+                        BitbucketStep(
+                            name=f"Run {self.name}",
+                            caches=["uv"],
+                            script=BitbucketScript(
+                                [
+                                    BitbucketScriptItemAnchor(name="install-uv"),
+                                    cmd,
+                                ]
+                            ),
+                        )
                     )
-                )
-            elif backend is BackendEnum.none:
-                steps.append(
-                    BitbucketStep(
-                        name=f"Run {self.name}",
-                        script=BitbucketScript(
-                            [
-                                BitbucketScriptItemAnchor(name="ensure-venv"),
-                                "ruff check --fix",
-                            ]
-                        ),
+                elif backend is BackendEnum.none:
+                    steps.append(
+                        BitbucketStep(
+                            name=f"Run {self.name}",
+                            script=BitbucketScript(
+                                [
+                                    BitbucketScriptItemAnchor(name="ensure-venv"),
+                                    cmd,
+                                ]
+                            ),
+                        )
                     )
-                )
-            else:
-                assert_never(backend)
+                else:
+                    assert_never(backend)
 
         if self.is_formatter_used():
-            if backend is BackendEnum.uv:
-                steps.append(
-                    BitbucketStep(
-                        name=f"Run {self.name} Formatter",
-                        caches=["uv"],
-                        script=BitbucketScript(
-                            [
-                                BitbucketScriptItemAnchor(name="install-uv"),
-                                "uv run ruff format",
-                            ]
-                        ),
+            cmd = self.default_formatter_command()
+            if cmd:
+                if backend is BackendEnum.uv:
+                    steps.append(
+                        BitbucketStep(
+                            name=f"Run {self.name} Formatter",
+                            caches=["uv"],
+                            script=BitbucketScript(
+                                [
+                                    BitbucketScriptItemAnchor(name="install-uv"),
+                                    cmd,
+                                ]
+                            ),
+                        )
                     )
-                )
-            elif backend is BackendEnum.none:
-                steps.append(
-                    BitbucketStep(
-                        name=f"Run {self.name} Formatter",
-                        script=BitbucketScript(
-                            [
-                                BitbucketScriptItemAnchor(name="ensure-venv"),
-                                "ruff format",
-                            ]
-                        ),
+                elif backend is BackendEnum.none:
+                    steps.append(
+                        BitbucketStep(
+                            name=f"Run {self.name} Formatter",
+                            script=BitbucketScript(
+                                [
+                                    BitbucketScriptItemAnchor(name="ensure-venv"),
+                                    cmd,
+                                ]
+                            ),
+                        )
                     )
-                )
-            else:
-                assert_never(backend)
+                else:
+                    assert_never(backend)
 
         return steps
 

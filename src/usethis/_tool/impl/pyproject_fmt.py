@@ -29,6 +29,15 @@ class PyprojectFmtTool(Tool):
     def name(self) -> str:
         return "pyproject-fmt"
 
+    def default_command(self) -> str | None:
+        backend = get_backend()
+        if backend is BackendEnum.uv and is_uv_used():
+            return "uv run pyproject-fmt pyproject.toml"
+        elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            return "pyproject-fmt pyproject.toml"
+        else:
+            assert_never(backend)
+
     def print_how_to_use(self) -> None:
         install_method = self.get_install_method()
         backend = get_backend()
@@ -43,13 +52,9 @@ class PyprojectFmtTool(Tool):
                     f"Run 'pre-commit run pyproject-fmt --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    f"Run 'uv run pyproject-fmt pyproject.toml' to run {self.name}."
-                )
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
-                how_print(f"Run 'pyproject-fmt pyproject.toml' to run {self.name}.")
+            cmd = self.default_command()
+            if cmd:
+                how_print(f"Run '{cmd}' to run {self.name}.")
         else:
             assert_never(install_method)
 
@@ -94,6 +99,10 @@ class PyprojectFmtTool(Tool):
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
         backend = get_backend()
+        cmd = self.default_command()
+        
+        if not cmd:
+            return []
 
         if backend is BackendEnum.uv:
             return [
@@ -103,7 +112,7 @@ class PyprojectFmtTool(Tool):
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="install-uv"),
-                            "uv run pyproject-fmt pyproject.toml",
+                            cmd,
                         ]
                     ),
                 )
@@ -115,7 +124,7 @@ class PyprojectFmtTool(Tool):
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),
-                            "pyproject-fmt pyproject.toml",
+                            cmd,
                         ]
                     ),
                 )

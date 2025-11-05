@@ -56,6 +56,24 @@ class Tool(Protocol):
         """
         pass
 
+    def default_command(self) -> str | None:
+        """The default command to run the tool, backend-dependent.
+
+        This method returns the command string for running the tool, which varies
+        based on the current backend (e.g., "uv", "none"). This is used to avoid
+        duplication in get_bitbucket_steps methods and help messages.
+
+        Returns:
+            The command string for running the tool, or None if the tool has no
+            associated command.
+
+        Examples:
+            For codespell with uv backend: "uv run codespell"
+            For codespell with none backend: "codespell"
+            For a config-only tool: None
+        """
+        return None
+
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's development dependencies.
 

@@ -24,6 +24,7 @@ from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
 from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.python.version import get_python_major_version
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.rule import RuleConfig
@@ -222,8 +223,11 @@ class PytestTool(Tool):
             raise NotImplementedError(msg)
         return {preferred_file_manager}
 
-    def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        versions = get_supported_major_python_versions()
+    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
+        if matrix_python:
+            versions = get_supported_major_python_versions()
+        else:
+            versions = [get_python_major_version()]
 
         backend = get_backend()
 
@@ -272,7 +276,7 @@ class PytestTool(Tool):
 
         return sorted(names)
 
-    def update_bitbucket_steps(self) -> None:
+    def update_bitbucket_steps(self, *, matrix_python: bool = True) -> None:
         """Update the pytest-related Bitbucket Pipelines steps.
 
         A bespoke function is needed here to ensure we inform the user about the need
@@ -284,7 +288,7 @@ class PytestTool(Tool):
 
         # But otherwise if not early exiting, we are going to add steps so we might
         # need to inform the user
-        super().update_bitbucket_steps()
+        super().update_bitbucket_steps(matrix_python=matrix_python)
 
         backend = get_backend()
 

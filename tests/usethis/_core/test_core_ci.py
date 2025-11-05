@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+import usethis._integrations.python.version
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._core.ci import use_ci_bitbucket
@@ -584,3 +585,79 @@ pipelines:
                 "ℹ Consider `usethis tool pytest` to test your code for the pipeline.\n"  # noqa: RUF001
                 "☐ Run your pipeline via the Bitbucket website.\n"
             )
+
+    class TestPythonMatrix:
+        def test_matrix_enabled_by_default(self, uv_init_dir: Path):
+            """Test that matrix is enabled by default and creates multiple test steps."""
+            # Arrange
+            (uv_init_dir / "tests").mkdir()
+            (uv_init_dir / "tests" / "conftest.py").touch()
+
+            with change_cwd(uv_init_dir), files_manager():
+                PyprojectTOMLManager()[["project"]]["requires-python"] = ">=3.12,<3.14"
+
+                # Act
+                use_ci_bitbucket()
+
+            # Assert
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            assert "Test on 3.12" in contents
+            assert "Test on 3.13" in contents
+
+        def test_matrix_disabled_creates_single_step(
+            self, uv_init_dir: Path, monkeypatch: pytest.MonkeyPatch
+        ):
+            """Test that --no-matrix-python creates only one test step for current version."""
+            # Arrange
+            monkeypatch.setattr(
+                usethis._integrations.python.version,
+                "get_python_version",
+                lambda: "3.10.0",
+            )
+            (uv_init_dir / "tests").mkdir()
+            (uv_init_dir / "tests" / "conftest.py").touch()
+
+            with (
+                change_cwd(uv_init_dir),
+                files_manager(),
+            ):
+                PyprojectTOMLManager()[["project"]]["requires-python"] = ">=3.12,<3.14"
+
+                # Act
+                use_ci_bitbucket(matrix_python=False)
+
+            # Assert
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            # Should only have one test step for the current development version (3.10)
+            assert "Test on 3.10" in contents
+            # Should NOT have other versions
+            assert "Test on 3.12" not in contents
+            assert "Test on 3.13" not in contents
+
+        def test_matrix_disabled_with_none_backend(
+            self, bare_dir: Path, monkeypatch: pytest.MonkeyPatch
+        ):
+            """Test that --no-matrix-python works with backend=none."""
+            # Arrange
+            monkeypatch.setattr(
+                usethis._integrations.python.version,
+                "get_python_version",
+                lambda: "3.11.0",
+            )
+            (bare_dir / "tests").mkdir()
+            (bare_dir / "tests" / "conftest.py").touch()
+
+            with (
+                change_cwd(bare_dir),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
+                # Act
+                use_ci_bitbucket(matrix_python=False)
+
+            # Assert
+            contents = (bare_dir / "bitbucket-pipelines.yml").read_text()
+            # Should have one test step for Python 3.11
+            assert "Test on 3.11" in contents
+            # Should use image instead of uv
+            assert "image: python:3.11" in contents

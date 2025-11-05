@@ -14,6 +14,11 @@ def bitbucket(
     remove: bool = typer.Option(
         False, "--remove", help="Remove Bitbucket Pipelines CI instead of adding it."
     ),
+    matrix_python: bool = typer.Option(
+        True,
+        "--matrix-python/--no-matrix-python",
+        help="Test against multiple Python versions.",
+    ),
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
@@ -28,12 +33,15 @@ def bitbucket(
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
         ),
         files_manager(),
     ):
         try:
-            use_ci_bitbucket(remove=remove)
+            use_ci_bitbucket(remove=remove, matrix_python=matrix_python)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

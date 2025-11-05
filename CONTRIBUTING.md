@@ -72,6 +72,62 @@ It is recommended that you use signed commits, although this is not a requiremen
 
 This project uses [Import Linter](https://import-linter.readthedocs.io/en/stable/) to enforce a software architecture. Refer to the `[[tool.importlinter.contracts]]` sections in `pyproject.toml` to understand the structure of the project.
 
+### Global Configuration State
+
+The `usethis._config.usethis_config` object manages global application state that affects behavior across the entire application. This design avoids the need for pass-through variables that would otherwise need to be threaded through many layers of function calls.
+
+**Purpose**: The global config controls application-wide behaviors such as:
+- **Message suppression**: `quiet`, `alert_only`, `instruct_only` control what categories of messages are displayed
+- **Network access**: `offline` disables all network operations
+- **Dependency installation**: `frozen` prevents installing dependencies or updating lockfiles
+- **Build backend**: `backend` specifies which package manager to use
+- **Pre-commit integration**: `disable_pre_commit` controls pre-commit behavior
+- **Subprocess verbosity**: `subprocess_verbose` controls subprocess output
+- **Project directory**: `project_dir` overrides the default current working directory
+
+**Usage as a context manager**: The `usethis_config.set()` method is a context manager that temporarily overrides global settings:
+
+```python
+from usethis._config import usethis_config
+
+# Temporarily suppress all output except warnings and errors
+with usethis_config.set(alert_only=True):
+    # Code here runs with modified config
+    do_something()
+# Original settings are automatically restored
+```
+
+**CLI integration**: Command-line flags are applied to the global config using the context manager pattern. For example:
+
+```python
+def my_command(
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+):
+    from usethis._config import usethis_config
+    
+    with usethis_config.set(offline=offline, quiet=quiet):
+        # The entire command execution uses these settings
+        do_work()
+```
+
+**Internal usage**: Functions deep in the call stack can access the current configuration without requiring parameters to be passed through every intermediate function:
+
+```python
+def some_internal_function():
+    from usethis._config import usethis_config
+    
+    if usethis_config.quiet:
+        return  # Skip output
+    print("Normal output")
+```
+
+**Important guidelines**:
+- The global config should only contain settings that affect application behavior across many different commands
+- Do **not** add new global state for command-specific behavior that only affects a single command
+- Only add new state when there is a very good reason and the state is useful across the whole application
+- The purpose is to control application behavior (e.g., output verbosity, network access), not the specific behavior of individual CLI commands
+
 ## Python Version Support
 
 This project supports all versions of Python through until end of life. The development environment uses the oldest supported version, which is given in the `.python-version` file. The GitHub Actions pipeline tests all supported versions.

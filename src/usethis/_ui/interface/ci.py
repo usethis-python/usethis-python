@@ -10,7 +10,7 @@ app = typer.Typer(
 
 
 @app.command(help="Use Bitbucket Pipelines for CI.")
-def bitbucket(  # noqa: PLR0913
+def bitbucket(
     remove: bool = typer.Option(
         False, "--remove", help="Remove Bitbucket Pipelines CI instead of adding it."
     ),

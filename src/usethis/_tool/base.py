@@ -576,7 +576,7 @@ class Tool(Protocol):
         By default, this creates a single step using the tool's default_command().
         Tools can override this method for more complex step requirements (e.g., pytest
         with multiple Python versions, or Ruff with separate linter/formatter steps).
-        
+
         Args:
             matrix_python: Whether to use a Python version matrix. When False,
                            only the current development version is used.
@@ -635,7 +635,7 @@ class Tool(Protocol):
         """Add Bitbucket steps associated with this tool, and remove outdated ones.
 
         Only runs if Bitbucket is used in the project.
-        
+
         Args:
             matrix_python: Whether to use a Python version matrix. When False,
                 only the current development version is used.

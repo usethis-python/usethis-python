@@ -276,7 +276,7 @@ sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml
 sonar.verbose=false
-sonar.exclusions=**/Dockerfile, src/notebooks/**/*, ./tests
+sonar.exclusions=./tests, **/Dockerfile, src/notebooks/**/*
 """
         )
 

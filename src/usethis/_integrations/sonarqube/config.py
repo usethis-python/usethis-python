@@ -59,12 +59,10 @@ def get_sonar_project_properties() -> str:  # noqa: PLR0912
         ]
     except (FileNotFoundError, KeyError):
         exclusions = []
+    # TypeAdapter(list).validate_python() ensures we have a list and returns a new list
     exclusions = TypeAdapter(list).validate_python(exclusions)
     for exclusion in exclusions:
         TypeAdapter(str).validate_python(exclusion)
-
-    # Convert to list for manipulation if needed
-    exclusions = list(exclusions)
 
     # Get coverage report output path
     try:
@@ -82,7 +80,7 @@ def get_sonar_project_properties() -> str:  # noqa: PLR0912
         sources = "./"
         # When using flat layout, exclude tests directory to avoid double indexing
         if "./tests" not in exclusions:
-            exclusions.append("./tests")
+            exclusions.insert(0, "./tests")
     else:
         sources = f"./{source_dir_str}"
 

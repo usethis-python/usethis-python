@@ -74,6 +74,18 @@ It is recommended that you use signed commits, although this is not a requiremen
 
 This project uses [Import Linter](https://import-linter.readthedocs.io/en/stable/) to enforce a software architecture. Refer to the `[[tool.importlinter.contracts]]` sections in `pyproject.toml` to understand the structure of the project.
 
+### Global Configuration State
+
+The `usethis._config.usethis_config` object manages global application state that affects behavior across the entire application. This design avoids the need for pass-through variables that would otherwise need to be threaded through many layers of function calls. It provides a context manager, `usethis_config.set()`, which temporarily overrides global settings:
+
+```python
+# Temporarily suppress all output except warnings and errors
+with usethis_config.set(alert_only=True):
+    # Code here runs with modified config
+    do_something()
+# Original settings are automatically restored
+```
+
 ## Python Version Support
 
 This project supports all versions of Python through until end of life. The development environment uses the oldest supported version, which is given in the `.python-version` file. The GitHub Actions pipeline tests all supported versions.

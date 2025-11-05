@@ -127,6 +127,30 @@ src/usethis/
 - `_pipeweld` is completely independent
 - See `[[tool.importlinter.contracts]]` in pyproject.toml for full layer definitions
 
+### Global Configuration State (`usethis_config`)
+
+**CRITICAL:** The `usethis._config.usethis_config` object manages global application state. This is used to avoid pass-through variables that would otherwise need to be threaded through many layers of function calls.
+
+**When to use global state:**
+- ✅ **DO** use `usethis_config` for settings that affect application behavior across many different commands
+- ✅ **DO** use it for application-wide concerns: output verbosity (`quiet`, `alert_only`, `instruct_only`), network access (`offline`), dependency installation (`frozen`), build backend (`backend`), etc.
+- ❌ **DO NOT** add new global state for command-specific behavior that only affects a single CLI command
+- ❌ **DO NOT** use it for passing data between functions (use function parameters instead)
+
+**Requirements for adding new global state:**
+1. There must be a very good reason - the default should be to use function parameters
+2. The state must be useful across the whole application, not just one or two commands
+3. The purpose must be to control application behavior (e.g., how output is displayed, whether network is allowed), not the specific business logic of a command
+4. Document the new state clearly in the `UsethisConfig` docstring
+
+**How it works:**
+- `usethis_config.set()` is a context manager that temporarily overrides settings
+- CLI commands use it to apply command-line flags: `with usethis_config.set(offline=offline, quiet=quiet):`
+- Internal functions access current config: `if usethis_config.quiet: return`
+- Settings are automatically restored when the context manager exits
+
+See CONTRIBUTING.md Architecture section for detailed documentation and examples.
+
 ### Configuration Files
 - `pyproject.toml` - Main project config, dependencies, tool configurations (Ruff, pytest, coverage, import-linter)
 - `uv.lock` - Lock file (committed to repo)

@@ -6,7 +6,7 @@
 
 **Tech Stack:** Python 3.10-3.14, uv package manager, Typer CLI framework, Rich for terminal output, pydantic for validation, tomlkit/ruamel-yaml for config files.
 
-**Repository Size:** ~162 Python files across src/ and tests/ directories. Project follows trunk-based development on `main` branch.
+**Repository Size:** 100-500 Python files across src/ and tests/ directories. Project follows trunk-based development on `main` branch.
 
 ## Critical Build & Environment Requirements
 
@@ -194,7 +194,7 @@ src/usethis/
    uv run mkdocs build               # Build static site to site/
    ```
 
-### Adding a New Badge
+### Adding support for a New Badge
 Follow the guide in CONTRIBUTING.md:
 1. Add `get_<badge_name>_badge` function in `src/usethis/_core/badge.py`
 2. Declare interface in `src/usethis/_ui/interface/badge.py`
@@ -210,6 +210,7 @@ Follow the guide in CONTRIBUTING.md:
 - Modern generics: `list[int]` not `typing.List[int]`
 - Keyword-only args: Use `*` separator for most arguments except 1-2 most important
 - Print statements: Use `usethis._console.plain_print()` (never bare `print()`) to respect `--quiet` flag
+- Use `pathlib.Path` for all filesystem operations (not `os.path`)
 
 **Docstrings:**
 - Google style format
@@ -219,18 +220,6 @@ Follow the guide in CONTRIBUTING.md:
 **Linting:**
 - Avoid suppressions unless absolutely necessary
 - Format: `# ruff: noqa: RULE1, RULE2` (not `# ruff noqa:`)
-- Use `pathlib.Path` for all filesystem operations (not `os.path`)
-
-## Common Issues & Workarounds
-
-### Known Workarounds (documented in code)
-1. **tomlkit/ruamel.yaml bugs** - These roundtrip packages are quite limited and so sometimes unusual techniques are used to avoid bugs and quirks, e.g. `tests/usethis/_core/test_author.py:127`.
-2. **Verbosity control** - Bespoke workarounds exist throughout the codebase, e.g. in `src/usethis/_tool/impl/ruff.py:474` to cope with the lack of dedicated verbosity control in the package.
-3. **Use of symlinks in uv** - This is a workaround in `src/usethis/_integrations/backend/uv/link_mode.py:13` to ensure uv is able to successfully manage venvs in Windows without hitting permissions issues.
-
-### Dependency Resolution
-- Default: `UV_RESOLUTION=highest` (latest compatible versions)
-- CI min test: `UV_RESOLUTION=lowest-direct` (oldest compatible versions)
 
 ## Trust These Instructions
 

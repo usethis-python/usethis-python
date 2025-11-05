@@ -24,7 +24,7 @@ class PyprojectFmtTool(Tool):
     def name(self) -> str:
         return "pyproject-fmt"
 
-    def default_command(self) -> str | None:
+    def default_command(self) -> str:
         backend = get_backend()
         if backend is BackendEnum.uv and is_uv_used():
             return "uv run pyproject-fmt pyproject.toml"
@@ -48,8 +48,7 @@ class PyprojectFmtTool(Tool):
                 )
         elif install_method == "devdep" or install_method is None:
             cmd = self.default_command()
-            if cmd:
-                how_print(f"Run '{cmd}' to run {self.name}.")
+            how_print(f"Run '{cmd}' to run {self.name}.")
         else:
             assert_never(install_method)
 

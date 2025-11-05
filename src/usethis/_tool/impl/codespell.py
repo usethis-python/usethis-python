@@ -31,7 +31,7 @@ class CodespellTool(Tool):
     def name(self) -> str:
         return "Codespell"
 
-    def default_command(self) -> str | None:
+    def default_command(self) -> str:
         backend = get_backend()
         if backend is BackendEnum.uv and is_uv_used():
             return "uv run codespell"
@@ -55,8 +55,7 @@ class CodespellTool(Tool):
                 )
         elif install_method == "devdep" or install_method is None:
             cmd = self.default_command()
-            if cmd:
-                how_print(f"Run '{cmd}' to run the Codespell spellchecker.")
+            how_print(f"Run '{cmd}' to run the Codespell spellchecker.")
         else:
             assert_never(install_method)
 

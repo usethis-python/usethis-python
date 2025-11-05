@@ -42,3 +42,7 @@ class ForbiddenBackendError(UsethisError):
 
 class DepGroupError(UsethisError):
     """Raised when adding or removing a dependency from a group fails."""
+
+
+class NoDefaultToolCommand(UsethisError):
+    """Raised when a tool does not have a default command."""

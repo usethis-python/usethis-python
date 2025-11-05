@@ -33,7 +33,7 @@ class DeptryTool(Tool):
     def name(self) -> str:
         return "deptry"
 
-    def default_command(self) -> str | None:
+    def default_command(self) -> str:
         backend = get_backend()
         _dir = get_source_dir_str()
         if backend is BackendEnum.uv and is_uv_used():
@@ -59,8 +59,7 @@ class DeptryTool(Tool):
                 )
         elif install_method == "devdep" or install_method is None:
             cmd = self.default_command()
-            if cmd:
-                how_print(f"Run '{cmd}' to run deptry.")
+            how_print(f"Run '{cmd}' to run deptry.")
         else:
             assert_never(install_method)
 

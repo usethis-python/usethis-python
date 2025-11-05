@@ -25,7 +25,7 @@ from usethis._integrations.pre_commit.hooks import (
 from usethis._tool.config import ConfigSpec, NoConfigValue
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
-from usethis.errors import FileConfigError
+from usethis.errors import FileConfigError, NoDefaultToolCommand
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -56,7 +56,7 @@ class Tool(Protocol):
         """
         pass
 
-    def default_command(self) -> str | None:
+    def default_command(self) -> str:
         """The default command to run the tool, backend-dependent.
 
         This method returns the command string for running the tool, which varies
@@ -64,15 +64,17 @@ class Tool(Protocol):
         duplication in get_bitbucket_steps methods and help messages.
 
         Returns:
-            The command string for running the tool, or None if the tool has no
-            associated command.
+            The command string for running the tool.
+
+        Raises:
+            NoDefaultToolCommand: If the tool has no associated command.
 
         Examples:
             For codespell with uv backend: "uv run codespell"
             For codespell with none backend: "codespell"
-            For a config-only tool: None
         """
-        return None
+        msg = f"{self.name} has no default command."
+        raise NoDefaultToolCommand(msg)
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's development dependencies.
@@ -577,8 +579,9 @@ class Tool(Protocol):
         from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
         from usethis._types.backend import BackendEnum
         
-        cmd = self.default_command()
-        if not cmd:
+        try:
+            cmd = self.default_command()
+        except NoDefaultToolCommand:
             return []
         
         backend = get_backend()

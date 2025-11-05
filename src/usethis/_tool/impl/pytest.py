@@ -42,7 +42,7 @@ class PytestTool(Tool):
     def name(self) -> str:
         return "pytest"
 
-    def default_command(self) -> str | None:
+    def default_command(self) -> str:
         """Get the default command for running pytest."""
         backend = get_backend()
         if backend is BackendEnum.uv and is_uv_used():
@@ -59,8 +59,7 @@ class PytestTool(Tool):
         how_print("Add test functions with the format 'test_*()'.")
 
         cmd = self.default_command()
-        if cmd:
-            how_print(f"Run '{cmd}' to run the tests.")
+        how_print(f"Run '{cmd}' to run the tests.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         from usethis._tool.impl.coverage_py import CoveragePyTool

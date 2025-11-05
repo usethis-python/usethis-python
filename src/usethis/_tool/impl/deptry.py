@@ -8,11 +8,6 @@ from typing_extensions import assert_never
 from usethis._console import how_print, info_print, tick_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
-from usethis._integrations.ci.bitbucket.anchor import (
-    ScriptItemAnchor as BitbucketScriptItemAnchor,
-)
-from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.schema import HookDefinition, Language, LocalRepo
 from usethis._integrations.project.layout import get_source_dir_str
@@ -38,6 +33,16 @@ class DeptryTool(Tool):
     def name(self) -> str:
         return "deptry"
 
+    def default_command(self) -> str:
+        backend = get_backend()
+        _dir = get_source_dir_str()
+        if backend is BackendEnum.uv and is_uv_used():
+            return f"uv run deptry {_dir}"
+        elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            return f"deptry {_dir}"
+        else:
+            assert_never(backend)
+
     def print_how_to_use(self) -> None:
         _dir = get_source_dir_str()
         install_method = self.get_install_method()
@@ -53,11 +58,8 @@ class DeptryTool(Tool):
                     f"Run 'pre-commit run deptry --all-files' to run {self.name}."
                 )
         elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(f"Run 'uv run deptry {_dir}' to run deptry.")
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
-                how_print(f"Run 'deptry {_dir}' to run deptry.")
+            cmd = self.default_command()
+            how_print(f"Run '{cmd}' to run deptry.")
         else:
             assert_never(install_method)
 
@@ -126,39 +128,6 @@ class DeptryTool(Tool):
                 requires_venv=True,
                 inform_how_to_use_on_migrate=False,
             )
-        else:
-            assert_never(backend)
-
-    def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        backend = get_backend()
-
-        _dir = get_source_dir_str()
-
-        if backend is BackendEnum.uv:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    caches=["uv"],
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="install-uv"),
-                            f"uv run deptry {_dir}",
-                        ]
-                    ),
-                )
-            ]
-        elif backend is BackendEnum.none:
-            return [
-                BitbucketStep(
-                    name=f"Run {self.name}",
-                    script=BitbucketScript(
-                        [
-                            BitbucketScriptItemAnchor(name="ensure-venv"),
-                            f"deptry {_dir}",
-                        ]
-                    ),
-                )
-            ]
         else:
             assert_never(backend)
 

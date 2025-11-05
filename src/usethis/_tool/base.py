@@ -8,6 +8,12 @@ from typing_extensions import assert_never
 from usethis._config import usethis_config
 from usethis._console import tick_print, warn_print
 from usethis._deps import add_deps_to_group, is_dep_in_any_group, remove_deps_from_group
+from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.ci.bitbucket.anchor import (
+    ScriptItemAnchor as BitbucketScriptItemAnchor,
+)
+from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
+from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_step_in_default,
     bitbucket_steps_are_equivalent,
@@ -25,13 +31,13 @@ from usethis._integrations.pre_commit.hooks import (
 from usethis._tool.config import ConfigSpec, NoConfigValue
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
-from usethis.errors import FileConfigError
+from usethis._types.backend import BackendEnum
+from usethis.errors import FileConfigError, NoDefaultToolCommand
 
 if TYPE_CHECKING:
     from pathlib import Path
 
     from usethis._integrations.backend.uv.deps import Dependency
-    from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
     from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ConfigItem, ResolutionT
@@ -55,6 +61,26 @@ class Tool(Protocol):
         This method is called after a tool is added to the project.
         """
         pass
+
+    def default_command(self) -> str:
+        """The default command to run the tool, backend-dependent.
+
+        This method returns the command string for running the tool, which varies
+        based on the current backend (e.g., "uv", "none"). This is used to avoid
+        duplication in get_bitbucket_steps methods and help messages.
+
+        Returns:
+            The command string for running the tool.
+
+        Raises:
+            NoDefaultToolCommand: If the tool has no associated command.
+
+        Examples:
+            For codespell with uv backend: "uv run codespell"
+            For codespell with none backend: "codespell"
+        """
+        msg = f"{self.name} has no default command."
+        raise NoDefaultToolCommand(msg)
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's development dependencies.
@@ -545,8 +571,45 @@ class Tool(Protocol):
         return None
 
     def get_bitbucket_steps(self) -> list[BitbucketStep]:
-        """Get the Bitbucket pipeline step associated with this tool."""
-        return []
+        """Get the Bitbucket pipeline step associated with this tool.
+
+        By default, this creates a single step using the tool's default_command().
+        Tools can override this method for more complex step requirements (e.g., pytest
+        with multiple Python versions, or Ruff with separate linter/formatter steps).
+        """
+        try:
+            cmd = self.default_command()
+        except NoDefaultToolCommand:
+            return []
+
+        backend = get_backend()
+        if backend is BackendEnum.uv:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    caches=["uv"],
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="install-uv"),
+                            cmd,
+                        ]
+                    ),
+                )
+            ]
+        elif backend is BackendEnum.none:
+            return [
+                BitbucketStep(
+                    name=f"Run {self.name}",
+                    script=BitbucketScript(
+                        [
+                            BitbucketScriptItemAnchor(name="ensure-venv"),
+                            cmd,
+                        ]
+                    ),
+                )
+            ]
+        else:
+            assert_never(backend)
 
     def get_managed_bitbucket_step_names(self) -> list[str]:
         """These are the names of the Bitbucket steps that are managed by this tool.

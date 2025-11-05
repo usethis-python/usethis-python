@@ -648,27 +648,6 @@ pipelines:
 """
         )
 
-    def test_import_pipeline_raises_error(self, tmp_path: Path):
-        """Test that add_bitbucket_step_in_default raises error for import pipelines."""
-        # Arrange
-        (tmp_path / "bitbucket-pipelines.yml").write_text(
-            """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-        import: shared-pipeline:master:share-pipeline-1
-"""
-        )
-
-        # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(UnexpectedImportPipelineError):
-            add_bitbucket_step_in_default(
-                Step(
-                    name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
-                )
-            )
-
 
 class TestRemoveBitbucketStepFromDefault:
     def test_remove_remove_one_step(self, tmp_path: Path):

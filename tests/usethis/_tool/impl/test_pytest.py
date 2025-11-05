@@ -4,6 +4,7 @@ from sysconfig import get_python_version
 import pytest
 
 import usethis._tool.impl.pytest
+from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.ci.bitbucket.steps import add_placeholder_step_in_default
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -14,6 +15,40 @@ from usethis._types.backend import BackendEnum
 
 
 class TestPytestTool:
+    class TestDefaultCommand:
+        def test_uv_backend_with_uv_lock(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "uv.lock").touch()
+            
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                cmd = PytestTool().default_command()
+            
+            # Assert
+            assert cmd == "uv run pytest"
+        
+        def test_uv_backend_without_uv_lock(self, tmp_path: Path):
+            # Arrange - no uv.lock file
+            
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                cmd = PytestTool().default_command()
+            
+            # Assert
+            assert cmd == "pytest"
+        
+        def test_none_backend(self, tmp_path: Path):
+            # Arrange
+            
+            # Act
+            with change_cwd(tmp_path), files_manager(), usethis_config.set(
+                backend=BackendEnum.none
+            ):
+                cmd = PytestTool().default_command()
+            
+            # Assert
+            assert cmd == "pytest"
+
     class TestUpdateBitbucketSteps:
         def test_new_file(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             with change_cwd(uv_init_dir), files_manager():

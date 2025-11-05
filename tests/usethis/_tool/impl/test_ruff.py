@@ -12,9 +12,78 @@ from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.schema import UriRepo
 from usethis._test import change_cwd
 from usethis._tool.impl.ruff import RuffTool
+from usethis._types.backend import BackendEnum
 
 
 class TestRuffTool:
+    class TestDefaultLinterCommand:
+        def test_uv_backend_with_uv_lock(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "uv.lock").touch()
+            
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                cmd = RuffTool().default_linter_command()
+            
+            # Assert
+            assert cmd == "uv run ruff check --fix"
+        
+        def test_uv_backend_without_uv_lock(self, tmp_path: Path):
+            # Arrange - no uv.lock file
+            
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                cmd = RuffTool().default_linter_command()
+            
+            # Assert
+            assert cmd == "ruff check --fix"
+        
+        def test_none_backend(self, tmp_path: Path):
+            # Arrange
+            
+            # Act
+            with change_cwd(tmp_path), files_manager(), usethis_config.set(
+                backend=BackendEnum.none
+            ):
+                cmd = RuffTool().default_linter_command()
+            
+            # Assert
+            assert cmd == "ruff check --fix"
+
+    class TestDefaultFormatterCommand:
+        def test_uv_backend_with_uv_lock(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "uv.lock").touch()
+            
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                cmd = RuffTool().default_formatter_command()
+            
+            # Assert
+            assert cmd == "uv run ruff format"
+        
+        def test_uv_backend_without_uv_lock(self, tmp_path: Path):
+            # Arrange - no uv.lock file
+            
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                cmd = RuffTool().default_formatter_command()
+            
+            # Assert
+            assert cmd == "ruff format"
+        
+        def test_none_backend(self, tmp_path: Path):
+            # Arrange
+            
+            # Act
+            with change_cwd(tmp_path), files_manager(), usethis_config.set(
+                backend=BackendEnum.none
+            ):
+                cmd = RuffTool().default_formatter_command()
+            
+            # Assert
+            assert cmd == "ruff format"
+
     class TestSelectRules:
         def test_no_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]

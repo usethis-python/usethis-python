@@ -25,11 +25,11 @@ from usethis._integrations.ci.bitbucket.steps import (
 )
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.environ.python import get_supported_major_python_versions
-from usethis._integrations.python.version import get_python_major_version
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
 from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.python.version import get_python_major_version
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.rule import RuleConfig

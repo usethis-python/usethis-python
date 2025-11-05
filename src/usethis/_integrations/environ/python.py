@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing_extensions import assert_never
+
 from usethis._config import usethis_config
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.python import (

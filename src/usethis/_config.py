@@ -55,7 +55,7 @@ class UsethisConfig:
     matrix_python: bool = MATRIX_PYTHON_DEFAULT
 
     @contextmanager
-    def set(  # noqa: PLR0913
+    def set(  # noqa: PLR0913, PLR0915
         self,
         *,
         offline: bool | None = None,

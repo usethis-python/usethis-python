@@ -135,3 +135,26 @@ class TestBitbucket:
 
         # Assert
         assert result.exit_code == 1, result.output
+
+    def test_import_pipeline_error_handled(self, tmp_path: Path):
+        """Test that import pipeline errors are handled gracefully at CLI level."""
+        # Arrange - create a bitbucket-pipelines.yml with an import pipeline
+        (tmp_path / "bitbucket-pipelines.yml").write_text(
+            """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+        import: shared-pipeline:master:share-pipeline-1
+"""
+        )
+        # Add a tool so update_bitbucket_steps gets called
+        (tmp_path / "pytest.ini").touch()
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["--backend=none"])
+
+        # Assert - error should be caught and handled, not propagate as unhandled exception
+        assert result.exit_code == 1, result.output
+        assert "import pipeline" in result.output.lower()

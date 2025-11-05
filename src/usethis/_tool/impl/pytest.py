@@ -17,12 +17,7 @@ from usethis._integrations.ci.bitbucket.anchor import (
 from usethis._integrations.ci.bitbucket.schema import Image, ImageName
 from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
-from usethis._integrations.ci.bitbucket.steps import (
-    add_bitbucket_step_in_default,
-    bitbucket_steps_are_equivalent,
-    get_steps_in_default,
-    remove_bitbucket_step_from_default,
-)
+from usethis._integrations.ci.bitbucket.steps import get_steps_in_default
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.environ.python import get_supported_major_python_versions
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -283,17 +278,9 @@ class PytestTool(Tool):
         if not is_bitbucket_used() or not self.is_used():
             return
 
-        # Add the new steps
-        for step in self.get_bitbucket_steps(matrix_python=matrix_python):
-            add_bitbucket_step_in_default(step)
-
-        # Remove any old steps that are not active managed by this tool
-        for step in get_steps_in_default():
-            if step.name in self.get_managed_bitbucket_step_names() and not any(
-                bitbucket_steps_are_equivalent(step, step_)
-                for step_ in self.get_bitbucket_steps(matrix_python=matrix_python)
-            ):
-                remove_bitbucket_step_from_default(step)
+        # But otherwise if not early exiting, we are going to add steps so we might
+        # need to inform the user
+        super().update_bitbucket_steps(matrix_python=matrix_python)
 
         backend = get_backend()
 

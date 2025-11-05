@@ -564,23 +564,26 @@ class Tool(Protocol):
             if step.name in self.get_managed_bitbucket_step_names():
                 remove_bitbucket_step_from_default(step)
 
-    def update_bitbucket_steps(self) -> None:
+    def update_bitbucket_steps(self, **kwargs) -> None:
         """Add Bitbucket steps associated with this tool, and remove outdated ones.
 
         Only runs if Bitbucket is used in the project.
+        
+        Args:
+            **kwargs: Additional keyword arguments to pass to get_bitbucket_steps().
         """
         if not is_bitbucket_used() or not self.is_used():
             return
 
         # Add the new steps
-        for step in self.get_bitbucket_steps():
+        for step in self.get_bitbucket_steps(**kwargs):
             add_bitbucket_step_in_default(step)
 
         # Remove any old steps that are not active managed by this tool
         for step in get_steps_in_default():
             if step.name in self.get_managed_bitbucket_step_names() and not any(
                 bitbucket_steps_are_equivalent(step, step_)
-                for step_ in self.get_bitbucket_steps()
+                for step_ in self.get_bitbucket_steps(**kwargs)
             ):
                 remove_bitbucket_step_from_default(step)
 

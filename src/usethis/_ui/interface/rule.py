@@ -12,7 +12,7 @@ ignore_opt = typer.Option(
 )
 
 
-def rule(  # noqa: PLR0913
+def rule(
     rules: list[str],
     remove: bool = remove_opt,
     ignore: bool = ignore_opt,

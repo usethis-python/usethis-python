@@ -13,7 +13,7 @@ from usethis._types.status import DevelopmentStatusEnum
 from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
 
 
-def init(  # noqa: PLR0913
+def init(
     doc: bool = typer.Option(
         True, "--doc/--no-doc", help="Add a recommended documentation framework."
     ),
@@ -103,7 +103,7 @@ def init(  # noqa: PLR0913
             raise typer.Exit(code=1) from None
 
 
-def _init(  # noqa: PLR0913, PLR0915
+def _init(  # noqa: PLR0915
     *,
     doc: bool,
     format_: bool,

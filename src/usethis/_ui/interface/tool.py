@@ -20,8 +20,6 @@ if TYPE_CHECKING:
 
 app = typer.Typer(help="Add and configure individual tools.", add_completion=False)
 
-# ruff: noqa: PLR0913 since there are many options for these commands.
-
 
 @app.command(
     name="codespell",

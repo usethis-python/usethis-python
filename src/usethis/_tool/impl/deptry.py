@@ -129,7 +129,7 @@ class DeptryTool(Tool):
         else:
             assert_never(backend)
 
-    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
         backend = get_backend()
 
         _dir = get_source_dir_str()

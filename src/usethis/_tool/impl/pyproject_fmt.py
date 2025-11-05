@@ -92,7 +92,7 @@ class PyprojectFmtTool(Tool):
             requires_venv=False,
         )
 
-    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
         backend = get_backend()
 
         if backend is BackendEnum.uv:

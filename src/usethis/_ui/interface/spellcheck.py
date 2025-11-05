@@ -12,7 +12,7 @@ from usethis._ui.options import (
 )
 
 
-def spellcheck(  # noqa: PLR0913
+def spellcheck(
     remove: bool = remove_opt,
     how: bool = how_opt,
     offline: bool = offline_opt,

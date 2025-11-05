@@ -17,6 +17,7 @@ FROZEN_DEFAULT = False
 OFFLINE_DEFAULT = False
 QUIET_DEFAULT = False
 BACKEND_DEFAULT = "auto"
+MATRIX_PYTHON_DEFAULT = True
 
 
 @dataclass
@@ -38,6 +39,8 @@ class UsethisConfig:
         subprocess_verbose: Verbose output for subprocesses.
         force_project_dir: Directory for the project. If None, defaults to the current
                            working directory dynamically determined at runtime.
+        matrix_python: Whether to use a Python version matrix for CI tests. When False,
+                       only the current development Python version is used.
     """
 
     offline: bool = OFFLINE_DEFAULT
@@ -49,6 +52,7 @@ class UsethisConfig:
     disable_pre_commit: bool = False
     subprocess_verbose: bool = False
     project_dir: Path | None = None
+    matrix_python: bool = MATRIX_PYTHON_DEFAULT
 
     @contextmanager
     def set(  # noqa: PLR0913
@@ -63,6 +67,7 @@ class UsethisConfig:
         disable_pre_commit: bool | None = None,
         subprocess_verbose: bool | None = None,
         project_dir: Path | str | None = None,
+        matrix_python: bool | None = None,
     ) -> Generator[None, None, None]:
         """Temporarily change command options."""
         old_offline = self.offline
@@ -74,6 +79,7 @@ class UsethisConfig:
         old_disable_pre_commit = self.disable_pre_commit
         old_subprocess_verbose = self.subprocess_verbose
         old_project_dir = self.project_dir
+        old_matrix_python = self.matrix_python
 
         if offline is None:
             offline = old_offline
@@ -93,6 +99,8 @@ class UsethisConfig:
             subprocess_verbose = old_subprocess_verbose
         if project_dir is None:
             project_dir = old_project_dir
+        if matrix_python is None:
+            matrix_python = old_matrix_python
 
         self.offline = offline
         self.quiet = quiet
@@ -105,6 +113,7 @@ class UsethisConfig:
         if isinstance(project_dir, str):
             project_dir = Path(project_dir)
         self.project_dir = project_dir
+        self.matrix_python = matrix_python
         yield
         self.offline = old_offline
         self.quiet = old_quiet
@@ -115,6 +124,7 @@ class UsethisConfig:
         self.disable_pre_commit = old_disable_pre_commit
         self.subprocess_verbose = old_subprocess_verbose
         self.project_dir = old_project_dir
+        self.matrix_python = old_matrix_python
 
     def cpd(self) -> Path:
         """Return the current project directory."""

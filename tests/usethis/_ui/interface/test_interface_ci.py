@@ -158,3 +158,54 @@ pipelines:
         # Assert - error should be caught and handled, not propagate as unhandled exception
         assert result.exit_code == 1, result.output
         assert "import pipeline" in result.output.lower()
+
+    def test_no_matrix_python_flag(
+        self, uv_init_dir: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """Test that --no-matrix-python flag creates single test step via CLI."""
+        # Arrange
+        monkeypatch.setattr(
+            usethis._integrations.python.version,
+            "get_python_version",
+            lambda: "3.10.0",
+        )
+        (uv_init_dir / "tests").mkdir()
+        (uv_init_dir / "tests" / "conftest.py").touch()
+
+        with PyprojectTOMLManager() as mgr:
+            mgr[["project"]]["requires-python"] = ">=3.12,<3.14"
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            result = runner.invoke_safe(app, ["--no-matrix-python"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        # Should only have one test step for the current development version (3.10)
+        assert "Test on 3.10" in contents
+        # Should NOT have other versions
+        assert "Test on 3.12" not in contents
+        assert "Test on 3.13" not in contents
+
+    def test_matrix_python_flag_enabled_default(self, uv_init_dir: Path):
+        """Test that --matrix-python (default) creates multiple test steps via CLI."""
+        # Arrange
+        (uv_init_dir / "tests").mkdir()
+        (uv_init_dir / "tests" / "conftest.py").touch()
+
+        with PyprojectTOMLManager() as mgr:
+            mgr[["project"]]["requires-python"] = ">=3.12,<3.14"
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            result = runner.invoke_safe(app, ["--matrix-python"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        # Should have multiple test steps
+        assert "Test on 3.12" in contents
+        assert "Test on 3.13" in contents

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from typing_extensions import assert_never
-
+from usethis._config import usethis_config
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.python import (
     get_supported_uv_major_python_versions,
@@ -11,6 +10,10 @@ from usethis._types.backend import BackendEnum
 
 
 def get_supported_major_python_versions() -> list[int]:
+    # If matrix_python is disabled, return only the current development version
+    if not usethis_config.matrix_python:
+        return [get_python_major_version()]
+
     backend = get_backend()
 
     if backend is BackendEnum.uv:

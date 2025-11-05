@@ -13,6 +13,11 @@ def bitbucket(
     remove: bool = typer.Option(
         False, "--remove", help="Remove Bitbucket Pipelines CI instead of adding it."
     ),
+    matrix_python: bool = typer.Option(
+        True,
+        "--matrix-python/--no-matrix-python",
+        help="Test against multiple Python versions (matrix) or just the current development version.",
+    ),
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
@@ -28,7 +33,11 @@ def bitbucket(
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            matrix_python=matrix_python,
         ),
         files_manager(),
     ):

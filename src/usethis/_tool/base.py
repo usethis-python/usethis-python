@@ -579,7 +579,7 @@ class Tool(Protocol):
         
         Args:
             matrix_python: Whether to use a Python version matrix. When False,
-                only the current development version is used.
+                           only the current development version is used.
         """
         try:
             cmd = self.default_command()

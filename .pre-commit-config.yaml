@@ -84,9 +84,9 @@ repos:
         pass_filenames: false
   - repo: local
     hooks:
-      - id: pyright
-        name: pyright
-        entry: uv run --frozen --offline pyright
+      - id: ty
+        name: ty
+        entry: uv run --frozen --offline ty check
         language: system
         types_or: [python, pyi]
         always_run: true

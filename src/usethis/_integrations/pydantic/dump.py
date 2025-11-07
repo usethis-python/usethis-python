@@ -172,14 +172,8 @@ def _(
     for key, value in model:
         default_value = model.__class__.model_fields[key].default
 
-        # The reference for the value (for recursion)
-        if isinstance(reference, dict | BaseModel):
-            try:
-                value_ref = dict(reference)[key]
-            except KeyError:
-                value_ref = None
-        else:
-            value_ref = None
+        # The value for the reference (for recursion)
+        value_ref = _get_value_ref(reference, key=key)
 
         # If the model has default value, we usually won't dump it.
         # There is an exception though: if we have a reference which we are trying
@@ -217,3 +211,22 @@ def _(
     ordered_d.update(d)
 
     return ordered_d
+
+
+def _get_value_ref(
+    reference: ModelRepresentation | None, *, key: str
+) -> ModelRepresentation | None:
+    if isinstance(reference, dict):
+        try:
+            value_ref = dict(reference)[key]
+        except KeyError:
+            value_ref = None
+    if isinstance(reference, BaseModel):
+        try:
+            value_ref = reference.model_dump()[key]
+        except KeyError:
+            value_ref = None
+    else:
+        value_ref = None
+
+    return value_ref

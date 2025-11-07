@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 import requests
+from requests.exceptions import RequestException
 
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.pyproject_toml.requires_python import (
@@ -33,7 +34,7 @@ class TestSchemaJSON:
             online_schema_json = requests.get(
                 "https://www.schemastore.org/pre-commit-config.json", timeout=5
             ).text
-        except requests.exceptions.RequestException as err:
+        except RequestException as err:
             if os.getenv("CI"):
                 pytest.skip(
                     "Failed to fetch JSON schema (connection issues); skipping test"

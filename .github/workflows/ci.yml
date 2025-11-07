@@ -51,10 +51,11 @@ jobs:
           CI_UV_UPGRADE_ARG: ${{ matrix.dependencies == 'max' && '--upgrade' || '' }}
           UV_RESOLUTION: ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
 
-      - name: Run prek
-        if: ${{ matrix.pre_commit == null || matrix.pre_commit == 'true' }}
+      - name: Run checks
+        if: ${{ matrix.checks == null || matrix.checks == 'true' }}
         run: |
           uv run --frozen prek run --all-files
+          uv run --frozen pyright
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
@@ -105,16 +106,16 @@ jobs:
           - dependencies: "min"
             python_version: "3.10"
             uv_version: "0.6.8"
-            pre_commit: "false"
+            checks: "false"
           - dependencies: "max"
             python_version: "3.14"
-            pre_commit: "false"
+            checks: "false"
           - codecov: "true"
             python_version: "3.14"
 
-            pre_commit: "false"
+            checks: "false"
           - codspeed: "true"
             python_version: "3.13"
 
-            pre_commit: "false"
+            checks: "false"
             pytest: "false"

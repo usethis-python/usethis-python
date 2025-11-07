@@ -1,5 +1,5 @@
 import pytest
-import requests
+from requests.exceptions import HTTPError
 
 from usethis._integrations.ci.github.tags import (
     GitHubTagError,
@@ -29,7 +29,7 @@ class TestGetGitHubLatestTag:
             class MockResponse:
                 def raise_for_status(self):
                     msg = "Failed to fetch tags."
-                    raise requests.exceptions.HTTPError(msg)
+                    raise HTTPError(msg)
 
             return MockResponse()
 

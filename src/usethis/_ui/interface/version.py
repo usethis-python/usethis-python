@@ -9,9 +9,6 @@ def version() -> None:
     try:
         from usethis._version import __version__
     except ImportError:
-        __version__ = None
-
-    if __version__ is not None:
-        plain_print(__version__)
+        raise typer.Exit(code=1) from None
     else:
-        raise typer.Exit(code=1)
+        plain_print(__version__)

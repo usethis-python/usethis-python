@@ -88,6 +88,7 @@ class PreCommitTool(Tool):
             return [
                 BitbucketStep(
                     name=f"Run {self.name}",
+                    caches=["pre-commit"],
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),

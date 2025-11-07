@@ -3,8 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import typer
+from typing_extensions import assert_never
 
-from usethis._console import instruct_print
+from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._types.ci import CIServiceEnum
 from usethis._types.docstyle import DocStyleEnum
@@ -12,7 +13,7 @@ from usethis._types.status import DevelopmentStatusEnum
 from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
 
 
-def init(  # noqa: PLR0913
+def init(
     doc: bool = typer.Option(
         True, "--doc/--no-doc", help="Add a recommended documentation framework."
     ),
@@ -62,9 +63,8 @@ def init(  # noqa: PLR0913
     ),
 ) -> None:
     """Initialize a new project with recommended tooling."""
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
-    from usethis._console import err_print
+    from usethis._console import err_print, instruct_print
     from usethis.errors import UsethisError
 
     assert isinstance(backend, BackendEnum)
@@ -103,7 +103,7 @@ def init(  # noqa: PLR0913
             raise typer.Exit(code=1) from None
 
 
-def _init(  # noqa: PLR0913, PLR0915
+def _init(  # noqa: PLR0915
     *,
     doc: bool,
     format_: bool,
@@ -115,9 +115,6 @@ def _init(  # noqa: PLR0913, PLR0915
     docstyle: DocStyleEnum | None,
     status: DevelopmentStatusEnum,
 ):
-    from typing_extensions import assert_never
-
-    from usethis._config import usethis_config
     from usethis._console import tick_print
     from usethis._core.ci import print_how_to_use_ci_bitbucket, use_ci_bitbucket
     from usethis._core.docstyle import use_docstyle

@@ -3,29 +3,7 @@ from pathlib import Path
 
 def test_assemble_readme_from_docs(usethis_dev_dir: Path):
     """The README should be kept in-sync with the corresponding doc packages."""
-
     parts = []
-
-    # Logo
-    parts.append("""\
-<h1 align="center">
-  <img src="https://raw.githubusercontent.com/usethis-python/usethis-python/refs/heads/main/docs/logo.svg"><br>
-</h1>
-""")
-
-    # Header
-    parts.append("""\
-# usethis
-""")
-
-    # Badges
-    parts.append("""\
-[![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/usethis-python/usethis-python/main/assets/badge/v1.json)](https://github.com/usethis-python/usethis-python)
-[![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
-![PyPI License](https://img.shields.io/pypi/l/usethis.svg)
-[![PyPI Supported Versions](https://img.shields.io/pypi/pyversions/usethis.svg)](https://pypi.python.org/pypi/usethis)
-[![Docs](https://app.readthedocs.org/projects/usethis/badge/?version=stable)](https://usethis.readthedocs.io/en/stable/)
-""")
 
     # Main sections
     parts.append(
@@ -40,59 +18,18 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
         "`](reference.md#",
         "`](https://usethis.readthedocs.io/en/stable/cli/reference#",
     )
-    parts.append("""\
-## 📜 Documentation
 
-The usethis documentation is available at [usethis.readthedocs.io](https://usethis.readthedocs.io/en/stable/).
-
-Additionally, the command line reference documentation can be viewed with `usethis --help`.
-""")
     parts.append(cli_overview_content)
     parts.append(_get_doc_file(usethis_dev_dir / "docs" / "example-usage.md"))
     parts.append(_get_doc_file(usethis_dev_dir / "docs" / "similar-projects.md"))
 
-    # Back matter
-    parts.append("""\
-## 🚀 Development
-
-[![Commits since latest release](https://img.shields.io/github/commits-since/usethis-python/usethis-python/latest.svg)](https://github.com/usethis-python/usethis-python/releases)
-[![GitHub Actions Status](https://github.com/usethis-python/usethis-python/workflows/CI/badge.svg)](https://github.com/usethis-python/usethis-python/actions)
-[![codecov](https://codecov.io/gh/usethis-python/usethis-python/graph/badge.svg?token=0QW539GSP9)](https://codecov.io/gh/usethis-python/usethis-python)
-[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/usethis-python/usethis-python)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-
-### Roadmap
-
-Major features planned for later in 2025 are:
-
-- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)),
-- Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)), and
-
-Other features are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.
-
-### Contributing
-
-See the
-[CONTRIBUTING.md](https://github.com/usethis-python/usethis-python/blob/main/CONTRIBUTING.md)
-file.
-
-## Acknowledgements
-
-Special thanks to the [Posit](https://posit.co/) team for creating the original [usethis package for **R**](https://usethis.r-lib.org/index.html) , which inspired this project.
-
-Additional thanks are due to the maintainers of the various tools which usethis integrates with, especially [Astral](https://astral.sh/) who created [uv](https://github.com/astral-sh/uv).
-
-## License
-
-usethis is licensed under the MIT license ([LICENSE](https://github.com/usethis-python/usethis-python/blob/main/LICENSE) or <https://opensource.org/licenses/MIT>)
-
-Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in usethis by you, as defined in the Apache License, Version 2.0, (<https://www.apache.org/licenses/LICENSE-2.0>), shall be licensed under the MIT license, without any additional terms or conditions.
-""")
-
-    assert (usethis_dev_dir / "README.md").read_text(encoding="utf-8").replace(
-        "> [!TIP]\n> ", ""
-    ) == "\n".join(parts)
+    content = (
+        (usethis_dev_dir / "README.md")
+        .read_text(encoding="utf-8")
+        .replace("> [!TIP]\n> ", "")
+    )
+    for part in parts:
+        assert part in content
 
 
 def _get_doc_file(

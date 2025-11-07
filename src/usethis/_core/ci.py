@@ -18,7 +18,7 @@ from usethis._tool.impl.ruff import RuffTool
 if TYPE_CHECKING:
     from usethis._tool.base import Tool
 
-# These are tools would run via pre-commit if available
+# These are tools which would run via pre-commit if available
 _CI_QA_TOOLS: list[type[Tool]] = [  # Not including pytest and pre-commit
     # This order should match the canonical order in the function which adds
     # steps
@@ -30,7 +30,9 @@ _CI_QA_TOOLS: list[type[Tool]] = [  # Not including pytest and pre-commit
 ]
 
 
-def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:
+def use_ci_bitbucket(
+    *, remove: bool = False, how: bool = False, matrix_python: bool = True
+) -> None:
     if how:
         print_how_to_use_ci_bitbucket()
         return
@@ -49,7 +51,7 @@ def use_ci_bitbucket(*, remove: bool = False, how: bool = False) -> None:
             for tool in _CI_QA_TOOLS:
                 tool().update_bitbucket_steps()
 
-        PytestTool().update_bitbucket_steps()
+        PytestTool().update_bitbucket_steps(matrix_python=matrix_python)
 
         print_how_to_use_ci_bitbucket()
     else:

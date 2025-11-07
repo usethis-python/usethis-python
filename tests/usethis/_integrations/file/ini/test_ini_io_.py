@@ -122,7 +122,7 @@ class TestINIFileManager:
             with (
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
-                pytest.raises(ValueError, match="Content is None, cannot dump."),
+                pytest.raises(ValueError, match=r"Content is None, cannot dump."),
             ):
                 manager._dump_content()
 

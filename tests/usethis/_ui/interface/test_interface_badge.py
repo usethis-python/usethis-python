@@ -86,6 +86,17 @@ class TestRuff:
         assert result.exit_code == 0, result.output
 
 
+class TestSocket:
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["socket"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+
 class TestPreCommit:
     def test_add(self, tmp_path: Path):
         # Act

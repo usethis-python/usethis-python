@@ -31,7 +31,9 @@ class CoveragePyTool(Tool):
         return "Coverage.py"
 
     def print_how_to_use(self) -> None:
-        from usethis._tool.impl.pytest import PytestTool
+        from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415
+            PytestTool,
+        )
 
         backend = get_backend()
 
@@ -52,7 +54,9 @@ class CoveragePyTool(Tool):
             how_print(f"Run 'coverage help' to see available {self.name} commands.")
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.pytest import PytestTool
+        from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415
+            PytestTool,
+        )
 
         deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
         if unconditional or PytestTool().is_used():

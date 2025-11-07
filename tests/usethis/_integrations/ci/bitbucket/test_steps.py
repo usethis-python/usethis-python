@@ -242,7 +242,7 @@ pipelines:
               - "echo 'Running #2'"
 """
         )
-        out, err = capfd.readouterr()
+        out, _err = capfd.readouterr()
         assert out == (
             "✔ Writing 'bitbucket-pipelines.yml'.\n"
             "✔ Adding 'Test on 3.12' to default pipeline in 'bitbucket-pipelines.yml'.\n"

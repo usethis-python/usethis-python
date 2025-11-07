@@ -112,7 +112,7 @@ repos:
             change_cwd(tmp_path),
             pytest.raises(
                 PreCommitConfigYAMLConfigError,
-                match="Invalid '.pre-commit-config.yaml' file:",
+                match=r"Invalid '.pre-commit-config.yaml' file:",
             ),
             read_pre_commit_config_yaml(),
         ):

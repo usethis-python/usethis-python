@@ -198,6 +198,7 @@ If you're not interested in templating automations, then [configurator](https://
 [![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/usethis-python/usethis-python)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Socket Badge](https://badge.socket.dev/pypi/package/usethis)](https://socket.dev/pypi/package/usethis/overview)
 
 ### Roadmap
 
@@ -218,7 +219,7 @@ file.
 
 Special thanks to the [Posit](https://posit.co/) team for creating the original [usethis package for **R**](https://usethis.r-lib.org/index.html) , which inspired this project.
 
-Additional thanks are due to the maintainers of the various tools which usethis integrates with, especially [Astral](https://astral.sh/) who created [uv](https://github.com/astral-sh/uv).
+Additional thanks are due to the maintainers of the various tools which usethis integrates with, especially the people with [Astral](https://astral.sh/) who created [uv](https://github.com/astral-sh/uv).
 
 ## License
 

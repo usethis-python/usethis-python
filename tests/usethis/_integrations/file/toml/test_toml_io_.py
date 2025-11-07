@@ -27,7 +27,7 @@ class TestTOMLFileManager:
                 manager = MyTOMLFileManager()
 
             # Act, Assert
-            with pytest.raises(ValueError, match="Content is None, cannot dump."):
+            with pytest.raises(ValueError, match=r"Content is None, cannot dump."):
                 manager._dump_content()
 
     class TestContains:
@@ -89,7 +89,7 @@ a = "b"
                 MyTOMLFileManager() as manager,
                 pytest.raises(
                     TOMLValueMissingError,
-                    match="Configuration value 'a.b' is missing.",
+                    match=r"Configuration value 'a.b' is missing.",
                 ),
             ):
                 manager[["a", "b"]]
@@ -303,7 +303,7 @@ lint.pydocstyle.convention = "pep257"
                 # Act, Assert
                 with pytest.raises(
                     TOMLValueAlreadySetError,
-                    match="Configuration value at root level is already set.",
+                    match=r"Configuration value at root level is already set.",
                 ):
                     manager.set_value(keys=[], value={"a": "c"}, exists_ok=False)
 
@@ -356,7 +356,7 @@ lint.pydocstyle.convention = "pep257"
                 # Act, Assert
                 with pytest.raises(
                     TOMLValueAlreadySetError,
-                    match="Configuration value 'a' is already set.",
+                    match=r"Configuration value 'a' is already set.",
                 ):
                     manager.set_value(keys=["a"], value=["d"])
 
@@ -375,7 +375,7 @@ lint.pydocstyle.convention = "pep257"
                 # Act, Assert
                 with pytest.raises(
                     TOMLValueAlreadySetError,
-                    match="Configuration value 'key' is already set.",
+                    match=r"Configuration value 'key' is already set.",
                 ):
                     manager.set_value(keys=["key", "inner"], value="new_value")
 
@@ -535,7 +535,7 @@ lint.pydocstyle.convention = "pep257"
 
                 # Act, Assert
                 with pytest.raises(
-                    ValueError, match="At least one ID key must be provided."
+                    ValueError, match=r"At least one ID key must be provided."
                 ):
                     manager.extend_list(keys=[], values=["d"])
 
@@ -621,7 +621,7 @@ lint.pydocstyle.convention = "pep257"
 
                 # Act, Assert
                 with pytest.raises(
-                    ValueError, match="At least one ID key must be provided."
+                    ValueError, match=r"At least one ID key must be provided."
                 ):
                     manager.remove_from_list(keys=[], values=["d"])
 

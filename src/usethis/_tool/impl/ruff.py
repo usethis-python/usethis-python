@@ -266,7 +266,7 @@ class RuffTool(Tool):
             inform_how_to_use_on_migrate=True,  # The pre-commit commands are not simpler than the venv-based commands
         )
 
-    def get_bitbucket_steps(self) -> list[BitbucketStep]:
+    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
         backend = get_backend()
 
         steps = []

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import typer
 
+from usethis._config import usethis_config
 from usethis._ui.options import offline_opt, quiet_opt
 
 if TYPE_CHECKING:
@@ -27,7 +28,6 @@ def pypi(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.badge import get_pypi_badge
 
@@ -42,7 +42,6 @@ def ruff(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.badge import get_ruff_badge
 
@@ -57,12 +56,27 @@ def pre_commit(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.badge import get_pre_commit_badge
 
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
         _badge_effect(get_pre_commit_badge(), remove=remove, show=show)
+
+
+@app.command(
+    help="Add a badge with your PyPI package's supply chain security rating from Socket."
+)
+def socket(
+    remove: bool = remove_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    show: bool = show_opt,
+) -> None:
+    from usethis._config_file import files_manager
+    from usethis._core.badge import get_socket_badge
+
+    with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+        _badge_effect(get_socket_badge(), remove=remove, show=show)
 
 
 @app.command(help="Add a badge for usethis.")
@@ -72,7 +86,6 @@ def usethis(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.badge import get_usethis_badge
 
@@ -87,7 +100,6 @@ def uv(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._core.badge import get_uv_badge
 

@@ -162,7 +162,7 @@ project = ["a"]
             PyprojectTOMLManager(),
             pytest.raises(
                 TOMLValueMissingError,
-                match="'project' is not a valid mapping .* does not contain the key 'authors'",
+                match=r"'project' is not a valid mapping .* does not contain the key 'authors'",
             ),
         ):
             add_author(name="John Cleese")
@@ -181,7 +181,7 @@ authors = { name = "Python Dev" }
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
             pytest.raises(
-                TOMLValueInvalidError, match="'project.authors' is not a valid list"
+                TOMLValueInvalidError, match=r"'project.authors' is not a valid list"
             ),
         ):
             add_author(name="John Cleese")

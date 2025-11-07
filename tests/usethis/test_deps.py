@@ -234,7 +234,7 @@ dependencies = "not a list"
             PyprojectTOMLManager(),
             pytest.raises(
                 UVDepGroupError,
-                match="Failed to parse the 'project.dependencies' section",
+                match=r"Failed to parse the 'project.dependencies' section",
             ),
         ):
             get_project_deps()

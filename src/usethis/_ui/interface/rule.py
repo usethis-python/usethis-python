@@ -1,5 +1,6 @@
 import typer
 
+from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._ui.options import backend_opt, offline_opt, quiet_opt
 
@@ -11,7 +12,7 @@ ignore_opt = typer.Option(
 )
 
 
-def rule(  # noqa: PLR0913
+def rule(
     rules: list[str],
     remove: bool = remove_opt,
     ignore: bool = ignore_opt,
@@ -19,7 +20,6 @@ def rule(  # noqa: PLR0913
     quiet: bool = quiet_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    from usethis._config import usethis_config
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.rule import (

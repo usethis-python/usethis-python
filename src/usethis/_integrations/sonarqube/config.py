@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
 from pydantic import TypeAdapter
 
@@ -28,40 +27,15 @@ def get_sonar_project_properties() -> str:
 
     # Get Python version
     try:
-        python_version = _get_short_version(Path(".python-version").read_text().strip())
+        python_version = _get_short_version(
+            (usethis_config.cpd() / ".python-version").read_text().strip()
+        )
     except (FileNotFoundError, _NonstandardPythonVersionError):
         python_version = get_python_version()
 
-    # Get Project key
-    try:
-        project_key = PyprojectTOMLManager()[
-            ["tool", "usethis", "sonarqube", "project-key"]
-        ]
-    except KeyError:
-        msg = "Could not find SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
-        raise MissingProjectKeyError(msg) from None
-    except FileNotFoundError:
-        msg = "Could not find 'pyproject.toml' for SonarQube project key at 'tool.usethis.sonarqube.project-key'."
-        raise MissingProjectKeyError(msg) from None
-    _validate_project_key(project_key)
-
-    # Get verbosity setting
-    try:
-        verbose = PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]]
-    except (FileNotFoundError, KeyError):
-        verbose = False
-    verbose = TypeAdapter(bool).validate_python(verbose)
-
-    # Get exclusions
-    try:
-        exclusions = PyprojectTOMLManager()[
-            ["tool", "usethis", "sonarqube", "exclusions"]
-        ]
-    except (FileNotFoundError, KeyError):
-        exclusions = []
-    exclusions = TypeAdapter(list).validate_python(exclusions)
-    for exclusion in exclusions:
-        TypeAdapter(str).validate_python(exclusion)
+    project_key = _get_sonarqube_project_key()
+    verbose = _is_sonarqube_verbose()
+    exclusions = _get_sonarqube_exclusions()
 
     # Get coverage report output path
     try:
@@ -77,6 +51,9 @@ def get_sonar_project_properties() -> str:
     source_dir_str = get_source_dir_str()
     if source_dir_str == ".":
         sources = "./"
+        # When using flat layout, exclude tests directory to avoid double indexing
+        if "tests/*" not in exclusions:
+            exclusions.insert(0, "tests/*")
     else:
         sources = f"./{source_dir_str}"
 
@@ -101,6 +78,46 @@ def _get_short_version(version: str) -> str:
         raise _NonstandardPythonVersionError(msg)
 
     return match.group(1)
+
+
+def _get_sonarqube_project_key() -> str:
+    try:
+        project_key = PyprojectTOMLManager()[
+            ["tool", "usethis", "sonarqube", "project-key"]
+        ]
+    except KeyError:
+        msg = "Could not find SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
+        raise MissingProjectKeyError(msg) from None
+    except FileNotFoundError:
+        msg = "Could not find 'pyproject.toml' for SonarQube project key at 'tool.usethis.sonarqube.project-key'."
+        raise MissingProjectKeyError(msg) from None
+    _validate_project_key(project_key)
+    return project_key
+
+
+def _is_sonarqube_verbose() -> bool:
+    try:
+        verbose = PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]]
+    except (FileNotFoundError, KeyError):
+        verbose = False
+    verbose = TypeAdapter(bool).validate_python(verbose)
+
+    return verbose
+
+
+def _get_sonarqube_exclusions() -> list[str]:
+    try:
+        exclusions = PyprojectTOMLManager()[
+            ["tool", "usethis", "sonarqube", "exclusions"]
+        ]
+    except (FileNotFoundError, KeyError):
+        exclusions = []
+    # TypeAdapter(list).validate_python() ensures we have a list and returns a new list
+    exclusions = TypeAdapter(list).validate_python(exclusions)
+    for exclusion in exclusions:
+        TypeAdapter(str).validate_python(exclusion)
+
+    return exclusions
 
 
 def _validate_project_key(project_key: str) -> None:

@@ -55,6 +55,13 @@ def get_ruff_badge() -> Badge:
     )
 
 
+def get_socket_badge() -> Badge:
+    name = get_project_name()
+    return Badge(
+        markdown=f"[![Socket Badge](https://badge.socket.dev/pypi/package/{name})](https://socket.dev/pypi/package/{name}/overview)"
+    )
+
+
 def get_uv_badge() -> Badge:
     return Badge(
         markdown="[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)"
@@ -68,12 +75,17 @@ def get_usethis_badge() -> Badge:
 
 
 def get_badge_order() -> list[Badge]:
+    # Some general principles here:
+    # 1. Dynamic badges giving factual information about the package should go first
+    # 2. Static badges which list affiliation should go next e.g. uv, Ruff, etc.
+    # 3. Badges giving project scores, ratings, etc. should go last.
     return [
         get_pypi_badge(),
         get_uv_badge(),
         get_ruff_badge(),
         get_pre_commit_badge(),
         get_usethis_badge(),
+        get_socket_badge(),
     ]
 
 

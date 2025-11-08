@@ -90,9 +90,9 @@ class YAMLFileManager(KeyValueFileManager):
         except UnexpectedFileOpenError as err:
             raise UnexpectedYAMLOpenError(err) from None
 
-    def read_file(self) -> None:
+    def read_file(self) -> YAMLDocument:
         try:
-            super().read_file()
+            return super().read_file()
         except FileNotFoundError as err:
             raise YAMLNotFoundError(err) from None
         except UnexpectedFileIOError as err:

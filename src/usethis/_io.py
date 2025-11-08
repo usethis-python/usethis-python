@@ -95,10 +95,9 @@ class UsethisFileManager(Generic[DocumentT]):
         self._validate_lock()
 
         if self._content is None:
-            self.read_file()
-            assert self._content is not None
-
-        return self._content
+            return self.read_file()
+        else:
+            return self._content
 
     def commit(self, document: DocumentT) -> None:
         """Store the given document in memory for deferred writing."""
@@ -119,8 +118,11 @@ class UsethisFileManager(Generic[DocumentT]):
 
         self.path.write_text(self._dump_content())
 
-    def read_file(self) -> None:
-        """Read the document from disk and store it in memory."""
+    def read_file(self) -> DocumentT:
+        """Read the document from disk and store it in memory.
+
+        Also returns the document.
+        """
         self._validate_lock()
 
         if self._content is not None:
@@ -130,10 +132,14 @@ class UsethisFileManager(Generic[DocumentT]):
             )
             raise UnexpectedFileIOError(msg)
         try:
-            self._content = self._parse_content(self.path.read_text())
+            document = self._parse_content(self.path.read_text())
         except FileNotFoundError:
             msg = f"'{self.name}' not found in the current directory at '{self.path}'."
             raise FileNotFoundError(msg) from None
+
+        self._content = document
+
+        return document
 
     @abstractmethod
     def _dump_content(self) -> str:

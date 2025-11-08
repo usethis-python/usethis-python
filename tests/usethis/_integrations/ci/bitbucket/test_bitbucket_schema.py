@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 import requests
+from requests.exceptions import RequestException
 
 from usethis._integrations.ci.bitbucket.schema import Script, Step, Step2, StepBase
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -31,7 +32,7 @@ class TestSchemaJSON:
             online_schema_json = requests.get(
                 "https://api.bitbucket.org/schemas/pipelines-configuration", timeout=5
             ).text
-        except requests.exceptions.RequestException as err:
+        except RequestException as err:
             if os.getenv("CI"):
                 pytest.skip(
                     "Failed to fetch JSON schema (connection issues); skipping test"

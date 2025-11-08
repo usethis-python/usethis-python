@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import requests
+from requests.exceptions import RequestException
 
 from usethis._integrations.ci.github.errors import (
     GitHubTagError,
@@ -29,7 +30,7 @@ def get_github_latest_tag(owner: str, repo: str) -> str:
     try:
         response = requests.get(api_url, timeout=1)
         response.raise_for_status()  # Raise an error for HTTP issues
-    except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError) as err:
+    except RequestException as err:
         msg = f"Failed to fetch tags from GitHub API:\n{err}"
         raise GitHubTagError(msg) from None
 

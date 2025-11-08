@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
+    from tomlkit import TOMLDocument
     from typing_extensions import Self
 
     from usethis._io import Key
@@ -43,9 +44,9 @@ class PyprojectTOMLManager(TOMLFileManager):
         except UnexpectedTOMLOpenError as err:
             raise UnexpectedPyprojectTOMLOpenError(err) from None
 
-    def read_file(self) -> None:
+    def read_file(self) -> TOMLDocument:
         try:
-            super().read_file()
+            return super().read_file()
         except TOMLNotFoundError as err:
             raise PyprojectTOMLNotFoundError(err) from None
         except UnexpectedTOMLIOError as err:

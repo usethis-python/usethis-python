@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
+    from configupdater import ConfigUpdater as INIDocument
     from typing_extensions import Self
 
     from usethis._io import Key
@@ -43,9 +44,9 @@ class SetupCFGManager(INIFileManager):
         except UnexpectedINIOpenError as err:
             raise UnexpectedSetupCFGOpenError(err) from None
 
-    def read_file(self) -> None:
+    def read_file(self) -> INIDocument:
         try:
-            super().read_file()
+            return super().read_file()
         except ININotFoundError as err:
             raise SetupCFGNotFoundError(err) from None
         except UnexpectedINIIOError as err:

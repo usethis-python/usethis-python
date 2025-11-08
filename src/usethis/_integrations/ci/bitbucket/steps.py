@@ -137,7 +137,7 @@ def _add_step_in_default_via_doc(
             if script_item.name not in defined_script_item_by_name:
                 script_item_name = script_item.name
                 try:
-                    script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
+                    resolved_script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
                 except KeyError:
                     msg = f"Unrecognized script item anchor: '{script_item.name}'."
                     raise NotImplementedError(msg) from None
@@ -156,14 +156,14 @@ def _add_step_in_default_via_doc(
                     script_item_name=script_item_name,
                     doc=doc,
                 )
-                existing_script_items.insert(insertion_index, script_item)
+                existing_script_items.insert(insertion_index, resolved_script_item)
                 existing_script_items = CommentedSeq(existing_script_items)
             else:
                 # Otherwise, if the anchor is already defined, we need to use the
                 # reference
-                script_item = defined_script_item_by_name[script_item.name]
+                resolved_script_item = defined_script_item_by_name[script_item.name]
 
-            step.script.root[idx] = script_item
+            step.script.root[idx] = resolved_script_item
 
     # If the step is unrecognized, it will go at the end.
     prerequisites: set[str] = set()
@@ -435,7 +435,8 @@ def _get_steps_in_pipeline(pipeline: Pipeline) -> list[Step]:
 
 
 @singledispatch
-def get_steps_in_pipeline_item(item) -> list[Step]: ...
+def get_steps_in_pipeline_item(item) -> list[Step]:
+    raise NotImplementedError
 
 
 @get_steps_in_pipeline_item.register(StepItem)

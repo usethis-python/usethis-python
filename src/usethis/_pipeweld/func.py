@@ -280,7 +280,7 @@ def _has_any_steps(
     if isinstance(component, str):
         return component in steps
     elif isinstance(component, Parallel | Series):
-        for subcomponent in component.root:
+        for subcomponent in component.root:  # ty: ignore[possibly-missing-attribute]
             if _has_any_steps(subcomponent, steps=steps):
                 return True
         return False

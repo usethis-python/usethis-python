@@ -89,11 +89,12 @@ class RuleConfig(BaseModel):
             )
             raise NotImplementedError(msg)
 
-        return type(self)(
-            selected=self.selected + other.selected,
-            ignored=self.ignored + other.ignored,
-            unmanaged_selected=self.unmanaged_selected + other.unmanaged_selected,
-            unmanaged_ignored=self.unmanaged_ignored + other.unmanaged_ignored,
-            tests_unmanaged_ignored=self.tests_unmanaged_ignored
-            + other.tests_unmanaged_ignored,
+        new = self.model_copy()
+        new.selected = self.selected + other.selected
+        new.ignored = self.ignored + other.ignored
+        new.unmanaged_selected = self.unmanaged_selected + other.unmanaged_selected
+        new.unmanaged_ignored = self.unmanaged_ignored + other.unmanaged_ignored
+        new.tests_unmanaged_ignored = (
+            self.tests_unmanaged_ignored + other.tests_unmanaged_ignored
         )
+        return new

@@ -161,9 +161,9 @@ def _add_step_in_default_via_doc(
             else:
                 # Otherwise, if the anchor is already defined, we need to use the
                 # reference
-                script_item = defined_script_item_by_name[script_item.name]
+                resolved_script_item = defined_script_item_by_name[script_item.name]
 
-            step.script.root[idx] = script_item
+            step.script.root[idx] = resolved_script_item
 
     # If the step is unrecognized, it will go at the end.
     prerequisites: set[str] = set()

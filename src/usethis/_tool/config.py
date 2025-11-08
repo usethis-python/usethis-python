@@ -61,6 +61,12 @@ class ConfigSpec(BaseModel):
             config_items=config_items,
         )
 
+    @classmethod
+    def empty(cls) -> Self:
+        return cls(
+            file_manager_by_relative_path={}, resolution="first", config_items=[]
+        )
+
 
 class NoConfigValue:
     pass

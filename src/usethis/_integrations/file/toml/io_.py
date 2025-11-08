@@ -53,9 +53,9 @@ class TOMLFileManager(KeyValueFileManager):
         except UnexpectedFileOpenError as err:
             raise UnexpectedTOMLOpenError(err) from None
 
-    def read_file(self) -> None:
+    def read_file(self) -> TOMLDocument:
         try:
-            super().read_file()
+            return super().read_file()
         except FileNotFoundError as err:
             raise TOMLNotFoundError(err) from None
         except UnexpectedFileIOError as err:

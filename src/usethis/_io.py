@@ -96,9 +96,15 @@ class UsethisFileManager(Generic[DocumentT]):
 
         if self._content is None:
             document = self.read_file()
+            if document is None:
+                msg = f"The content of the '{self.name}' file is None."
+                raise UnexpectedFileIOError(msg)
         else:
             document = self._content
 
+            if document is None:
+                msg = f"The content of the '{self.name}' file is None."
+                raise UnexpectedFileIOError(msg)
         return document
 
     def commit(self, document: DocumentT) -> None:
@@ -135,11 +141,14 @@ class UsethisFileManager(Generic[DocumentT]):
             raise UnexpectedFileIOError(msg)
         try:
             document = self._parse_content(self.path.read_text())
-            self._content = document
         except FileNotFoundError:
             msg = f"'{self.name}' not found in the current directory at '{self.path}'."
             raise FileNotFoundError(msg) from None
 
+        self._content = document
+        if document is None:
+            msg = f"The content of the '{self.name}' file is None."
+            raise UnexpectedFileIOError(msg)
         return document
 
     @abstractmethod

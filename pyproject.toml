@@ -77,6 +77,9 @@ doc = [
   "mkdocs>=1.6.1",
   "mkdocs-material>=9.6.10",
 ]
+uv = [
+  "uv>=0.6.8",
+]
 
 [tool.hatch.version]
 source = "vcs"
@@ -308,3 +311,6 @@ layers = [
 ]
 containers = [ "usethis._integrations.ci" ]
 exhaustive = true
+
+[tool.sync-with-uv.repo-to-package]
+"https://github.com/astral-sh/uv-pre-commit" = "uv"

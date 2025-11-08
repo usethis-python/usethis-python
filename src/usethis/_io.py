@@ -95,17 +95,9 @@ class UsethisFileManager(Generic[DocumentT]):
         self._validate_lock()
 
         if self._content is None:
-            document = self.read_file()
-            if document is None:
-                msg = f"The content of the '{self.name}' file is None."
-                raise UnexpectedFileIOError(msg)
+            return self.read_file()
         else:
-            document = self._content
-
-            if document is None:
-                msg = f"The content of the '{self.name}' file is None."
-                raise UnexpectedFileIOError(msg)
-        return document
+            return self._content
 
     def commit(self, document: DocumentT) -> None:
         """Store the given document in memory for deferred writing."""
@@ -146,9 +138,7 @@ class UsethisFileManager(Generic[DocumentT]):
             raise FileNotFoundError(msg) from None
 
         self._content = document
-        if document is None:
-            msg = f"The content of the '{self.name}' file is None."
-            raise UnexpectedFileIOError(msg)
+
         return document
 
     @abstractmethod

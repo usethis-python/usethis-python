@@ -216,14 +216,10 @@ def _(
 def _get_value_ref(
     reference: ModelRepresentation | None, *, key: str
 ) -> ModelRepresentation | None:
-    if isinstance(reference, dict):
+    # The reference for the value (for recursion)
+    if isinstance(reference, dict | BaseModel):
         try:
-            value_ref = dict(reference)[key]
-        except KeyError:
-            value_ref = None
-    if isinstance(reference, BaseModel):
-        try:
-            value_ref = reference.model_dump()[key]
+            value_ref = dict(reference)[key]  # ty: ignore[no-matching-overload]
         except KeyError:
             value_ref = None
     else:

@@ -120,9 +120,7 @@ class Tool(Protocol):
 
         This includes the file managers and resolution methodology.
         """
-        return ConfigSpec(
-            file_manager_by_relative_path={}, resolution="first", config_items=[]
-        )
+        return ConfigSpec.empty()
 
     def get_pre_commit_config(self) -> PreCommitConfig:
         """Get the pre-commit configurations for the tool."""

@@ -68,7 +68,7 @@
 
 - The `zizmor` CI runner no longer triggers for documentation-only changes.
 
-- There is a now a `copilot-instructions.md` file to configure GitHub Copilot.
+- There is now a `copilot-instructions.md` file to configure GitHub Copilot.
 
 - The test to ensure the docs stay synchronized with the README has been weakened and no longer hard-codes any content from the README. This should reduce the flakiness of this test for README-only changes.
 

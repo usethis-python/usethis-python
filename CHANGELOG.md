@@ -62,7 +62,7 @@
 
 ### 🔧 Internal Changes
 
-- There is a now method `Tool.default_command()` to specify any CLI command associated with a tool, to reduce duplication across the codebase.
+- There is now a method `Tool.default_command()` to specify any CLI command associated with a tool, to reduce duplication across the codebase.
 
 - The `ty` type checker from Astral has been added, and now runs via pre-commit hooks. Pyright continues to be used in the CI, but not via pre-commit.
 

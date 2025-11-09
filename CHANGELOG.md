@@ -1,5 +1,77 @@
 # Changelog
 
+## 0.17.0
+
+### 🚀 New Features
+
+- The `usethis ci bitbucket` command will now automatically use parallelism between pipeline steps where possible.
+
+- The `usethis ci bitbucket` command now has a `--no-matrix-python` option to opt-out of generating a Python version matrix for CI pipelines, i.e. to only test against a single Python version.
+
+- The behaviour of `--backend=none` is now the default when Poetry is detected, and a warning is displayed. This would change in a future release when a Poetry backend is implemented.
+
+- The command `usethis badge socket` has been added, which adds a Socket badge to the README for your PyPI package, giving a security scan rating.
+
+### 🐞 Bug Fixes
+
+- `usethis tool import-linter` will no longer add `INP` rules multiple times when run repeatedly.
+
+- The (undocumented) `usethis show sonarqube` command previously gave invalid config for flat directory structures; this has been fixed. Also, the command no longer creates a `pyproject.toml` file if it does not already exist.
+
+- When running `usethis tool requirements.txt` with `--backend=none`, the how-to-use message misleadingly implies that a pre-existing `requirements.txt` file would be modified; this message no longer displays in this case.
+
+### 🦾 Robustness
+
+- Unrecognized entries (i.e. not found in the [JSON Schema Store](https://www.schemastore.org/)) in `.pre-commit-config.yaml` and `bitbucket-pipelines.yml` files will no longer cause validation errors or be dropped. Other minor improvements to the schema validation logic have also been made to improve robustness when roundtripping files.
+
+- Read-only operations on YAML files will no longer modify the file with cosmetic changes. There should also be a small performance improvement associated with avoiding unnecessary writes.
+
+- The `usethis ci bitbucket` command will add the `pre-commit` cache to `pre-commit` steps when using the `--backend=none` behaviour.
+
+- Running `usethis init` with `--backend=none` will now explicitly instruct the user about any dependencies that need to be managed manually.
+
+- References to Bitbucket Pipelines are now consistently capitalized and pluralized throughout the codebase.
+
+### 📚 Documentation
+
+- The [FAQ](https://usethis.readthedocs.io/en/stable/faq/) now explicitly explains whether `uv` is necessary to use `usethis`, and gives some guidance for Poetry users.
+
+- Instructions for implementing a new `usethis badge` command in usethis have been added to the CONTRIBUTING.md file.
+
+- Some instructions for how to diagnose slow `pytest` collection speeds are now in `CONTRIBUTING.md`.
+
+- There is now an acknowledgements section in the README.
+
+- The `CONTRIBUTING.md` file now explains how to run the CLI from within a temporary project directory.
+
+- The `CONTRIBUTING.md` file explicitly mentions that type annotations should not be included in docstrings.
+
+- The `CONTRIBUTING.md` file now explains the details of the `usethis._config.usethis_config` global state object.
+
+- All `usethis tool` commands are now explicitly enumerated in the README.
+
+- The README now explicitly links to the [ReadTheDocs site](https://usethis.readthedocs.io/en/stable/).
+
+- The CLI Reference had issues with indentation of sub-bullet points; this has been resolved.
+
+- A few badges have been moved and added to the Development section of the README.
+
+### 📦 Packaging
+
+- As per the notes for 0.16.0, Version 0.18.13 of `ruamel.yaml` introduced a regression relating to indentation. The new version 0.18.16 of `ruamel.yaml` is now also excluded as a dependency version until this is addressed in a future release.
+
+### 🔧 Internal Changes
+
+- There is a now method `Tool.default_command()` to specify any CLI command associated with a tool, to reduce duplication across the codebase.
+
+- The `ty` type checker from Astral has been added, and now runs via pre-commit hooks. Pyright continues to be used in the CI, but not via pre-commit.
+
+- The `zizmor` CI runner no longer triggers for documentation-only changes.
+
+- There is a now a `copilot-instructions.md` file to configure GitHub Copilot.
+
+- The test to ensure the docs stay synchronized with the README has been weakened and no longer hard-codes any content from the README. This should reduce the flakiness of this test for README-only changes.
+
 ## 0.16.0
 
 ### 🚀 New Features

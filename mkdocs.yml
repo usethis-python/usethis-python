@@ -2,8 +2,10 @@ site_name: usethis
 
 nav:
   - Introduction: index.md
-  - Getting Started: getting-started.md
-  - Example Usage: example-usage.md
+  - Getting Started:
+    - Installation: start/installation.md
+    - Example Usage: start/example-usage.md
+    - Detailed Example: start/detailed-example.md
   - CLI Reference:
     - Overview: cli/overview.md
     - Reference: cli/reference.md

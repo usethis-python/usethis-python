@@ -1,3 +1,4 @@
+import difflib
 from pathlib import Path
 
 
@@ -11,7 +12,7 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
             usethis_dev_dir / "docs" / "index.md", skip_lines=2, demote_headers=False
         )
     )
-    parts.append(_get_doc_file(usethis_dev_dir / "docs" / "getting-started.md"))
+    parts.append(_get_doc_file(usethis_dev_dir / "docs" / "start" / "installation.md"))
     cli_overview_content = _get_doc_file(
         usethis_dev_dir / "docs" / "cli" / "overview.md",
     ).replace(  # README uses absolute links, docs use relative links
@@ -20,7 +21,17 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
     )
 
     parts.append(cli_overview_content)
-    parts.append(_get_doc_file(usethis_dev_dir / "docs" / "example-usage.md"))
+    parts.append(
+        _get_doc_file(usethis_dev_dir / "docs" / "start" / "example-usage.md")
+        .replace(  # README uses absolute links, docs use relative links
+            "](start/detailed-example.md)",
+            "](https://usethis.readthedocs.io/en/stable/start/detailed-example)",
+        )
+        .replace(
+            "](cli/reference.md)",
+            "](https://usethis.readthedocs.io/en/stable/cli/reference)",
+        )
+    )
     parts.append(_get_doc_file(usethis_dev_dir / "docs" / "similar-projects.md"))
 
     content = (
@@ -29,7 +40,15 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
         .replace("> [!TIP]\n> ", "")
     )
     for part in parts:
-        assert part in content
+        assert part in content, "\n".join(
+            difflib.unified_diff(
+                part.splitlines(),
+                content.splitlines(),
+                fromfile="docs",
+                tofile="README.md",
+                lineterm="",
+            )
+        )
 
 
 def _get_doc_file(

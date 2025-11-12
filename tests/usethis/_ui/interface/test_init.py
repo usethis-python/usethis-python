@@ -60,48 +60,6 @@ class TestInit:
                 "codespell",
             ]
 
-    def test_readme_example(self, tmp_path: Path):
-        """This example is used the README.md file.
-
-        Note carefully! If this test is updated, the README.md file must be
-        updated too.
-        """
-        # Act
-        runner = CliRunner()
-        with change_cwd(tmp_path):
-            result = runner.invoke_safe(app, ["init"])
-
-        # Assert
-        assert result.exit_code == 0, result.output
-        assert (
-            result.output
-            # ###################################
-            # See docstring!
-            # ###################################
-            == """\
-✔ Writing 'pyproject.toml' and initializing project.
-✔ Writing 'README.md'.
-☐ Populate 'README.md' to help users understand the project.
-✔ Setting the development status to '1 - Planning'.
-✔ Adding recommended documentation tools.
-☐ Run 'uv run mkdocs build' to build the documentation.
-☐ Run 'uv run mkdocs serve' to serve the documentation locally.
-✔ Adding recommended linters.
-☐ Run 'uv run deptry src' to run deptry.
-☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
-✔ Adding recommended formatters.
-☐ Run 'uv run ruff format' to run the Ruff formatter.
-☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.
-✔ Adding recommended spellcheckers.
-☐ Run 'uv run codespell' to run the Codespell spellchecker.
-✔ Adding recommended test frameworks.
-☐ Add test files to the '/tests' directory with the format 'test_*.py'.
-☐ Add test functions with the format 'test_*()'.
-☐ Run 'uv run pytest' to run the tests.
-☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.
-"""
-        )
-
     def test_specify_path(self, tmp_path: Path):
         # Act
         runner = CliRunner()

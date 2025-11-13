@@ -2044,7 +2044,7 @@ repos:
                     "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit."
                     "✔ Removing '.pre-commit-config.yaml'."
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'."
-                    "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
+                    "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -3031,7 +3031,7 @@ class TestRequirementsTxt:
                 "✔ Writing 'pyproject.toml'."
                 "✔ Writing 'uv.lock'."
                 "✔ Writing 'requirements.txt'."
-                "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
+                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
             )
 
         def test_start_from_uv_init(
@@ -3052,7 +3052,7 @@ class TestRequirementsTxt:
             assert out.replace("\n", "") == (
                 "✔ Writing 'uv.lock'."
                 "✔ Writing 'requirements.txt'."
-                "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
+                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
             )
 
         def test_start_from_uv_locked(
@@ -3075,7 +3075,7 @@ class TestRequirementsTxt:
             assert not err
             assert out.replace("\n", "") == (
                 "✔ Writing 'requirements.txt'."
-                "☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
+                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -3109,7 +3109,7 @@ repos:
       - id: uv-export
         name: uv-export
         files: ^uv\\.lock$
-        entry: uv export --frozen --offline --quiet --no-default-groups -o=requirements.txt
+        entry: uv export --frozen --offline --quiet -o=requirements.txt
         language: system
         pass_filenames: false
         require_serial: true

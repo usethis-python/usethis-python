@@ -378,7 +378,6 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
                         [
                             "export",
                             "--frozen",
-                            "--no-default-groups",
                             "--output-file=requirements.txt",
                         ],
                         change_toml=False,

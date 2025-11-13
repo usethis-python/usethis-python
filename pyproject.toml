@@ -137,10 +137,10 @@ lint.ignore = [ "PLR2004", "S101", "SIM108" ]
 lint.per-file-ignores."!tests/**/*.py" = [ "ARG002", "PT" ]
 lint.per-file-ignores."src/usethis/_ui/interface/**/*.py" = [ "PLR0913" ]
 lint.per-file-ignores."tests/**/*.py" = [ "D", "INP", "S603", "TC" ]
+
 lint.flake8-bugbear.extend-immutable-calls = [ "typer.Argument", "typer.Option" ]
-
+lint.flake8-builtins.strict-checking = true
 lint.flake8-tidy-imports.banned-api."typer.testing.CliRunner".msg = "Use `usethis._test.CliRunner` instead of `typer.CliRunner`."
-
 lint.flake8-type-checking.quote-annotations = true
 lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
 lint.flake8-type-checking.strict = true

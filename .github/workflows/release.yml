@@ -40,6 +40,11 @@ jobs:
     environment: release
 
     steps:
+      - name: Set up uv
+        uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d # v7.1.0
+        with:
+          version: "latest"
+          enable-cache: false
       - name: Download distributions
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:

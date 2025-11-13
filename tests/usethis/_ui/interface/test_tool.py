@@ -379,8 +379,7 @@ class TestRequirementsTxt:
         assert (
             result.output
             == """\
-☐ Run 'uv export --no-default-groups -o=requirements.txt' to write 
-'requirements.txt'.
+☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'.
 """
         )
 

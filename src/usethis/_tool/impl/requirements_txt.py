@@ -41,7 +41,7 @@ class RequirementsTxtTool(Tool):
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv:
                 how_print(
-                    "Run 'uv export --no-default-groups -o=requirements.txt' to write 'requirements.txt'."
+                    "Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
                 )
             elif backend is BackendEnum.none:
                 if not (usethis_config.cpd() / "requirements.txt").exists():
@@ -72,7 +72,7 @@ class RequirementsTxtTool(Tool):
                             name="uv-export",
                             files="^uv\\.lock$",
                             pass_filenames=False,
-                            entry="uv export --frozen --offline --quiet --no-default-groups -o=requirements.txt",
+                            entry="uv export --frozen --offline --quiet -o=requirements.txt",
                             language=Language("system"),
                             require_serial=True,
                         )

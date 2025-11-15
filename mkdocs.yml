@@ -1,4 +1,4 @@
-site_name: usethis
+site_name: usethis Documentation
 
 nav:
   - Introduction: index.md
@@ -15,6 +15,7 @@ nav:
 theme:
   name: material
   logo: logo.svg
+  favicon: favicon.svg
   palette:
     - media: "(prefers-color-scheme)"
       toggle:

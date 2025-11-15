@@ -19,7 +19,7 @@ $ uvx usethis tool ruff
 ☐ Run 'uv run ruff format' to run the Ruff formatter.
 ```
 
-For a detailed breakdown of what each line of the output means, [there is a detailed explanation available](start/detailed-example.md).
+For a detailed breakdown of what each line of the output means, [there is a detailed explanation available](detailed-example.md).
 
 As another example, to use pytest, run:
 
@@ -47,4 +47,4 @@ $ uvx usethis ci bitbucket
 ☐ Run your pipeline via the Bitbucket website.
 ```
 
-See the [CLI Reference](cli/reference.md) for a full list of available commands.
+See the [CLI Reference](../cli/reference.md) for a full list of available commands.

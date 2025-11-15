@@ -11,6 +11,7 @@ nav:
     - Reference: cli/reference.md
   - Similar Projects: similar-projects.md
   - FAQ: faq.md
+  - License: about-license.md
 
 theme:
   name: material

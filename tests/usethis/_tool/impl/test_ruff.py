@@ -375,7 +375,7 @@ lint.per-file-ignores."tests/**" = ["INP"]
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_latest_version(self, tmp_path: Path):
         if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing  version bumps manually")
+            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
 
         with change_cwd(tmp_path), files_manager():
             # Arrange

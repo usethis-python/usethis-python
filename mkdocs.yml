@@ -12,6 +12,7 @@ nav:
   - With Other Frameworks: frameworks.md
   - Similar Projects: similar-projects.md
   - FAQ: faq.md
+  - License: about-license.md
 
 theme:
   name: material

@@ -174,7 +174,7 @@ You could consider [this template](https://github.com/pawamoy/copier-uv) or [thi
 
 If you're using Cookiecutter, then you can update to a latest version of a template using a tool like [cruft](https://github.com/cruft/cruft). Copier has inbuilt support for template updating. Another template-style option which provides updating is [jaraco/skeleton](https://blog.jaraco.com/skeleton/), which is a specific, git-based template rather than a general templating system.
 
-If you're not interested in templating automations, then [configurator](https://github.com/jamesbraza/configurator) provides a list of useful tooling and configuration to consider for your Python projects.
+If you're not interested in templating automations, then [configurator](https://github.com/jamesbraza/configurator) provides a list of useful tooling and configuration to consider for your Python projects. If you're adopting a specific framework like Django, FastAPI, Dagster, or Flask, [this list](https://usethis.readthedocs.io/en/stable/frameworks) gives options for initializing new projects via CLI.
 
 ## 🚀 Development
 

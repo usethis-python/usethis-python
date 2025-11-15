@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
+from usethis._integrations.backend.uv.errors import UVSubprocessFailedError
 from usethis._integrations.backend.uv.version import FALLBACK_UV_VERSION, get_uv_version
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
@@ -40,3 +41,19 @@ class TestGetUVVersion:
         assert major.isdigit()
         assert minor.isdigit()
         assert patch.isdigit()
+
+    def test_mock_subprocess_failure(self, monkeypatch: pytest.MonkeyPatch):
+        # Arrange
+        def mock_call_uv_subprocess(*_, **__) -> str:
+            raise UVSubprocessFailedError
+
+        monkeypatch.setattr(
+            "usethis._integrations.backend.uv.version.call_uv_subprocess",
+            mock_call_uv_subprocess,
+        )
+
+        # Act
+        version = get_uv_version()
+
+        # Assert
+        assert version == FALLBACK_UV_VERSION

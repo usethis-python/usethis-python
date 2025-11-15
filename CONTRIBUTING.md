@@ -96,6 +96,20 @@ This project supports all versions of Python through until end of life. The deve
 
 To ensure the `--quiet` flag is always effective, avoid using simple `print` statements. Instead, use the purpose-built `usethis._console.plain_print` function.
 
+### Branding
+
+The usethis name should not be capitalized (i.e. not Usethis or UseThis), even at the
+beginning of a sentence. It should only be styled in monospace as `usethis` when referring to the command itself.
+
+These colours are used in branding materials:
+
+- Green: #00c000
+- Orange: #f26622
+- Grey: #999999
+- Darker Grey: #424242
+
+Along with the fonts [EB Garamond](https://fonts.google.com/specimen/EB+Garamond) and [Cairo](https://fonts.google.com/specimen/Cairo).
+
 ## Guides
 
 ### Adding a new badge
@@ -108,3 +122,7 @@ To add a new `usethis badge` interface, follow these steps:
 - Declare a recommended badge placement in the `get_badge_order` function in <src\usethis\_core\badge.py>. This helps ensure the badges are arranged in an opinionated way relative to existing badges.
 
 Finally, run the command on this project, to make sure the badge gets inserted correctly with valid Markdown syntax. Check it renders successfully and that any hyperlink works as expected.
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the MIT license. See the [LICENSE](https://github.com/usethis-python/usethis-python/blob/main/LICENSE) file.

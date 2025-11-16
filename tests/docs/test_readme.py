@@ -38,7 +38,6 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
             "](https://usethis.readthedocs.io/en/stable/frameworks)",
         )
     )
-    parts.append(_get_doc_file(usethis_dev_dir / "docs" / "similar-projects.md"))
     parts.append(_get_doc_file(usethis_dev_dir / "docs" / "about-license.md"))
 
     content = (

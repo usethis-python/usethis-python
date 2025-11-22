@@ -20,7 +20,10 @@ def get_backend() -> Literal[BackendEnum.uv, BackendEnum.none]:
         )
         return BackendEnum.none
 
-    if is_uv_used() or is_uv_available():
+    if is_uv_used():
+        return BackendEnum.uv
+
+    if not (usethis_config.cpd() / "pyproject.toml").exists() and is_uv_available():
         return BackendEnum.uv
 
     return BackendEnum.none

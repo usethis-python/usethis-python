@@ -48,11 +48,12 @@ class CodespellTool(Tool):
                 how_print(
                     "Run 'uv run pre-commit run codespell --all-files' to run the Codespell spellchecker."
                 )
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
+            elif backend in (BackendEnum.none, BackendEnum.uv):
                 how_print(
                     "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
                 )
+            else:
+                assert_never(backend)
         elif install_method == "devdep" or install_method is None:
             cmd = self.default_command()
             how_print(f"Run '{cmd}' to run the Codespell spellchecker.")

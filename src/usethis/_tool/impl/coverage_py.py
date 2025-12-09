@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from typing_extensions import assert_never
+
 from usethis._config import usethis_config
 from usethis._config_file import (
     CoverageRCManager,
@@ -42,16 +44,18 @@ class CoveragePyTool(Tool):
                 how_print(
                     f"Run 'uv run pytest --cov' to run your tests with {self.name}."
                 )
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
+            elif backend in (BackendEnum.none, BackendEnum.uv):
                 how_print(f"Run 'pytest --cov' to run your tests with {self.name}.")
+            else:
+                assert_never(backend)
         elif backend is BackendEnum.uv and is_uv_used():
             how_print(
                 f"Run 'uv run coverage help' to see available {self.name} commands."
             )
-        else:
-            assert backend in (BackendEnum.none, BackendEnum.uv)
+        elif backend in (BackendEnum.none, BackendEnum.uv):
             how_print(f"Run 'coverage help' to see available {self.name} commands.")
+        else:
+            assert_never(backend)
 
     def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415

@@ -58,9 +58,10 @@ class PreCommitTool(Tool):
             how_print(
                 "Run 'uv run pre-commit run --all-files' to run the hooks manually."
             )
-        else:
-            assert backend in (BackendEnum.none, BackendEnum.uv)
+        elif backend in (BackendEnum.none, BackendEnum.uv):
             how_print("Run 'pre-commit run --all-files' to run the hooks manually.")
+        else:
+            assert_never(backend)
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pre-commit")]

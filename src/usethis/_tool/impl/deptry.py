@@ -52,11 +52,12 @@ class DeptryTool(Tool):
                 how_print(
                     f"Run 'uv run pre-commit run deptry --all-files' to run {self.name}."
                 )
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
+            elif backend in (BackendEnum.none, BackendEnum.uv):
                 how_print(
                     f"Run 'pre-commit run deptry --all-files' to run {self.name}."
                 )
+            else:
+                assert_never(backend)
         elif install_method == "devdep" or install_method is None:
             cmd = self.default_command()
             how_print(f"Run '{cmd}' to run deptry.")

@@ -143,10 +143,7 @@ def _get_graph(pkg_name: str) -> grimp.ImportGraph:
             graph = grimp.build_graph(pkg_name, cache_dir=None)
         except ValueError as err:
             raise ImportGraphBuildFailedError(err) from None
-        except (
-            ModuleNotFoundError,
-            grimp.exceptions.NamespacePackageEncountered,
-        ) as err:
+        except ModuleNotFoundError as err:
             raise ImportGraphBuildFailedError(err) from None
         except grimp.exceptions.NotATopLevelModule:
             msg = f"Module {pkg_name} is not a top-level module, cannot build graph."

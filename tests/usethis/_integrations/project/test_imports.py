@@ -422,7 +422,6 @@ class TestGetGraph:
         ):
             _get_graph("different_name.a")
 
-    @pytest.mark.skip(reason="failing on bleeding edge versions of grimp")
     def test_namespace_package_top_level(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):

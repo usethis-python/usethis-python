@@ -13,7 +13,6 @@ from usethis._integrations.project.imports import (
     get_layered_architectures,
 )
 from usethis._test import change_cwd
-from usethis.errors import UsethisError
 
 
 class TestLayeredArchitecture:
@@ -423,7 +422,6 @@ class TestGetGraph:
         ):
             _get_graph("different_name.a")
 
-    @pytest.mark.skip(reason="failing on bleeding edge versions of grimp")
     def test_namespace_package_top_level(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):
@@ -435,9 +433,12 @@ class TestGetGraph:
 
         monkeypatch.syspath_prepend(str(tmp_path))
 
-        # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(UsethisError):
-            _get_graph("abientot")
+        # Act
+        with change_cwd(tmp_path):
+            graph = _get_graph("abientot")
+
+        # Assert
+        assert isinstance(graph, grimp.ImportGraph)
 
     def test_namespace_package_portion(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

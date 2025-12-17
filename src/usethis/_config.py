@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from usethis._types.backend import BackendEnum
 
@@ -46,12 +46,13 @@ class UsethisConfig:
     alert_only: bool = False
     instruct_only: bool = False
     backend: BackendEnum = BackendEnum(BACKEND_DEFAULT)  # noqa: RUF009
+    inferred_backend: Literal[BackendEnum.uv, BackendEnum.none] | None = None
     disable_pre_commit: bool = False
     subprocess_verbose: bool = False
     project_dir: Path | None = None
 
     @contextmanager
-    def set(  # noqa: PLR0913
+    def set(  # noqa: PLR0913, PLR0915
         self,
         *,
         offline: bool | None = None,
@@ -71,6 +72,7 @@ class UsethisConfig:
         old_alert_only = self.alert_only
         old_instruct_only = self.instruct_only
         old_backend = self.backend
+        old_inferred_backend = self.inferred_backend
         old_disable_pre_commit = self.disable_pre_commit
         old_subprocess_verbose = self.subprocess_verbose
         old_project_dir = self.project_dir
@@ -100,6 +102,8 @@ class UsethisConfig:
         self.alert_only = alert_only
         self.instruct_only = instruct_only
         self.backend = backend
+        if backend is not BackendEnum.auto:
+            self.inferred_backend = backend
         self.disable_pre_commit = disable_pre_commit
         self.subprocess_verbose = subprocess_verbose
         if isinstance(project_dir, str):
@@ -112,6 +116,7 @@ class UsethisConfig:
         self.alert_only = old_alert_only
         self.instruct_only = old_instruct_only
         self.backend = old_backend
+        self.inferred_backend = old_inferred_backend
         self.disable_pre_commit = old_disable_pre_commit
         self.subprocess_verbose = old_subprocess_verbose
         self.project_dir = old_project_dir

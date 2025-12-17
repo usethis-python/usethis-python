@@ -877,7 +877,11 @@ class TestRegisterDefaultGroup:
         # Arrange
         (tmp_path / "pyproject.toml").write_text("")
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+            usethis_config.set(backend=BackendEnum.uv),
+        ):
             # Act
             register_default_group("test")
 

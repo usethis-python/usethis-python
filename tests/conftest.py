@@ -8,6 +8,7 @@ import pytest
 
 from usethis._config import usethis_config
 from usethis._integrations.backend.uv.call import call_subprocess, call_uv_subprocess
+from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd, is_offline
 
 if "UV_PYTHON" in os.environ:
@@ -33,6 +34,16 @@ def _uv_init_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
             ],
             change_toml=True,
         )
+
+        # Append empty [tool.uv] section to pyproject.toml
+        # This helps usethis to correctly infer that uv is being used in subsequent ops.
+        # We can set a default value (tool.uv.environment = []) which usethis doesn't
+        # care about (only for this testing purpose).
+        # Without this, uv is used for initializing the project directory, but there's
+        # no real indiciation that it's being used anywhere! So tests would suggest
+        # --how behaviour based on --backend=none logic.
+        with PyprojectTOMLManager() as mgr:
+            mgr[["tool", "uv", "environment"]] = []
 
     return tmp_path
 

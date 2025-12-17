@@ -16,10 +16,14 @@ class TestBitbucket:
         (tmp_path / "pytest.ini").touch()
         (tmp_path / "ruff.toml").touch()
         # Consistent versions in the matrix - only two to demonstrate it, 3 is excessive
+        # Likewise, simulate use of uv via a [tool.uv] section in pyproject.toml
         (tmp_path / "pyproject.toml").write_text(
             """\
 [project]
 requires-python = ">=3.12,<3.14"
+
+[tool.uv]
+environment = []
 """
         )
 

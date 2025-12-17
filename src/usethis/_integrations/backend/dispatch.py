@@ -11,19 +11,23 @@ from usethis._types.backend import BackendEnum
 
 
 def get_backend() -> Literal[BackendEnum.uv, BackendEnum.none]:
-    if usethis_config.backend is not BackendEnum.auto:
-        return usethis_config.backend
+    # Effectively we cache the inference, storing it in usethis_config.
+    if usethis_config.inferred_backend is not None:
+        return usethis_config.inferred_backend
 
-    if is_poetry_used():
+    if usethis_config.backend is not BackendEnum.auto:
+        usethis_config.inferred_backend = usethis_config.backend
+    elif is_poetry_used():
         warn_print(
             "This project is using Poetry, which is not fully supported by usethis."
         )
-        return BackendEnum.none
+        usethis_config.inferred_backend = BackendEnum.none
+    elif is_uv_used():
+        usethis_config.inferred_backend = BackendEnum.uv
+    elif not (usethis_config.cpd() / "pyproject.toml").exists() and is_uv_available():
+        # If there's not likely to be a backend in use yet, and uv is available.
+        usethis_config.inferred_backend = BackendEnum.uv
+    else:
+        usethis_config.inferred_backend = BackendEnum.none
 
-    if is_uv_used():
-        return BackendEnum.uv
-
-    if not (usethis_config.cpd() / "pyproject.toml").exists() and is_uv_available():
-        return BackendEnum.uv
-
-    return BackendEnum.none
+    return usethis_config.inferred_backend

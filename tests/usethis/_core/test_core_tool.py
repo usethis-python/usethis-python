@@ -1038,9 +1038,6 @@ containers = ["b"]
 exhaustive = true
 """)
 
-        @pytest.mark.xfail(
-            reason="https://github.com/usethis-python/usethis-python/issues/502"
-        )
         def test_pre_commit_used_not_uv(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -1053,21 +1050,31 @@ repos:
       - id: placeholder
 """
             )
+            # Package to analyze
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
 
             # Act
-            with change_cwd(tmp_path), files_manager():
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
                 use_import_linter()
 
             # Assert
             contents = (tmp_path / ".pre-commit-config.yaml").read_text()
-            assert "import-linter" not in contents
+            assert "import-linter" in contents
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Install the dependency 'import-linter'.\n"
-                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
-                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
+                "☐ Add the dev dependency 'import-linter'.\n"
+                "✔ Writing '.importlinter'.\n"
+                "✔ Adding Import Linter config to '.importlinter'.\n"
+                "✔ Adding hook 'import-linter' to '.pre-commit-config.yaml'.\n"
+                "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
+                "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001
+                "☐ Run 'pre-commit run import-linter --all-files' to run Import Linter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")

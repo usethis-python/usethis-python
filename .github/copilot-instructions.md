@@ -13,7 +13,7 @@
 ### Environment Setup (REQUIRED FIRST STEP)
 1. **ALWAYS run `uv sync` first** after cloning or before any development work. This installs all dependencies including dev, test, and doc groups.
 2. Python version: Use 3.10.18 (specified in `.python-version`). The CI tests 3.10-3.14, but development uses oldest supported version.
-3. uv version: Minimum 0.6.8 required (documented in README and `pyproject.toml`). Check with `uv --version`.
+3. uv version: Minimum 0.8.18 required (documented in README and `pyproject.toml`). Check with `uv --version`.
 
 ### Running Commands
 **Critical:** ALWAYS prefix Python commands with `uv run` to use the project environment:
@@ -166,7 +166,7 @@ See CONTRIBUTING.md Architecture section for detailed documentation and examples
 
 **ci.yml** - Main CI pipeline (runs on push to main, PRs, and daily cron):
 - Matrix testing: Python 3.10-3.14 × (ubuntu/macos/windows)
-- Also tests min dependencies (3.10 + uv 0.6.8) and max dependencies (3.14 + latest)
+- Also tests min dependencies (3.10 + uv 0.8.18) and max dependencies (3.14 + latest)
 - Runs prek checks, pytest with coverage
 - CodSpeed benchmarking (Python 3.13)
 - Codecov upload (Python 3.14)

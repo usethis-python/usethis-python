@@ -755,9 +755,9 @@ pyinstrument==5.1.1 \
     --hash=sha256:f2d640230b71c6d9ac8f27a9c5cd07fc8a6acad9196d1e48d9c33658b176fb80 \
     --hash=sha256:f4912edf01912792d2f44dfc43d3f041acc7ea634d0300b3394711963a431d1b \
     --hash=sha256:fa254f269a72a007b5d02c18cd4b67081e0efabbd33e18acdbd5e3be905afa06
-pymdown-extensions==10.14.3 \
-    --hash=sha256:05e0bee73d64b9c71a4ae17c72abc2f700e8bc8403755a00580b49a4e9f189e9 \
-    --hash=sha256:41e576ce3f5d650be59e900e4ceff231e0aed2a88cf30acaee41e02f063a061b
+pymdown-extensions==10.19.1 \
+    --hash=sha256:4969c691009a389fb1f9712dd8e7bd70dcc418d15a0faf70acb5117d022f7de8 \
+    --hash=sha256:e8698a66055b1dc0dca2a7f2c9d0ea6f5faa7834a9c432e3535ab96c0c4e509b
     # via mkdocs-material
 pyright==1.1.403 \
     --hash=sha256:3ab69b9f41c67fb5bbb4d7a36243256f0d549ed3608678d381d5f51863921104 \

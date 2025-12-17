@@ -19,7 +19,7 @@ from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
-_SYNC_WITH_UV_VERSION = "v0.4.0"  # Manually bump this version when necessary
+_SYNC_WITH_UV_VERSION = "v0.5.0"  # Manually bump this version when necessary
 
 
 class PreCommitTool(Tool):
@@ -58,9 +58,10 @@ class PreCommitTool(Tool):
             how_print(
                 "Run 'uv run pre-commit run --all-files' to run the hooks manually."
             )
-        else:
-            assert backend in (BackendEnum.none, BackendEnum.uv)
+        elif backend in (BackendEnum.none, BackendEnum.uv):
             how_print("Run 'pre-commit run --all-files' to run the hooks manually.")
+        else:
+            assert_never(backend)
 
     def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pre-commit")]

@@ -36,11 +36,12 @@ class TestPreCommitTool:
                 assert not PreCommitTool().is_used()
 
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self):
+    def test_latest_sync_with_uv_version(self, tmp_path: Path):
         if os.getenv("CI"):
             pytest.skip("Avoid flaky pipelines by testing version bumps manually")
 
-        (config,) = PreCommitTool().get_pre_commit_config().repo_configs
+        with change_cwd(tmp_path), files_manager():
+            (config,) = PreCommitTool().get_pre_commit_config().repo_configs
         repo = config.repo
         assert isinstance(repo, UriRepo)
         try:

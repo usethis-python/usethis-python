@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from typing_extensions import assert_never
+
 from usethis._config_file import MkDocsYMLManager
 from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
@@ -29,10 +31,11 @@ class MkDocsTool(Tool):
         if backend is BackendEnum.uv and is_uv_used():
             how_print("Run 'uv run mkdocs build' to build the documentation.")
             how_print("Run 'uv run mkdocs serve' to serve the documentation locally.")
-        else:
-            assert backend in (BackendEnum.none, BackendEnum.uv)
+        elif backend in (BackendEnum.none, BackendEnum.uv):
             how_print("Run 'mkdocs build' to build the documentation.")
             how_print("Run 'mkdocs serve' to serve the documentation locally.")
+        else:
+            assert_never(backend)
 
     def get_doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="mkdocs")]

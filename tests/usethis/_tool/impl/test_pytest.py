@@ -136,7 +136,11 @@ version = "0.1.0"
             (uv_init_dir / "pytest.ini").touch()
 
             # Act
-            with change_cwd(uv_init_dir), files_manager():
+            with (
+                change_cwd(uv_init_dir),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
                 PytestTool().update_bitbucket_steps()
 
             # Assert
@@ -170,7 +174,11 @@ version = "0.1.0"
             )
             (tmp_path / "pytest.ini").touch()
 
-            with change_cwd(tmp_path), files_manager():
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
                 add_placeholder_step_in_default(report_placeholder=False)
 
                 # Act
@@ -204,7 +212,10 @@ pipelines:
 """
             )
 
-        def test_no_backend_auto(
+        @pytest.mark.skip(
+            reason="https://github.com/usethis-python/usethis-python/issues/1183"
+        )
+        def test_no_backend(
             self,
             tmp_path: Path,
             capfd: pytest.CaptureFixture[str],

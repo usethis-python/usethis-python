@@ -1,7 +1,7 @@
 # 🧭 Installation
 
 First, it is strongly recommended you [install the uv package manager](https://docs.astral.sh/uv/getting-started/installation/): this is a simple, documented process. If you're already using uv, make sure you're using at least
-version v0.6.8 (run `uv --version` to check, and `uv self update` to upgrade).
+version v0.8.18 (run `uv --version` to check, and `uv self update` to upgrade).
 
 You can install usethis directly into the project environment:
 

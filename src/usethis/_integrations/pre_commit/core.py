@@ -33,9 +33,10 @@ def install_pre_commit_hooks() -> None:
     if usethis_config.frozen:
         if backend is BackendEnum.uv and is_uv_used():
             instruct_print("Run 'uv run pre-commit install' to register pre-commit.")
-        else:
-            assert backend in (BackendEnum.none, BackendEnum.uv)
+        elif backend in (BackendEnum.none, BackendEnum.uv):
             instruct_print("Run 'pre-commit install' to register pre-commit.")
+        else:
+            assert_never(backend)
         return
 
     if backend is BackendEnum.uv:

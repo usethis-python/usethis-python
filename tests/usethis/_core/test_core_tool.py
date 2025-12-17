@@ -374,7 +374,11 @@ class TestCoverage:
             # Set python version
             (tmp_path / ".python-version").write_text(get_python_version())
 
-            with change_cwd(tmp_path), files_manager():
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
                 # Act
                 use_coverage_py()
 
@@ -807,8 +811,6 @@ ignore_missing = ["pytest"]
                 (uv_init_dir / "pyproject.toml").read_text()
                 == contents
                 + """\
-
-[tool.uv]
 link-mode = "symlink"
 
 [dependency-groups]
@@ -1036,9 +1038,6 @@ containers = ["b"]
 exhaustive = true
 """)
 
-        @pytest.mark.xfail(
-            reason="https://github.com/usethis-python/usethis-python/issues/502"
-        )
         def test_pre_commit_used_not_uv(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -1051,21 +1050,31 @@ repos:
       - id: placeholder
 """
             )
+            # Package to analyze
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
 
             # Act
-            with change_cwd(tmp_path), files_manager():
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
                 use_import_linter()
 
             # Assert
             contents = (tmp_path / ".pre-commit-config.yaml").read_text()
-            assert "import-linter" not in contents
+            assert "import-linter" in contents
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Install the dependency 'import-linter'.\n"
-                "✔ Adding Import Linter config to 'pyproject.toml'.\n"
-                "☐ Run 'uv run lint-imports' to run Import Linter.\n"
+                "☐ Add the dev dependency 'import-linter'.\n"
+                "✔ Writing '.importlinter'.\n"
+                "✔ Adding Import Linter config to '.importlinter'.\n"
+                "✔ Adding hook 'import-linter' to '.pre-commit-config.yaml'.\n"
+                "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
+                "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001
+                "☐ Run 'pre-commit run import-linter --all-files' to run Import Linter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1365,7 +1374,11 @@ exhaustive = True
             # https://github.com/usethis-python/usethis-python/pull/501#issuecomment-2784482750
 
             # Act
-            with change_cwd(tmp_path), files_manager(), usethis_config.set(frozen=True):
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(frozen=True, backend=BackendEnum.uv),
+            ):
                 use_import_linter()
 
             # Assert
@@ -1767,8 +1780,8 @@ nav:
             out, _ = capfd.readouterr()
             assert out == (
                 """\
-☐ Run 'mkdocs build' to build the documentation.
-☐ Run 'mkdocs serve' to serve the documentation locally.
+☐ Run 'uv run mkdocs build' to build the documentation.
+☐ Run 'uv run mkdocs serve' to serve the documentation locally.
 """
             )
 
@@ -2466,7 +2479,11 @@ class TestPytest:
         def test_no_pyproject_toml(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(tmp_path), files_manager():
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
                 # Act
                 use_pytest()
 
@@ -2544,7 +2561,11 @@ minversion = "7\""""
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pytest_installed(self, tmp_path: Path):
-            with change_cwd(tmp_path), files_manager():
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
                 # Act
                 use_pytest()
 
@@ -2554,7 +2575,11 @@ minversion = "7\""""
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_registers_test_group(self, tmp_path: Path):
-            with change_cwd(tmp_path), files_manager():
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
                 # Act
                 use_pytest()
 
@@ -3020,7 +3045,11 @@ class TestRequirementsTxt:
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
                 use_requirements_txt()
 
             # Assert
@@ -3509,8 +3538,8 @@ select = ["F"]
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
-                "☐ Run 'ruff format' to run the Ruff formatter.\n"
+                "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
 
         def test_only_linter(
@@ -3523,7 +3552,7 @@ select = ["F"]
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
+                "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             )
 
         def test_only_formatter(
@@ -3535,7 +3564,7 @@ select = ["F"]
 
             # Assert
             out, _ = capfd.readouterr()
-            assert out == "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            assert out == "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
 
     class TestPrecommitIntegration:
         @pytest.mark.usefixtures("_vary_network_conn")

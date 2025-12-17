@@ -85,3 +85,18 @@ class TestGetBackend:
             out
             == "⚠ This project is using Poetry, which is not fully supported by usethis.\n"
         )
+
+    def test_pyproject_already_exists(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").touch()
+
+        # Act
+        with (
+            change_cwd(tmp_path),
+            usethis_config.set(backend=BackendEnum.auto),
+            files_manager(),
+        ):
+            result = get_backend()
+
+        # Assert
+        assert result == BackendEnum.none

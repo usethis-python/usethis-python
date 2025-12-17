@@ -502,7 +502,13 @@ line-length = 88
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke_safe(app, ["pytest"])
+            result = runner.invoke_safe(
+                app,
+                [
+                    "pytest",
+                    "--backend=uv",  # N.B. --backend=uv since we've run Ruff and uv would be inferred
+                ],
+            )
 
         # Assert
         assert result.exit_code == 0, result.output

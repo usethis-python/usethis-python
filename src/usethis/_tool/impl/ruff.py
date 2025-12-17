@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule, RuleConfig
 
-_RUFF_VERSION = "v0.14.4"  # Manually bump this version when necessary
+_RUFF_VERSION = "v0.14.9"  # Manually bump this version when necessary
 
 
 class RuffTool(Tool):
@@ -84,21 +84,23 @@ class RuffTool(Tool):
                 how_print(
                     "Run 'uv run pre-commit run ruff --all-files' to run the Ruff linter."
                 )
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
+            elif backend in (BackendEnum.none, BackendEnum.uv):
                 how_print(
                     "Run 'pre-commit run ruff --all-files' to run the Ruff linter."
                 )
+            else:
+                assert_never(backend)
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv and is_uv_used():
                 how_print(
                     "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
                 )
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
+            elif backend in (BackendEnum.none, BackendEnum.uv):
                 how_print(
                     "Run 'ruff check --fix' to run the Ruff linter with autofixes."
                 )
+            else:
+                assert_never(backend)
         else:
             assert_never(install_method)
 
@@ -113,15 +115,17 @@ class RuffTool(Tool):
                 how_print(
                     "Run 'uv run pre-commit run ruff-format' to run the Ruff formatter."
                 )
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
+            elif backend in (BackendEnum.none, BackendEnum.uv):
                 how_print("Run 'pre-commit run ruff-format' to run the Ruff formatter.")
+            else:
+                assert_never(backend)
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv and is_uv_used():
                 how_print("Run 'uv run ruff format' to run the Ruff formatter.")
-            else:
-                assert backend in (BackendEnum.none, BackendEnum.uv)
+            elif backend in (BackendEnum.none, BackendEnum.uv):
                 how_print("Run 'ruff format' to run the Ruff formatter.")
+            else:
+                assert_never(backend)
         else:
             assert_never(install_method)
 

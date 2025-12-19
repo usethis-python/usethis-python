@@ -417,10 +417,12 @@ def use_ruff(
 ) -> None:
     """Add Ruff to the project.
 
-    By default, sensible default rules are selected. The exceptions are when using the
-    `minimal` option, or if rules are already selected, in which case they are left
-    alone. However, if the existing rules are all pydocstyle rules (managed by the
-    `usethis docstyle` interface, then the default rules will still be added).
+    By default, sensible default rules are selected if there are no rules selected yet,
+    but this behaviour can be controlled by using the `minimal` option.
+
+    If the existing rules are all pydocstyle rules (managed by the `usethis docstyle`
+    interface), then the default rules will still be added, again excepting when the
+    `minimal` option is used.
 
     Args:
         remove: Remove Ruff configuration.
@@ -494,6 +496,9 @@ def use_ruff(
 
 def _get_basic_rule_config() -> RuleConfig:
     """Get the basic rule config for Ruff."""
+    # This is not merged with existing config; it's a sensible default set of rules if
+    # starting from nothing. See the `use_ruff()` docstring.
+
     rule_config = RuleConfig(
         selected=[
             "A",

@@ -188,10 +188,10 @@ If you're not interested in templating automations, then [configurator](https://
 
 ### Roadmap
 
-Major features planned for later in 2025 are:
+Major features planned are:
 
-- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)),
-- Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)), and
+- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)), and
+- Support for a typechecker (likely Pyright, [#121](https://github.com/usethis-python/usethis-python/issues/121)).
 
 Other features are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.
 

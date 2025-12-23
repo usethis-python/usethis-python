@@ -22,6 +22,7 @@ def files_manager() -> Iterator[None]:
         SetupCFGManager(),
         CodespellRCManager(),
         CoverageRCManager(),
+        CoverageRCTOMLManager(),
         DotRuffTOMLManager(),
         DotPytestINIManager(),
         DotImportLinterManager(),
@@ -48,6 +49,14 @@ class CoverageRCManager(INIFileManager):
     @property
     def relative_path(self) -> Path:
         return Path(".coveragerc")
+
+
+class CoverageRCTOMLManager(TOMLFileManager):
+    """Class to manage the .coveragerc.toml file."""
+
+    @property
+    def relative_path(self) -> Path:
+        return Path(".coveragerc.toml")
 
 
 class DotImportLinterManager(INIFileManager):

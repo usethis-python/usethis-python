@@ -8,6 +8,7 @@ from typing_extensions import assert_never
 from usethis._config import usethis_config
 from usethis._config_file import (
     CoverageRCManager,
+    CoverageRCTOMLManager,
     ToxINIManager,
 )
 from usethis._console import how_print
@@ -70,10 +71,11 @@ class CoveragePyTool(Tool):
     def preferred_file_manager(self) -> KeyValueFileManager:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
-        return CoverageRCManager()
+        return CoverageRCTOMLManager()
 
     def get_config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
+        # https://coverage.readthedocs.io/en/7.13.0/config.html#configuration-reference
 
         exclude_also = [
             "if TYPE_CHECKING:",
@@ -91,6 +93,7 @@ class CoveragePyTool(Tool):
         return ConfigSpec.from_flat(
             file_managers=[
                 CoverageRCManager(),
+                CoverageRCTOMLManager(),
                 SetupCFGManager(),
                 ToxINIManager(),
                 PyprojectTOMLManager(),
@@ -101,6 +104,7 @@ class CoveragePyTool(Tool):
                     description="Overall Config",
                     root={
                         Path(".coveragerc"): ConfigEntry(keys=[]),
+                        Path(".coveragerc.toml"): ConfigEntry(keys=[]),
                         # N.B. other ini files use a "coverage:" prefix so there's no
                         # section corresponding to overall config
                         Path("pyproject.toml"): ConfigEntry(keys=["tool", "coverage"]),
@@ -111,6 +115,7 @@ class CoveragePyTool(Tool):
                     description="Run Configuration",
                     root={
                         Path(".coveragerc"): ConfigEntry(keys=["run"]),
+                        Path(".coveragerc.toml"): ConfigEntry(keys=["run"]),
                         Path("setup.cfg"): ConfigEntry(keys=["coverage:run"]),
                         Path("tox.ini"): ConfigEntry(keys=["coverage:run"]),
                         Path("pyproject.toml"): ConfigEntry(
@@ -123,6 +128,10 @@ class CoveragePyTool(Tool):
                     root={
                         Path(".coveragerc"): ConfigEntry(
                             keys=["run", "source"], get_value=_get_source
+                        ),
+                        Path(".coveragerc.toml"): ConfigEntry(
+                            keys=["run", "source"],
+                            get_value=_get_source,
                         ),
                         Path("setup.cfg"): ConfigEntry(
                             keys=["coverage:run", "source"], get_value=_get_source
@@ -140,6 +149,7 @@ class CoveragePyTool(Tool):
                     description="Report Configuration",
                     root={
                         Path(".coveragerc"): ConfigEntry(keys=["report"]),
+                        Path(".coveragerc.toml"): ConfigEntry(keys=["report"]),
                         Path("setup.cfg"): ConfigEntry(keys=["coverage:report"]),
                         Path("tox.ini"): ConfigEntry(keys=["coverage:report"]),
                         Path("pyproject.toml"): ConfigEntry(
@@ -151,6 +161,10 @@ class CoveragePyTool(Tool):
                     description="Exclude Also Configuration",
                     root={
                         Path(".coveragerc"): ConfigEntry(
+                            keys=["report", "exclude_also"],
+                            get_value=lambda: exclude_also,
+                        ),
+                        Path(".coveragerc.toml"): ConfigEntry(
                             keys=["report", "exclude_also"],
                             get_value=lambda: exclude_also,
                         ),
@@ -174,6 +188,10 @@ class CoveragePyTool(Tool):
                         Path(".coveragerc"): ConfigEntry(
                             keys=["report", "omit"], get_value=lambda: omit
                         ),
+                        Path(".coveragerc.toml"): ConfigEntry(
+                            keys=["report", "omit"],
+                            get_value=lambda: omit,
+                        ),
                         Path("setup.cfg"): ConfigEntry(
                             keys=["coverage:report", "omit"], get_value=lambda: omit
                         ),
@@ -190,6 +208,7 @@ class CoveragePyTool(Tool):
                     description="Paths Configuration",
                     root={
                         Path(".coveragerc"): ConfigEntry(keys=["paths"]),
+                        Path(".coveragerc.toml"): ConfigEntry(keys=["paths"]),
                         Path("setup.cfg"): ConfigEntry(keys=["coverage:paths"]),
                         Path("tox.ini"): ConfigEntry(keys=["coverage:paths"]),
                         Path("pyproject.toml"): ConfigEntry(
@@ -201,6 +220,7 @@ class CoveragePyTool(Tool):
                     description="HTML Configuration",
                     root={
                         Path(".coveragerc"): ConfigEntry(keys=["html"]),
+                        Path(".coveragerc.toml"): ConfigEntry(keys=["html"]),
                         Path("setup.cfg"): ConfigEntry(keys=["coverage:html"]),
                         Path("tox.ini"): ConfigEntry(keys=["coverage:html"]),
                         Path("pyproject.toml"): ConfigEntry(
@@ -212,6 +232,7 @@ class CoveragePyTool(Tool):
                     description="XML Configuration",
                     root={
                         Path(".coveragerc"): ConfigEntry(keys=["xml"]),
+                        Path(".coveragerc.toml"): ConfigEntry(keys=["xml"]),
                         Path("setup.cfg"): ConfigEntry(keys=["coverage:xml"]),
                         Path("tox.ini"): ConfigEntry(keys=["coverage:xml"]),
                         Path("pyproject.toml"): ConfigEntry(
@@ -223,6 +244,7 @@ class CoveragePyTool(Tool):
                     description="JSON Configuration",
                     root={
                         Path(".coveragerc"): ConfigEntry(keys=["json"]),
+                        Path(".coveragerc.toml"): ConfigEntry(keys=["json"]),
                         Path("setup.cfg"): ConfigEntry(keys=["coverage:json"]),
                         Path("tox.ini"): ConfigEntry(keys=["coverage:json"]),
                         Path("pyproject.toml"): ConfigEntry(
@@ -234,6 +256,7 @@ class CoveragePyTool(Tool):
                     description="LCOV Configuration",
                     root={
                         Path(".coveragerc"): ConfigEntry(keys=["lcov"]),
+                        Path(".coveragerc.toml"): ConfigEntry(keys=["lcov"]),
                         Path("setup.cfg"): ConfigEntry(keys=["coverage:lcov"]),
                         Path("tox.ini"): ConfigEntry(keys=["coverage:lcov"]),
                         Path("pyproject.toml"): ConfigEntry(
@@ -245,4 +268,4 @@ class CoveragePyTool(Tool):
         )
 
     def get_managed_files(self) -> list[Path]:
-        return [Path(".coveragerc")]
+        return [Path(".coveragerc"), Path(".coveragerc.toml")]

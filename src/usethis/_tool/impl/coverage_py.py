@@ -71,7 +71,7 @@ class CoveragePyTool(Tool):
     def preferred_file_manager(self) -> KeyValueFileManager:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
-        return CoverageRCTOMLManager()
+        return CoverageRCManager()
 
     def get_config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference

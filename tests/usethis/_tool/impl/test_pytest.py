@@ -1,5 +1,4 @@
 from pathlib import Path
-from sysconfig import get_python_version
 
 import pytest
 
@@ -8,7 +7,7 @@ from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.ci.bitbucket.steps import add_placeholder_step_in_default
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.python.version import extract_major_version
+from usethis._integrations.python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.impl.pytest import PytestTool
 from usethis._types.backend import BackendEnum
@@ -186,7 +185,7 @@ version = "0.1.0"
 
             # Assert
             contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
-            version = extract_major_version(get_python_version())
+            version = PythonVersion.from_interpreter()
             assert (
                 contents
                 == f"""\
@@ -203,12 +202,12 @@ definitions:
 pipelines:
     default:
       - step:
-            name: Test on 3.{version}
+            name: Test on {version.to_short_string()}
             caches:
               - uv
             script:
               - *install-uv
-              - uv run --python 3.{version} pytest -x --junitxml=test-reports/report.xml
+              - uv run --python {version.to_short_string()} pytest -x --junitxml=test-reports/report.xml
 """
             )
 

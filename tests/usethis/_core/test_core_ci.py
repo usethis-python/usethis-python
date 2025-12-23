@@ -611,7 +611,7 @@ pipelines:
             # Arrange
             monkeypatch.setattr(
                 usethis._integrations.python.version,
-                "get_python_version",
+                "_get_python_version",
                 lambda: "3.10.0",
             )
             (uv_init_dir / "tests").mkdir()
@@ -641,7 +641,7 @@ pipelines:
             # Arrange
             monkeypatch.setattr(
                 usethis._integrations.python.version,
-                "get_python_version",
+                "_get_python_version",
                 lambda: "3.11.0",
             )
             (bare_dir / "tests").mkdir()

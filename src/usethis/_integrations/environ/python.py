@@ -4,19 +4,19 @@ from typing_extensions import assert_never
 
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.python import (
-    get_supported_uv_major_python_versions,
+    get_supported_uv_minor_python_versions,
 )
-from usethis._integrations.python.version import get_python_major_version
+from usethis._integrations.python.version import PythonVersion
 from usethis._types.backend import BackendEnum
 
 
-def get_supported_major_python_versions() -> list[int]:
+def get_supported_minor_python_versions() -> list[PythonVersion]:
     backend = get_backend()
 
     if backend is BackendEnum.uv:
-        versions = get_supported_uv_major_python_versions()
+        versions = get_supported_uv_minor_python_versions()
     elif backend is BackendEnum.none:
-        versions = [get_python_major_version()]
+        versions = [PythonVersion.from_interpreter()]
     else:
         assert_never(backend)
 

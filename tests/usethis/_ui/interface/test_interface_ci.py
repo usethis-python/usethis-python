@@ -88,7 +88,7 @@ class TestBitbucket:
 
         monkeypatch.setattr(
             usethis._integrations.python.version,
-            "get_python_version",
+            "_get_python_version",
             lambda: "3.10.0",
         )
 
@@ -166,7 +166,7 @@ pipelines:
         # Arrange
         monkeypatch.setattr(
             usethis._integrations.python.version,
-            "get_python_version",
+            "_get_python_version",
             lambda: "3.10.0",
         )
         (uv_init_dir / "tests").mkdir()

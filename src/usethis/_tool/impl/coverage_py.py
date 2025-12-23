@@ -75,6 +75,8 @@ class CoveragePyTool(Tool):
 
     def get_config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
+        # But the `latest` link doesn't yet include some latest changes regarding
+        # `.coveragerc.toml`, which are available here:
         # https://coverage.readthedocs.io/en/7.13.0/config.html#configuration-reference
 
         exclude_also = [

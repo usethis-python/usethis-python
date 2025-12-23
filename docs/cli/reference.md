@@ -190,7 +190,7 @@ declaring dependencies with `uv add`.
 - `usethis tool deptry` - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.
 - `usethis tool import-linter` - Use [Import Linter](https://import-linter.readthedocs.io/en/stable/): enforce a self-imposed architecture on imports.
 - `usethis tool pre-commit` - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
-- `usethis tool pyproject-fmt` - Use the [pyproject-fmt linter](https://github.com/tox-dev/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
+- `usethis tool pyproject-fmt` - Use the [pyproject-fmt formatter](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
 - `usethis tool ruff` - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
 
 ### Testing

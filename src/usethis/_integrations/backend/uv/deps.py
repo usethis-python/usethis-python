@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from usethis._config import usethis_config
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.backend.uv.errors import (
     UVDepGroupError,
@@ -23,7 +22,6 @@ def add_dep_to_group_via_uv(dep: Dependency, group: str):
         )
     except UVSubprocessFailedError as err:
         msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"
-        msg += (usethis_config.cpd() / "pyproject.toml").read_text()
         raise UVDepGroupError(msg) from None
 
 

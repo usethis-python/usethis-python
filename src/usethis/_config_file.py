@@ -20,9 +20,9 @@ def files_manager() -> Iterator[None]:
     with (
         PyprojectTOMLManager(),
         SetupCFGManager(),
-        CodespellRCManager(),
-        CoverageRCManager(),
-        CoverageRCTOMLManager(),
+        DotCodespellRCManager(),
+        DotCoverageRCManager(),
+        DotCoverageRCTOMLManager(),
         DotRuffTOMLManager(),
         DotPytestINIManager(),
         DotImportLinterManager(),
@@ -35,7 +35,7 @@ def files_manager() -> Iterator[None]:
         yield
 
 
-class CodespellRCManager(INIFileManager):
+class DotCodespellRCManager(INIFileManager):
     """Class to manage the .codespellrc file."""
 
     @property
@@ -43,7 +43,7 @@ class CodespellRCManager(INIFileManager):
         return Path(".codespellrc")
 
 
-class CoverageRCManager(INIFileManager):
+class DotCoverageRCManager(INIFileManager):
     """Class to manage the .coveragerc file."""
 
     @property
@@ -51,7 +51,7 @@ class CoverageRCManager(INIFileManager):
         return Path(".coveragerc")
 
 
-class CoverageRCTOMLManager(TOMLFileManager):
+class DotCoverageRCTOMLManager(TOMLFileManager):
     """Class to manage the .coveragerc.toml file."""
 
     @property

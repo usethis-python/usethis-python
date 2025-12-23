@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from usethis._config_file import CoverageRCTOMLManager, files_manager
+from usethis._config_file import DotCoverageRCTOMLManager, files_manager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 from usethis._tool.impl.coverage_py import CoveragePyTool
@@ -85,7 +85,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 
             # Assert - config should be added to .coveragerc.toml
             with change_cwd(tmp_path), files_manager():
-                assert ["run"] in CoverageRCTOMLManager()
+                assert ["run"] in DotCoverageRCTOMLManager()
             content = (tmp_path / ".coveragerc.toml").read_text()
             assert "[run]" in content
             assert "[report]" in content

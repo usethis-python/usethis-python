@@ -7,16 +7,12 @@ from pydantic import TypeAdapter
 from usethis._config import usethis_config
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.python.version import get_python_version
+from usethis._integrations.python.version import PythonVersion, PythonVersionParseError
 from usethis._integrations.sonarqube.errors import (
     CoverageReportConfigNotFoundError,
     InvalidSonarQubeProjectKeyError,
     MissingProjectKeyError,
 )
-
-
-class _NonstandardPythonVersionError(Exception):
-    """Raised when a non-standard Python version is detected."""
 
 
 def get_sonar_project_properties() -> str:
@@ -27,11 +23,11 @@ def get_sonar_project_properties() -> str:
 
     # Get Python version
     try:
-        python_version = _get_short_version(
+        python_version = PythonVersion.from_string(
             (usethis_config.cpd() / ".python-version").read_text().strip()
-        )
-    except (FileNotFoundError, _NonstandardPythonVersionError):
-        python_version = get_python_version()
+        ).to_short_string()
+    except (FileNotFoundError, PythonVersionParseError):
+        python_version = PythonVersion.from_interpreter().to_short_string()
 
     project_key = _get_sonarqube_project_key()
     verbose = _is_sonarqube_verbose()
@@ -69,15 +65,6 @@ sonar.verbose={"true" if verbose else "false"}
     if exclusions:
         text += "sonar.exclusions=" + ", ".join(exclusions) + "\n"
     return text
-
-
-def _get_short_version(version: str) -> str:
-    match = re.match(r"^(\d{1,2}\.\d{1,2})", version)
-    if match is None:
-        msg = f"Could not parse Python version from '{version}'."
-        raise _NonstandardPythonVersionError(msg)
-
-    return match.group(1)
 
 
 def _get_sonarqube_project_key() -> str:

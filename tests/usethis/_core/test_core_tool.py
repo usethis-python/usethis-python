@@ -31,7 +31,7 @@ from usethis._integrations.backend.uv.link_mode import ensure_symlink_mode
 from usethis._integrations.backend.uv.toml import UVTOMLManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
-from usethis._integrations.python.version import get_python_version
+from usethis._integrations.python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.pre_commit import _SYNC_WITH_UV_VERSION
@@ -372,7 +372,9 @@ class TestCoverage:
         ):
             # Arrange
             # Set python version
-            (tmp_path / ".python-version").write_text(get_python_version())
+            (tmp_path / ".python-version").write_text(
+                str(PythonVersion.from_interpreter())
+            )
 
             with (
                 change_cwd(tmp_path),
@@ -2738,7 +2740,7 @@ def test_foo():
                 # Set the Python version to 3.10
                 monkeypatch.setattr(
                     usethis._integrations.python.version,
-                    "get_python_version",
+                    "_get_python_version",
                     lambda: "3.10.0",
                 )
 
@@ -2950,7 +2952,7 @@ pipelines:
                 # Set the Python version to 3.10
                 monkeypatch.setattr(
                     usethis._integrations.python.version,
-                    "get_python_version",
+                    "_get_python_version",
                     lambda: "3.10.0",
                 )
 

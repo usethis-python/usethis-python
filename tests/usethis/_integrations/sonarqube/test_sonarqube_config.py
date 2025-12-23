@@ -5,7 +5,7 @@ import pytest
 from usethis._init import ensure_pyproject_toml
 from usethis._integrations.backend.uv.python import uv_python_pin
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.python.version import get_python_version
+from usethis._integrations.python.version import PythonVersion
 from usethis._integrations.sonarqube.config import (
     _validate_project_key,
     get_sonar_project_properties,
@@ -73,7 +73,7 @@ sonar.verbose=false
 
         with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange
-            assert get_python_version()
+            assert str(PythonVersion.from_interpreter())
             uv_python_pin("3.10")
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
@@ -124,7 +124,7 @@ sonar.exclusions=tests/*
             == f"""\
 sonar.projectKey=foobar
 sonar.language=py
-sonar.python.version={get_python_version()}
+sonar.python.version={PythonVersion.from_interpreter()!s}
 sonar.sources=./
 sonar.tests=./tests
 sonar.python.coverage.reportPaths=coverage.xml

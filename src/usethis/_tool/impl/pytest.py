@@ -19,12 +19,12 @@ from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
 from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.ci.bitbucket.steps import get_steps_in_default
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
-from usethis._integrations.environ.python import get_supported_major_python_versions
+from usethis._integrations.environ.python import get_supported_minor_python_versions
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.python.version import get_python_major_version
+from usethis._integrations.python.version import PythonVersion
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.rule import RuleConfig
@@ -225,9 +225,9 @@ class PytestTool(Tool):
 
     def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
         if matrix_python:
-            versions = get_supported_major_python_versions()
+            versions = get_supported_minor_python_versions()
         else:
-            versions = [get_python_major_version()]
+            versions = [PythonVersion.from_interpreter()]
 
         backend = get_backend()
 
@@ -235,19 +235,19 @@ class PytestTool(Tool):
         for version in versions:
             if backend is BackendEnum.uv:
                 step = BitbucketStep(
-                    name=f"Test on 3.{version}",
+                    name=f"Test on {version.to_short_string()}",
                     caches=["uv"],
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="install-uv"),
-                            f"uv run --python 3.{version} pytest -x --junitxml=test-reports/report.xml",
+                            f"uv run --python {version.to_short_string()} pytest -x --junitxml=test-reports/report.xml",
                         ]
                     ),
                 )
             elif backend is BackendEnum.none:
                 step = BitbucketStep(
-                    name=f"Test on 3.{version}",
-                    image=Image(ImageName(f"python:3.{version}")),
+                    name=f"Test on {version.to_short_string()}",
+                    image=Image(ImageName(f"python:{version.to_short_string()}")),
                     script=BitbucketScript(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),

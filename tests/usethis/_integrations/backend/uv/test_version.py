@@ -23,7 +23,11 @@ class TestGetUVVersion:
                 == FALLBACK_UV_VERSION
             )
         except GitHubTagError as err:
-            if usethis_config.offline or "rate limit exceeded for url" in str(err):
+            if (
+                usethis_config.offline
+                or "rate limit exceeded for url" in str(err)
+                or "Read timed out." in str(err)
+            ):
                 pytest.skip(
                     "Failed to fetch GitHub tags (connection issues); skipping test"
                 )

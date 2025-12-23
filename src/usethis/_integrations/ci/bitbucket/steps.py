@@ -41,7 +41,7 @@ from usethis._integrations.ci.bitbucket.schema import (
     StepItem,
 )
 from usethis._integrations.ci.bitbucket.schema_utils import step1tostep
-from usethis._integrations.environ.python import get_supported_major_python_versions
+from usethis._integrations.environ.python import get_supported_minor_python_versions
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._types.backend import BackendEnum
 
@@ -171,7 +171,7 @@ def _add_step_in_default_via_doc(
     # N.B. Currently, we are not accounting for parallelism, whereas all these steps
     # could be parallel potentially.
     # See https://github.com/usethis-python/usethis-python/issues/149
-    maj_versions = get_supported_major_python_versions()
+    minor_versions = get_supported_minor_python_versions()
     step_order = [
         "Run pre-commit",
         # For these tools, sync them with the pre-commit removal logic
@@ -181,7 +181,7 @@ def _add_step_in_default_via_doc(
         "Run deptry",
         "Run Import Linter",
         "Run Codespell",
-        *[f"Test on 3.{maj_version}" for maj_version in maj_versions],
+        *[f"Test on {version.to_short_string()}" for version in minor_versions],
     ]
     for step_name in step_order:
         if step_name == step.name:

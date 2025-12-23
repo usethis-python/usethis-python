@@ -9,10 +9,7 @@ from usethis._integrations.file.pyproject_toml.requires_python import (
     MissingRequiresPythonError,
     get_requires_python,
 )
-from usethis._integrations.python.version import (
-    extract_major_version,
-    get_python_version,
-)
+from usethis._integrations.python.version import PythonVersion
 
 
 def get_available_uv_python_versions() -> set[str]:
@@ -23,11 +20,11 @@ def get_available_uv_python_versions() -> set[str]:
     }
 
 
-def get_supported_uv_major_python_versions() -> list[int]:
+def get_supported_uv_minor_python_versions() -> list[PythonVersion]:
     try:
         requires_python = get_requires_python()
     except (MissingRequiresPythonError, PyprojectTOMLNotFoundError):
-        return [extract_major_version(get_python_version())]
+        return [PythonVersion.from_interpreter()]
 
     versions = set()
     for version in get_available_uv_python_versions():
@@ -35,7 +32,19 @@ def get_supported_uv_major_python_versions() -> list[int]:
         if requires_python.contains(version):
             versions.add(version)
 
-    return sorted({extract_major_version(version) for version in versions})
+    # Extract unique minor versions and create PythonVersion objects with patch=None
+    # Use (major, minor) tuple as key to avoid assuming major will always be 3
+    version_objs = {PythonVersion.from_string(version) for version in versions}
+    minor_versions: dict[tuple[str, str], PythonVersion] = {}
+    for v in version_objs:
+        key = (v.major, v.minor)
+        if key not in minor_versions:
+            # Create a new PythonVersion with just major.minor (patch=None)
+            minor_versions[key] = PythonVersion(
+                major=v.major, minor=v.minor, patch=None
+            )
+
+    return sorted(minor_versions.values(), key=lambda v: (int(v.major), int(v.minor)))
 
 
 def _parse_python_version_from_uv_output(version: str) -> str:

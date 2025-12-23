@@ -19,6 +19,7 @@ _PYPROJECT_FMT_VERSION = "v2.11.1"  # Manually bump this version when necessary
 
 
 class PyprojectFmtTool(Tool):
+    # https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt
     # https://github.com/tox-dev/pyproject-fmt
     @property
     def name(self) -> str:

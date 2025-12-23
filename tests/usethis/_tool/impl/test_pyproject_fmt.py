@@ -38,6 +38,8 @@ class TestPyprojectFmtTool:
         repo = config.repo
         assert isinstance(repo, UriRepo)
         try:
+            # N.B. this is the pre-commit mirror, it can lag behind the main repo
+            # at https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt
             assert repo.rev == get_github_latest_tag(
                 owner="tox-dev", repo="pyproject-fmt"
             )

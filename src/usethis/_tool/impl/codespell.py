@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from typing_extensions import assert_never
 
 from usethis._config import usethis_config
-from usethis._config_file import CodespellRCManager
+from usethis._config_file import DotCodespellRCManager
 from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
@@ -66,14 +66,14 @@ class CodespellTool(Tool):
     def preferred_file_manager(self) -> KeyValueFileManager:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
-        return CodespellRCManager()
+        return DotCodespellRCManager()
 
     def get_config_spec(self) -> ConfigSpec:
         # https://github.com/codespell-project/codespell?tab=readme-ov-file#using-a-config-file
 
         return ConfigSpec.from_flat(
             file_managers=[
-                CodespellRCManager(),
+                DotCodespellRCManager(),
                 SetupCFGManager(),
                 PyprojectTOMLManager(),
             ],

@@ -7,8 +7,8 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._config_file import (
-    CoverageRCManager,
-    CoverageRCTOMLManager,
+    DotCoverageRCManager,
+    DotCoverageRCTOMLManager,
     ToxINIManager,
 )
 from usethis._console import how_print
@@ -71,7 +71,7 @@ class CoveragePyTool(Tool):
     def preferred_file_manager(self) -> KeyValueFileManager:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
-        return CoverageRCManager()
+        return DotCoverageRCManager()
 
     def get_config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
@@ -94,8 +94,8 @@ class CoveragePyTool(Tool):
 
         return ConfigSpec.from_flat(
             file_managers=[
-                CoverageRCManager(),
-                CoverageRCTOMLManager(),
+                DotCoverageRCManager(),
+                DotCoverageRCTOMLManager(),
                 SetupCFGManager(),
                 ToxINIManager(),
                 PyprojectTOMLManager(),

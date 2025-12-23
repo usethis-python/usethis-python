@@ -242,6 +242,10 @@ class ImportLinterTool(Tool):
                             keys=["tool", "importlinter", "contracts"],
                             get_value=lambda: contracts,
                         ),
+                        # N.B. these INI sections are added via
+                        # `ini_contracts_config_items`
+                        # but there might be others so we still need to declare they
+                        # are associated with this tool based on regex.
                         Path(".importlinter"): ConfigEntry(
                             keys=[re.compile("importlinter:contract:.*")]
                         ),
@@ -271,6 +275,9 @@ class ImportLinterTool(Tool):
             try:
                 layered_architecture_by_module = get_layered_architectures(root_package)
             except ImportGraphBuildFailedError:
+                layered_architecture_by_module = {}
+
+            if not layered_architecture_by_module:
                 layered_architecture_by_module = {
                     root_package: LayeredArchitecture(layers=[], excluded=set())
                 }

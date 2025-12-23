@@ -34,6 +34,8 @@ def get_layered_architectures(pkg_name: str) -> dict[str, LayeredArchitecture]:
 
     This is intended to inform the basis of a layer contract.
 
+    Note that the resulting dictionary may be empty if the package seems to be empty.
+
     Reference:
         https://import-linter.readthedocs.io/en/stable/contract_types.html#layers
 

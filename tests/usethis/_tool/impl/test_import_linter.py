@@ -156,6 +156,24 @@ repos:
             assert not (tmp_path / ".importlinter").exists()
             assert (tmp_path / "pyproject.toml").exists()
 
+    class TestGetConfigSpec:
+        def test_empty_src_directory(self, tmp_path: Path):
+            # Arrange: Create empty src directory with package subdirectory
+            # src/ contains mypkg/ but mypkg/ is completely empty (no __init__.py)
+            (tmp_path / "pyproject.toml").write_text('[project]\nname = "mypkg"')
+            (tmp_path / "src").mkdir()
+            (tmp_path / "src" / "mypkg").mkdir()
+            # mypkg directory is empty - no __init__.py, no files
+
+            # Act: get_config_spec should not crash with AssertionError
+            # when get_importable_packages returns empty and grimp fails
+            with change_cwd(tmp_path), files_manager():
+                config_spec = ImportLinterTool().get_config_spec()
+
+            # Assert: Should return a valid config spec with fallback contract
+            assert config_spec is not None
+            assert len(config_spec.config_items) > 0
+
 
 class TestIsINPRule:
     def test_inp_rule(self):

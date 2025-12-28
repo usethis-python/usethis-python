@@ -482,9 +482,11 @@ class RuffTool(Tool):
             alert_only=(is_selected or is_ignored) or usethis_config.alert_only,
             instruct_only=(is_selected or is_ignored) or usethis_config.instruct_only,
         ):
-            self.ignore_rules_in_glob(
-                rule_config.tests_unmanaged_ignored, glob="tests/**"
-            )
+            # Only add test directory ignore rules if the tests directory exists
+            if (usethis_config.cpd() / "tests").exists():
+                self.ignore_rules_in_glob(
+                    rule_config.tests_unmanaged_ignored, glob="tests/**"
+                )
 
     def remove_rule_config(self, rule_config: RuleConfig) -> None:
         """Remove the Ruff rules associated with a rule config from the project.

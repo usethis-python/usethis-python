@@ -229,6 +229,45 @@ class TestImportLinter:
 """  # noqa: RUF001
         )
 
+    def test_dont_exclude_test_when_dir_doesnt_exist(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "src").mkdir()
+        (tmp_path / "src" / "example").mkdir()
+        (tmp_path / "src" / "example" / "__init__.py").touch()
+        (tmp_path / "src" / "example" / "module.py").touch()
+        (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "example"
+version = "0.1.0"
+
+[tool.ruff]
+line-length = 88
+""")
+        # Note: No tests directory created
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["import-linter", "--frozen"])
+
+            # Assert
+            assert result.exit_code == 0, result.output
+
+            with files_manager():
+                pyproject = PyprojectTOMLManager()
+                # Should not have per-file-ignores for tests/** since tests dir doesn't exist
+                if ["tool", "ruff", "lint", "per-file-ignores"] in pyproject:
+                    per_file_ignores = pyproject[
+                        ["tool", "ruff", "lint", "per-file-ignores"]
+                    ]
+                    assert "tests/**" not in per_file_ignores, (
+                        "Should not add tests/** ignore when tests directory doesn't exist"
+                    )
+                else:
+                    # If per-file-ignores doesn't exist at all, that's also correct
+                    # (no tests directory means no test-specific ignores needed)
+                    pass
+
 
 class TestPyprojectTOML:
     def test_add(self, tmp_path: Path):

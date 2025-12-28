@@ -436,6 +436,7 @@ class TestCoverage:
 [run]
 source =
     src
+relative_files = true
 
 [report]
 exclude_also =
@@ -464,6 +465,7 @@ omit =
 [coverage:run]
 source =
     src
+relative_files = true
 
 [coverage:report]
 exclude_also =

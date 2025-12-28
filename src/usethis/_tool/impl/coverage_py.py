@@ -148,6 +148,32 @@ class CoveragePyTool(Tool):
                     },
                 ),
                 ConfigItem(
+                    # https://github.com/usethis-python/usethis-python/issues/930
+                    # This config helps ensure reports generated in CI environments
+                    # have consistent paths between jobs, by forcing them to be relative
+                    description="Relative Files Configuration",
+                    root={
+                        Path(".coveragerc"): ConfigEntry(
+                            keys=["run", "relative_files"], get_value=lambda: "true"
+                        ),
+                        Path(".coveragerc.toml"): ConfigEntry(
+                            keys=["run", "relative_files"], get_value=lambda: True
+                        ),
+                        Path("setup.cfg"): ConfigEntry(
+                            keys=["coverage:run", "relative_files"],
+                            get_value=lambda: "true",
+                        ),
+                        Path("tox.ini"): ConfigEntry(
+                            keys=["coverage:run", "relative_files"],
+                            get_value=lambda: "true",
+                        ),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "coverage", "run", "relative_files"],
+                            get_value=lambda: True,
+                        ),
+                    },
+                ),
+                ConfigItem(
                     description="Report Configuration",
                     root={
                         Path(".coveragerc"): ConfigEntry(keys=["report"]),

@@ -169,6 +169,7 @@ log_cli_level = "INFO"
 minversion = "7"
 
 [tool.coverage.run]
+relative_files = true
 source = [ "src" ]
 omit = [ "*/pytest-of-*/*", "*/_temp/*" ]
 

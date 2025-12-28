@@ -1496,6 +1496,7 @@ root_package = "a"
         ):
             # Arrange
             (uv_init_dir / "ruff.toml").touch()
+            (uv_init_dir / "tests").mkdir()
 
             with change_cwd(uv_init_dir), files_manager():
                 # Act
@@ -1532,6 +1533,7 @@ select = ["INP"]
 [lint]
 select = ["INP"]
 """)
+            (uv_init_dir / "tests").mkdir()
 
             with change_cwd(uv_init_dir), files_manager():
                 # Act

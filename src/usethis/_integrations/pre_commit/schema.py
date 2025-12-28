@@ -8,6 +8,7 @@
 # plus manually remove default for LocalRepo.repo
 # plus manually add HookDefinition.require_serial for type hinting
 # plus manually set default to None for roundtripping
+# plus manually add unsupported and unsupported_script to Language
 
 
 from __future__ import annotations
@@ -74,6 +75,8 @@ class Language(
             "pygrep",
             "script",
             "system",
+            "unsupported",  # Added manually https://github.com/usethis-python/usethis-python/issues/1149
+            "unsupported_script",  # Added manually https://github.com/usethis-python/usethis-python/issues/1149
         ]
         | str
     ]
@@ -100,6 +103,8 @@ class Language(
             "pygrep",
             "script",
             "system",
+            "unsupported",  # Added manually https://github.com/usethis-python/usethis-python/issues/1149
+            "unsupported_script",  # Added manually https://github.com/usethis-python/usethis-python/issues/1149
         ]
         | str
     )

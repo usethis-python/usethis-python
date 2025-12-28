@@ -1468,6 +1468,7 @@ root_package = "a"
 
             # Arrange
             (tmp_path / "ruff.toml").touch()
+            (tmp_path / "tests").mkdir()
 
             with change_cwd(tmp_path), files_manager():
                 # ... preparing for duplicate call
@@ -1496,6 +1497,7 @@ root_package = "a"
         ):
             # Arrange
             (uv_init_dir / "ruff.toml").touch()
+            (uv_init_dir / "tests").mkdir()
 
             with change_cwd(uv_init_dir), files_manager():
                 # Act
@@ -1532,6 +1534,7 @@ select = ["INP"]
 [lint]
 select = ["INP"]
 """)
+            (uv_init_dir / "tests").mkdir()
 
             with change_cwd(uv_init_dir), files_manager():
                 # Act
@@ -1573,6 +1576,7 @@ format.docstring-code-format = true
 lint.select = [ "A", "C4", "E4", "E7", "E9", "F", "FLY", "FURB", "I", "INP", "PLE", "PLR", "PT", "RUF", "SIM", "UP" ]
 lint.ignore = [ "PLR2004", "SIM108" ]
 """)
+            (uv_init_dir / "tests").mkdir()
 
             with change_cwd(uv_init_dir), files_manager():
                 # Act
@@ -2718,6 +2722,7 @@ def test_foo():
             with change_cwd(tmp_path), files_manager():
                 # Arrange
                 use_import_linter()
+                (tmp_path / "tests").mkdir()
 
                 # Act
                 (tmp_path / "ruff.toml").touch()

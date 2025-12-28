@@ -8,7 +8,7 @@ def get_pre_commit_version() -> str:
     """Get an inferred pre-commit version for usethis to target.
 
     If no version can be inferred, a hard-coded version is used, corresponding to a
-    recent release (see `_PRE_COMMIT_VERSION`).
+    recent release (see `PRE_COMMIT_VERSION`).
     """
     version = get_minimum_pre_commit_version()
     if version is not None:

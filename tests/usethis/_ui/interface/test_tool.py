@@ -229,7 +229,7 @@ class TestImportLinter:
 """  # noqa: RUF001
         )
 
-    def test_dont_exclude_test_when_dir_doesnt_exist(self, tmp_path: Path):
+    def test_when_test_dir_doesnt_exist(self, tmp_path: Path):
         # Arrange
         (tmp_path / "src").mkdir()
         (tmp_path / "src" / "example").mkdir()

@@ -15,7 +15,8 @@ from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
-from usethis._integrations.pre_commit.schema import HookDefinition, Language, LocalRepo
+from usethis._integrations.pre_commit.language import get_system_language
+from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.imports import (
     LayeredArchitecture,
@@ -342,7 +343,7 @@ class ImportLinterTool(Tool):
                             name="import-linter",
                             pass_filenames=False,
                             entry="uv run --frozen --offline lint-imports",
-                            language=Language("system"),
+                            language=get_system_language(),
                             require_serial=True,
                             always_run=True,
                         )
@@ -361,7 +362,7 @@ class ImportLinterTool(Tool):
                             name="import-linter",
                             pass_filenames=False,
                             entry="lint-imports",
-                            language=Language("system"),
+                            language=get_system_language(),
                         )
                     ],
                 ),

@@ -9,7 +9,8 @@ from usethis._console import how_print, info_print, tick_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.schema import HookDefinition, Language, LocalRepo
+from usethis._integrations.pre_commit.language import get_system_language
+from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._tool.base import Tool
 from usethis._tool.config import (
@@ -102,7 +103,7 @@ class DeptryTool(Tool):
                             id="deptry",
                             name="deptry",
                             entry=f"uv run --frozen --offline deptry {_dir}",
-                            language=Language("system"),
+                            language=get_system_language(),
                             always_run=True,
                             pass_filenames=False,
                         )
@@ -120,7 +121,7 @@ class DeptryTool(Tool):
                             id="deptry",
                             name="deptry",
                             entry=f"deptry {_dir}",
-                            language=Language("system"),
+                            language=get_system_language(),
                             always_run=True,
                             pass_filenames=False,
                         )

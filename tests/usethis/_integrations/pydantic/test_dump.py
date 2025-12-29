@@ -215,7 +215,7 @@ class TestFancyModelDump:
             # Assert
             assert isinstance(output, dict)
             assert isinstance(output["mim"], dict)
-            assert list(output["mim"].keys()) == ["y", "x"]
+            assert list(output["mim"].keys()) == ["y", "x"]  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
 
     class TestReference:
         def test_no_reference_drop_default(self):

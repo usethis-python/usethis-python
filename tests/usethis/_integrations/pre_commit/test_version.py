@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from usethis._config_file import files_manager
 from usethis._integrations.pre_commit.version import get_minimum_pre_commit_version
 from usethis._test import change_cwd
 
@@ -17,7 +18,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_minimum_pre_commit_version()
 
         # Assert
@@ -42,7 +43,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_minimum_pre_commit_version()
 
         # Assert

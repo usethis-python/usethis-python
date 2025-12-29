@@ -102,7 +102,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_cache("uv")
 
         # Assert
@@ -148,7 +148,7 @@ pipelines:
         (tmp_path / "bitbucket-pipelines.yml").write_text(original)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_cache("whatever")
 
         # Assert
@@ -167,7 +167,7 @@ pipelines:
         (tmp_path / "bitbucket-pipelines.yml").write_text(original)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_cache("whatever")
 
         # Assert
@@ -188,7 +188,7 @@ pipelines:
         (tmp_path / "bitbucket-pipelines.yml").write_text(original)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_cache("whatever")
 
         # Assert

@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config_file import files_manager
 from usethis._integrations.pre_commit.hooks import (
     _get_placeholder_repo_config,
     add_placeholder_hook,
@@ -31,6 +32,7 @@ repos:
 """)
         with (
             change_cwd(tmp_path),
+            files_manager(),
             pytest.raises(NotImplementedError, match="Hook 'foo' not recognized"),
         ):
             add_repo(
@@ -51,7 +53,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             add_repo(
                 LocalRepo(
                     repo="local",
@@ -90,7 +92,7 @@ repos:
 
     def test_placeholder(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             add_repo(_get_placeholder_repo_config())
 
         # Assert
@@ -114,7 +116,7 @@ repos:
         )
 
     def test_hook_order_constant_is_respected(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             # Arrange: Add 'codespell' first (later in _HOOK_ORDER)
             add_repo(
                 LocalRepo(
@@ -152,7 +154,7 @@ repos:
             ]
 
     def test_hooks_added_in_standard_order(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             add_repo(
                 LocalRepo(
@@ -189,7 +191,7 @@ repos:
             ]
 
     def test_hook_order_constant_is_respected_multi(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             # Act
             add_repo(
                 LocalRepo(
@@ -352,7 +354,7 @@ repos:
 
 class TestRemoveHook:
     def test_empty(self, tmp_path: Path):
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_hook("foo")
         assert (
             (tmp_path / ".pre-commit-config.yaml").read_text()
@@ -376,7 +378,7 @@ repos:
     - id: bar
 """
         )
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_hook("bar")
         assert (
             (tmp_path / ".pre-commit-config.yaml").read_text()
@@ -409,7 +411,7 @@ repos:
         language: python
 """
         )
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_hook("bar")
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == (
             """\
@@ -431,7 +433,7 @@ repos:
 """
         )
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_hook("bar")
 
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == (
@@ -446,7 +448,7 @@ class TestGetHookNames:
     def test_empty(self, tmp_path: Path):
         (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n")
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             assert get_hook_ids() == []
 
     def test_single(self, tmp_path: Path):
@@ -458,7 +460,7 @@ repos:
       - id: bar
 """
         )
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             assert get_hook_ids() == ["bar"]
 
     def test_multihooks(self, tmp_path: Path):
@@ -471,7 +473,7 @@ repos:
       - id: baz
 """
         )
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             assert get_hook_ids() == ["bar", "baz"]
 
     def test_multirepo(self, tmp_path: Path):
@@ -486,7 +488,7 @@ repos:
     - id: qux
 """
         )
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             assert get_hook_ids() == ["bar", "qux"]
 
     def test_duplicated_ok(self, tmp_path: Path):
@@ -504,7 +506,7 @@ repos:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_hook_ids()
 
         # Assert
@@ -514,7 +516,7 @@ repos:
 class TestAddPlaceholderHook:
     def test_contents(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             add_placeholder_hook()
 
         # Assert

@@ -13,4 +13,4 @@ def ensure_bitbucket_pipelines_config_exists() -> None:
         tick_print(f"Writing '{name}'.")
         # N.B. where necessary, we can opt to use a different image from this default
         # on a per-step basis, so this is safe even when we want to use Python images.
-        path.write_text("image: atlassian/default-image:3", encoding="utf-8")
+        path.write_text("image: atlassian/default-image:3\n", encoding="utf-8")

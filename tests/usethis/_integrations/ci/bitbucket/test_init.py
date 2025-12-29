@@ -18,7 +18,7 @@ class TestEnsureBitbucketPipelinesConfigExists:
         assert (tmp_path / "bitbucket-pipelines.yml").is_file()
         assert (
             tmp_path / "bitbucket-pipelines.yml"
-        ).read_text() == "image: atlassian/default-image:3"
+        ).read_text() == "image: atlassian/default-image:3\n"
         out, err = capfd.readouterr()
         assert not err
         assert out == ("✔ Writing 'bitbucket-pipelines.yml'.\n")

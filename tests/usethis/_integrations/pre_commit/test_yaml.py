@@ -135,7 +135,7 @@ extra:
             content["repos"] = ["something"]
 
 
-class TesttPreCommitFancyDump:
+class TestPreCommitFancyDump:
     def test_placeholder(self):
         _pre_commit_fancy_dump(
             config=JsonSchemaForPreCommitConfigYaml(

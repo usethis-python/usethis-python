@@ -323,9 +323,12 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
 
         rule_config = tool.get_rule_config()
 
-        for tool in ALL_TOOLS:
-            if tool.is_used():
-                rule_config |= tool.get_rule_config().subset_related_to_tests()
+        for _tool in ALL_TOOLS:
+            if isinstance(_tool, PytestTool):
+                continue
+
+            if _tool.is_used():
+                rule_config |= _tool.get_rule_config().subset_related_to_tests()
 
         if RuffTool().is_used():
             RuffTool().apply_rule_config(rule_config)

@@ -67,7 +67,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_pre_commit_version()
 
         # Assert
@@ -92,7 +92,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_pre_commit_version()
 
         # Assert

@@ -58,10 +58,10 @@ pipelines:
                 use_pre_commit()
                 use_pre_commit(remove=True)
 
-            # Assert
-            for step in get_steps_in_default():
-                if step.caches is not None:
-                    assert "uv" not in step.caches
+                # Assert
+                for step in get_steps_in_default():
+                    if step.caches is not None:
+                        assert "uv" not in step.caches
             content = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
             assert "caches" not in content  # Should remove the empty cache section
 
@@ -183,15 +183,16 @@ pipelines:
                 with change_cwd(uv_init_repo_dir), files_manager():
                     # Arrange
                     use_ci_bitbucket()
-                    contents = (
-                        uv_init_repo_dir / "bitbucket-pipelines.yml"
-                    ).read_text()
-                    assert "Placeholder" in contents
 
+                # Assert Placeholder exists after first call
+                contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+                assert "Placeholder" in contents
+
+                with change_cwd(uv_init_repo_dir), files_manager():
                     # Act
                     use_pre_commit()
 
-                # Assert
+                # Assert Placeholder removed after adding pre-commit
                 contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
                 assert "Placeholder" not in contents
 
@@ -200,15 +201,16 @@ pipelines:
                     # Arrange
                     use_pre_commit()
                     use_ci_bitbucket()
-                    contents = (
-                        uv_init_repo_dir / "bitbucket-pipelines.yml"
-                    ).read_text()
-                    assert "Placeholder" not in contents
 
+                # Assert Placeholder not in file after arranging
+                contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
+                assert "Placeholder" not in contents
+
+                with change_cwd(uv_init_repo_dir), files_manager():
                     # Act
                     use_pre_commit(remove=True)
 
-                # Assert
+                # Assert Placeholder restored
                 contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
                 assert "Placeholder" in contents
 

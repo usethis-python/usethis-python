@@ -3,6 +3,7 @@ from uuid import UUID
 
 import pytest
 
+from usethis._config_file import files_manager
 from usethis._integrations.ci.bitbucket.errors import UnexpectedImportPipelineError
 from usethis._integrations.ci.bitbucket.pipeweld import (
     apply_pipeweld_instruction,
@@ -38,7 +39,7 @@ from usethis._test import change_cwd
 class TestApplyPipeweldInstruction:
     def test_add_to_brand_new_pipeline(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             apply_pipeweld_instruction(
                 InsertSuccessor(step="foo", after=None),
                 step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -71,7 +72,11 @@ pipelines:
         )
 
         # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(UnexpectedImportPipelineError):
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            pytest.raises(UnexpectedImportPipelineError),
+        ):
             apply_pipeweld_instruction(
                 InsertSuccessor(step="foo", after=None),
                 step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -92,7 +97,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             apply_pipeweld_instruction(
                 InsertSuccessor(step="foo", after=None),
                 step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -133,7 +138,7 @@ pipelines:
             )
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="bar"),
                     step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -178,7 +183,7 @@ pipelines:
             )
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="qux"),
                     step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -229,7 +234,7 @@ pipelines:
             )
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="qux"),
                     step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -277,7 +282,7 @@ pipelines:
             )
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="baz"),
                     step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -320,7 +325,7 @@ pipelines:
             )
 
             # Act: Insert foo in parallel to bar
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertParallel(step="foo", after="bar"),
                     step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -366,7 +371,7 @@ pipelines:
             )
 
             # Act: Insert foo in parallel to bar (which is already in a parallel block)
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertParallel(step="foo", after="bar"),
                     step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -405,7 +410,7 @@ image: atlassian/default-image:3
             )
 
             # Act: Insert foo in parallel at the beginning (after=None)
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertParallel(step="foo", after=None),
                     step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -447,7 +452,7 @@ pipelines:
             )
 
             # Act: Insert foo in parallel to bar (expanded format)
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertParallel(step="foo", after="bar"),
                     step_to_insert=Step(name="foo", script=Script(["echo foo"])),
@@ -501,7 +506,7 @@ pipelines:
 """
         )
 
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             # Simulate pipeweld instructions for: series("A", "C", "B")
             # Note: step_to_insert is always C (the actual new step being added)
             # but instruction.step varies (A, B, or C) to indicate which step
@@ -568,7 +573,7 @@ pipelines:
         )
 
         # Act: Extract the only step from the parallel block
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             apply_pipeweld_instruction(
                 InsertSuccessor(step="A", after=None),
                 step_to_insert=Step(name="C", script=Script(["echo C"])),

@@ -46,6 +46,19 @@ class RuleConfig(BaseModel):
         """Get all (project-scope) ignored rules."""
         return self.ignored + self.unmanaged_ignored
 
+    def subset_related_to_tests(self) -> Self:
+        """Get a RuleConfig with only rules relating to tests configuration.
+
+        This is useful for cases where we are introducing pytest into a project, and
+        then we want to introduce specifically this subset of rules.
+        """
+        self = self.model_copy()
+        self.selected = []
+        self.ignored = []
+        self.unmanaged_selected = []
+        self.unmanaged_ignored = []
+        return self
+
     @property
     def empty(self) -> bool:
         """Check if the rule config is empty."""

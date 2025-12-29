@@ -2631,6 +2631,22 @@ minversion = "7\""""
                 assert "PT" in RuffTool().get_selected_rules()
 
         @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_import_linter_integration_adds_test_dir_ignores(
+            self, uv_init_dir: Path
+        ):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_ruff()
+                use_import_linter()
+
+                # Act
+                use_pytest()
+
+                # Assert
+                # Verify that INP rules are ignored in tests/** after pytest creates tests/
+                assert "INP" in RuffTool().get_ignored_rules_in_glob("tests/**")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_pytest_ini_priority(self, uv_init_dir: Path):
             # Arrange
             (uv_init_dir / "pytest.ini").touch()

@@ -311,19 +311,24 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    rule_config = tool.get_rule_config()
-
     if not remove:
         ensure_dep_declaration_file()
 
         tool.add_test_deps()
         tool.add_configs()
-        if RuffTool().is_used():
-            RuffTool().apply_rule_config(rule_config)
 
         # deptry currently can't scan the tests folder for dev deps
         # https://github.com/fpgmaas/deptry/issues/302
         add_pytest_dir()
+
+        rule_config = tool.get_rule_config()
+
+        for tool in ALL_TOOLS:
+            if tool.is_used():
+                rule_config |= tool.get_rule_config().subset_related_to_tests()
+
+        if RuffTool().is_used():
+            RuffTool().apply_rule_config(rule_config)
 
         PytestTool().update_bitbucket_steps()
 
@@ -332,6 +337,8 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         if CoveragePyTool().is_used():
             CoveragePyTool().print_how_to_use()
     else:
+        rule_config = tool.get_rule_config()
+
         PytestTool().remove_bitbucket_steps()
 
         if RuffTool().is_used():

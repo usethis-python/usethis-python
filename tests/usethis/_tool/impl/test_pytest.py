@@ -290,7 +290,7 @@ pipelines:
             )
 
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 PytestTool().remove_bitbucket_steps()
 
             # Assert

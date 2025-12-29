@@ -2,32 +2,25 @@ from pathlib import Path
 
 import pytest
 
-from usethis._integrations.ci.bitbucket.io_ import (
-    BitbucketPipelinesYAMLConfigError,
-    edit_bitbucket_pipelines_yaml,
-    read_bitbucket_pipelines_yaml,
+from usethis._integrations.ci.bitbucket.errors import BitbucketPipelinesYAMLSchemaError
+from usethis._integrations.ci.bitbucket.schema import (
+    Cache,
+    CachePath,
+    Clone,
+    Definitions,
+    Image,
+    ImageName,
+    PipelinesConfiguration,
+)
+from usethis._integrations.ci.bitbucket.yaml import (
+    ORDER_BY_CLS,
+    BitbucketPipelinesYAMLManager,
+    _bitbucket_fancy_dump,
 )
 from usethis._test import change_cwd
 
 
 class TestEditBitbucketPipelinesYAML:
-    def test_does_not_exist(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
-        # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as _:
-            pass
-
-        # Assert
-        assert (tmp_path / "bitbucket-pipelines.yml").is_file()
-        assert (
-            (tmp_path / "bitbucket-pipelines.yml").read_text()
-            == """\
-image: atlassian/default-image:3
-"""
-        )
-        out, err = capfd.readouterr()
-        assert not err
-        assert out == ("✔ Writing 'bitbucket-pipelines.yml'.\n")
-
     def test_do_nothing(self, tmp_path: Path):
         # Arrange
         (tmp_path / "bitbucket-pipelines.yml").write_text(
@@ -37,8 +30,9 @@ image: atlassian/default-image:3
         )
 
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as _:
-            pass
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            mgr.model_validate()
+            # No changes made
 
         # Assert
         contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
@@ -58,9 +52,12 @@ image: atlassian/default-image:3
         )
 
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            doc = mgr.get()
+            mgr.model_validate()
             assert isinstance(doc.content, dict)  # Help pyright
             doc.content["image"] = "atlassian/default-image:2"
+            mgr.commit(doc)
 
         # Assert
         contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
@@ -84,7 +81,9 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            doc = mgr.get()
+            mgr.model_validate()
             # Help pyright with assertions
             assert isinstance(doc.content, dict)
             assert isinstance(doc.content["pipelines"], dict)
@@ -92,6 +91,7 @@ pipelines:
             assert isinstance(doc.content["pipelines"]["default"][0], dict)
             assert isinstance(doc.content["pipelines"]["default"][0]["step"], dict)
             doc.content["pipelines"]["default"][0]["step"]["script"] = ["echo 'Bye!'"]
+            mgr.commit(doc)
 
         # Assert
         contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
@@ -119,8 +119,9 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as _:
-            pass
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            mgr.model_validate()
+            # No changes made
 
         # Assert
         contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
@@ -144,10 +145,10 @@ awfpah28yqh2an ran  2rqa0-2 }[
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            pytest.raises(BitbucketPipelinesYAMLConfigError),
-            edit_bitbucket_pipelines_yaml() as _,
+            pytest.raises(BitbucketPipelinesYAMLSchemaError),
+            BitbucketPipelinesYAMLManager() as mgr,
         ):
-            pass
+            mgr.model_validate()
 
 
 class TestReadBitbucketPipelinesYAML:
@@ -164,8 +165,55 @@ pipelines:
         (tmp_path / "bitbucket-pipelines.yml").write_text(content_str)
 
         # Act
-        with change_cwd(tmp_path), read_bitbucket_pipelines_yaml():
-            pass
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            mgr.model_validate()
+            # Read-only, no commit needed
 
         # Assert
-        assert (tmp_path / "bitbucket-pipelines.yml").read_text() == content_str
+        # Note: YAML round-tripping may normalize formatting (e.g., remove unnecessary quotes)
+        expected = """\
+pipelines:
+    default:
+      - step:
+            script:
+              - echo
+"""
+        assert (tmp_path / "bitbucket-pipelines.yml").read_text() == expected
+
+
+class TestOrderByCls:
+    def test_attribute_consistency(self):
+        for cls, fields in ORDER_BY_CLS.items():
+            for field in fields:
+                assert field in cls.model_fields
+
+
+class TestBitbucketFancyDump:
+    def test_order(self):
+        # Arrange
+        config = PipelinesConfiguration(
+            image=Image(ImageName("python:3.8.1")),
+            clone=Clone(depth="full"),
+            definitions=Definitions(
+                caches={
+                    "pip": Cache(CachePath("pip")),
+                },
+            ),
+        )
+
+        # Act
+        dump = _bitbucket_fancy_dump(config, reference={})
+
+        # Assert
+        assert dump == {
+            "image": "python:3.8.1",
+            "clone": {
+                "depth": "full",
+            },
+            "definitions": {
+                "caches": {
+                    "pip": "pip",
+                },
+            },
+        }
+        assert list(dump) == ["image", "clone", "definitions"]

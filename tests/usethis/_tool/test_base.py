@@ -467,7 +467,7 @@ repos:
       - id: deptry
 """)
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 result = tool.is_pre_commit_config_present()
 
             # Assert
@@ -560,7 +560,7 @@ repos:
             tool = MyTool()
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -584,7 +584,7 @@ repos:
             tool = MyTool()
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -616,7 +616,7 @@ repos:
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -645,7 +645,7 @@ repos:
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -752,7 +752,7 @@ repos:
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tool.remove_pre_commit_repo_configs()
 
                 # Assert
@@ -775,7 +775,7 @@ repos:
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tool.remove_pre_commit_repo_configs()
 
                 # Assert
@@ -798,7 +798,7 @@ repos:
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tool.remove_pre_commit_repo_configs()
 
                 # Assert
@@ -859,7 +859,7 @@ repos:
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tr_tool.remove_pre_commit_repo_configs()
 
                 # Assert

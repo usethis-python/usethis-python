@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 def update_ruamel_yaml_map(
-    cmap: YAMLLiteral,
+    cmap: YAMLLiteral | dict[str, Any],
     new_contents: dict[str, Any],
     *,
     preserve_comments: bool,
@@ -32,8 +32,8 @@ def update_ruamel_yaml_map(
         TypeError: If the provided `cmap` is not a CommentedMap.
     """
     """Update the values of a ruamel.yaml map in-place using a diff-like algorithm."""
-    if not isinstance(cmap, CommentedMap):
-        msg = f"Expected CommentedMap, but got '{type(cmap)}'."
+    if not isinstance(cmap, CommentedMap | dict):
+        msg = f"Expected CommentedMap or dict, but got '{type(cmap)}'."
         raise TypeError(msg)
 
     if not preserve_comments:

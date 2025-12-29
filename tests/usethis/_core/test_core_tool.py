@@ -31,6 +31,7 @@ from usethis._integrations.backend.uv.link_mode import ensure_symlink_mode
 from usethis._integrations.backend.uv.toml import UVTOMLManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
+from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._integrations.python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
@@ -157,6 +158,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 # Check hook names
                 hook_names = get_hook_ids()
                 assert "codespell" in hook_names
+
             # Check output
             out, err = capfd.readouterr()
             assert not err
@@ -904,7 +906,7 @@ repos:
             )
 
             # Act
-            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_repo_dir), files_manager():
                 use_deptry()
 
             # Assert
@@ -931,8 +933,14 @@ repos:
                 # Arrange
                 use_deptry()
                 use_pre_commit()
-                content = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
-                assert "deptry" in content
+
+                # Check that deptry was added by reading from FileManager
+                mgr = PreCommitConfigYAMLManager()
+                model = mgr.model_validate()
+                hook_ids = [
+                    hook.id for repo in model.repos if repo.hooks for hook in repo.hooks
+                ]
+                assert "deptry" in hook_ids
 
                 # Act
                 use_deptry(remove=True)
@@ -3239,7 +3247,7 @@ repos:
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 use_requirements_txt(remove=True)
 
             # Assert

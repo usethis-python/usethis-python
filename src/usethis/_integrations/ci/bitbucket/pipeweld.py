@@ -7,13 +7,12 @@ from uuid import uuid4
 from typing_extensions import assert_never
 
 import usethis._pipeweld.containers
-from usethis._integrations.ci.bitbucket.dump import bitbucket_fancy_dump
 from usethis._integrations.ci.bitbucket.errors import (
     MissingStepError,
     UnexpectedImportPipelineError,
 )
-from usethis._integrations.ci.bitbucket.io_ import (
-    edit_bitbucket_pipelines_yaml,
+from usethis._integrations.ci.bitbucket.init import (
+    ensure_bitbucket_pipelines_config_exists,
 )
 from usethis._integrations.ci.bitbucket.schema import (
     ImportPipeline,
@@ -29,11 +28,10 @@ from usethis._integrations.ci.bitbucket.schema import (
     StepItem,
 )
 from usethis._integrations.ci.bitbucket.schema_utils import step1tostep
-from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
+from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
 from usethis._pipeweld.ops import InsertParallel, InsertSuccessor, Instruction
 
 if TYPE_CHECKING:
-    from usethis._integrations.ci.bitbucket.io_ import BitbucketPipelinesYAMLDocument
     from usethis._integrations.ci.bitbucket.schema import PipelinesConfiguration
 
 
@@ -119,24 +117,26 @@ def _(item: StageItem):
 def apply_pipeweld_instruction(
     instruction: Instruction, *, step_to_insert: Step
 ) -> None:
-    with edit_bitbucket_pipelines_yaml() as doc:
-        apply_pipeweld_instruction_via_doc(
-            instruction, doc=doc, step_to_insert=step_to_insert
-        )
-        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
-        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+    ensure_bitbucket_pipelines_config_exists()
+
+    mgr = BitbucketPipelinesYAMLManager()
+    model = mgr.model_validate()
+    apply_pipeweld_instruction_via_model(
+        instruction, model=model, step_to_insert=step_to_insert
+    )
+    mgr.commit_model(model)
 
 
-def apply_pipeweld_instruction_via_doc(
+def apply_pipeweld_instruction_via_model(
     instruction: Instruction,
     *,
     step_to_insert: Step,
-    doc: BitbucketPipelinesYAMLDocument,
+    model: PipelinesConfiguration,
 ) -> None:
-    if doc.model.pipelines is None:
-        doc.model.pipelines = Pipelines()
+    if model.pipelines is None:
+        model.pipelines = Pipelines()
 
-    pipelines = doc.model.pipelines
+    pipelines = model.pipelines
     default = pipelines.default
 
     if default is None:

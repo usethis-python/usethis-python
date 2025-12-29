@@ -4,6 +4,7 @@ import pytest
 
 from usethis._config import usethis_config
 from usethis._integrations.pre_commit.hooks import get_hook_ids
+from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app
 
@@ -49,7 +50,7 @@ class TestInit:
         )
 
         # Check the pre-commit hooks are added in the correct order
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), PreCommitConfigYAMLManager():
             hook_ids = get_hook_ids()
             assert hook_ids == [
                 "sync-with-uv",

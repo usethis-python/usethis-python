@@ -1,22 +1,22 @@
 from pathlib import Path
+from typing import cast
 
 import pytest
 
-from usethis._integrations.pre_commit.io_ import (
-    PreCommitConfigYAMLConfigError,
-    edit_pre_commit_config_yaml,
-    read_pre_commit_config_yaml,
+from usethis._config_file import files_manager
+from usethis._integrations.pre_commit.errors import PreCommitConfigYAMLConfigError
+from usethis._integrations.pre_commit.hooks import _get_placeholder_repo_config
+from usethis._integrations.pre_commit.schema import (
+    JsonSchemaForPreCommitConfigYaml,
+)
+from usethis._integrations.pre_commit.yaml import (
+    PreCommitConfigYAMLManager,
+    _pre_commit_fancy_dump,
 )
 from usethis._test import change_cwd
 
 
 class TestEditPreCommitConfigYAML:
-    def test_does_not_exist(self, tmp_path: Path):
-        with change_cwd(tmp_path), edit_pre_commit_config_yaml():
-            pass
-
-        assert (tmp_path / ".pre-commit-config.yaml").exists()
-
     def test_unchanged(self, tmp_path: Path):
         # Arrange
         content_str = """\
@@ -30,8 +30,9 @@ repos:
         (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
 
         # Act
-        with change_cwd(tmp_path), edit_pre_commit_config_yaml() as _:
-            pass
+        with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
+            mgr.model_validate()
+            # No changes made
 
         # Assert
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == content_str
@@ -41,25 +42,16 @@ repos:
         (tmp_path / ".pre-commit-config.yaml").write_text("")
 
         # Act
-        with (
-            change_cwd(tmp_path),
-            edit_pre_commit_config_yaml() as doc,
-        ):
-            doc.content["repos"] = []
+        with change_cwd(tmp_path), files_manager():
+            mgr = PreCommitConfigYAMLManager()
+            doc = mgr.get()
+            mgr.model_validate()
+            content = cast("dict", doc.content)
+            content["repos"] = []
+            mgr.commit(doc)
 
         # Assert
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == "repos: []\n"
-
-    def test_empty_valid_but_unchanged(self, tmp_path: Path):
-        # Arrange
-        (tmp_path / ".pre-commit-config.yaml").write_text("")
-
-        # Act
-        with change_cwd(tmp_path), edit_pre_commit_config_yaml():
-            pass
-
-        # Assert
-        assert (tmp_path / ".pre-commit-config.yaml").read_text() == ""
 
     def test_extra_config(self, tmp_path: Path):
         # Arrange
@@ -74,8 +66,9 @@ extra:
         (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
 
         # Act / Assert
-        with change_cwd(tmp_path), edit_pre_commit_config_yaml():
-            pass
+        with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
+            mgr.model_validate()
+            # No changes made
 
         assert (tmp_path / ".pre-commit-config.yaml").read_text() == content_str
 
@@ -92,7 +85,8 @@ repos:
         (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
 
         # Act
-        with change_cwd(tmp_path), read_pre_commit_config_yaml():
+        with change_cwd(tmp_path), PreCommitConfigYAMLManager():
+            # Just reading, no modifications
             pass
 
         # Assert
@@ -114,9 +108,9 @@ repos:
                 PreCommitConfigYAMLConfigError,
                 match=r"Invalid '.pre-commit-config.yaml' file:",
             ),
-            read_pre_commit_config_yaml(),
+            PreCommitConfigYAMLManager() as mgr,
         ):
-            pass
+            mgr.model_validate()
 
     def test_extra_config(self, tmp_path: Path):
         # Arrange
@@ -133,6 +127,28 @@ extra:
         # Act / Assert
         with (
             change_cwd(tmp_path),
-            read_pre_commit_config_yaml() as doc,
+            PreCommitConfigYAMLManager() as mgr,
         ):
-            assert doc.content["extra"] == ["something"]
+            doc = mgr.get()
+            mgr.model_validate()
+            content = cast("dict", doc.content)
+            content["repos"] = ["something"]
+
+
+class TestPreCommitFancyDump:
+    def test_placeholder(self):
+        _pre_commit_fancy_dump(
+            config=JsonSchemaForPreCommitConfigYaml(
+                repos=[
+                    _get_placeholder_repo_config(),
+                ]
+            ),
+            reference={},
+        )
+
+    def test_invalid(self):
+        with pytest.raises(TypeError):
+            _pre_commit_fancy_dump(
+                config=2,  # type: ignore for test
+                reference={},
+            )

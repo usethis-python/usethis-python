@@ -7,9 +7,9 @@ from usethis._console import instruct_print, tick_print
 from usethis._integrations.pre_commit.init import (
     ensure_pre_commit_config_exists,
 )
+from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
-    Language,
     LocalRepo,
     MetaRepo,
 )
@@ -187,7 +187,7 @@ def _get_placeholder_repo_config() -> LocalRepo:
                 id=_PLACEHOLDER_ID,
                 name="Placeholder - add your own hooks!",
                 entry="""uv run --isolated --frozen --offline python -c "print('hello world!')\"""",
-                language=Language("system"),
+                language=get_system_language(),
             )
         ],
     )

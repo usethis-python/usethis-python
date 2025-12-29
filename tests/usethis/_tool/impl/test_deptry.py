@@ -4,6 +4,7 @@ import pytest
 
 from usethis._config_file import files_manager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.pre_commit.schema import Language
 from usethis._test import change_cwd
 from usethis._tool.config import ConfigEntry, ConfigItem
 from usethis._tool.impl.deptry import DeptryTool
@@ -268,3 +269,102 @@ ignore = ["DEP003"]
 
             # Assert
             assert (tmp_path / "pyproject.toml").exists()
+
+    class TestGetPreCommitConfig:
+        def test_uses_system_language_when_no_minimum_version(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+""")
+            (tmp_path / "src").mkdir()
+            (tmp_path / "src" / "test_project").mkdir()
+            (tmp_path / "src" / "test_project" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                result = DeptryTool().get_pre_commit_config()
+
+            # Assert
+            assert result.repo_configs is not None
+            assert result.repo_configs[0].repo.hooks is not None
+            assert result.repo_configs[0].repo.hooks[0].language == Language("system")
+
+        def test_uses_system_language_when_minimum_version_below_4_4_0(
+            self, tmp_path: Path
+        ):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+""")
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+minimum_pre_commit_version: '4.3.0'
+repos: []
+""")
+            (tmp_path / "src").mkdir()
+            (tmp_path / "src" / "test_project").mkdir()
+            (tmp_path / "src" / "test_project" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                result = DeptryTool().get_pre_commit_config()
+
+            # Assert
+            assert result.repo_configs is not None
+            assert result.repo_configs[0].repo.hooks is not None
+            assert result.repo_configs[0].repo.hooks[0].language == Language("system")
+
+        def test_uses_unsupported_language_when_minimum_version_is_4_4_0(
+            self, tmp_path: Path
+        ):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+""")
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+minimum_pre_commit_version: '4.4.0'
+repos: []
+""")
+            (tmp_path / "src").mkdir()
+            (tmp_path / "src" / "test_project").mkdir()
+            (tmp_path / "src" / "test_project" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                result = DeptryTool().get_pre_commit_config()
+
+            # Assert
+            assert result.repo_configs is not None
+            assert result.repo_configs[0].repo.hooks is not None
+            assert result.repo_configs[0].repo.hooks[0].language == Language(
+                "unsupported"
+            )
+
+        def test_uses_unsupported_language_when_minimum_version_above_4_4_0(
+            self, tmp_path: Path
+        ):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test-project"
+""")
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+minimum_pre_commit_version: '4.5.0'
+repos: []
+""")
+            (tmp_path / "src").mkdir()
+            (tmp_path / "src" / "test_project").mkdir()
+            (tmp_path / "src" / "test_project" / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                result = DeptryTool().get_pre_commit_config()
+
+            # Assert
+            assert result.repo_configs is not None
+            assert result.repo_configs[0].repo.hooks is not None
+            assert result.repo_configs[0].repo.hooks[0].language == Language(
+                "unsupported"
+            )

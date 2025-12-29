@@ -136,15 +136,20 @@ extra:
 
 
 class TestPreCommitFancyDump:
-    def test_placeholder(self):
-        _pre_commit_fancy_dump(
-            config=JsonSchemaForPreCommitConfigYaml(
-                repos=[
-                    _get_placeholder_repo_config(),
-                ]
-            ),
-            reference={},
-        )
+    def test_placeholder(self, tmp_path: Path):
+        # Arrange - create a minimal pre-commit config for get_system_language()
+        (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n")
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            _pre_commit_fancy_dump(
+                config=JsonSchemaForPreCommitConfigYaml(
+                    repos=[
+                        _get_placeholder_repo_config(),
+                    ]
+                ),
+                reference={},
+            )
 
     def test_invalid(self):
         with pytest.raises(TypeError):

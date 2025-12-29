@@ -3,22 +3,19 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from usethis._console import tick_print
-from usethis._integrations.ci.bitbucket.dump import bitbucket_fancy_dump
-from usethis._integrations.ci.bitbucket.io_ import (
-    edit_bitbucket_pipelines_yaml,
-    read_bitbucket_pipelines_yaml,
+from usethis._integrations.ci.bitbucket.init import (
+    ensure_bitbucket_pipelines_config_exists,
 )
 from usethis._integrations.ci.bitbucket.schema import Definitions
-from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
+from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
 
 if TYPE_CHECKING:
-    from usethis._integrations.ci.bitbucket.io_ import BitbucketPipelinesYAMLDocument
-    from usethis._integrations.ci.bitbucket.schema import Cache
+    from usethis._integrations.ci.bitbucket.schema import Cache, PipelinesConfiguration
 
 
 def get_cache_by_name() -> dict[str, Cache]:
-    with read_bitbucket_pipelines_yaml() as doc:
-        config = doc.model
+    mgr = BitbucketPipelinesYAMLManager()
+    config = mgr.model_validate()
 
     if config.definitions is None:
         return {}
@@ -32,53 +29,52 @@ def get_cache_by_name() -> dict[str, Cache]:
 
 
 def add_caches(cache_by_name: dict[str, Cache]) -> None:
-    with edit_bitbucket_pipelines_yaml() as doc:
-        _add_caches_via_doc(cache_by_name, doc=doc)
-        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
-        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+    ensure_bitbucket_pipelines_config_exists()
+
+    mgr = BitbucketPipelinesYAMLManager()
+    model = mgr.model_validate()
+    _add_caches_via_model(cache_by_name, model=model)
+    mgr.commit_model(model)
 
 
-def _add_caches_via_doc(
-    cache_by_name: dict[str, Cache], *, doc: BitbucketPipelinesYAMLDocument
+def _add_caches_via_model(
+    cache_by_name: dict[str, Cache], *, model: PipelinesConfiguration
 ) -> None:
-    config = doc.model
-
-    if config.definitions is None:
-        config.definitions = Definitions()
-    if config.definitions.caches is None:
-        config.definitions.caches = {}
+    if model.definitions is None:
+        model.definitions = Definitions()
+    if model.definitions.caches is None:
+        model.definitions.caches = {}
 
     for name, cache in cache_by_name.items():
-        if not _cache_exists(name, doc=doc):
+        if not _cache_exists(name, model=model):
             tick_print(
                 f"Adding cache '{name}' definition to 'bitbucket-pipelines.yml'."
             )
-            config.definitions.caches[name] = cache
+            model.definitions.caches[name] = cache
 
 
 def remove_cache(cache: str) -> None:
-    with edit_bitbucket_pipelines_yaml() as doc:
-        config = doc.model
+    mgr = BitbucketPipelinesYAMLManager()
+    model = mgr.model_validate()
 
-        if config.definitions is None or config.definitions.caches is None:
-            return
+    if model.definitions is None or model.definitions.caches is None:
+        return
 
-        if cache in config.definitions.caches:
-            tick_print(
-                f"Removing cache '{cache}' definition from 'bitbucket-pipelines.yml'."
-            )
-            del config.definitions.caches[cache]
+    if cache in model.definitions.caches:
+        tick_print(
+            f"Removing cache '{cache}' definition from 'bitbucket-pipelines.yml'."
+        )
+        del model.definitions.caches[cache]
 
-            # Remove an empty caches section
-            if not config.definitions.caches:
-                del config.definitions.caches
+        # Remove an empty caches section
+        if not model.definitions.caches:
+            del model.definitions.caches
 
-        dump = bitbucket_fancy_dump(config, reference=doc.content)
-        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+    mgr.commit_model(model)
 
 
-def _cache_exists(name: str, *, doc: BitbucketPipelinesYAMLDocument) -> bool:
-    if doc.model.definitions is None or doc.model.definitions.caches is None:
+def _cache_exists(name: str, *, model: PipelinesConfiguration) -> bool:
+    if model.definitions is None or model.definitions.caches is None:
         return False
 
-    return name in doc.model.definitions.caches
+    return name in model.definitions.caches

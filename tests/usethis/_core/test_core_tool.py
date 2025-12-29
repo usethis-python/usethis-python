@@ -157,6 +157,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 # Check hook names
                 hook_names = get_hook_ids()
                 assert "codespell" in hook_names
+
             # Check output
             out, err = capfd.readouterr()
             assert not err
@@ -902,7 +903,7 @@ repos:
             )
 
             # Act
-            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_repo_dir), files_manager():
                 use_deptry()
 
             # Assert

@@ -4,11 +4,8 @@ from typing import TYPE_CHECKING
 
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
-from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
-from usethis._integrations.pre_commit.dump import pre_commit_fancy_dump
-from usethis._integrations.pre_commit.io_ import (
-    edit_pre_commit_config_yaml,
-    read_pre_commit_config_yaml,
+from usethis._integrations.pre_commit.init import (
+    ensure_pre_commit_config_exists,
 )
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
@@ -16,6 +13,7 @@ from usethis._integrations.pre_commit.schema import (
     LocalRepo,
     MetaRepo,
 )
+from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -47,75 +45,70 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
 
     This assumes the hook doesn't already exist in the configuration file.
     """
-    with edit_pre_commit_config_yaml() as doc:
-        if repo.hooks is None or len(repo.hooks) != 1:
-            msg = "Currently, only repos with exactly one hook are supported."
-            raise NotImplementedError(msg)  # Should allow multiple or 0 hooks per repo
+    ensure_pre_commit_config_exists()
 
-        (hook_config,) = repo.hooks
+    mgr = PreCommitConfigYAMLManager()
+    model = mgr.model_validate()
 
-        if hook_config.id is None:
-            msg = "The hook ID must be specified."
-            raise ValueError(msg)
+    if repo.hooks is None or len(repo.hooks) != 1:
+        msg = "Currently, only repos with exactly one hook are supported."
+        raise NotImplementedError(msg)  # Should allow multiple or 0 hooks per repo
 
-        # Ordered list of the hooks already in the file
-        existing_hooks = extract_hook_ids(doc.model)
+    (hook_config,) = repo.hooks
 
-        if not existing_hooks:
-            if hook_ids_are_equivalent(hook_config.id, _PLACEHOLDER_ID):
-                tick_print("Adding placeholder hook to '.pre-commit-config.yaml'.")
-            else:
-                tick_print(
-                    f"Adding hook '{hook_config.id}' to '.pre-commit-config.yaml'."
-                )
+    if hook_config.id is None:
+        msg = "The hook ID must be specified."
+        raise ValueError(msg)
 
-            doc.model.repos.append(repo)
+    # Ordered list of the hooks already in the file
+    existing_hooks = extract_hook_ids(model)
+
+    if not existing_hooks:
+        if hook_ids_are_equivalent(hook_config.id, _PLACEHOLDER_ID):
+            tick_print("Adding placeholder hook to '.pre-commit-config.yaml'.")
         else:
-            # There are existing hooks so we need to know where to insert the new hook.
+            tick_print(f"Adding hook '{hook_config.id}' to '.pre-commit-config.yaml'.")
 
-            # Get the precendents, i.e. hooks occurring before the new hook
-            # Also the successors, i.e. hooks occurring after the new hook
-            try:
-                hook_idx = _HOOK_ORDER.index(hook_config.id)
-            except ValueError:
-                msg = f"Hook '{hook_config.id}' not recognized."
-                raise NotImplementedError(msg) from None
-            precedents = _HOOK_ORDER[:hook_idx]
-            successors = _HOOK_ORDER[hook_idx + 1 :]
+        model.repos.append(repo)
+        mgr.commit_model(model)
+    else:
+        # There are existing hooks so we need to know where to insert the new hook.
 
-            existing_precedents = [
-                hook for hook in existing_hooks if hook in precedents
-            ]
-            existing_successors = [
-                hook for hook in existing_hooks if hook in successors
-            ]
+        # Get the precendents, i.e. hooks occurring before the new hook
+        # Also the successors, i.e. hooks occurring after the new hook
+        try:
+            hook_idx = _HOOK_ORDER.index(hook_config.id)
+        except ValueError:
+            msg = f"Hook '{hook_config.id}' not recognized."
+            raise NotImplementedError(msg) from None
+        precedents = _HOOK_ORDER[:hook_idx]
+        successors = _HOOK_ORDER[hook_idx + 1 :]
 
-            # Add immediately after the last precedecessor.
-            # If there isn't one, we want to add as late as possible without violating
-            # order, i.e. before the first successor, if there is one.
-            if existing_precedents:
-                last_precedent = existing_precedents[-1]
-            elif not existing_successors:
-                last_precedent = existing_hooks[-1]
+        existing_precedents = [hook for hook in existing_hooks if hook in precedents]
+        existing_successors = [hook for hook in existing_hooks if hook in successors]
+
+        # Add immediately after the last precedecessor.
+        # If there isn't one, we want to add as late as possible without violating
+        # order, i.e. before the first successor, if there is one.
+        if existing_precedents:
+            last_precedent = existing_precedents[-1]
+        elif not existing_successors:
+            last_precedent = existing_hooks[-1]
+        else:
+            first_successor = existing_successors[0]
+            first_successor_idx = existing_hooks.index(first_successor)
+            if first_successor_idx == 0:
+                last_precedent = None
             else:
-                first_successor = existing_successors[0]
-                first_successor_idx = existing_hooks.index(first_successor)
-                if first_successor_idx == 0:
-                    last_precedent = None
-                else:
-                    last_precedent = existing_hooks[first_successor_idx - 1]
+                last_precedent = existing_hooks[first_successor_idx - 1]
 
-            doc.model.repos = insert_repo(
-                repo_to_insert=repo,
-                existing_repos=doc.model.repos,
-                predecessor=last_precedent,
-            )
-
-        update_ruamel_yaml_map(
-            doc.content,
-            pre_commit_fancy_dump(doc.model, reference=doc.content),
-            preserve_comments=True,
+        model.repos = insert_repo(
+            repo_to_insert=repo,
+            existing_repos=model.repos,
+            predecessor=last_precedent,
         )
+
+        mgr.commit_model(model)
 
 
 def insert_repo(
@@ -206,29 +199,30 @@ def remove_hook(hook_id: str) -> None:
     If the hook doesn't exist, this function will have no effect. Meta hooks are
     ignored.
     """
-    with edit_pre_commit_config_yaml() as doc:
-        # search across the repos for any hooks with matching ID
-        for repo in doc.model.repos:
-            if isinstance(repo, MetaRepo) or repo.hooks is None:
-                continue
+    ensure_pre_commit_config_exists()
 
-            for hook in repo.hooks:
-                if hook_ids_are_equivalent(hook.id, hook_id):
-                    tick_print(
-                        f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'."
-                    )
-                    repo.hooks.remove(hook)
+    mgr = PreCommitConfigYAMLManager()
+    model = mgr.model_validate()
 
-            # if repo has no hooks, remove it
-            if not repo.hooks:
-                doc.model.repos.remove(repo)
+    # search across the repos for any hooks with matching ID
+    for repo in model.repos:
+        if isinstance(repo, MetaRepo) or repo.hooks is None:
+            continue
 
-        # If there are no more hooks, we should add a placeholder.
-        if not doc.model.repos:
-            doc.model.repos.append(_get_placeholder_repo_config())
+        for hook in repo.hooks:
+            if hook_ids_are_equivalent(hook.id, hook_id):
+                tick_print(f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'.")
+                repo.hooks.remove(hook)
 
-        dump = pre_commit_fancy_dump(doc.model, reference=doc.content)
-        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+        # if repo has no hooks, remove it
+        if not repo.hooks:
+            model.repos.remove(repo)
+
+    # If there are no more hooks, we should add a placeholder.
+    if not model.repos:
+        model.repos.append(_get_placeholder_repo_config())
+
+    mgr.commit_model(model)
 
 
 def get_hook_ids() -> list[str]:
@@ -237,8 +231,9 @@ def get_hook_ids() -> list[str]:
     if not path.exists():
         return []
 
-    with read_pre_commit_config_yaml() as doc:
-        return extract_hook_ids(doc.model)
+    mgr = PreCommitConfigYAMLManager()
+    model = mgr.model_validate()
+    return extract_hook_ids(model)
 
 
 def extract_hook_ids(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:

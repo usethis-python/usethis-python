@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import singledispatch
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from ruamel.yaml.comments import CommentedSeq
 from ruamel.yaml.scalarstring import LiteralScalarString
@@ -15,15 +15,15 @@ from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor,
     anchor_name_from_script_item,
 )
-from usethis._integrations.ci.bitbucket.cache import _add_caches_via_doc, remove_cache
-from usethis._integrations.ci.bitbucket.dump import bitbucket_fancy_dump
-from usethis._integrations.ci.bitbucket.errors import UnexpectedImportPipelineError
-from usethis._integrations.ci.bitbucket.io_ import (
-    edit_bitbucket_pipelines_yaml,
-    read_bitbucket_pipelines_yaml,
+from usethis._integrations.ci.bitbucket.cache import _add_caches_via_model, remove_cache
+from usethis._integrations.ci.bitbucket.errors import (
+    UnexpectedImportPipelineError,
+)
+from usethis._integrations.ci.bitbucket.init import (
+    ensure_bitbucket_pipelines_config_exists,
 )
 from usethis._integrations.ci.bitbucket.pipeweld import (
-    apply_pipeweld_instruction_via_doc,
+    apply_pipeweld_instruction_via_model,
     get_pipeweld_pipeline_from_default,
     get_pipeweld_step,
 )
@@ -41,16 +41,20 @@ from usethis._integrations.ci.bitbucket.schema import (
     StepItem,
 )
 from usethis._integrations.ci.bitbucket.schema_utils import step1tostep
+from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
 from usethis._integrations.environ.python import get_supported_minor_python_versions
-from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
     from ruamel.yaml.anchor import Anchor
 
     from usethis._integrations.ci.bitbucket.anchor import ScriptItemName
-    from usethis._integrations.ci.bitbucket.io_ import BitbucketPipelinesYAMLDocument
-    from usethis._integrations.ci.bitbucket.schema import Pipeline
+    from usethis._integrations.ci.bitbucket.schema import (
+        Pipeline,
+        PipelinesConfiguration,
+    )
+    from usethis._integrations.file.yaml.io_ import YAMLDocument
+
 
 _CACHE_LOOKUP = {
     "uv": CachePath("~/.cache/uv"),
@@ -77,6 +81,8 @@ for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
 
 
 def add_bitbucket_step_in_default(step: Step) -> None:
+    ensure_bitbucket_pipelines_config_exists()
+
     try:
         existing_steps = get_steps_in_default()
     except UnexpectedImportPipelineError:
@@ -92,14 +98,11 @@ def add_bitbucket_step_in_default(step: Step) -> None:
             return
 
     # Add the step to the default pipeline
-    with edit_bitbucket_pipelines_yaml() as doc:
-        _add_step_in_default_via_doc(step, doc=doc)
-        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
-        update_ruamel_yaml_map(
-            doc.content,
-            dump,
-            preserve_comments=True,
-        )
+    mgr = BitbucketPipelinesYAMLManager()
+    doc = mgr.get()
+    model = mgr.model_validate()
+    model = _add_step_in_default_via_model(step, model=model, doc=doc)
+    mgr.commit_model(model)
 
     # Remove the placeholder step if it already exists
     placeholder = _get_placeholder_step()
@@ -108,10 +111,10 @@ def add_bitbucket_step_in_default(step: Step) -> None:
         remove_bitbucket_step_from_default(placeholder)
 
 
-def _add_step_in_default_via_doc(
-    step: Step, *, doc: BitbucketPipelinesYAMLDocument
-) -> None:
-    _add_step_caches_via_doc(step, doc=doc)
+def _add_step_in_default_via_model(
+    step: Step, *, model: PipelinesConfiguration, doc: YAMLDocument
+) -> PipelinesConfiguration:
+    _add_step_caches_via_model(step, model=model)
 
     if step.name != _PLACEHOLDER_NAME:
         # We need to selectively choose to report at a higher level.
@@ -120,50 +123,10 @@ def _add_step_in_default_via_doc(
             f"Adding '{step.name}' to default pipeline in 'bitbucket-pipelines.yml'."
         )
 
-    config = doc.model
-
     step = step.model_copy(deep=True)
 
-    # If the step uses an anchorized script definition, add it to the definitions
-    # section
-    for idx, script_item in enumerate(step.script.root):
-        if isinstance(script_item, ScriptItemAnchor):
-            # We've found an anchorized script definition...
-
-            # Get the names of the anchors which are already defined in the file.
-            defined_script_item_by_name = get_defined_script_items_via_doc(doc=doc)
-
-            # If our anchor doesn't have a definition yet, we need to add it.
-            if script_item.name not in defined_script_item_by_name:
-                script_item_name = script_item.name
-                try:
-                    resolved_script_item = _SCRIPT_ITEM_LOOKUP[script_item.name]
-                except KeyError:
-                    msg = f"Unrecognized script item anchor: '{script_item.name}'."
-                    raise NotImplementedError(msg) from None
-
-                if config.definitions is None:
-                    config.definitions = Definitions()
-
-                existing_script_items = config.definitions.script_items
-
-                if existing_script_items is None:
-                    existing_script_items = CommentedSeq()
-                    config.definitions.script_items = existing_script_items
-
-                # Insert script item in canonical order based on _SCRIPT_ITEM_LOOKUP
-                insertion_index = _get_script_item_insertion_index(
-                    script_item_name=script_item_name,
-                    doc=doc,
-                )
-                existing_script_items.insert(insertion_index, resolved_script_item)
-                existing_script_items = CommentedSeq(existing_script_items)
-            else:
-                # Otherwise, if the anchor is already defined, we need to use the
-                # reference
-                resolved_script_item = defined_script_item_by_name[script_item.name]
-
-            step.script.root[idx] = resolved_script_item
+    # Resolve any anchorized script items in the step
+    step = _resolve_script_anchors(step, model=model, doc=doc)
 
     # If the step is unrecognized, it will go at the end.
     prerequisites: set[str] = set()
@@ -189,28 +152,116 @@ def _add_step_in_default_via_doc(
         prerequisites.add(step_name)
 
     weld_result = usethis._pipeweld.func.Adder(
-        pipeline=get_pipeweld_pipeline_from_default(doc.model),
+        pipeline=get_pipeweld_pipeline_from_default(model),
         step=get_pipeweld_step(step),
         prerequisites=prerequisites,
     ).add()
     for instruction in weld_result.instructions:
-        apply_pipeweld_instruction_via_doc(
-            instruction=instruction, step_to_insert=step, doc=doc
+        apply_pipeweld_instruction_via_model(
+            instruction=instruction, step_to_insert=step, model=model
         )
+
+    # Restore script_items to a serializable form
+    # We synchronized it to content's list for anchor detection, but the ruamel.yaml
+    # objects can't be serialized by pydantic. Convert to plain strings.
+    if model.definitions is not None and model.definitions.script_items is not None:
+        model.definitions.script_items = [
+            str(item) for item in model.definitions.script_items
+        ]
+
+    return model
+
+
+def _resolve_script_anchors(
+    step: Step, *, model: PipelinesConfiguration, doc: YAMLDocument
+) -> Step:
+    """Resolve script item anchors by adding definitions and replacing with references."""
+    # Process each script item in the step
+    for idx, script_item in enumerate(step.script.root):
+        if isinstance(script_item, ScriptItemAnchor):
+            # Get the names of the anchors which are already defined in the file
+            defined_script_item_by_name = get_defined_script_items(model=model, doc=doc)
+
+            # If our anchor doesn't have a definition yet, we need to add it
+            if script_item.name not in defined_script_item_by_name:
+                _add_script_item_definition(
+                    script_item_name=script_item.name, model=model, doc=doc
+                )
+                # Refresh the defined items after adding
+                defined_script_item_by_name = get_defined_script_items(
+                    model=model, doc=doc
+                )
+
+            # Replace the anchor reference with the actual script content
+            resolved_script_item = defined_script_item_by_name[script_item.name]
+            step.script.root[idx] = resolved_script_item
+
+    return step
+
+
+def _add_script_item_definition(
+    *,
+    script_item_name: ScriptItemName,
+    model: PipelinesConfiguration,
+    doc: YAMLDocument,
+) -> None:
+    """Add a script item definition to the YAML file's definitions section.
+
+    This function:
+    1. Looks up the script item in _SCRIPT_ITEM_LOOKUP
+    2. Ensures definitions.script_items exists in both model and doc.content
+    3. Inserts the item at the correct position based on canonical order
+    4. Synchronizes model.definitions.script_items with doc.content
+
+    Args:
+        script_item_name: The name of the script item anchor to add.
+        model: The pipelines configuration model to update.
+        doc: YAMLDocument to modify.
+
+    Raises:
+        NotImplementedError: If the script item name is not recognized.
+    """
+    try:
+        resolved_script_item = _SCRIPT_ITEM_LOOKUP[script_item_name]
+    except KeyError:
+        msg = f"Unrecognized script item anchor: '{script_item_name}'."
+        raise NotImplementedError(msg) from None
+
+    # Ensure definitions.script_items exists in both model and doc.content
+    content = cast("dict", doc.content)
+    if "definitions" not in content:
+        content["definitions"] = {}
+        if model.definitions is None:
+            model.definitions = Definitions()
+    if "script_items" not in content["definitions"]:
+        content["definitions"]["script_items"] = CommentedSeq()
+
+    # ALWAYS synchronize model to point to content's list
+    # This ensures model sees LiteralScalarString objects with anchors
+    if model.definitions is not None:
+        model.definitions.script_items = content["definitions"]["script_items"]
+
+    # Insert script item in canonical order based on _SCRIPT_ITEM_LOOKUP
+    insertion_index = _get_script_item_insertion_index(
+        script_item_name=script_item_name,
+        model=model,
+    )
+    content["definitions"]["script_items"].insert(insertion_index, resolved_script_item)
+
+    # Update model to point to the modified content list
+    if model.definitions is not None:
+        model.definitions.script_items = content["definitions"]["script_items"]
 
 
 def _get_script_item_insertion_index(
-    *, script_item_name: ScriptItemName, doc: BitbucketPipelinesYAMLDocument
+    *, script_item_name: ScriptItemName, model: PipelinesConfiguration
 ) -> int:
     """Get the correct insertion index for a script item to maintain canonical order."""
-    # Check if we have existing script items in the raw YAML content
-    if not (
-        dict(doc.content).get("definitions")
-        and dict(doc.content["definitions"]).get("script_items")
-    ):
+    # Check if we have existing script items in the model
+    if model.definitions is None or model.definitions.script_items is None:
         return 0
 
-    existing_script_items = doc.content["definitions"]["script_items"]
+    existing_script_items = model.definitions.script_items
     canonical_order = list(_SCRIPT_ITEM_LOOKUP.keys())
 
     for i, existing_item in enumerate(existing_script_items):
@@ -242,38 +293,38 @@ def remove_bitbucket_step_from_default(step: Step) -> None:
             f"Removing '{step.name}' from default pipeline in 'bitbucket-pipelines.yml'."
         )
 
-    with edit_bitbucket_pipelines_yaml() as doc:
-        config = doc.model
+    mgr = BitbucketPipelinesYAMLManager()
+    doc = mgr.get()
+    model = mgr.model_validate()
 
-        if config.pipelines is None:
-            return
+    if model.pipelines is None:
+        return
 
-        if config.pipelines.default is None:
-            return
+    if model.pipelines.default is None:
+        return
 
-        pipeline = config.pipelines.default
+    pipeline = model.pipelines.default
 
-        if isinstance(pipeline.root, ImportPipeline):
-            msg = "Cannot remove steps from an import pipeline."
-            raise UnexpectedImportPipelineError(msg)
+    if isinstance(pipeline.root, ImportPipeline):
+        msg = "Cannot remove steps from an import pipeline."
+        raise UnexpectedImportPipelineError(msg)
 
-        items = pipeline.root.root
+    items = pipeline.root.root
 
-        # Iterate over the items. Any item that contains the step is censored to remove
-        # references to the step. If the only thing in the item is the step, we get None
-        new_items: list[StepItem | ParallelItem | StageItem] = []
-        for item in items:
-            new_item = _censor_step(item, step=step)
-            if new_item is not None:
-                new_items.append(new_item)
-        pipeline.root.root = new_items
+    # Iterate over the items. Any item that contains the step is censored to remove
+    # references to the step. If the only thing in the item is the step, we get None
+    new_items: list[StepItem | ParallelItem | StageItem] = []
+    for item in items:
+        new_item = _censor_step(item, step=step)
+        if new_item is not None:
+            new_items.append(new_item)
+    pipeline.root.root = new_items
 
-        if len(new_items) == 0:
-            placeholder = _get_placeholder_step()
-            _add_step_in_default_via_doc(placeholder, doc=doc)
+    if len(new_items) == 0:
+        placeholder = _get_placeholder_step()
+        model = _add_step_in_default_via_model(placeholder, model=model, doc=doc)
 
-        dump = bitbucket_fancy_dump(doc.model, reference=doc.content)
-        update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
+    mgr.commit_model(model)
 
     if step.caches is not None:
         for cache in step.caches:
@@ -352,9 +403,7 @@ def is_cache_used(cache: str) -> bool:
     return False
 
 
-def _add_step_caches_via_doc(
-    step: Step, *, doc: BitbucketPipelinesYAMLDocument
-) -> None:
+def _add_step_caches_via_model(step: Step, *, model: PipelinesConfiguration) -> None:
     if step.caches is not None:
         cache_by_name = {}
         for name in step.caches:
@@ -367,7 +416,7 @@ def _add_step_caches_via_doc(
                 )
                 raise NotImplementedError(msg) from None
             cache_by_name[name] = cache
-        _add_caches_via_doc(cache_by_name, doc=doc)
+        _add_caches_via_model(cache_by_name, model=model)
 
 
 def bitbucket_steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
@@ -406,16 +455,16 @@ def get_steps_in_default() -> list[Step]:
     if not (usethis_config.cpd() / "bitbucket-pipelines.yml").exists():
         return []
 
-    with read_bitbucket_pipelines_yaml() as doc:
-        config = doc.model
+    mgr = BitbucketPipelinesYAMLManager()
+    model = mgr.model_validate()
 
-    if config.pipelines is None:
+    if model.pipelines is None:
         return []
 
-    if config.pipelines.default is None:
+    if model.pipelines.default is None:
         return []
 
-    pipeline = config.pipelines.default
+    pipeline = model.pipelines.default
 
     return _get_steps_in_pipeline(pipeline)
 
@@ -506,19 +555,23 @@ def _get_placeholder_step() -> Step:
         assert_never(backend)
 
 
-def get_defined_script_items_via_doc(
-    doc: BitbucketPipelinesYAMLDocument,
+def get_defined_script_items(
+    *, model: PipelinesConfiguration, doc: YAMLDocument
 ) -> dict[str, str]:
-    """These are the names of the anchors."""
-    config = doc.model
+    """Get defined script items with their anchor names.
 
-    if config.definitions is None:
+    Args:
+        model: The pipelines configuration model.
+        doc: YAMLDocument for accessing raw content with anchor information.
+    """
+    if model.definitions is None or model.definitions.script_items is None:
         return {}
 
-    if config.definitions.script_items is None:
+    content = cast("dict", doc.content)
+    if "definitions" not in content or "script_items" not in content["definitions"]:
         return {}
 
-    script_item_contents = doc.content["definitions"]["script_items"]
+    script_item_contents = content["definitions"]["script_items"]
 
     script_anchor_by_name = {}
     for script_item_content in script_item_contents:

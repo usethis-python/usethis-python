@@ -11,13 +11,13 @@ from usethis._integrations.pre_commit.hooks import (
     insert_repo,
     remove_hook,
 )
-from usethis._integrations.pre_commit.io_ import edit_pre_commit_config_yaml
 from usethis._integrations.pre_commit.schema import (
     HookDefinition,
     Language,
     LocalRepo,
     UriRepo,
 )
+from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._test import change_cwd
 
 
@@ -252,7 +252,8 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path), edit_pre_commit_config_yaml() as doc:
+        with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
+            existing_repos = mgr.model_validate().repos
             repos = insert_repo(
                 repo_to_insert=LocalRepo(
                     repo="local",
@@ -265,7 +266,7 @@ repos:
                         )
                     ],
                 ),
-                existing_repos=doc.model.repos,
+                existing_repos=existing_repos,
                 predecessor=None,
             )
 
@@ -323,7 +324,8 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path), edit_pre_commit_config_yaml() as doc:
+        with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
+            existing_repos = mgr.model_validate().repos
             repos = insert_repo(
                 repo_to_insert=LocalRepo(
                     repo="local",
@@ -336,7 +338,7 @@ repos:
                         )
                     ],
                 ),
-                existing_repos=doc.model.repos,
+                existing_repos=existing_repos,
                 predecessor="bar",
             )
 

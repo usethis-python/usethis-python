@@ -3,8 +3,11 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
+from usethis._config_file import files_manager
 from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
-from usethis._integrations.ci.bitbucket.io_ import edit_bitbucket_pipelines_yaml
+from usethis._integrations.ci.bitbucket.init import (
+    ensure_bitbucket_pipelines_config_exists,
+)
 from usethis._integrations.ci.bitbucket.schema import (
     Parallel,
     ParallelExpanded,
@@ -21,16 +24,16 @@ from usethis._integrations.ci.bitbucket.steps import (
     _CACHE_LOOKUP,
     Step,
     UnexpectedImportPipelineError,
-    _add_step_caches_via_doc,
+    _add_step_caches_via_model,
     add_bitbucket_step_in_default,
     add_placeholder_step_in_default,
     bitbucket_steps_are_equivalent,
-    get_defined_script_items_via_doc,
+    get_defined_script_items,
     get_steps_in_default,
     get_steps_in_pipeline_item,
     remove_bitbucket_step_from_default,
 )
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
 from usethis._test import change_cwd
 
 
@@ -49,7 +52,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
@@ -87,7 +90,7 @@ pipelines: {}
         )
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
@@ -121,7 +124,7 @@ pipelines: {}
         )
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Greeting",
@@ -161,12 +164,13 @@ pipelines:
             ),
         )
 
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(step)
 
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+        contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
 
-            # Act
+        # Act
+        with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(step)
 
         # Assert
@@ -195,19 +199,21 @@ pipelines:
             ),
         )
 
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             # Act
             add_bitbucket_step_in_default(step)
             add_bitbucket_step_in_default(other_step)
 
             # Assert
-            with edit_bitbucket_pipelines_yaml() as doc:
-                item_by_name = get_defined_script_items_via_doc(doc=doc)
-                assert len(item_by_name) == 1
+            mgr = BitbucketPipelinesYAMLManager()
+            doc = mgr.get()
+            model = mgr.model_validate()
+            item_by_name = get_defined_script_items(model=model, doc=doc)
+            assert len(item_by_name) == 1
 
     def test_order(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             # This step should be listed second
             add_bitbucket_step_in_default(
                 Step(
@@ -252,7 +258,7 @@ pipelines:
     def test_placeholder_removed(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_placeholder_step_in_default()
@@ -265,13 +271,13 @@ pipelines:
                 )
             )
 
-            # Assert
-            with open(uv_init_dir / "bitbucket-pipelines.yml") as f:
-                contents = f.read()
+        # Assert
+        with open(uv_init_dir / "bitbucket-pipelines.yml") as f:
+            contents = f.read()
 
-            assert (
-                contents
-                == """\
+        assert (
+            contents
+            == """\
 image: atlassian/default-image:3
 definitions:
     script_items:
@@ -287,13 +293,13 @@ pipelines:
             script:
               - echo 'Hello, world!'
 """
-            )
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Adding 'Greeting' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-                "✔ Removing cache 'uv' definition from 'bitbucket-pipelines.yml'.\n"
-            )
+        )
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == (
+            "✔ Adding 'Greeting' to default pipeline in 'bitbucket-pipelines.yml'.\n"
+            "✔ Removing cache 'uv' definition from 'bitbucket-pipelines.yml'.\n"
+        )
 
     def test_add_script_item_to_existing_file(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
@@ -320,7 +326,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Farewell",
@@ -388,7 +394,7 @@ pipelines:
         )
 
         # Act - add a step that uses install-uv
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Install uv",
@@ -461,7 +467,7 @@ pipelines:
         )
 
         # Act - add a step that uses ensure-venv
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Setup venv",
@@ -518,7 +524,7 @@ pipelines: {}
         )
 
         # Act - add steps with script items in reverse canonical order
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             # Add ensure-venv first (should end up second)
             add_bitbucket_step_in_default(
                 Step(
@@ -601,7 +607,7 @@ pipelines:
         )
 
         # Act - add a step that uses install-uv
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
                 Step(
                     name="Install uv",
@@ -669,7 +675,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
@@ -694,7 +700,7 @@ pipelines:
 
     def test_no_file(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
@@ -714,7 +720,7 @@ pipelines: {}
         (tmp_path / "bitbucket-pipelines.yml").write_text(txt)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
@@ -733,7 +739,7 @@ image: atlassian/default-image:3
         (tmp_path / "bitbucket-pipelines.yml").write_text(txt)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
@@ -756,7 +762,11 @@ pipelines:
         )
 
         # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(UnexpectedImportPipelineError):
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            pytest.raises(UnexpectedImportPipelineError),
+        ):
             remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
@@ -784,7 +794,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
@@ -827,7 +837,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
@@ -870,7 +880,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
@@ -909,7 +919,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
@@ -966,7 +976,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Greeting",
@@ -1011,7 +1021,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
@@ -1063,7 +1073,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
@@ -1111,7 +1121,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             remove_bitbucket_step_from_default(
                 Step(
                     name="Farewell",
@@ -1250,7 +1260,7 @@ pipelines:
 
     def test_contents(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             add_placeholder_step_in_default()
 
         # Assert
@@ -1277,7 +1287,7 @@ pipelines:
         )
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             add_placeholder_step_in_default()
 
         # Assert
@@ -1288,9 +1298,15 @@ pipelines:
 
 class TestGetDefinedScriptItemNames:
     def test_empty(self, tmp_path: Path):
+        # Arrange
+        with change_cwd(tmp_path), files_manager():
+            ensure_bitbucket_pipelines_config_exists()
+
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            item_by_name = get_defined_script_items_via_doc(doc=doc)
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            doc = mgr.get()
+            model = mgr.model_validate()
+            item_by_name = get_defined_script_items(model=model, doc=doc)
 
         # Assert
         assert item_by_name == {}
@@ -1304,8 +1320,10 @@ image: atlassian/default-image:3
         )
 
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            item_by_name = get_defined_script_items_via_doc(doc=doc)
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            doc = mgr.get()
+            model = mgr.model_validate()
+            item_by_name = get_defined_script_items(model=model, doc=doc)
 
         # Assert
         assert item_by_name == {}
@@ -1322,8 +1340,10 @@ definitions:
         )
 
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            item_by_name = get_defined_script_items_via_doc(doc=doc)
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            doc = mgr.get()
+            model = mgr.model_validate()
+            item_by_name = get_defined_script_items(model=model, doc=doc)
 
         # Assert
         assert item_by_name == {}
@@ -1340,8 +1360,10 @@ definitions:
         )
 
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            item_by_name = get_defined_script_items_via_doc(doc=doc)
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            doc = mgr.get()
+            model = mgr.model_validate()
+            item_by_name = get_defined_script_items(model=model, doc=doc)
 
         # Assert
         assert item_by_name == {}
@@ -1359,8 +1381,10 @@ definitions:
         )
 
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            item_by_name = get_defined_script_items_via_doc(doc=doc)
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            doc = mgr.get()
+            model = mgr.model_validate()
+            item_by_name = get_defined_script_items(model=model, doc=doc)
 
         # Assert
         assert list(item_by_name.keys()) == ["say-hello"]
@@ -1378,8 +1402,10 @@ definitions:
         )
 
         # Act
-        with change_cwd(tmp_path), edit_bitbucket_pipelines_yaml() as doc:
-            item_by_name = get_defined_script_items_via_doc(doc=doc)
+        with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
+            doc = mgr.get()
+            model = mgr.model_validate()
+            item_by_name = get_defined_script_items(model=model, doc=doc)
 
         # Assert
         assert item_by_name == {}
@@ -1402,17 +1428,18 @@ image: atlassian/default-image:3
         )
         with (
             change_cwd(tmp_path),
-            pytest.raises(NotImplementedError, match=match),
-            edit_bitbucket_pipelines_yaml() as doc,
+            BitbucketPipelinesYAMLManager() as mgr,
         ):
-            _add_step_caches_via_doc(
-                step=Step(
-                    name="Greeting",
-                    caches=["unrecognized"],
-                    script=Script(["echo 'Hello, world!'"]),
-                ),
-                doc=doc,
-            )
+            model = mgr.model_validate()
+            with pytest.raises(NotImplementedError, match=match):
+                _add_step_caches_via_model(
+                    step=Step(
+                        name="Greeting",
+                        caches=["unrecognized"],
+                        script=Script(["echo 'Hello, world!'"]),
+                    ),
+                    model=model,
+                )
 
 
 class TestStepsAreEquivalent:
@@ -1502,7 +1529,7 @@ class TestStepsAreEquivalent:
 class TestGetStepsInDefault:
     def test_no_file(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             steps = get_steps_in_default()
 
         # Assert
@@ -1516,7 +1543,7 @@ image: atlassian/default-image:3
         (tmp_path / "bitbucket-pipelines.yml").write_text(content)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             steps = get_steps_in_default()
 
         # Assert
@@ -1531,7 +1558,7 @@ pipelines: {}
         (tmp_path / "bitbucket-pipelines.yml").write_text(content)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             steps = get_steps_in_default()
 
         # Assert
@@ -1552,7 +1579,7 @@ pipelines:
         (tmp_path / "bitbucket-pipelines.yml").write_text(content)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             steps = get_steps_in_default()
 
         # Assert
@@ -1572,7 +1599,7 @@ pipelines:
         (tmp_path / "bitbucket-pipelines.yml").write_text(content)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             steps = get_steps_in_default()
 
         # Assert
@@ -1594,5 +1621,9 @@ pipelines:
         (tmp_path / "bitbucket-pipelines.yml").write_text(content)
 
         # Act, Assert
-        with change_cwd(tmp_path), pytest.raises(UnexpectedImportPipelineError):
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            pytest.raises(UnexpectedImportPipelineError),
+        ):
             get_steps_in_default()

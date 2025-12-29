@@ -1,5 +1,5 @@
 from usethis._config import usethis_config
-from usethis._integrations.pre_commit.io_ import read_pre_commit_config_yaml
+from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 
 
 def get_minimum_pre_commit_version() -> str | None:
@@ -14,5 +14,6 @@ def get_minimum_pre_commit_version() -> str | None:
     if not path.exists():
         return None
 
-    with read_pre_commit_config_yaml() as doc:
-        return doc.model.minimum_pre_commit_version
+    mgr = PreCommitConfigYAMLManager()
+    model = mgr.model_validate()
+    return model.minimum_pre_commit_version

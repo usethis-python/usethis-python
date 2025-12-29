@@ -5,7 +5,6 @@ import pytest
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._deps import add_deps_to_group
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.core import (
     install_pre_commit_hooks,
     remove_pre_commit_config,
@@ -67,7 +66,7 @@ class TestInstallPreCommitHooks:
         # This is needed to check the standard (non-frozen) message
 
         # Arrange
-        with change_cwd(uv_env_dir), PyprojectTOMLManager():
+        with change_cwd(uv_env_dir), files_manager():
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()
@@ -89,7 +88,7 @@ class TestInstallPreCommitHooks:
         self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
         # Arrange
-        with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_repo_dir), files_manager():
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()
@@ -133,7 +132,7 @@ class TestUninstallPreCommitHooks:
         # This is needed to check the standard (non-frozen) message
 
         # Arrange
-        with change_cwd(uv_env_dir), PyprojectTOMLManager():
+        with change_cwd(uv_env_dir), files_manager():
             add_deps_to_group([Dependency(name="pre-commit")], "dev")
             add_placeholder_hook()
             capfd.readouterr()

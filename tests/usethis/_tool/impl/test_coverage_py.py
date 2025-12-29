@@ -107,3 +107,19 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             assert (tmp_path / ".coveragerc.toml").read_text() == (
                 '[run]\nsource = ["existing"]\n'
             )
+
+        def test_relative_files_set_to_true(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "example"
+version = "0.1.0"
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                CoveragePyTool().add_configs()
+
+            # Assert
+            content = (tmp_path / "pyproject.toml").read_text()
+            assert "relative_files = true" in content

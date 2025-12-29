@@ -3240,7 +3240,7 @@ repos:
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 use_requirements_txt(remove=True)
 
             # Assert

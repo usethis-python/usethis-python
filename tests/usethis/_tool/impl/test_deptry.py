@@ -282,7 +282,7 @@ name = "test-project"
             (tmp_path / "src" / "test_project" / "__init__.py").touch()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = DeptryTool().get_pre_commit_config()
 
             # Assert
@@ -307,7 +307,7 @@ repos: []
             (tmp_path / "src" / "test_project" / "__init__.py").touch()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = DeptryTool().get_pre_commit_config()
 
             # Assert
@@ -332,7 +332,7 @@ repos: []
             (tmp_path / "src" / "test_project" / "__init__.py").touch()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = DeptryTool().get_pre_commit_config()
 
             # Assert
@@ -359,7 +359,7 @@ repos: []
             (tmp_path / "src" / "test_project" / "__init__.py").touch()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = DeptryTool().get_pre_commit_config()
 
             # Assert

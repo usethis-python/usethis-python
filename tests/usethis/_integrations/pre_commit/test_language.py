@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from usethis._config_file import files_manager
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.schema import Language
 from usethis._test import change_cwd
@@ -18,7 +19,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_system_language()
 
         # Assert
@@ -38,7 +39,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_system_language()
 
         # Assert
@@ -56,7 +57,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_system_language()
 
         # Assert
@@ -64,7 +65,7 @@ repos:
 
     def test_returns_system_when_config_doesnt_exist(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_system_language()
 
         # Assert
@@ -81,7 +82,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_system_language()
 
         # Assert
@@ -99,7 +100,7 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path):
+        with change_cwd(tmp_path), files_manager():
             result = get_system_language()
 
         # Assert

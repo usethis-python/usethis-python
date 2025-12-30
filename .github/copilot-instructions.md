@@ -24,6 +24,8 @@
 
 **Common Warning:** You may see warnings like "Failed to uninstall package at .venv\Lib\site-packages\usethis-*.dist-info due to missing RECORD file." This is normal and doesn't affect functionality.
 
+**Interacting with git**: Try to avoid interacting with git directly without user instruction. Don't ever modify `.gitignore` or other git config files without explicit user consent.
+
 ## Testing
 
 ### Running Tests

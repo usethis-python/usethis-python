@@ -292,12 +292,7 @@ class Tool(Protocol):
         """Migrate the tool's configuration to pre-commit."""
         if self.is_used():
             pre_commit_config = self.get_pre_commit_config()
-            # For tools that don't require a venv for their pre-commits, we will
-            # remove the dependency as an explicit dependency, and make it
-            # pre-commit only.
-            if not pre_commit_config.any_require_venv:
-                self.remove_dev_deps()
-
+            # N.B. don't need to modify dev deps
             # We're migrating, so sometimes we might need to inform the user about the
             # new way to do things.
             if pre_commit_config.inform_how_to_use_on_migrate:
@@ -307,11 +302,7 @@ class Tool(Protocol):
         """Migrate the tool's configuration from pre-commit."""
         if self.is_used():
             pre_commit_config = self.get_pre_commit_config()
-            # For tools that don't require a venv for their pre-commits, we will
-            # need to add the dependency explicitly.
-            if not pre_commit_config.any_require_venv:
-                self.add_dev_deps()
-
+            # N.B. don't need to modify dev deps
             # We're migrating, so sometimes we might need to inform the user about
             # the new way to do things.
             if pre_commit_config.inform_how_to_use_on_migrate:

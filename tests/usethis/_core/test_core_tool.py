@@ -2115,7 +2115,7 @@ repos:
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_codepsell_used(
+        def test_codespell_used(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
             with change_cwd(uv_init_dir), files_manager():

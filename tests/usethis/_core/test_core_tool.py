@@ -3195,7 +3195,7 @@ pipelines:
 
 class TestRequirementsTxt:
     class TestAdd:
-        def test_start_from_nothing(
+        def test_start_from_nothing_uv_backend(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
         ):
             # Act
@@ -3216,6 +3216,26 @@ class TestRequirementsTxt:
                 "✔ Writing 'requirements.txt'."
                 "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
             )
+
+        def test_start_from_nothing_none_backend(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Writing 'requirements.txt'.\n"
+            content = (tmp_path / "requirements.txt").read_text()
+            assert content == "-e .\n"
 
         def test_start_from_uv_init(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]

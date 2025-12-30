@@ -27,9 +27,9 @@ As another example, to use pytest, run:
 $ uvx usethis tool pytest
 ✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.
 ✔ Adding pytest config to 'pyproject.toml'.
-✔ Selecting Ruff rule 'PT' in 'pyproject.toml'.
 ✔ Creating '/tests'.
 ✔ Writing '/tests/conftest.py'.
+✔ Selecting Ruff rule 'PT' in 'pyproject.toml'.
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.
 ☐ Run 'uv run pytest' to run the tests.

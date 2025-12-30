@@ -6,7 +6,7 @@
 
 - Previously, when available, uv would be used as a package manager backend when `pyproject.toml` existed, even if there was no lockfile. This was considered to have too many false positives for projects using different systems (e.g. `setup.py` with linter configuration in `pyproject.toml`). Now, in lieu of any other evidence such as `[tool.uv]` sections in `pyproject.toml`, the default is to use the `--backend=none` behaviour.
 
-- Previously, tools configured via `pre-commit` would not be declared as dev dependencies unless necessary, namely the tools codespell and pyproject-fmt. Now, they are always be declared as a dev dependencies (when using the uv package manager backend).
+- Previously, tools configured via `pre-commit` would not be declared as dev dependencies unless necessary, namely the tools codespell and pyproject-fmt. Now, they are always declared as dev dependencies (when using the uv package manager backend).
 
 ### 🚀 New Features
 

@@ -309,7 +309,16 @@ class Tool(Protocol):
                 self.print_how_to_use()
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
-        """Get relative paths to all active configuration files."""
+        """Get file managers for all active configuration files.
+
+        Active configuration files are just those that we expect to use based on our
+        strategy for deciding on relevant files: this is a combination of the resolution
+        methodology associated with the tool, and hard-coded preferences for certain
+        files.
+
+        Most commonly, this will just be a single file manager. The active config files
+        themselves do not necessarily exist yet.
+        """
         config_spec = self.get_config_spec()
         resolution = config_spec.resolution
         return self._get_active_config_file_managers_from_resolution(
@@ -428,8 +437,14 @@ class Tool(Protocol):
     ) -> bool:
         """Add a specific configuration item using specified file managers.
 
-        Returns whether any config was added. Config might not be added in some cases
-        where it's conditional and not applicable based on the current project state.
+        Args:
+            config_item: The configuration item to add.
+            file_managers: The set of (active) file managers to consider for adding the
+                           config.
+
+        Returns:
+            Whether any config was added. Config might not be added in some cases where
+            it's conditional and not applicable based on the current project state.
         """
         # This is mostly a helper method for `add_configs`.
 
@@ -440,45 +455,61 @@ class Tool(Protocol):
             for file_manager in file_managers
             if file_manager.path in config_item.paths
         ]
-
+        # Validate the filter is not empty
         if not used_file_managers:
             if config_item.applies_to_all:
                 msg = f"No active config file managers found for one of the '{self.name}' config items."
                 raise NotImplementedError(msg)
             else:
                 # Early exit; this config item is not managed by any active files
-                # so it's optional, effectively.
+                # and explicitly declares itself not-applicable-to-all-files, so it's
+                # optional, effectively. See docs for ConfigItem.applies_to_all to
+                # understand the motivation for this better.
                 return False
 
+        # Now, filter the config entries associated with the item to just those
+        # relevant to the active file managers
+        # Usually, there will only be one such entry (since there is usually one entry
+        # per file manager)
         config_entries = [
             config_item
             for relative_path, config_item in config_item.root.items()
             if relative_path
             in {file_manager.relative_path for file_manager in used_file_managers}
         ]
+        # Validate the filter is not empty
         if not config_entries:
             msg = f"No config entries found for one of the '{self.name}' config items."
             raise NotImplementedError(msg)
+
+        # Focus on the one entry
         if len(config_entries) != 1:
             msg = (
                 "Adding config is not yet supported for the case of multiple "
                 "active config files."
             )
             raise NotImplementedError(msg)
-
         (entry,) = config_entries
 
         if isinstance(entry.get_value(), NoConfigValue):
             # No value to add, so skip this config item.
             return False
 
-        # N.B. we wait to create files until after all `return False` lines to avoid
+        # Create the config files if they don't exist yet.
+        # N.B. we wait to do this until after all `return False` lines to avoid
         # creating empty files unnecessarily.
         for file_manager in used_file_managers:
             if not (file_manager.path.exists() and file_manager.path.is_file()):
                 tick_print(f"Writing '{file_manager.relative_path}'.")
                 file_manager.path.touch(exist_ok=True)
 
+        # Try and identify which file manager to use for adding the config, based on
+        # where existing config is located and our priority order
+        # The idea is that the config is located at a given key sequence (e.g.
+        # ["tool", "ruff", "line-length"]), and we we will look for existing config
+        # using at least a shared subset of those e.g. ["tool", "ruff"], and
+        # preferentially add to the highest-priority file manager which already has
+        # config at that shared key sequence.
         shared_keys = []
         for key in entry.keys:
             shared_keys.append(key)
@@ -490,7 +521,6 @@ class Tool(Protocol):
             if not new_file_managers:
                 break
             used_file_managers = new_file_managers
-
         # Now, use the highest-priority file manager to add the config
         (used_file_manager, *_) = used_file_managers
 

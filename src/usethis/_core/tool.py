@@ -66,8 +66,8 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
     if not remove:
         ensure_dep_declaration_file()
 
+        tool.add_dev_deps()
         if not PreCommitTool().is_used():
-            tool.add_dev_deps()
             tool.update_bitbucket_steps()
         else:
             tool.add_pre_commit_config()
@@ -272,8 +272,8 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
     if not remove:
         ensure_dep_declaration_file()
 
+        tool.add_dev_deps()
         if not PreCommitTool().is_used():
-            tool.add_dev_deps()
             tool.update_bitbucket_steps()
         else:
             tool.add_pre_commit_config()

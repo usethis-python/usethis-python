@@ -151,9 +151,9 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 use_codespell()
 
                 # Assert
-                # Check dependencies - shouldn't have installed codespell
+                # Check dependencies - should have installed codespell (issue #1020)
                 dev_deps = get_deps_from_group("dev")
-                assert all(dep.name != "codespell" for dep in dev_deps)
+                assert any(dep.name == "codespell" for dep in dev_deps)
 
                 # Check hook names
                 hook_names = get_hook_ids()
@@ -162,10 +162,14 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             # Check output
             out, err = capfd.readouterr()
             assert not err
+            # Note: Since deps are now added (issue #1020), the message is "uv run codespell"
+            # not "pre-commit run codespell" because get_install_method() returns "devdep"
             assert out.replace("\n", "") == (
+                "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'."
+                "☐ Install the dependency 'codespell'."
                 "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'."
                 "✔ Adding Codespell config to 'pyproject.toml'."
-                "☐ Run 'uv run pre-commit run codespell --all-files' to run the Codespell spellchecker."
+                "☐ Run 'uv run codespell' to run the Codespell spellchecker."
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -854,6 +858,10 @@ dev = []
                 use_deptry()
 
                 # Assert
+                # Check dependencies - SHOULD have installed deptry (issue #1020)
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "deptry" for dep in dev_deps)
+
                 hook_names = get_hook_ids()
 
             # 1. File exists
@@ -1675,10 +1683,15 @@ repos:
             with change_cwd(uv_init_repo_dir), files_manager():
                 use_import_linter()
 
-            # Assert
+                # Assert
+                # Check dependencies - should have installed import-linter (issue #1020)
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "import-linter" for dep in dev_deps)
+
             contents = (uv_init_repo_dir / ".pre-commit-config.yaml").read_text()
             assert "import-linter" in contents
             assert "placeholder" not in contents
+
             out, err = capfd.readouterr()
             assert not err
             assert out == (
@@ -1977,9 +1990,9 @@ repos:
                 hook_names = get_hook_ids()
                 assert "pyproject-fmt" in hook_names
 
+                # Issue #1020: Deps should remain even when using pre-commit
                 dev_deps = get_deps_from_group("dev")
-                for dev_dep in dev_deps:
-                    assert dev_dep.name != "pyproject-fmt"
+                assert any(dep.name == "pyproject-fmt" for dep in dev_deps)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_codespell_used(self, uv_init_repo_dir: Path):
@@ -1994,9 +2007,9 @@ repos:
                 hook_names = get_hook_ids()
                 assert "codespell" in hook_names
 
+                # Issue #1020: Deps should remain even when using pre-commit
                 dev_deps = get_deps_from_group("dev")
-                for dep in dev_deps:
-                    assert dep.name != "codespell"
+                assert any(dep.name == "codespell" for dep in dev_deps)
 
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2091,12 +2104,13 @@ repos:
 
                 # Assert
                 out, _ = capfd.readouterr()
+                # Note: Since deps are now added when tool is used with pre-commit (issue #1020),
+                # the dependency is already present and doesn't need to be re-added when
+                # removing pre-commit.
                 assert out == (
                     "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
-                    "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
-                    "☐ Install the dependency 'pyproject-fmt'.\n"
                     "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
@@ -2117,12 +2131,13 @@ repos:
                 # Assert
                 out, err = capfd.readouterr()
                 assert not err
+                # Note: Since deps are now added when tool is used with pre-commit (issue #1020),
+                # the dependency is already present and doesn't need to be re-added when
+                # removing pre-commit.
                 assert out == (
                     "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
                     "✔ Removing '.pre-commit-config.yaml'.\n"
                     "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
-                    "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
-                    "☐ Install the dependency 'codespell'.\n"
                     "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
                 )
 
@@ -2267,6 +2282,53 @@ pipelines:
                     change_toml=False,
                 )
 
+    class TestMigration:
+        """Test migration of tools to/from pre-commit (issue #1020)."""
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_deps_not_removed_when_migrating_to_pre_commit(self, uv_init_dir: Path):
+            """Test that deps are NOT removed when migrating to pre-commit."""
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange - Add a tool first
+                use_codespell()
+
+                # Verify dep is present before migration
+                dev_deps_before = get_deps_from_group("dev")
+                assert any(dep.name == "codespell" for dep in dev_deps_before)
+
+                # Act - Add pre-commit (which triggers migration)
+                use_pre_commit()
+
+                # Assert - Dep should STILL be present after migration (issue #1020)
+                dev_deps_after = get_deps_from_group("dev")
+                assert any(dep.name == "codespell" for dep in dev_deps_after)
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_deps_not_added_when_migrating_from_pre_commit(self, uv_init_dir: Path):
+            """Test that deps are NOT re-added when migrating from pre-commit."""
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange - Add pre-commit first, then a tool
+                use_pre_commit()
+                use_codespell()
+
+                # Verify dep is present before removal
+                dev_deps_before = get_deps_from_group("dev")
+                codespell_deps_before = [
+                    dep for dep in dev_deps_before if dep.name == "codespell"
+                ]
+                assert len(codespell_deps_before) == 1
+
+                # Act - Remove pre-commit (which triggers migration)
+                use_pre_commit(remove=True)
+
+                # Assert - Dep should still be present exactly once (not duplicated)
+                dev_deps_after = get_deps_from_group("dev")
+                codespell_deps_after = [
+                    dep for dep in dev_deps_after if dep.name == "codespell"
+                ]
+                assert len(codespell_deps_after) == 1
+                assert codespell_deps_after == codespell_deps_before
+
 
 class TestPyprojectFmt:
     class TestAdd:
@@ -2345,6 +2407,39 @@ keep_full_version = true
                 "✔ Adding 'Run pyproject-fmt' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
                 "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pre_commit_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Issue #1020: deps should be added even when pre-commit is used
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_pyproject_fmt()
+
+                # Assert
+                # Check dependencies - should have installed pyproject-fmt (issue #1020)
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "pyproject-fmt" for dep in dev_deps)
+
+                # Check hook names
+                hook_names = get_hook_ids()
+                assert "pyproject-fmt" in hook_names
+
+            # Check output
+            out, err = capfd.readouterr()
+            assert not err
+            assert out.replace("\n", "") == (
+                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'."
+                "☐ Install the dependency 'pyproject-fmt'."
+                "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'."
+                "✔ Adding pyproject-fmt config to 'pyproject.toml'."
+                "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt."
             )
 
     class TestRemove:
@@ -2438,12 +2533,12 @@ foo = "bar"
             assert "pyproject-fmt" not in contents
             out, err = capfd.readouterr()
             assert not err
+            # Issue #1020: Deps are now present even with pre-commit, so they're removed
             assert out == (
                 "✔ Removing pyproject-fmt config from 'pyproject.toml'.\n"
                 "✔ Removing hook 'pyproject-fmt' from '.pre-commit-config.yaml'.\n"
+                "✔ Removing dependency 'pyproject-fmt' from the 'dev' group in 'pyproject.toml'.\n"
             )
-            # N.B. we don't remove it as a dependency because it's not a dep when
-            # pre-commit is used.
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove_without_precommit(
@@ -3648,10 +3743,12 @@ select = ["F"]
             assert "ruff" not in contents
             out, err = capfd.readouterr()
             assert not err
+            # Issue #1020: Deps are now present even with pre-commit, so they're removed
             assert out == (
                 "✔ Removing hook 'ruff-check' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing hook 'ruff-format' from '.pre-commit-config.yaml'.\n"
                 "✔ Removing Ruff config from 'pyproject.toml'.\n"
+                "✔ Removing dependency 'ruff' from the 'dev' group in 'pyproject.toml'.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")

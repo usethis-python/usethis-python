@@ -1,42 +1,64 @@
+minimum_prek_version: 0.2.23
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: v0.4.0
     hooks:
       - id: sync-with-uv
+        priority: 0 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.9.8
     hooks:
-      - id: uv-lock
       - id: uv-sync
+        priority: 0
       - id: uv-export
+        priority: 0
       - id: uv-export
         args: ["--frozen", "--only-group=doc", "--output-file=docs/requirements.txt", "--quiet"]
+        priority: 0
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
+        priority: 0
       - id: check-case-conflict
+        priority: 0
       - id: check-merge-conflict
+        priority: 0
       - id: check-symlinks
+        priority: 0
       - id: check-yaml
+        priority: 0
       - id: debug-statements
+        priority: 0
       - id: name-tests-test
         args: [--pytest-test-first]
+        priority: 0
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:
       - id: validate-pyproject
+        priority: 0
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: v2.5.0
     hooks:
       - id: pyproject-fmt
         args: [--max-supported-python=3.14]
+        priority: 0
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.3
     hooks:
       - id: ruff-check
         args: [--fix]
+        priority: 0
       - id: ruff-format
+        priority: 0
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.1
+    hooks:
+      - id: codespell
+        additional_dependencies:
+          - tomli
+        priority: 0
   - repo: local
     hooks:
       - id: deptry
@@ -45,12 +67,7 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
-    hooks:
-      - id: codespell
-        additional_dependencies:
-          - tomli
+        priority: 1
   - repo: local
     hooks:
       - id: import-linter
@@ -59,6 +76,7 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
+        priority: 1
   - repo: local
     hooks:
       - id: ty
@@ -68,6 +86,7 @@ repos:
         types_or: [python, pyi]
         always_run: true
         require_serial: true
+        priority: 1
 default_stages:
   - pre-commit
   - pre-push

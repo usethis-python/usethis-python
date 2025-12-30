@@ -1,5 +1,85 @@
 # Changelog
 
+## 0.18.0
+
+### 💥 Changes
+
+- Previously, when available, uv would be used as a package manager backend when `pyproject.toml` existed, even if there was no lockfile. This was considered to have too many false positives for projects using different systems (e.g. `setup.py` with linter configuration in `pyproject.toml`). Now, in lieu of any other evidence such as `[tool.uv]` sections in `pyproject.toml`, the default is to use the `--backend=none` behaviour.
+
+- Previously, tools configured via `pre-commit` would not be declared as dev dependencies unless necessary, namely the tools codespell and pyproject-fmt. Now, they are always be declared as a dev dependencies (when using the uv package manager backend).
+
+### 🚀 New Features
+
+- Import Linter contract inference via `usethis tool import-linter` now supports namespace packages.
+
+- The new `.coveragerc.toml` file introduced by Coverage.py in v7.13.0 is now supported by usethis.
+
+- The new `pre-commit` language alias of `unsupported` instead of `system` introduced in `v4.4.0` is now used when the minimum version of pre-commit is declared via `minimum_pre_commit_version` at 4.4.0 or greater.
+
+- The default Coverage.py configuration now sets `relative_files = true` to use relative paths e.g. in XML coverage reports. This helps improve robustness when parsing coverage reports as artifacts between CI jobs.
+
+- By default, usethis will now explicitly include dev dependencies in `requirements.txt` export configuration when using `usethis tool requirements.txt`. Previously this was implicit via the editable install `-e .` declaration.
+
+- There is now a `usethis show backend` command which emits the inferred backend (currently; one of `uv` or `none`).
+
+### 🐞 Bug Fixes
+
+- There are no longer fatal crashes while running `usethis tool import-linter` in the presence of empty directories in the source directory.
+
+- Root-level `.py` files (e.g. `setup.py`) are no longer considered packages for Import Linter contract inference when using `usethis tool import-linter`.
+
+### 🦾 Robustness
+
+- A speedup of up to 30% has been achieved in some situations by using atomic writes (and reducing duplicated reads) for YAML files.
+
+- When using the uv backend, if `pyproject.toml` does not yet exist, it will not be created unnecessarily when running `usethis tool requirements.txt`.
+
+- Test directory-related ignores for Ruff config (i.e. referencing `tests/**`) are now only generated when the `tests` directory actually exists.
+
+- `PT`-code Ruff rules (relating to pytest) are explicitly ignored for non-tests directories.
+
+- Error messages for subprocess failures now emit the failing command for better diagnosability.
+
+- Subprocess failures for uv no longer emit the full `pyproject.toml` contents.
+
+### 🧹 Maintenance
+
+- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically support for new options available regarding pipeline triggers and self-hosted runners.
+
+### 📚 Documentation
+
+- There is now dedicated guidance [on the docs site](https://usethis.readthedocs.io/en/latest/frameworks/) for using usethis together with popular frameworks like Django, FastAPI, and Dagster.
+
+- A detailed example of `usethis init` has been pulled out the README into a [dedicated docs page](https://usethis.readthedocs.io/en/latest/start/detailed-example/).
+
+- The license is now documented [on the docs site](https://usethis.readthedocs.io/en/latest/about-license/) (in addition to the `LICENSE` file).
+
+- Branding (colours, project naming) etc. is now documented in `CONTRIBUTING.md`.
+
+- There is now a favicon on the docs site.
+
+- There are now dedicated 404 pages for the docs site.
+
+- The correct URL is now used for the pyproject-fmt homepage.
+
+### 📦 Packaging
+
+- As per the notes for 0.16.0, Version 0.18.13 of ruamel.yaml introduced a regression relating to indentation. The new version 0.18.17 of ruamel.yaml is now also excluded as a dependency version until this is addressed in a future release.
+
+### 🔧 Internal Changes
+
+- As of uv version 0.8.18, uv now allows `pyproject.toml` to be missing `[project]` sections. This causes changes to tested behaviour of usethis, and so the lowest tested version of uv is now v0.8.18. Going forward, it is not recommended to use older versions of uv with usethis.
+
+- The GitHub Actions for publishing to PyPI now use separate build and publish steps [to reduce the scope of publish token permissions](https://docs.pyx.dev/publishing#publishing-with-a-trusted-publisher).
+
+- CI pipelines are now triggered for all changes, including documentation-only changes, since documentation includes tested codeblocks.
+
+- Codspeed runners in CI now run on Python 3.13 to reduce duplication between Python 3.14 runners.
+
+- The config for prek now uses the [`priority`](https://prek.j178.dev/configuration/#priority) option to enable concurrency between hooks.
+
+- The pyright-style type checker has been migrated from pyright to a similar alternative, basedpyright.
+
 ## 0.17.0
 
 ### 🚀 New Features

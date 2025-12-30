@@ -77,7 +77,7 @@ The following checks run automatically via prek (pre-commit framework). All must
 9. **deptry** - Checks for missing/unused dependencies (`uv run deptry src`)
 10. **codespell** - Spell checker
 11. **import-linter** - Enforces architecture constraints (`uv run lint-imports`)
-12. **pyright** - Type checker (`uv run pyright`)
+12. **ty** - Type checker (`uv run ty`)
 
 **To run all checks manually:**
 ```bash
@@ -86,12 +86,12 @@ uv run prek run --all-files
 
 **Individual validation commands:**
 ```bash
-uv run ruff check --fix          # Linter with autofixes
+uv run ruff check --fix           # Linter with autofixes
 uv run ruff format                # Formatter
 uv run deptry src                 # Dependency checker
 uv run codespell                  # Spell checker
 uv run lint-imports               # Architecture constraints
-uv run pyright                    # Type checker
+uv run ty                         # Type checker
 ```
 
 ## Architecture & Project Structure
@@ -270,7 +270,7 @@ These instructions have been validated by running actual commands and inspecting
 | Run all checks | `uv run prek run --all-files` |
 | Format code | `uv run ruff format` |
 | Lint code | `uv run ruff check --fix` |
-| Check types | `uv run pyright` |
+| Check types | `uv run ty` |
 | Check dependencies | `uv run deptry src` |
 | Check architecture | `uv run lint-imports` |
 | Serve docs | `uv run mkdocs serve` |

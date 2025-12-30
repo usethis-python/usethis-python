@@ -51,7 +51,7 @@ jobs:
         if: ${{ matrix.checks == null || matrix.checks == 'true' }}
         run: |
           uv run --frozen prek run --all-files
-          uv run --frozen pyright
+          uv run --frozen basedpyright
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0

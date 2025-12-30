@@ -19,7 +19,7 @@ hello: world # comment
 
         # Act
         with edit_yaml(path) as yaml_document:
-            assert isinstance(yaml_document.content, CommentedMap)  # Help pyright
+            assert isinstance(yaml_document.content, CommentedMap)
             update_ruamel_yaml_map(
                 yaml_document.content,
                 {"hello": "world"},
@@ -43,7 +43,7 @@ hello: world # comment
 
         # Act
         with edit_yaml(path) as yaml_document:
-            assert isinstance(yaml_document.content, CommentedMap)  # Help pyright
+            assert isinstance(yaml_document.content, CommentedMap)
             update_ruamel_yaml_map(
                 yaml_document.content,
                 {"hello": "universe"},
@@ -70,7 +70,7 @@ key:
 
         # Act
         with edit_yaml(path) as yaml_document:
-            assert isinstance(yaml_document.content, CommentedMap)  # Help pyright
+            assert isinstance(yaml_document.content, CommentedMap)
             update_ruamel_yaml_map(
                 yaml_document.content,
                 {"key": [1, 2, 4]},
@@ -98,7 +98,7 @@ other: value
 
         # Act
         with edit_yaml(path) as yaml_document:
-            assert isinstance(yaml_document.content, CommentedMap)  # Help pyright
+            assert isinstance(yaml_document.content, CommentedMap)
             update_ruamel_yaml_map(
                 yaml_document.content,
                 {"key": "new value"},
@@ -124,7 +124,7 @@ this: willberemoved
 
         # Act
         with edit_yaml(path) as yaml_document:
-            assert isinstance(yaml_document.content, CommentedMap)  # Help pyright
+            assert isinstance(yaml_document.content, CommentedMap)
             update_ruamel_yaml_map(
                 yaml_document.content,
                 {"key": {"hello": "universe"}, "banana": "yummy"},
@@ -159,8 +159,8 @@ hello: 4 # yet another
 
         # Act
         with edit_yaml(path) as yaml_document:
-            assert isinstance(yaml_document.content, CommentedMap)  # Help pyright
-            assert isinstance(another_yaml_doc.content, CommentedMap)  # Help pyright
+            assert isinstance(yaml_document.content, CommentedMap)
+            assert isinstance(another_yaml_doc.content, CommentedMap)
             update_ruamel_yaml_map(
                 yaml_document.content,
                 {"key": [1, another_yaml_doc.content, another_yaml_doc.content.copy()]},
@@ -382,7 +382,7 @@ class TestLCSListUpdate:
 """)
 
         with edit_yaml(path) as yaml_document:
-            assert isinstance(yaml_document.content, CommentedSeq)  # Help pyright
+            assert isinstance(yaml_document.content, CommentedSeq)
             # Act
             lcs_list_update(yaml_document.content, [1, 2, 4])
 

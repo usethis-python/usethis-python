@@ -54,13 +54,13 @@ scripts.usethis = "usethis.__main__:app"
 
 [dependency-groups]
 dev = [
+  "basedpyright>=1.36.2",
   "datamodel-code-generator[http]>=0.35.0",
   "deptry>=0.23.0",
   "import-linter>=2.3",
   "jinja2>=3.1.6",
   "prek>=0.2.23",
   "pyinstrument>=5.1.1",
-  "pyright[nodejs]>=1.1.399",
   "ruff>=0.14.3",
   "ty>=0.0.1a25",
 ]
@@ -183,6 +183,38 @@ exclude_also = [
   "@(abc\\.)?abstractmethod",
 ]
 omit = [ "*/pytest-of-*/*", "*/_temp/*" ]
+
+[tool.basedpyright]
+ignore = [ "src/usethis/_version.py" ]
+failOnWarnings = true
+reportAny = false
+reportArgumentType = false
+reportAssignmentType = false
+reportAttributeAccessIssue = false
+reportCallInDefaultInitializer = false
+reportExplicitAny = false
+reportImplicitOverride = false
+reportImplicitStringConcatenation = false
+reportImportCycles = false
+reportInvalidAbstractMethod = false
+reportMissingParameterType = false
+reportMissingTypeArgument = false
+reportMissingTypeStubs = false
+reportPrivateLocalImportUsage = false
+reportPrivateUsage = false
+reportUnannotatedClassAttribute = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownVariableType = false
+reportUnnecessaryComparison = false
+reportUnnecessaryIsInstance = false
+reportUnnecessaryTypeIgnoreComment = false
+reportUnreachable = false
+reportUnusedFunction = false
+reportUnusedCallResult = false
+reportUnusedParameter = false
 
 [tool.ty]
 environment.python-platform = "all"

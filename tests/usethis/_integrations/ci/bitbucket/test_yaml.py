@@ -55,7 +55,7 @@ image: atlassian/default-image:3
         with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
             doc = mgr.get()
             mgr.model_validate()
-            assert isinstance(doc.content, dict)  # Help pyright
+            assert isinstance(doc.content, dict)  # Help type checker
             doc.content["image"] = "atlassian/default-image:2"
             mgr.commit(doc)
 
@@ -84,7 +84,7 @@ pipelines:
         with change_cwd(tmp_path), BitbucketPipelinesYAMLManager() as mgr:
             doc = mgr.get()
             mgr.model_validate()
-            # Help pyright with assertions
+            # Help type checker with assertions
             assert isinstance(doc.content, dict)
             assert isinstance(doc.content["pipelines"], dict)
             assert isinstance(doc.content["pipelines"]["default"], list)

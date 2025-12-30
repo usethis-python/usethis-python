@@ -70,6 +70,11 @@ class RuleConfig(BaseModel):
             and not self.tests_unmanaged_ignored
         )
 
+    @property
+    def is_related_to_tests(self) -> bool:
+        """Check if the rule config has any tests-related rules."""
+        return bool(self.tests_unmanaged_ignored)
+
     def __repr__(self) -> str:
         """Representation which omits empty-list fields."""
         args = []

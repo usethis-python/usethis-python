@@ -214,7 +214,8 @@ layers = [
   "_core",
   "_tool",
   # Specific config file and backend implementations
-  "_deps | _init",
+  "_init",
+  "_deps",
   "_config_file",
   "_integrations",
   "_io | _subprocess | _console",

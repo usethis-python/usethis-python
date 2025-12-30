@@ -3208,14 +3208,16 @@ class TestRequirementsTxt:
 
             # Assert
             assert (tmp_path / "requirements.txt").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+            assert not (tmp_path / "uv.lock").exists()
             out, err = capfd.readouterr()
             assert not err
             assert out.replace("\n", "") == (
-                "✔ Writing 'pyproject.toml'."
-                "✔ Writing 'uv.lock'."
                 "✔ Writing 'requirements.txt'."
                 "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
             )
+            content = (tmp_path / "requirements.txt").read_text()
+            assert content == "-e .\n"
 
         def test_start_from_nothing_none_backend(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]

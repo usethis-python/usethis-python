@@ -4,6 +4,7 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._console import tick_print
+from usethis._deps import get_project_deps
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.init import (
     ensure_pyproject_toml_via_uv,
@@ -62,6 +63,25 @@ def _regularize_package_name(project_name: str) -> str:
     if project_name[0].isdigit():
         project_name = "_" + project_name
     return project_name.lower()
+
+
+def write_simple_requirements_txt() -> None:
+    r"""Write a simple requirements.txt file with -e . and any project dependencies.
+
+    This is used when we don't have a lock file or when using backend=none.
+    Always writes at least "-e .\n", and appends any dependencies found in
+    pyproject.toml if they exist.
+    """
+    name = "requirements.txt"
+    tick_print(f"Writing '{name}'.")
+    path = usethis_config.cpd() / name
+    with open(path, "w", encoding="utf-8") as f:
+        # Always write -e . first
+        f.write("-e .\n")
+        # Add any dependencies that exist
+        project_deps = get_project_deps()
+        if project_deps:
+            f.writelines(dep.to_requirement_string() + "\n" for dep in project_deps)
 
 
 def ensure_dep_declaration_file() -> None:

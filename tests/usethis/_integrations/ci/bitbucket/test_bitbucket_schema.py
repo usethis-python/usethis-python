@@ -5,7 +5,7 @@ import pytest
 import requests
 from requests.exceptions import RequestException
 
-from usethis._integrations.ci.bitbucket.schema import Script, Step, Step2, StepBase
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.pyproject_toml.requires_python import (
     get_requires_python,
@@ -15,11 +15,13 @@ from usethis._test import change_cwd, is_offline
 
 class TestStep2:
     def test_shared_parent(self):
-        assert isinstance(Step2(script=Script(["hi"])), StepBase)
-        assert isinstance(Step(script=Script(["hi"])), StepBase)
+        assert isinstance(schema.Step2(script=schema.Script(["hi"])), schema.StepBase)
+        assert isinstance(schema.Step(script=schema.Script(["hi"])), schema.StepBase)
 
     def test_field_subset(self):
-        assert set(Step2.model_fields.keys()) == set(Step.model_fields.keys())
+        assert set(schema.Step2.model_fields.keys()) == set(
+            schema.Step.model_fields.keys()
+        )
 
 
 class TestSchemaJSON:

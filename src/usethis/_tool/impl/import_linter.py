@@ -15,8 +15,8 @@ from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.file.ini.io_ import INIFileManager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
+from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._integrations.pre_commit.language import get_system_language
-from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.imports import (
     LayeredArchitecture,
@@ -335,10 +335,10 @@ class ImportLinterTool(Tool):
 
         if backend is BackendEnum.uv:
             return PreCommitConfig.from_single_repo(
-                LocalRepo(
+                pre_commit_schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        pre_commit_schema.HookDefinition(
                             id="import-linter",
                             name="import-linter",
                             pass_filenames=False,
@@ -354,10 +354,10 @@ class ImportLinterTool(Tool):
             )
         elif backend is BackendEnum.none:
             return PreCommitConfig.from_single_repo(
-                LocalRepo(
+                pre_commit_schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        pre_commit_schema.HookDefinition(
                             id="import-linter",
                             name="import-linter",
                             pass_filenames=False,

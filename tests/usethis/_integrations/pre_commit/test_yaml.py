@@ -4,11 +4,9 @@ from typing import cast
 import pytest
 
 from usethis._config_file import files_manager
+from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.errors import PreCommitConfigYAMLConfigError
 from usethis._integrations.pre_commit.hooks import _get_placeholder_repo_config
-from usethis._integrations.pre_commit.schema import (
-    JsonSchemaForPreCommitConfigYaml,
-)
 from usethis._integrations.pre_commit.yaml import (
     PreCommitConfigYAMLManager,
     _pre_commit_fancy_dump,
@@ -143,7 +141,7 @@ class TestPreCommitFancyDump:
         # Act
         with change_cwd(tmp_path), files_manager():
             _pre_commit_fancy_dump(
-                config=JsonSchemaForPreCommitConfigYaml(
+                config=schema.JsonSchemaForPreCommitConfigYaml(
                     repos=[
                         _get_placeholder_repo_config(),
                     ]

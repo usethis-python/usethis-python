@@ -10,16 +10,12 @@ from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import how_print, tick_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
+from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
-from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.schema import (
-    HookDefinition,
-    UriRepo,
-)
+from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._tool.base import Tool
 from usethis._tool.config import (
     ConfigEntry,
@@ -246,10 +242,10 @@ class RuffTool(Tool):
         if self.is_linter_used():
             repo_configs.append(
                 PreCommitRepoConfig(
-                    repo=UriRepo(
+                    repo=pre_commit_schema.UriRepo(
                         repo="https://github.com/astral-sh/ruff-pre-commit",
                         rev=_RUFF_VERSION,
-                        hooks=[HookDefinition(id="ruff-check")],
+                        hooks=[pre_commit_schema.HookDefinition(id="ruff-check")],
                     ),
                     requires_venv=False,
                 ),
@@ -257,10 +253,10 @@ class RuffTool(Tool):
         if self.is_formatter_used():
             repo_configs.append(
                 PreCommitRepoConfig(
-                    repo=UriRepo(
+                    repo=pre_commit_schema.UriRepo(
                         repo="https://github.com/astral-sh/ruff-pre-commit",
                         rev=_RUFF_VERSION,
-                        hooks=[HookDefinition(id="ruff-format")],
+                        hooks=[pre_commit_schema.HookDefinition(id="ruff-format")],
                     ),
                     requires_venv=False,
                 ),
@@ -270,17 +266,19 @@ class RuffTool(Tool):
             inform_how_to_use_on_migrate=True,  # The pre-commit commands are not simpler than the venv-based commands
         )
 
-    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
+    def get_bitbucket_steps(
+        self, *, matrix_python: bool = True
+    ) -> list[bitbucket_schema.Step]:
         backend = get_backend()
 
         steps = []
         if self.is_linter_used():
             if backend is BackendEnum.uv:
                 steps.append(
-                    BitbucketStep(
+                    bitbucket_schema.Step(
                         name=f"Run {self.name}",
                         caches=["uv"],
-                        script=BitbucketScript(
+                        script=bitbucket_schema.Script(
                             [
                                 BitbucketScriptItemAnchor(name="install-uv"),
                                 "uv run ruff check --fix",
@@ -290,9 +288,9 @@ class RuffTool(Tool):
                 )
             elif backend is BackendEnum.none:
                 steps.append(
-                    BitbucketStep(
+                    bitbucket_schema.Step(
                         name=f"Run {self.name}",
-                        script=BitbucketScript(
+                        script=bitbucket_schema.Script(
                             [
                                 BitbucketScriptItemAnchor(name="ensure-venv"),
                                 "ruff check --fix",
@@ -306,10 +304,10 @@ class RuffTool(Tool):
         if self.is_formatter_used():
             if backend is BackendEnum.uv:
                 steps.append(
-                    BitbucketStep(
+                    bitbucket_schema.Step(
                         name=f"Run {self.name} Formatter",
                         caches=["uv"],
-                        script=BitbucketScript(
+                        script=bitbucket_schema.Script(
                             [
                                 BitbucketScriptItemAnchor(name="install-uv"),
                                 "uv run ruff format",
@@ -319,9 +317,9 @@ class RuffTool(Tool):
                 )
             elif backend is BackendEnum.none:
                 steps.append(
-                    BitbucketStep(
+                    bitbucket_schema.Step(
                         name=f"Run {self.name} Formatter",
-                        script=BitbucketScript(
+                        script=bitbucket_schema.Script(
                             [
                                 BitbucketScriptItemAnchor(name="ensure-venv"),
                                 "ruff format",

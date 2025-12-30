@@ -1,14 +1,13 @@
 from pathlib import Path
 
 from usethis._config_file import files_manager
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.ci.bitbucket.config import (
     add_bitbucket_pipelines_config,
     remove_bitbucket_pipelines_config,
 )
-from usethis._integrations.ci.bitbucket.schema import Model, Script
 from usethis._integrations.ci.bitbucket.steps import (
-    Step,
     add_bitbucket_step_in_default,
 )
 from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
@@ -71,9 +70,9 @@ pipelines:
         ):
             add_bitbucket_pipelines_config()
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Example step",
-                    script=Script(
+                    script=schema.Script(
                         [ScriptItemAnchor(name="install-uv"), "echo 'Hello, world!'"]
                     ),
                 ),
@@ -81,7 +80,7 @@ pipelines:
 
         # Assert
         with edit_yaml(uv_init_dir / "bitbucket-pipelines.yml") as yaml_document:
-            assert Model.model_validate(yaml_document.content)
+            assert schema.Model.model_validate(yaml_document.content)
 
 
 class TestRemoveBitbucketPipelineConfig:

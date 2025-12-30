@@ -9,11 +9,10 @@ from usethis._config import usethis_config
 from usethis._console import tick_print, warn_print
 from usethis._deps import add_deps_to_group, is_dep_in_any_group, remove_deps_from_group
 from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
-from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_step_in_default,
     bitbucket_steps_are_equivalent,
@@ -38,7 +37,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     from usethis._integrations.backend.uv.deps import Dependency
-    from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
+    from usethis._integrations.pre_commit import schema as pre_commit_schema
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ConfigItem, ResolutionT
     from usethis._tool.rule import Rule
@@ -220,7 +219,9 @@ class Tool(Protocol):
     def remove_doc_deps(self) -> None:
         remove_deps_from_group(self.get_doc_deps(unconditional=True), "doc")
 
-    def get_pre_commit_repos(self) -> list[LocalRepo | UriRepo]:
+    def get_pre_commit_repos(
+        self,
+    ) -> list[pre_commit_schema.LocalRepo | pre_commit_schema.UriRepo]:
         """Get the pre-commit repository definitions for the tool."""
         return [c.repo for c in self.get_pre_commit_config().repo_configs]
 
@@ -589,7 +590,9 @@ class Tool(Protocol):
             return "pre-commit"
         return None
 
-    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
+    def get_bitbucket_steps(
+        self, *, matrix_python: bool = True
+    ) -> list[bitbucket_schema.Step]:
         """Get the Bitbucket pipeline step associated with this tool.
 
         By default, this creates a single step using the tool's default_command().
@@ -608,10 +611,10 @@ class Tool(Protocol):
         backend = get_backend()
         if backend is BackendEnum.uv:
             return [
-                BitbucketStep(
+                bitbucket_schema.Step(
                     name=f"Run {self.name}",
                     caches=["uv"],
-                    script=BitbucketScript(
+                    script=bitbucket_schema.Script(
                         [
                             BitbucketScriptItemAnchor(name="install-uv"),
                             cmd,
@@ -621,9 +624,9 @@ class Tool(Protocol):
             ]
         elif backend is BackendEnum.none:
             return [
-                BitbucketStep(
+                bitbucket_schema.Step(
                     name=f"Run {self.name}",
-                    script=BitbucketScript(
+                    script=bitbucket_schema.Script(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),
                             cmd,

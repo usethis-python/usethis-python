@@ -8,12 +8,11 @@ from usethis._config import usethis_config
 from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
+from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
-from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
-from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
+from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._tool.base import Tool
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
@@ -34,10 +33,10 @@ class PreCommitTool(Tool):
 
         if backend is BackendEnum.uv:
             return PreCommitConfig.from_single_repo(
-                UriRepo(
+                pre_commit_schema.UriRepo(
                     repo="https://github.com/tsvikas/sync-with-uv",
                     rev=_SYNC_WITH_UV_VERSION,
-                    hooks=[HookDefinition(id="sync-with-uv")],
+                    hooks=[pre_commit_schema.HookDefinition(id="sync-with-uv")],
                 ),
                 requires_venv=False,
                 inform_how_to_use_on_migrate=False,
@@ -69,15 +68,17 @@ class PreCommitTool(Tool):
     def get_managed_files(self) -> list[Path]:
         return [Path(".pre-commit-config.yaml")]
 
-    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
+    def get_bitbucket_steps(
+        self, *, matrix_python: bool = True
+    ) -> list[bitbucket_schema.Step]:
         backend = get_backend()
 
         if backend is BackendEnum.uv:
             return [
-                BitbucketStep(
+                bitbucket_schema.Step(
                     name=f"Run {self.name}",
                     caches=["uv", "pre-commit"],
-                    script=BitbucketScript(
+                    script=bitbucket_schema.Script(
                         [
                             BitbucketScriptItemAnchor(name="install-uv"),
                             "uv run pre-commit run --all-files",
@@ -87,10 +88,10 @@ class PreCommitTool(Tool):
             ]
         elif backend is BackendEnum.none:
             return [
-                BitbucketStep(
+                bitbucket_schema.Step(
                     name=f"Run {self.name}",
                     caches=["pre-commit"],
-                    script=BitbucketScript(
+                    script=bitbucket_schema.Script(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),
                             "pre-commit run --all-files",

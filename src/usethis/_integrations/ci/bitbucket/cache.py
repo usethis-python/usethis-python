@@ -1,19 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from usethis._console import tick_print
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.init import (
     ensure_bitbucket_pipelines_config_exists,
 )
-from usethis._integrations.ci.bitbucket.schema import Definitions
 from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
 
-if TYPE_CHECKING:
-    from usethis._integrations.ci.bitbucket.schema import Cache, PipelinesConfiguration
 
-
-def get_cache_by_name() -> dict[str, Cache]:
+def get_cache_by_name() -> dict[str, schema.Cache]:
     mgr = BitbucketPipelinesYAMLManager()
     config = mgr.model_validate()
 
@@ -28,7 +23,7 @@ def get_cache_by_name() -> dict[str, Cache]:
     return cache_by_name
 
 
-def add_caches(cache_by_name: dict[str, Cache]) -> None:
+def add_caches(cache_by_name: dict[str, schema.Cache]) -> None:
     ensure_bitbucket_pipelines_config_exists()
 
     mgr = BitbucketPipelinesYAMLManager()
@@ -38,10 +33,10 @@ def add_caches(cache_by_name: dict[str, Cache]) -> None:
 
 
 def _add_caches_via_model(
-    cache_by_name: dict[str, Cache], *, model: PipelinesConfiguration
+    cache_by_name: dict[str, schema.Cache], *, model: schema.PipelinesConfiguration
 ) -> None:
     if model.definitions is None:
-        model.definitions = Definitions()
+        model.definitions = schema.Definitions()
     if model.definitions.caches is None:
         model.definitions.caches = {}
 
@@ -73,7 +68,7 @@ def remove_cache(cache: str) -> None:
     mgr.commit_model(model)
 
 
-def _cache_exists(name: str, *, model: PipelinesConfiguration) -> bool:
+def _cache_exists(name: str, *, model: schema.PipelinesConfiguration) -> bool:
     if model.definitions is None or model.definitions.caches is None:
         return False
 

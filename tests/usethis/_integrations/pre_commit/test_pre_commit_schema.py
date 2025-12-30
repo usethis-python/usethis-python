@@ -9,17 +9,17 @@ from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.pyproject_toml.requires_python import (
     get_requires_python,
 )
-from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo
+from usethis._integrations.pre_commit import schema
 from usethis._test import change_cwd, is_offline
 
 
 def test_multiple_per_repo():
     # There was a suspicion this wasn't possible, but it is.
-    LocalRepo(
+    schema.LocalRepo(
         repo="local",
         hooks=[
-            HookDefinition(id="black"),
-            HookDefinition(id="isort"),
+            schema.HookDefinition(id="black"),
+            schema.HookDefinition(id="isort"),
         ],
     )
 

@@ -8,8 +8,8 @@ from typing_extensions import assert_never
 from usethis._config import usethis_config
 from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._integrations.pre_commit.language import get_system_language
-from usethis._integrations.pre_commit.schema import HookDefinition, LocalRepo
 from usethis._tool.base import Tool
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
@@ -65,10 +65,10 @@ class RequirementsTxtTool(Tool):
 
         if backend is BackendEnum.uv:
             return PreCommitConfig.from_single_repo(
-                LocalRepo(
+                pre_commit_schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        pre_commit_schema.HookDefinition(
                             id="uv-export",
                             name="uv-export",
                             files="^uv\\.lock$",

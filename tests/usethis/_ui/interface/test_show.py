@@ -1,7 +1,36 @@
 from pathlib import Path
 
+from usethis._config import usethis_config
 from usethis._test import CliRunner, change_cwd
+from usethis._types.backend import BackendEnum
 from usethis._ui.interface.show import app
+
+
+class TestBackend:
+    def test_uv_backend(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "uv.lock").touch()
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["backend"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert result.output == "uv\n"
+
+    def test_none_backend(self, tmp_path: Path):
+        # Arrange
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path), usethis_config.set(backend=BackendEnum.none):
+            result = runner.invoke_safe(app, ["backend"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert result.output == "none\n"
 
 
 class TestName:

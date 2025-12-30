@@ -8,6 +8,24 @@ app = typer.Typer(
 )
 
 
+@app.command(help="Show the inferred project manager backend, e.g. 'uv' or 'none'.")
+def backend(
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+) -> None:
+    from usethis._config_file import files_manager
+    from usethis._console import err_print
+    from usethis._core.show import show_backend
+    from usethis.errors import UsethisError
+
+    with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+        try:
+            show_backend()
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None
+
+
 @app.command(help="Show the name of the project")
 def name(
     offline: bool = offline_opt,

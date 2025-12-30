@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from functools import singledispatch
-from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from typing_extensions import assert_never
 
 import usethis._pipeweld.containers
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.errors import (
     MissingStepError,
     UnexpectedImportPipelineError,
@@ -14,43 +14,27 @@ from usethis._integrations.ci.bitbucket.errors import (
 from usethis._integrations.ci.bitbucket.init import (
     ensure_bitbucket_pipelines_config_exists,
 )
-from usethis._integrations.ci.bitbucket.schema import (
-    ImportPipeline,
-    Items,
-    Parallel,
-    ParallelExpanded,
-    ParallelItem,
-    ParallelSteps,
-    Pipeline,
-    Pipelines,
-    StageItem,
-    Step,
-    StepItem,
-)
 from usethis._integrations.ci.bitbucket.schema_utils import step1tostep
 from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
 from usethis._pipeweld.ops import InsertParallel, InsertSuccessor, Instruction
 
-if TYPE_CHECKING:
-    from usethis._integrations.ci.bitbucket.schema import PipelinesConfiguration
 
-
-def get_pipeweld_step(step: Step) -> str:
+def get_pipeweld_step(step: schema.Step) -> str:
     if step.name is not None:
         return step.name
     return step.model_dump_json(exclude_defaults=True, by_alias=True)
 
 
 def get_pipeweld_pipeline_from_default(
-    model: PipelinesConfiguration,
+    model: schema.PipelinesConfiguration,
 ) -> usethis._pipeweld.containers.Series:
     if model.pipelines is None:
-        model.pipelines = Pipelines()
+        model.pipelines = schema.Pipelines()
     default = model.pipelines.default
 
     if default is None:
         items = []
-    elif isinstance(default.root, ImportPipeline):
+    elif isinstance(default.root, schema.ImportPipeline):
         msg = (
             "Cannot add step to default pipeline in 'bitbucket-pipelines.yml' because "
             "it is an import pipeline."
@@ -66,7 +50,7 @@ def get_pipeweld_pipeline_from_default(
 
 @singledispatch
 def get_pipeweld_object(
-    item: StepItem | ParallelItem | StageItem,
+    item: schema.StepItem | schema.ParallelItem | schema.StageItem,
 ) -> (
     str | usethis._pipeweld.containers.Parallel | usethis._pipeweld.containers.DepGroup
 ):
@@ -74,18 +58,18 @@ def get_pipeweld_object(
 
 
 @get_pipeweld_object.register
-def _(item: StepItem):
+def _(item: schema.StepItem):
     return get_pipeweld_step(item.step)
 
 
 @get_pipeweld_object.register
-def _(item: ParallelItem):
+def _(item: schema.ParallelItem):
     parallel_steps: set[str] = set()
 
     if item.parallel is not None:
-        if isinstance(item.parallel.root, ParallelSteps):
+        if isinstance(item.parallel.root, schema.ParallelSteps):
             step_items = item.parallel.root.root
-        elif isinstance(item.parallel.root, ParallelExpanded):
+        elif isinstance(item.parallel.root, schema.ParallelExpanded):
             step_items = item.parallel.root.steps.root
         else:
             assert_never(item.parallel.root)
@@ -97,7 +81,7 @@ def _(item: ParallelItem):
 
 
 @get_pipeweld_object.register
-def _(item: StageItem):
+def _(item: schema.StageItem):
     depgroup_steps: list[str] = []
 
     if item.stage.name is not None:
@@ -115,7 +99,7 @@ def _(item: StageItem):
 
 
 def apply_pipeweld_instruction(
-    instruction: Instruction, *, step_to_insert: Step
+    instruction: Instruction, *, step_to_insert: schema.Step
 ) -> None:
     ensure_bitbucket_pipelines_config_exists()
 
@@ -130,18 +114,18 @@ def apply_pipeweld_instruction(
 def apply_pipeweld_instruction_via_model(
     instruction: Instruction,
     *,
-    step_to_insert: Step,
-    model: PipelinesConfiguration,
+    step_to_insert: schema.Step,
+    model: schema.PipelinesConfiguration,
 ) -> None:
     if model.pipelines is None:
-        model.pipelines = Pipelines()
+        model.pipelines = schema.Pipelines()
 
     pipelines = model.pipelines
     default = pipelines.default
 
     if default is None:
         items = []
-    elif isinstance(default.root, ImportPipeline):
+    elif isinstance(default.root, schema.ImportPipeline):
         msg = (
             f"Cannot add step '{step_to_insert.name}' to default pipeline in "
             f"'bitbucket-pipelines.yml' because it is an import pipeline."
@@ -170,14 +154,14 @@ def apply_pipeweld_instruction_via_model(
     )
 
     if default is None and items:
-        pipelines.default = Pipeline(Items(items))
+        pipelines.default = schema.Pipeline(schema.Items(items))
 
 
 def _apply_instruction_to_items(
     *,
     instruction: Instruction,
-    items: list[StepItem | ParallelItem | StageItem],
-    step_to_insert: Step,
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
+    step_to_insert: schema.Step,
 ) -> None:
     """Apply an instruction to insert a step into the items list.
 
@@ -188,14 +172,14 @@ def _apply_instruction_to_items(
     """
     if instruction.after is None:
         # Insert at the beginning - always as a simple step
-        items.insert(0, StepItem(step=step_to_insert))
+        items.insert(0, schema.StepItem(step=step_to_insert))
     elif isinstance(instruction, InsertSuccessor):
         # Insert in series after the specified step
         for item in items:
             if _is_insertion_necessary(item, instruction=instruction):
                 items.insert(
                     items.index(item) + 1,
-                    StepItem(step=step_to_insert),
+                    schema.StepItem(step=step_to_insert),
                 )
                 break
     elif isinstance(instruction, InsertParallel):
@@ -211,8 +195,10 @@ def _apply_instruction_to_items(
 
 
 def _extract_step_from_items(
-    items: list[StepItem | ParallelItem | StageItem], *, step_name: str
-) -> Step:
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
+    *,
+    step_name: str,
+) -> schema.Step:
     """Find and remove a step from the items list.
 
     This function searches for a step with the given name, removes it from the
@@ -234,24 +220,24 @@ def _extract_step_from_items(
 
 @singledispatch
 def _extract_step_from_item(
-    item: StepItem | ParallelItem | StageItem,
+    item: schema.StepItem | schema.ParallelItem | schema.StageItem,
     *,
     step_name: str,
-    items: list[StepItem | ParallelItem | StageItem],
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
     idx: int,
-) -> Step | None:
+) -> schema.Step | None:
     """Extract a step from an item, potentially modifying the items list."""
     raise NotImplementedError
 
 
 @_extract_step_from_item.register
 def _(
-    item: StepItem,
+    item: schema.StepItem,
     *,
     step_name: str,
-    items: list[StepItem | ParallelItem | StageItem],
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
     idx: int,
-) -> Step | None:
+) -> schema.Step | None:
     if get_pipeweld_step(item.step) == step_name:
         # Remove this item from the list
         items.pop(idx)
@@ -261,16 +247,16 @@ def _(
 
 @_extract_step_from_item.register
 def _(
-    item: ParallelItem,
+    item: schema.ParallelItem,
     *,
     step_name: str,
-    items: list[StepItem | ParallelItem | StageItem],
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
     idx: int,
-) -> Step | None:
+) -> schema.Step | None:
     if item.parallel is not None:
-        if isinstance(item.parallel.root, ParallelSteps):
+        if isinstance(item.parallel.root, schema.ParallelSteps):
             step_items = item.parallel.root.root
-        elif isinstance(item.parallel.root, ParallelExpanded):
+        elif isinstance(item.parallel.root, schema.ParallelExpanded):
             step_items = item.parallel.root.steps.root
         else:
             assert_never(item.parallel.root)
@@ -295,12 +281,12 @@ def _(
 @_extract_step_from_item.register
 def _(
     # https://github.com/astral-sh/ruff/issues/18654
-    item: StageItem,  # noqa: ARG001
+    item: schema.StageItem,  # noqa: ARG001
     *,
     step_name: str,  # noqa: ARG001
-    items: list[StepItem | ParallelItem | StageItem],  # noqa: ARG001
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],  # noqa: ARG001
     idx: int,  # noqa: ARG001
-) -> Step | None:
+) -> schema.Step | None:
     # We don't extract steps from within stages as they represent deployment
     # stages and their internal structure should be preserved.
     return None
@@ -308,11 +294,11 @@ def _(
 
 @singledispatch
 def _insert_parallel_step(
-    item: StepItem | ParallelItem | StageItem,
+    item: schema.StepItem | schema.ParallelItem | schema.StageItem,
     *,
-    items: list[StepItem | ParallelItem | StageItem],
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
     idx: int,
-    step_to_insert: Step,
+    step_to_insert: schema.Step,
 ) -> None:
     """Insert a step in parallel with an existing item.
 
@@ -324,19 +310,19 @@ def _insert_parallel_step(
 
 @_insert_parallel_step.register
 def _(
-    item: StepItem,
+    item: schema.StepItem,
     *,
-    items: list[StepItem | ParallelItem | StageItem],
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
     idx: int,
-    step_to_insert: Step,
+    step_to_insert: schema.Step,
 ) -> None:
     # Replace the single step with a parallel block containing both steps
-    parallel_item = ParallelItem(
-        parallel=Parallel(
-            ParallelSteps(
+    parallel_item = schema.ParallelItem(
+        parallel=schema.Parallel(
+            schema.ParallelSteps(
                 [
-                    StepItem(step=item.step),
-                    StepItem(step=step_to_insert),
+                    schema.StepItem(step=item.step),
+                    schema.StepItem(step=step_to_insert),
                 ]
             )
         )
@@ -346,31 +332,31 @@ def _(
 
 @_insert_parallel_step.register
 def _(
-    item: ParallelItem,
+    item: schema.ParallelItem,
     *,
     # https://github.com/astral-sh/ruff/issues/18654
-    items: list[StepItem | ParallelItem | StageItem],  # noqa: ARG001
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],  # noqa: ARG001
     idx: int,  # noqa: ARG001
-    step_to_insert: Step,
+    step_to_insert: schema.Step,
 ) -> None:
     if item.parallel is not None:
-        if isinstance(item.parallel.root, ParallelSteps):
+        if isinstance(item.parallel.root, schema.ParallelSteps):
             # Add to the existing list of parallel steps
-            item.parallel.root.root.append(StepItem(step=step_to_insert))
-        elif isinstance(item.parallel.root, ParallelExpanded):
+            item.parallel.root.root.append(schema.StepItem(step=step_to_insert))
+        elif isinstance(item.parallel.root, schema.ParallelExpanded):
             # Add to the expanded parallel steps
-            item.parallel.root.steps.root.append(StepItem(step=step_to_insert))
+            item.parallel.root.steps.root.append(schema.StepItem(step=step_to_insert))
         else:
             assert_never(item.parallel.root)
 
 
 @_insert_parallel_step.register
 def _(
-    item: StageItem,
+    item: schema.StageItem,
     *,
-    items: list[StepItem | ParallelItem | StageItem],
+    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
     idx: int,
-    step_to_insert: Step,
+    step_to_insert: schema.Step,
 ) -> None:
     # StageItems are trickier since they aren't supported in ParallelSteps. But we
     # never need to add them in practice anyway. The only reason this is really here
@@ -380,7 +366,7 @@ def _(
 
 @singledispatch
 def _is_insertion_necessary(
-    item: StepItem | ParallelItem | StageItem,
+    item: schema.StepItem | schema.ParallelItem | schema.StageItem,
     *,
     instruction: Instruction,
 ) -> bool:
@@ -388,16 +374,16 @@ def _is_insertion_necessary(
 
 
 @_is_insertion_necessary.register
-def _(item: StepItem, *, instruction: Instruction):
+def _(item: schema.StepItem, *, instruction: Instruction):
     return get_pipeweld_step(item.step) == instruction.after
 
 
 @_is_insertion_necessary.register
-def _(item: ParallelItem, *, instruction: Instruction):
+def _(item: schema.ParallelItem, *, instruction: Instruction):
     if item.parallel is not None:
-        if isinstance(item.parallel.root, ParallelSteps):
+        if isinstance(item.parallel.root, schema.ParallelSteps):
             step_items = item.parallel.root.root
-        elif isinstance(item.parallel.root, ParallelExpanded):
+        elif isinstance(item.parallel.root, schema.ParallelExpanded):
             step_items = item.parallel.root.steps.root
         else:
             assert_never(item.parallel.root)
@@ -409,7 +395,7 @@ def _(item: ParallelItem, *, instruction: Instruction):
 
 
 @_is_insertion_necessary.register
-def _(item: StageItem, *, instruction: Instruction):
+def _(item: schema.StageItem, *, instruction: Instruction):
     step1s = item.stage.steps.copy()
 
     for step1 in step1s:

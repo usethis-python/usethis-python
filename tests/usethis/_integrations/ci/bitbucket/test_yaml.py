@@ -2,16 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.errors import BitbucketPipelinesYAMLSchemaError
-from usethis._integrations.ci.bitbucket.schema import (
-    Cache,
-    CachePath,
-    Clone,
-    Definitions,
-    Image,
-    ImageName,
-    PipelinesConfiguration,
-)
 from usethis._integrations.ci.bitbucket.yaml import (
     ORDER_BY_CLS,
     BitbucketPipelinesYAMLManager,
@@ -191,12 +183,12 @@ class TestOrderByCls:
 class TestBitbucketFancyDump:
     def test_order(self):
         # Arrange
-        config = PipelinesConfiguration(
-            image=Image(ImageName("python:3.8.1")),
-            clone=Clone(depth="full"),
-            definitions=Definitions(
+        config = schema.PipelinesConfiguration(
+            image=schema.Image(schema.ImageName("python:3.8.1")),
+            clone=schema.Clone(depth="full"),
+            definitions=schema.Definitions(
                 caches={
-                    "pip": Cache(CachePath("pip")),
+                    "pip": schema.Cache(schema.CachePath("pip")),
                 },
             ),
         )

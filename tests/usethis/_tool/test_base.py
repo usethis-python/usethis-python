@@ -8,8 +8,8 @@ from usethis._console import how_print
 from usethis._deps import add_deps_to_group
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
+from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_ids
-from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
 from usethis._io import KeyValueFileManager
 from usethis._test import change_cwd
 from usethis._tool.base import Tool
@@ -58,9 +58,9 @@ class MyTool(Tool):
 
     def get_pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
-            UriRepo(
+            schema.UriRepo(
                 repo=f"repo for {self.name}",
-                hooks=[HookDefinition(id="deptry")],
+                hooks=[schema.HookDefinition(id="deptry")],
             ),
             requires_venv=False,
         )
@@ -102,11 +102,11 @@ class TwoHooksTool(Tool):
 
     def get_pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
-            UriRepo(
+            schema.UriRepo(
                 repo=f"repo for {self.name}",
                 hooks=[
-                    HookDefinition(id="ruff"),
-                    HookDefinition(id="ruff-format"),
+                    schema.HookDefinition(id="ruff"),
+                    schema.HookDefinition(id="ruff-format"),
                 ],
             ),
             requires_venv=False,
@@ -157,7 +157,9 @@ class TestTool:
         def test_specific(self):
             tool = MyTool()
             assert tool.get_pre_commit_repos() == [
-                UriRepo(repo="repo for my_tool", hooks=[HookDefinition(id="deptry")])
+                schema.UriRepo(
+                    repo="repo for my_tool", hooks=[schema.HookDefinition(id="deptry")]
+                )
             ]
 
     class TestGetConfigSpec:
@@ -512,20 +514,20 @@ repos:
                     return PreCommitConfig(
                         repo_configs=[
                             PreCommitRepoConfig(
-                                repo=UriRepo(
+                                repo=schema.UriRepo(
                                     repo="example",
                                     hooks=[
-                                        HookDefinition(id="ruff"),
-                                        HookDefinition(id="ruff-format"),
+                                        schema.HookDefinition(id="ruff"),
+                                        schema.HookDefinition(id="ruff-format"),
                                     ],
                                 ),
                                 requires_venv=False,
                             ),
                             PreCommitRepoConfig(
-                                repo=UriRepo(
+                                repo=schema.UriRepo(
                                     repo="other",
                                     hooks=[
-                                        HookDefinition(
+                                        schema.HookDefinition(
                                             id="deptry",
                                         )
                                     ],
@@ -819,20 +821,20 @@ repos:
                     return PreCommitConfig(
                         repo_configs=[
                             PreCommitRepoConfig(
-                                repo=UriRepo(
+                                repo=schema.UriRepo(
                                     repo="example",
                                     hooks=[
-                                        HookDefinition(id="ruff"),
-                                        HookDefinition(id="ruff-format"),
+                                        schema.HookDefinition(id="ruff"),
+                                        schema.HookDefinition(id="ruff-format"),
                                     ],
                                 ),
                                 requires_venv=False,
                             ),
                             PreCommitRepoConfig(
-                                repo=UriRepo(
+                                repo=schema.UriRepo(
                                     repo="other",
                                     hooks=[
-                                        HookDefinition(
+                                        schema.HookDefinition(
                                             id="deptry",
                                         )
                                     ],

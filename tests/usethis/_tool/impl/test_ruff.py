@@ -9,7 +9,7 @@ from usethis._core.tool import use_ruff
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.schema import UriRepo
+from usethis._integrations.pre_commit import schema
 from usethis._test import change_cwd
 from usethis._tool.impl.ruff import RuffTool
 
@@ -384,7 +384,7 @@ lint.per-file-ignores."tests/**" = ["INP"]
             # Act
             (config,) = RuffTool().get_pre_commit_config().repo_configs
         repo = config.repo
-        assert isinstance(repo, UriRepo)
+        assert isinstance(repo, schema.UriRepo)
         try:
             assert repo.rev == get_github_latest_tag(
                 owner="astral-sh", repo="ruff-pre-commit"

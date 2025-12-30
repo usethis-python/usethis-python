@@ -5,13 +5,8 @@ from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.errors import BitbucketPipelinesYAMLSchemaError
-from usethis._integrations.ci.bitbucket.schema import (
-    PipelinesConfiguration,
-    Step,
-    Step2,
-    StepBase,
-)
 from usethis._integrations.file.yaml.io_ import YAMLFileManager
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._integrations.pydantic.dump import fancy_model_dump
@@ -22,10 +17,10 @@ if TYPE_CHECKING:
     from usethis._integrations.pydantic.dump import ModelRepresentation
 
 ORDER_BY_CLS: dict[type[BaseModel], list[str]] = {
-    PipelinesConfiguration: ["image", "clone", "definitions"],
-    StepBase: ["name", "caches", "script"],
-    Step: ["name", "caches", "script"],
-    Step2: ["name", "caches", "script"],
+    schema.PipelinesConfiguration: ["image", "clone", "definitions"],
+    schema.StepBase: ["name", "caches", "script"],
+    schema.Step: ["name", "caches", "script"],
+    schema.Step2: ["name", "caches", "script"],
 }
 
 
@@ -36,7 +31,7 @@ class BitbucketPipelinesYAMLManager(YAMLFileManager):
     def relative_path(self) -> Path:
         return Path("bitbucket-pipelines.yml")
 
-    def model_validate(self) -> PipelinesConfiguration:
+    def model_validate(self) -> schema.PipelinesConfiguration:
         """Validate the current document content against the JSON schema.
 
         Returns:
@@ -47,12 +42,12 @@ class BitbucketPipelinesYAMLManager(YAMLFileManager):
         """
         doc = self.get()
         try:
-            return PipelinesConfiguration.model_validate(doc.content)
+            return schema.PipelinesConfiguration.model_validate(doc.content)
         except ValidationError as err:
             msg = f"Invalid 'bitbucket-pipelines.yml' file:\n{err}"
             raise BitbucketPipelinesYAMLSchemaError(msg) from None
 
-    def commit_model(self, model: PipelinesConfiguration) -> None:
+    def commit_model(self, model: schema.PipelinesConfiguration) -> None:
         doc = self.get()
 
         # Special handling for script_items: These items may contain YAML anchors (e.g.,
@@ -128,7 +123,9 @@ class BitbucketPipelinesYAMLManager(YAMLFileManager):
 
 
 def _bitbucket_fancy_dump(
-    config: PipelinesConfiguration, *, reference: ModelRepresentation | None = None
+    config: schema.PipelinesConfiguration,
+    *,
+    reference: ModelRepresentation | None = None,
 ) -> dict[str, ModelRepresentation]:
     dump = fancy_model_dump(config, reference=reference, order_by_cls=ORDER_BY_CLS)
 

@@ -8,8 +8,8 @@ from ruamel.yaml.comments import CommentedMap
 
 from usethis._integrations.file.yaml.io_ import YAMLFileManager
 from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
+from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.errors import PreCommitConfigYAMLConfigError
-from usethis._integrations.pre_commit.schema import JsonSchemaForPreCommitConfigYaml
 from usethis._integrations.pydantic.dump import fancy_model_dump
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class PreCommitConfigYAMLManager(YAMLFileManager):
     def relative_path(self) -> Path:
         return Path(".pre-commit-config.yaml")
 
-    def model_validate(self) -> JsonSchemaForPreCommitConfigYaml:
+    def model_validate(self) -> schema.JsonSchemaForPreCommitConfigYaml:
         """Validate the current document content against the JSON schema.
 
         Returns:
@@ -43,12 +43,14 @@ class PreCommitConfigYAMLManager(YAMLFileManager):
             ruamel_content = CommentedMap({"repos": []})
 
         try:
-            return JsonSchemaForPreCommitConfigYaml.model_validate(ruamel_content)
+            return schema.JsonSchemaForPreCommitConfigYaml.model_validate(
+                ruamel_content
+            )
         except ValidationError as err:
             msg = f"Invalid '.pre-commit-config.yaml' file:\n{err}"
             raise PreCommitConfigYAMLConfigError(msg) from None
 
-    def commit_model(self, model: JsonSchemaForPreCommitConfigYaml) -> None:
+    def commit_model(self, model: schema.JsonSchemaForPreCommitConfigYaml) -> None:
         doc = self.get()
         dump = _pre_commit_fancy_dump(model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
@@ -57,7 +59,7 @@ class PreCommitConfigYAMLManager(YAMLFileManager):
 
 
 def _pre_commit_fancy_dump(
-    config: JsonSchemaForPreCommitConfigYaml, *, reference: ModelRepresentation
+    config: schema.JsonSchemaForPreCommitConfigYaml, *, reference: ModelRepresentation
 ) -> dict[str, ModelRepresentation]:
     dump = fancy_model_dump(config, reference=reference, order_by_cls=ORDER_BY_CLS)
 

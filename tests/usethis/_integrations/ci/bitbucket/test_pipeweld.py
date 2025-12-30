@@ -4,31 +4,12 @@ from uuid import UUID
 import pytest
 
 from usethis._config_file import files_manager
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.errors import UnexpectedImportPipelineError
 from usethis._integrations.ci.bitbucket.pipeweld import (
     apply_pipeweld_instruction,
     get_pipeweld_pipeline_from_default,
     get_pipeweld_step,
-)
-from usethis._integrations.ci.bitbucket.schema import (
-    Image,
-    ImageName,
-    ImportPipeline,
-    Items,
-    Parallel,
-    ParallelExpanded,
-    ParallelItem,
-    ParallelSteps,
-    Pipeline,
-    Pipelines,
-    PipelinesConfiguration,
-    Script,
-    Stage,
-    StageItem,
-    Step,
-    Step1,
-    Step2,
-    StepItem,
 )
 from usethis._pipeweld.containers import DepGroup, depgroup, parallel, series
 from usethis._pipeweld.func import _get_instructions_for_insertion
@@ -42,7 +23,9 @@ class TestApplyPipeweldInstruction:
         with change_cwd(tmp_path), files_manager():
             apply_pipeweld_instruction(
                 InsertSuccessor(step="foo", after=None),
-                step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                step_to_insert=schema.Step(
+                    name="foo", script=schema.Script(["echo foo"])
+                ),
             )
 
         # Assert
@@ -79,7 +62,9 @@ pipelines:
         ):
             apply_pipeweld_instruction(
                 InsertSuccessor(step="foo", after=None),
-                step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                step_to_insert=schema.Step(
+                    name="foo", script=schema.Script(["echo foo"])
+                ),
             )
 
     def test_existing_pipeline(self, tmp_path: Path):
@@ -100,7 +85,9 @@ pipelines:
         with change_cwd(tmp_path), files_manager():
             apply_pipeweld_instruction(
                 InsertSuccessor(step="foo", after=None),
-                step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                step_to_insert=schema.Step(
+                    name="foo", script=schema.Script(["echo foo"])
+                ),
             )
 
         # Assert
@@ -141,7 +128,9 @@ pipelines:
             with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="bar"),
-                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=schema.Step(
+                        name="foo", script=schema.Script(["echo foo"])
+                    ),
                 )
 
             # Assert
@@ -186,7 +175,9 @@ pipelines:
             with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="qux"),
-                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=schema.Step(
+                        name="foo", script=schema.Script(["echo foo"])
+                    ),
                 )
 
             # Assert
@@ -237,7 +228,9 @@ pipelines:
             with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="qux"),
-                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=schema.Step(
+                        name="foo", script=schema.Script(["echo foo"])
+                    ),
                 )
 
             # Assert
@@ -285,7 +278,9 @@ pipelines:
             with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertSuccessor(step="foo", after="baz"),
-                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=schema.Step(
+                        name="foo", script=schema.Script(["echo foo"])
+                    ),
                 )
 
             # Assert
@@ -328,7 +323,9 @@ pipelines:
             with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertParallel(step="foo", after="bar"),
-                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=schema.Step(
+                        name="foo", script=schema.Script(["echo foo"])
+                    ),
                 )
 
             # Assert: Should create a parallel block with both steps
@@ -374,7 +371,9 @@ pipelines:
             with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertParallel(step="foo", after="bar"),
-                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=schema.Step(
+                        name="foo", script=schema.Script(["echo foo"])
+                    ),
                 )
 
             # Assert: Should add to the existing parallel block
@@ -413,7 +412,9 @@ image: atlassian/default-image:3
             with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertParallel(step="foo", after=None),
-                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=schema.Step(
+                        name="foo", script=schema.Script(["echo foo"])
+                    ),
                 )
 
             # Assert: Should just add the step (parallel with no other steps is just a step)
@@ -455,7 +456,9 @@ pipelines:
             with change_cwd(tmp_path), files_manager():
                 apply_pipeweld_instruction(
                     InsertParallel(step="foo", after="bar"),
-                    step_to_insert=Step(name="foo", script=Script(["echo foo"])),
+                    step_to_insert=schema.Step(
+                        name="foo", script=schema.Script(["echo foo"])
+                    ),
                 )
 
             # Assert: Should add to the existing parallel block
@@ -515,19 +518,19 @@ pipelines:
             # Step 1: Move A to beginning
             apply_pipeweld_instruction(
                 InsertSuccessor(step="A", after=None),
-                step_to_insert=Step(name="C", script=Script(["echo C"])),
+                step_to_insert=schema.Step(name="C", script=schema.Script(["echo C"])),
             )
 
             # Step 2: Move B after A
             apply_pipeweld_instruction(
                 InsertSuccessor(step="B", after="A"),
-                step_to_insert=Step(name="C", script=Script(["echo C"])),
+                step_to_insert=schema.Step(name="C", script=schema.Script(["echo C"])),
             )
 
             # Step 3: Insert C after A (C will go between A and B)
             apply_pipeweld_instruction(
                 InsertSuccessor(step="C", after="A"),
-                step_to_insert=Step(name="C", script=Script(["echo C"])),
+                step_to_insert=schema.Step(name="C", script=schema.Script(["echo C"])),
             )
 
         # Assert: Should result in A, then C, then B in series
@@ -576,7 +579,7 @@ pipelines:
         with change_cwd(tmp_path), files_manager():
             apply_pipeweld_instruction(
                 InsertSuccessor(step="A", after=None),
-                step_to_insert=Step(name="C", script=Script(["echo C"])),
+                step_to_insert=schema.Step(name="C", script=schema.Script(["echo C"])),
             )
 
         # Assert: Parallel block should be removed entirely, leaving A and B
@@ -747,8 +750,8 @@ class TestGetInstructionsForInsertion:
 class TestGetPipeweldPipelineFromDefault:
     def test_image_only(self):
         # Arrange
-        model = PipelinesConfiguration(
-            image=Image(ImageName("atlassian/default-image:3"))
+        model = schema.PipelinesConfiguration(
+            image=schema.Image(schema.ImageName("atlassian/default-image:3"))
         )
 
         # Act
@@ -759,10 +762,10 @@ class TestGetPipeweldPipelineFromDefault:
 
     def test_import_pipeline_raises(self):
         # Arrange
-        model = PipelinesConfiguration(
-            pipelines=Pipelines(
-                default=Pipeline(
-                    ImportPipeline(
+        model = schema.PipelinesConfiguration(
+            pipelines=schema.Pipelines(
+                default=schema.Pipeline(
+                    schema.ImportPipeline(
                         # import is a keyword so we need to use a dict
                         **{"import": "shared-pipeline:master:share-pipeline-1"}
                     )
@@ -776,15 +779,15 @@ class TestGetPipeweldPipelineFromDefault:
 
     def test_series(self):
         # Arrange
-        model = PipelinesConfiguration(
-            pipelines=Pipelines(
-                default=Pipeline(
-                    Items(
+        model = schema.PipelinesConfiguration(
+            pipelines=schema.Pipelines(
+                default=schema.Pipeline(
+                    schema.Items(
                         [
-                            StepItem(
-                                step=Step(
+                            schema.StepItem(
+                                step=schema.Step(
                                     name="foo",
-                                    script=Script(["echo foo"]),
+                                    script=schema.Script(["echo foo"]),
                                 )
                             )
                         ]
@@ -801,25 +804,25 @@ class TestGetPipeweldPipelineFromDefault:
 
     def test_parallel(self):
         # Arrange
-        model = PipelinesConfiguration(
-            pipelines=Pipelines(
-                default=Pipeline(
-                    Items(
+        model = schema.PipelinesConfiguration(
+            pipelines=schema.Pipelines(
+                default=schema.Pipeline(
+                    schema.Items(
                         [
-                            ParallelItem(
-                                parallel=Parallel(
-                                    ParallelSteps(
+                            schema.ParallelItem(
+                                parallel=schema.Parallel(
+                                    schema.ParallelSteps(
                                         [
-                                            StepItem(
-                                                step=Step(
+                                            schema.StepItem(
+                                                step=schema.Step(
                                                     name="foo",
-                                                    script=Script(["echo foo"]),
+                                                    script=schema.Script(["echo foo"]),
                                                 )
                                             ),
-                                            StepItem(
-                                                step=Step(
+                                            schema.StepItem(
+                                                step=schema.Step(
                                                     name="bar",
-                                                    script=Script(["echo bar"]),
+                                                    script=schema.Script(["echo bar"]),
                                                 )
                                             ),
                                         ]
@@ -842,26 +845,30 @@ class TestGetPipeweldPipelineFromDefault:
 
     def test_parallel_expanded(self):
         # Arrange
-        model = PipelinesConfiguration(
-            pipelines=Pipelines(
-                default=Pipeline(
-                    Items(
+        model = schema.PipelinesConfiguration(
+            pipelines=schema.Pipelines(
+                default=schema.Pipeline(
+                    schema.Items(
                         [
-                            ParallelItem(
-                                parallel=Parallel(
-                                    ParallelExpanded(
-                                        steps=ParallelSteps(
+                            schema.ParallelItem(
+                                parallel=schema.Parallel(
+                                    schema.ParallelExpanded(
+                                        steps=schema.ParallelSteps(
                                             [
-                                                StepItem(
-                                                    step=Step(
+                                                schema.StepItem(
+                                                    step=schema.Step(
                                                         name="foo",
-                                                        script=Script(["echo foo"]),
+                                                        script=schema.Script(
+                                                            ["echo foo"]
+                                                        ),
                                                     )
                                                 ),
-                                                StepItem(
-                                                    step=Step(
+                                                schema.StepItem(
+                                                    step=schema.Step(
                                                         name="bar",
-                                                        script=Script(["echo bar"]),
+                                                        script=schema.Script(
+                                                            ["echo bar"]
+                                                        ),
                                                     )
                                                 ),
                                             ]
@@ -885,19 +892,19 @@ class TestGetPipeweldPipelineFromDefault:
 
     def test_named_stage_item(self):
         # Arrange
-        model = PipelinesConfiguration(
-            pipelines=Pipelines(
-                default=Pipeline(
-                    Items(
+        model = schema.PipelinesConfiguration(
+            pipelines=schema.Pipelines(
+                default=schema.Pipeline(
+                    schema.Items(
                         [
-                            StageItem(
-                                stage=Stage(
+                            schema.StageItem(
+                                stage=schema.Stage(
                                     name="mystage",
                                     steps=[
-                                        Step1(
-                                            step=Step2(
+                                        schema.Step1(
+                                            step=schema.Step2(
                                                 name="foo",
-                                                script=Script(["echo foo"]),
+                                                script=schema.Script(["echo foo"]),
                                             )
                                         )
                                     ],
@@ -922,18 +929,18 @@ class TestGetPipeweldPipelineFromDefault:
 
     def test_unnamed_stage_item(self):
         # Arrange
-        model = PipelinesConfiguration(
-            pipelines=Pipelines(
-                default=Pipeline(
-                    Items(
+        model = schema.PipelinesConfiguration(
+            pipelines=schema.Pipelines(
+                default=schema.Pipeline(
+                    schema.Items(
                         [
-                            StageItem(
-                                stage=Stage(
+                            schema.StageItem(
+                                stage=schema.Stage(
                                     steps=[
-                                        Step1(
-                                            step=Step2(
+                                        schema.Step1(
+                                            step=schema.Step2(
                                                 name="foo",
-                                                script=Script(["echo foo"]),
+                                                script=schema.Script(["echo foo"]),
                                             )
                                         )
                                     ],
@@ -965,9 +972,9 @@ class TestGetPipeweldPipelineFromDefault:
 class TestGetPipeweldStep:
     def test_no_name(self):
         # Arrange
-        step = Step(
+        step = schema.Step(
             name=None,
-            script=Script(["echo foo"]),
+            script=schema.Script(["echo foo"]),
         )
 
         # Act
@@ -978,9 +985,9 @@ class TestGetPipeweldStep:
 
     def test_with_name(self):
         # Arrange
-        step = Step(
+        step = schema.Step(
             name="foo",
-            script=Script(["echo foo"]),
+            script=schema.Script(["echo foo"]),
         )
 
         # Act

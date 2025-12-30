@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
+from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.hooks import (
     _get_placeholder_repo_config,
     add_placeholder_hook,
@@ -11,12 +12,6 @@ from usethis._integrations.pre_commit.hooks import (
     hooks_are_equivalent,
     insert_repo,
     remove_hook,
-)
-from usethis._integrations.pre_commit.schema import (
-    HookDefinition,
-    Language,
-    LocalRepo,
-    UriRepo,
 )
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._test import change_cwd
@@ -36,8 +31,10 @@ repos:
             pytest.raises(NotImplementedError, match="Hook 'foo' not recognized"),
         ):
             add_repo(
-                UriRepo(
-                    repo="foo", rev="foo", hooks=[HookDefinition(id="foo", name="foo")]
+                schema.UriRepo(
+                    repo="foo",
+                    rev="foo",
+                    hooks=[schema.HookDefinition(id="foo", name="foo")],
                 )
             )
 
@@ -55,14 +52,14 @@ repos:
         # Act
         with change_cwd(tmp_path), files_manager():
             add_repo(
-                LocalRepo(
+                schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="deptry",
                             name="deptry",
                             entry="uv run --frozen deptry src",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                             always_run=True,
                         )
                     ],
@@ -119,14 +116,14 @@ repos:
         with change_cwd(tmp_path), files_manager():
             # Arrange: Add 'codespell' first (later in _HOOK_ORDER)
             add_repo(
-                LocalRepo(
+                schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="codespell",
                             name="codespell",
                             entry="codespell .",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                         )
                     ],
                 )
@@ -134,14 +131,14 @@ repos:
 
             # Now add 'pyproject-fmt' (earlier in _HOOK_ORDER)
             add_repo(
-                LocalRepo(
+                schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="pyproject-fmt",
                             name="pyproject-fmt",
                             entry="uv run --frozen pyproject-fmt .",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                         )
                     ],
                 )
@@ -157,14 +154,14 @@ repos:
         with change_cwd(tmp_path), files_manager():
             # Arrange
             add_repo(
-                LocalRepo(
+                schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="pyproject-fmt",
                             name="pyproject-fmt",
                             entry="uv run --frozen pyproject-fmt .",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                         )
                     ],
                 )
@@ -172,14 +169,14 @@ repos:
 
             # Act
             add_repo(
-                LocalRepo(
+                schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="codespell",
                             name="codespell",
                             entry="codespell .",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                         )
                     ],
                 )
@@ -194,40 +191,40 @@ repos:
         with change_cwd(tmp_path), files_manager():
             # Act
             add_repo(
-                LocalRepo(
+                schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="foo",
                             name="foo",
                             entry="foo .",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                         )
                     ],
                 ),
             )
             add_repo(
-                LocalRepo(
+                schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="codespell",
                             name="codespell",
                             entry="codespell .",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                         )
                     ],
                 )
             )
             add_repo(
-                LocalRepo(
+                schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="pyproject-fmt",
                             name="pyproject-fmt",
                             entry="uv run --frozen pyproject-fmt .",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                         )
                     ],
                 )
@@ -257,14 +254,14 @@ repos:
         with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
             existing_repos = mgr.model_validate().repos
             repos = insert_repo(
-                repo_to_insert=LocalRepo(
+                repo_to_insert=schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="pyproject-fmt",
                             name="pyproject-fmt",
                             entry="uv run --frozen pyproject-fmt .",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                         )
                     ],
                 ),
@@ -282,14 +279,14 @@ repos:
 
     def test_existing_repo_has_none_hooks(self):
         # Arrange
-        existing_repos = [LocalRepo(repo="local", hooks=None)]
-        new_hook = HookDefinition(
+        existing_repos = [schema.LocalRepo(repo="local", hooks=None)]
+        new_hook = schema.HookDefinition(
             id="new-hook",
             name="New Hook",
             entry="echo 'New hook'",
-            language=Language("system"),
+            language=schema.Language("system"),
         )
-        repo_to_insert = LocalRepo(
+        repo_to_insert = schema.LocalRepo(
             repo="local",
             hooks=[new_hook],
         )
@@ -305,8 +302,8 @@ repos:
         assert isinstance(results, list)
         assert len(results) == 2
         assert results == [
-            LocalRepo(repo="local", hooks=[new_hook]),
-            LocalRepo(repo="local", hooks=None),
+            schema.LocalRepo(repo="local", hooks=[new_hook]),
+            schema.LocalRepo(repo="local", hooks=None),
         ]
 
     def test_duplicate_predecessor(
@@ -329,14 +326,14 @@ repos:
         with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
             existing_repos = mgr.model_validate().repos
             repos = insert_repo(
-                repo_to_insert=LocalRepo(
+                repo_to_insert=schema.LocalRepo(
                     repo="local",
                     hooks=[
-                        HookDefinition(
+                        schema.HookDefinition(
                             id="pyproject-fmt",
                             name="pyproject-fmt",
                             entry="uv run --frozen pyproject-fmt .",
-                            language=Language("system"),
+                            language=schema.Language("system"),
                         )
                     ],
                 ),
@@ -548,17 +545,17 @@ repos:
 class TestHooksAreEquivalent:
     def test_identical(self):
         # Arrange
-        hook = HookDefinition(
+        hook = schema.HookDefinition(
             id="foo",
             name="Foo",
             entry="echo 'Hello, world!'",
-            language=Language("python"),
+            language=schema.Language("python"),
         )
-        other = HookDefinition(
+        other = schema.HookDefinition(
             id="foo",
             name="Foo",
             entry="echo 'Hello, world!'",
-            language=Language("python"),
+            language=schema.Language("python"),
         )
 
         # Act
@@ -569,17 +566,17 @@ class TestHooksAreEquivalent:
 
     def test_different_id(self):
         # Arrange
-        hook = HookDefinition(
+        hook = schema.HookDefinition(
             id="foo",
             name="Foo",
             entry="echo 'Hello, world!'",
-            language=Language("python"),
+            language=schema.Language("python"),
         )
-        other = HookDefinition(
+        other = schema.HookDefinition(
             id="bar",
             name="Foo",
             entry="echo 'Hello, world!'",
-            language=Language("python"),
+            language=schema.Language("python"),
         )
 
         # Act
@@ -590,17 +587,17 @@ class TestHooksAreEquivalent:
 
     def test_different_name(self):
         # Arrange
-        hook = HookDefinition(
+        hook = schema.HookDefinition(
             id="foo",
             name="Foo",
             entry="echo 'Hello, world!'",
-            language=Language("python"),
+            language=schema.Language("python"),
         )
-        other = HookDefinition(
+        other = schema.HookDefinition(
             id="foo",
             name="Bar",
             entry="echo 'Hello, world!'",
-            language=Language("python"),
+            language=schema.Language("python"),
         )
 
         # Act
@@ -611,12 +608,12 @@ class TestHooksAreEquivalent:
 
     def test_case_sensitive_id_difference(self):
         # Arrange
-        hook = HookDefinition(
+        hook = schema.HookDefinition(
             id="foo",
             name="Foo",
             entry="echo 'Hello, world!'",
         )
-        other = HookDefinition(
+        other = schema.HookDefinition(
             id="FOO",
             name="Different",
             entry="echo 'Au revoir!'",
@@ -630,17 +627,17 @@ class TestHooksAreEquivalent:
 
     def test_no_id(self):
         # Arrange
-        hook = HookDefinition(
+        hook = schema.HookDefinition(
             id=None,
             name="Foo",
             entry="echo 'Hello, world!'",
-            language=Language("python"),
+            language=schema.Language("python"),
         )
-        other = HookDefinition(
+        other = schema.HookDefinition(
             id="foo",
             name="Foo",
             entry="echo 'Hello, world!'",
-            language=Language("python"),
+            language=schema.Language("python"),
         )
 
         # Act
@@ -652,10 +649,10 @@ class TestHooksAreEquivalent:
     def test_aliases(self):
         # Arrange / Act / Assert
         assert hooks_are_equivalent(
-            HookDefinition(id="ruff"),
-            HookDefinition(id="ruff-check"),
+            schema.HookDefinition(id="ruff"),
+            schema.HookDefinition(id="ruff-check"),
         )
         assert hooks_are_equivalent(
-            HookDefinition(id="ruff-check"),
-            HookDefinition(id="ruff"),
+            schema.HookDefinition(id="ruff-check"),
+            schema.HookDefinition(id="ruff"),
         )

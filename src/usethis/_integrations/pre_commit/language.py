@@ -1,10 +1,10 @@
 from packaging.version import Version
 
-from usethis._integrations.pre_commit.schema import Language
+from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.version import get_minimum_pre_commit_version
 
 
-def get_system_language() -> Language:
+def get_system_language() -> schema.Language:
     """Get the appropriate 'system' language keyword based on pre-commit version.
 
     Returns 'unsupported' for pre-commit >= 4.4.0, otherwise 'system'.
@@ -15,5 +15,5 @@ def get_system_language() -> Language:
     """
     min_version = get_minimum_pre_commit_version()
     if min_version is not None and Version(min_version) >= Version("4.4.0"):
-        return Language("unsupported")
-    return Language("system")
+        return schema.Language("unsupported")
+    return schema.Language("system")

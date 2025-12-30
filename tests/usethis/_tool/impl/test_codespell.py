@@ -7,7 +7,7 @@ from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
-from usethis._integrations.pre_commit.schema import UriRepo
+from usethis._integrations.pre_commit import schema
 from usethis._test import change_cwd
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._types.backend import BackendEnum
@@ -143,7 +143,7 @@ repos:
 
         (config,) = CodespellTool().get_pre_commit_config().repo_configs
         repo = config.repo
-        assert isinstance(repo, UriRepo)
+        assert isinstance(repo, schema.UriRepo)
         try:
             assert repo.rev == get_github_latest_tag(
                 owner="codespell-project", repo="codespell"

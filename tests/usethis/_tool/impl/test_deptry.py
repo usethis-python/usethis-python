@@ -4,7 +4,7 @@ import pytest
 
 from usethis._config_file import files_manager
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.schema import Language
+from usethis._integrations.pre_commit import schema
 from usethis._test import change_cwd
 from usethis._tool.config import ConfigEntry, ConfigItem
 from usethis._tool.impl.deptry import DeptryTool
@@ -288,7 +288,9 @@ name = "test-project"
             # Assert
             assert result.repo_configs is not None
             assert result.repo_configs[0].repo.hooks is not None
-            assert result.repo_configs[0].repo.hooks[0].language == Language("system")
+            assert result.repo_configs[0].repo.hooks[0].language == schema.Language(
+                "system"
+            )
 
         def test_uses_system_language_when_minimum_version_below_4_4_0(
             self, tmp_path: Path
@@ -313,7 +315,9 @@ repos: []
             # Assert
             assert result.repo_configs is not None
             assert result.repo_configs[0].repo.hooks is not None
-            assert result.repo_configs[0].repo.hooks[0].language == Language("system")
+            assert result.repo_configs[0].repo.hooks[0].language == schema.Language(
+                "system"
+            )
 
         def test_uses_unsupported_language_when_minimum_version_is_4_4_0(
             self, tmp_path: Path
@@ -338,7 +342,7 @@ repos: []
             # Assert
             assert result.repo_configs is not None
             assert result.repo_configs[0].repo.hooks is not None
-            assert result.repo_configs[0].repo.hooks[0].language == Language(
+            assert result.repo_configs[0].repo.hooks[0].language == schema.Language(
                 "unsupported"
             )
 
@@ -365,6 +369,6 @@ repos: []
             # Assert
             assert result.repo_configs is not None
             assert result.repo_configs[0].repo.hooks is not None
-            assert result.repo_configs[0].repo.hooks[0].language == Language(
+            assert result.repo_configs[0].repo.hooks[0].language == schema.Language(
                 "unsupported"
             )

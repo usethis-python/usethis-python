@@ -11,12 +11,10 @@ from usethis._config_file import DotPytestINIManager, PytestINIManager, ToxINIMa
 from usethis._console import how_print, info_print, instruct_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
+from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
-from usethis._integrations.ci.bitbucket.schema import Image, ImageName
-from usethis._integrations.ci.bitbucket.schema import Script as BitbucketScript
-from usethis._integrations.ci.bitbucket.schema import Step as BitbucketStep
 from usethis._integrations.ci.bitbucket.steps import get_steps_in_default
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.environ.python import get_supported_minor_python_versions
@@ -223,7 +221,9 @@ class PytestTool(Tool):
             raise NotImplementedError(msg)
         return {preferred_file_manager}
 
-    def get_bitbucket_steps(self, *, matrix_python: bool = True) -> list[BitbucketStep]:
+    def get_bitbucket_steps(
+        self, *, matrix_python: bool = True
+    ) -> list[bitbucket_schema.Step]:
         if matrix_python:
             versions = get_supported_minor_python_versions()
         else:
@@ -234,10 +234,10 @@ class PytestTool(Tool):
         steps = []
         for version in versions:
             if backend is BackendEnum.uv:
-                step = BitbucketStep(
+                step = bitbucket_schema.Step(
                     name=f"Test on {version.to_short_string()}",
                     caches=["uv"],
-                    script=BitbucketScript(
+                    script=bitbucket_schema.Script(
                         [
                             BitbucketScriptItemAnchor(name="install-uv"),
                             f"uv run --python {version.to_short_string()} pytest -x --junitxml=test-reports/report.xml",
@@ -245,10 +245,14 @@ class PytestTool(Tool):
                     ),
                 )
             elif backend is BackendEnum.none:
-                step = BitbucketStep(
+                step = bitbucket_schema.Step(
                     name=f"Test on {version.to_short_string()}",
-                    image=Image(ImageName(f"python:{version.to_short_string()}")),
-                    script=BitbucketScript(
+                    image=bitbucket_schema.Image(
+                        bitbucket_schema.ImageName(
+                            f"python:{version.to_short_string()}"
+                        )
+                    ),
+                    script=bitbucket_schema.Script(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),
                             _PYTEST_PIP_CMD,

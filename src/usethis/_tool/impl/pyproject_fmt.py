@@ -8,7 +8,7 @@ from usethis._console import how_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.schema import HookDefinition, UriRepo
+from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
@@ -85,10 +85,10 @@ class PyprojectFmtTool(Tool):
 
     def get_pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
-            UriRepo(
+            pre_commit_schema.UriRepo(
                 repo="https://github.com/tox-dev/pyproject-fmt",
                 rev=_PYPROJECT_FMT_VERSION,
-                hooks=[HookDefinition(id="pyproject-fmt")],
+                hooks=[pre_commit_schema.HookDefinition(id="pyproject-fmt")],
             ),
             requires_venv=False,
         )

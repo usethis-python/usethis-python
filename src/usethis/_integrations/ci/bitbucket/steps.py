@@ -11,6 +11,7 @@ import usethis._pipeweld.func
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
 from usethis._integrations.backend.dispatch import get_backend
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor,
     anchor_name_from_script_item,
@@ -27,19 +28,6 @@ from usethis._integrations.ci.bitbucket.pipeweld import (
     get_pipeweld_pipeline_from_default,
     get_pipeweld_step,
 )
-from usethis._integrations.ci.bitbucket.schema import (
-    CachePath,
-    Definitions,
-    ImportPipeline,
-    Parallel,
-    ParallelExpanded,
-    ParallelItem,
-    ParallelSteps,
-    Script,
-    StageItem,
-    Step,
-    StepItem,
-)
 from usethis._integrations.ci.bitbucket.schema_utils import step1tostep
 from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
 from usethis._integrations.environ.python import get_supported_minor_python_versions
@@ -49,16 +37,12 @@ if TYPE_CHECKING:
     from ruamel.yaml.anchor import Anchor
 
     from usethis._integrations.ci.bitbucket.anchor import ScriptItemName
-    from usethis._integrations.ci.bitbucket.schema import (
-        Pipeline,
-        PipelinesConfiguration,
-    )
     from usethis._integrations.file.yaml.io_ import YAMLDocument
 
 
 _CACHE_LOOKUP = {
-    "uv": CachePath("~/.cache/uv"),
-    "pre-commit": CachePath("~/.cache/pre-commit"),
+    "uv": schema.CachePath("~/.cache/uv"),
+    "pre-commit": schema.CachePath("~/.cache/pre-commit"),
 }
 
 
@@ -80,7 +64,7 @@ for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
     script_item.yaml_set_anchor(value=name, always_dump=True)
 
 
-def add_bitbucket_step_in_default(step: Step) -> None:
+def add_bitbucket_step_in_default(step: schema.Step) -> None:
     ensure_bitbucket_pipelines_config_exists()
 
     try:
@@ -112,8 +96,11 @@ def add_bitbucket_step_in_default(step: Step) -> None:
 
 
 def _add_step_in_default_via_model(
-    step: Step, *, model: PipelinesConfiguration, doc: YAMLDocument
-) -> PipelinesConfiguration:
+    step: schema.Step,
+    *,
+    model: schema.PipelinesConfiguration,
+    doc: YAMLDocument,
+) -> schema.PipelinesConfiguration:
     _add_step_caches_via_model(step, model=model)
 
     if step.name != _PLACEHOLDER_NAME:
@@ -173,8 +160,11 @@ def _add_step_in_default_via_model(
 
 
 def _resolve_script_anchors(
-    step: Step, *, model: PipelinesConfiguration, doc: YAMLDocument
-) -> Step:
+    step: schema.Step,
+    *,
+    model: schema.PipelinesConfiguration,
+    doc: YAMLDocument,
+) -> schema.Step:
     """Resolve script item anchors by adding definitions and replacing with references."""
     # Process each script item in the step
     for idx, script_item in enumerate(step.script.root):
@@ -202,7 +192,7 @@ def _resolve_script_anchors(
 def _add_script_item_definition(
     *,
     script_item_name: ScriptItemName,
-    model: PipelinesConfiguration,
+    model: schema.PipelinesConfiguration,
     doc: YAMLDocument,
 ) -> None:
     """Add a script item definition to the YAML file's definitions section.
@@ -232,7 +222,7 @@ def _add_script_item_definition(
     if "definitions" not in content:
         content["definitions"] = {}
         if model.definitions is None:
-            model.definitions = Definitions()
+            model.definitions = schema.Definitions()
     if "script_items" not in content["definitions"]:
         content["definitions"]["script_items"] = CommentedSeq()
 
@@ -254,7 +244,7 @@ def _add_script_item_definition(
 
 
 def _get_script_item_insertion_index(
-    *, script_item_name: ScriptItemName, model: PipelinesConfiguration
+    *, script_item_name: ScriptItemName, model: schema.PipelinesConfiguration
 ) -> int:
     """Get the correct insertion index for a script item to maintain canonical order."""
     # Check if we have existing script items in the model
@@ -277,7 +267,7 @@ def _get_script_item_insertion_index(
     return len(existing_script_items)  # Default to end
 
 
-def remove_bitbucket_step_from_default(step: Step) -> None:
+def remove_bitbucket_step_from_default(step: schema.Step) -> None:
     """Remove a step from the default pipeline in the Bitbucket Pipelines configuration.
 
     If the default pipeline does not exist, or the step is not found, nothing happens.
@@ -305,7 +295,7 @@ def remove_bitbucket_step_from_default(step: Step) -> None:
 
     pipeline = model.pipelines.default
 
-    if isinstance(pipeline.root, ImportPipeline):
+    if isinstance(pipeline.root, schema.ImportPipeline):
         msg = "Cannot remove steps from an import pipeline."
         raise UnexpectedImportPipelineError(msg)
 
@@ -313,7 +303,7 @@ def remove_bitbucket_step_from_default(step: Step) -> None:
 
     # Iterate over the items. Any item that contains the step is censored to remove
     # references to the step. If the only thing in the item is the step, we get None
-    new_items: list[StepItem | ParallelItem | StageItem] = []
+    new_items: list[schema.StepItem | schema.ParallelItem | schema.StageItem] = []
     for item in items:
         new_item = _censor_step(item, step=step)
         if new_item is not None:
@@ -334,31 +324,35 @@ def remove_bitbucket_step_from_default(step: Step) -> None:
 
 @singledispatch
 def _censor_step(
-    item: StepItem | ParallelItem | StageItem, *, step: Step
-) -> StepItem | ParallelItem | StageItem | None:
+    item: schema.StepItem | schema.ParallelItem | schema.StageItem, *, step: schema.Step
+) -> schema.StepItem | schema.ParallelItem | schema.StageItem | None:
     """Censor a step from a pipeline item, with None if necessary."""
     raise NotImplementedError
 
 
-@_censor_step.register(StepItem)
-def _(item: StepItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+@_censor_step.register(schema.StepItem)
+def _(
+    item: schema.StepItem, *, step: schema.Step
+) -> schema.StepItem | schema.ParallelItem | schema.StageItem | None:
     if bitbucket_steps_are_equivalent(item.step, step):
         return None
     return item
 
 
-@_censor_step.register(ParallelItem)
-def _(item: ParallelItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+@_censor_step.register(schema.ParallelItem)
+def _(
+    item: schema.ParallelItem, *, step: schema.Step
+) -> schema.StepItem | schema.ParallelItem | schema.StageItem | None:
     par = item.parallel.root
 
-    if isinstance(par, ParallelSteps):
+    if isinstance(par, schema.ParallelSteps):
         step_items = par.root
-    elif isinstance(par, ParallelExpanded):
+    elif isinstance(par, schema.ParallelExpanded):
         step_items = par.steps.root
     else:
         assert_never(par)
 
-    new_step_items: list[StepItem] = []
+    new_step_items: list[schema.StepItem] = []
     for step_item in step_items:
         if bitbucket_steps_are_equivalent(step_item.step, step):
             continue
@@ -368,17 +362,21 @@ def _(item: ParallelItem, *, step: Step) -> StepItem | ParallelItem | StageItem 
         return None
     elif len(new_step_items) == 1 and len(step_items) != 1:
         return new_step_items[0]
-    elif isinstance(par, ParallelSteps):
-        return ParallelItem(parallel=Parallel(ParallelSteps(new_step_items)))
-    elif isinstance(par, ParallelExpanded):
-        par.steps = ParallelSteps(new_step_items)
-        return ParallelItem(parallel=Parallel(par))
+    elif isinstance(par, schema.ParallelSteps):
+        return schema.ParallelItem(
+            parallel=schema.Parallel(schema.ParallelSteps(new_step_items))
+        )
+    elif isinstance(par, schema.ParallelExpanded):
+        par.steps = schema.ParallelSteps(new_step_items)
+        return schema.ParallelItem(parallel=schema.Parallel(par))
     else:
         assert_never(par)
 
 
-@_censor_step.register(StageItem)
-def _(item: StageItem, *, step: Step) -> StepItem | ParallelItem | StageItem | None:
+@_censor_step.register(schema.StageItem)
+def _(
+    item: schema.StageItem, *, step: schema.Step
+) -> schema.StepItem | schema.ParallelItem | schema.StageItem | None:
     step1s = item.stage.steps
 
     new_step1s = []
@@ -392,7 +390,7 @@ def _(item: StageItem, *, step: Step) -> StepItem | ParallelItem | StageItem | N
 
     new_stage = item.stage.model_copy()
     new_stage.steps = new_step1s
-    return StageItem(stage=new_stage)
+    return schema.StageItem(stage=new_stage)
 
 
 def is_cache_used(cache: str) -> bool:
@@ -403,7 +401,9 @@ def is_cache_used(cache: str) -> bool:
     return False
 
 
-def _add_step_caches_via_model(step: Step, *, model: PipelinesConfiguration) -> None:
+def _add_step_caches_via_model(
+    step: schema.Step, *, model: schema.PipelinesConfiguration
+) -> None:
     if step.caches is not None:
         cache_by_name = {}
         for name in step.caches:
@@ -419,7 +419,9 @@ def _add_step_caches_via_model(step: Step, *, model: PipelinesConfiguration) -> 
         _add_caches_via_model(cache_by_name, model=model)
 
 
-def bitbucket_steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
+def bitbucket_steps_are_equivalent(
+    step1: schema.Step | None, step2: schema.Step
+) -> bool:
     if step1 is None:
         return False
 
@@ -441,7 +443,7 @@ def bitbucket_steps_are_equivalent(step1: Step | None, step2: Step) -> bool:
     return step1 == step2
 
 
-def get_steps_in_default() -> list[Step]:
+def get_steps_in_default() -> list[schema.Step]:
     """Get the steps in the default pipeline of the Bitbucket Pipelines configuration.
 
     If the default pipeline does not exist, an empty list is returned.
@@ -469,8 +471,8 @@ def get_steps_in_default() -> list[Step]:
     return _get_steps_in_pipeline(pipeline)
 
 
-def _get_steps_in_pipeline(pipeline: Pipeline) -> list[Step]:
-    if isinstance(pipeline.root, ImportPipeline):
+def _get_steps_in_pipeline(pipeline: schema.Pipeline) -> list[schema.Step]:
+    if isinstance(pipeline.root, schema.ImportPipeline):
         msg = "Cannot retrieve steps from an import pipeline."
         raise UnexpectedImportPipelineError(msg)
 
@@ -484,21 +486,21 @@ def _get_steps_in_pipeline(pipeline: Pipeline) -> list[Step]:
 
 
 @singledispatch
-def get_steps_in_pipeline_item(item) -> list[Step]:
+def get_steps_in_pipeline_item(item) -> list[schema.Step]:
     raise NotImplementedError
 
 
-@get_steps_in_pipeline_item.register(StepItem)
-def _(item: StepItem) -> list[Step]:
+@get_steps_in_pipeline_item.register(schema.StepItem)
+def _(item: schema.StepItem) -> list[schema.Step]:
     return [item.step]
 
 
-@get_steps_in_pipeline_item.register(ParallelItem)
-def _(item: ParallelItem) -> list[Step]:
+@get_steps_in_pipeline_item.register(schema.ParallelItem)
+def _(item: schema.ParallelItem) -> list[schema.Step]:
     _p = item.parallel.root
-    if isinstance(_p, ParallelSteps):
+    if isinstance(_p, schema.ParallelSteps):
         step_items = _p.root
-    elif isinstance(_p, ParallelExpanded):
+    elif isinstance(_p, schema.ParallelExpanded):
         step_items = _p.steps.root
     else:
         assert_never(_p)
@@ -507,8 +509,8 @@ def _(item: ParallelItem) -> list[Step]:
     return steps
 
 
-@get_steps_in_pipeline_item.register(StageItem)
-def _(item: StageItem) -> list[Step]:
+@get_steps_in_pipeline_item.register(schema.StageItem)
+def _(item: schema.StageItem) -> list[schema.Step]:
     return [step1tostep(step1) for step1 in item.stage.steps if step1.step is not None]
 
 
@@ -528,13 +530,13 @@ def add_placeholder_step_in_default(report_placeholder: bool = True) -> None:
         )
 
 
-def _get_placeholder_step() -> Step:
+def _get_placeholder_step() -> schema.Step:
     backend = get_backend()
 
     if backend is BackendEnum.uv:
-        return Step(
+        return schema.Step(
             name=_PLACEHOLDER_NAME,
-            script=Script(
+            script=schema.Script(
                 [
                     ScriptItemAnchor(name="install-uv"),
                     "echo 'Hello, world!'",
@@ -543,9 +545,9 @@ def _get_placeholder_step() -> Step:
             caches=["uv"],
         )
     elif backend is BackendEnum.none:
-        return Step(
+        return schema.Step(
             name=_PLACEHOLDER_NAME,
-            script=Script(
+            script=schema.Script(
                 [
                     "echo 'Hello, world!'",
                 ]
@@ -556,7 +558,7 @@ def _get_placeholder_step() -> Step:
 
 
 def get_defined_script_items(
-    *, model: PipelinesConfiguration, doc: YAMLDocument
+    *, model: schema.PipelinesConfiguration, doc: YAMLDocument
 ) -> dict[str, str]:
     """Get defined script items with their anchor names.
 

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from usethis._config_file import files_manager
+from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.language import get_system_language
-from usethis._integrations.pre_commit.schema import Language
 from usethis._test import change_cwd
 
 
@@ -23,7 +23,7 @@ repos:
             result = get_system_language()
 
         # Assert
-        assert result == Language("unsupported")
+        assert result == schema.Language("unsupported")
 
     def test_returns_unsupported_when_minimum_version_is_above_4_4_0(
         self, tmp_path: Path
@@ -43,7 +43,7 @@ repos:
             result = get_system_language()
 
         # Assert
-        assert result == Language("unsupported")
+        assert result == schema.Language("unsupported")
 
     def test_returns_system_when_minimum_version_is_below_4_4_0(self, tmp_path: Path):
         # Arrange
@@ -61,7 +61,7 @@ repos:
             result = get_system_language()
 
         # Assert
-        assert result == Language("system")
+        assert result == schema.Language("system")
 
     def test_returns_system_when_config_doesnt_exist(self, tmp_path: Path):
         # Act
@@ -69,7 +69,7 @@ repos:
             result = get_system_language()
 
         # Assert
-        assert result == Language("system")
+        assert result == schema.Language("system")
 
     def test_returns_system_when_minimum_version_not_declared(self, tmp_path: Path):
         # Arrange
@@ -86,7 +86,7 @@ repos:
             result = get_system_language()
 
         # Assert
-        assert result == Language("system")
+        assert result == schema.Language("system")
 
     def test_returns_system_when_minimum_version_is_3_x(self, tmp_path: Path):
         # Arrange
@@ -104,4 +104,4 @@ repos:
             result = get_system_language()
 
         # Assert
-        assert result == Language("system")
+        assert result == schema.Language("system")

@@ -4,24 +4,15 @@ from typing import TYPE_CHECKING
 
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
+from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.init import (
     ensure_pre_commit_config_exists,
 )
 from usethis._integrations.pre_commit.language import get_system_language
-from usethis._integrations.pre_commit.schema import (
-    HookDefinition,
-    LocalRepo,
-    MetaRepo,
-)
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 
 if TYPE_CHECKING:
     from collections.abc import Collection
-
-    from usethis._integrations.pre_commit.schema import (
-        JsonSchemaForPreCommitConfigYaml,
-        UriRepo,
-    )
 
 _HOOK_ORDER = [
     "sync-with-uv",
@@ -40,7 +31,7 @@ _HOOK_ORDER = [
 _PLACEHOLDER_ID = "placeholder"
 
 
-def add_repo(repo: LocalRepo | UriRepo) -> None:
+def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
     """Add a pre-commit repo configuration to the pre-commit configuration file.
 
     This assumes the hook doesn't already exist in the configuration file.
@@ -113,10 +104,10 @@ def add_repo(repo: LocalRepo | UriRepo) -> None:
 
 def insert_repo(
     *,
-    repo_to_insert: LocalRepo | UriRepo | MetaRepo,
-    existing_repos: Collection[LocalRepo | UriRepo | MetaRepo],
+    repo_to_insert: schema.LocalRepo | schema.UriRepo | schema.MetaRepo,
+    existing_repos: Collection[schema.LocalRepo | schema.UriRepo | schema.MetaRepo],
     predecessor: str | None,
-) -> list[LocalRepo | UriRepo | MetaRepo]:
+) -> list[schema.LocalRepo | schema.UriRepo | schema.MetaRepo]:
     # Insert the new hook after the last precedent repo
     # Do this by iterating over the repos and hooks, and inserting the new hook
     # after the last precedent
@@ -161,7 +152,9 @@ def insert_repo(
     return repos
 
 
-def _report_adding_repo(repo: LocalRepo | UriRepo | MetaRepo) -> None:
+def _report_adding_repo(
+    repo: schema.LocalRepo | schema.UriRepo | schema.MetaRepo,
+) -> None:
     """Append a repo to the end of the existing repos with message."""
     if repo.hooks is not None:
         for inserted_hook in repo.hooks:
@@ -179,11 +172,11 @@ def add_placeholder_hook() -> None:
     )
 
 
-def _get_placeholder_repo_config() -> LocalRepo:
-    return LocalRepo(
+def _get_placeholder_repo_config() -> schema.LocalRepo:
+    return schema.LocalRepo(
         repo="local",
         hooks=[
-            HookDefinition(
+            schema.HookDefinition(
                 id=_PLACEHOLDER_ID,
                 name="Placeholder - add your own hooks!",
                 entry="""uv run --isolated --frozen --offline python -c "print('hello world!')\"""",
@@ -206,7 +199,7 @@ def remove_hook(hook_id: str) -> None:
 
     # search across the repos for any hooks with matching ID
     for repo in model.repos:
-        if isinstance(repo, MetaRepo) or repo.hooks is None:
+        if isinstance(repo, schema.MetaRepo) or repo.hooks is None:
             continue
 
         for hook in repo.hooks:
@@ -236,7 +229,9 @@ def get_hook_ids() -> list[str]:
     return extract_hook_ids(model)
 
 
-def extract_hook_ids(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
+def extract_hook_ids(
+    model: schema.JsonSchemaForPreCommitConfigYaml,
+) -> list[str]:
     hook_ids = []
     for repo in model.repos:
         if repo.hooks is None:
@@ -248,7 +243,9 @@ def extract_hook_ids(model: JsonSchemaForPreCommitConfigYaml) -> list[str]:
     return hook_ids
 
 
-def hooks_are_equivalent(hook: HookDefinition, other: HookDefinition) -> bool:
+def hooks_are_equivalent(
+    hook: schema.HookDefinition, other: schema.HookDefinition
+) -> bool:
     """Check if two hooks are equivalent."""
     if hook_ids_are_equivalent(hook.id, other.id):
         return True

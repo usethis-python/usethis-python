@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-from usethis._integrations.pre_commit.schema import LocalRepo, UriRepo
+from usethis._integrations.pre_commit import schema
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -18,7 +18,7 @@ class PreCommitRepoConfig(BaseModel):
         requires_venv: Whether the repository requires a virtual environment to run.
     """
 
-    repo: LocalRepo | UriRepo
+    repo: schema.LocalRepo | schema.UriRepo
     requires_venv: bool
 
 
@@ -43,7 +43,7 @@ class PreCommitConfig(BaseModel):
     @classmethod
     def from_single_repo(
         cls,
-        repo: LocalRepo | UriRepo,
+        repo: schema.LocalRepo | schema.UriRepo,
         *,
         requires_venv: bool,
         inform_how_to_use_on_migrate: bool = True,

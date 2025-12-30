@@ -3,20 +3,20 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.cache import (
     add_caches,
     get_cache_by_name,
     remove_cache,
 )
 from usethis._integrations.ci.bitbucket.config import add_bitbucket_pipelines_config
-from usethis._integrations.ci.bitbucket.schema import Cache, CachePath
 from usethis._test import change_cwd
 
 
 class TestAddCaches:
     def test_in_caches(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
-        cache_by_name = {"example": Cache(CachePath("~/.cache/example"))}
+        cache_by_name = {"example": schema.Cache(schema.CachePath("~/.cache/example"))}
 
         with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_pipelines_config()
@@ -26,7 +26,9 @@ class TestAddCaches:
             add_caches(cache_by_name)
 
             # Assert
-            default_cache_by_name = {"uv": Cache(CachePath("~/.cache/uv"))}
+            default_cache_by_name = {
+                "uv": schema.Cache(schema.CachePath("~/.cache/uv"))
+            }
             assert get_cache_by_name() == cache_by_name | default_cache_by_name
             out, err = capfd.readouterr()
             assert not err
@@ -37,7 +39,9 @@ class TestAddCaches:
     def test_already_exists(self, uv_init_dir: Path):
         # Arrange
         cache_by_name = {
-            "uv": Cache(CachePath("~/.cache/uv"))  # uv cache is in the default config
+            "uv": schema.Cache(
+                schema.CachePath("~/.cache/uv")
+            )  # uv cache is in the default config
         }
 
         # Act
@@ -51,7 +55,7 @@ class TestAddCaches:
     def test_definitions_order(self, tmp_path: Path):
         """Test that the newly-created definitions section is placed after the image."""
         # Arrange
-        cache_by_name = {"example": Cache(CachePath("~/.cache/example"))}
+        cache_by_name = {"example": schema.Cache(schema.CachePath("~/.cache/example"))}
 
         (tmp_path / "bitbucket-pipelines.yml").write_text(
             """\
@@ -126,7 +130,7 @@ pipelines:
         with change_cwd(uv_init_dir), files_manager():
             # Arrange
             add_bitbucket_pipelines_config()
-            add_caches({"mycache": Cache(CachePath("~/.cache/mytool"))})
+            add_caches({"mycache": schema.Cache(schema.CachePath("~/.cache/mytool"))})
 
             # Act
             remove_cache("mycache")

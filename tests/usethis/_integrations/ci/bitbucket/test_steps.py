@@ -4,25 +4,13 @@ import pytest
 
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
+from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.ci.bitbucket.init import (
     ensure_bitbucket_pipelines_config_exists,
 )
-from usethis._integrations.ci.bitbucket.schema import (
-    Parallel,
-    ParallelExpanded,
-    ParallelItem,
-    ParallelSteps,
-    Script,
-    Stage,
-    StageItem,
-    Step1,
-    Step2,
-    StepItem,
-)
 from usethis._integrations.ci.bitbucket.steps import (
     _CACHE_LOOKUP,
-    Step,
     UnexpectedImportPipelineError,
     _add_step_caches_via_model,
     add_bitbucket_step_in_default,
@@ -54,9 +42,9 @@ pipelines:
         # Act
         with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Why, hello!'"]),
+                    script=schema.Script(["echo 'Why, hello!'"]),
                 ),
             )
 
@@ -92,9 +80,9 @@ pipelines: {}
         # Act
         with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -126,10 +114,10 @@ pipelines: {}
         # Act
         with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Greeting",
                     caches=["uv"],
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -154,9 +142,9 @@ pipelines:
         )
 
     def test_add_same_step_twice(self, uv_init_dir: Path):  # Arrange
-        step = Step(
+        step = schema.Step(
             name="Greeting",
-            script=Script(
+            script=schema.Script(
                 [
                     ScriptItemAnchor(name="install-uv"),
                     "echo 'Hello, world!'",
@@ -180,18 +168,18 @@ pipelines:
         self, uv_init_dir: Path
     ):
         # Assert
-        step = Step(
+        step = schema.Step(
             name="Greeting",
-            script=Script(
+            script=schema.Script(
                 [
                     ScriptItemAnchor(name="install-uv"),
                     "echo 'Hello, world!'",
                 ]
             ),
         )
-        other_step = Step(
+        other_step = schema.Step(
             name="Farewell",
-            script=Script(
+            script=schema.Script(
                 [
                     ScriptItemAnchor(name="install-uv"),
                     "echo 'Goodbye!'",
@@ -216,16 +204,16 @@ pipelines:
         with change_cwd(uv_init_dir), files_manager():
             # This step should be listed second
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Test on 3.12",
-                    script=Script(["echo 'Running #2'"]),
+                    script=schema.Script(["echo 'Running #2'"]),
                 ),
             )
             # This one should come first
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Run pre-commit",
-                    script=Script(["echo 'Running #1'"]),
+                    script=schema.Script(["echo 'Running #1'"]),
                 ),
             )
 
@@ -265,9 +253,9 @@ pipelines:
 
             # Act
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -328,9 +316,9 @@ pipelines:
         # Act
         with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Farewell",
-                    script=Script(
+                    script=schema.Script(
                         [
                             ScriptItemAnchor(name="install-uv"),
                             "echo 'Goodbye!'",
@@ -396,9 +384,9 @@ pipelines:
         # Act - add a step that uses install-uv
         with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Install uv",
-                    script=Script(
+                    script=schema.Script(
                         [
                             ScriptItemAnchor(name="install-uv"),
                             "echo 'uv installed!'",
@@ -469,9 +457,9 @@ pipelines:
         # Act - add a step that uses ensure-venv
         with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Setup venv",
-                    script=Script(
+                    script=schema.Script(
                         [
                             ScriptItemAnchor(name="ensure-venv"),
                             "echo 'Environment ready!'",
@@ -527,9 +515,9 @@ pipelines: {}
         with change_cwd(uv_init_dir), files_manager():
             # Add ensure-venv first (should end up second)
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Setup venv",
-                    script=Script(
+                    script=schema.Script(
                         [
                             ScriptItemAnchor(name="ensure-venv"),
                             "echo 'Environment ready!'",
@@ -539,9 +527,9 @@ pipelines: {}
             )
             # Add install-uv second (should end up first)
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Install uv",
-                    script=Script(
+                    script=schema.Script(
                         [
                             ScriptItemAnchor(name="install-uv"),
                             "echo 'uv installed!'",
@@ -609,9 +597,9 @@ pipelines:
         # Act - add a step that uses install-uv
         with change_cwd(uv_init_dir), files_manager():
             add_bitbucket_step_in_default(
-                Step(
+                schema.Step(
                     name="Install uv",
-                    script=Script(
+                    script=schema.Script(
                         [
                             ScriptItemAnchor(name="install-uv"),
                             "echo 'uv installed!'",
@@ -677,9 +665,9 @@ pipelines:
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -702,9 +690,9 @@ pipelines:
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -722,9 +710,9 @@ pipelines: {}
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -741,9 +729,9 @@ image: atlassian/default-image:3
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -768,9 +756,9 @@ pipelines:
             pytest.raises(UnexpectedImportPipelineError),
         ):
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -796,9 +784,9 @@ pipelines:
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -839,9 +827,9 @@ pipelines:
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!"]),
+                    script=schema.Script(["echo 'Hello, world!"]),
                 )
             )
 
@@ -882,9 +870,9 @@ pipelines:
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Farewell",
-                    script=Script(["echo 'Goodbye!'"]),
+                    script=schema.Script(["echo 'Goodbye!'"]),
                 )
             )
 
@@ -921,9 +909,9 @@ pipelines:
         # Act
         with change_cwd(uv_init_dir), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Farewell",
-                    script=Script(["echo 'Goodbye!'"]),
+                    script=schema.Script(["echo 'Goodbye!'"]),
                 )
             )
 
@@ -978,9 +966,9 @@ pipelines:
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Greeting",
-                    script=Script(["echo 'Hello, world!'"]),
+                    script=schema.Script(["echo 'Hello, world!'"]),
                 )
             )
 
@@ -1023,9 +1011,9 @@ pipelines:
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Farewell",
-                    script=Script(["echo 'Goodbye!'"]),
+                    script=schema.Script(["echo 'Goodbye!'"]),
                 )
             )
 
@@ -1075,9 +1063,9 @@ pipelines:
         # Act
         with change_cwd(tmp_path), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Farewell",
-                    script=Script(["echo 'Goodbye!'"]),
+                    script=schema.Script(["echo 'Goodbye!'"]),
                 )
             )
 
@@ -1123,9 +1111,9 @@ pipelines:
         # Act
         with change_cwd(uv_init_dir), files_manager():
             remove_bitbucket_step_from_default(
-                Step(
+                schema.Step(
                     name="Farewell",
-                    script=Script(["echo 'Goodbye!'"]),
+                    script=schema.Script(["echo 'Goodbye!'"]),
                 )
             )
 
@@ -1161,8 +1149,8 @@ class TestGetStepsInPipelineItem:
     class TestStepItem:
         def test_step(self):
             # Arrange
-            step = Step(script=Script(["echo 'Hello, world!'"]))
-            item = StepItem(step=step)
+            step = schema.Step(script=schema.Script(["echo 'Hello, world!'"]))
+            item = schema.StepItem(step=step)
 
             # Act
             steps = get_steps_in_pipeline_item(item)
@@ -1174,12 +1162,14 @@ class TestGetStepsInPipelineItem:
         def test_parallel_steps(self):
             # Arrange
             original_steps = [
-                Step(script=Script(["echo 'Hello, world!'"])),
-                Step(script=Script(["echo 'Why, hello!'"])),
+                schema.Step(script=schema.Script(["echo 'Hello, world!'"])),
+                schema.Step(script=schema.Script(["echo 'Why, hello!'"])),
             ]
-            item = ParallelItem(
-                parallel=Parallel(
-                    ParallelSteps([StepItem(step=step) for step in original_steps])
+            item = schema.ParallelItem(
+                parallel=schema.Parallel(
+                    schema.ParallelSteps(
+                        [schema.StepItem(step=step) for step in original_steps]
+                    )
                 )
             )
 
@@ -1192,14 +1182,14 @@ class TestGetStepsInPipelineItem:
         def test_parallel_expanded(self):
             # Arrange
             original_steps = [
-                Step(script=Script(["echo 'Hello, world!'"])),
-                Step(script=Script(["echo 'Why, hello!'"])),
+                schema.Step(script=schema.Script(["echo 'Hello, world!'"])),
+                schema.Step(script=schema.Script(["echo 'Why, hello!'"])),
             ]
-            item = ParallelItem(
-                parallel=Parallel(
-                    ParallelExpanded(
-                        steps=ParallelSteps(
-                            [StepItem(step=step) for step in original_steps]
+            item = schema.ParallelItem(
+                parallel=schema.Parallel(
+                    schema.ParallelExpanded(
+                        steps=schema.ParallelSteps(
+                            [schema.StepItem(step=step) for step in original_steps]
                         )
                     )
                 )
@@ -1214,14 +1204,14 @@ class TestGetStepsInPipelineItem:
     class TestStageItem:
         def test_steps(self):
             # Arrange
-            script = Script(["echo 'Hello, world!'"])
-            item = StageItem(
-                stage=Stage(
+            script = schema.Script(["echo 'Hello, world!'"])
+            item = schema.StageItem(
+                stage=schema.Stage(
                     steps=[
-                        Step1(
-                            step=Step2(
+                        schema.Step1(
+                            step=schema.Step2(
                                 name="greetings",
-                                script=Script(["echo 'Hello, world!'"]),
+                                script=schema.Script(["echo 'Hello, world!'"]),
                             )
                         ),
                     ]
@@ -1232,7 +1222,7 @@ class TestGetStepsInPipelineItem:
             steps = get_steps_in_pipeline_item(item)
 
             # Assert
-            assert steps == [Step(name="greetings", script=script)]
+            assert steps == [schema.Step(name="greetings", script=script)]
 
 
 class TestAddPlaceholderStepInDefault:
@@ -1433,10 +1423,10 @@ image: atlassian/default-image:3
             model = mgr.model_validate()
             with pytest.raises(NotImplementedError, match=match):
                 _add_step_caches_via_model(
-                    step=Step(
+                    step=schema.Step(
                         name="Greeting",
                         caches=["unrecognized"],
-                        script=Script(["echo 'Hello, world!'"]),
+                        script=schema.Script(["echo 'Hello, world!'"]),
                     ),
                     model=model,
                 )
@@ -1445,13 +1435,13 @@ image: atlassian/default-image:3
 class TestStepsAreEquivalent:
     def test_identical(self):
         # Arrange
-        step = Step(
+        step = schema.Step(
             name="Greeting",
-            script=Script(["echo 'Hello, world!'"]),
+            script=schema.Script(["echo 'Hello, world!'"]),
         )
-        other = Step(
+        other = schema.Step(
             name="Greeting",
-            script=Script(["echo 'Hello, world!'"]),
+            script=schema.Script(["echo 'Hello, world!'"]),
         )
 
         # Act
@@ -1462,13 +1452,13 @@ class TestStepsAreEquivalent:
 
     def test_different_name(self):
         # Arrange
-        step = Step(
+        step = schema.Step(
             name="Greeting",
-            script=Script(["echo 'Hello, world!'"]),
+            script=schema.Script(["echo 'Hello, world!'"]),
         )
-        other = Step(
+        other = schema.Step(
             name="Farewell",
-            script=Script(["echo 'Hello, world!'"]),
+            script=schema.Script(["echo 'Hello, world!'"]),
         )
 
         # Act
@@ -1479,13 +1469,13 @@ class TestStepsAreEquivalent:
 
     def test_different_script(self):
         # Arrange
-        step = Step(
+        step = schema.Step(
             name="Greeting",
-            script=Script(["echo 'Hello, world!'"]),
+            script=schema.Script(["echo 'Hello, world!'"]),
         )
-        other = Step(
+        other = schema.Step(
             name="Greeting",
-            script=Script(["echo 'Goodbye!'"]),
+            script=schema.Script(["echo 'Goodbye!'"]),
         )
 
         # Act
@@ -1496,13 +1486,13 @@ class TestStepsAreEquivalent:
 
     def test_case_sensitive_name_difference(self):
         # Arrange
-        step = Step(
+        step = schema.Step(
             name="Greeting",
-            script=Script(["echo 'Hello, world!'"]),
+            script=schema.Script(["echo 'Hello, world!'"]),
         )
-        other = Step(
+        other = schema.Step(
             name="greeting",
-            script=Script(["echo 'See ya!'"]),
+            script=schema.Script(["echo 'See ya!'"]),
         )
 
         # Act
@@ -1514,9 +1504,9 @@ class TestStepsAreEquivalent:
     def test_none(self):
         # Arrange
         step = None
-        other = Step(
+        other = schema.Step(
             name="Greeting",
-            script=Script(["echo 'Hello, world!'"]),
+            script=schema.Script(["echo 'Hello, world!'"]),
         )
 
         # Act
@@ -1604,9 +1594,9 @@ pipelines:
 
         # Assert
         assert steps == [
-            Step(
+            schema.Step(
                 name="Greeting",
-                script=Script(["echo 'Hello, world!'"]),
+                script=schema.Script(["echo 'Hello, world!'"]),
             )
         ]
 

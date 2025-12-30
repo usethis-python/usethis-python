@@ -30,6 +30,8 @@ class RuleConfig(BaseModel):
         unmanaged_ignored: Unmanaged ignored rules.
         tests_unmanaged_ignored: Unmanaged cases of rules ignored for specifically the
                                  tests directory.
+        nontests_unmanaged_ignored: Unmanaged cases of rules ignored for specifically
+                                    non-test directories (using !tests/**/*.py glob).
     """
 
     selected: list[Rule] = Field(default_factory=list)
@@ -37,6 +39,7 @@ class RuleConfig(BaseModel):
     unmanaged_selected: list[Rule] = Field(default_factory=list)
     unmanaged_ignored: list[Rule] = Field(default_factory=list)
     tests_unmanaged_ignored: list[Rule] = Field(default_factory=list)
+    nontests_unmanaged_ignored: list[Rule] = Field(default_factory=list)
 
     def get_all_selected(self) -> list[Rule]:
         """Get all (project-scope) selected rules."""
@@ -68,12 +71,13 @@ class RuleConfig(BaseModel):
             and not self.unmanaged_selected
             and not self.unmanaged_ignored
             and not self.tests_unmanaged_ignored
+            and not self.nontests_unmanaged_ignored
         )
 
     @property
     def is_related_to_tests(self) -> bool:
         """Check if the rule config has any tests-related rules."""
-        return bool(self.tests_unmanaged_ignored)
+        return bool(self.tests_unmanaged_ignored or self.nontests_unmanaged_ignored)
 
     def __repr__(self) -> str:
         """Representation which omits empty-list fields."""
@@ -88,6 +92,8 @@ class RuleConfig(BaseModel):
             args.append(f"unmanaged_ignored={self.unmanaged_ignored}")
         if self.tests_unmanaged_ignored:
             args.append(f"tests_unmanaged_ignored={self.tests_unmanaged_ignored}")
+        if self.nontests_unmanaged_ignored:
+            args.append(f"nontests_unmanaged_ignored={self.nontests_unmanaged_ignored}")
         arg_str = ", ".join(args)
         return f"RuleConfig({arg_str})"
 
@@ -114,5 +120,8 @@ class RuleConfig(BaseModel):
         new.unmanaged_ignored = self.unmanaged_ignored + other.unmanaged_ignored
         new.tests_unmanaged_ignored = (
             self.tests_unmanaged_ignored + other.tests_unmanaged_ignored
+        )
+        new.nontests_unmanaged_ignored = (
+            self.nontests_unmanaged_ignored + other.nontests_unmanaged_ignored
         )
         return new

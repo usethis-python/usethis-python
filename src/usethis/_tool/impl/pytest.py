@@ -162,7 +162,7 @@ class PytestTool(Tool):
         return [Path(".pytest.ini"), Path("pytest.ini"), Path("tests/conftest.py")]
 
     def get_rule_config(self) -> RuleConfig:
-        return RuleConfig(selected=["PT"])
+        return RuleConfig(selected=["PT"], nontests_unmanaged_ignored=["PT"])
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         # This is a variant of the "first" method

@@ -2742,6 +2742,32 @@ minversion = "7\""""
                 assert "INP" in RuffTool().get_ignored_rules_in_glob("tests/**")
 
         @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pytest_then_ruff_ignores_pt_in_nontests(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_pytest()
+
+                # Act
+                use_ruff()
+
+                # Assert
+                # Verify that PT rules are ignored in non-test files (!tests/**/*.py)
+                assert "PT" in RuffTool().get_ignored_rules_in_glob("!tests/**/*.py")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_then_pytest_ignores_pt_in_nontests(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_ruff()
+
+                # Act
+                use_pytest()
+
+                # Assert
+                # Verify that PT rules are ignored in non-test files (!tests/**/*.py)
+                assert "PT" in RuffTool().get_ignored_rules_in_glob("!tests/**/*.py")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_pytest_ini_priority(self, uv_init_dir: Path):
             # Arrange
             (uv_init_dir / "pytest.ini").touch()

@@ -3,7 +3,7 @@ import json
 from usethis._integrations.backend.uv.call import call_uv_subprocess
 from usethis._integrations.backend.uv.errors import UVSubprocessFailedError
 
-FALLBACK_UV_VERSION = "0.9.18"
+FALLBACK_UV_VERSION = "0.9.20"
 
 
 def get_uv_version() -> str:

@@ -6,7 +6,11 @@ import pytest
 import usethis._integrations.backend.uv.call
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
-from usethis._init import ensure_pyproject_toml, project_init
+from usethis._init import (
+    ensure_pyproject_toml,
+    project_init,
+    write_simple_requirements_txt,
+)
 from usethis._integrations.backend.uv.errors import UVInitError, UVSubprocessFailedError
 from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLInitError
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -200,3 +204,95 @@ class TestEnsurePyprojectTOML:
 
             # Assert
             assert ["build-system"] in PyprojectTOMLManager()
+
+
+class TestWriteSimpleRequirementsTxt:
+    def test_no_pyproject_toml(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            write_simple_requirements_txt()
+
+        # Assert
+        assert (tmp_path / "requirements.txt").exists()
+        content = (tmp_path / "requirements.txt").read_text()
+        assert content == "-e .\n"
+
+    def test_no_dependencies(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """\
+[project]
+name = "test"
+version = "0.1.0"
+dependencies = []
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            write_simple_requirements_txt()
+
+        # Assert
+        assert (tmp_path / "requirements.txt").exists()
+        content = (tmp_path / "requirements.txt").read_text()
+        assert content == "-e .\n"
+
+    def test_with_dependencies(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """\
+[project]
+name = "test"
+version = "0.1.0"
+dependencies = [
+    "requests",
+    "click>=8.0",
+]
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            write_simple_requirements_txt()
+
+        # Assert
+        assert (tmp_path / "requirements.txt").exists()
+        content = (tmp_path / "requirements.txt").read_text()
+        assert content == "-e .\nrequests\nclick\n"
+
+    def test_with_dependencies_with_extras(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """\
+[project]
+name = "test"
+version = "0.1.0"
+dependencies = [
+    "requests[security]",
+    "click[extra1,extra2]>=8.0",
+]
+"""
+        )
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            write_simple_requirements_txt()
+
+        # Assert
+        assert (tmp_path / "requirements.txt").exists()
+        content = (tmp_path / "requirements.txt").read_text()
+        # Note: extras should be preserved (sorted alphabetically per frozenset behavior)
+        assert content == "-e .\nrequests[security]\nclick[extra1,extra2]\n"
+
+    def test_overwrites_existing_file(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "requirements.txt").write_text("old content")
+
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            write_simple_requirements_txt()
+
+        # Assert
+        content = (tmp_path / "requirements.txt").read_text()
+        assert content == "-e .\n"
+        assert "old content" not in content

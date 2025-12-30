@@ -8,10 +8,10 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._console import info_print, instruct_print, tick_print
-from usethis._deps import get_project_deps
-from usethis._init import ensure_dep_declaration_file
+from usethis._init import ensure_dep_declaration_file, write_simple_requirements_txt
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.call import call_uv_subprocess
+from usethis._integrations.backend.uv.lockfile import ensure_uv_lock
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.mkdocs.core import add_docs_dir
@@ -367,53 +367,46 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
     path = usethis_config.cpd() / "requirements.txt"
 
     if not remove:
-        ensure_dep_declaration_file()
+        backend = get_backend()
 
-        is_pre_commit = PreCommitTool().is_used()
-
-        if is_pre_commit:
+        if PreCommitTool().is_used():
             tool.add_pre_commit_config()
 
-        if not path.exists():
-            backend = get_backend()
-            if backend is BackendEnum.uv:
-                if (
-                    not (usethis_config.cpd() / "uv.lock").exists()
-                    and not usethis_config.frozen
-                ):
-                    tick_print("Writing 'uv.lock'.")
-                    call_uv_subprocess(["lock"], change_toml=False)
+        if path.exists():
+            # requirements file already exists - short circuit; only need to explain how
+            # how to re-generate it.
+            tool.print_how_to_use()
+            return
 
-                if not usethis_config.frozen:
-                    tick_print("Writing 'requirements.txt'.")
-                    call_uv_subprocess(
-                        [
-                            "export",
-                            "--frozen",
-                            "--output-file=requirements.txt",
-                        ],
-                        change_toml=False,
-                    )
-            elif backend is BackendEnum.none:
-                # Simply dump the dependencies list to requirements.txt
-                if usethis_config.backend is BackendEnum.auto:
-                    info_print(
-                        "Generating 'requirements.txt' with un-pinned, abstract dependencies."
-                    )
-                    info_print(
-                        "Consider installing 'uv' for pinned, cross-platform, full requirements files."
-                    )
+        if backend is BackendEnum.uv:
+            if not (usethis_config.cpd() / "pyproject.toml").exists():
+                write_simple_requirements_txt()
+            elif not usethis_config.frozen:
+                ensure_uv_lock()
                 tick_print("Writing 'requirements.txt'.")
-                with open(path, "w", encoding="utf-8") as f:
-                    f.write("-e .\n")
-                    f.writelines(
-                        dep.to_requirement_string() + "\n" for dep in get_project_deps()
-                    )
-            else:
-                assert_never(backend)
+                call_uv_subprocess(
+                    [
+                        "export",
+                        "--frozen",
+                        "--output-file=requirements.txt",
+                    ],
+                    change_toml=False,
+                )
+        elif backend is BackendEnum.none:
+            # Simply dump the dependencies list to requirements.txt
+            if usethis_config.backend is BackendEnum.auto:
+                info_print(
+                    "Generating 'requirements.txt' with un-pinned, abstract dependencies."
+                )
+                info_print(
+                    "Consider installing 'uv' for pinned, cross-platform, full requirements files."
+                )
+
+            write_simple_requirements_txt()
+        else:
+            assert_never(backend)
 
         tool.print_how_to_use()
-
     else:
         tool.remove_pre_commit_repo_configs()
         tool.remove_managed_files()

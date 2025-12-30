@@ -491,7 +491,7 @@ class Tool(Protocol):
                 break
             used_file_managers = new_file_managers
 
-        # Now, use the highest-prority file manager to add the config
+        # Now, use the highest-priority file manager to add the config
         (used_file_manager, *_) = used_file_managers
 
         if not config_item.force and entry.keys in used_file_manager:

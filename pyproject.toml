@@ -55,14 +55,17 @@ scripts.usethis = "usethis.__main__:app"
 [dependency-groups]
 dev = [
   "basedpyright>=1.36.2",
+  "codespell>=2.4.1",
   "datamodel-code-generator[http]>=0.35.0",
   "deptry>=0.23.0",
   "import-linter>=2.3",
   "jinja2>=3.1.6",
   "prek>=0.2.23",
   "pyinstrument>=5.1.1",
+  "pyproject-fmt>=2.11.1",
   "ruff>=0.14.3",
   "ty>=0.0.1a25",
+  "validate-pyproject>=0.24.1",
 ]
 test = [
   "click>=8.1.8",
@@ -99,6 +102,11 @@ exclude = [
 
 [tool.hatch.build.hooks.vcs]
 version-file = "src/usethis/_version.py"
+
+[tool.uv]
+required-version = ">=0.8.18"             # Sync with README
+default-groups = [ "test", "dev", "doc" ]
+link-mode = "symlink"
 
 [tool.ruff]
 line-length = 88
@@ -147,6 +155,7 @@ lint.flake8-type-checking.strict = true
 lint.pydocstyle.convention = "google"
 
 [tool.codespell]
+skip = [ "site" ]
 ignore-words-list = [ "edn" ]
 
 [tool.pyproject-fmt]
@@ -184,6 +193,17 @@ exclude_also = [
 ]
 omit = [ "*/pytest-of-*/*", "*/_temp/*" ]
 
+[tool.ty]
+environment.python-platform = "all"
+rules.type-assertion-failure = "ignore"
+
+[[tool.ty.overrides]]
+include = [ "src/usethis/_integrations/file/**" ]
+rules.invalid-argument-type = "ignore"
+rules.invalid-return-type = "ignore"
+rules.invalid-assignment = "ignore"
+rules.possibly-missing-attribute = "ignore"
+
 [tool.basedpyright]
 ignore = [ "src/usethis/_version.py" ]
 failOnWarnings = true
@@ -215,22 +235,6 @@ reportUnreachable = false
 reportUnusedFunction = false
 reportUnusedCallResult = false
 reportUnusedParameter = false
-
-[tool.ty]
-environment.python-platform = "all"
-rules.type-assertion-failure = "ignore"
-
-[[tool.ty.overrides]]
-include = [ "src/usethis/_integrations/file/**" ]
-rules.invalid-argument-type = "ignore"
-rules.invalid-return-type = "ignore"
-rules.invalid-assignment = "ignore"
-rules.possibly-missing-attribute = "ignore"
-
-[tool.uv]
-required-version = ">=0.8.18"             # Sync with README
-default-groups = [ "test", "dev", "doc" ]
-link-mode = "symlink"
 
 [tool.importlinter]
 root_packages = [ "usethis" ]

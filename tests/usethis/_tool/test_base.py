@@ -18,6 +18,7 @@ from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import Rule, RuleConfig
 from usethis._types.deps import Dependency
+from usethis.errors import UnhandledConfigEntryError
 
 
 class DefaultTool(Tool):
@@ -1402,24 +1403,21 @@ key3 = value3
                 assert result is False
                 file_manager.extend_list.assert_not_called()
 
-        class TestToolWithoutSelectionSupport:
-            def test_it_raises_not_implemented_error(self) -> None:
-                # Arrange
-                file_manager = MagicMock()
-                tool = MockToolForRuleTests(
-                    file_manager=file_manager, selected_rules=[]
-                )
-                # Override to simulate a tool without selection support
-                tool._get_select_keys = lambda fm: super(  # type: ignore[method-assign]
-                    MockToolForRuleTests, tool
-                )._get_select_keys(fm)
+        def test_tool_without_selection_support(self) -> None:
+            # Arrange
+            file_manager = MagicMock()
+            tool = MockToolForRuleTests(file_manager=file_manager, selected_rules=[])
+            # Override to simulate a tool without selection support
+            tool._get_select_keys = lambda fm: super(  # type: ignore[method-assign]
+                MockToolForRuleTests, tool
+            )._get_select_keys(fm)
 
-                # Act & Assert
-                with pytest.raises(
-                    NotImplementedError,
-                    match="Unknown location for selected mocktool rules",
-                ):
-                    tool.select_rules(["E501"])
+            # Act & Assert
+            with pytest.raises(
+                UnhandledConfigEntryError,
+                match="Unknown location for selected mocktool rules",
+            ):
+                tool.select_rules(["E501"])
 
     class TestDeselectRules:
         class TestWhenRulesAreCurrentlySelected:
@@ -1472,24 +1470,23 @@ key3 = value3
                 assert result is False
                 file_manager.remove_from_list.assert_not_called()
 
-        class TestToolWithoutSelectionSupport:
-            def test_it_raises_not_implemented_error(self) -> None:
-                # Arrange
-                file_manager = MagicMock()
-                tool = MockToolForRuleTests(
-                    file_manager=file_manager, selected_rules=["E501"]
-                )
-                # Override to simulate a tool without selection support
-                tool._get_select_keys = lambda fm: super(  # type: ignore[method-assign]
-                    MockToolForRuleTests, tool
-                )._get_select_keys(fm)
+        def test_tool_without_selection_support(self) -> None:
+            # Arrange
+            file_manager = MagicMock()
+            tool = MockToolForRuleTests(
+                file_manager=file_manager, selected_rules=["E501"]
+            )
+            # Override to simulate a tool without selection support
+            tool._get_select_keys = lambda fm: super(  # type: ignore[method-assign]
+                MockToolForRuleTests, tool
+            )._get_select_keys(fm)
 
-                # Act & Assert
-                with pytest.raises(
-                    NotImplementedError,
-                    match="Unknown location for selected mocktool rules",
-                ):
-                    tool.deselect_rules(["E501"])
+            # Act & Assert
+            with pytest.raises(
+                UnhandledConfigEntryError,
+                match="Unknown location for selected mocktool rules",
+            ):
+                tool.deselect_rules(["E501"])
 
     class TestGetSelectedRules:
         def test_it_returns_empty_list_by_default(self) -> None:

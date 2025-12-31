@@ -319,8 +319,9 @@ layers = [
   "ci | pre_commit",
   "environ",
   "backend | mkdocs | pytest | pydantic | sonarqube",
-  "project | python",
+  "project",
   "file",
+  "python",
 ]
 containers = [ "usethis._integrations" ]
 exhaustive = true

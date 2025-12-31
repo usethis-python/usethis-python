@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
-from usethis._console import how_print, info_print, tick_print
+from usethis._console import how_print, info_print
 from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -17,7 +17,6 @@ from usethis._tool.config import (
     ConfigEntry,
     ConfigItem,
     ConfigSpec,
-    ensure_managed_file_exists,
 )
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
@@ -154,44 +153,6 @@ class DeptryTool(Tool):
         """Does nothing for deptry - all rules are automatically enabled by default."""
         return False
 
-    def ignore_rules(self, rules: list[Rule]) -> bool:
-        rules = sorted(set(rules) - set(self.get_ignored_rules()))
-
-        if not rules:
-            return False
-
-        rules_str = ", ".join([f"'{rule}'" for rule in rules])
-        s = "" if len(rules) == 1 else "s"
-
-        (file_manager,) = self.get_active_config_file_managers()
-        ensure_managed_file_exists(file_manager)
-        tick_print(
-            f"Ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
-        )
-        keys = self._get_ignore_keys(file_manager)
-        file_manager.extend_list(keys=keys, values=rules)
-
-        return True
-
-    def unignore_rules(self, rules: list[str]) -> bool:
-        rules = sorted(set(rules) & set(self.get_ignored_rules()))
-
-        if not rules:
-            return False
-
-        rules_str = ", ".join([f"'{rule}'" for rule in rules])
-        s = "" if len(rules) == 1 else "s"
-
-        (file_manager,) = self.get_active_config_file_managers()
-        ensure_managed_file_exists(file_manager)
-        tick_print(
-            f"No longer ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
-        )
-        keys = self._get_ignore_keys(file_manager)
-        file_manager.remove_from_list(keys=keys, values=rules)
-
-        return True
-
     def get_ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
@@ -207,8 +168,4 @@ class DeptryTool(Tool):
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "deptry", "ignore"]
         else:
-            msg = (
-                f"Unknown location for ignored {self.name} rules for file manager "
-                f"'{file_manager.name}' of type {file_manager.__class__.__name__}."
-            )
-            raise NotImplementedError(msg)
+            return super()._get_ignore_keys(file_manager)

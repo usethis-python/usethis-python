@@ -38,24 +38,31 @@ def get_required_minor_python_versions() -> list[PythonVersion]:
     """
     requires_python = get_requires_python()
 
-    # Extract all versions mentioned in the specifier, grouped by (major, minor)
-    versions_by_minor: dict[tuple[int, int], set[int]] = {}
+    # Get a lookup of patch versions against their associated (major, minor) versions
+    # e.g.
+    # >=3.10.5,<3.12.0      → {(3, 10): {5}, (3, 12): {0}}
+    # >=3.10                → {(3, 10): {0}}
+    patches_by_short: dict[tuple[int, int], set[int]] = {}
     for spec in requires_python:
         parsed = PythonVersion.from_string(spec.version)
         major_minor = (int(parsed.major), int(parsed.minor))
         patch = int(parsed.patch) if parsed.patch else 0
-        versions_by_minor.setdefault(major_minor, set()).add(patch)
+        patches_by_short.setdefault(major_minor, set()).add(patch)
 
-    # Get overall bounds from what's explicitly in the specifier
+    # Get overall bounds from what's explicitly in the specifier, or hard-coded
+    # limits if it's unbounded
+    # e.g.
+    # >=3.10.2,<3.12.0  → min: (3,10), max: (3,12)
+    # <=3.9            → min: (3,0), max: (3,9)
     min_version = _get_minimum_minor_python_version_tuple(
-        requires_python, versions_by_minor
+        requires_python, patches_by_short
     )
     max_version = _get_maximum_minor_python_version_tuple(
-        requires_python, versions_by_minor
+        requires_python, patches_by_short
     )
 
-    # If max_version is in a higher major version than min_version,
-    # extend the previous major version to its hard-coded limit
+    # Edge case: extend the previous major version to its hard-coded limit
+    # Only do this provided max_version is in a higher major version than min_version.
     # E.g., >=3.6,<4.0 should include up to 3.15
     major_version_limits: dict[int, int] = {}
     if max_version[0] > min_version[0]:
@@ -64,20 +71,29 @@ def get_required_minor_python_versions() -> list[PythonVersion]:
             major_version_limits[major] = _get_maximum_python_minor_version(major)
 
     # Get minor version bounds from what's actually in the spec
-    all_major_minors = list(versions_by_minor.keys())
+    all_major_minors = list(patches_by_short.keys())
     all_minors = [minor for _, minor in all_major_minors]
+    # We don't bother grouping the minor versions by major version since we almost
+    # always deal with just major version 3 in practice.
     min_minor_in_spec = min(all_minors)
     max_minor_in_spec = max(all_minors)
 
     supported_versions = []
     # Generate all major.minor combinations in range
+    # Basically, do a sophisticated brute-force search
     for major in range(min_version[0], max_version[0] + 1):
         min_minor = min_version[1] if major == min_version[0] else min_minor_in_spec
-        # Apply hard-coded limit if this major version has one
-        if major in major_version_limits:
-            max_minor = major_version_limits[major]
+
+        # Determine max_minor for this major version
+        # Edge case: if max_version is in a higher major version than this one,
+        # extend to the hard-coded limit for this major version
+        # E.g., >=3.6,<4.0 should include up to 3.15 for major=3 as of early 2026
+        if major < max_version[0]:
+            max_minor = _get_maximum_python_minor_version(major)
+        elif major == max_version[0]:
+            max_minor = max_version[1]
         else:
-            max_minor = max_version[1] if major == max_version[0] else max_minor_in_spec
+            max_minor = max_minor_in_spec
 
         for minor in range(min_minor, max_minor + 1):
             version = PythonVersion(major=str(major), minor=str(minor), patch=None)
@@ -87,8 +103,8 @@ def get_required_minor_python_versions() -> list[PythonVersion]:
             # The extremes will lie +/- 1 from any named patch version
             patches_to_check = set()
             major_minor_key = (major, minor)
-            if major_minor_key in versions_by_minor:
-                for patch in versions_by_minor[major_minor_key]:
+            if major_minor_key in patches_by_short:
+                for patch in patches_by_short[major_minor_key]:
                     patches_to_check.add(max(0, patch - 1))
                     patches_to_check.add(patch)
                     patches_to_check.add(patch + 1)
@@ -108,7 +124,7 @@ def get_required_minor_python_versions() -> list[PythonVersion]:
 
 
 def _get_minimum_minor_python_version_tuple(
-    requires_python: SpecifierSet, versions_by_minor: dict[tuple[int, int], set[int]]
+    requires_python: SpecifierSet, patch_by_short: dict[tuple[int, int], set[int]]
 ) -> tuple[int, int]:
     """Get the minimum (major, minor) Python version from requires-python specifier.
 
@@ -116,12 +132,12 @@ def _get_minimum_minor_python_version_tuple(
 
     Args:
         requires_python: The requires-python specifier set.
-        versions_by_minor: Dict mapping (major, minor) to set of patch versions.
+        patch_by_short: Dict mapping (major, minor) to set of patch versions.
 
     Returns:
         Tuple of (major, minor) representing the minimum version.
     """
-    all_major_minors = list(versions_by_minor.keys())
+    all_major_minors = list(patch_by_short.keys())
     min_version = min(all_major_minors)
 
     # Check if specifier is unbounded downward by testing min_version - 1 minor
@@ -140,7 +156,7 @@ def _get_minimum_minor_python_version_tuple(
 
 
 def _get_maximum_minor_python_version_tuple(
-    requires_python: SpecifierSet, versions_by_minor: dict[tuple[int, int], set[int]]
+    requires_python: SpecifierSet, patch_by_short: dict[tuple[int, int], set[int]]
 ) -> tuple[int, int]:
     """Get the maximum (major, minor) Python version from requires-python specifier.
 
@@ -148,12 +164,12 @@ def _get_maximum_minor_python_version_tuple(
 
     Args:
         requires_python: The requires-python specifier set.
-        versions_by_minor: Dict mapping (major, minor) to set of patch versions.
+        patch_by_short: Dict mapping (major, minor) to set of patch versions.
 
     Returns:
         Tuple of (major, minor) representing the maximum version.
     """
-    all_major_minors = list(versions_by_minor.keys())
+    all_major_minors = list(patch_by_short.keys())
     max_version = max(all_major_minors)
 
     # Check if specifier is unbounded upward by testing max_version + 1 minor

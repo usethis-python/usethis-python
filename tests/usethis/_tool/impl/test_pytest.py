@@ -211,9 +211,6 @@ pipelines:
 """
             )
 
-        @pytest.mark.skip(
-            reason="https://github.com/usethis-python/usethis-python/issues/1183"
-        )
         def test_no_backend(
             self,
             tmp_path: Path,
@@ -243,6 +240,7 @@ requires-python = ">=3.13,<3.14"
             assert (
                 out
                 == """\
+⚠ Current Python interpreter (3.10) is outside requires-python bounds \n(<3.14,>=3.13). Using lowest supported version (3.13).
 ✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
 ℹ Consider installing 'uv' to readily manage test dependencies.
 ☐ Declare your test dependencies in 'bitbucket-pipelines.yml'.

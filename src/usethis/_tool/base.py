@@ -20,6 +20,9 @@ from usethis._integrations.ci.bitbucket.steps import (
     remove_bitbucket_step_from_default,
 )
 from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
+from usethis._integrations.environ.python import (
+    get_supported_minor_python_versions,
+)
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import (
     add_repo,
@@ -38,6 +41,7 @@ if TYPE_CHECKING:
 
     from usethis._integrations.backend.uv.deps import Dependency
     from usethis._integrations.pre_commit import schema as pre_commit_schema
+    from usethis._integrations.python.version import PythonVersion
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ConfigItem, ResolutionT
     from usethis._tool.rule import Rule
@@ -591,7 +595,10 @@ class Tool(Protocol):
         return None
 
     def get_bitbucket_steps(
-        self, *, matrix_python: bool = True
+        self,
+        *,
+        matrix_python: bool = True,
+        versions: list[PythonVersion] | None = None,
     ) -> list[bitbucket_schema.Step]:
         """Get the Bitbucket pipeline step associated with this tool.
 
@@ -602,7 +609,13 @@ class Tool(Protocol):
         Args:
             matrix_python: Whether to use a Python version matrix. When False,
                            only the current development version is used.
+            versions: Optional pre-computed list of Python versions. If None,
+                      versions will be computed as needed.
         """
+        # N.B. the default implementation doesn't need matrix_python or versions,
+        # but these are included in the signature to allow for it to be used, e.g. for
+        # pytest
+
         try:
             cmd = self.default_command()
         except NoDefaultToolCommand:
@@ -665,15 +678,19 @@ class Tool(Protocol):
         if not is_bitbucket_used() or not self.is_used():
             return
 
+        # Get versions once to pass through entire call chain (avoids duplicate calls)
+        versions = get_supported_minor_python_versions() if matrix_python else None
+
         # Add the new steps
-        for step in self.get_bitbucket_steps(matrix_python=matrix_python):
-            add_bitbucket_step_in_default(step)
+        steps = self.get_bitbucket_steps(matrix_python=matrix_python, versions=versions)
+        for step in steps:
+            add_bitbucket_step_in_default(step, minor_versions=versions)
 
         # Remove any old steps that are not active managed by this tool
+        managed_names = [step.name for step in steps if step.name is not None]
         for step in get_steps_in_default():
-            if step.name in self.get_managed_bitbucket_step_names() and not any(
-                bitbucket_steps_are_equivalent(step, step_)
-                for step_ in self.get_bitbucket_steps(matrix_python=matrix_python)
+            if step.name in managed_names and not any(
+                bitbucket_steps_are_equivalent(step, step_) for step_ in steps
             ):
                 remove_bitbucket_step_from_default(step)
 

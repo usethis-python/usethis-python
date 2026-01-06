@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 
     from usethis._integrations.ci.bitbucket.anchor import ScriptItemName
     from usethis._integrations.file.yaml.io_ import YAMLDocument
+    from usethis._integrations.python.version import PythonVersion
 
 
 _CACHE_LOOKUP = {
@@ -64,7 +65,9 @@ for name, script_item in _SCRIPT_ITEM_LOOKUP.items():
     script_item.yaml_set_anchor(value=name, always_dump=True)
 
 
-def add_bitbucket_step_in_default(step: schema.Step) -> None:
+def add_bitbucket_step_in_default(
+    step: schema.Step, *, minor_versions: list[PythonVersion] | None = None
+) -> None:
     ensure_bitbucket_pipelines_config_exists()
 
     try:
@@ -85,7 +88,9 @@ def add_bitbucket_step_in_default(step: schema.Step) -> None:
     mgr = BitbucketPipelinesYAMLManager()
     doc = mgr.get()
     model = mgr.model_validate()
-    model = _add_step_in_default_via_model(step, model=model, doc=doc)
+    model = _add_step_in_default_via_model(
+        step, model=model, doc=doc, minor_versions=minor_versions
+    )
     mgr.commit_model(model)
 
     # Remove the placeholder step if it already exists
@@ -100,6 +105,7 @@ def _add_step_in_default_via_model(
     *,
     model: schema.PipelinesConfiguration,
     doc: YAMLDocument,
+    minor_versions: list[PythonVersion] | None = None,
 ) -> schema.PipelinesConfiguration:
     _add_step_caches_via_model(step, model=model)
 
@@ -121,7 +127,10 @@ def _add_step_in_default_via_model(
     # N.B. Currently, we are not accounting for parallelism, whereas all these steps
     # could be parallel potentially.
     # See https://github.com/usethis-python/usethis-python/issues/149
-    minor_versions = get_supported_minor_python_versions()
+    if minor_versions is None:
+        # Generally, we want to specify `minor_versions` to avoid re-computing it over
+        # and over when adding multiple steps.
+        minor_versions = get_supported_minor_python_versions()
     step_order = [
         "Run pre-commit",
         # For these tools, sync them with the pre-commit removal logic

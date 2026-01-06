@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
-from usethis._console import _cached_warn_print
+from usethis._console import _cached_warn_print, get_icon_mode
 from usethis._integrations.backend.uv.call import call_subprocess, call_uv_subprocess
 from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd, is_offline
@@ -24,6 +24,7 @@ def clear_functools_caches():
     """Fixture to clear functools.caches before each test."""
 
     _cached_warn_print.cache_clear()
+    get_icon_mode.cache_clear()
     _importlinter_warn_no_packages_found.cache_clear()
 
 

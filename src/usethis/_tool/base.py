@@ -30,11 +30,15 @@ from usethis._integrations.pre_commit.hooks import (
     hook_ids_are_equivalent,
     remove_hook,
 )
-from usethis._tool.config import ConfigSpec, NoConfigValue
+from usethis._tool.config import ConfigSpec, NoConfigValue, ensure_managed_file_exists
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
-from usethis.errors import FileConfigError, NoDefaultToolCommand
+from usethis.errors import (
+    FileConfigError,
+    NoDefaultToolCommand,
+    UnhandledConfigEntryError,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -702,6 +706,27 @@ class Tool(Protocol):
         """Determine if a rule is managed by this tool."""
         return False
 
+    def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:
+        """Get the configuration keys for selected rules.
+
+        This is optional - tools that don't support rule selection can leave this
+        unimplemented and will get an UnhandledConfigEntryError if selection is attempted.
+
+        Args:
+            file_manager: The file manager being used.
+
+        Returns:
+            List of keys to access the selected rules config section.
+
+        Raises:
+            UnhandledConfigEntryError: If the file manager type is not supported.
+        """
+        msg = (
+            f"Unknown location for selected {self.name} rules for file manager "
+            f"'{file_manager.name}' of type '{file_manager.__class__.__name__}'."
+        )
+        raise UnhandledConfigEntryError(msg)
+
     def select_rules(self, rules: list[Rule]) -> bool:
         """Select the rules managed by the tool.
 
@@ -715,11 +740,45 @@ class Tool(Protocol):
         Returns:
             True if any rules were selected, False if no rules were selected.
         """
-        return False
+        rules = sorted(set(rules) - set(self.get_selected_rules()))
+
+        if not rules:
+            return False
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
+        (file_manager,) = self.get_active_config_file_managers()
+        ensure_managed_file_exists(file_manager)
+        tick_print(
+            f"Selecting {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
+        keys = self._get_select_keys(file_manager)
+        file_manager.extend_list(keys=keys, values=rules)
+
+        return True
 
     def get_selected_rules(self) -> list[Rule]:
         """Get the rules managed by the tool that are currently selected."""
         return []
+
+    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
+        """Get the configuration keys for ignored rules.
+
+        Args:
+            file_manager: The file manager being used.
+
+        Returns:
+            List of keys to access the ignored rules config section.
+
+        Raises:
+            UnhandledConfigEntryError: If the file manager type is not supported.
+        """
+        msg = (
+            f"Unknown location for ignored {self.name} rules for file manager "
+            f"'{file_manager.name}' of type '{file_manager.__class__.__name__}'."
+        )
+        raise UnhandledConfigEntryError(msg)
 
     def ignore_rules(self, rules: list[Rule]) -> bool:
         """Ignore rules managed by the tool.
@@ -738,7 +797,23 @@ class Tool(Protocol):
         Returns:
             True if any rules were ignored, False if no rules were ignored.
         """
-        return False
+        rules = sorted(set(rules) - set(self.get_ignored_rules()))
+
+        if not rules:
+            return False
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
+        (file_manager,) = self.get_active_config_file_managers()
+        ensure_managed_file_exists(file_manager)
+        tick_print(
+            f"Ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
+        keys = self._get_ignore_keys(file_manager)
+        file_manager.extend_list(keys=keys, values=rules)
+
+        return True
 
     def unignore_rules(self, rules: list[str]) -> bool:
         """Stop ignoring rules managed by the tool.
@@ -753,7 +828,23 @@ class Tool(Protocol):
         Returns:
             True if any rules were unignored, False if no rules were unignored.
         """
-        return False
+        rules = sorted(set(rules) & set(self.get_ignored_rules()))
+
+        if not rules:
+            return False
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
+        (file_manager,) = self.get_active_config_file_managers()
+        ensure_managed_file_exists(file_manager)
+        tick_print(
+            f"No longer ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
+        keys = self._get_ignore_keys(file_manager)
+        file_manager.remove_from_list(keys=keys, values=rules)
+
+        return True
 
     def get_ignored_rules(self) -> list[Rule]:
         """Get the ignored rules managed by the tool."""
@@ -771,4 +862,20 @@ class Tool(Protocol):
         Returns:
             True if any rules were deselected, False if no rules were deselected.
         """
-        return False
+        rules = sorted(set(rules) & set(self.get_selected_rules()))
+
+        if not rules:
+            return False
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
+        (file_manager,) = self.get_active_config_file_managers()
+        ensure_managed_file_exists(file_manager)
+        tick_print(
+            f"Deselecting {self.name} rule{s} {rules_str} in '{file_manager.name}'."
+        )
+        keys = self._get_select_keys(file_manager)
+        file_manager.remove_from_list(keys=keys, values=rules)
+
+        return True

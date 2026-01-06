@@ -1,5 +1,6 @@
 import re
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -15,8 +16,9 @@ from usethis._test import change_cwd
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
-from usethis._tool.rule import RuleConfig
+from usethis._tool.rule import Rule, RuleConfig
 from usethis._types.deps import Dependency
+from usethis.errors import UnhandledConfigEntryError
 
 
 class DefaultTool(Tool):
@@ -111,6 +113,49 @@ class TwoHooksTool(Tool):
             ),
             requires_venv=False,
         )
+
+
+class MockToolForRuleTests(Tool):
+    """Mock tool for testing rule management methods."""
+
+    def __init__(  # noqa: PLR0913
+        self,
+        *,
+        name: str = "mocktool",
+        file_manager: KeyValueFileManager | None = None,
+        ignored_rules: list[Rule] | None = None,
+        selected_rules: list[Rule] | None = None,
+        ignore_keys: list[str] | None = None,
+        select_keys: list[str] | None = None,
+    ):
+        self._name = name
+        self._file_manager = file_manager or MagicMock()
+        self._ignored_rules = ignored_rules or []
+        self._selected_rules = selected_rules or []
+        self._ignore_keys = ignore_keys or ["tool", "mocktool", "ignore"]
+        self._select_keys = select_keys or ["tool", "mocktool", "select"]
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
+        return {self._file_manager}
+
+    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:  # noqa: ARG002
+        return self._ignore_keys
+
+    def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:  # noqa: ARG002
+        return self._select_keys
+
+    def get_ignored_rules(self) -> list[Rule]:
+        return self._ignored_rules
+
+    def get_selected_rules(self) -> list[Rule]:
+        return self._selected_rules
+
+    def print_how_to_use(self) -> None:
+        pass
 
 
 class TestTool:
@@ -1126,3 +1171,342 @@ key3 = value3
 
                 # Assert
                 assert (tmp_path / "mytool-config.yaml").exists()
+
+    class TestIgnoreRules:
+        class TestWhenRulesAreNew:
+            def test_it_adds_rules_to_config(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                file_manager.name = "pyproject.toml"
+                tool = MockToolForRuleTests(file_manager=file_manager, ignored_rules=[])
+
+                # Act
+                result = tool.ignore_rules(["E501", "F401"])
+
+                # Assert
+                assert result is True
+                file_manager.extend_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "ignore"], values=["E501", "F401"]
+                )
+
+            def test_it_sorts_rules(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(file_manager=file_manager, ignored_rules=[])
+
+                # Act
+                tool.ignore_rules(["F401", "E501", "D100"])
+
+                # Assert
+                file_manager.extend_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "ignore"], values=["D100", "E501", "F401"]
+                )
+
+            def test_it_deduplicates_rules(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(file_manager=file_manager, ignored_rules=[])
+
+                # Act
+                tool.ignore_rules(["E501", "E501", "F401"])
+
+                # Assert
+                file_manager.extend_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "ignore"], values=["E501", "F401"]
+                )
+
+        class TestWhenSomeRulesAlreadyIgnored:
+            def test_it_only_adds_new_rules(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, ignored_rules=["E501"]
+                )
+
+                # Act
+                result = tool.ignore_rules(["E501", "F401"])
+
+                # Assert
+                assert result is True
+                file_manager.extend_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "ignore"], values=["F401"]
+                )
+
+        class TestWhenAllRulesAlreadyIgnored:
+            def test_it_returns_false(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, ignored_rules=["E501", "F401"]
+                )
+
+                # Act
+                result = tool.ignore_rules(["E501", "F401"])
+
+                # Assert
+                assert result is False
+                file_manager.extend_list.assert_not_called()
+
+        class TestWhenNoRulesProvided:
+            def test_it_returns_false(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(file_manager=file_manager)
+
+                # Act
+                result = tool.ignore_rules([])
+
+                # Assert
+                assert result is False
+                file_manager.extend_list.assert_not_called()
+
+    class TestUnignoreRules:
+        class TestWhenRulesAreCurrentlyIgnored:
+            def test_it_removes_rules_from_config(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                file_manager.name = "pyproject.toml"
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, ignored_rules=["E501", "F401", "D100"]
+                )
+
+                # Act
+                result = tool.unignore_rules(["E501", "F401"])
+
+                # Assert
+                assert result is True
+                file_manager.remove_from_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "ignore"], values=["E501", "F401"]
+                )
+
+            def test_it_sorts_rules(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, ignored_rules=["E501", "F401", "D100"]
+                )
+
+                # Act
+                tool.unignore_rules(["F401", "E501"])
+
+                # Assert
+                file_manager.remove_from_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "ignore"], values=["E501", "F401"]
+                )
+
+        class TestWhenSomeRulesNotIgnored:
+            def test_it_only_removes_ignored_rules(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, ignored_rules=["E501"]
+                )
+
+                # Act
+                result = tool.unignore_rules(["E501", "F401"])
+
+                # Assert
+                assert result is True
+                file_manager.remove_from_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "ignore"], values=["E501"]
+                )
+
+        class TestWhenNoRulesAreIgnored:
+            def test_it_returns_false(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(file_manager=file_manager, ignored_rules=[])
+
+                # Act
+                result = tool.unignore_rules(["E501", "F401"])
+
+                # Assert
+                assert result is False
+                file_manager.remove_from_list.assert_not_called()
+
+        class TestWhenNoRulesProvided:
+            def test_it_returns_false(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, ignored_rules=["E501"]
+                )
+
+                # Act
+                result = tool.unignore_rules([])
+
+                # Assert
+                assert result is False
+                file_manager.remove_from_list.assert_not_called()
+
+    class TestSelectRules:
+        class TestWhenRulesAreNew:
+            def test_it_adds_rules_to_config(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                file_manager.name = "pyproject.toml"
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, selected_rules=[]
+                )
+
+                # Act
+                result = tool.select_rules(["E501", "F401"])
+
+                # Assert
+                assert result is True
+                file_manager.extend_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "select"], values=["E501", "F401"]
+                )
+
+            def test_it_sorts_rules(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, selected_rules=[]
+                )
+
+                # Act
+                tool.select_rules(["F401", "E501", "D100"])
+
+                # Assert
+                file_manager.extend_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "select"], values=["D100", "E501", "F401"]
+                )
+
+        class TestWhenSomeRulesAlreadySelected:
+            def test_it_only_adds_new_rules(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, selected_rules=["E501"]
+                )
+
+                # Act
+                result = tool.select_rules(["E501", "F401"])
+
+                # Assert
+                assert result is True
+                file_manager.extend_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "select"], values=["F401"]
+                )
+
+        class TestWhenAllRulesAlreadySelected:
+            def test_it_returns_false(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, selected_rules=["E501", "F401"]
+                )
+
+                # Act
+                result = tool.select_rules(["E501", "F401"])
+
+                # Assert
+                assert result is False
+                file_manager.extend_list.assert_not_called()
+
+        def test_tool_without_selection_support(self) -> None:
+            # Arrange
+            file_manager = MagicMock()
+            tool = MockToolForRuleTests(file_manager=file_manager, selected_rules=[])
+            # Override to simulate a tool without selection support
+            tool._get_select_keys = lambda fm: super(  # type: ignore[method-assign]
+                MockToolForRuleTests, tool
+            )._get_select_keys(fm)
+
+            # Act & Assert
+            with pytest.raises(
+                UnhandledConfigEntryError,
+                match="Unknown location for selected mocktool rules",
+            ):
+                tool.select_rules(["E501"])
+
+    class TestDeselectRules:
+        class TestWhenRulesAreCurrentlySelected:
+            def test_it_removes_rules_from_config(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                file_manager.name = "pyproject.toml"
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, selected_rules=["E501", "F401", "D100"]
+                )
+
+                # Act
+                result = tool.deselect_rules(["E501", "F401"])
+
+                # Assert
+                assert result is True
+                file_manager.remove_from_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "select"], values=["E501", "F401"]
+                )
+
+        class TestWhenSomeRulesNotSelected:
+            def test_it_only_removes_selected_rules(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, selected_rules=["E501"]
+                )
+
+                # Act
+                result = tool.deselect_rules(["E501", "F401"])
+
+                # Assert
+                assert result is True
+                file_manager.remove_from_list.assert_called_once_with(
+                    keys=["tool", "mocktool", "select"], values=["E501"]
+                )
+
+        class TestWhenNoRulesAreSelected:
+            def test_it_returns_false(self) -> None:
+                # Arrange
+                file_manager = MagicMock()
+                tool = MockToolForRuleTests(
+                    file_manager=file_manager, selected_rules=[]
+                )
+
+                # Act
+                result = tool.deselect_rules(["E501", "F401"])
+
+                # Assert
+                assert result is False
+                file_manager.remove_from_list.assert_not_called()
+
+        def test_tool_without_selection_support(self) -> None:
+            # Arrange
+            file_manager = MagicMock()
+            tool = MockToolForRuleTests(
+                file_manager=file_manager, selected_rules=["E501"]
+            )
+            # Override to simulate a tool without selection support
+            tool._get_select_keys = lambda fm: super(  # type: ignore[method-assign]
+                MockToolForRuleTests, tool
+            )._get_select_keys(fm)
+
+            # Act & Assert
+            with pytest.raises(
+                UnhandledConfigEntryError,
+                match="Unknown location for selected mocktool rules",
+            ):
+                tool.deselect_rules(["E501"])
+
+    class TestGetSelectedRules:
+        def test_it_returns_empty_list_by_default(self) -> None:
+            # Arrange
+            tool = MockToolForRuleTests(selected_rules=[])
+
+            # Act
+            result = tool.get_selected_rules()
+
+            # Assert
+            assert result == []
+
+        def test_it_returns_configured_rules(self) -> None:
+            # Arrange
+            tool = MockToolForRuleTests(selected_rules=["E501", "F401"])
+
+            # Act
+            result = tool.get_selected_rules()
+
+            # Assert
+            assert result == ["E501", "F401"]

@@ -2,6 +2,7 @@ from pathlib import Path
 
 from usethis._config_file import files_manager
 from usethis._deps import get_deps_from_group
+from usethis._integrations.python.version import PythonVersion
 from usethis._test import CliRunner, change_cwd
 from usethis._types.deps import Dependency
 from usethis._ui.app import app
@@ -55,9 +56,15 @@ class TestSpellcheck:
         # Assert
         assert result.exit_code == 0, result.output
         assert not (tmp_path / "pyproject.toml").exists()
+        # Check if tomli is needed based on current interpreter
+        current_version = PythonVersion.from_interpreter()
+        needs_tomli = (int(current_version.major), int(current_version.minor)) < (3, 11)
+        if needs_tomli:
+            expected_deps = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
+        else:
+            expected_deps = "☐ Add the dev dependency 'codespell'.\n"
         assert result.output == (
-            "☐ Add the dev dependency 'codespell'.\n"
-            "✔ Writing '.codespellrc'.\n"
+            expected_deps + "✔ Writing '.codespellrc'.\n"
             "✔ Adding Codespell config to '.codespellrc'.\n"
             "☐ Run 'codespell' to run the Codespell spellchecker.\n"
         )
@@ -74,8 +81,14 @@ class TestSpellcheck:
         # Assert
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()
+        # Check if tomli is needed based on current interpreter
+        current_version = PythonVersion.from_interpreter()
+        needs_tomli = (int(current_version.major), int(current_version.minor)) < (3, 11)
+        if needs_tomli:
+            expected_deps = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
+        else:
+            expected_deps = "☐ Add the dev dependency 'codespell'.\n"
         assert result.output == (
-            "☐ Add the dev dependency 'codespell'.\n"
-            "✔ Adding Codespell config to 'pyproject.toml'.\n"
+            expected_deps + "✔ Adding Codespell config to 'pyproject.toml'.\n"
             "☐ Run 'codespell' to run the Codespell spellchecker.\n"
         )

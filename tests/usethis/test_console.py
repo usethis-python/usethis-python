@@ -197,7 +197,7 @@ class TestWarnPrint:
 class TestGetIconMode:
     def test_unicode_support(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Arrange
-        monkeypatch.setattr("usethis._console._get_encoding", lambda: "utf-8")
+        monkeypatch.setattr("usethis._console._get_stdout_encoding", lambda: "utf-8")
         get_icon_mode.cache_clear()
 
         # Act
@@ -208,7 +208,7 @@ class TestGetIconMode:
 
     def test_universal_support(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Arrange - use cp437 which supports universal but not unicode icons
-        monkeypatch.setattr("usethis._console._get_encoding", lambda: "cp437")
+        monkeypatch.setattr("usethis._console._get_stdout_encoding", lambda: "cp437")
         get_icon_mode.cache_clear()
 
         # Act
@@ -219,7 +219,7 @@ class TestGetIconMode:
 
     def test_text_fallback(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # Arrange
-        monkeypatch.setattr("usethis._console._get_encoding", lambda: "ascii")
+        monkeypatch.setattr("usethis._console._get_stdout_encoding", lambda: "ascii")
         get_icon_mode.cache_clear()
 
         # Act
@@ -249,7 +249,7 @@ class TestGetIcon:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         # Arrange
-        monkeypatch.setattr("usethis._console._get_encoding", lambda: "utf-8")
+        monkeypatch.setattr("usethis._console._get_stdout_encoding", lambda: "utf-8")
         get_icon_mode.cache_clear()
 
         # Act & Assert
@@ -264,7 +264,7 @@ class TestGetIcon:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         # Arrange
-        monkeypatch.setattr("usethis._console._get_encoding", lambda: "cp437")
+        monkeypatch.setattr("usethis._console._get_stdout_encoding", lambda: "cp437")
         get_icon_mode.cache_clear()
 
         # Act & Assert
@@ -279,7 +279,7 @@ class TestGetIcon:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         # Arrange
-        monkeypatch.setattr("usethis._console._get_encoding", lambda: "ascii")
+        monkeypatch.setattr("usethis._console._get_stdout_encoding", lambda: "ascii")
         get_icon_mode.cache_clear()
 
         # Act & Assert
@@ -299,7 +299,7 @@ class TestIconFallbackIntegration:
         self, capfd: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
     ) -> None:
         # Arrange
-        monkeypatch.setattr("usethis._console._get_encoding", lambda: "ascii")
+        monkeypatch.setattr("usethis._console._get_stdout_encoding", lambda: "ascii")
         get_icon_mode.cache_clear()
 
         # Act
@@ -313,7 +313,7 @@ class TestIconFallbackIntegration:
         self, capfd: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
     ) -> None:
         # Arrange
-        monkeypatch.setattr("usethis._console._get_encoding", lambda: "cp437")
+        monkeypatch.setattr("usethis._console._get_stdout_encoding", lambda: "cp437")
         get_icon_mode.cache_clear()
 
         # Act

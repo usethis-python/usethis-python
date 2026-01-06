@@ -211,9 +211,6 @@ pipelines:
 """
             )
 
-        @pytest.mark.skip(
-            reason="https://github.com/usethis-python/usethis-python/issues/1183"
-        )
         def test_no_backend(
             self,
             tmp_path: Path,
@@ -223,6 +220,10 @@ pipelines:
             # Arrange
             monkeypatch.setattr(
                 usethis._tool.impl.pytest, "get_backend", lambda: BackendEnum.none
+            )
+            monkeypatch.setattr(
+                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                lambda: PythonVersion(major="3", minor="10", patch=None),
             )
             (tmp_path / "bitbucket-pipelines.yml").touch()
             (tmp_path / "pytest.ini").touch()
@@ -240,15 +241,14 @@ requires-python = ">=3.13,<3.14"
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert (
-                out
-                == """\
+            expected_output = """\
+⚠ Current Python interpreter (3.10) is outside requires-python bounds \n(<3.14,>=3.13). Using lowest supported version (3.13).
 ✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
 ℹ Consider installing 'uv' to readily manage test dependencies.
 ☐ Declare your test dependencies in 'bitbucket-pipelines.yml'.
 ℹ Add test dependencies to this line: 'pip install pytest'
 """  # noqa: RUF001
-            )
+            assert out == expected_output
 
     class TestRemoveBitbucketSteps:
         def test_no_file(self, uv_init_dir: Path):

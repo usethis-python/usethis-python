@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
@@ -17,6 +18,9 @@ from usethis._tool.base import Tool
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
+
+if TYPE_CHECKING:
+    from usethis._integrations.python.version import PythonVersion
 
 _SYNC_WITH_UV_VERSION = "v0.5.0"  # Manually bump this version when necessary
 
@@ -69,7 +73,10 @@ class PreCommitTool(Tool):
         return [Path(".pre-commit-config.yaml")]
 
     def get_bitbucket_steps(
-        self, *, matrix_python: bool = True
+        self,
+        *,
+        matrix_python: bool = True,
+        versions: list[PythonVersion] | None = None,
     ) -> list[bitbucket_schema.Step]:
         backend = get_backend()
 

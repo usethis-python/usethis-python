@@ -607,6 +607,9 @@ class Tool(Protocol):
             matrix_python: Whether to use a Python version matrix. When False,
                            only the current development version is used.
         """
+        # N.B. the default implementation doesn't need matrix_python,
+        # but it's included in the signature to allow for it to be used, e.g. for pytest
+
         try:
             cmd = self.default_command()
         except NoDefaultToolCommand:
@@ -670,14 +673,15 @@ class Tool(Protocol):
             return
 
         # Add the new steps
-        for step in self.get_bitbucket_steps(matrix_python=matrix_python):
+        steps = self.get_bitbucket_steps(matrix_python=matrix_python)
+        for step in steps:
             add_bitbucket_step_in_default(step)
 
         # Remove any old steps that are not active managed by this tool
+        managed_names = self.get_managed_bitbucket_step_names()
         for step in get_steps_in_default():
-            if step.name in self.get_managed_bitbucket_step_names() and not any(
-                bitbucket_steps_are_equivalent(step, step_)
-                for step_ in self.get_bitbucket_steps(matrix_python=matrix_python)
+            if step.name in managed_names and not any(
+                bitbucket_steps_are_equivalent(step, step_) for step_ in steps
             ):
                 remove_bitbucket_step_from_default(step)
 

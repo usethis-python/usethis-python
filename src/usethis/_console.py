@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import codecs
+import functools
 import sys
 from typing import TYPE_CHECKING
 
@@ -97,5 +98,10 @@ def err_print(msg: str | Exception) -> None:
 def warn_print(msg: str | Exception) -> None:
     msg = str(msg)
 
+    _cached_warn_print(msg)
+
+
+@functools.cache
+def _cached_warn_print(msg: str) -> None:
     if not usethis_config.quiet:
         console.print(f"⚠ {msg}", style="yellow")

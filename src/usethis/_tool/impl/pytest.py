@@ -222,16 +222,12 @@ class PytestTool(Tool):
         return {preferred_file_manager}
 
     def get_bitbucket_steps(
-        self,
-        *,
-        matrix_python: bool = True,
-        versions: list[PythonVersion] | None = None,
+        self, *, matrix_python: bool = True
     ) -> list[bitbucket_schema.Step]:
-        if versions is None:
-            if matrix_python:
-                versions = get_supported_minor_python_versions()
-            else:
-                versions = [PythonVersion.from_interpreter()]
+        if matrix_python:
+            versions = get_supported_minor_python_versions()
+        else:
+            versions = [PythonVersion.from_interpreter()]
 
         backend = get_backend()
 

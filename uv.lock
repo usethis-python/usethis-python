@@ -1680,7 +1680,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.5.0" },
     { name = "requests", specifier = ">=2.26.0" },
     { name = "rich", specifier = ">=9.6.1" },
-    { name = "ruamel-yaml", specifier = ">=0.16.13,!=0.18.13,!=0.18.14,!=0.18.15,!=0.18.16,!=0.18.17" },
+    { name = "ruamel-yaml", specifier = ">=0.16.13,!=0.18.13,!=0.18.14,!=0.18.15,!=0.18.16,!=0.18.17,!=0.19.0,!=0.19.1" },
     { name = "tomlkit", specifier = ">=0.13.3" },
     { name = "typer", specifier = ">=0.12.4" },
     { name = "typing-extensions", specifier = ">=3.10.0.0" },

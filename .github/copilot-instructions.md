@@ -77,7 +77,7 @@ The following checks run automatically via prek (pre-commit framework). All must
 9. **deptry** - Checks for missing/unused dependencies (`uv run deptry src`)
 10. **codespell** - Spell checker
 11. **import-linter** - Enforces architecture constraints (`uv run lint-imports`)
-12. **ty** - Type checker (`uv run ty`)
+12. **ty** - Type checker (`uv run ty check`)
 
 **To run all checks manually:**
 ```bash
@@ -91,7 +91,7 @@ uv run ruff format                # Formatter
 uv run deptry src                 # Dependency checker
 uv run codespell                  # Spell checker
 uv run lint-imports               # Architecture constraints
-uv run ty                         # Type checker
+uv run ty check                   # Type checker
 ```
 
 ## Architecture & Project Structure
@@ -270,7 +270,7 @@ These instructions have been validated by running actual commands and inspecting
 | Run all checks | `uv run prek run --all-files` |
 | Format code | `uv run ruff format` |
 | Lint code | `uv run ruff check --fix` |
-| Check types | `uv run ty` |
+| Check types | `uv run ty check` |
 | Check dependencies | `uv run deptry src` |
 | Check architecture | `uv run lint-imports` |
 | Serve docs | `uv run mkdocs serve` |

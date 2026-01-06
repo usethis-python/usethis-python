@@ -46,3 +46,7 @@ class DepGroupError(UsethisError):
 
 class NoDefaultToolCommand(UsethisError):
     """Raised when a tool does not have a default command."""
+
+
+class UnhandledConfigEntryError(UsethisError):
+    """Raised when a tool encounters an unknown file manager type for config entries."""

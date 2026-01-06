@@ -332,84 +332,6 @@ class RuffTool(Tool):
 
         return steps
 
-    def select_rules(self, rules: list[Rule]) -> bool:
-        """Add Ruff rules to the project."""
-        rules = sorted(set(rules) - set(self.get_selected_rules()))
-
-        if not rules:
-            return False
-
-        rules_str = ", ".join([f"'{rule}'" for rule in rules])
-        s = "" if len(rules) == 1 else "s"
-
-        (file_manager,) = self.get_active_config_file_managers()
-        ensure_managed_file_exists(file_manager)
-        tick_print(
-            f"Selecting {self.name} rule{s} {rules_str} in '{file_manager.name}'."
-        )
-        keys = self._get_select_keys(file_manager)
-        file_manager.extend_list(keys=keys, values=rules)
-
-        return True
-
-    def ignore_rules(self, rules: list[Rule]) -> bool:
-        """Ignore Ruff rules in the project."""
-        rules = sorted(set(rules) - set(self.get_ignored_rules()))
-
-        if not rules:
-            return False
-
-        rules_str = ", ".join([f"'{rule}'" for rule in rules])
-        s = "" if len(rules) == 1 else "s"
-
-        (file_manager,) = self.get_active_config_file_managers()
-        ensure_managed_file_exists(file_manager)
-        tick_print(
-            f"Ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
-        )
-        keys = self._get_ignore_keys(file_manager)
-        file_manager.extend_list(keys=keys, values=rules)
-
-        return True
-
-    def unignore_rules(self, rules: list[str]) -> bool:
-        """Unignore Ruff rules in the project."""
-        rules = list(set(rules) & set(self.get_ignored_rules()))
-
-        if not rules:
-            return False
-
-        rules_str = ", ".join([f"'{rule}'" for rule in rules])
-        s = "" if len(rules) == 1 else "s"
-
-        (file_manager,) = self.get_active_config_file_managers()
-        ensure_managed_file_exists(file_manager)
-        tick_print(
-            f"No longer ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
-        )
-        keys = self._get_ignore_keys(file_manager)
-        file_manager.remove_from_list(keys=keys, values=rules)
-        return True
-
-    def deselect_rules(self, rules: list[Rule]) -> bool:
-        """Ensure Ruff rules are not selected in the project."""
-        rules = list(set(rules) & set(self.get_selected_rules()))
-
-        if not rules:
-            return False
-
-        rules_str = ", ".join([f"'{rule}'" for rule in rules])
-        s = "" if len(rules) == 1 else "s"
-
-        (file_manager,) = self.get_active_config_file_managers()
-        ensure_managed_file_exists(file_manager)
-        tick_print(
-            f"Deselecting {self.name} rule{s} {rules_str} in '{file_manager.name}'."
-        )
-        keys = self._get_select_keys(file_manager)
-        file_manager.remove_from_list(keys=keys, values=rules)
-        return True
-
     def get_selected_rules(self) -> list[Rule]:
         """Get the Ruff rules selected in the project."""
         (file_manager,) = self.get_active_config_file_managers()
@@ -546,11 +468,7 @@ class RuffTool(Tool):
         elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):
             return ["lint", "select"]
         else:
-            msg = (
-                f"Unknown location for selected {self.name} rules for file manager "
-                f"'{file_manager.name}' of type '{file_manager.__class__.__name__}'."
-            )
-            raise NotImplementedError(msg)
+            return super()._get_select_keys(file_manager)
 
     def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""
@@ -559,11 +477,7 @@ class RuffTool(Tool):
         elif isinstance(file_manager, RuffTOMLManager | DotRuffTOMLManager):
             return ["lint", "ignore"]
         else:
-            msg = (
-                f"Unknown location for ignored {self.name} rules for file manager "
-                f"'{file_manager.name}' of type '{file_manager.__class__.__name__}'."
-            )
-            raise NotImplementedError(msg)
+            return super()._get_ignore_keys(file_manager)
 
     def _get_per_file_ignore_keys(
         self, file_manager: KeyValueFileManager, *, glob: str

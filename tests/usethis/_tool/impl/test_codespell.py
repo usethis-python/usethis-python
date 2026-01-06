@@ -8,9 +8,11 @@ from usethis._config_file import files_manager
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._integrations.pre_commit import schema
+from usethis._integrations.python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
 
 
 class TestCodespellTool:
@@ -184,3 +186,116 @@ repos:
             assert not (tmp_path / ".codespellrc").exists()
             assert not (tmp_path / "setup.cfg").exists()
             assert (tmp_path / "pyproject.toml").exists()
+
+    class TestGetDevDeps:
+        def test_requires_python_includes_3_10(self, tmp_path: Path):
+            # Arrange
+            # Create a pyproject.toml with requires-python that includes Python 3.10
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[project]
+name = "test-project"
+version = "0.1.0"
+requires-python = ">=3.10"
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                deps = CodespellTool().get_dev_deps()
+
+            # Assert
+            assert Dependency(name="codespell") in deps
+            assert Dependency(name="tomli") in deps
+
+        def test_requires_python_only_3_11_and_above(self, tmp_path: Path):
+            # Arrange
+            # Create a pyproject.toml with requires-python that only includes Python >= 3.11
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[project]
+name = "test-project"
+version = "0.1.0"
+requires-python = ">=3.11"
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                deps = CodespellTool().get_dev_deps()
+
+            # Assert
+            assert Dependency(name="codespell") in deps
+            assert Dependency(name="tomli") not in deps
+
+        def test_requires_python_range_includes_3_10(self, tmp_path: Path):
+            # Arrange
+            # Create a pyproject.toml with requires-python range that includes 3.10
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[project]
+name = "test-project"
+version = "0.1.0"
+requires-python = ">=3.10,<3.13"
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                deps = CodespellTool().get_dev_deps()
+
+            # Assert
+            assert Dependency(name="codespell") in deps
+            assert Dependency(name="tomli") in deps
+
+        def test_no_pyproject_toml_3pt10(
+            self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        ):
+            # Arrange - no pyproject.toml file, using interpreter version
+            monkeypatch.setattr(
+                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                lambda: PythonVersion(major="3", minor="10", patch=None),
+            )
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                deps = CodespellTool().get_dev_deps()
+
+            # Assert
+            assert Dependency(name="codespell") in deps
+            assert Dependency(name="tomli") in deps
+
+        def test_no_pyproject_toml_3pt11(
+            self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        ):
+            # Arrange - no pyproject.toml file, using interpreter version
+            monkeypatch.setattr(
+                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                lambda: PythonVersion(major="3", minor="11", patch=None),
+            )
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                deps = CodespellTool().get_dev_deps()
+
+            # Assert
+            assert Dependency(name="codespell") in deps
+            assert Dependency(name="tomli") not in deps
+
+        def test_unconditional_includes_tomli(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[project]
+name = "test-project"
+version = "0.1.0"
+requires-python = ">=3.12"
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                deps = CodespellTool().get_dev_deps(unconditional=True)
+
+            # Assert
+            # When unconditional=True, tomli should always be included
+            assert Dependency(name="codespell") in deps
+            assert Dependency(name="tomli") in deps

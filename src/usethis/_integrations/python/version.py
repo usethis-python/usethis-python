@@ -44,6 +44,10 @@ class PythonVersion:
         """Return X.Y format (e.g., '3.10')."""
         return f"{self.major}.{self.minor}"
 
+    def to_short_tuple(self) -> tuple[int, int]:
+        """Return (major, minor) as integers."""
+        return (int(self.major), int(self.minor))
+
     def __str__(self) -> str:
         """Return full version string."""
         if self.patch is None:

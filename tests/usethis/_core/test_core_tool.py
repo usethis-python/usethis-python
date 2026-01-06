@@ -285,9 +285,15 @@ foo = bar
             # Assert
             out, err = capfd.readouterr()
             assert not err
+            # Check if tomli is needed based on current interpreter
+            current_version = PythonVersion.from_interpreter()
+            needs_tomli = current_version.to_short_tuple() < (3, 11)
+            if needs_tomli:
+                expected_deps = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
+            else:
+                expected_deps = "☐ Add the dev dependency 'codespell'.\n"
             assert out == (
-                "☐ Add the dev dependency 'codespell'.\n"
-                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                expected_deps + "✔ Adding Codespell config to 'pyproject.toml'.\n"
                 "☐ Run 'codespell' to run the Codespell spellchecker.\n"
             )
 
@@ -305,9 +311,18 @@ foo = bar
             # Assert
             out, err = capfd.readouterr()
             assert not err
+            # Check if tomli is needed based on current interpreter
+            current_version = PythonVersion.from_interpreter()
+            needs_tomli = (int(current_version.major), int(current_version.minor)) < (
+                3,
+                11,
+            )
+            if needs_tomli:
+                expected_deps = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
+            else:
+                expected_deps = "☐ Add the dev dependency 'codespell'.\n"
             assert out == (
-                "☐ Add the dev dependency 'codespell'.\n"
-                "✔ Writing '.codespellrc'.\n"
+                expected_deps + "✔ Writing '.codespellrc'.\n"
                 "✔ Adding Codespell config to '.codespellrc'.\n"
                 "☐ Run 'codespell' to run the Codespell spellchecker.\n"
             )

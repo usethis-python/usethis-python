@@ -1,0 +1,126 @@
+[importlinter]
+root_packages =
+    usethis
+
+[importlinter:contract:usethis]
+name = usethis
+type = layers
+containers =
+    usethis
+layers =
+    _test | __main__
+    _ui
+    _toolset
+    _core
+    _tool
+    _init
+    _deps
+    _config_file
+    _integrations
+    _io | _subprocess | _console
+    _config
+    _types | errors
+    _pipeweld
+exhaustive = true
+exhaustive_ignores =
+    _version
+
+[importlinter:contract:ui]
+name = usethis._ui
+type = layers
+containers =
+    usethis._ui
+layers =
+    app
+    interface
+    options
+exhaustive = true
+
+[importlinter:contract:core]
+name = usethis._core
+type = layers
+containers =
+    usethis._core
+layers =
+    badge | docstyle | list | rule
+    author | browse | ci | readme | show | status | tool
+exhaustive = true
+
+[importlinter:contract:tool]
+name = usethis._tool
+type = layers
+containers =
+    usethis._tool
+layers =
+    all_
+    impl
+    base
+    config | pre_commit | rule
+exhaustive = true
+
+[importlinter:contract:tool_impl]
+name = usethis._tool.impl
+type = layers
+containers =
+    usethis._tool.impl
+layers =
+    pyproject_toml
+    codespell | deptry | import_linter | pyproject_fmt | requirements_txt
+    ruff
+    pytest : coverage_py
+    pre_commit | mkdocs
+exhaustive = true
+
+[importlinter:contract:integrations]
+name = usethis._integrations
+type = layers
+containers =
+    usethis._integrations
+layers =
+    ci | pre_commit
+    environ
+    backend | mkdocs | pytest | pydantic | sonarqube
+    project
+    file
+    python
+exhaustive = true
+
+[importlinter:contract:integrations_file]
+name = usethis._integrations.file
+type = layers
+containers =
+    usethis._integrations.file
+layers =
+    pyproject_toml | setup_cfg
+    ini | toml | yaml
+    dir
+exhaustive = true
+
+[importlinter:contract:ui_interface]
+name = usethis._ui.interface
+type = layers
+containers =
+    usethis._ui.interface
+layers =
+    author | badge | browse | ci | doc | docstyle | format_ | init | lint | list | readme | rule | show | spellcheck | status | test | tool | version
+exhaustive = true
+
+[importlinter:contract:pipeweld]
+name = usethis._pipeweld
+type = layers
+containers =
+    usethis._pipeweld
+layers =
+    func
+    result
+    containers | ops
+exhaustive = true
+
+[importlinter:contract:integrations_ci]
+name = usethis._integrations.ci
+type = layers
+containers =
+    usethis._integrations.ci
+layers =
+    bitbucket | github
+exhaustive = true

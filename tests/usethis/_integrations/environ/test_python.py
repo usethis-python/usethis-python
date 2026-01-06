@@ -42,13 +42,20 @@ requires-python = ">=3.11,<3.13"
             assert "outside requires-python bounds" in out
 
         def test_with_single_version(
-            self, tmp_path: Path, capfd: pytest.CaptureFixture[str], monkeypatch
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+            monkeypatch: pytest.MonkeyPatch,
         ):
             # Arrange
 
             monkeypatch.setattr(
                 "usethis._integrations.environ.python.get_backend",
                 lambda: BackendEnum.none,
+            )
+            monkeypatch.setattr(
+                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                lambda: PythonVersion(major="3", minor="10", patch=None),
             )
             (tmp_path / "pyproject.toml").write_text(
                 """
@@ -66,7 +73,6 @@ requires-python = ">=3.13"
             assert versions[0] == PythonVersion(major="3", minor="13", patch=None)
             assert all(v.major == "3" for v in versions)
             assert all(int(v.minor) >= 13 for v in versions)
-            # Current interpreter is 3.10, outside the range
             out, _err = capfd.readouterr()
             assert "Current Python interpreter" in out
             assert "outside requires-python bounds" in out

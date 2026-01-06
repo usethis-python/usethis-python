@@ -237,16 +237,15 @@ requires-python = ">=3.13,<3.14"
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert (
-                out
-                == """\
-⚠ Current Python interpreter (3.10) is outside requires-python bounds \n(<3.14,>=3.13). Using lowest supported version (3.13).
+            current_version = PythonVersion.from_interpreter()
+            expected_output = f"""\
+⚠ Current Python interpreter ({current_version.to_short_string()}) is outside requires-python bounds \n(<3.14,>=3.13). Using lowest supported version (3.13).
 ✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
 ℹ Consider installing 'uv' to readily manage test dependencies.
 ☐ Declare your test dependencies in 'bitbucket-pipelines.yml'.
 ℹ Add test dependencies to this line: 'pip install pytest'
 """  # noqa: RUF001
-            )
+            assert out == expected_output
 
     class TestRemoveBitbucketSteps:
         def test_no_file(self, uv_init_dir: Path):

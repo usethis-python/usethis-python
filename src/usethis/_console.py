@@ -118,12 +118,13 @@ IconType = Literal["tick", "instruct", "how", "info", "error", "warning"]
 
 _ICON_FALLBACKS: dict[IconType, tuple[str, str, str]] = {
     # Format: (unicode, universal, text)  # noqa: ERA001
-    "tick": ("✔", "√", "[ok]"),
-    "instruct": ("☐", "□", "[todo]"),
-    "how": ("☐", "□", "[todo]"),
-    "info": ("ℹ", "i", "[info]"),  # noqa: RUF001
-    "error": ("✗", "×", "[error]"),  # noqa: RUF001
-    "warning": ("⚠", "!", "[warning]"),
+    # Text format uses escaped brackets to avoid Rich markup interpretation
+    "tick": ("✔", "√", "\\[ok]"),
+    "instruct": ("☐", "□", "\\[todo]"),
+    "how": ("☐", "□", "\\[todo]"),
+    "info": ("ℹ", "i", "\\[info]"),  # noqa: RUF001
+    "error": ("✗", "×", "\\[error]"),  # noqa: RUF001
+    "warning": ("⚠", "!", "\\[warning]"),
 }
 
 
@@ -134,20 +135,23 @@ def get_icon_mode() -> Literal["unicode", "universal", "text"]:
     Tries to encode icons and returns the first level that works.
     Cached for performance.
     """
-    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    encoding = _get_stdout_encoding()
 
-    # Try unicode icons
-    try:
-        "✔☐ℹ✗⚠".encode(encoding)  # noqa: RUF001
+    # Try Unicode (utf-8)
+    if encoding.lower() in ("utf-8", "utf8"):
         return "unicode"
-    except (UnicodeEncodeError, LookupError):
+
+    # Try Universal (cp437 and other common encodings)
+    try:
+        "✔".encode(encoding)
+        return "unicode"
+    except (UnicodeEncodeError, LookupError, AttributeError):
         pass
 
-    # Try universal icons
     try:
-        "√□i×!".encode(encoding)  # noqa: RUF001
+        "√".encode(encoding)
         return "universal"
-    except (UnicodeEncodeError, LookupError):
+    except (UnicodeEncodeError, LookupError, AttributeError):
         pass
 
     # Final fallback to text
@@ -168,3 +172,7 @@ def _get_icon(icon_type: IconType) -> str:
         return fallbacks[1]
     else:
         return fallbacks[2]
+
+
+def _get_stdout_encoding() -> str:
+    return getattr(sys.stdout, "encoding", None) or "utf-8"

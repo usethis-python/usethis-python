@@ -44,7 +44,7 @@ def get_supported_uv_minor_python_versions() -> list[PythonVersion]:
                 major=v.major, minor=v.minor, patch=None
             )
 
-    return sorted(minor_versions.values(), key=lambda v: (int(v.major), int(v.minor)))
+    return sorted(minor_versions.values(), key=lambda v: v.to_short_tuple())
 
 
 def _parse_python_version_from_uv_output(version: str) -> str:

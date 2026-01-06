@@ -58,7 +58,7 @@ class TestSpellcheck:
         assert not (tmp_path / "pyproject.toml").exists()
         # Check if tomli is needed based on current interpreter
         current_version = PythonVersion.from_interpreter()
-        needs_tomli = (int(current_version.major), int(current_version.minor)) < (3, 11)
+        needs_tomli = current_version.to_short_tuple() < (3, 11)
         if needs_tomli:
             expected_deps = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
         else:
@@ -83,7 +83,7 @@ class TestSpellcheck:
         assert (tmp_path / "pyproject.toml").exists()
         # Check if tomli is needed based on current interpreter
         current_version = PythonVersion.from_interpreter()
-        needs_tomli = (int(current_version.major), int(current_version.minor)) < (3, 11)
+        needs_tomli = current_version.to_short_tuple() < (3, 11)
         if needs_tomli:
             expected_deps = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
         else:

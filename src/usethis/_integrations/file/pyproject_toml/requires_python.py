@@ -42,7 +42,7 @@ def get_required_minor_python_versions() -> list[PythonVersion]:
     versions_by_minor: dict[tuple[int, int], set[int]] = {}
     for spec in requires_python:
         parsed = PythonVersion.from_string(spec.version)
-        major_minor = (int(parsed.major), int(parsed.minor))
+        major_minor = parsed.to_short_tuple()
         patch = int(parsed.patch) if parsed.patch else 0
         versions_by_minor.setdefault(major_minor, set()).add(patch)
 

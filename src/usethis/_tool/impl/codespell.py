@@ -79,7 +79,7 @@ class CodespellTool(Tool):
             except (MissingRequiresPythonError, PyprojectTOMLNotFoundError):
                 versions = [PythonVersion.from_interpreter()]
 
-            needs_tomli = any((int(v.major), int(v.minor)) < (3, 11) for v in versions)
+            needs_tomli = any(v.to_short_tuple() < (3, 11) for v in versions)
         if needs_tomli:
             deps.append(Dependency(name="tomli"))
 

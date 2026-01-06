@@ -221,6 +221,10 @@ pipelines:
             monkeypatch.setattr(
                 usethis._tool.impl.pytest, "get_backend", lambda: BackendEnum.none
             )
+            monkeypatch.setattr(
+                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                lambda: PythonVersion(major="3", minor="10", patch=None),
+            )
             (tmp_path / "bitbucket-pipelines.yml").touch()
             (tmp_path / "pytest.ini").touch()
             (tmp_path / "pyproject.toml").write_text(
@@ -237,9 +241,8 @@ requires-python = ">=3.13,<3.14"
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            current_version = PythonVersion.from_interpreter()
-            expected_output = f"""\
-⚠ Current Python interpreter ({current_version.to_short_string()}) is outside requires-python bounds \n(<3.14,>=3.13). Using lowest supported version (3.13).
+            expected_output = """\
+⚠ Current Python interpreter (3.10) is outside requires-python bounds \n(<3.14,>=3.13). Using lowest supported version (3.13).
 ✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
 ℹ Consider installing 'uv' to readily manage test dependencies.
 ☐ Declare your test dependencies in 'bitbucket-pipelines.yml'.

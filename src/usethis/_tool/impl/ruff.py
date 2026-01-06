@@ -28,6 +28,7 @@ from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
+    from usethis._integrations.python.version import PythonVersion
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule, RuleConfig
 
@@ -267,7 +268,10 @@ class RuffTool(Tool):
         )
 
     def get_bitbucket_steps(
-        self, *, matrix_python: bool = True
+        self,
+        *,
+        matrix_python: bool = True,
+        versions: list[PythonVersion] | None = None,
     ) -> list[bitbucket_schema.Step]:
         backend = get_backend()
 

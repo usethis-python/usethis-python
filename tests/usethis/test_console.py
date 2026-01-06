@@ -166,3 +166,23 @@ class TestWarnPrint:
         out, err = capfd.readouterr()
         assert not err
         assert out == "⚠ Hello\n"
+
+    def test_cached_str(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Act
+        warn_print("Hello")
+        warn_print("Hello")
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "⚠ Hello\n"
+
+    def test_cached_exception(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Act
+        warn_print(Exception("Hello"))
+        warn_print(Exception("Hello"))
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "⚠ Hello\n"

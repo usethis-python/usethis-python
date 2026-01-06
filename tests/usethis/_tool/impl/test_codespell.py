@@ -261,7 +261,6 @@ requires-python = ">=3.10,<3.13"
                 deps = CodespellTool().get_dev_deps()
 
             # Assert
-            # Without requires-python, we don't add tomli
             assert Dependency(name="codespell") in deps
             assert Dependency(name="tomli") in deps
 
@@ -278,7 +277,6 @@ requires-python = ">=3.10,<3.13"
                 deps = CodespellTool().get_dev_deps()
 
             # Assert
-            # Without requires-python, we don't add tomli
             assert Dependency(name="codespell") in deps
             assert Dependency(name="tomli") not in deps
 

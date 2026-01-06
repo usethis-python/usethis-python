@@ -20,6 +20,10 @@ class TestGetSupportedMinorPythonVersions:
                 "usethis._integrations.environ.python.get_backend",
                 lambda: BackendEnum.none,
             )
+            monkeypatch.setattr(
+                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                lambda: PythonVersion(major="3", minor="10", patch=None),
+            )
             (tmp_path / "pyproject.toml").write_text(
                 """
 [project]

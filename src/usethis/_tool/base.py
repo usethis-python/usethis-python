@@ -647,8 +647,8 @@ class Tool(Protocol):
     def get_managed_bitbucket_step_names(self) -> list[str]:
         """These are the names of the Bitbucket steps that are managed by this tool.
 
-        They should be removed if they are not currently active according to `get_bitbucket_steps`.
-        They should also be removed if the tool is removed.
+        They should be removed if they are not currently active according to
+        `get_bitbucket_steps`. They should also be removed if the tool is removed.
         """
         return [
             step.name for step in self.get_bitbucket_steps() if step.name is not None
@@ -667,7 +667,7 @@ class Tool(Protocol):
 
         Args:
             matrix_python: Whether to use a Python version matrix. When False,
-                only the current development version is used.
+                           only the current development version is used.
         """
         if not is_bitbucket_used() or not self.is_used():
             return

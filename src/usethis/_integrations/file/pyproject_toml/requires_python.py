@@ -76,7 +76,6 @@ def get_required_minor_python_versions() -> list[PythonVersion]:
     # We don't bother grouping the minor versions by major version since we almost
     # always deal with just major version 3 in practice.
     min_minor_in_spec = min(all_minors)
-    max_minor_in_spec = max(all_minors)
 
     supported_versions = []
     # Generate all major.minor combinations in range
@@ -93,7 +92,8 @@ def get_required_minor_python_versions() -> list[PythonVersion]:
         elif major == max_version[0]:
             max_minor = max_version[1]
         else:
-            max_minor = max_minor_in_spec
+            # Unreachable by definition of max_version and loop range
+            raise AssertionError
 
         for minor in range(min_minor, max_minor + 1):
             version = PythonVersion(major=str(major), minor=str(minor), patch=None)

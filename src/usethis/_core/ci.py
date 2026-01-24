@@ -17,9 +17,7 @@ def use_ci_bitbucket(
         return
 
     if not remove:
-        use_any_tool = PytestTool().is_used() or any(
-            tool.is_used() for tool in ALL_TOOLS
-        )
+        use_any_tool = any(tool.is_used() for tool in ALL_TOOLS)
 
         add_bitbucket_pipelines_config(report_placeholder=not use_any_tool)
 

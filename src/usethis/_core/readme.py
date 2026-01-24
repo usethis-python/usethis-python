@@ -10,7 +10,7 @@ from usethis._integrations.readme.path import get_readme_path
 
 def add_readme() -> None:
     """Add a README.md file to the project."""
-    # Any file extension is fine, but we'll use '.md' for consistency.s
+    # Any file extension is fine, but we'll use '.md' for consistency.
 
     try:
         path = get_readme_path()

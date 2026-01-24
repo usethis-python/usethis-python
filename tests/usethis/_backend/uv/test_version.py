@@ -52,7 +52,7 @@ class TestGetUVVersion:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(
-            "usethis._integrations.backend.uv.version.call_uv_subprocess",
+            "usethis._backend.uv.version.call_uv_subprocess",
             mock_call_uv_subprocess,
         )
 

@@ -698,6 +698,13 @@ class Tool(Protocol):
 
         # Remove any old steps that are not active managed by this tool
         managed_names = self.get_managed_bitbucket_step_names()
+
+        # Early return if there are no steps to add and no managed steps to clean up
+        # This avoids unnecessarily reading the Bitbucket YAML file (which would
+        # initialize an empty file with {})
+        if not steps and not managed_names:
+            return
+
         for step in get_steps_in_default():
             if step.name in managed_names and not any(
                 bitbucket_steps_are_equivalent(step, step_) for step_ in steps

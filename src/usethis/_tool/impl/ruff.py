@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule, RuleConfig
 
-_RUFF_VERSION = "v0.14.11"  # Manually bump this version when necessary
+_RUFF_VERSION = "v0.14.14"  # Manually bump this version when necessary
 
 
 class RuffTool(Tool):

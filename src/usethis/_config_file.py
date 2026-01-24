@@ -4,13 +4,13 @@ import contextlib
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from usethis._integrations.backend.uv.toml import UVTOMLManager
+from usethis._backend.uv.toml import UVTOMLManager
+from usethis._file.ini.io_ import INIFileManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.setup_cfg.io_ import SetupCFGManager
+from usethis._file.toml.io_ import TOMLFileManager
+from usethis._file.yaml.io_ import YAMLFileManager
 from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
-from usethis._integrations.file.ini.io_ import INIFileManager
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
-from usethis._integrations.file.toml.io_ import TOMLFileManager
-from usethis._integrations.file.yaml.io_ import YAMLFileManager
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 
 if TYPE_CHECKING:

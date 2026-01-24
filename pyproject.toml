@@ -198,7 +198,7 @@ environment.python-platform = "all"
 rules.type-assertion-failure = "ignore"
 
 [[tool.ty.overrides]]
-include = [ "src/usethis/_integrations/file/**" ]
+include = [ "src/usethis/_file/**" ]
 rules.invalid-argument-type = "ignore"
 rules.invalid-return-type = "ignore"
 rules.invalid-assignment = "ignore"

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from usethis._console import tick_print
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import ensure_pyproject_toml
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._types.status import DevelopmentStatusEnum
 
 

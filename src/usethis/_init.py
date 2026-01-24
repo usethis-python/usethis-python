@@ -2,15 +2,15 @@ import re
 
 from typing_extensions import assert_never
 
-from usethis._config import usethis_config
-from usethis._console import tick_print
-from usethis._deps import get_project_deps
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.init import (
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.init import (
     ensure_pyproject_toml_via_uv,
     opinionated_uv_init,
 )
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._config import usethis_config
+from usethis._console import tick_print
+from usethis._deps import get_project_deps
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.name import get_project_name
 from usethis._types.backend import BackendEnum
 

@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.call import call_uv_subprocess
+from usethis._backend.uv.lockfile import ensure_uv_lock
 from usethis._config import usethis_config
 from usethis._console import info_print, instruct_print, tick_print
+from usethis._detect.ci.bitbucket import is_bitbucket_used
+from usethis._file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._init import ensure_dep_declaration_file, write_simple_requirements_txt
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.call import call_uv_subprocess
-from usethis._integrations.backend.uv.lockfile import ensure_uv_lock
-from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
-from usethis._integrations.file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._integrations.mkdocs.core import add_docs_dir
 from usethis._integrations.pre_commit.core import (
     install_pre_commit_hooks,
@@ -67,10 +67,8 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
         ensure_dep_declaration_file()
 
         tool.add_dev_deps()
-        if not PreCommitTool().is_used():
-            tool.update_bitbucket_steps()
-        else:
-            tool.add_pre_commit_config()
+        tool.update_bitbucket_steps()
+        tool.add_pre_commit_config()
 
         tool.add_configs()
         tool.print_how_to_use()
@@ -112,10 +110,8 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
         ensure_dep_declaration_file()
 
         tool.add_dev_deps()
-        if PreCommitTool().is_used():
-            tool.add_pre_commit_config()
-        else:
-            tool.update_bitbucket_steps()
+        tool.update_bitbucket_steps()
+        tool.add_pre_commit_config()
 
         tool.add_configs()
         tool.print_how_to_use()
@@ -143,10 +139,8 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
         tool.add_configs()
         if RuffTool().is_used():
             RuffTool().apply_rule_config(rule_config)
-        if PreCommitTool().is_used():
-            tool.add_pre_commit_config()
-        else:
-            tool.update_bitbucket_steps()
+        tool.update_bitbucket_steps()
+        tool.add_pre_commit_config()
 
         tool.print_how_to_use()
     else:
@@ -251,7 +245,7 @@ def _add_bitbucket_linter_steps_to_default() -> None:
         tools: list[Tool] = [PyprojectFmtTool(), DeptryTool(), RuffTool()]
         for tool in tools:
             if tool.is_used():
-                tool.update_bitbucket_steps()
+                tool._unconditional_update_bitbucket_steps()
 
 
 def _remove_bitbucket_linter_steps_from_default() -> None:
@@ -273,10 +267,8 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
         ensure_dep_declaration_file()
 
         tool.add_dev_deps()
-        if not PreCommitTool().is_used():
-            tool.update_bitbucket_steps()
-        else:
-            tool.add_pre_commit_config()
+        tool.update_bitbucket_steps()
+        tool.add_pre_commit_config()
 
         tool.add_configs()
         tool.print_how_to_use()
@@ -480,10 +472,8 @@ def use_ruff(
 
         if linter:
             tool.apply_rule_config(rule_config)
-        if PreCommitTool().is_used():
-            tool.add_pre_commit_config()
-        else:
-            tool.update_bitbucket_steps()
+        tool.update_bitbucket_steps()
+        tool.add_pre_commit_config()
 
         tool.print_how_to_use()
     else:

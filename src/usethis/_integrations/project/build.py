@@ -1,4 +1,4 @@
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 
 
 def has_pyproject_toml_declared_build_system() -> bool:

@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
 from usethis._config import usethis_config
 from usethis._console import how_print
-from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._tool.base import Tool
@@ -15,7 +15,7 @@ from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
-    from usethis._integrations.backend.uv.deps import (
+    from usethis._backend.uv.deps import (
         Dependency,
     )
 

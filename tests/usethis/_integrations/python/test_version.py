@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from usethis._integrations.python.version import (
+from usethis._python.version import (
     PythonVersion,
     PythonVersionParseError,
 )

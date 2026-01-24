@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.call import call_uv_subprocess
+from usethis._backend.uv.detect import is_uv_used
+from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._config import usethis_config
 from usethis._console import info_print, instruct_print, tick_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.call import call_uv_subprocess
-from usethis._integrations.backend.uv.errors import UVSubprocessFailedError
-from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._types.backend import BackendEnum
 

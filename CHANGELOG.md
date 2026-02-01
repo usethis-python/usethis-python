@@ -18,7 +18,7 @@
 
 ### 📦 Packaging
 
-- As per the notes for 0.16.0, Version 0.18.13 of ruamel.yaml introduced a regression relating to indentation. The new versions 0.19.0 and 0.19.1 of ruamel.yaml is now also excluded as dependency versions until this is addressed in a future release.
+- As per the notes for 0.16.0, Version 0.18.13 of ruamel.yaml introduced a regression relating to indentation. The new versions 0.19.0 and 0.19.1 of ruamel.yaml are now also excluded as dependency versions until this is addressed in a future release.
 
 ### 🔧 Internal Changes
 

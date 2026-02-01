@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.18.1
+
+### 🐞 Bug Fixes
+
+- `usethis show` commands will no longer hard-wrap output, which introduced incorrect outputs, to `usethis show sonarqube` for example.
+
+### 🦾 Robustness
+
+- Fallback icons (e.g. `√`, `□`, `i`, `×`, `!`) for message icons (`✔`, `☐`, `ℹ`, `✗`, `⚠`) are now used for terminals which don't support unicode.
+
+- Identical warnings will now never display twice for the same command.
+
+- When a backend is not being used, the inferred version of Python based on the current interpreter is now compared with the `requires-python` bounds from `pyproject.toml`. If there is a mismatch, a warning is now emitted.
+
+- The `tomli` dependency on `codespell` is only declared as a dependency for Python versions 3.10 and below, since for versions 3.11 onwards, `codespell` uses `tomlib` from the standard library. This is based on the `requires-python` bounds from `pyproject.toml` if available, otherwise by the current interpreter.
+
+### 📦 Packaging
+
+- As per the notes for 0.16.0, Version 0.18.13 of ruamel.yaml introduced a regression relating to indentation. The new versions 0.19.0 and 0.19.1 of ruamel.yaml is now also excluded as dependency versions until this is addressed in a future release.
+
+### 🔧 Internal Changes
+
+- Rule management logic is now abstracted into the `Tool` class, reducing duplication between the logic used for deptry and Ruff.
+
+- Import Linter contracts for development have been moved from `pyproject.toml` to `.importlinter` for tidiness.
+
 ## 0.18.0
 
 ### 💥 Changes

@@ -14,7 +14,7 @@
 
 - When a backend is not being used, the inferred version of Python based on the current interpreter is now compared with the `requires-python` bounds from `pyproject.toml`. If there is a mismatch, a warning is now emitted.
 
-- The `tomli` dependency on `codespell` is only declared as a dependency for Python versions 3.10 and below, since for versions 3.11 onwards, `codespell` uses `tomlib` from the standard library. This is based on the `requires-python` bounds from `pyproject.toml` if available, otherwise by the current interpreter.
+- The `tomli` dependency on `codespell` is only declared as a dependency for Python versions 3.10 and below, since for versions 3.11 onwards, `codespell` uses `tomllib` from the standard library. This is based on the `requires-python` bounds from `pyproject.toml` if available, otherwise by the current interpreter.
 
 ### 📦 Packaging
 

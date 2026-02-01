@@ -29,6 +29,17 @@ class TestPlainPrint:
         out, _ = capfd.readouterr()
         assert out == "Hello\n"
 
+    def test_no_line_wrapping(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Arrange
+        long_msg = "A" * 100
+
+        # Act
+        plain_print(long_msg)
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == f"{long_msg}\n"
+
 
 class TestTablePrint:
     def test_out(self, capfd: pytest.CaptureFixture[str]) -> None:

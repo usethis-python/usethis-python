@@ -32,7 +32,7 @@ def plain_print(msg: str | Exception) -> None:
         or usethis_config.alert_only
         or usethis_config.instruct_only
     ):
-        console.print(msg)
+        Console(force_terminal=False, soft_wrap=True).print(msg)
 
 
 def table_print(table: Table) -> None:

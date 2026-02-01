@@ -4,7 +4,7 @@
 
 ### 🐞 Bug Fixes
 
-- `usethis show` commands will no longer hard-wrap output, which introduced incorrect outputs, to `usethis show sonarqube` for example.
+- `usethis show` commands will no longer hard-wrap outputs, which gave invalid results in some cases, e.g. when running `usethis show sonarqube` with long `sonar.projectKey` fields.
 
 ### 🦾 Robustness
 

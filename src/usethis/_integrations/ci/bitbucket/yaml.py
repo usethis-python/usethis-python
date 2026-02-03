@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 
+from usethis._file.yaml.io_ import YAMLFileManager
+from usethis._file.yaml.update import update_ruamel_yaml_map
 from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.errors import BitbucketPipelinesYAMLSchemaError
-from usethis._integrations.file.yaml.io_ import YAMLFileManager
-from usethis._integrations.file.yaml.update import update_ruamel_yaml_map
 from usethis._integrations.pydantic.dump import fancy_model_dump
 
 if TYPE_CHECKING:

@@ -6,8 +6,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-import usethis._integrations.backend.dispatch
-import usethis._integrations.python.version
+import usethis._backend.dispatch
+import usethis._python.version
+from usethis._backend.uv.call import call_uv_subprocess
+from usethis._backend.uv.link_mode import ensure_symlink_mode
+from usethis._backend.uv.toml import UVTOMLManager
 from usethis._config import usethis_config
 from usethis._config_file import RuffTOMLManager, files_manager
 from usethis._core.ci import use_ci_bitbucket
@@ -26,13 +29,10 @@ from usethis._core.tool import (
     use_tool,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
-from usethis._integrations.backend.uv.call import call_uv_subprocess
-from usethis._integrations.backend.uv.link_mode import ensure_symlink_mode
-from usethis._integrations.backend.uv.toml import UVTOMLManager
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
-from usethis._integrations.python.version import PythonVersion
+from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.pre_commit import _SYNC_WITH_UV_VERSION
@@ -2906,7 +2906,7 @@ def test_foo():
 
                 # Set the Python version to 3.10
                 monkeypatch.setattr(
-                    usethis._integrations.python.version,
+                    usethis._python.version,
                     "_get_python_version",
                     lambda: "3.10.0",
                 )
@@ -3118,7 +3118,7 @@ pipelines:
             ):
                 # Set the Python version to 3.10
                 monkeypatch.setattr(
-                    usethis._integrations.python.version,
+                    usethis._python.version,
                     "_get_python_version",
                     lambda: "3.10.0",
                 )
@@ -3355,7 +3355,7 @@ project.dependencies = [ "ruff", "typer-slim[standard]" ]
 """)
 
             monkeypatch.setattr(  # Do this rather than set Backend.none to test the auto behaviour messages
-                usethis._integrations.backend.dispatch,
+                usethis._backend.dispatch,
                 "is_uv_available",
                 lambda *_, **__: False,
             )

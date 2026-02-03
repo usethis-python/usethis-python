@@ -3,17 +3,17 @@ from typing import Any
 
 import pytest
 
-import usethis._integrations.backend.uv.call
+import usethis._backend.uv.call
+from usethis._backend.uv.errors import UVInitError, UVSubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
+from usethis._file.pyproject_toml.errors import PyprojectTOMLInitError
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import (
     ensure_pyproject_toml,
     project_init,
     write_simple_requirements_txt,
 )
-from usethis._integrations.backend.uv.errors import UVInitError, UVSubprocessFailedError
-from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLInitError
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 
@@ -41,7 +41,7 @@ class TestProjectInit:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(
-            usethis._integrations.backend.uv.call,
+            usethis._backend.uv.call,
             "call_uv_subprocess",
             mock_call_uv_subprocess,
         )
@@ -184,7 +184,7 @@ class TestEnsurePyprojectTOML:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(
-            usethis._integrations.backend.uv.call,
+            usethis._backend.uv.call,
             "call_uv_subprocess",
             mock_call_uv_subprocess,
         )

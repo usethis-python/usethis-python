@@ -5,8 +5,8 @@ import pytest
 import requests
 from requests.exceptions import RequestException
 
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.file.pyproject_toml.requires_python import (
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.requires_python import (
     get_requires_python,
 )
 from usethis._integrations.pre_commit import schema

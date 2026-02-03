@@ -14,10 +14,13 @@ layers =
     _core
     _tool
     _init
+    _detect
     _deps
     _config_file
     _integrations
-    _io | _subprocess | _console
+    _backend
+    _file
+    _io | _subprocess | _console | _python
     _config
     _types | errors
     _pipeweld
@@ -65,10 +68,10 @@ containers =
     usethis._tool.impl
 layers =
     pyproject_toml
-    codespell | deptry | import_linter | pyproject_fmt | requirements_txt
+    codespell | deptry | import_linter | mkdocs | pyproject_fmt | requirements_txt
     ruff
     pytest : coverage_py
-    pre_commit | mkdocs
+    pre_commit
 exhaustive = true
 
 [importlinter:contract:integrations]
@@ -79,17 +82,15 @@ containers =
 layers =
     ci | pre_commit
     environ
-    backend | mkdocs | pytest | pydantic | sonarqube
-    project
-    file
-    python
+    mkdocs | pytest | pydantic | sonarqube
+    project | readme
 exhaustive = true
 
-[importlinter:contract:integrations_file]
-name = usethis._integrations.file
+[importlinter:contract:_file]
+name = usethis._file
 type = layers
 containers =
-    usethis._integrations.file
+    usethis._file
 layers =
     pyproject_toml | setup_cfg
     ini | toml | yaml

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
+from usethis._detect.ci.bitbucket import is_bitbucket_used
 from usethis._test import change_cwd
 
 

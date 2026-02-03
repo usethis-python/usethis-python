@@ -5,17 +5,17 @@ from packaging.requirements import Requirement
 from pydantic import TypeAdapter
 from typing_extensions import assert_never
 
-from usethis._config import usethis_config
-from usethis._console import instruct_print, tick_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.call import add_default_groups_via_uv
-from usethis._integrations.backend.uv.deps import (
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.call import add_default_groups_via_uv
+from usethis._backend.uv.deps import (
     add_dep_to_group_via_uv,
     get_default_groups_via_uv,
     remove_dep_from_group_via_uv,
 )
-from usethis._integrations.backend.uv.errors import UVDepGroupError
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._backend.uv.errors import UVDepGroupError
+from usethis._config import usethis_config
+from usethis._console import instruct_print, tick_print
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 from usethis.errors import DepGroupError

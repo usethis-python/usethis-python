@@ -2,10 +2,9 @@ from pathlib import Path
 
 import pytest
 
+from usethis._backend.uv.python import uv_python_pin
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import ensure_pyproject_toml
-from usethis._integrations.backend.uv.python import uv_python_pin
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.python.version import PythonVersion
 from usethis._integrations.sonarqube.config import (
     _validate_project_key,
     get_sonar_project_properties,
@@ -15,6 +14,7 @@ from usethis._integrations.sonarqube.errors import (
     InvalidSonarQubeProjectKeyError,
     MissingProjectKeyError,
 )
+from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 
 

@@ -4,7 +4,7 @@ import pytest
 
 from usethis._config_file import files_manager
 from usethis._integrations.environ.python import get_supported_minor_python_versions
-from usethis._integrations.python.version import PythonVersion
+from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 

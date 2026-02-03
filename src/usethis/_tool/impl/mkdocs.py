@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.detect import is_uv_used
 from usethis._config_file import MkDocsYMLManager
 from usethis._console import how_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.used import is_uv_used
 from usethis._integrations.project.name import get_project_name
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec

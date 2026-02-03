@@ -1,6 +1,8 @@
 from pathlib import Path
 
 from usethis._config_file import files_manager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.yaml.io_ import edit_yaml
 from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
 from usethis._integrations.ci.bitbucket.config import (
@@ -11,8 +13,6 @@ from usethis._integrations.ci.bitbucket.steps import (
     add_bitbucket_step_in_default,
 )
 from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.file.yaml.io_ import edit_yaml
 from usethis._test import change_cwd
 
 

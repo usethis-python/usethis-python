@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 
 from usethis._core.author import add_author
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.file.toml.errors import (
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.toml.errors import (
     TOMLValueInvalidError,
     TOMLValueMissingError,
 )

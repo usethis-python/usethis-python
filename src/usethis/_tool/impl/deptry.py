@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.detect import is_uv_used
 from usethis._console import how_print, info_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.used import is_uv_used
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.project.layout import get_source_dir_str

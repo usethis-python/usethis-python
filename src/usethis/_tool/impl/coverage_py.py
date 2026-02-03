@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import (
     DotCoverageRCManager,
@@ -12,10 +14,8 @@ from usethis._config_file import (
     ToxINIManager,
 )
 from usethis._console import how_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.used import is_uv_used
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec

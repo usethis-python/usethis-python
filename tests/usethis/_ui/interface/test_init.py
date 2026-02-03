@@ -5,7 +5,7 @@ import pytest
 from usethis._config import usethis_config
 from usethis._integrations.pre_commit.hooks import get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
-from usethis._integrations.python.version import PythonVersion
+from usethis._python.version import PythonVersion
 from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app
 

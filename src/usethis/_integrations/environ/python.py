@@ -2,18 +2,18 @@ from __future__ import annotations
 
 from typing_extensions import assert_never
 
-from usethis._console import warn_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.python import (
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.python import (
     get_supported_uv_minor_python_versions,
 )
-from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
-from usethis._integrations.file.pyproject_toml.requires_python import (
+from usethis._console import warn_print
+from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
+from usethis._file.pyproject_toml.requires_python import (
     MissingRequiresPythonError,
     get_required_minor_python_versions,
     get_requires_python,
 )
-from usethis._integrations.python.version import PythonVersion
+from usethis._python.version import PythonVersion
 from usethis._types.backend import BackendEnum
 
 

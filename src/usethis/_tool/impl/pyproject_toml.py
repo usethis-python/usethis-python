@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from usethis._console import how_print, info_print, instruct_print
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool.base import Tool
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._tool.impl.coverage_py import CoveragePyTool
@@ -18,7 +18,7 @@ from usethis._tool.impl.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.ruff import RuffTool
 
 if TYPE_CHECKING:
-    from usethis._integrations.backend.uv.deps import (
+    from usethis._backend.uv.deps import (
         Dependency,
     )
 

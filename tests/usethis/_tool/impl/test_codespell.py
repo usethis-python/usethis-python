@@ -8,7 +8,7 @@ from usethis._config_file import files_manager
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._integrations.pre_commit import schema
-from usethis._integrations.python.version import PythonVersion
+from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._types.backend import BackendEnum

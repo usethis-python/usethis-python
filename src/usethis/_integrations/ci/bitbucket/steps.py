@@ -8,9 +8,9 @@ from ruamel.yaml.scalarstring import LiteralScalarString
 from typing_extensions import assert_never
 
 import usethis._pipeweld.func
+from usethis._backend.dispatch import get_backend
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
-from usethis._integrations.backend.dispatch import get_backend
 from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor,
@@ -36,8 +36,8 @@ from usethis._types.backend import BackendEnum
 if TYPE_CHECKING:
     from ruamel.yaml.anchor import Anchor
 
+    from usethis._file.yaml.io_ import YAMLDocument
     from usethis._integrations.ci.bitbucket.anchor import ScriptItemName
-    from usethis._integrations.file.yaml.io_ import YAMLDocument
 
 
 _CACHE_LOOKUP = {

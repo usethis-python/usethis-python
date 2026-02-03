@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-import usethis._integrations.python.version
+import usethis._python.version
 from usethis._config import usethis_config
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app as main_app
 from usethis._ui.interface.ci import app
@@ -87,7 +87,7 @@ class TestBitbucket:
         """
 
         monkeypatch.setattr(
-            usethis._integrations.python.version,
+            usethis._python.version,
             "_get_python_version",
             lambda: "3.10.0",
         )
@@ -165,7 +165,7 @@ pipelines:
         """Test that --no-matrix-python flag creates single test step via CLI."""
         # Arrange
         monkeypatch.setattr(
-            usethis._integrations.python.version,
+            usethis._python.version,
             "_get_python_version",
             lambda: "3.10.0",
         )

@@ -615,6 +615,17 @@ test = []
         assert not err
         assert out == "☐ Add the test dependency 'pytest'.\n"
 
+    def test_no_pyproject_toml(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
+            # Assert
+            assert get_deps_from_group("test") == [Dependency(name="pytest")]
+
+        content = (tmp_path / "pyproject.toml").read_text()
+        assert "[dependency-groups]" in content
+
 
 class TestRemoveDepsFromGroup:
     @pytest.mark.usefixtures("_vary_network_conn")

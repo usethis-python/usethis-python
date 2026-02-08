@@ -27,8 +27,6 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         msg = f"The '{usethis_config.backend.value}' backend is enabled, but a uv subprocess was invoked."
         raise ForbiddenBackendError(msg)
 
-    is_pyproject_toml = (usethis_config.cpd() / "pyproject.toml").exists()
-
     if change_toml and args[0] in {
         "lock",
         "add",
@@ -40,14 +38,8 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
     }:
         ensure_symlink_mode()
 
-    if is_pyproject_toml and change_toml:
-        if PyprojectTOMLManager().is_locked():
-            ensure_pyproject_validity()
-            PyprojectTOMLManager().write_file()
-            PyprojectTOMLManager()._content = None
-        else:
-            with PyprojectTOMLManager():
-                ensure_pyproject_validity()
+    if change_toml:
+        _prepare_pyproject_write()
 
     if usethis_config.frozen and args[0] in {
         # Note, not "lock", for which the --frozen flags has quite a different effect
@@ -81,6 +73,22 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         PyprojectTOMLManager().read_file()
 
     return output
+
+
+def _prepare_pyproject_write() -> None:
+    is_pyproject_toml = (usethis_config.cpd() / "pyproject.toml").exists()
+    is_locked = PyprojectTOMLManager().is_locked()
+
+    if is_pyproject_toml and is_locked:
+        ensure_pyproject_validity()
+        PyprojectTOMLManager().write_file()
+        PyprojectTOMLManager()._content = None  # Basically a cache clear
+    elif not is_pyproject_toml and is_locked:
+        # Similarly; cache clear
+        PyprojectTOMLManager()._content = None
+    elif is_pyproject_toml:
+        with PyprojectTOMLManager():
+            ensure_pyproject_validity()
 
 
 def add_default_groups_via_uv(groups: list[str]) -> None:

@@ -222,7 +222,7 @@ pipelines:
                 usethis._tool.impl.pytest, "get_backend", lambda: BackendEnum.none
             )
             monkeypatch.setattr(
-                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                "usethis._python.version.PythonVersion.from_interpreter",
                 lambda: PythonVersion(major="3", minor="10", patch=None),
             )
             (tmp_path / "bitbucket-pipelines.yml").touch()

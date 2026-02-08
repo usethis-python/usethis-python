@@ -610,8 +610,11 @@ repos:
             # Arrange
             tool = MyTool()
 
-            # Act
             with change_cwd(tmp_path), files_manager():
+                # Ensure pre-commit is considered used
+                add_deps_to_group([Dependency(name="pre-commit")], "dev")
+
+                # Act
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -622,7 +625,7 @@ repos:
             tool = DefaultTool()
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -634,8 +637,12 @@ repos:
             # Arrange
             tool = MyTool()
 
-            # Act
             with change_cwd(tmp_path), files_manager():
+                # Ensure pre-commit is considered used
+                add_deps_to_group([Dependency(name="pre-commit")], "dev")
+                capfd.readouterr()
+
+                # Act
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -756,8 +763,11 @@ repos:
             # Arrange
             th_tool = TwoHooksTool()
 
+            # Ensure pre-commit is considered used
+            (tmp_path / ".pre-commit-config.yaml").touch()
+
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 # Currently, multiple hooks are not supported.
                 # If we do ever support it, this with-raises block and
                 # test skip can be removed. Instead, we will need to write this test.

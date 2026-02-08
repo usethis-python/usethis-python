@@ -539,7 +539,7 @@ repos:
             nrc_tool = NoRepoConfigsTool()
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), files_manager():
                 nrc_tool.add_pre_commit_config()
 
                 # Assert
@@ -582,6 +582,10 @@ repos:
                         ],
                         inform_how_to_use_on_migrate=False,
                     )
+
+            # To indicate that we are, in fact, using pre-commit (otherwise the
+            # add-tool method is no-op
+            (uv_init_dir / ".pre-commit-config.yaml").touch()
 
             mrt_tool = MultiRepoTool()
 

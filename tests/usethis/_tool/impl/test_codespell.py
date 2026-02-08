@@ -253,7 +253,7 @@ requires-python = ">=3.10,<3.13"
         ):
             # Arrange - no pyproject.toml file, using interpreter version
             monkeypatch.setattr(
-                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                "usethis._python.version.PythonVersion.from_interpreter",
                 lambda: PythonVersion(major="3", minor="10", patch=None),
             )
             # Act
@@ -269,7 +269,7 @@ requires-python = ">=3.10,<3.13"
         ):
             # Arrange - no pyproject.toml file, using interpreter version
             monkeypatch.setattr(
-                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                "usethis._python.version.PythonVersion.from_interpreter",
                 lambda: PythonVersion(major="3", minor="11", patch=None),
             )
             # Act

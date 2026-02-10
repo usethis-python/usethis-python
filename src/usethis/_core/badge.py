@@ -8,12 +8,12 @@ from pydantic import BaseModel
 
 from usethis._config import usethis_config
 from usethis._console import plain_print, tick_print, warn_print
-from usethis._core.readme import (
+from usethis._core.readme import add_readme
+from usethis._integrations.project.name import get_project_name
+from usethis._integrations.readme.path import (
     NonMarkdownREADMEError,
-    add_readme,
     get_markdown_readme_path,
 )
-from usethis._integrations.project.name import get_project_name
 
 if TYPE_CHECKING:
     from typing_extensions import Self

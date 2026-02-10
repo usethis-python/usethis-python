@@ -8,7 +8,7 @@ from usethis._config_file import files_manager
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._integrations.pre_commit import schema
-from usethis._integrations.python.version import PythonVersion
+from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._types.backend import BackendEnum
@@ -253,7 +253,7 @@ requires-python = ">=3.10,<3.13"
         ):
             # Arrange - no pyproject.toml file, using interpreter version
             monkeypatch.setattr(
-                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                "usethis._python.version.PythonVersion.from_interpreter",
                 lambda: PythonVersion(major="3", minor="10", patch=None),
             )
             # Act
@@ -269,7 +269,7 @@ requires-python = ">=3.10,<3.13"
         ):
             # Arrange - no pyproject.toml file, using interpreter version
             monkeypatch.setattr(
-                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                "usethis._python.version.PythonVersion.from_interpreter",
                 lambda: PythonVersion(major="3", minor="11", patch=None),
             )
             # Act

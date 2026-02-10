@@ -5,14 +5,14 @@ import re
 from pydantic import TypeAdapter
 
 from usethis._config import usethis_config
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.python.version import PythonVersion, PythonVersionParseError
 from usethis._integrations.sonarqube.errors import (
     CoverageReportConfigNotFoundError,
     InvalidSonarQubeProjectKeyError,
     MissingProjectKeyError,
 )
+from usethis._python.version import PythonVersion, PythonVersionParseError
 
 
 def get_sonar_project_properties() -> str:

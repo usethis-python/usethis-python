@@ -3,7 +3,12 @@ from pathlib import Path
 import pytest
 from packaging.requirements import InvalidRequirement
 
-import usethis._integrations.backend.uv.deps
+import usethis._backend.uv.deps
+from usethis._backend.uv.errors import (
+    UVDepGroupError,
+    UVSubprocessFailedError,
+)
+from usethis._backend.uv.toml import UVTOMLManager
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._deps import (
@@ -18,12 +23,7 @@ from usethis._deps import (
     register_default_group,
     remove_deps_from_group,
 )
-from usethis._integrations.backend.uv.errors import (
-    UVDepGroupError,
-    UVSubprocessFailedError,
-)
-from usethis._integrations.backend.uv.toml import UVTOMLManager
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -577,7 +577,7 @@ class TestAddDepsToGroup:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(
-            usethis._integrations.backend.uv.deps,
+            usethis._backend.uv.deps,
             "call_uv_subprocess",
             mock_call_uv_subprocess,
         )
@@ -614,6 +614,17 @@ test = []
         out, err = capfd.readouterr()
         assert not err
         assert out == "☐ Add the test dependency 'pytest'.\n"
+
+    def test_no_pyproject_toml(self, tmp_path: Path):
+        # Act
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
+            # Assert
+            assert get_deps_from_group("test") == [Dependency(name="pytest")]
+
+        content = (tmp_path / "pyproject.toml").read_text()
+        assert "[dependency-groups]" in content
 
 
 class TestRemoveDepsFromGroup:
@@ -752,7 +763,7 @@ class TestRemoveDepsFromGroup:
                 raise UVSubprocessFailedError
 
             monkeypatch.setattr(
-                usethis._integrations.backend.uv.deps,
+                usethis._backend.uv.deps,
                 "call_uv_subprocess",
                 mock_call_uv_subprocess,
             )

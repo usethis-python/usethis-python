@@ -6,9 +6,9 @@ import pytest
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._core.tool import use_ruff
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema
 from usethis._test import change_cwd
 from usethis._tool.impl.ruff import RuffTool

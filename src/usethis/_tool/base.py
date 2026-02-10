@@ -5,10 +5,13 @@ from typing import TYPE_CHECKING, Literal, Protocol
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
 from usethis._config import usethis_config
 from usethis._console import tick_print, warn_print
 from usethis._deps import add_deps_to_group, is_dep_in_any_group, remove_deps_from_group
-from usethis._integrations.backend.dispatch import get_backend
+from usethis._detect.ci.bitbucket import is_bitbucket_used
+from usethis._detect.pre_commit import is_pre_commit_used
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -19,8 +22,6 @@ from usethis._integrations.ci.bitbucket.steps import (
     get_steps_in_default,
     remove_bitbucket_step_from_default,
 )
-from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import (
     add_repo,
     get_hook_ids,
@@ -40,7 +41,7 @@ from usethis.errors import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from usethis._integrations.backend.uv.deps import Dependency
+    from usethis._backend.uv.deps import Dependency
     from usethis._integrations.pre_commit import schema as pre_commit_schema
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ConfigItem, ResolutionT
@@ -248,7 +249,14 @@ class Tool(Protocol):
         return False
 
     def add_pre_commit_config(self) -> None:
-        """Add the tool's pre-commit configuration."""
+        """Add the tool's pre-commit configuration.
+
+        Only adds configuration if pre-commit is being used in the project.
+        """
+        # Only add pre-commit configuration if pre-commit is being used
+        if not is_pre_commit_used():
+            return
+
         repos = self.get_pre_commit_repos()
 
         if not repos:
@@ -647,8 +655,8 @@ class Tool(Protocol):
     def get_managed_bitbucket_step_names(self) -> list[str]:
         """These are the names of the Bitbucket steps that are managed by this tool.
 
-        They should be removed if they are not currently active according to `get_bitbucket_steps`.
-        They should also be removed if the tool is removed.
+        They should be removed if they are not currently active according to
+        `get_bitbucket_steps`. They should also be removed if the tool is removed.
         """
         return [
             step.name for step in self.get_bitbucket_steps() if step.name is not None
@@ -663,12 +671,23 @@ class Tool(Protocol):
     def update_bitbucket_steps(self, *, matrix_python: bool = True) -> None:
         """Add Bitbucket steps associated with this tool, and remove outdated ones.
 
-        Only runs if Bitbucket is used in the project.
+        Only runs if Bitbucket is used in the project. If pre-commit is being used,
+        this method short-circuits since the tool will run via pre-commit instead.
 
         Args:
             matrix_python: Whether to use a Python version matrix. When False,
-                only the current development version is used.
+                           only the current development version is used.
         """
+        # If pre-commit is being used and this is not the PreCommitTool itself,
+        # don't add Bitbucket steps (the tool will run via pre-commit instead)
+        if is_pre_commit_used():
+            return
+
+        self._unconditional_update_bitbucket_steps(matrix_python=matrix_python)
+
+    def _unconditional_update_bitbucket_steps(
+        self, *, matrix_python: bool = True
+    ) -> None:
         if not is_bitbucket_used() or not self.is_used():
             return
 
@@ -679,6 +698,13 @@ class Tool(Protocol):
 
         # Remove any old steps that are not active managed by this tool
         managed_names = self.get_managed_bitbucket_step_names()
+
+        # Early return if there are no steps to add and no managed steps to clean up
+        # This avoids unnecessarily reading the Bitbucket YAML file (which would
+        # initialize an empty file with {})
+        if not steps and not managed_names:
+            return
+
         for step in get_steps_in_default():
             if step.name in managed_names and not any(
                 bitbucket_steps_are_equivalent(step, step_) for step_ in steps

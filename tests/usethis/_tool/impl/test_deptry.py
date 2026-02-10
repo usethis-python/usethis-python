@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config_file import files_manager
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema
 from usethis._test import change_cwd
 from usethis._tool.config import ConfigEntry, ConfigItem

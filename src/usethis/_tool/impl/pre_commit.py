@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
-from usethis._config import usethis_config
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.detect import is_uv_used
 from usethis._console import how_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.used import is_uv_used
+from usethis._detect.pre_commit import is_pre_commit_used
 from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
@@ -20,7 +20,7 @@ from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._integrations.python.version import PythonVersion
+    from usethis._python.version import PythonVersion
 
 _SYNC_WITH_UV_VERSION = "v0.5.0"  # Manually bump this version when necessary
 
@@ -51,9 +51,7 @@ class PreCommitTool(Tool):
             assert_never(backend)
 
     def is_used(self) -> bool:
-        if usethis_config.disable_pre_commit:
-            return False
-        return super().is_used()
+        return is_pre_commit_used()
 
     def print_how_to_use(self) -> None:
         backend = get_backend()
@@ -108,6 +106,17 @@ class PreCommitTool(Tool):
             ]
         else:
             assert_never(backend)
+
+    def update_bitbucket_steps(self, *, matrix_python: bool = True) -> None:
+        """Add Bitbucket steps associated with pre-commit, and remove outdated ones.
+
+        Only runs if Bitbucket is used in the project.
+
+        Args:
+            matrix_python: Whether to use a Python version matrix. When False,
+                           only the current development version is used.
+        """
+        self._unconditional_update_bitbucket_steps(matrix_python=matrix_python)
 
     def migrate_config_to_pre_commit(self) -> None:
         pass

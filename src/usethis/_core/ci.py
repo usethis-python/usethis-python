@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from usethis._console import how_print, info_print
 from usethis._integrations.ci.bitbucket.config import (
     add_bitbucket_pipelines_config,
     remove_bitbucket_pipelines_config,
 )
+from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._tool.impl.deptry import DeptryTool
 from usethis._tool.impl.import_linter import ImportLinterTool
@@ -15,13 +14,10 @@ from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
 from usethis._tool.impl.pytest import PytestTool
 from usethis._tool.impl.ruff import RuffTool
 
-if TYPE_CHECKING:
-    from usethis._tool.base import Tool
-
-# These are tools would run via pre-commit if available
-_CI_QA_TOOLS: list[type[Tool]] = [  # Not including pytest and pre-commit
-    # This order should match the canonical order in the function which adds
-    # steps
+# Ordered list of QA tools that should run in CI (matches canonical step order)
+# These tools run via pre-commit if available, otherwise directly in CI
+_CI_QA_TOOL_TYPES = [
+    PreCommitTool,
     PyprojectFmtTool,
     RuffTool,
     DeptryTool,
@@ -38,28 +34,23 @@ def use_ci_bitbucket(
         return
 
     if not remove:
-        use_pre_commit = PreCommitTool().is_used()
-        use_any_tool = (
-            use_pre_commit or PytestTool().is_used() or _using_any_ci_qa_tools()
-        )
+        use_any_tool = any(tool.is_used() for tool in ALL_TOOLS)
 
         add_bitbucket_pipelines_config(report_placeholder=not use_any_tool)
 
-        if use_pre_commit:
-            PreCommitTool().update_bitbucket_steps()
-        else:
-            for tool in _CI_QA_TOOLS:
-                tool().update_bitbucket_steps()
+        # Add steps for QA tools in canonical order
+        for tool_type in _CI_QA_TOOL_TYPES:
+            # Find the matching tool instance in ALL_TOOLS
+            for tool in ALL_TOOLS:
+                if isinstance(tool, tool_type):
+                    tool.update_bitbucket_steps()
+                    break
 
         PytestTool().update_bitbucket_steps(matrix_python=matrix_python)
 
         print_how_to_use_ci_bitbucket()
     else:
         remove_bitbucket_pipelines_config()
-
-
-def _using_any_ci_qa_tools():
-    return any(tool().is_used() for tool in _CI_QA_TOOLS)
 
 
 def print_how_to_use_ci_bitbucket() -> None:

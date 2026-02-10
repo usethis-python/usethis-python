@@ -7,8 +7,8 @@ import pytest
 from usethis._config_file import files_manager
 from usethis._console import how_print
 from usethis._deps import add_deps_to_group
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_ids
 from usethis._io import KeyValueFileManager
@@ -539,7 +539,7 @@ repos:
             nrc_tool = NoRepoConfigsTool()
 
             # Act
-            with change_cwd(uv_init_dir):
+            with change_cwd(uv_init_dir), files_manager():
                 nrc_tool.add_pre_commit_config()
 
                 # Assert
@@ -583,6 +583,10 @@ repos:
                         inform_how_to_use_on_migrate=False,
                     )
 
+            # To indicate that we are, in fact, using pre-commit (otherwise the
+            # add-tool method is no-op
+            (uv_init_dir / ".pre-commit-config.yaml").touch()
+
             mrt_tool = MultiRepoTool()
 
             # Act
@@ -606,8 +610,11 @@ repos:
             # Arrange
             tool = MyTool()
 
-            # Act
             with change_cwd(tmp_path), files_manager():
+                # Ensure pre-commit is considered used
+                add_deps_to_group([Dependency(name="pre-commit")], "dev")
+
+                # Act
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -618,7 +625,7 @@ repos:
             tool = DefaultTool()
 
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -630,8 +637,12 @@ repos:
             # Arrange
             tool = MyTool()
 
-            # Act
             with change_cwd(tmp_path), files_manager():
+                # Ensure pre-commit is considered used
+                add_deps_to_group([Dependency(name="pre-commit")], "dev")
+                capfd.readouterr()
+
+                # Act
                 tool.add_pre_commit_config()
 
                 # Assert
@@ -752,8 +763,11 @@ repos:
             # Arrange
             th_tool = TwoHooksTool()
 
+            # Ensure pre-commit is considered used
+            (tmp_path / ".pre-commit-config.yaml").touch()
+
             # Act
-            with change_cwd(tmp_path):
+            with change_cwd(tmp_path), files_manager():
                 # Currently, multiple hooks are not supported.
                 # If we do ever support it, this with-raises block and
                 # test skip can be removed. Instead, we will need to write this test.

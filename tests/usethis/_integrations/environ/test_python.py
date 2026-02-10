@@ -4,7 +4,7 @@ import pytest
 
 from usethis._config_file import files_manager
 from usethis._integrations.environ.python import get_supported_minor_python_versions
-from usethis._integrations.python.version import PythonVersion
+from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 
@@ -17,11 +17,11 @@ class TestGetSupportedMinorPythonVersions:
             # Arrange
 
             monkeypatch.setattr(
-                "usethis._integrations.environ.python.get_backend",
+                "usethis._backend.dispatch.get_backend",
                 lambda: BackendEnum.none,
             )
             monkeypatch.setattr(
-                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                "usethis._python.version.PythonVersion.from_interpreter",
                 lambda: PythonVersion(major="3", minor="10", patch=None),
             )
             (tmp_path / "pyproject.toml").write_text(
@@ -54,11 +54,11 @@ requires-python = ">=3.11,<3.13"
             # Arrange
 
             monkeypatch.setattr(
-                "usethis._integrations.environ.python.get_backend",
+                "usethis._backend.dispatch.get_backend",
                 lambda: BackendEnum.none,
             )
             monkeypatch.setattr(
-                "usethis._integrations.python.version.PythonVersion.from_interpreter",
+                "usethis._python.version.PythonVersion.from_interpreter",
                 lambda: PythonVersion(major="3", minor="10", patch=None),
             )
             (tmp_path / "pyproject.toml").write_text(

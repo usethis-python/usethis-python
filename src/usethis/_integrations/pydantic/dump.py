@@ -9,7 +9,7 @@ from pydantic import BaseModel, RootModel
 if TYPE_CHECKING:
     from typing import TypeAlias
 
-    from usethis._integrations.file.yaml.io_ import YAMLLiteral
+    from usethis._file.yaml.io_ import YAMLLiteral
 
     ModelLiteral: TypeAlias = bool | int | float | str
     ModelRepresentation: TypeAlias = (

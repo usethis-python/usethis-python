@@ -29,7 +29,9 @@ def test_skeleton_matches():
             and not underscore_parent_path.exists()
         ):
             msg = (
-                f"One of the following paths expected to exist by test suite structure:"
+                f"Since this test file exists:"
+                f"\n{test_py}"
+                f"One of the following paths is expected to exist:"
                 f"\n{std_path}"
                 f"\n{underscore_path}"
                 f"\n{std_parent_path}"

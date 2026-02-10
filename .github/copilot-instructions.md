@@ -252,6 +252,10 @@ Follow the guide in CONTRIBUTING.md:
 - Avoid suppressions unless absolutely necessary
 - Format: `# ruff: noqa: RULE1, RULE2` (not `# ruff noqa:`)
 
+## Reasoning Style
+
+Never use the word "Actually", say "I just realized" or any other meta-language. Instead, clearly state the insight immediately. Similarly, do not use ellipses, e.g. "Unless...". Don't say "Let me check." Be efficient, clear, and direct, not conversational.
+
 ## Trust These Instructions
 
 These instructions have been validated by running actual commands and inspecting the full codebase. Only search for additional information if:

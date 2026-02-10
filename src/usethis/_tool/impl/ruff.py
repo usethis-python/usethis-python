@@ -5,16 +5,16 @@ from typing import TYPE_CHECKING, Literal
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import how_print, tick_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.used import is_uv_used
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._tool.base import Tool
 from usethis._tool.config import (
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule, RuleConfig
 
-_RUFF_VERSION = "v0.14.10"  # Manually bump this version when necessary
+_RUFF_VERSION = "v0.15.0"  # Manually bump this version when necessary
 
 
 class RuffTool(Tool):

@@ -5,20 +5,20 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotCodespellRCManager
 from usethis._console import how_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.used import is_uv_used
-from usethis._integrations.file.pyproject_toml.errors import PyprojectTOMLNotFoundError
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.file.pyproject_toml.requires_python import (
+from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.requires_python import (
     MissingRequiresPythonError,
     get_required_minor_python_versions,
 )
-from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
+from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
-from usethis._integrations.python.version import PythonVersion
+from usethis._python.version import PythonVersion
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig

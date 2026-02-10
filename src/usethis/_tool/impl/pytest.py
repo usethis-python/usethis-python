@@ -6,23 +6,23 @@ from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotPytestINIManager, PytestINIManager, ToxINIManager
 from usethis._console import how_print, info_print, instruct_print
-from usethis._integrations.backend.dispatch import get_backend
-from usethis._integrations.backend.uv.used import is_uv_used
+from usethis._detect.ci.bitbucket import is_bitbucket_used
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
 from usethis._integrations.ci.bitbucket.steps import get_steps_in_default
-from usethis._integrations.ci.bitbucket.used import is_bitbucket_used
 from usethis._integrations.environ.python import get_supported_minor_python_versions
-from usethis._integrations.file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._integrations.python.version import PythonVersion
+from usethis._python.version import PythonVersion
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.rule import RuleConfig
@@ -285,6 +285,9 @@ class PytestTool(Tool):
 
         A bespoke function is needed here to ensure we inform the user about the need
         to manually add the dependencies if they are not using a backend.
+
+        Unlike other tools, pytest steps should always be added even when pre-commit
+        is used, because pytest is a test step, not a pre-commit hook.
         """
         # Same early exit as the wrapped super() function
         if not is_bitbucket_used() or not self.is_used():
@@ -292,7 +295,9 @@ class PytestTool(Tool):
 
         # But otherwise if not early exiting, we are going to add steps so we might
         # need to inform the user
-        super().update_bitbucket_steps(matrix_python=matrix_python)
+        # Call _unconditional_update_bitbucket_steps directly to bypass the
+        # pre-commit check in the base class
+        self._unconditional_update_bitbucket_steps(matrix_python=matrix_python)
 
         backend = get_backend()
 

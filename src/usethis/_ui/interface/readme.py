@@ -12,6 +12,7 @@ def readme(
     backend: BackendEnum = backend_opt,
     badges: bool = typer.Option(False, "--badges", help="Add relevant badges"),
 ) -> None:
+    from usethis._backend.uv.detect import is_uv_used
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.badge import (
@@ -22,7 +23,6 @@ def readme(
         get_uv_badge,
     )
     from usethis._core.readme import add_readme
-    from usethis._integrations.backend.uv.used import is_uv_used
     from usethis._tool.impl.pre_commit import PreCommitTool
     from usethis._tool.impl.ruff import RuffTool
     from usethis.errors import UsethisError

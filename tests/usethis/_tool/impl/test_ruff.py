@@ -441,3 +441,47 @@ version = "0.1.0"
             assert not err
             assert "Removing 'Run Ruff'" in out
             assert "Removing 'Run Ruff Formatter'" in out
+
+        def test_dont_remove_steps_when_tool_not_used(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            """When pre-commit is enabled but tool isn't used, don't remove steps."""
+            # Arrange - create Bitbucket steps manually (simulating legacy config)
+            # but DON'T create ruff.toml (tool is not actually used)
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[project]
+name = "example"
+version = "0.1.0"
+"""
+            )
+            (tmp_path / "bitbucket-pipelines.yml").write_text(
+                """\
+image: atlassian/default-image:3
+pipelines:
+    default:
+      - step:
+            name: Run Ruff
+            script:
+              - ruff check
+      - step:
+            name: Some Other Step
+            script:
+              - echo "hello"
+"""
+            )
+
+            # Act - enable pre-commit and run update_bitbucket_steps
+            # (tool is NOT used, so steps should NOT be removed)
+            (tmp_path / ".pre-commit-config.yaml").touch()
+            with change_cwd(tmp_path), files_manager():
+                RuffTool().update_bitbucket_steps()
+
+            # Assert - steps should NOT be removed because tool is not used
+            contents_after = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert "Run Ruff" in contents_after
+            assert "Some Other Step" in contents_after
+            out, err = capfd.readouterr()
+            assert not err
+            # Should not contain any removal messages
+            assert "Removing" not in out

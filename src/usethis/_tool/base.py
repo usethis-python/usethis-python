@@ -681,8 +681,10 @@ class Tool(Protocol):
         # If pre-commit is being used and this is not the PreCommitTool itself,
         # don't add Bitbucket steps (the tool will run via pre-commit instead)
         if is_pre_commit_used():
-            # Remove any stale Bitbucket steps before returning
-            if is_bitbucket_used():
+            # Remove any stale Bitbucket steps before returning, but only if the
+            # tool is actually used (to avoid removing steps for tools that were
+            # never configured in this project)
+            if is_bitbucket_used() and self.is_used():
                 self.remove_bitbucket_steps()
             return
 

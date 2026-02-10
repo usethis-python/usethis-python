@@ -6,7 +6,22 @@ from usethis._integrations.ci.bitbucket.config import (
     remove_bitbucket_pipelines_config,
 )
 from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.impl.codespell import CodespellTool
+from usethis._tool.impl.deptry import DeptryTool
+from usethis._tool.impl.import_linter import ImportLinterTool
+from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
 from usethis._tool.impl.pytest import PytestTool
+from usethis._tool.impl.ruff import RuffTool
+
+# Ordered list of QA tools that should run in CI (matches canonical step order)
+# These tools run via pre-commit if available, otherwise directly in CI
+_CI_QA_TOOL_TYPES = [
+    PyprojectFmtTool,
+    RuffTool,
+    DeptryTool,
+    ImportLinterTool,
+    CodespellTool,
+]
 
 
 def use_ci_bitbucket(
@@ -21,8 +36,13 @@ def use_ci_bitbucket(
 
         add_bitbucket_pipelines_config(report_placeholder=not use_any_tool)
 
-        for tool in ALL_TOOLS:
-            tool.update_bitbucket_steps()
+        # Add steps for QA tools in canonical order
+        for tool_type in _CI_QA_TOOL_TYPES:
+            # Find the matching tool instance in ALL_TOOLS
+            for tool in ALL_TOOLS:
+                if isinstance(tool, tool_type):
+                    tool.update_bitbucket_steps()
+                    break
 
         PytestTool().update_bitbucket_steps(matrix_python=matrix_python)
 

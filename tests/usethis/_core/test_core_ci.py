@@ -392,35 +392,34 @@ definitions:
         uv --version
 pipelines:
     default:
-      - parallel:
-          - step:
-                name: Run pyproject-fmt
-                caches:
-                  - uv
-                script:
-                  - *install-uv
-                  - uv run pyproject-fmt pyproject.toml
-          - step:
-                name: Run Ruff
-                caches:
-                  - uv
-                script:
-                  - *install-uv
-                  - uv run ruff check --fix
-          - step:
-                name: Run Ruff Formatter
-                caches:
-                  - uv
-                script:
-                  - *install-uv
-                  - uv run ruff format
-          - step:
-                name: Run deptry
-                caches:
-                  - uv
-                script:
-                  - *install-uv
-                  - uv run deptry src
+      - step:
+            name: Run pyproject-fmt
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - uv run pyproject-fmt pyproject.toml
+      - step:
+            name: Run Ruff
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - uv run ruff check --fix
+      - step:
+            name: Run Ruff Formatter
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - uv run ruff format
+      - step:
+            name: Run deptry
+            caches:
+              - uv
+            script:
+              - *install-uv
+              - uv run deptry src
 """
             )
 

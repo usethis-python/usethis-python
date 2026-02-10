@@ -9,6 +9,7 @@ from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.codespell import CodespellTool
 from usethis._tool.impl.deptry import DeptryTool
 from usethis._tool.impl.import_linter import ImportLinterTool
+from usethis._tool.impl.pre_commit import PreCommitTool
 from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
 from usethis._tool.impl.pytest import PytestTool
 from usethis._tool.impl.ruff import RuffTool
@@ -16,6 +17,7 @@ from usethis._tool.impl.ruff import RuffTool
 # Ordered list of QA tools that should run in CI (matches canonical step order)
 # These tools run via pre-commit if available, otherwise directly in CI
 _CI_QA_TOOL_TYPES = [
+    PreCommitTool,
     PyprojectFmtTool,
     RuffTool,
     DeptryTool,

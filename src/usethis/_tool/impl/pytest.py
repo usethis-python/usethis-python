@@ -285,6 +285,9 @@ class PytestTool(Tool):
 
         A bespoke function is needed here to ensure we inform the user about the need
         to manually add the dependencies if they are not using a backend.
+
+        Unlike other tools, pytest steps should always be added even when pre-commit
+        is used, because pytest is a test step, not a pre-commit hook.
         """
         # Same early exit as the wrapped super() function
         if not is_bitbucket_used() or not self.is_used():
@@ -292,7 +295,9 @@ class PytestTool(Tool):
 
         # But otherwise if not early exiting, we are going to add steps so we might
         # need to inform the user
-        super().update_bitbucket_steps(matrix_python=matrix_python)
+        # Call _unconditional_update_bitbucket_steps directly to bypass the
+        # pre-commit check in the base class
+        self._unconditional_update_bitbucket_steps(matrix_python=matrix_python)
 
         backend = get_backend()
 

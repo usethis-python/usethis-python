@@ -399,3 +399,45 @@ lint.per-file-ignores."tests/**" = ["INP"]
                     "Failed to fetch GitHub tags (connection issues); skipping test"
                 )
             raise err
+
+    class TestUpdateBitbucketSteps:
+        def test_remove_stale_steps_when_pre_commit_used(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            """When pre-commit is enabled, stale Bitbucket steps should be removed."""
+            # Arrange - first add Bitbucket steps for Ruff
+            (tmp_path / "ruff.toml").touch()
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[project]
+name = "example"
+version = "0.1.0"
+"""
+            )
+            with change_cwd(tmp_path), files_manager():
+                from usethis._integrations.ci.bitbucket.steps import (
+                    add_placeholder_step_in_default,
+                )
+
+                add_placeholder_step_in_default(report_placeholder=False)
+                RuffTool().update_bitbucket_steps()
+
+            # Verify steps were added
+            contents_before = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert "Run Ruff" in contents_before
+            assert "Run Ruff Formatter" in contents_before
+            capfd.readouterr()  # Clear captured output
+
+            # Act - enable pre-commit and run update_bitbucket_steps again
+            (tmp_path / ".pre-commit-config.yaml").touch()
+            with change_cwd(tmp_path), files_manager():
+                RuffTool().update_bitbucket_steps()
+
+            # Assert - stale steps should be removed
+            contents_after = (tmp_path / "bitbucket-pipelines.yml").read_text()
+            assert "Run Ruff" not in contents_after
+            assert "Run Ruff Formatter" not in contents_after
+            out, err = capfd.readouterr()
+            assert not err
+            assert "Removing 'Run Ruff'" in out
+            assert "Removing 'Run Ruff Formatter'" in out

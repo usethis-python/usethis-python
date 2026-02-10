@@ -681,6 +681,9 @@ class Tool(Protocol):
         # If pre-commit is being used and this is not the PreCommitTool itself,
         # don't add Bitbucket steps (the tool will run via pre-commit instead)
         if is_pre_commit_used():
+            # Remove any stale Bitbucket steps before returning
+            if is_bitbucket_used():
+                self.remove_bitbucket_steps()
             return
 
         self._unconditional_update_bitbucket_steps(matrix_python=matrix_python)

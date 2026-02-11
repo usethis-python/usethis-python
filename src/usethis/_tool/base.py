@@ -678,25 +678,25 @@ class Tool(Protocol):
             matrix_python: Whether to use a Python version matrix. When False,
                            only the current development version is used.
         """
-        # If pre-commit is being used and this is not the PreCommitTool itself,
-        # don't add Bitbucket steps (the tool will run via pre-commit instead)
-        if is_pre_commit_used():
-            return
-
-        self._unconditional_update_bitbucket_steps(matrix_python=matrix_python)
+        # If pre-commit is being used, we assume the tool is running via pre-commit,
+        # and we don't need to add a separate Bitbucket step for it.
+        self._unconditional_update_bitbucket_steps(
+            matrix_python=matrix_python, skip_add=is_pre_commit_used()
+        )
 
     def _unconditional_update_bitbucket_steps(
-        self, *, matrix_python: bool = True
+        self, *, matrix_python: bool = True, skip_add: bool = False
     ) -> None:
         if not is_bitbucket_used() or not self.is_used():
             return
 
         # Add the new steps
         steps = self.get_bitbucket_steps(matrix_python=matrix_python)
-        for step in steps:
-            add_bitbucket_step_in_default(step)
+        if not skip_add:
+            for step in steps:
+                add_bitbucket_step_in_default(step)
 
-        # Remove any old steps that are not active managed by this tool
+        # Remove any old steps that are not actively managed by this tool
         managed_names = self.get_managed_bitbucket_step_names()
 
         # Early return if there are no steps to add and no managed steps to clean up

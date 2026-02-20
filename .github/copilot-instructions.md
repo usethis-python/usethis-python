@@ -50,6 +50,7 @@ uv run pytest -k "test_help" -v
 - Use arrange-act-assert structure with comments separating sections
 - Only one contiguous block of assertions in assert section
 - Tests organized into classes: `TestMyClass` containing `TestMyMethod` for nested method tests
+- Test classes and functions should not have docstrings; descriptive names should suffice
 - **No side-effects**: Tests must not modify, create, or delete files in the repository directory
   - Always use pytest's `tmp_path` fixture for file operations
   - Always use `usethis._test.change_cwd` context manager when testing code that operates on the current working directory
@@ -246,7 +247,8 @@ Follow the guide in CONTRIBUTING.md:
 **Docstrings:**
 - Google style format
 - NO type annotations in docstrings (already in function signature)
-- Example: `text:` not `text (str):`
+- Example: `text:` not `text (str):
+- Do not use in the test suite unless explicitly instructed
 
 **Linting:**
 - Avoid suppressions unless absolutely necessary

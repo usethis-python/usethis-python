@@ -40,7 +40,7 @@ uv run pytest
 
 Tests are written using the `pytest` framework. The test suite is located in the `tests` directory. The tests are organized into subdirectories with a directory structure that mirrors the structure of the code being tested. This makes it easy to find the tests for a specific module or function. For example: `src/x/y/z.py` would be tested at `tests/x/y/test_z.py`.
 
-Tests are usually organized into classes centred around the objects being tested; either modules or classes. For example, tests for a class `MyClass` would be tested in a class `TestMyClass`. If testing a method of a class, the method tests would be nested within the class test. For example, tests for the `my_method` method of `MyClass` would be in a nested class `TestMyMethod` within `TestMyClass`.
+Tests are usually organized into classes centred around the objects being tested; either modules or classes. For example, tests for a class `MyClass` would be tested in a class `TestMyClass`. If testing a method of a class, the method tests would be nested within the class test. For example, tests for the `my_method` method of `MyClass` would be in a nested class `TestMyMethod` within `TestMyClass`. These classes, and the test functions themselves do not usually need docstrings, and their use is discouraged. The test function names are usually descriptive enough to make it clear what is being tested.
 
 PRs should ideally include tests for any new features or bug fixes.
 

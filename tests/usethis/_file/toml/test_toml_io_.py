@@ -122,11 +122,13 @@ a = "b"
             with change_cwd(tmp_path):
                 manager = MyTOMLFileManager()
 
+            expected = tomlkit.TOMLDocument()
+
             # Act
-            manager._content = 42  # type: ignore
+            manager._content = expected
 
             # Assert
-            assert manager._content == 42
+            assert manager._content == expected
 
         def test_set_high_levels_of_nesting(self, tmp_path: Path) -> None:
             # Arrange

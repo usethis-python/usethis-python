@@ -1424,9 +1424,9 @@ key3 = value3
             file_manager = MagicMock()
             tool = MockToolForRuleTests(file_manager=file_manager, selected_rules=[])
             # Override to simulate a tool without selection support
-            tool._get_select_keys = lambda fm: super(  # type: ignore[method-assign]
+            tool._get_select_keys = lambda file_manager: super(  # type: ignore[method-assign]
                 MockToolForRuleTests, tool
-            )._get_select_keys(fm)
+            )._get_select_keys(file_manager)
 
             # Act & Assert
             with pytest.raises(
@@ -1489,13 +1489,16 @@ key3 = value3
         def test_tool_without_selection_support(self) -> None:
             # Arrange
             file_manager = MagicMock()
-            tool = MockToolForRuleTests(
-                file_manager=file_manager, selected_rules=["E501"]
-            )
-            # Override to simulate a tool without selection support
-            tool._get_select_keys = lambda fm: super(  # type: ignore[method-assign]
-                MockToolForRuleTests, tool
-            )._get_select_keys(fm)
+
+            class MyMock(MockToolForRuleTests):
+                def _get_select_keys(
+                    self, file_manager: KeyValueFileManager
+                ) -> list[str]:
+                    return super(MockToolForRuleTests, self)._get_select_keys(
+                        file_manager
+                    )
+
+            tool = MyMock(file_manager=file_manager, selected_rules=["E501"])
 
             # Act & Assert
             with pytest.raises(

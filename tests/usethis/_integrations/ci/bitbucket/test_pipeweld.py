@@ -766,8 +766,10 @@ class TestGetPipeweldPipelineFromDefault:
             pipelines=schema.Pipelines(
                 default=schema.Pipeline(
                     schema.ImportPipeline(
-                        # import is a keyword so we need to use a dict
-                        **{"import": "shared-pipeline:master:share-pipeline-1"}
+                        schema.ImportInlinePipeline(
+                            # import is a keyword so we need to use a dict
+                            **{"import": "shared-pipeline:master:share-pipeline-1"}
+                        )
                     )
                 ),
             ),

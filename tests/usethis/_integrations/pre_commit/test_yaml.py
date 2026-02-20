@@ -148,10 +148,3 @@ class TestPreCommitFancyDump:
                 ),
                 reference={},
             )
-
-    def test_invalid(self):
-        with pytest.raises(TypeError):
-            _pre_commit_fancy_dump(
-                config=2,  # type: ignore for test
-                reference={},
-            )

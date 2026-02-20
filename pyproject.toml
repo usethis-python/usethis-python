@@ -210,7 +210,6 @@ failOnWarnings = true
 reportAny = false
 reportArgumentType = false
 reportAssignmentType = false
-reportAttributeAccessIssue = false
 reportCallInDefaultInitializer = false
 reportExplicitAny = false
 reportImplicitOverride = false

@@ -103,7 +103,7 @@ class TestINIFileManager:
                 change_cwd(tmp_path),
                 MyINIFileManager() as manager,
             ):
-                manager._content = 42  # type: ignore
+                manager._content = ConfigUpdater()
                 with pytest.raises(UnexpectedINIIOError):
                     manager.read_file()
 

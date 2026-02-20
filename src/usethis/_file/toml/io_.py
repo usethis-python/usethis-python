@@ -402,7 +402,7 @@ def _set_value_in_existing(
             for key in reversed(unshared_keys[1:]):
                 contents = {key: contents}
 
-            shared_container[keys[1]] = contents  # type: ignore[reportAssignmentType]
+            shared_container[keys[1]] = contents  # pyright: ignore[reportArgumentType]
         else:
             shared_container[_get_unified_key(unshared_keys)] = value
 

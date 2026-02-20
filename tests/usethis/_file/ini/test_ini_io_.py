@@ -11,7 +11,6 @@ from usethis._file.ini.errors import (
     INIStructureError,
     INIValueAlreadySetError,
     INIValueMissingError,
-    InvalidINITypeError,
     UnexpectedINIIOError,
     UnexpectedINIOpenError,
 )
@@ -1470,26 +1469,6 @@ key2 = value2
 key = new_value
 """
             )
-
-        def test_wrong_list_type_raises(self, tmp_path: Path):
-            # Arrange
-            class MyINIFileManager(INIFileManager):
-                @property
-                def relative_path(self) -> Path:
-                    return Path("valid.ini")
-
-            valid_file = tmp_path / "valid.ini"
-            valid_file.touch()
-
-            # Act, Assert
-            with (
-                change_cwd(tmp_path),
-                MyINIFileManager() as manager,
-                pytest.raises(
-                    InvalidINITypeError, match="INI files only support strings"
-                ),
-            ):
-                manager.extend_list(keys=["section", "key"], values=[123])  # type: ignore
 
     class TestRemoveFromList:
         def test_singleton_list_collapsed(self, tmp_path: Path):

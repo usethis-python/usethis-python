@@ -207,7 +207,6 @@ rules.possibly-missing-attribute = "ignore"
 [tool.basedpyright]
 ignore = [ "src/usethis/_version.py" ]
 reportAny = false
-reportArgumentType = false
 reportAssignmentType = false
 reportAttributeAccessIssue = false
 reportCallInDefaultInitializer = false

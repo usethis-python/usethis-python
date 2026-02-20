@@ -6,12 +6,12 @@ from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.ci.bitbucket import schema
 from usethis._integrations.ci.bitbucket.anchor import ScriptItemAnchor
+from usethis._integrations.ci.bitbucket.errors import UnexpectedImportPipelineError
 from usethis._integrations.ci.bitbucket.init import (
     ensure_bitbucket_pipelines_config_exists,
 )
 from usethis._integrations.ci.bitbucket.steps import (
     _CACHE_LOOKUP,
-    UnexpectedImportPipelineError,
     _add_step_caches_via_model,
     add_bitbucket_step_in_default,
     add_placeholder_step_in_default,

@@ -15,9 +15,7 @@ from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
-    from usethis._backend.uv.deps import (
-        Dependency,
-    )
+    from usethis._types.deps import Dependency
 
 
 class RequirementsTxtTool(Tool):

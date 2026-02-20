@@ -10,7 +10,7 @@ from ruamel.yaml.comments import (
 if TYPE_CHECKING:
     from typing import Any
 
-    from usethis._file.yaml.io_ import YAMLLiteral
+    from usethis._file.yaml.typing_ import YAMLLiteral
 
 
 def update_ruamel_yaml_map(

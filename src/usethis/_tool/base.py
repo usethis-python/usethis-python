@@ -41,11 +41,11 @@ from usethis.errors import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from usethis._backend.uv.deps import Dependency
     from usethis._integrations.pre_commit import schema as pre_commit_schema
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ConfigItem, ResolutionT
     from usethis._tool.rule import Rule
+    from usethis._types.deps import Dependency
 
 
 class Tool(Protocol):

@@ -18,9 +18,8 @@ from usethis._tool.impl.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.ruff import RuffTool
 
 if TYPE_CHECKING:
-    from usethis._backend.uv.deps import (
-        Dependency,
-    )
+    from usethis._types.deps import Dependency
+
 
 OTHER_TOOLS: list[Tool] = [
     CodespellTool(),

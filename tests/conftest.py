@@ -6,10 +6,11 @@ from pathlib import Path
 
 import pytest
 
-from usethis._backend.uv.call import call_subprocess, call_uv_subprocess
+from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
 from usethis._console import _cached_warn_print, get_icon_mode
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._subprocess import call_subprocess
 from usethis._test import change_cwd, is_offline
 from usethis._tool.impl.import_linter import _importlinter_warn_no_packages_found
 

@@ -1,9 +1,11 @@
 import pytest
 from requests.exceptions import HTTPError
 
-from usethis._integrations.ci.github.tags import (
+from usethis._integrations.ci.github.errors import (
     GitHubTagError,
     NoGitHubTagsFoundError,
+)
+from usethis._integrations.ci.github.tags import (
     get_github_latest_tag,
 )
 

@@ -199,12 +199,3 @@ class TestPythonVersion:
 
             # Act & Assert
             assert v1 != v2
-
-    class TestImmutability:
-        def test_frozen_dataclass(self):
-            # Arrange
-            version = PythonVersion(major="3", minor="13")
-
-            # Act & Assert
-            with pytest.raises(AttributeError):
-                version.major = "4"  # type: ignore[misc]

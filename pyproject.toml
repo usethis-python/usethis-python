@@ -218,7 +218,6 @@ reportInvalidAbstractMethod = false
 reportMissingParameterType = false
 reportMissingTypeArgument = false
 reportMissingTypeStubs = false
-reportPrivateLocalImportUsage = false
 reportPrivateUsage = false
 reportUnannotatedClassAttribute = false
 reportUnknownArgumentType = false

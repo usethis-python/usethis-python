@@ -15,7 +15,7 @@ from usethis._integrations.pydantic.dump import fancy_model_dump
 if TYPE_CHECKING:
     from pydantic import BaseModel
 
-    from usethis._integrations.pydantic.dump import ModelRepresentation
+    from usethis._integrations.pydantic.typing_ import ModelRepresentation
 
 ORDER_BY_CLS: dict[type[BaseModel], list[str]] = {}
 

@@ -56,6 +56,12 @@ class Tool(Protocol):
 
         It is assumed that this name is also the name of the Python package associated
         with the tool; if not, make sure to override methods which access this property.
+
+        This is the display-friendly (e.g. brand compliant) name of the tool, not the
+        name of a CLI command, etc. Pay mind to the correct capitalization.
+
+        For example, the tool named `ty` has a name of `ty`, not `Ty` or `TY`.
+        Import Linter has a name of `Import Linter`, not `import-linter`.
         """
 
     @abstractmethod

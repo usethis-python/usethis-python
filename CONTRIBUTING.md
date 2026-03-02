@@ -123,6 +123,51 @@ To add a new `usethis badge` interface, follow these steps:
 
 Finally, run the command on this project, to make sure the badge gets inserted correctly with valid Markdown syntax. Check it renders successfully and that any hyperlink works as expected.
 
+### Adding a new tool
+
+Tool implementations are defined in classes in the `usethis._tool.impl` module. To add a new tool, follow these steps:
+
+#### Define the configuration file classes
+
+- If your tool uses bespoke configuration files (e.g. its configuration does not fit within standard files like `pyproject.toml`, or `setup.cfg`), you will need to define classes for these.
+- These classes should be added to `usethis._config_file` and should subclass an appropriate base class based on the file type (YAML, TOML, INI, etc.) e.g. `YAMLFileManager`.
+- Name the classes based on the filename of the configuration file, following the pattern of the other classes in the module.
+- Register the file in the `files_manager` function in the `usethis._config_file` module.
+
+#### Create the `Tool` subclass
+
+- Create a submodule in `usethis._tool.impl` for your tool, e.g. for a tool named Xyz name it `usethis._tool.impl.xyz`.
+- Declare this new submodule in the `.importlinter` configuration to architecturally describe its dependency relationships with other tools' submodules. For example, does your tool integrate with pre-commit? It should be in a higher layer module than the `pre-commit` submodule.
+- Define a `usethis._tool.base.Tool` subclass, e.g. for a tool named Xyz, define a class `XyzTool(Tool)`.
+- Start by implementing its `name` property method, then work through the other methods. Most method have default implementations, but even in those cases you will need to consider them individually and determine an appropriate implementation. For example, methods which specify the tool's dependencies default to empty dependencies, but you shouldn't rely on this. In the future, it is planned to make it easier for you to distinguish methods which are essential to consider overriding versus those which are usually not necessary to override, see <https://github.com/usethis-python/usethis-python/issues/1316>
+- Include a comment with a URL linking to the tool's source repo for reference.
+
+#### Register your `Tool` subclass
+
+- In `usethis._tool.all_`, add your subclass to the `SupportedToolType` union, and to the `ALL_TOOLS` list.
+
+#### Create the `use_*` function
+
+- Create a function in `usethis._core.tool` named `use_<tool_name>`, e.g. for a tool named Xyz, create a function `use_xyz()`.
+- The function should follow the pattern of the other functions in the module. It is responsible for invoking methods on your `Tool` subclass to perform the operations necessary to add your tool, remove it, and display a message explaining how the tool is used.
+
+#### Create the `typer` command function
+
+- Create a function in `usethis._interface.tool` named after your tool in lowercase, e.g. for a tool named Xyz, create a function `xyz()`.
+- The function should follow the pattern of the other functions in the module. It is responsible for invoking your `use_*` function via the `_run_tool` wrapper.
+
+#### Write tests
+
+- You should write tests in `tests/usethis/_core/test_core_tool` for the `use_*` function, following the pattern of the other tests in that module for other tools.
+
+#### Pass tests
+
+- Some tests may break as a result of new test registration, for example the `TestGetUsageTable` tests for the `usethis list` command. You should run the test suite (via CI if you like) and address any failing tests.
+
+#### Update the README and documentation
+
+- Finally, you should update the README and documentation to include your new tool. You can follow the pattern of the existing tools in the documentation.
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT license. See the [LICENSE](https://github.com/usethis-python/usethis-python/blob/main/LICENSE) file.

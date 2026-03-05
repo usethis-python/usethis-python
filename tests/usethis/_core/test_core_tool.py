@@ -163,7 +163,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             out, err = capfd.readouterr()
             assert not err
             # Note: Since deps are now added (issue #1020), the message is "uv run codespell"
-            # not "pre-commit run codespell" because get_install_method() returns "devdep"
+            # not "pre-commit run -acodespell" because get_install_method() returns "devdep"
             assert out.replace("\n", "") == (
                 "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'."
                 "☐ Install the dependency 'codespell'."
@@ -3340,7 +3340,7 @@ repos:
             assert out == (
                 "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv run pre-commit run uv-export' to write 'requirements.txt'.\n"
+                "☐ Run 'uv run pre-commit -a run uv-export' to write 'requirements.txt'.\n"
             )
 
         def test_none_backend(

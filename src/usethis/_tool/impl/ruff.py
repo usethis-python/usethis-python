@@ -191,9 +191,11 @@ class RuffTool(RuffToolSpec, Tool):
         backend = get_backend()
         if install_method == "pre-commit":
             if backend is BackendEnum.uv and is_uv_used():
-                how_print("Run 'uv run pre-commit run ruff -a' to run the Ruff linter.")
+                how_print(
+                    "Run 'uv run pre-commit run -a ruff-check' to run the Ruff linter."
+                )
             elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print("Run 'pre-commit run ruff -a' to run the Ruff linter.")
+                how_print("Run 'pre-commit run -a ruff-check' to run the Ruff linter.")
             else:
                 assert_never(backend)
         elif install_method == "devdep" or install_method is None:
@@ -219,10 +221,12 @@ class RuffTool(RuffToolSpec, Tool):
         if install_method == "pre-commit":
             if backend is BackendEnum.uv and is_uv_used():
                 how_print(
-                    "Run 'uv run pre-commit run ruff-format' to run the Ruff formatter."
+                    "Run 'uv run pre-commit run -a ruff-format' to run the Ruff formatter."
                 )
             elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print("Run 'pre-commit run ruff-format' to run the Ruff formatter.")
+                how_print(
+                    "Run 'pre-commit run -a ruff-format' to run the Ruff formatter."
+                )
             else:
                 assert_never(backend)
         elif install_method == "devdep" or install_method is None:

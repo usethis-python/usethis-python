@@ -58,10 +58,12 @@ class RequirementsTxtTool(RequirementsTxtToolSpec, Tool):
         if install_method == "pre-commit":
             if backend is BackendEnum.uv:
                 how_print(
-                    "Run 'uv run pre-commit run uv-export' to write 'requirements.txt'."
+                    "Run 'uv run pre-commit run -a uv-export' to write 'requirements.txt'."
                 )
             elif backend is BackendEnum.none:
-                how_print("Run 'pre-commit run uv-export' to write 'requirements.txt'.")
+                how_print(
+                    "Run 'pre-commit run -a uv-export' to write 'requirements.txt'."
+                )
             else:
                 assert_never(backend)
         elif install_method == "devdep" or install_method is None:

@@ -3340,7 +3340,7 @@ repos:
             assert out == (
                 "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
                 "✔ Writing 'requirements.txt'.\n"
-                "☐ Run 'uv run pre-commit -a run uv-export' to write 'requirements.txt'.\n"
+                "☐ Run 'uv run pre-commit run -a uv-export' to write 'requirements.txt'.\n"
             )
 
         def test_none_backend(

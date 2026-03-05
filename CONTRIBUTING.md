@@ -134,12 +134,13 @@ Tool implementations are defined in classes in the `usethis._tool.impl` module. 
 - Name the classes based on the filename of the configuration file, following the pattern of the other classes in the module.
 - Register the file in the `files_manager` function in the `usethis._config_file` module.
 
-#### Create the `Tool` subclass
+#### Create the `Tool` and `ToolSpec` subclasses
 
 - Create a submodule in `usethis._tool.impl` for your tool, e.g. for a tool named Xyz name it `usethis._tool.impl.xyz`.
 - Declare this new submodule in the `.importlinter` configuration to architecturally describe its dependency relationships with other tools' submodules. For example, does your tool integrate with pre-commit? It should be in a higher layer module than the `pre-commit` submodule.
-- Define a `usethis._tool.base.Tool` subclass, e.g. for a tool named Xyz, define a class `XyzTool(Tool)`.
-- Start by implementing its `name` property method, then work through the other methods. Most method have default implementations, but even in those cases you will need to consider them individually and determine an appropriate implementation. For example, methods which specify the tool's dependencies default to empty dependencies, but you shouldn't rely on this. In the future, it is planned to make it easier for you to distinguish methods which are essential to consider overriding versus those which are usually not necessary to override, see <https://github.com/usethis-python/usethis-python/issues/1316>
+- Define a `usethis._tool.base.ToolSpec` subclass, e.g. for a tool named Xyz, define a class `XyzToolSpec(ToolSpec)`.
+- Start by implementing its `name` property method, then work through the other methods. Most method have default implementations, but even in those cases you will need to consider them individually and determine an appropriate implementation. For example, methods which specify the tool's dependencies default to empty dependencies, but you shouldn't rely on this.
+- Then, define a subclass of the `ToolSpec` subclass you just created, which also subclasses `usethis._tool.base.Tool`, e.g. for a tool named Xyz, define a class `XyzTool(XyzToolSpec, Tool)`. The only method this usually requires a non-default implementation for is `config_spec` to specify which configuration sections should be set up for the tool (and which sections the tool manages). However, you may find it helpful to provide custom implementations for other methods as well, e.g. `print_how_to_use`.
 - Include a comment with a URL linking to the tool's source repo for reference.
 
 #### Register your `Tool` subclass

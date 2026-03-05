@@ -749,7 +749,7 @@ repos:
                 "✔ Adding hook 'sync-with-uv' to '.pre-commit-config.yaml'.\n"
                 "✔ Adding hook 'deptry' to '.pre-commit-config.yaml'.\n"
                 "☐ Run 'uv run pre-commit install' to register pre-commit.\n"
-                "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
+                "☐ Run 'uv run pre-commit run -a' to run the hooks manually.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1109,7 +1109,7 @@ repos:
                 "✔ Adding hook 'import-linter' to '.pre-commit-config.yaml'.\n"
                 "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
                 "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001
-                "☐ Run 'pre-commit run import-linter --all-files' to run Import Linter.\n"
+                "☐ Run 'pre-commit run -a import-linter' to run Import Linter.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -1493,7 +1493,7 @@ root_package = "a"
                 use_import_linter()
 
                 # Assert
-                assert "INP" in RuffTool().get_selected_rules()
+                assert "INP" in RuffTool().selected_rules()
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_no_duplicate_inp_rules(self, tmp_path: Path):
@@ -1850,7 +1850,7 @@ class TestPreCommit:
                 "✔ Writing '.pre-commit-config.yaml'.\n"
                 "✔ Adding hook 'sync-with-uv' to '.pre-commit-config.yaml'.\n"
                 "☐ Run 'uv run pre-commit install' to register pre-commit.\n"
-                "☐ Run 'uv run pre-commit run --all-files' to run the hooks manually.\n"
+                "☐ Run 'uv run pre-commit run -a' to run the hooks manually.\n"
             )
             # Config file
             assert (uv_init_dir / ".pre-commit-config.yaml").exists()
@@ -1889,7 +1889,7 @@ repos:
                 "☐ Replace it with your own hooks.\n"
                 "☐ Alternatively, use 'usethis tool' to add other tools and their hooks.\n"
                 "☐ Run 'pre-commit install' to register pre-commit.\n"
-                "☐ Run 'pre-commit run --all-files' to run the hooks manually.\n"
+                "☐ Run 'pre-commit run -a' to run the hooks manually.\n"
             )
             # Config file
             assert (uv_init_dir / ".pre-commit-config.yaml").exists()
@@ -2293,7 +2293,7 @@ pipelines:
                 # Act, Assert
                 # Run the pre-commit hooks via subprocess - check it doesn't raise
                 call_uv_subprocess(
-                    ["run", "pre-commit", "run", "--all-files"],
+                    ["run", "pre-commit", "run", "-a"],
                     change_toml=False,
                 )
 
@@ -2738,7 +2738,7 @@ minversion = "7\""""
                 use_pytest()
 
                 # Assert
-                assert "PT" in RuffTool().get_selected_rules()
+                assert "PT" in RuffTool().selected_rules()
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_ruff_import_linter_integration_adds_test_dir_ignores(

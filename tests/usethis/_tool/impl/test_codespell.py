@@ -23,7 +23,7 @@ class TestCodespellTool:
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                cmd = CodespellTool().default_command()
+                cmd = CodespellTool().how_to_use_cmd()
 
             # Assert
             assert cmd == "uv run codespell"
@@ -33,7 +33,7 @@ class TestCodespellTool:
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                cmd = CodespellTool().default_command()
+                cmd = CodespellTool().how_to_use_cmd()
 
             # Assert
             assert cmd == "codespell"
@@ -47,7 +47,7 @@ class TestCodespellTool:
                 files_manager(),
                 usethis_config.set(backend=BackendEnum.none),
             ):
-                cmd = CodespellTool().default_command()
+                cmd = CodespellTool().how_to_use_cmd()
 
             # Assert
             assert cmd == "codespell"
@@ -79,7 +79,7 @@ repos:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "☐ Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker.\n"
+                "☐ Run 'pre-commit run -a codespell' to run the Codespell spellchecker.\n"
             )
 
         def test_pre_commit_used_but_not_configured(
@@ -143,7 +143,7 @@ repos:
         if os.getenv("CI"):
             pytest.skip("Avoid flaky pipelines by testing version bumps manually")
 
-        (config,) = CodespellTool().get_pre_commit_config().repo_configs
+        (config,) = CodespellTool().pre_commit_config().repo_configs
         repo = config.repo
         assert isinstance(repo, schema.UriRepo)
         try:
@@ -202,7 +202,7 @@ requires-python = ">=3.10"
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().get_dev_deps()
+                deps = CodespellTool().dev_deps()
 
             # Assert
             assert Dependency(name="codespell") in deps
@@ -222,7 +222,7 @@ requires-python = ">=3.11"
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().get_dev_deps()
+                deps = CodespellTool().dev_deps()
 
             # Assert
             assert Dependency(name="codespell") in deps
@@ -242,7 +242,7 @@ requires-python = ">=3.10,<3.13"
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().get_dev_deps()
+                deps = CodespellTool().dev_deps()
 
             # Assert
             assert Dependency(name="codespell") in deps
@@ -258,7 +258,7 @@ requires-python = ">=3.10,<3.13"
             )
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().get_dev_deps()
+                deps = CodespellTool().dev_deps()
 
             # Assert
             assert Dependency(name="codespell") in deps
@@ -274,7 +274,7 @@ requires-python = ">=3.10,<3.13"
             )
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().get_dev_deps()
+                deps = CodespellTool().dev_deps()
 
             # Assert
             assert Dependency(name="codespell") in deps
@@ -293,7 +293,7 @@ requires-python = ">=3.12"
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().get_dev_deps(unconditional=True)
+                deps = CodespellTool().dev_deps(unconditional=True)
 
             # Assert
             # When unconditional=True, tomli should always be included

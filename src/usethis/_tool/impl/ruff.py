@@ -16,7 +16,7 @@ from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
 from usethis._integrations.pre_commit import schema as pre_commit_schema
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import (
     ConfigEntry,
     ConfigItem,
@@ -24,6 +24,7 @@ from usethis._tool.config import (
     ensure_managed_file_exists,
 )
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
+from usethis._tool.rule import Rule
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
@@ -34,9 +35,25 @@ if TYPE_CHECKING:
 _RUFF_VERSION = "v0.15.4"  # Manually bump this version when necessary
 
 
-class RuffTool(Tool):
-    # https://github.com/astral-sh/ruff
+class RuffToolSpec(ToolSpec):
+    @property
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="Ruff",
+            url="https://github.com/astral-sh/ruff",
+            managed_files=[Path(".ruff.toml"), Path("ruff.toml")],
+        )
 
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        return [Dependency(name="ruff")]
+
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        if (usethis_config.cpd() / "pyproject.toml").exists():
+            return PyprojectTOMLManager()
+        return RuffTOMLManager()
+
+
+class RuffTool(RuffToolSpec, Tool):
     def __init__(
         self,
         linter_detection: Literal["auto", "always", "never"] = "auto",
@@ -60,80 +77,7 @@ class RuffTool(Tool):
             formatter_detection == "auto"
         )
 
-    @property
-    def name(self) -> str:
-        return "Ruff"
-
-    def print_how_to_use(self) -> None:
-        """Print how to use the Ruff tool."""
-        self.print_how_to_use_linter()
-        self.print_how_to_use_formatter()
-
-    def print_how_to_use_linter(self) -> None:
-        if not self.is_linter_used():
-            return
-
-        install_method = self.get_install_method()
-        backend = get_backend()
-        if install_method == "pre-commit":
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    "Run 'uv run pre-commit run ruff --all-files' to run the Ruff linter."
-                )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print(
-                    "Run 'pre-commit run ruff --all-files' to run the Ruff linter."
-                )
-            else:
-                assert_never(backend)
-        elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
-                )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print(
-                    "Run 'ruff check --fix' to run the Ruff linter with autofixes."
-                )
-            else:
-                assert_never(backend)
-        else:
-            assert_never(install_method)
-
-    def print_how_to_use_formatter(self) -> None:
-        if not self.is_formatter_used():
-            return
-
-        install_method = self.get_install_method()
-        backend = get_backend()
-        if install_method == "pre-commit":
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    "Run 'uv run pre-commit run ruff-format' to run the Ruff formatter."
-                )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print("Run 'pre-commit run ruff-format' to run the Ruff formatter.")
-            else:
-                assert_never(backend)
-        elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print("Run 'uv run ruff format' to run the Ruff formatter.")
-            elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print("Run 'ruff format' to run the Ruff formatter.")
-            else:
-                assert_never(backend)
-        else:
-            assert_never(install_method)
-
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="ruff")]
-
-    def preferred_file_manager(self) -> KeyValueFileManager:
-        if (usethis_config.cpd() / "pyproject.toml").exists():
-            return PyprojectTOMLManager()
-        return RuffTOMLManager()
-
-    def get_config_spec(self) -> ConfigSpec:
+    def config_spec(self) -> ConfigSpec:
         # https://docs.astral.sh/ruff/configuration/#config-file-discovery
 
         line_length = 88
@@ -234,10 +178,64 @@ class RuffTool(Tool):
             config_items=config_items,
         )
 
-    def get_managed_files(self) -> list[Path]:
-        return [Path(".ruff.toml"), Path("ruff.toml")]
+    def print_how_to_use(self) -> None:
+        """Print how to use the Ruff tool."""
+        self.print_how_to_use_linter()
+        self.print_how_to_use_formatter()
 
-    def get_pre_commit_config(self) -> PreCommitConfig:
+    def print_how_to_use_linter(self) -> None:
+        if not self.is_linter_used():
+            return
+
+        install_method = self.get_install_method()
+        backend = get_backend()
+        if install_method == "pre-commit":
+            if backend is BackendEnum.uv and is_uv_used():
+                how_print("Run 'uv run pre-commit run ruff -a' to run the Ruff linter.")
+            elif backend in (BackendEnum.none, BackendEnum.uv):
+                how_print("Run 'pre-commit run ruff -a' to run the Ruff linter.")
+            else:
+                assert_never(backend)
+        elif install_method == "devdep" or install_method is None:
+            if backend is BackendEnum.uv and is_uv_used():
+                how_print(
+                    "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
+                )
+            elif backend in (BackendEnum.none, BackendEnum.uv):
+                how_print(
+                    "Run 'ruff check --fix' to run the Ruff linter with autofixes."
+                )
+            else:
+                assert_never(backend)
+        else:
+            assert_never(install_method)
+
+    def print_how_to_use_formatter(self) -> None:
+        if not self.is_formatter_used():
+            return
+
+        install_method = self.get_install_method()
+        backend = get_backend()
+        if install_method == "pre-commit":
+            if backend is BackendEnum.uv and is_uv_used():
+                how_print(
+                    "Run 'uv run pre-commit run ruff-format' to run the Ruff formatter."
+                )
+            elif backend in (BackendEnum.none, BackendEnum.uv):
+                how_print("Run 'pre-commit run ruff-format' to run the Ruff formatter.")
+            else:
+                assert_never(backend)
+        elif install_method == "devdep" or install_method is None:
+            if backend is BackendEnum.uv and is_uv_used():
+                how_print("Run 'uv run ruff format' to run the Ruff formatter.")
+            elif backend in (BackendEnum.none, BackendEnum.uv):
+                how_print("Run 'ruff format' to run the Ruff formatter.")
+            else:
+                assert_never(backend)
+        else:
+            assert_never(install_method)
+
+    def pre_commit_config(self) -> PreCommitConfig:
         repo_configs = []
         if self.is_linter_used():
             repo_configs.append(
@@ -332,7 +330,7 @@ class RuffTool(Tool):
 
         return steps
 
-    def get_selected_rules(self) -> list[Rule]:
+    def selected_rules(self) -> list[Rule]:
         """Get the Ruff rules selected in the project."""
         (file_manager,) = self.get_active_config_file_managers()
 
@@ -344,7 +342,7 @@ class RuffTool(Tool):
 
         return rules
 
-    def get_ignored_rules(self) -> list[Rule]:
+    def ignored_rules(self) -> list[Rule]:
         """Get the Ruff rules ignored in the project."""
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
@@ -449,7 +447,7 @@ class RuffTool(Tool):
     def _are_pydocstyle_rules_selected(self) -> bool:
         """Check if pydocstyle rules are selected in the configuration."""
         # If "ALL" is selected, or any rule whose alphabetical part is "D".
-        rules = self.get_selected_rules()
+        rules = self.selected_rules()
         for rule in rules:
             if rule == "ALL":
                 return True

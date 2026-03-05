@@ -17,7 +17,7 @@ from usethis._console import how_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -26,39 +26,16 @@ if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
 
 
-class CoveragePyTool(Tool):
-    # https://github.com/nedbat/coveragepy
-
+class CoveragePyToolSpec(ToolSpec):
     @property
-    def name(self) -> str:
-        return "Coverage.py"
-
-    def print_how_to_use(self) -> None:
-        from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415
-            PytestTool,
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="Coverage.py",
+            url="https://github.com/nedbat/coveragepy",
+            managed_files=[Path(".coveragerc"), Path(".coveragerc.toml")],
         )
 
-        backend = get_backend()
-
-        if PytestTool().is_used():
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    f"Run 'uv run pytest --cov' to run your tests with {self.name}."
-                )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print(f"Run 'pytest --cov' to run your tests with {self.name}.")
-            else:
-                assert_never(backend)
-        elif backend is BackendEnum.uv and is_uv_used():
-            how_print(
-                f"Run 'uv run coverage help' to see available {self.name} commands."
-            )
-        elif backend in (BackendEnum.none, BackendEnum.uv):
-            how_print(f"Run 'coverage help' to see available {self.name} commands.")
-        else:
-            assert_never(backend)
-
-    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415
             PytestTool,
         )
@@ -73,7 +50,9 @@ class CoveragePyTool(Tool):
             return PyprojectTOMLManager()
         return DotCoverageRCManager()
 
-    def get_config_spec(self) -> ConfigSpec:
+
+class CoveragePyTool(CoveragePyToolSpec, Tool):
+    def config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
         # But the `latest` link doesn't yet include some latest changes regarding
         # `.coveragerc.toml`, which are available here:
@@ -295,5 +274,27 @@ class CoveragePyTool(Tool):
             ],
         )
 
-    def get_managed_files(self) -> list[Path]:
-        return [Path(".coveragerc"), Path(".coveragerc.toml")]
+    def print_how_to_use(self) -> None:
+        from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415
+            PytestTool,
+        )
+
+        backend = get_backend()
+
+        if PytestTool().is_used():
+            if backend is BackendEnum.uv and is_uv_used():
+                how_print(
+                    f"Run 'uv run pytest --cov' to run your tests with {self.name}."
+                )
+            elif backend in (BackendEnum.none, BackendEnum.uv):
+                how_print(f"Run 'pytest --cov' to run your tests with {self.name}.")
+            else:
+                assert_never(backend)
+        elif backend is BackendEnum.uv and is_uv_used():
+            how_print(
+                f"Run 'uv run coverage help' to see available {self.name} commands."
+            )
+        elif backend in (BackendEnum.none, BackendEnum.uv):
+            how_print(f"Run 'coverage help' to see available {self.name} commands.")
+        else:
+            assert_never(backend)

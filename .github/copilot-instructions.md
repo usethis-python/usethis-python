@@ -82,7 +82,7 @@ The following checks run automatically via prek (pre-commit framework). All must
 
 **To run all checks manually:**
 ```bash
-uv run prek run --all-files
+uv run prek run -a
 ```
 
 **Individual validation commands:**
@@ -217,7 +217,7 @@ See CONTRIBUTING.md Architecture section for detailed documentation and examples
    ```bash
    uv run pytest                     # Tests
    uv run pytest --cov               # Coverage
-   uv run prek run --all-files       # All pre-commit checks
+   uv run prek run -a       # All pre-commit checks
    ```
 
 7. **Build documentation** (optional):
@@ -273,7 +273,7 @@ These instructions have been validated by running actual commands and inspecting
 | Install git hooks | `uv run prek install` |
 | Run tests | `uv run pytest` |
 | Run tests with coverage | `uv run pytest --cov` |
-| Run all checks | `uv run prek run --all-files` |
+| Run all checks | `uv run prek run -a` |
 | Format code | `uv run ruff format` |
 | Lint code | `uv run ruff check --fix` |
 | Check types | `uv run ty check` |

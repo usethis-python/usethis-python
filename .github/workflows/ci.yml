@@ -50,7 +50,7 @@ jobs:
       - name: Run checks
         if: ${{ matrix.checks == null || matrix.checks == 'true' }}
         run: |
-          uv run --frozen prek run --all-files
+          uv run --frozen prek run -a
           uv run --frozen basedpyright
 
       - name: Run pytest

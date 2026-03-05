@@ -27,7 +27,7 @@ class TestRuffTool:
                 RuffTool().select_rules(["A", "B", "C"])
 
                 # Assert
-                assert RuffTool().get_selected_rules() == ["A", "B", "C"]
+                assert RuffTool().selected_rules() == ["A", "B", "C"]
 
             # Assert
             out, err = capfd.readouterr()
@@ -56,7 +56,7 @@ class TestRuffTool:
                 RuffTool().select_rules(new_rules)
 
                 # Assert
-                rules = RuffTool().get_selected_rules()
+                rules = RuffTool().selected_rules()
             assert rules == new_rules
 
         def test_mixing(self, tmp_path: Path):
@@ -73,7 +73,7 @@ class TestRuffTool:
                 RuffTool().select_rules(["C", "D"])
 
                 # Assert
-                rules = RuffTool().get_selected_rules()
+                rules = RuffTool().selected_rules()
             assert rules == ["A", "B", "C", "D"]
 
         def test_respects_order(self, tmp_path: Path):
@@ -90,7 +90,7 @@ select = ["D", "B", "A"]
                 RuffTool().select_rules(["E", "C", "A"])
 
                 # Assert
-                assert RuffTool().get_selected_rules() == ["D", "B", "A", "C", "E"]
+                assert RuffTool().selected_rules() == ["D", "B", "A", "C", "E"]
 
         def test_ruff_toml(self, tmp_path: Path):
             # Arrange
@@ -106,7 +106,7 @@ select = ["A", "B"]
                 RuffTool().select_rules(["C", "D"])
 
                 # Assert
-                rules = RuffTool().get_selected_rules()
+                rules = RuffTool().selected_rules()
 
             assert rules == ["A", "B", "C", "D"]
 
@@ -124,7 +124,7 @@ select = ["A"]
                 RuffTool().select_rules([])
 
                 # Assert
-                assert RuffTool().get_selected_rules() == ["A"]
+                assert RuffTool().selected_rules() == ["A"]
 
     class TestDeselectRules:
         def test_no_pyproject_toml(self, tmp_path: Path):
@@ -133,7 +133,7 @@ select = ["A"]
                 RuffTool().deselect_rules(["A"])
 
                 # Assert
-                assert RuffTool().get_selected_rules() == []
+                assert RuffTool().selected_rules() == []
 
         def test_blank_slate(self, tmp_path: Path):
             # Arrange
@@ -144,7 +144,7 @@ select = ["A"]
                 RuffTool().deselect_rules(["A", "B", "C"])
 
                 # Assert
-                assert RuffTool().get_selected_rules() == []
+                assert RuffTool().selected_rules() == []
 
         def test_single_rule(self, tmp_path: Path):
             # Arrange
@@ -160,7 +160,7 @@ select = ["A"]
                 RuffTool().deselect_rules(["A"])
 
                 # Assert
-                assert RuffTool().get_selected_rules() == []
+                assert RuffTool().selected_rules() == []
 
         def test_mix(self, tmp_path: Path):
             # Arrange
@@ -176,7 +176,7 @@ select = ["A", "B", "C"]
                 RuffTool().deselect_rules(["A", "C"])
 
                 # Assert
-                assert RuffTool().get_selected_rules() == ["B"]
+                assert RuffTool().selected_rules() == ["B"]
 
         def test_ruff_toml(self, tmp_path: Path):
             # Arrange
@@ -192,7 +192,7 @@ select = ["A", "B"]
                 RuffTool().deselect_rules(["A"])
 
                 # Assert
-                assert RuffTool().get_selected_rules() == ["B"]
+                assert RuffTool().selected_rules() == ["B"]
 
     class TestIgnoreRules:
         def test_add_to_existing(self, tmp_path: Path):
@@ -209,7 +209,7 @@ ignore = ["A", "B"]
                 RuffTool().ignore_rules(["C", "D"])
 
                 # Assert
-                assert RuffTool().get_ignored_rules() == ["A", "B", "C", "D"]
+                assert RuffTool().ignored_rules() == ["A", "B", "C", "D"]
 
         def test_no_rules(self, tmp_path: Path):
             # Arrange
@@ -225,7 +225,7 @@ ignore = ["A"]
                 RuffTool().ignore_rules([])
 
                 # Assert
-                assert RuffTool().get_ignored_rules() == ["A"]
+                assert RuffTool().ignored_rules() == ["A"]
 
     class TestIsLinterUsed:
         def test_neither_subtool_has_config_assume_both_used(self, tmp_path: Path):
@@ -382,7 +382,7 @@ lint.per-file-ignores."tests/**" = ["INP"]
             use_ruff(formatter=False)
 
             # Act
-            (config,) = RuffTool().get_pre_commit_config().repo_configs
+            (config,) = RuffTool().pre_commit_config().repo_configs
         repo = config.repo
         assert isinstance(repo, schema.UriRepo)
         try:

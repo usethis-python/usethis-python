@@ -54,7 +54,7 @@ class TestSelectRules:
             select_rules(rules=["RUF001"])
 
             # Assert
-            assert "RUF001" in RuffTool().get_selected_rules()
+            assert "RUF001" in RuffTool().selected_rules()
 
         out, err = capfd.readouterr()
         assert not err
@@ -76,7 +76,7 @@ select = ["RUF001"]
             deselect_rules(rules=["RUF001"])
 
             # Assert
-            assert "RUF001" not in RuffTool().get_selected_rules()
+            assert "RUF001" not in RuffTool().selected_rules()
 
         out, err = capfd.readouterr()
         assert not err
@@ -98,7 +98,7 @@ ignore = ["RUF001"]
             unignore_rules(rules=["RUF001"])
 
             # Assert
-            assert "RUF001" not in RuffTool().get_ignored_rules()
+            assert "RUF001" not in RuffTool().ignored_rules()
 
     def test_deptry(self, uv_init_dir: Path):
         with change_cwd(uv_init_dir), files_manager():
@@ -114,7 +114,7 @@ ignore = ["DEP001"]
             unignore_rules(rules=["DEP001"])
 
             # Assert
-            assert "DEP001" not in DeptryTool().get_ignored_rules()
+            assert "DEP001" not in DeptryTool().ignored_rules()
 
 
 class TestIgnoreRules:

@@ -6,13 +6,12 @@ from typing import TYPE_CHECKING
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.detect import is_uv_used
-from usethis._console import how_print, info_print
+from usethis._console import info_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import (
     ConfigEntry,
     ConfigItem,
@@ -27,69 +26,22 @@ if TYPE_CHECKING:
     from usethis._tool.rule import Rule
 
 
-class DeptryTool(Tool):
-    # https://github.com/fpgmaas/deptry
+class DeptryToolSpec(ToolSpec):
     @property
-    def name(self) -> str:
-        return "deptry"
-
-    def default_command(self) -> str:
-        backend = get_backend()
-        _dir = get_source_dir_str()
-        if backend is BackendEnum.uv and is_uv_used():
-            return f"uv run deptry {_dir}"
-        elif backend is BackendEnum.none or backend is BackendEnum.uv:
-            return f"deptry {_dir}"
-        else:
-            assert_never(backend)
-
-    def print_how_to_use(self) -> None:
-        _dir = get_source_dir_str()
-        install_method = self.get_install_method()
-        backend = get_backend()
-        if install_method == "pre-commit":
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    f"Run 'uv run pre-commit run deptry --all-files' to run {self.name}."
-                )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print(
-                    f"Run 'pre-commit run deptry --all-files' to run {self.name}."
-                )
-            else:
-                assert_never(backend)
-        elif install_method == "devdep" or install_method is None:
-            cmd = self.default_command()
-            how_print(f"Run '{cmd}' to run deptry.")
-        else:
-            assert_never(install_method)
-
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="deptry")]
-
-    def get_config_spec(self) -> ConfigSpec:
-        # https://deptry.com/usage/#configuration
-        return ConfigSpec.from_flat(
-            file_managers=[PyprojectTOMLManager()],
-            resolution="first",
-            config_items=[
-                ConfigItem(
-                    description="Overall config",
-                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])},
-                ),
-                ConfigItem(
-                    description="Ignore notebooks",
-                    root={
-                        Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "deptry", "ignore_notebooks"],
-                            get_value=lambda: False,
-                        )
-                    },
-                ),
-            ],
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="deptry",
+            url="https://github.com/fpgmaas/deptry",
         )
 
-    def get_pre_commit_config(self) -> PreCommitConfig:
+    def raw_cmd(self) -> str:
+        _dir = get_source_dir_str()
+        return f"deptry {_dir}"
+
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        return [Dependency(name="deptry")]
+
+    def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()
 
         _dir = get_source_dir_str()
@@ -132,8 +84,29 @@ class DeptryTool(Tool):
         else:
             assert_never(backend)
 
-    def is_managed_rule(self, rule: Rule) -> bool:
-        return rule.startswith("DEP") and rule[3:].isdigit()
+
+class DeptryTool(DeptryToolSpec, Tool):
+    def config_spec(self) -> ConfigSpec:
+        # https://deptry.com/usage/#configuration
+        return ConfigSpec.from_flat(
+            file_managers=[PyprojectTOMLManager()],
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    description="Overall config",
+                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])},
+                ),
+                ConfigItem(
+                    description="Ignore notebooks",
+                    root={
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "deptry", "ignore_notebooks"],
+                            get_value=lambda: False,
+                        )
+                    },
+                ),
+            ],
+        )
 
     def select_rules(self, rules: list[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
@@ -141,7 +114,7 @@ class DeptryTool(Tool):
             info_print(f"All {self.name} rules are always implicitly selected.")
         return False
 
-    def get_selected_rules(self) -> list[Rule]:
+    def selected_rules(self) -> list[Rule]:
         """No notion of selection for deptry.
 
         This doesn't mean rules won't be enabled, it just means we don't keep track
@@ -153,7 +126,7 @@ class DeptryTool(Tool):
         """Does nothing for deptry - all rules are automatically enabled by default."""
         return False
 
-    def get_ignored_rules(self) -> list[Rule]:
+    def ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
         try:

@@ -42,7 +42,7 @@ class TestPreCommitTool:
             pytest.skip("Avoid flaky pipelines by testing version bumps manually")
 
         with change_cwd(tmp_path), files_manager():
-            (config,) = PreCommitTool().get_pre_commit_config().repo_configs
+            (config,) = PreCommitTool().pre_commit_config().repo_configs
         repo = config.repo
         assert isinstance(repo, schema.UriRepo)
         try:

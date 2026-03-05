@@ -34,7 +34,7 @@ class TestPyprojectFmtTool:
         if os.getenv("CI"):
             pytest.skip("Avoid flaky pipelines by testing version bumps manually")
 
-        (config,) = PyprojectFmtTool().get_pre_commit_config().repo_configs
+        (config,) = PyprojectFmtTool().pre_commit_config().repo_configs
         repo = config.repo
         assert isinstance(repo, schema.UriRepo)
         try:

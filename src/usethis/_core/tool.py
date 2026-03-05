@@ -130,15 +130,13 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
         return
 
-    rule_config = tool.get_rule_config()
-
     if not remove:
         ensure_dep_declaration_file()
 
         tool.add_dev_deps()
         tool.add_configs()
         if RuffTool().is_used():
-            RuffTool().apply_rule_config(rule_config)
+            RuffTool().apply_rule_config(tool.rule_config)
         tool.update_bitbucket_steps()
         tool.add_pre_commit_config()
 
@@ -147,7 +145,7 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_pre_commit_repo_configs()
         tool.remove_bitbucket_steps()
         if RuffTool().is_used():
-            RuffTool().remove_rule_config(rule_config)
+            RuffTool().remove_rule_config(tool.rule_config)
         tool.remove_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()
@@ -313,16 +311,14 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         # https://github.com/fpgmaas/deptry/issues/302
         add_pytest_dir()
 
-        rule_config = tool.get_rule_config()
+        rule_config = tool.rule_config
 
         for _tool in ALL_TOOLS:
             if isinstance(_tool, PytestTool):
                 continue
 
-            config = _tool.get_rule_config()
-
-            if config.is_related_to_tests and _tool.is_used():
-                rule_config |= config.subset_related_to_tests()
+            if _tool.rule_config.is_related_to_tests and _tool.is_used():
+                rule_config |= _tool.rule_config.subset_related_to_tests()
 
         if RuffTool().is_used():
             RuffTool().apply_rule_config(rule_config)
@@ -334,12 +330,10 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         if CoveragePyTool().is_used():
             CoveragePyTool().print_how_to_use()
     else:
-        rule_config = tool.get_rule_config()
-
         PytestTool().remove_bitbucket_steps()
 
         if RuffTool().is_used():
-            RuffTool().remove_rule_config(rule_config)
+            RuffTool().remove_rule_config(tool.rule_config)
         tool.remove_configs()
         tool.remove_test_deps()
         remove_pytest_dir()  # Last, since this is a manual step
@@ -446,16 +440,15 @@ def use_ruff(
         # See docstring. Basically, `usethis docstyle` manages the pydocstyle rules,
         # so we want to allow the user to subsequently call `usethis tool ruff` and
         # still get non-minimal default rules.
-        all(tool._is_pydocstyle_rule(rule) for rule in tool.get_selected_rules())
+        all(tool._is_pydocstyle_rule(rule) for rule in tool.selected_rules())
         # Another situation where we add default rules is when there are no rules
         # selected yet (and we haven't explicitly been requested to add minimal config).
-        or not tool.get_selected_rules()
+        or not tool.selected_rules()
     ):
         rule_config = _get_basic_rule_config()
         for _tool in ALL_TOOLS:
-            tool_rule_config = _tool.get_rule_config()
-            if not tool_rule_config.empty and _tool.is_used():
-                rule_config |= tool_rule_config
+            if not _tool.rule_config.empty and _tool.is_used():
+                rule_config |= _tool.rule_config
     else:
         rule_config = RuleConfig()
 

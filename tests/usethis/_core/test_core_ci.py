@@ -154,7 +154,7 @@ pipelines:
               - pre-commit
             script:
               - *install-uv
-              - uv run pre-commit run --all-files
+              - uv run pre-commit run -a
 """
                 )
 

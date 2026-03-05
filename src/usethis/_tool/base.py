@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from abc import abstractmethod
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal, Protocol
 
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
-from usethis._console import tick_print, warn_print
+from usethis._console import how_print, tick_print, warn_print
 from usethis._deps import add_deps_to_group, is_dep_in_any_group, remove_deps_from_group
 from usethis._detect.ci.bitbucket import is_bitbucket_used
 from usethis._detect.pre_commit import is_pre_commit_used
@@ -22,6 +24,7 @@ from usethis._integrations.ci.bitbucket.steps import (
     get_steps_in_default,
     remove_bitbucket_step_from_default,
 )
+from usethis._integrations.pre_commit.cmd_ import pre_commit_raw_cmd
 from usethis._integrations.pre_commit.hooks import (
     add_repo,
     get_hook_ids,
@@ -48,9 +51,29 @@ if TYPE_CHECKING:
     from usethis._types.deps import Dependency
 
 
-class Tool(Protocol):
+@dataclass(frozen=True)
+class ToolMeta:
+    """These are static metadata associated with the tool.
+
+    These aspects are independent of the current project.
+
+    See the respective `ToolSpec` properties for each attribute for documentation on the
+    individual attributes.
+    """
+
+    name: str
+    managed_files: list[Path] = field(default_factory=list)
+    # This is more about the inherent definition
+    rule_config: RuleConfig = field(default_factory=RuleConfig)
+    url: str | None = None  # For documentation purposes
+
+
+class ToolSpec(Protocol):
     @property
     @abstractmethod
+    def meta(self) -> ToolMeta: ...
+
+    @property
     def name(self) -> str:
         """The name of the tool, for display purposes.
 
@@ -63,24 +86,149 @@ class Tool(Protocol):
         For example, the tool named `ty` has a name of `ty`, not `Ty` or `TY`.
         Import Linter has a name of `Import Linter`, not `import-linter`.
         """
+        return self.meta.name
 
-    @abstractmethod
+    @property
+    def managed_files(self) -> list[Path]:
+        """Get (relative) paths to files managed by (solely) this tool."""
+        return self.meta.managed_files
+
+    @property
+    def rule_config(self) -> RuleConfig:
+        """Get the linter rule configuration associated with this tool.
+
+        This is a static, opinionated configuration which usethis uses when adding the
+        tool (and managing this and other tools when adding and removing, etc.).
+        """
+        return self.meta.rule_config
+
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        """If there is no currently active config file, this is the preferred one.
+
+        This can vary dynamically, since often we will prefer to respect an existing
+        configuration file if it exists.
+        """
+        return PyprojectTOMLManager()
+
+    def raw_cmd(self) -> str:
+        """The default command to run the tool.
+
+        This should not include a backend-specific prefix, e.g. don't include "uv run".
+
+        A non-default implementation should be provided when the tool has a CLI.
+
+        This will usually be a static string, but may involve some dynamic inference,
+        e.g. when determining the source directory for to operate on.
+
+        Returns:
+            The command string.
+
+        Raises:
+            NoDefaultToolCommand: If the tool has no associated command.
+
+        Examples:
+            For codespell: "codespell"
+        """
+        msg = f"{self.name} has no default command."
+        raise NoDefaultToolCommand(msg)
+
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """The tool's development dependencies.
+
+        These should all be considered characteristic of this particular tool.
+
+        In general, these can vary dynamically, e.g. based on the versions of Python
+        supported in the current project.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return []
+
+    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """The tool's test dependencies.
+
+        These should all be considered characteristic of this particular tool.
+
+        In general, these can vary dynamically, e.g. based on the versions of Python
+        supported in the current project.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return []
+
+    def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """The tool's documentation dependencies.
+
+        These should all be considered characteristic of this particular tool.
+
+        In general, these can vary dynamically, e.g. based on the versions of Python
+        supported in the current project.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return []
+
+    def pre_commit_config(self) -> PreCommitConfig:
+        """Get the pre-commit configurations for the tool.
+
+        In general, this can vary dynamically, e.g. based on whether Ruff is being
+        configured to be used as a formatter vs. a linter.
+        """
+        return PreCommitConfig(repo_configs=[], inform_how_to_use_on_migrate=False)
+
+    def selected_rules(self) -> list[Rule]:
+        """Get the rules managed by the tool that are currently selected.
+
+        In general, this requires reading config files to look at which rules are
+        selected for the project.
+        """
+        if not self.rule_config.selected:
+            return []
+
+        raise NotImplementedError
+
+    def ignored_rules(self) -> list[Rule]:
+        """Get the ignored rules managed by the tool.
+
+        In general, this requires reading config files to look at which rules are
+        ignored for the project.
+        """
+        if not self.rule_config.ignored:
+            return []
+
+        raise NotImplementedError
+
+
+class Tool(ToolSpec, Protocol):
     def print_how_to_use(self) -> None:
         """Print instructions for using the tool.
 
-        This method is called after a tool is added to the project.
-        """
-        pass
+        This method is invoked after a tool is added to the project, and when using
+        the --how option in the CLI.
 
-    def default_command(self) -> str:
-        """The default command to run the tool, backend-dependent.
+        It is useful for tools to provide a custom implementation of this method to
+        provide extra details, e.g. a word to describe what the tool does
+        (e.g. "... to run {self.name} spellchecker").
+        """
+        how_print(f"Run '{self.how_to_use_cmd()}' to run {self.name}.")
+
+    def how_to_use_cmd(self) -> str:
+        """The command used when explaining to run the tool.
 
         This method returns the command string for running the tool, which varies
-        based on the current backend (e.g., "uv", "none"). This is used to avoid
-        duplication in get_bitbucket_steps methods and help messages.
+        based on the current backend (e.g., "uv", "none"), along with installation
+        method (e.g. virtual environment/development dependency versus pre-commit).
+        This is used to avoid duplication in get_bitbucket_steps methods and help
+        messages.
 
         Returns:
-            The command string for running the tool.
+            The command string for running the tool for how-to-use instructions.
 
         Raises:
             NoDefaultToolCommand: If the tool has no associated command.
@@ -89,56 +237,59 @@ class Tool(Protocol):
             For codespell with uv backend: "uv run codespell"
             For codespell with none backend: "codespell"
         """
-        msg = f"{self.name} has no default command."
-        raise NoDefaultToolCommand(msg)
+        backend = get_backend()
+        install_method = self.get_install_method()
+        if install_method == "pre-commit":
+            if backend is BackendEnum.uv and is_uv_used():
+                return f"uv run {pre_commit_raw_cmd} {self.how_to_use_pre_commit_hook_id()}"
+            elif backend is BackendEnum.none or backend is BackendEnum.uv:
+                return f"{pre_commit_raw_cmd} {self.how_to_use_pre_commit_hook_id()}"
+            else:
+                assert_never(backend)
+        elif install_method == "devdep" or install_method is None:
+            if backend is BackendEnum.uv and is_uv_used():
+                return f"uv run {self.raw_cmd()}"
+            elif backend is BackendEnum.none or backend is BackendEnum.uv:
+                return self.raw_cmd()
+            else:
+                assert_never(backend)
+        else:
+            assert_never(install_method)
 
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        """The tool's development dependencies.
+    def how_to_use_pre_commit_hook_id(self) -> str:
+        """The pre-commit hook ID to use when explaining how to run via pre-commit."""
+        pre_commit_repos = self.get_pre_commit_repos()
+        try:
+            (pre_commit_repo,) = pre_commit_repos
+        except ValueError as err:
+            raise NotImplementedError from err
 
-        These should all be considered characteristic of this particular tool.
+        hooks = pre_commit_repo.hooks
 
-        Args:
-            unconditional: Whether to return all possible dependencies regardless of
-                           whether they are relevant to the current project.
-        """
-        return []
+        if hooks is None:
+            raise NotImplementedError
 
-    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        """The tool's test dependencies.
+        hook_ids = [hook.id for hook in hooks]
 
-        These should all be considered characteristic of this particular tool.
+        try:
+            (hook_id,) = hook_ids
+        except ValueError as err:
+            raise NotImplementedError from err
 
-        Args:
-            unconditional: Whether to return all possible dependencies regardless of
-                           whether they are relevant to the current project.
-        """
-        return []
+        if hook_id is None:
+            raise NotImplementedError
 
-    def get_doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        """The tool's documentation dependencies.
+        return hook_id
 
-        These should all be considered characteristic of this particular tool.
-
-        Args:
-            unconditional: Whether to return all possible dependencies regardless of
-                           whether they are relevant to the current project.
-        """
-        return []
-
-    def get_config_spec(self) -> ConfigSpec:
+    def config_spec(self) -> ConfigSpec:
         """Get the configuration specification for this tool.
+
+        This can be dynamically determined, e.g. based on the source directory structure
+        of the current project.
 
         This includes the file managers and resolution methodology.
         """
         return ConfigSpec.empty()
-
-    def get_pre_commit_config(self) -> PreCommitConfig:
-        """Get the pre-commit configurations for the tool."""
-        return PreCommitConfig(repo_configs=[], inform_how_to_use_on_migrate=False)
-
-    def get_managed_files(self) -> list[Path]:
-        """Get (relative) paths to files managed by (solely) this tool."""
-        return []
 
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project.
@@ -152,9 +303,7 @@ class Tool(Protocol):
         decode_err_by_name: dict[str, FileConfigError] = {}
         _is_used = False
 
-        _is_used = any(
-            file.exists() and file.is_file() for file in self.get_managed_files()
-        )
+        _is_used = any(file.exists() and file.is_file() for file in self.managed_files)
 
         if not _is_used:
             try:
@@ -195,46 +344,44 @@ class Tool(Protocol):
         _is_declared = False
 
         _is_declared = any(
-            is_dep_in_any_group(dep) for dep in self.get_dev_deps(unconditional=True)
+            is_dep_in_any_group(dep) for dep in self.dev_deps(unconditional=True)
         )
 
         if not _is_declared:
             _is_declared = any(
-                is_dep_in_any_group(dep)
-                for dep in self.get_test_deps(unconditional=True)
+                is_dep_in_any_group(dep) for dep in self.test_deps(unconditional=True)
             )
 
         if not _is_declared:
             _is_declared = any(
-                is_dep_in_any_group(dep)
-                for dep in self.get_doc_deps(unconditional=True)
+                is_dep_in_any_group(dep) for dep in self.doc_deps(unconditional=True)
             )
 
         return _is_declared
 
     def add_dev_deps(self) -> None:
-        add_deps_to_group(self.get_dev_deps(), "dev")
+        add_deps_to_group(self.dev_deps(), "dev")
 
     def remove_dev_deps(self) -> None:
-        remove_deps_from_group(self.get_dev_deps(unconditional=True), "dev")
+        remove_deps_from_group(self.dev_deps(unconditional=True), "dev")
 
     def add_test_deps(self) -> None:
-        add_deps_to_group(self.get_test_deps(), "test")
+        add_deps_to_group(self.test_deps(), "test")
 
     def remove_test_deps(self) -> None:
-        remove_deps_from_group(self.get_test_deps(unconditional=True), "test")
+        remove_deps_from_group(self.test_deps(unconditional=True), "test")
 
     def add_doc_deps(self) -> None:
-        add_deps_to_group(self.get_doc_deps(), "doc")
+        add_deps_to_group(self.doc_deps(), "doc")
 
     def remove_doc_deps(self) -> None:
-        remove_deps_from_group(self.get_doc_deps(unconditional=True), "doc")
+        remove_deps_from_group(self.doc_deps(unconditional=True), "doc")
 
     def get_pre_commit_repos(
         self,
     ) -> list[pre_commit_schema.LocalRepo | pre_commit_schema.UriRepo]:
         """Get the pre-commit repository definitions for the tool."""
-        return [c.repo for c in self.get_pre_commit_config().repo_configs]
+        return [c.repo for c in self.pre_commit_config().repo_configs]
 
     def is_pre_commit_config_present(self) -> bool:
         """Whether the tool's pre-commit configuration is present."""
@@ -310,7 +457,7 @@ class Tool(Protocol):
     def migrate_config_to_pre_commit(self) -> None:
         """Migrate the tool's configuration to pre-commit."""
         if self.is_used():
-            pre_commit_config = self.get_pre_commit_config()
+            pre_commit_config = self.pre_commit_config()
             # N.B. don't need to modify dev deps
             # We're migrating, so sometimes we might need to inform the user about the
             # new way to do things.
@@ -320,7 +467,7 @@ class Tool(Protocol):
     def migrate_config_from_pre_commit(self) -> None:
         """Migrate the tool's configuration from pre-commit."""
         if self.is_used():
-            pre_commit_config = self.get_pre_commit_config()
+            pre_commit_config = self.pre_commit_config()
             # N.B. don't need to modify dev deps
             # We're migrating, so sometimes we might need to inform the user about
             # the new way to do things.
@@ -338,7 +485,7 @@ class Tool(Protocol):
         Most commonly, this will just be a single file manager. The active config files
         themselves do not necessarily exist yet.
         """
-        config_spec = self.get_config_spec()
+        config_spec = self.config_spec()
         resolution = config_spec.resolution
         return self._get_active_config_file_managers_from_resolution(
             resolution,
@@ -362,7 +509,7 @@ class Tool(Protocol):
                 if path.exists() and path.is_file():
                     return {file_manager}
         elif resolution == "first_content":
-            config_spec = self.get_config_spec()
+            config_spec = self.config_spec()
             for relative_path, file_manager in file_manager_by_relative_path.items():
                 path = usethis_config.cpd() / relative_path
                 if path.exists() and path.is_file():
@@ -393,13 +540,9 @@ class Tool(Protocol):
             raise NotImplementedError(msg)
         return {preferred_file_manager}
 
-    def preferred_file_manager(self) -> KeyValueFileManager:
-        """If there is no currently active config file, this is the preferred one."""
-        return PyprojectTOMLManager()
-
     def is_config_present(self) -> bool:
         """Whether any of the tool's managed config sections are present."""
-        return self._is_config_spec_present(self.get_config_spec())
+        return self._is_config_spec_present(self.config_spec())
 
     def _is_config_spec_present(self, config_spec: ConfigSpec) -> bool:
         """Check whether a bespoke config spec is present.
@@ -440,7 +583,7 @@ class Tool(Protocol):
         active_config_file_managers = self.get_active_config_file_managers()
 
         already_added = False  # Only print messages for the first added config item.
-        for config_item in self.get_config_spec().config_items:
+        for config_item in self.config_spec().config_items:
             with usethis_config.set(
                 alert_only=already_added or usethis_config.alert_only,
                 instruct_only=already_added or usethis_config.instruct_only,
@@ -558,7 +701,7 @@ class Tool(Protocol):
         Note, this does not require knowledge of the config file resolution methodology,
         since all files' configs are removed regardless of whether they are in use.
         """
-        config_spec = self.get_config_spec()
+        config_spec = self.config_spec()
 
         first_removal = True
         for config_item in config_spec.config_items:
@@ -592,15 +735,19 @@ class Tool(Protocol):
         This includes any tool-specific files in the project.
         If no files exist, this method has no effect.
         """
-        for file in self.get_managed_files():
+        for file in self.managed_files:
             if (usethis_config.cpd() / file).exists() and (
                 usethis_config.cpd() / file
             ).is_file():
                 tick_print(f"Removing '{file}'.")
                 file.unlink()
 
-    def get_install_method(self) -> Literal["pre-commit", "devdep"] | None:
-        """Infer the method used to install the tool, return None if uninstalled."""
+    def get_install_method(self) -> Literal["devdep", "pre-commit"] | None:
+        """Infer the method used to install the tool, return None if uninstalled.
+
+        Returns "pre-commit" if the tool is never available as a dev dependency and is
+        only available as a pre-commit hook.
+        """
         if self.is_declared_as_dep():
             return "devdep"
 
@@ -613,7 +760,7 @@ class Tool(Protocol):
     ) -> list[bitbucket_schema.Step]:
         """Get the Bitbucket pipeline step associated with this tool.
 
-        By default, this creates a single step using the tool's default_command().
+        By default, this creates a single step using the tool's (default) command.
         Tools can override this method for more complex step requirements (e.g., pytest
         with multiple Python versions, or Ruff with separate linter/formatter steps).
 
@@ -625,7 +772,7 @@ class Tool(Protocol):
         # but it's included in the signature to allow for it to be used, e.g. for pytest
 
         try:
-            cmd = self.default_command()
+            cmd = self.how_to_use_cmd()
         except NoDefaultToolCommand:
             return []
 
@@ -717,14 +864,6 @@ class Tool(Protocol):
             ):
                 remove_bitbucket_step_from_default(step)
 
-    def get_rule_config(self) -> RuleConfig:
-        """Get the linter rule configuration associated with this tool."""
-        return RuleConfig()
-
-    def is_managed_rule(self, rule: Rule) -> bool:
-        """Determine if a rule is managed by this tool."""
-        return False
-
     def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         """Get the configuration keys for selected rules.
 
@@ -759,7 +898,7 @@ class Tool(Protocol):
         Returns:
             True if any rules were selected, False if no rules were selected.
         """
-        rules = sorted(set(rules) - set(self.get_selected_rules()))
+        rules = sorted(set(rules) - set(self.selected_rules()))
 
         if not rules:
             return False
@@ -776,10 +915,6 @@ class Tool(Protocol):
         file_manager.extend_list(keys=keys, values=rules)
 
         return True
-
-    def get_selected_rules(self) -> list[Rule]:
-        """Get the rules managed by the tool that are currently selected."""
-        return []
 
     def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         """Get the configuration keys for ignored rules.
@@ -816,7 +951,7 @@ class Tool(Protocol):
         Returns:
             True if any rules were ignored, False if no rules were ignored.
         """
-        rules = sorted(set(rules) - set(self.get_ignored_rules()))
+        rules = sorted(set(rules) - set(self.ignored_rules()))
 
         if not rules:
             return False
@@ -847,7 +982,7 @@ class Tool(Protocol):
         Returns:
             True if any rules were unignored, False if no rules were unignored.
         """
-        rules = sorted(set(rules) & set(self.get_ignored_rules()))
+        rules = sorted(set(rules) & set(self.ignored_rules()))
 
         if not rules:
             return False
@@ -865,10 +1000,6 @@ class Tool(Protocol):
 
         return True
 
-    def get_ignored_rules(self) -> list[Rule]:
-        """Get the ignored rules managed by the tool."""
-        return []
-
     def deselect_rules(self, rules: list[Rule]) -> bool:
         """Deselect the rules managed by the tool.
 
@@ -881,7 +1012,7 @@ class Tool(Protocol):
         Returns:
             True if any rules were deselected, False if no rules were deselected.
         """
-        rules = sorted(set(rules) & set(self.get_selected_rules()))
+        rules = sorted(set(rules) & set(self.selected_rules()))
 
         if not rules:
             return False

@@ -332,9 +332,7 @@ class TestPreCommit:
             else:
                 call_subprocess(["usethis", "tool", "pre-commit", "--offline"])
 
-            call_uv_subprocess(
-                ["run", "pre-commit", "run", "--all-files"], change_toml=False
-            )
+            call_uv_subprocess(["run", "pre-commit", "run", "-a"], change_toml=False)
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_cli_fail(self, uv_init_repo_dir: Path):
@@ -347,7 +345,7 @@ class TestPreCommit:
             # Pass invalid TOML to fail the pre-commit for validate-pyproject
             (uv_init_repo_dir / "pyproject.toml").write_text("[")
             try:
-                call_subprocess(["uv", "run", "pre-commit", "run", "--all-files"])
+                call_subprocess(["uv", "run", "pre-commit", "run", "-a"])
             except SubprocessFailedError:
                 pass
             else:
@@ -364,7 +362,7 @@ class TestPreCommit:
         assert (
             result.output
             == """\
-☐ Run 'pre-commit run --all-files' to run the hooks manually.
+☐ Run 'pre-commit run -a' to run the hooks manually.
 """
         )
 

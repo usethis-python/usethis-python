@@ -23,7 +23,7 @@ from usethis._integrations.environ.python import get_supported_minor_python_vers
 from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._python.version import PythonVersion
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
@@ -35,32 +35,24 @@ if TYPE_CHECKING:
 _PYTEST_PIP_CMD = "pip install pytest"
 
 
-class PytestTool(Tool):
-    # https://github.com/pytest-dev/pytest
+class PytestToolSpec(ToolSpec):
     @property
-    def name(self) -> str:
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="pytest",
+            url="https://github.com/pytest-dev/pytest",
+            managed_files=[
+                Path(".pytest.ini"),
+                Path("pytest.ini"),
+                Path("tests/conftest.py"),
+            ],
+            rule_config=RuleConfig(selected=["PT"], nontests_unmanaged_ignored=["PT"]),
+        )
+
+    def raw_cmd(self) -> str:
         return "pytest"
 
-    def default_command(self) -> str:
-        """Get the default command for running pytest."""
-        backend = get_backend()
-        if backend is BackendEnum.uv and is_uv_used():
-            return "uv run pytest"
-        elif backend is BackendEnum.none or backend is BackendEnum.uv:
-            return "pytest"
-        else:
-            assert_never(backend)
-
-    def print_how_to_use(self) -> None:
-        how_print(
-            "Add test files to the '/tests' directory with the format 'test_*.py'."
-        )
-        how_print("Add test functions with the format 'test_*()'.")
-
-        cmd = self.default_command()
-        how_print(f"Run '{cmd}' to run the tests.")
-
-    def get_test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         from usethis._tool.impl.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
             CoveragePyTool,
         )
@@ -75,7 +67,9 @@ class PytestTool(Tool):
             return PyprojectTOMLManager()
         return PytestINIManager()
 
-    def get_config_spec(self) -> ConfigSpec:
+
+class PytestTool(PytestToolSpec, Tool):
+    def config_spec(self) -> ConfigSpec:
         # https://docs.pytest.org/en/stable/reference/customize.html#configuration-file-formats
         # "Options from multiple configfiles candidates are never merged - the first match wins."
 
@@ -156,15 +150,16 @@ class PytestTool(Tool):
             ],
         )
 
-    def get_managed_files(self) -> list[Path]:
-        return [Path(".pytest.ini"), Path("pytest.ini"), Path("tests/conftest.py")]
-
-    def get_rule_config(self) -> RuleConfig:
-        return RuleConfig(selected=["PT"], nontests_unmanaged_ignored=["PT"])
+    def print_how_to_use(self) -> None:
+        how_print(
+            "Add test files to the '/tests' directory with the format 'test_*.py'."
+        )
+        how_print("Add test functions with the format 'test_*()'.")
+        how_print(f"Run '{self.how_to_use_cmd()}' to run the tests.")
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         # This is a variant of the "first" method
-        config_spec = self.get_config_spec()
+        config_spec = self.config_spec()
         if config_spec.resolution != "bespoke":
             # Something has gone badly wrong, perhaps in a subclass of PytestTool.
             raise NotImplementedError

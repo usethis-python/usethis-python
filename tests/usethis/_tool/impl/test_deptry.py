@@ -19,7 +19,7 @@ class TestDeptryTool:
         tool = DeptryTool()
 
         # Act
-        result = tool.get_config_spec()
+        result = tool.config_spec()
 
         # Assert
         config_item, *_ = result.config_items
@@ -45,89 +45,6 @@ ignore_missing = ["pytest"]
         assert "[tool.deptry]" not in pyproject.read_text()
         assert "ignore_missing" not in pyproject.read_text()
 
-    class TestIsManagedRule:
-        def test_dep001(self):
-            # Arrange
-            rule = "DEP001"
-
-            # Act
-            result = DeptryTool().is_managed_rule(rule)
-
-            # Assert
-            assert result is True
-
-        def test_not_deptry_rule(self):
-            # Arrange
-            rule = "NOT_DEPTRY_RULE"
-
-            # Act
-            result = DeptryTool().is_managed_rule(rule)
-
-            # Assert
-            assert result is False
-
-        def test_extra_letters(self):
-            # Arrange
-            rule = "DEPA001"
-
-            # Act
-            result = DeptryTool().is_managed_rule(rule)
-
-            # Assert
-            assert result is False
-
-        def test_leading_numbers(self):
-            # Arrange
-            rule = "001DEP"
-
-            # Act
-            result = DeptryTool().is_managed_rule(rule)
-
-            # Assert
-            assert result is False
-
-        def test_letters_separated_by_numbers(self):
-            # Arrange
-            rule = "D0E0P1"
-
-            # Act
-            result = DeptryTool().is_managed_rule(rule)
-
-            # Assert
-            assert result is False
-
-        def test_four_numbers(self):
-            # Arrange
-            rule = "DEP0001"
-
-            # Act
-            result = DeptryTool().is_managed_rule(rule)
-
-            # Assert
-            assert result is True
-
-        def test_no_numbers(self):
-            # N.B. Deptry does not accept rules without number codes, unlike Ruff.
-
-            # Arrange
-            rule = "DEP"
-
-            # Act
-            result = DeptryTool().is_managed_rule(rule)
-
-            # Assert
-            assert result is False
-
-        def test_truncated(self):
-            # Arrange
-            rule = "DE"
-
-            # Act
-            result = DeptryTool().is_managed_rule(rule)
-
-            # Assert
-            assert result is False
-
     class TestSelectRules:
         def test_always_empty(self, tmp_path: Path):
             # Arrange
@@ -138,7 +55,7 @@ ignore_missing = ["pytest"]
                 tool.select_rules(["A", "B", "C"])
 
                 # Assert
-                assert tool.get_selected_rules() == []
+                assert tool.selected_rules() == []
 
     class TestGetSelectedRules:
         def test_always_empty(self, tmp_path: Path):
@@ -147,7 +64,7 @@ ignore_missing = ["pytest"]
 
             # Act
             with change_cwd(tmp_path), PyprojectTOMLManager():
-                result = tool.get_selected_rules()
+                result = tool.selected_rules()
 
                 # Assert
                 assert result == []
@@ -162,7 +79,7 @@ ignore_missing = ["pytest"]
                 tool.deselect_rules(["A", "B", "C"])
 
                 # Assert
-                assert tool.get_selected_rules() == []
+                assert tool.selected_rules() == []
 
     class TestIgnoreRules:
         def test_ignore_dep001_no_pyproject_toml(
@@ -176,7 +93,7 @@ ignore_missing = ["pytest"]
                 tool.ignore_rules(["DEP001"])
 
                 # Assert
-                assert tool.get_ignored_rules() == ["DEP001"]
+                assert tool.ignored_rules() == ["DEP001"]
 
             out, err = capfd.readouterr()
             assert not err
@@ -195,7 +112,7 @@ ignore_missing = ["pytest"]
                 tool.ignore_rules(["DEP001"])
 
                 # Assert
-                assert tool.get_ignored_rules() == ["DEP001"]
+                assert tool.ignored_rules() == ["DEP001"]
 
             assert (
                 (tmp_path / "pyproject.toml").read_text()
@@ -216,7 +133,7 @@ ignore = ["DEP001"]
 
             # Act
             with change_cwd(tmp_path), PyprojectTOMLManager():
-                result = tool.get_ignored_rules()
+                result = tool.ignored_rules()
 
                 # Assert
                 assert result == []
@@ -228,7 +145,7 @@ ignore = ["DEP001"]
 
             # Act
             with change_cwd(tmp_path), PyprojectTOMLManager():
-                result = tool.get_ignored_rules()
+                result = tool.ignored_rules()
 
                 # Assert
                 assert result == []
@@ -245,7 +162,7 @@ ignore = ["DEP003"]
 
             # Act
             with change_cwd(tmp_path), PyprojectTOMLManager():
-                result = tool.get_ignored_rules()
+                result = tool.ignored_rules()
 
                 # Assert
                 assert result == ["DEP003"]
@@ -283,7 +200,7 @@ name = "test-project"
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                result = DeptryTool().get_pre_commit_config()
+                result = DeptryTool().pre_commit_config()
 
             # Assert
             assert result.repo_configs is not None
@@ -310,7 +227,7 @@ repos: []
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                result = DeptryTool().get_pre_commit_config()
+                result = DeptryTool().pre_commit_config()
 
             # Assert
             assert result.repo_configs is not None
@@ -337,7 +254,7 @@ repos: []
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                result = DeptryTool().get_pre_commit_config()
+                result = DeptryTool().pre_commit_config()
 
             # Assert
             assert result.repo_configs is not None
@@ -364,7 +281,7 @@ repos: []
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                result = DeptryTool().get_pre_commit_config()
+                result = DeptryTool().pre_commit_config()
 
             # Assert
             assert result.repo_configs is not None

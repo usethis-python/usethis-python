@@ -13,7 +13,7 @@ from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_ids
 from usethis._io import KeyValueFileManager
 from usethis._test import change_cwd
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolMeta
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import Rule, RuleConfig
@@ -28,8 +28,8 @@ class DefaultTool(Tool):
     """
 
     @property
-    def name(self) -> str:
-        return "default_tool"
+    def meta(self) -> ToolMeta:
+        return ToolMeta(name="default_tool")
 
     def print_how_to_use(self) -> None:
         how_print("How to use default_tool")
@@ -42,13 +42,17 @@ class MyTool(Tool):
     """
 
     @property
-    def name(self) -> str:
-        return "my_tool"
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="my_tool",
+            managed_files=[Path("mytool-config.yaml")],
+            rule_config=RuleConfig(selected=["MYRULE"]),
+        )
 
     def print_how_to_use(self) -> None:
         how_print("How to use my_tool")
 
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [
             Dependency(name=self.name),
             Dependency(name="black"),
@@ -58,7 +62,7 @@ class MyTool(Tool):
             deps.append(Dependency(name="pytest"))
         return deps
 
-    def get_pre_commit_config(self) -> PreCommitConfig:
+    def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
             schema.UriRepo(
                 repo=f"repo for {self.name}",
@@ -67,7 +71,7 @@ class MyTool(Tool):
             requires_venv=False,
         )
 
-    def get_config_spec(self) -> ConfigSpec:
+    def config_spec(self) -> ConfigSpec:
         return ConfigSpec(
             file_manager_by_relative_path={
                 Path("pyproject.toml"): PyprojectTOMLManager(),
@@ -84,25 +88,19 @@ class MyTool(Tool):
             ],
         )
 
-    def get_rule_config(self) -> RuleConfig:
-        return RuleConfig(selected=["MYRULE"])
-
-    def get_managed_files(self) -> list[Path]:
-        return [Path("mytool-config.yaml")]
-
     def get_managed_pyproject_keys(self) -> list[list[str]]:
         return [["tool", self.name], ["project", "classifiers"]]
 
 
 class TwoHooksTool(Tool):
     @property
-    def name(self) -> str:
-        return "two_hooks_tool"
+    def meta(self) -> ToolMeta:
+        return ToolMeta(name="two_hooks_tool")
 
     def print_how_to_use(self) -> None:
         how_print("How to use two_hooks_tool")
 
-    def get_pre_commit_config(self) -> PreCommitConfig:
+    def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
             schema.UriRepo(
                 repo=f"repo for {self.name}",
@@ -136,8 +134,8 @@ class MockToolForRuleTests(Tool):
         self._select_keys = select_keys or ["tool", "mocktool", "select"]
 
     @property
-    def name(self) -> str:
-        return self._name
+    def meta(self) -> ToolMeta:
+        return ToolMeta(name=self._name)
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         return {self._file_manager}
@@ -148,10 +146,10 @@ class MockToolForRuleTests(Tool):
     def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:  # noqa: ARG002
         return self._select_keys
 
-    def get_ignored_rules(self) -> list[Rule]:
+    def ignored_rules(self) -> list[Rule]:
         return self._ignored_rules
 
-    def get_selected_rules(self) -> list[Rule]:
+    def selected_rules(self) -> list[Rule]:
         return self._selected_rules
 
     def print_how_to_use(self) -> None:
@@ -171,11 +169,11 @@ class TestTool:
     class TestDevDeps:
         def test_default(self):
             tool = DefaultTool()
-            assert tool.get_dev_deps() == []
+            assert tool.dev_deps() == []
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.get_dev_deps() == [
+            assert tool.dev_deps() == [
                 Dependency(name="my_tool"),
                 Dependency(name="black"),
                 Dependency(name="flake8"),
@@ -213,7 +211,7 @@ class TestTool:
             tool = DefaultTool()
 
             # Act
-            config_spec = tool.get_config_spec()
+            config_spec = tool.config_spec()
 
             # Assert
             assert config_spec == ConfigSpec(
@@ -225,20 +223,20 @@ class TestTool:
     class TestGetAssociatedRuffRules:
         def test_default(self):
             tool = DefaultTool()
-            assert tool.get_rule_config() == RuleConfig()
+            assert tool.rule_config == RuleConfig()
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.get_rule_config() == RuleConfig(selected=["MYRULE"])
+            assert tool.rule_config == RuleConfig(selected=["MYRULE"])
 
     class TestGetManagedFiles:
         def test_default(self):
             tool = DefaultTool()
-            assert tool.get_managed_files() == []
+            assert tool.managed_files == []
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.get_managed_files() == [
+            assert tool.managed_files == [
                 Path("mytool-config.yaml"),
             ]
 
@@ -402,13 +400,13 @@ class TestTool:
             # Arrange
             class ThisTool(Tool):
                 @property
-                def name(self) -> str:
-                    return "my_tool"
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="my_tool")
 
                 def print_how_to_use(self) -> None:
                     how_print("How to use my_tool")
 
-                def get_config_spec(self) -> ConfigSpec:
+                def config_spec(self) -> ConfigSpec:
                     # Should use setup.cfg instead of pyproject.toml
                     return ConfigSpec(
                         file_manager_by_relative_path={
@@ -525,10 +523,10 @@ repos:
             # Arrange
             class NoRepoConfigsTool(Tool):
                 @property
-                def name(self) -> str:
-                    return "no_repo_configs_tool"
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="no_repo_configs_tool")
 
-                def get_pre_commit_config(self) -> PreCommitConfig:
+                def pre_commit_config(self) -> PreCommitConfig:
                     return PreCommitConfig(
                         repo_configs=[], inform_how_to_use_on_migrate=False
                     )
@@ -549,13 +547,13 @@ repos:
             # Arrange
             class MultiRepoTool(Tool):
                 @property
-                def name(self) -> str:
-                    return "multi_repo_tool"
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="multi_repo_tool")
 
                 def print_how_to_use(self) -> None:
                     how_print("How to use multi_repo_tool")
 
-                def get_pre_commit_config(self) -> PreCommitConfig:
+                def pre_commit_config(self) -> PreCommitConfig:
                     return PreCommitConfig(
                         repo_configs=[
                             PreCommitRepoConfig(
@@ -870,13 +868,13 @@ repos:
             # Arrange
             class TwoRepoTool(Tool):
                 @property
-                def name(self) -> str:
-                    return "two_repo_tool"
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="two_repo_tool")
 
                 def print_how_to_use(self) -> None:
                     how_print("How to use two_repo_tool")
 
-                def get_pre_commit_config(self) -> PreCommitConfig:
+                def pre_commit_config(self) -> PreCommitConfig:
                     return PreCommitConfig(
                         repo_configs=[
                             PreCommitRepoConfig(
@@ -932,8 +930,8 @@ repos:
             # Arrange
             class NoConfigTool(Tool):
                 @property
-                def name(self) -> str:
-                    return "no_config_tool"
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="no_config_tool")
 
                 def print_how_to_use(self) -> None:
                     how_print("How to use no_config_tool")
@@ -951,13 +949,13 @@ repos:
             # Arrange
             class ThisTool(Tool):
                 @property
-                def name(self) -> str:
-                    return "mytool"
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="mytool")
 
                 def print_how_to_use(self) -> None:
-                    how_print("How to use this_tool")
+                    how_print("How to use mytool")
 
-                def get_config_spec(self) -> ConfigSpec:
+                def config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
                         file_manager_by_relative_path={
                             Path("pyproject.toml"): PyprojectTOMLManager(),
@@ -1002,13 +1000,13 @@ key = "value"
             # Arrange
             class ThisTool(Tool):
                 @property
-                def name(self) -> str:
-                    return "mytool"
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="mytool")
 
                 def print_how_to_use(self) -> None:
                     how_print("How to use this_tool")
 
-                def get_config_spec(self) -> ConfigSpec:
+                def config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
                         file_manager_by_relative_path={
                             Path("pyproject.toml"): PyprojectTOMLManager(),
@@ -1058,13 +1056,13 @@ root_packages = ["example"]
             # Arrange
             class ThisTool(Tool):
                 @property
-                def name(self) -> str:
-                    return "mytool"
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="mytool")
 
                 def print_how_to_use(self) -> None:
                     how_print("How to use this_tool")
 
-                def get_config_spec(self) -> ConfigSpec:
+                def config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
                         file_manager_by_relative_path={
                             Path("setup.cfg"): SetupCFGManager(),
@@ -1098,13 +1096,13 @@ root_packages = ["example"]
             # Arrange
             class ThisTool(Tool):
                 @property
-                def name(self) -> str:
-                    return "mytool"
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="mytool")
 
                 def print_how_to_use(self) -> None:
                     how_print("How to use this_tool")
 
-                def get_config_spec(self) -> ConfigSpec:
+                def config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
                         file_manager_by_relative_path={
                             Path("setup.cfg"): SetupCFGManager(),
@@ -1513,7 +1511,7 @@ key3 = value3
             tool = MockToolForRuleTests(selected_rules=[])
 
             # Act
-            result = tool.get_selected_rules()
+            result = tool.selected_rules()
 
             # Assert
             assert result == []
@@ -1523,7 +1521,7 @@ key3 = value3
             tool = MockToolForRuleTests(selected_rules=["E501", "F401"])
 
             # Act
-            result = tool.get_selected_rules()
+            result = tool.selected_rules()
 
             # Assert
             assert result == ["E501", "F401"]

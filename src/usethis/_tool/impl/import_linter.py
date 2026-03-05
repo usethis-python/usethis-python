@@ -8,10 +8,9 @@ from typing import TYPE_CHECKING
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotImportLinterManager
-from usethis._console import how_print, info_print, warn_print
+from usethis._console import info_print, warn_print
 from usethis._file.ini.io_ import INIFileManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
@@ -24,7 +23,7 @@ from usethis._integrations.project.imports import (
 )
 from usethis._integrations.project.name import get_project_name
 from usethis._integrations.project.packages import get_importable_packages
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec, NoConfigValue
 from usethis._tool.impl.ruff import RuffTool
 from usethis._tool.pre_commit import PreCommitConfig
@@ -41,58 +40,22 @@ if TYPE_CHECKING:
 IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
 
 
-class ImportLinterTool(Tool):
-    # https://github.com/seddonym/import-linter
-
+class ImportLinterToolSpec(ToolSpec):
     @property
-    def name(self) -> str:
-        return "Import Linter"
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="Import Linter",
+            url="https://github.com/seddonym/import-linter",
+            managed_files=[Path(".importlinter")],
+            rule_config=RuleConfig(
+                unmanaged_selected=["INP"], tests_unmanaged_ignored=["INP"]
+            ),
+        )
 
-    def is_used(self) -> bool:
-        """Check if the Import Linter tool is used in the project."""
-        # We suppress the warning about assumptions regarding the package name.
-        # See _importlinter_warn_no_packages_found
-        with usethis_config.set(quiet=True):
-            return super().is_used()
+    def raw_cmd(self) -> str:
+        return "lint-imports"
 
-    def default_command(self) -> str:
-        backend = get_backend()
-        if backend is BackendEnum.uv and is_uv_used():
-            return "uv run lint-imports"
-        elif backend is BackendEnum.none or backend is BackendEnum.uv:
-            return "lint-imports"
-        else:
-            assert_never(backend)
-
-    def print_how_to_use(self) -> None:
-        if not _is_inp_rule_selected():
-            # If Ruff is used, we enable the INP rules instead.
-            info_print("Ensure '__init__.py' files are used in your packages.")
-            info_print(
-                "For more info see <https://docs.python.org/3/tutorial/modules.html#packages>"
-            )
-        install_method = self.get_install_method()
-        backend = get_backend()
-        if install_method == "pre-commit":
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    f"Run 'uv run pre-commit run import-linter --all-files' to run {self.name}."
-                )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print(
-                    f"Run 'pre-commit run import-linter --all-files' to run {self.name}."
-                )
-            else:
-                assert_never(backend)
-        elif install_method == "devdep" or install_method is None:
-            cmd = self.default_command()
-            how_print(f"Run '{cmd}' to run {self.name}.")
-        else:
-            assert_never(install_method)
-
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        # We need to add the import-linter package itself as a dev dependency.
-        # This is because it needs to run from within the virtual environment.
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="import-linter")]
 
     def preferred_file_manager(self) -> KeyValueFileManager:
@@ -100,7 +63,97 @@ class ImportLinterTool(Tool):
             return PyprojectTOMLManager()
         return DotImportLinterManager()
 
-    def get_config_spec(self) -> ConfigSpec:
+    def _get_layered_architecture_by_module_by_root_package(
+        self,
+    ) -> dict[str, dict[str, LayeredArchitecture]]:
+        root_packages = sorted(get_importable_packages())
+        if not root_packages:
+            # Couldn't find any packages, we're assuming the package name is the name
+            # of the project. Warn the user accordingly.
+            name = get_project_name()
+            _importlinter_warn_no_packages_found(name)
+            root_packages = [name]
+
+        layered_architecture_by_module_by_root_package = {}
+        for root_package in root_packages:
+            try:
+                layered_architecture_by_module = get_layered_architectures(root_package)
+            except ImportGraphBuildFailedError:
+                layered_architecture_by_module = {}
+
+            if not layered_architecture_by_module:
+                layered_architecture_by_module = {
+                    root_package: LayeredArchitecture(layers=[], excluded=set())
+                }
+
+            layered_architecture_by_module = dict(
+                sorted(
+                    layered_architecture_by_module.items(),
+                    key=lambda item: item[0].count("."),
+                )
+            )
+
+            layered_architecture_by_module_by_root_package[root_package] = (
+                layered_architecture_by_module
+            )
+
+        return layered_architecture_by_module_by_root_package
+
+    def _get_resolution(self) -> ResolutionT:
+        return "first"
+
+    def _get_file_manager_by_relative_path(self) -> dict[Path, KeyValueFileManager]:
+        return {
+            Path("setup.cfg"): SetupCFGManager(),
+            Path(".importlinter"): DotImportLinterManager(),
+            Path("pyproject.toml"): PyprojectTOMLManager(),
+        }
+
+    def pre_commit_config(self) -> PreCommitConfig:
+        backend = get_backend()
+
+        if backend is BackendEnum.uv:
+            return PreCommitConfig.from_single_repo(
+                pre_commit_schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        pre_commit_schema.HookDefinition(
+                            id="import-linter",
+                            name="import-linter",
+                            pass_filenames=False,
+                            entry="uv run --frozen --offline lint-imports",
+                            language=get_system_language(),
+                            require_serial=True,
+                            always_run=True,
+                        )
+                    ],
+                ),
+                requires_venv=True,
+                inform_how_to_use_on_migrate=False,
+            )
+        elif backend is BackendEnum.none:
+            return PreCommitConfig.from_single_repo(
+                pre_commit_schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        pre_commit_schema.HookDefinition(
+                            id="import-linter",
+                            name="import-linter",
+                            pass_filenames=False,
+                            entry="lint-imports",
+                            language=get_system_language(),
+                        )
+                    ],
+                ),
+                requires_venv=True,
+                inform_how_to_use_on_migrate=False,
+            )
+        else:
+            assert_never(backend)
+
+
+class ImportLinterTool(ImportLinterToolSpec, Tool):
+    def config_spec(self) -> ConfigSpec:
         # https://import-linter.readthedocs.io/en/stable/usage.html
 
         layered_architecture_by_module_by_root_package = (
@@ -260,52 +313,6 @@ class ImportLinterTool(Tool):
             ],
         )
 
-    def _get_layered_architecture_by_module_by_root_package(
-        self,
-    ) -> dict[str, dict[str, LayeredArchitecture]]:
-        root_packages = sorted(get_importable_packages())
-        if not root_packages:
-            # Couldn't find any packages, we're assuming the package name is the name
-            # of the project. Warn the user accordingly.
-            name = get_project_name()
-            _importlinter_warn_no_packages_found(name)
-            root_packages = [name]
-
-        layered_architecture_by_module_by_root_package = {}
-        for root_package in root_packages:
-            try:
-                layered_architecture_by_module = get_layered_architectures(root_package)
-            except ImportGraphBuildFailedError:
-                layered_architecture_by_module = {}
-
-            if not layered_architecture_by_module:
-                layered_architecture_by_module = {
-                    root_package: LayeredArchitecture(layers=[], excluded=set())
-                }
-
-            layered_architecture_by_module = dict(
-                sorted(
-                    layered_architecture_by_module.items(),
-                    key=lambda item: item[0].count("."),
-                )
-            )
-
-            layered_architecture_by_module_by_root_package[root_package] = (
-                layered_architecture_by_module
-            )
-
-        return layered_architecture_by_module_by_root_package
-
-    def _get_resolution(self) -> ResolutionT:
-        return "first"
-
-    def _get_file_manager_by_relative_path(self) -> dict[Path, KeyValueFileManager]:
-        return {
-            Path("setup.cfg"): SetupCFGManager(),
-            Path(".importlinter"): DotImportLinterManager(),
-            Path("pyproject.toml"): PyprojectTOMLManager(),
-        }
-
     def _are_active_ini_contracts(self) -> bool:
         # Consider active config manager, and see if there's a matching regex
         # for the contract in the INI file.
@@ -330,53 +337,21 @@ class ImportLinterTool(Tool):
             msg = f"Unsupported file manager: '{file_manager}'."
             raise NotImplementedError(msg)
 
-    def get_pre_commit_config(self) -> PreCommitConfig:
-        backend = get_backend()
+    def is_used(self) -> bool:
+        """Check if the Import Linter tool is used in the project."""
+        # We suppress the warning about assumptions regarding the package name.
+        # See _importlinter_warn_no_packages_found
+        with usethis_config.set(quiet=True):
+            return super().is_used()
 
-        if backend is BackendEnum.uv:
-            return PreCommitConfig.from_single_repo(
-                pre_commit_schema.LocalRepo(
-                    repo="local",
-                    hooks=[
-                        pre_commit_schema.HookDefinition(
-                            id="import-linter",
-                            name="import-linter",
-                            pass_filenames=False,
-                            entry="uv run --frozen --offline lint-imports",
-                            language=get_system_language(),
-                            require_serial=True,
-                            always_run=True,
-                        )
-                    ],
-                ),
-                requires_venv=True,
-                inform_how_to_use_on_migrate=False,
+    def print_how_to_use(self) -> None:
+        if not _is_inp_rule_selected():
+            # If Ruff is used, we enable the INP rules instead.
+            info_print("Ensure '__init__.py' files are used in your packages.")
+            info_print(
+                "For more info see <https://docs.python.org/3/tutorial/modules.html#packages>"
             )
-        elif backend is BackendEnum.none:
-            return PreCommitConfig.from_single_repo(
-                pre_commit_schema.LocalRepo(
-                    repo="local",
-                    hooks=[
-                        pre_commit_schema.HookDefinition(
-                            id="import-linter",
-                            name="import-linter",
-                            pass_filenames=False,
-                            entry="lint-imports",
-                            language=get_system_language(),
-                        )
-                    ],
-                ),
-                requires_venv=True,
-                inform_how_to_use_on_migrate=False,
-            )
-        else:
-            assert_never(backend)
-
-    def get_managed_files(self) -> list[Path]:
-        return [Path(".importlinter")]
-
-    def get_rule_config(self) -> RuleConfig:
-        return RuleConfig(unmanaged_selected=["INP"], tests_unmanaged_ignored=["INP"])
+        super().print_how_to_use()
 
 
 @functools.cache
@@ -386,7 +361,7 @@ def _importlinter_warn_no_packages_found(name: str) -> None:
 
 
 def _is_inp_rule_selected() -> bool:
-    return any(_is_inp_rule(rule) for rule in RuffTool().get_selected_rules())
+    return any(_is_inp_rule(rule) for rule in RuffTool().selected_rules())
 
 
 def _is_inp_rule(rule: Rule) -> bool:

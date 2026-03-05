@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
@@ -10,55 +9,21 @@ from usethis._config import usethis_config
 from usethis._console import how_print
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._integrations.pre_commit.language import get_system_language
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 
-if TYPE_CHECKING:
-    from usethis._types.deps import Dependency
 
-
-class RequirementsTxtTool(Tool):
-    # https://pip.pypa.io/en/stable/reference/requirements-file-format/
-
+class RequirementsTxtToolSpec(ToolSpec):
     @property
-    def name(self) -> str:
-        return "requirements.txt"
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="requirements.txt",
+            url="https://pip.pypa.io/en/stable/reference/requirements-file-format/",
+            managed_files=[Path("requirements.txt")],
+        )
 
-    def print_how_to_use(self) -> None:
-        install_method = self.get_install_method()
-        backend = get_backend()
-        if install_method == "pre-commit":
-            if backend is BackendEnum.uv:
-                how_print(
-                    "Run 'uv run pre-commit run uv-export' to write 'requirements.txt'."
-                )
-            elif backend is BackendEnum.none:
-                how_print("Run 'pre-commit run uv-export' to write 'requirements.txt'.")
-            else:
-                assert_never(backend)
-        elif install_method == "devdep" or install_method is None:
-            if backend is BackendEnum.uv:
-                how_print(
-                    "Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
-                )
-            elif backend is BackendEnum.none:
-                if not (usethis_config.cpd() / "requirements.txt").exists():
-                    how_print(
-                        "Run 'usethis tool requirements.txt' to write 'requirements.txt'."
-                    )
-            else:
-                assert_never(backend)
-        else:
-            assert_never(install_method)
-
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return []
-
-    def get_managed_files(self) -> list[Path]:
-        return [Path("requirements.txt")]
-
-    def get_pre_commit_config(self) -> PreCommitConfig:
+    def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()
 
         if backend is BackendEnum.uv:
@@ -84,3 +49,34 @@ class RequirementsTxtTool(Tool):
             return PreCommitConfig(repo_configs=[], inform_how_to_use_on_migrate=False)
         else:
             assert_never(backend)
+
+
+class RequirementsTxtTool(RequirementsTxtToolSpec, Tool):
+    def print_how_to_use(self) -> None:
+        install_method = self.get_install_method()
+        backend = get_backend()
+        if install_method == "pre-commit":
+            if backend is BackendEnum.uv:
+                how_print(
+                    "Run 'uv run pre-commit run -a uv-export' to write 'requirements.txt'."
+                )
+            elif backend is BackendEnum.none:
+                how_print(
+                    "Run 'pre-commit run -a uv-export' to write 'requirements.txt'."
+                )
+            else:
+                assert_never(backend)
+        elif install_method == "devdep" or install_method is None:
+            if backend is BackendEnum.uv:
+                how_print(
+                    "Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
+                )
+            elif backend is BackendEnum.none:
+                if not (usethis_config.cpd() / "requirements.txt").exists():
+                    how_print(
+                        "Run 'usethis tool requirements.txt' to write 'requirements.txt'."
+                    )
+            else:
+                assert_never(backend)
+        else:
+            assert_never(install_method)

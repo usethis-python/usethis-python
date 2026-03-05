@@ -3,10 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from typing_extensions import assert_never
-
-from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotCodespellRCManager
 from usethis._console import how_print
@@ -19,10 +15,9 @@ from usethis._file.pyproject_toml.requires_python import (
 from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._python.version import PythonVersion
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
-from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
@@ -31,42 +26,24 @@ if TYPE_CHECKING:
 _CODESPELL_VERSION = "v2.4.1"  # Manually bump this version when necessary
 
 
-class CodespellTool(Tool):
-    # https://github.com/codespell-project/codespell
+class CodespellToolSpec(ToolSpec):
     @property
-    def name(self) -> str:
-        return "Codespell"
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="Codespell",
+            url="https://github.com/codespell-project/codespell",
+            managed_files=[Path(".codespellrc")],
+        )
 
-    def default_command(self) -> str:
-        backend = get_backend()
-        if backend is BackendEnum.uv and is_uv_used():
-            return "uv run codespell"
-        elif backend is BackendEnum.none or backend is BackendEnum.uv:
-            return "codespell"
-        else:
-            assert_never(backend)
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        if (usethis_config.cpd() / "pyproject.toml").exists():
+            return PyprojectTOMLManager()
+        return DotCodespellRCManager()
 
-    def print_how_to_use(self) -> None:
-        backend = get_backend()
-        install_method = self.get_install_method()
-        if install_method == "pre-commit":
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    "Run 'uv run pre-commit run codespell --all-files' to run the Codespell spellchecker."
-                )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print(
-                    "Run 'pre-commit run codespell --all-files' to run the Codespell spellchecker."
-                )
-            else:
-                assert_never(backend)
-        elif install_method == "devdep" or install_method is None:
-            cmd = self.default_command()
-            how_print(f"Run '{cmd}' to run the Codespell spellchecker.")
-        else:
-            assert_never(install_method)
+    def raw_cmd(self) -> str:
+        return "codespell"
 
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="codespell")]
 
         # Python < 3.11 needs tomli (instead of the stdlib tomllib) to read
@@ -85,12 +62,23 @@ class CodespellTool(Tool):
 
         return deps
 
-    def preferred_file_manager(self) -> KeyValueFileManager:
-        if (usethis_config.cpd() / "pyproject.toml").exists():
-            return PyprojectTOMLManager()
-        return DotCodespellRCManager()
+    def pre_commit_config(self) -> PreCommitConfig:
+        return PreCommitConfig.from_single_repo(
+            pre_commit_schema.UriRepo(
+                repo="https://github.com/codespell-project/codespell",
+                rev=_CODESPELL_VERSION,
+                hooks=[
+                    pre_commit_schema.HookDefinition(
+                        id="codespell", additional_dependencies=["tomli"]
+                    )
+                ],
+            ),
+            requires_venv=False,
+        )
 
-    def get_config_spec(self) -> ConfigSpec:
+
+class CodespellTool(CodespellToolSpec, Tool):
+    def config_spec(self) -> ConfigSpec:
         # https://github.com/codespell-project/codespell?tab=readme-ov-file#using-a-config-file
 
         return ConfigSpec.from_flat(
@@ -146,19 +134,5 @@ class CodespellTool(Tool):
             ],
         )
 
-    def get_managed_files(self) -> list[Path]:
-        return [Path(".codespellrc")]
-
-    def get_pre_commit_config(self) -> PreCommitConfig:
-        return PreCommitConfig.from_single_repo(
-            pre_commit_schema.UriRepo(
-                repo="https://github.com/codespell-project/codespell",
-                rev=_CODESPELL_VERSION,
-                hooks=[
-                    pre_commit_schema.HookDefinition(
-                        id="codespell", additional_dependencies=["tomli"]
-                    )
-                ],
-            ),
-            requires_venv=False,
-        )
+    def print_how_to_use(self) -> None:
+        how_print(f"Run '{self.how_to_use_cmd()}' to run the {self.name} spellchecker.")

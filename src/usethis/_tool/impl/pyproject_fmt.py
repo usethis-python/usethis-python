@@ -2,62 +2,44 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from typing_extensions import assert_never
-
-from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.detect import is_uv_used
-from usethis._console import how_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
-from usethis._tool.base import Tool
+from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
-from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
-_PYPROJECT_FMT_VERSION = "v2.15.1"  # Manually bump this version when necessary
+_PYPROJECT_FMT_VERSION = "v2.16.2"  # Manually bump this version when necessary
 
 
-class PyprojectFmtTool(Tool):
-    # https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt
-    # https://github.com/tox-dev/pyproject-fmt
+class PyprojectFmtToolSpec(ToolSpec):
     @property
-    def name(self) -> str:
-        return "pyproject-fmt"
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="pyproject-fmt",
+            # also https://github.com/tox-dev/pyproject-fmt for pre-commit hook
+            url="https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt",
+        )
 
-    def default_command(self) -> str:
-        backend = get_backend()
-        if backend is BackendEnum.uv and is_uv_used():
-            return "uv run pyproject-fmt pyproject.toml"
-        elif backend is BackendEnum.none or backend is BackendEnum.uv:
-            return "pyproject-fmt pyproject.toml"
-        else:
-            assert_never(backend)
+    def raw_cmd(self) -> str:
+        return "pyproject-fmt pyproject.toml"
 
-    def print_how_to_use(self) -> None:
-        install_method = self.get_install_method()
-        backend = get_backend()
-        if install_method == "pre-commit":
-            if backend is BackendEnum.uv and is_uv_used():
-                how_print(
-                    f"Run 'uv run pre-commit run pyproject-fmt --all-files' to run {self.name}."
-                )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
-                how_print(
-                    f"Run 'pre-commit run pyproject-fmt --all-files' to run {self.name}."
-                )
-            else:
-                assert_never(backend)
-        elif install_method == "devdep" or install_method is None:
-            cmd = self.default_command()
-            how_print(f"Run '{cmd}' to run {self.name}.")
-        else:
-            assert_never(install_method)
-
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pyproject-fmt")]
 
-    def get_config_spec(self) -> ConfigSpec:
+    def pre_commit_config(self) -> PreCommitConfig:
+        return PreCommitConfig.from_single_repo(
+            pre_commit_schema.UriRepo(
+                repo="https://github.com/tox-dev/pyproject-fmt",
+                rev=_PYPROJECT_FMT_VERSION,
+                hooks=[pre_commit_schema.HookDefinition(id="pyproject-fmt")],
+            ),
+            requires_venv=False,
+        )
+
+
+class PyprojectFmtTool(PyprojectFmtToolSpec, Tool):
+    def config_spec(self) -> ConfigSpec:
         # https://pyproject-fmt.readthedocs.io/en/latest/#configuration-via-file
         return ConfigSpec.from_flat(
             file_managers=[PyprojectTOMLManager()],
@@ -81,14 +63,4 @@ class PyprojectFmtTool(Tool):
                     },
                 ),
             ],
-        )
-
-    def get_pre_commit_config(self) -> PreCommitConfig:
-        return PreCommitConfig.from_single_repo(
-            pre_commit_schema.UriRepo(
-                repo="https://github.com/tox-dev/pyproject-fmt",
-                rev=_PYPROJECT_FMT_VERSION,
-                hooks=[pre_commit_schema.HookDefinition(id="pyproject-fmt")],
-            ),
-            requires_venv=False,
         )

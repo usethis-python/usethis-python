@@ -101,7 +101,7 @@ select = ["E", "PT"]
             tool = PyprojectTOMLTool()
 
             # Act
-            result = tool.get_dev_deps()
+            result = tool.dev_deps()
 
             # Assert
             assert result == []

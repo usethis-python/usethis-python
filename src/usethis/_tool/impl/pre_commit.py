@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.detect import is_uv_used
 from usethis._console import how_print
 from usethis._detect.pre_commit import is_pre_commit_used
 from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
@@ -14,7 +13,8 @@ from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
 from usethis._integrations.pre_commit import schema as pre_commit_schema
-from usethis._tool.base import Tool
+from usethis._integrations.pre_commit.cmd_ import pre_commit_raw_cmd
+from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -25,13 +25,22 @@ if TYPE_CHECKING:
 _SYNC_WITH_UV_VERSION = "v0.5.0"  # Manually bump this version when necessary
 
 
-class PreCommitTool(Tool):
-    # https://github.com/pre-commit/pre-commit
+class PreCommitToolSpec(ToolSpec):
     @property
-    def name(self) -> str:
-        return "pre-commit"
+    def meta(self) -> ToolMeta:
+        return ToolMeta(
+            name="pre-commit",
+            url="https://github.com/pre-commit/pre-commit",
+            managed_files=[Path(".pre-commit-config.yaml")],
+        )
 
-    def get_pre_commit_config(self) -> PreCommitConfig:
+    def raw_cmd(self) -> str:
+        return pre_commit_raw_cmd
+
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        return [Dependency(name="pre-commit")]
+
+    def pre_commit_config(self) -> PreCommitConfig:
         """Get the pre-commit configurations for the tool."""
         backend = get_backend()
 
@@ -46,29 +55,17 @@ class PreCommitTool(Tool):
                 inform_how_to_use_on_migrate=False,
             )
         elif backend is BackendEnum.none:
-            return super().get_pre_commit_config()
+            return super().pre_commit_config()
         else:
             assert_never(backend)
 
+
+class PreCommitTool(PreCommitToolSpec, Tool):
     def is_used(self) -> bool:
         return is_pre_commit_used()
 
     def print_how_to_use(self) -> None:
-        backend = get_backend()
-        if backend is BackendEnum.uv and is_uv_used():
-            how_print(
-                "Run 'uv run pre-commit run --all-files' to run the hooks manually."
-            )
-        elif backend in (BackendEnum.none, BackendEnum.uv):
-            how_print("Run 'pre-commit run --all-files' to run the hooks manually.")
-        else:
-            assert_never(backend)
-
-    def get_dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="pre-commit")]
-
-    def get_managed_files(self) -> list[Path]:
-        return [Path(".pre-commit-config.yaml")]
+        how_print(f"Run '{self.how_to_use_cmd()}' to run the hooks manually.")
 
     def get_bitbucket_steps(
         self,
@@ -86,7 +83,7 @@ class PreCommitTool(Tool):
                     script=bitbucket_schema.Script(
                         [
                             BitbucketScriptItemAnchor(name="install-uv"),
-                            "uv run pre-commit run --all-files",
+                            "uv run pre-commit run -a",
                         ]
                     ),
                 )
@@ -99,7 +96,7 @@ class PreCommitTool(Tool):
                     script=bitbucket_schema.Script(
                         [
                             BitbucketScriptItemAnchor(name="ensure-venv"),
-                            "pre-commit run --all-files",
+                            "pre-commit run -a",
                         ]
                     ),
                 )

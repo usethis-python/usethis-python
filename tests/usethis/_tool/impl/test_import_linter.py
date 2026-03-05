@@ -34,7 +34,7 @@ repos:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "☐ Run 'uv run pre-commit run import-linter --all-files' to run Import Linter.\n"
+                "☐ Run 'uv run pre-commit run -a import-linter' to run Import Linter.\n"
             )
 
         def test_pre_commit_no_uv(
@@ -61,7 +61,7 @@ repos:
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "☐ Run 'pre-commit run import-linter --all-files' to run Import Linter.\n"
+                "☐ Run 'pre-commit run -a import-linter' to run Import Linter.\n"
             )
 
         def test_uv_only(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
@@ -168,7 +168,7 @@ repos:
             # Act: get_config_spec should not crash with AssertionError
             # when get_importable_packages returns empty and grimp fails
             with change_cwd(tmp_path), files_manager():
-                config_spec = ImportLinterTool().get_config_spec()
+                config_spec = ImportLinterTool().config_spec()
 
             # Assert: Should return a valid config spec with fallback contract
             assert config_spec is not None

@@ -21,7 +21,7 @@ class TestPytestTool:
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                cmd = PytestTool().default_command()
+                cmd = PytestTool().how_to_use_cmd()
 
             # Assert
             assert cmd == "uv run pytest"
@@ -31,7 +31,7 @@ class TestPytestTool:
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                cmd = PytestTool().default_command()
+                cmd = PytestTool().how_to_use_cmd()
 
             # Assert
             assert cmd == "pytest"
@@ -45,7 +45,7 @@ class TestPytestTool:
                 files_manager(),
                 usethis_config.set(backend=BackendEnum.none),
             ):
-                cmd = PytestTool().default_command()
+                cmd = PytestTool().how_to_use_cmd()
 
             # Assert
             assert cmd == "pytest"

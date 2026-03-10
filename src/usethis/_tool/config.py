@@ -67,6 +67,22 @@ class ConfigSpec(BaseModel):
             file_manager_by_relative_path={}, resolution="first", config_items=[]
         )
 
+    def is_present(self) -> bool:
+        """Check whether any managed configuration in this spec is present on disk."""
+        for config_item in self.config_items:
+            if not config_item.managed:
+                continue
+
+            for relative_path, entry in config_item.root.items():
+                file_manager = self.file_manager_by_relative_path[relative_path]
+                if not (file_manager.path.exists() and file_manager.path.is_file()):
+                    continue
+
+                if file_manager.__contains__(entry.keys):
+                    return True
+
+        return False
+
 
 class NoConfigValue:
     pass

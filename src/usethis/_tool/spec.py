@@ -1,0 +1,225 @@
+from __future__ import annotations
+
+from abc import abstractmethod
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Protocol
+
+from usethis._deps import is_dep_in_any_group
+from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.pre_commit.hooks import get_hook_ids, hook_ids_are_equivalent
+from usethis._tool.pre_commit import PreCommitConfig
+from usethis._tool.rule import RuleConfig
+from usethis.errors import NoDefaultToolCommand
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from usethis._integrations.pre_commit import schema as pre_commit_schema
+    from usethis._io import KeyValueFileManager
+    from usethis._tool.rule import Rule
+    from usethis._types.deps import Dependency
+
+
+@dataclass(frozen=True)
+class ToolMeta:
+    """These are static metadata associated with the tool.
+
+    These aspects are independent of the current project.
+
+    See the respective `ToolSpec` properties for each attribute for documentation on the
+    individual attributes.
+    """
+
+    name: str
+    managed_files: list[Path] = field(default_factory=list)
+    # This is more about the inherent definition
+    rule_config: RuleConfig = field(default_factory=RuleConfig)
+    url: str | None = None  # For documentation purposes
+
+
+class ToolSpec(Protocol):
+    @property
+    @abstractmethod
+    def meta(self) -> ToolMeta: ...
+
+    @property
+    def name(self) -> str:
+        """The name of the tool, for display purposes.
+
+        It is assumed that this name is also the name of the Python package associated
+        with the tool; if not, make sure to override methods which access this property.
+
+        This is the display-friendly (e.g. brand compliant) name of the tool, not the
+        name of a CLI command, etc. Pay mind to the correct capitalization.
+
+        For example, the tool named `ty` has a name of `ty`, not `Ty` or `TY`.
+        Import Linter has a name of `Import Linter`, not `import-linter`.
+        """
+        return self.meta.name
+
+    @property
+    def managed_files(self) -> list[Path]:
+        """Get (relative) paths to files managed by (solely) this tool."""
+        return self.meta.managed_files
+
+    @property
+    def rule_config(self) -> RuleConfig:
+        """Get the linter rule configuration associated with this tool.
+
+        This is a static, opinionated configuration which usethis uses when adding the
+        tool (and managing this and other tools when adding and removing, etc.).
+        """
+        return self.meta.rule_config
+
+    def preferred_file_manager(self) -> KeyValueFileManager:
+        """If there is no currently active config file, this is the preferred one.
+
+        This can vary dynamically, since often we will prefer to respect an existing
+        configuration file if it exists.
+        """
+        return PyprojectTOMLManager()
+
+    def raw_cmd(self) -> str:
+        """The default command to run the tool.
+
+        This should not include a backend-specific prefix, e.g. don't include "uv run".
+
+        A non-default implementation should be provided when the tool has a CLI.
+
+        This will usually be a static string, but may involve some dynamic inference,
+        e.g. when determining the source directory for to operate on.
+
+        Returns:
+            The command string.
+
+        Raises:
+            NoDefaultToolCommand: If the tool has no associated command.
+
+        Examples:
+            For codespell: "codespell"
+        """
+        msg = f"{self.name} has no default command."
+        raise NoDefaultToolCommand(msg)
+
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """The tool's development dependencies.
+
+        These should all be considered characteristic of this particular tool.
+
+        In general, these can vary dynamically, e.g. based on the versions of Python
+        supported in the current project.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return []
+
+    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """The tool's test dependencies.
+
+        These should all be considered characteristic of this particular tool.
+
+        In general, these can vary dynamically, e.g. based on the versions of Python
+        supported in the current project.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return []
+
+    def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """The tool's documentation dependencies.
+
+        These should all be considered characteristic of this particular tool.
+
+        In general, these can vary dynamically, e.g. based on the versions of Python
+        supported in the current project.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return []
+
+    def pre_commit_config(self) -> PreCommitConfig:
+        """Get the pre-commit configurations for the tool.
+
+        In general, this can vary dynamically, e.g. based on whether Ruff is being
+        configured to be used as a formatter vs. a linter.
+        """
+        return PreCommitConfig(repo_configs=[], inform_how_to_use_on_migrate=False)
+
+    def selected_rules(self) -> list[Rule]:
+        """Get the rules managed by the tool that are currently selected.
+
+        In general, this requires reading config files to look at which rules are
+        selected for the project.
+        """
+        if not self.rule_config.selected:
+            return []
+
+        raise NotImplementedError
+
+    def ignored_rules(self) -> list[Rule]:
+        """Get the ignored rules managed by the tool.
+
+        In general, this requires reading config files to look at which rules are
+        ignored for the project.
+        """
+        if not self.rule_config.ignored:
+            return []
+
+        raise NotImplementedError
+
+    def is_declared_as_dep(self) -> bool:
+        """Whether the tool is declared as a dependency in the project.
+
+        This is inferred based on whether any of the tools characteristic dependencies
+        are declared in the project.
+        """
+        # N.B. currently doesn't check core dependencies nor extras.
+        # Only PEP735 dependency groups.
+        # See https://github.com/usethis-python/usethis-python/issues/809
+        _is_declared = False
+
+        _is_declared = any(
+            is_dep_in_any_group(dep) for dep in self.dev_deps(unconditional=True)
+        )
+
+        if not _is_declared:
+            _is_declared = any(
+                is_dep_in_any_group(dep) for dep in self.test_deps(unconditional=True)
+            )
+
+        if not _is_declared:
+            _is_declared = any(
+                is_dep_in_any_group(dep) for dep in self.doc_deps(unconditional=True)
+            )
+
+        return _is_declared
+
+    def get_pre_commit_repos(
+        self,
+    ) -> list[pre_commit_schema.LocalRepo | pre_commit_schema.UriRepo]:
+        """Get the pre-commit repository definitions for the tool."""
+        return [c.repo for c in self.pre_commit_config().repo_configs]
+
+    def is_pre_commit_config_present(self) -> bool:
+        """Whether the tool's pre-commit configuration is present."""
+        repo_configs = self.get_pre_commit_repos()
+
+        for repo_config in repo_configs:
+            if repo_config.hooks is None:
+                continue
+
+            # Check if any of the hooks are present.
+            for hook in repo_config.hooks:
+                if any(
+                    hook_ids_are_equivalent(hook.id, hook_id)
+                    for hook_id in get_hook_ids()
+                ):
+                    return True
+
+        return False

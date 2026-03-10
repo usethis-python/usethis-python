@@ -25,6 +25,7 @@ from usethis._integrations.project.layout import get_source_dir_str
 from usethis._python.version import PythonVersion
 from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.deps import DepConfig
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -52,15 +53,11 @@ class PytestToolSpec(ToolSpec):
     def raw_cmd(self) -> str:
         return "pytest"
 
-    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
-            CoveragePyTool,
+    def dep_config(self) -> DepConfig:
+        return DepConfig(
+            test_deps=[Dependency(name="pytest")],
+            unmanaged_test_deps=[Dependency(name="pytest-cov")],
         )
-
-        deps = [Dependency(name="pytest")]
-        if unconditional or CoveragePyTool().is_used():
-            deps += [Dependency(name="pytest-cov")]
-        return deps
 
     def preferred_file_manager(self) -> KeyValueFileManager:
         if (usethis_config.cpd() / "pyproject.toml").exists():
@@ -156,6 +153,19 @@ class PytestTool(PytestToolSpec, Tool):
         )
         how_print("Add test functions with the format 'test_*()'.")
         how_print(f"Run '{self.how_to_use_cmd()}' to run the tests.")
+
+    def add_test_deps(self) -> None:
+        from usethis._deps import add_deps_to_group  # noqa: PLC0415
+        from usethis._tool.impl.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
+            CoveragePyTool,
+        )
+
+        if CoveragePyTool().is_used():
+            add_deps_to_group(
+                [Dependency(name="pytest"), Dependency(name="pytest-cov")], "test"
+            )
+        else:
+            super().add_test_deps()
 
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         # This is a variant of the "first" method

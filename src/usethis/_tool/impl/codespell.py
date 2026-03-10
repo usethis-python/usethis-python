@@ -17,6 +17,7 @@ from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._python.version import PythonVersion
 from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.deps import DepConfig
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.deps import Dependency
 
@@ -43,24 +44,24 @@ class CodespellToolSpec(ToolSpec):
     def raw_cmd(self) -> str:
         return "codespell"
 
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        deps = [Dependency(name="codespell")]
-
+    def dep_config(self) -> DepConfig:
         # Python < 3.11 needs tomli (instead of the stdlib tomllib) to read
         # pyproject.toml files
-        if unconditional:
-            needs_tomli = True
-        else:
-            try:
-                versions = get_required_minor_python_versions()
-            except (MissingRequiresPythonError, PyprojectTOMLNotFoundError):
-                versions = [PythonVersion.from_interpreter()]
+        try:
+            versions = get_required_minor_python_versions()
+        except (MissingRequiresPythonError, PyprojectTOMLNotFoundError):
+            versions = [PythonVersion.from_interpreter()]
 
-            needs_tomli = any(v.to_short_tuple() < (3, 11) for v in versions)
+        needs_tomli = any(v.to_short_tuple() < (3, 11) for v in versions)
+
         if needs_tomli:
-            deps.append(Dependency(name="tomli"))
-
-        return deps
+            return DepConfig(
+                dev_deps=[Dependency(name="codespell"), Dependency(name="tomli")]
+            )
+        return DepConfig(
+            dev_deps=[Dependency(name="codespell")],
+            unmanaged_dev_deps=[Dependency(name="tomli")],
+        )
 
     def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(

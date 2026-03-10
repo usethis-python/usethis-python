@@ -23,6 +23,7 @@ from usethis._tool.config import (
     ConfigSpec,
     ensure_managed_file_exists,
 )
+from usethis._tool.deps import DepConfig
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import Rule
 from usethis._types.backend import BackendEnum
@@ -44,8 +45,8 @@ class RuffToolSpec(ToolSpec):
             managed_files=[Path(".ruff.toml"), Path("ruff.toml")],
         )
 
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="ruff")]
+    def dep_config(self) -> DepConfig:
+        return DepConfig.from_single_dev_dep(Dependency(name="ruff"))
 
     def preferred_file_manager(self) -> KeyValueFileManager:
         if (usethis_config.cpd() / "pyproject.toml").exists():

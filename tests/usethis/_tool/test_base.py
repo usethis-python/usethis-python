@@ -15,6 +15,7 @@ from usethis._io import KeyValueFileManager
 from usethis._test import change_cwd
 from usethis._tool.base import Tool, ToolMeta
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.deps import DepConfig
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import Rule, RuleConfig
 from usethis._types.deps import Dependency
@@ -52,15 +53,15 @@ class MyTool(Tool):
     def print_how_to_use(self) -> None:
         how_print("How to use my_tool")
 
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        deps = [
-            Dependency(name=self.name),
-            Dependency(name="black"),
-            Dependency(name="flake8"),
-        ]
-        if unconditional:
-            deps.append(Dependency(name="pytest"))
-        return deps
+    def dep_config(self) -> DepConfig:
+        return DepConfig(
+            dev_deps=[
+                Dependency(name=self.name),
+                Dependency(name="black"),
+                Dependency(name="flake8"),
+            ],
+            unmanaged_dev_deps=[Dependency(name="pytest")],
+        )
 
     def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
@@ -166,18 +167,21 @@ class TestTool:
             tool = MyTool()
             assert tool.name == "my_tool"
 
-    class TestDevDeps:
+    class TestDepConfig:
         def test_default(self):
             tool = DefaultTool()
-            assert tool.dev_deps() == []
+            assert tool.dep_config() == DepConfig()
 
         def test_specific(self):
             tool = MyTool()
-            assert tool.dev_deps() == [
-                Dependency(name="my_tool"),
-                Dependency(name="black"),
-                Dependency(name="flake8"),
-            ]
+            assert tool.dep_config() == DepConfig(
+                dev_deps=[
+                    Dependency(name="my_tool"),
+                    Dependency(name="black"),
+                    Dependency(name="flake8"),
+                ],
+                unmanaged_dev_deps=[Dependency(name="pytest")],
+            )
 
     class TestPrintHowToUse:
         def test_default(self, capsys: pytest.CaptureFixture[str]):

@@ -12,6 +12,7 @@ from usethis._console import how_print
 from usethis._integrations.project.name import get_project_name
 from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.deps import DepConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
@@ -28,13 +29,11 @@ class MkDocsToolSpec(ToolSpec):
             managed_files=[Path("mkdocs.yml")],
         )
 
-    def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        deps = [Dependency(name="mkdocs")]
-
-        if unconditional:
-            deps.append(Dependency(name="mkdocs-material"))
-
-        return deps
+    def dep_config(self) -> DepConfig:
+        return DepConfig(
+            doc_deps=[Dependency(name="mkdocs")],
+            unmanaged_doc_deps=[Dependency(name="mkdocs-material")],
+        )
 
     def preferred_file_manager(self) -> KeyValueFileManager:
         """If there is no currently active config file, this is the preferred one."""

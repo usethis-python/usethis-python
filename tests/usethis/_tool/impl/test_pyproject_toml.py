@@ -95,13 +95,13 @@ select = ["E", "PT"]
             # Assert
             assert result == "pyproject.toml"
 
-    class TestDevDeps:
+    class TestDepConfig:
         def test_none(self):
             # Arrange
             tool = PyprojectTOMLTool()
 
             # Act
-            result = tool.dev_deps()
+            result = tool.dep_config()
 
             # Assert
-            assert result == []
+            assert result.dev_deps == []

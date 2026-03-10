@@ -6,6 +6,7 @@ from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.deps import DepConfig
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.deps import Dependency
 
@@ -24,8 +25,8 @@ class PyprojectFmtToolSpec(ToolSpec):
     def raw_cmd(self) -> str:
         return "pyproject-fmt pyproject.toml"
 
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="pyproject-fmt")]
+    def dep_config(self) -> DepConfig:
+        return DepConfig.from_single_dev_dep(Dependency(name="pyproject-fmt"))
 
     def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(

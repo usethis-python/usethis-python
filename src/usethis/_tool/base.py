@@ -32,6 +32,7 @@ from usethis._integrations.pre_commit.hooks import (
     remove_hook,
 )
 from usethis._tool.config import ConfigSpec, NoConfigValue, ensure_managed_file_exists
+from usethis._tool.deps import DepConfig
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
@@ -48,7 +49,6 @@ if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ConfigItem, ResolutionT
     from usethis._tool.rule import Rule
-    from usethis._types.deps import Dependency
 
 
 @dataclass(frozen=True)
@@ -132,47 +132,18 @@ class ToolSpec(Protocol):
         msg = f"{self.name} has no default command."
         raise NoDefaultToolCommand(msg)
 
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        """The tool's development dependencies.
+    def dep_config(self) -> DepConfig:
+        """The tool's dependency configuration.
 
-        These should all be considered characteristic of this particular tool.
+        This includes both managed dependencies (always added when the tool is added and
+        removed when the tool is removed) and unmanaged dependencies (never actively
+        added, but removed if found when the tool is removed).
 
-        In general, these can vary dynamically, e.g. based on the versions of Python
-        supported in the current project.
-
-        Args:
-            unconditional: Whether to return all possible dependencies regardless of
-                           whether they are relevant to the current project.
+        In general, the managed dependencies can vary dynamically, e.g. based on the
+        versions of Python supported in the current project or on whether other tools
+        are in use.
         """
-        return []
-
-    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        """The tool's test dependencies.
-
-        These should all be considered characteristic of this particular tool.
-
-        In general, these can vary dynamically, e.g. based on the versions of Python
-        supported in the current project.
-
-        Args:
-            unconditional: Whether to return all possible dependencies regardless of
-                           whether they are relevant to the current project.
-        """
-        return []
-
-    def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        """The tool's documentation dependencies.
-
-        These should all be considered characteristic of this particular tool.
-
-        In general, these can vary dynamically, e.g. based on the versions of Python
-        supported in the current project.
-
-        Args:
-            unconditional: Whether to return all possible dependencies regardless of
-                           whether they are relevant to the current project.
-        """
-        return []
+        return DepConfig()
 
     def pre_commit_config(self) -> PreCommitConfig:
         """Get the pre-commit configurations for the tool.
@@ -341,41 +312,33 @@ class Tool(ToolSpec, Protocol):
         # N.B. currently doesn't check core dependencies nor extras.
         # Only PEP735 dependency groups.
         # See https://github.com/usethis-python/usethis-python/issues/809
-        _is_declared = False
+        config = self.dep_config()
 
-        _is_declared = any(
-            is_dep_in_any_group(dep) for dep in self.dev_deps(unconditional=True)
+        all_deps = (
+            config.get_all_dev_deps()
+            + config.get_all_test_deps()
+            + config.get_all_doc_deps()
         )
 
-        if not _is_declared:
-            _is_declared = any(
-                is_dep_in_any_group(dep) for dep in self.test_deps(unconditional=True)
-            )
-
-        if not _is_declared:
-            _is_declared = any(
-                is_dep_in_any_group(dep) for dep in self.doc_deps(unconditional=True)
-            )
-
-        return _is_declared
+        return any(is_dep_in_any_group(dep) for dep in all_deps)
 
     def add_dev_deps(self) -> None:
-        add_deps_to_group(self.dev_deps(), "dev")
+        add_deps_to_group(self.dep_config().dev_deps, "dev")
 
     def remove_dev_deps(self) -> None:
-        remove_deps_from_group(self.dev_deps(unconditional=True), "dev")
+        remove_deps_from_group(self.dep_config().get_all_dev_deps(), "dev")
 
     def add_test_deps(self) -> None:
-        add_deps_to_group(self.test_deps(), "test")
+        add_deps_to_group(self.dep_config().test_deps, "test")
 
     def remove_test_deps(self) -> None:
-        remove_deps_from_group(self.test_deps(unconditional=True), "test")
+        remove_deps_from_group(self.dep_config().get_all_test_deps(), "test")
 
     def add_doc_deps(self) -> None:
-        add_deps_to_group(self.doc_deps(), "doc")
+        add_deps_to_group(self.dep_config().doc_deps, "doc")
 
     def remove_doc_deps(self) -> None:
-        remove_deps_from_group(self.doc_deps(unconditional=True), "doc")
+        remove_deps_from_group(self.dep_config().get_all_doc_deps(), "doc")
 
     def get_pre_commit_repos(
         self,

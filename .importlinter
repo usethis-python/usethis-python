@@ -58,7 +58,7 @@ layers =
     all_
     impl
     base
-    config | pre_commit | rule
+    config | deps | pre_commit | rule
 exhaustive = true
 
 [importlinter:contract:tool_impl]

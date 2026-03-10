@@ -19,6 +19,7 @@ from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.deps import DepConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
@@ -35,15 +36,11 @@ class CoveragePyToolSpec(ToolSpec):
             managed_files=[Path(".coveragerc"), Path(".coveragerc.toml")],
         )
 
-    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415
-            PytestTool,
+    def dep_config(self) -> DepConfig:
+        return DepConfig(
+            test_deps=[Dependency(name="coverage", extras=frozenset({"toml"}))],
+            unmanaged_test_deps=[Dependency(name="pytest-cov")],
         )
-
-        deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
-        if unconditional or PytestTool().is_used():
-            deps += [Dependency(name="pytest-cov")]
-        return deps
 
     def preferred_file_manager(self) -> KeyValueFileManager:
         if (usethis_config.cpd() / "pyproject.toml").exists():
@@ -298,3 +295,20 @@ class CoveragePyTool(CoveragePyToolSpec, Tool):
             how_print(f"Run 'coverage help' to see available {self.name} commands.")
         else:
             assert_never(backend)
+
+    def add_test_deps(self) -> None:
+        from usethis._deps import add_deps_to_group  # noqa: PLC0415
+        from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415
+            PytestTool,
+        )
+
+        if PytestTool().is_used():
+            add_deps_to_group(
+                [
+                    Dependency(name="coverage", extras=frozenset({"toml"})),
+                    Dependency(name="pytest-cov"),
+                ],
+                "test",
+            )
+        else:
+            super().add_test_deps()

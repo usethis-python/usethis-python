@@ -25,6 +25,7 @@ from usethis._integrations.project.name import get_project_name
 from usethis._integrations.project.packages import get_importable_packages
 from usethis._tool.base import Tool, ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec, NoConfigValue
+from usethis._tool.deps import DepConfig
 from usethis._tool.impl.ruff import RuffTool
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
@@ -55,8 +56,8 @@ class ImportLinterToolSpec(ToolSpec):
     def raw_cmd(self) -> str:
         return "lint-imports"
 
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="import-linter")]
+    def dep_config(self) -> DepConfig:
+        return DepConfig.from_single_dev_dep(Dependency(name="import-linter"))
 
     def preferred_file_manager(self) -> KeyValueFileManager:
         if (usethis_config.cpd() / "pyproject.toml").exists():

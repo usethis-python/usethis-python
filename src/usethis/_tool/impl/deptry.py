@@ -17,6 +17,7 @@ from usethis._tool.config import (
     ConfigItem,
     ConfigSpec,
 )
+from usethis._tool.deps import DepConfig
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -38,8 +39,8 @@ class DeptryToolSpec(ToolSpec):
         _dir = get_source_dir_str()
         return f"deptry {_dir}"
 
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="deptry")]
+    def dep_config(self) -> DepConfig:
+        return DepConfig.from_single_dev_dep(Dependency(name="deptry"))
 
     def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()

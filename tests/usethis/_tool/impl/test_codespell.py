@@ -187,7 +187,7 @@ repos:
             assert not (tmp_path / "setup.cfg").exists()
             assert (tmp_path / "pyproject.toml").exists()
 
-    class TestGetDevDeps:
+    class TestDepConfig:
         def test_requires_python_includes_3_10(self, tmp_path: Path):
             # Arrange
             # Create a pyproject.toml with requires-python that includes Python 3.10
@@ -202,11 +202,11 @@ requires-python = ">=3.10"
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().dev_deps()
+                config = CodespellTool().dep_config()
 
             # Assert
-            assert Dependency(name="codespell") in deps
-            assert Dependency(name="tomli") in deps
+            assert Dependency(name="codespell") in config.dev_deps
+            assert Dependency(name="tomli") in config.dev_deps
 
         def test_requires_python_only_3_11_and_above(self, tmp_path: Path):
             # Arrange
@@ -222,11 +222,11 @@ requires-python = ">=3.11"
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().dev_deps()
+                config = CodespellTool().dep_config()
 
             # Assert
-            assert Dependency(name="codespell") in deps
-            assert Dependency(name="tomli") not in deps
+            assert Dependency(name="codespell") in config.dev_deps
+            assert Dependency(name="tomli") not in config.dev_deps
 
         def test_requires_python_range_includes_3_10(self, tmp_path: Path):
             # Arrange
@@ -242,11 +242,11 @@ requires-python = ">=3.10,<3.13"
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().dev_deps()
+                config = CodespellTool().dep_config()
 
             # Assert
-            assert Dependency(name="codespell") in deps
-            assert Dependency(name="tomli") in deps
+            assert Dependency(name="codespell") in config.dev_deps
+            assert Dependency(name="tomli") in config.dev_deps
 
         def test_no_pyproject_toml_3pt10(
             self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -258,11 +258,11 @@ requires-python = ">=3.10,<3.13"
             )
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().dev_deps()
+                config = CodespellTool().dep_config()
 
             # Assert
-            assert Dependency(name="codespell") in deps
-            assert Dependency(name="tomli") in deps
+            assert Dependency(name="codespell") in config.dev_deps
+            assert Dependency(name="tomli") in config.dev_deps
 
         def test_no_pyproject_toml_3pt11(
             self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -274,13 +274,13 @@ requires-python = ">=3.10,<3.13"
             )
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().dev_deps()
+                config = CodespellTool().dep_config()
 
             # Assert
-            assert Dependency(name="codespell") in deps
-            assert Dependency(name="tomli") not in deps
+            assert Dependency(name="codespell") in config.dev_deps
+            assert Dependency(name="tomli") not in config.dev_deps
 
-        def test_unconditional_includes_tomli(self, tmp_path: Path):
+        def test_unmanaged_always_includes_tomli(self, tmp_path: Path):
             # Arrange
             (tmp_path / "pyproject.toml").write_text(
                 """\
@@ -293,9 +293,11 @@ requires-python = ">=3.12"
 
             # Act
             with change_cwd(tmp_path), files_manager():
-                deps = CodespellTool().dev_deps(unconditional=True)
+                config = CodespellTool().dep_config()
 
             # Assert
-            # When unconditional=True, tomli should always be included
-            assert Dependency(name="codespell") in deps
-            assert Dependency(name="tomli") in deps
+            # When Python >= 3.11, tomli is not in managed dev_deps but is in
+            # unmanaged_dev_deps (for cleanup purposes) and in get_all_dev_deps()
+            assert Dependency(name="tomli") not in config.dev_deps
+            assert Dependency(name="tomli") in config.unmanaged_dev_deps
+            assert Dependency(name="tomli") in config.get_all_dev_deps()

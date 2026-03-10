@@ -15,6 +15,7 @@ from usethis._integrations.ci.bitbucket.anchor import (
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._integrations.pre_commit.cmd_ import pre_commit_raw_cmd
 from usethis._tool.base import Tool, ToolMeta, ToolSpec
+from usethis._tool.deps import DepConfig
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -37,8 +38,8 @@ class PreCommitToolSpec(ToolSpec):
     def raw_cmd(self) -> str:
         return pre_commit_raw_cmd
 
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="pre-commit")]
+    def dep_config(self) -> DepConfig:
+        return DepConfig.from_single_dev_dep(Dependency(name="pre-commit"))
 
     def pre_commit_config(self) -> PreCommitConfig:
         """Get the pre-commit configurations for the tool."""

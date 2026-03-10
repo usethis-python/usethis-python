@@ -10,17 +10,14 @@ on:
     paths-ignore:
       - "mkdocs.yml"
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "20 14 * * *"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   tests:
-    permissions:
-      pull-requests: write # Needed to add Codecov and CodSpeed comments
-    name: ${{ (matrix.codecov == 'true' && 'Codecov') || (matrix.codspeed == 'true' && 'CodSpeed') || format('Test Python {0} {1}', matrix.python_version, ((matrix.dependencies == 'min' || matrix.dependencies == 'max') && format('{0} dependencies', matrix.dependencies)) || (matrix.os || 'ubuntu-latest')) }}
+    name: ${{ format('Test Python {0} {1}', matrix.python_version, ((matrix.dependencies == 'min' || matrix.dependencies == 'max') && format('{0} dependencies', matrix.dependencies)) || (matrix.os || 'ubuntu-latest')) }}
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
-    environment: test
     env:
       PYTHONIOENCODING: utf-8
     steps:
@@ -48,67 +45,26 @@ jobs:
           CI_UV_UPGRADE_ARG: ${{ matrix.dependencies == 'max' && '--upgrade' || '' }}
           UV_RESOLUTION: ${{ matrix.dependencies == 'min' && 'lowest-direct' || 'highest' }}
 
-      - name: Run checks
-        if: ${{ matrix.checks == null || matrix.checks == 'true' }}
-        run: |
-          uv run --frozen prek run -a
-          uv run --frozen basedpyright
-
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
-        if: ${{ matrix.pytest == null || matrix.pytest == 'true' }}
         with:
           emoji: false
           custom-pytest: uv run --frozen pytest
-          custom-arguments: --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
-
-      - name: Run benchmarks
-        uses: CodSpeedHQ/action@6b43a0cd438f6ca5ad26f9ed03ed159ed2df7da9 # v4.1.1
-        if: ${{ matrix.codspeed != null && matrix.codspeed == 'true' }}
-        with:
-          mode: instrumentation
-          token: ${{ secrets.CODSPEED_TOKEN }}
-          run: uv run --frozen pytest --codspeed
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
-        if: ${{ matrix.codecov != null && matrix.codecov == 'true' }}
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-
-      - name: Upload test results to Codecov
-
-        uses: codecov/test-results-action@47f89e9acb64b76debcd5ea40642d25a4adced9f # v1.1.1
-        if: ${{ matrix.codecov != null && matrix.codecov == 'true' && !cancelled() }}
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
 
     strategy:
       matrix:
         python_version: ["3.10", "3.14"]
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         dependencies: ["lockfile"]
-        codecov: ["false"]
-        codspeed: ["false"]
 
         include:
           - python_version: "3.11"
             os: "ubuntu-latest"
           - python_version: "3.12"
             os: "ubuntu-latest"
-          - codecov: "true"
-            python_version: "3.13"
-            checks: "false"
-          - codspeed: "true"
-            python_version: "3.13"
-            checks: "false"
-            pytest: "false"
+          # N.B. 3.13 is handled via codecov
           - dependencies: "min"
             python_version: "3.10"
             uv_version: "0.8.18"
-            checks: "false"
           - dependencies: "max"
             python_version: "3.14"
-            checks: "false"

@@ -41,7 +41,7 @@ jobs:
                   python-version: ${{ matrix.python_version }}
 
             - name: Run benchmarks
-              uses: CodSpeedHQ/action@6b43a0cd438f6ca5ad26f9ed03ed159ed2df7da9 # v4.1.1
+              uses: CodSpeedHQ/action@281164b0f014a4e7badd2c02cecad9b595b70537 # v4.11.1
               with:
                   mode: instrumentation
                   token: ${{ secrets.CODSPEED_TOKEN }}

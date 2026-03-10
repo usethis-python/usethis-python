@@ -13,12 +13,12 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 jobs:
-    tests:
+    analyze:
+        name: Analyze
         permissions:
             contents: read # required for actions/checkout
             pull-requests: write # Required for bot comments
             id-token: write # Required for OIDC authentication with CodSpeed
-        name: CodSpeed
         runs-on: "ubuntu-latest"
         env:
             PYTHONIOENCODING: utf-8

@@ -13,12 +13,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  tests:
+  analyze:
+    name: Analyze
+    environment: codecov
     permissions:
       pull-requests: write # Required for bot comments
-    name: Codecov
+
     runs-on: "ubuntu-latest"
-    environment: codecov
     env:
       PYTHONIOENCODING: utf-8
     steps:

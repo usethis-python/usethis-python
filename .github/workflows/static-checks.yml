@@ -13,8 +13,8 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 jobs:
-    tests:
-        name: Static Checks
+    analyze:
+        name: Analyze
         runs-on: "ubuntu-latest"
         steps:
             - name: Checkout code

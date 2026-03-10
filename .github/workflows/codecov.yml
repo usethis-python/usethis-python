@@ -1,0 +1,62 @@
+name: Codecov
+permissions: {}
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "mkdocs.yml"
+  pull_request:
+    paths-ignore:
+      - "mkdocs.yml"
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  analyze:
+    name: Analyze
+    environment: codecov
+    permissions:
+      pull-requests: write # Required for bot comments
+
+    runs-on: "ubuntu-latest"
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup git user config
+        run: |
+          git config --global user.name placeholder
+          git config --global user.email placeholder@example.com
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d # v7.1.0
+        with:
+          version: ${{ matrix.uv_version || 'latest' }}
+          enable-cache: true
+          python-version: ${{ matrix.python_version }}
+
+      - name: Run pytest
+        uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
+        if: ${{ matrix.pytest == null || matrix.pytest == 'true' }}
+        with:
+          emoji: false
+          custom-pytest: uv run --frozen pytest
+          custom-arguments: --cov --cov-report=xml --junitxml=junit.xml -o junit_family=legacy
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
+      - name: Upload test results to Codecov
+
+        uses: codecov/test-results-action@47f89e9acb64b76debcd5ea40642d25a4adced9f # v1.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true

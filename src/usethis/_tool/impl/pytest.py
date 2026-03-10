@@ -162,7 +162,7 @@ class PytestTool(PytestToolSpec, Tool):
 
         if CoveragePyTool().is_used():
             add_deps_to_group(
-                [Dependency(name="pytest"), Dependency(name="pytest-cov")], "test"
+                [*self.dep_config().test_deps, Dependency(name="pytest-cov")], "test"
             )
         else:
             super().add_test_deps()

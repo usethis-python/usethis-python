@@ -58,6 +58,8 @@ layers =
     all_
     impl
     base
+    heuristics
+    spec
     config | pre_commit | rule
 exhaustive = true
 

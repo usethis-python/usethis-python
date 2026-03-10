@@ -528,28 +528,26 @@ class RuffTool(RuffToolSpec, Tool):
         )
 
     def is_linter_config_present(self) -> bool:
-        return self._is_config_spec_present(
-            ConfigSpec.from_flat(
-                file_managers=[
-                    DotRuffTOMLManager(),
-                    RuffTOMLManager(),
-                    PyprojectTOMLManager(),
-                ],
-                resolution="first",
-                config_items=[
-                    ConfigItem(
-                        description="Linter Config",
-                        root={
-                            Path(".ruff.toml"): ConfigEntry(keys=["lint"]),
-                            Path("ruff.toml"): ConfigEntry(keys=["lint"]),
-                            Path("pyproject.toml"): ConfigEntry(
-                                keys=["tool", "ruff", "lint"]
-                            ),
-                        },
-                    ),
-                ],
-            )
-        )
+        return ConfigSpec.from_flat(
+            file_managers=[
+                DotRuffTOMLManager(),
+                RuffTOMLManager(),
+                PyprojectTOMLManager(),
+            ],
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    description="Linter Config",
+                    root={
+                        Path(".ruff.toml"): ConfigEntry(keys=["lint"]),
+                        Path("ruff.toml"): ConfigEntry(keys=["lint"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "ruff", "lint"]
+                        ),
+                    },
+                ),
+            ],
+        ).is_present()
 
     def is_formatter_used(self) -> bool:
         """Check if the formatter is used in the project.
@@ -570,28 +568,26 @@ class RuffTool(RuffToolSpec, Tool):
         )
 
     def is_formatter_config_present(self) -> bool:
-        return self._is_config_spec_present(
-            ConfigSpec.from_flat(
-                file_managers=[
-                    DotRuffTOMLManager(),
-                    RuffTOMLManager(),
-                    PyprojectTOMLManager(),
-                ],
-                resolution="first",
-                config_items=[
-                    ConfigItem(
-                        description="Formatter Config",
-                        root={
-                            Path(".ruff.toml"): ConfigEntry(keys=["format"]),
-                            Path("ruff.toml"): ConfigEntry(keys=["format"]),
-                            Path("pyproject.toml"): ConfigEntry(
-                                keys=["tool", "ruff", "format"]
-                            ),
-                        },
-                    ),
-                ],
-            )
-        )
+        return ConfigSpec.from_flat(
+            file_managers=[
+                DotRuffTOMLManager(),
+                RuffTOMLManager(),
+                PyprojectTOMLManager(),
+            ],
+            resolution="first",
+            config_items=[
+                ConfigItem(
+                    description="Formatter Config",
+                    root={
+                        Path(".ruff.toml"): ConfigEntry(keys=["format"]),
+                        Path("ruff.toml"): ConfigEntry(keys=["format"]),
+                        Path("pyproject.toml"): ConfigEntry(
+                            keys=["tool", "ruff", "format"]
+                        ),
+                    },
+                ),
+            ],
+        ).is_present()
 
     def is_no_subtool_config_present(self) -> bool:
         """Check if no subtool config is present."""

@@ -111,3 +111,34 @@ class TestIsLikelyUsed:
 
         # Assert
         assert not result
+
+
+class TestConfigSpecIsPresent:
+    def test_unmanaged_item_not_detected(self, uv_init_dir: Path):
+        # An unmanaged config item is skipped even when its keys exist on disk.
+        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "simple_tool", "key"], value="value"
+            )
+            spec = ConfigSpec(
+                file_manager_by_relative_path={
+                    Path("pyproject.toml"): PyprojectTOMLManager(),
+                },
+                resolution="first",
+                config_items=[
+                    ConfigItem(
+                        managed=False,
+                        root={
+                            Path("pyproject.toml"): ConfigEntry(
+                                keys=["tool", "simple_tool"],
+                            )
+                        },
+                    )
+                ],
+            )
+
+            # Act
+            result = spec.is_present()
+
+        # Assert
+        assert not result

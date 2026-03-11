@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-from functools import reduce, singledispatch, singledispatchmethod
+from functools import reduce
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
@@ -63,34 +63,35 @@ class Adder(BaseModel):
             instructions=instructions,
         )
 
-    @singledispatchmethod
     def partition_component(
         self, component: str | Series | Parallel | DepGroup, *, predecessor: str | None
     ) -> tuple[Partition, list[Instruction]]:
-        raise NotImplementedError
-
-    @partition_component.register(str)
-    def _(
-        self, component: str, *, predecessor: str | None
-    ) -> tuple[Partition, list[Instruction]]:
-        if component in self.prerequisites:
-            return Partition(
-                prerequisite_component=component,
-                top_ranked_endpoint=component,
-            ), []
-        elif component in self.postrequisites:
-            return Partition(
-                postrequisite_component=component,
-                top_ranked_endpoint=component,
-            ), []
+        if isinstance(component, str):
+            if component in self.prerequisites:
+                return Partition(
+                    prerequisite_component=component,
+                    top_ranked_endpoint=component,
+                ), []
+            elif component in self.postrequisites:
+                return Partition(
+                    postrequisite_component=component,
+                    top_ranked_endpoint=component,
+                ), []
+            else:
+                return Partition(
+                    nondependent_component=component,
+                    top_ranked_endpoint=component,
+                ), []
+        elif isinstance(component, Series):
+            return self._partition_series_component(component, predecessor=predecessor)
+        elif isinstance(component, Parallel):
+            return self._partition_parallel_component(component, predecessor=predecessor)
+        elif isinstance(component, DepGroup):
+            return self._partition_depgroup_component(component, predecessor=predecessor)
         else:
-            return Partition(
-                nondependent_component=component,
-                top_ranked_endpoint=component,
-            ), []
+            assert_never(component)
 
-    @partition_component.register(Series)
-    def _(
+    def _partition_series_component(
         self, component: Series, *, predecessor: str | None
     ) -> tuple[Partition, list[Instruction]]:
         partitions: list[Partition] = []
@@ -121,8 +122,7 @@ class Adder(BaseModel):
                 top_ranked_endpoint=partition.top_ranked_endpoint,
             ), instructions
 
-    @partition_component.register(Parallel)
-    def _(
+    def _partition_parallel_component(
         self, component: Parallel, *, predecessor: str | None
     ) -> tuple[Partition, list[Instruction]]:
         partition_with_instruction_tuples = [
@@ -161,8 +161,7 @@ class Adder(BaseModel):
                 top_ranked_endpoint=min(p.top_ranked_endpoint for p in partitions),
             ), instructions
 
-    @partition_component.register(DepGroup)
-    def _(
+    def _partition_depgroup_component(
         self, component: DepGroup, *, predecessor: str | None
     ) -> tuple[Partition, list[Instruction]]:
         partition, instructions = self.partition_component(
@@ -452,7 +451,6 @@ def _collapsed_union(
     return component
 
 
-@singledispatch
 def _get_instructions_for_insertion(
     component: str | Series | Parallel | DepGroup, *, after: str | None
 ) -> tuple[list[Instruction], str | None]:
@@ -468,70 +466,55 @@ def _get_instructions_for_insertion(
         A tuple containing the instructions to insert the new component and the endpoint
         of the component after the new step has been inserted.
     """
-    raise NotImplementedError
+    if isinstance(component, str):
+        return [InsertSuccessor(after=after, step=component)], component
+    elif isinstance(component, Series):
+        instructions = []
+        for subcomponent in component.root:
+            new_instructions, endpoint = _get_instructions_for_insertion(
+                subcomponent, after=after
+            )
+            instructions.extend(new_instructions)
+            after = endpoint
+        return instructions, after
+    elif isinstance(component, Parallel):
+        if len(component.root) == 0:
+            return [], after
 
+        instructions: list[Instruction] = []
+        endpoints = []
+        min_idx = None
+        min_endpoint = None
+        for idx, subcomponent in enumerate(component.root):
+            new_instructions, endpoint = _get_instructions_for_insertion(
+                subcomponent,
+                after=after,
+            )
+            if endpoint is not None and (min_endpoint is None or endpoint < min_endpoint):
+                min_idx = idx
+                min_endpoint = endpoint
 
-@_get_instructions_for_insertion.register(str)
-def _(component: str, *, after: str | None) -> tuple[list[Instruction], str | None]:
-    return [InsertSuccessor(after=after, step=component)], component
+            endpoints.append(endpoint)
+            instructions.extend(new_instructions)
 
+        for idx in range(len(component.root)):
+            if idx != min_idx:
+                instructions[idx] = InsertParallel(
+                    after=instructions[idx].after, step=instructions[idx].step
+                )
 
-@_get_instructions_for_insertion.register(Series)
-def _(component: Series, *, after: str | None) -> tuple[list[Instruction], str | None]:
-    instructions = []
-    for subcomponent in component.root:
-        new_instructions, endpoint = _get_instructions_for_insertion(
-            subcomponent, after=after
-        )
-        instructions.extend(new_instructions)
-        after = endpoint
-    return instructions, after
+        sorted_idxs = sorted(range(len(endpoints)), key=lambda k: endpoints[k])
 
+        instructions = [instructions[idx] for idx in sorted_idxs]
 
-@_get_instructions_for_insertion.register(Parallel)
-def _(
-    component: Parallel, *, after: str | None
-) -> tuple[list[Instruction], str | None]:
-    if len(component.root) == 0:
-        return [], after
-
-    instructions: list[Instruction] = []
-    endpoints = []
-    min_idx = None
-    min_endpoint = None
-    for idx, subcomponent in enumerate(component.root):
-        new_instructions, endpoint = _get_instructions_for_insertion(
-            subcomponent,
+        return instructions, min(endpoints)
+    elif isinstance(component, DepGroup):
+        return _get_instructions_for_insertion(
+            component.series,
             after=after,
         )
-        if endpoint is not None and (min_endpoint is None or endpoint < min_endpoint):
-            min_idx = idx
-            min_endpoint = endpoint
-
-        endpoints.append(endpoint)
-        instructions.extend(new_instructions)
-
-    for idx in range(len(component.root)):
-        if idx != min_idx:
-            instructions[idx] = InsertParallel(
-                after=instructions[idx].after, step=instructions[idx].step
-            )
-
-    sorted_idxs = sorted(range(len(endpoints)), key=lambda k: endpoints[k])
-
-    instructions = [instructions[idx] for idx in sorted_idxs]
-
-    return instructions, min(endpoints)
-
-
-@_get_instructions_for_insertion.register(DepGroup)
-def _(
-    component: DepGroup, *, after: str | None
-) -> tuple[list[Instruction], str | None]:
-    return _get_instructions_for_insertion(
-        component.series,
-        after=after,
-    )
+    else:
+        assert_never(component)
 
 
 def _concat(*components: str | Series | DepGroup | Parallel | None) -> Series | None:

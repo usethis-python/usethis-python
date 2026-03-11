@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from functools import singledispatch
 from itertools import zip_longest
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, RootModel
 
 if TYPE_CHECKING:
-    from usethis._integrations.pydantic.typing_ import ModelLiteral, ModelRepresentation
+    from usethis._integrations.pydantic.typing_ import ModelRepresentation
 
 
 class _FillValue:
@@ -17,7 +16,6 @@ class _FillValue:
 _FILL_VALUE = _FillValue()
 
 
-@singledispatch
 def fancy_model_dump(
     model: BaseModel | ModelRepresentation,
     *,
@@ -38,11 +36,23 @@ def fancy_model_dump(
                       Unspecified fields will be placed at the end, in model definition
                       order. RootModels are ignored.
     """
-    ...
+    if isinstance(model, list):
+        return _fancy_model_dump_list(model, reference=reference, order_by_cls=order_by_cls)
+    elif isinstance(model, dict):
+        return _fancy_model_dump_dict(model, reference=reference, order_by_cls=order_by_cls)
+    elif isinstance(model, bool | int | float | str):
+        return model
+    elif isinstance(model, RootModel):
+        return fancy_model_dump(model.root, reference=reference, order_by_cls=order_by_cls)
+    elif isinstance(model, BaseModel):
+        return _fancy_model_dump_base_model(
+            model, reference=reference, order_by_cls=order_by_cls
+        )
+    else:
+        return model
 
 
-@fancy_model_dump.register(list)
-def _(
+def _fancy_model_dump_list(
     model: list[BaseModel | ModelRepresentation],
     *,
     reference: ModelRepresentation | None = None,
@@ -72,8 +82,7 @@ def _(
     return x
 
 
-@fancy_model_dump.register(dict)
-def _(
+def _fancy_model_dump_dict(
     model: dict[str, BaseModel | ModelRepresentation],
     *,
     reference: ModelRepresentation | None = None,
@@ -98,60 +107,7 @@ def _(
     return d
 
 
-# N.B. when Python 3.10 support is dropped, we can register unions of types, rather than
-# having these separate identical implementations for each type.
-@fancy_model_dump.register(bool)
-def _(
-    model: ModelLiteral,
-    *,
-    reference: ModelRepresentation | None = None,  # noqa: ARG001
-    order_by_cls: dict[type[BaseModel], list[str]] | None = None,  # noqa: ARG001
-) -> ModelLiteral:
-    return model
-
-
-@fancy_model_dump.register(int)
-def _(
-    model: ModelLiteral,
-    *,
-    reference: ModelRepresentation | None = None,  # noqa: ARG001
-    order_by_cls: dict[type[BaseModel], list[str]] | None = None,  # noqa: ARG001
-) -> ModelLiteral:
-    return model
-
-
-@fancy_model_dump.register(float)
-def _(
-    model: ModelLiteral,
-    *,
-    reference: ModelRepresentation | None = None,  # noqa: ARG001
-    order_by_cls: dict[type[BaseModel], list[str]] | None = None,  # noqa: ARG001
-) -> ModelLiteral:
-    return model
-
-
-@fancy_model_dump.register(str)
-def _(
-    model: ModelLiteral,
-    *,
-    reference: ModelRepresentation | None = None,  # noqa: ARG001
-    order_by_cls: dict[type[BaseModel], list[str]] | None = None,  # noqa: ARG001
-) -> ModelLiteral:
-    return model
-
-
-@fancy_model_dump.register(RootModel)
-def _(
-    model: RootModel,
-    *,
-    reference: ModelRepresentation | None = None,
-    order_by_cls: dict[type[BaseModel], list[str]] | None = None,
-) -> ModelRepresentation:
-    return fancy_model_dump(model.root, reference=reference, order_by_cls=order_by_cls)
-
-
-@fancy_model_dump.register(BaseModel)
-def _(
+def _fancy_model_dump_base_model(
     model: BaseModel,
     *,
     reference: ModelRepresentation | None = None,

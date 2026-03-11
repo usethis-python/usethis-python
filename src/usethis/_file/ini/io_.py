@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import configparser
 import re
-from functools import singledispatch
 from typing import TYPE_CHECKING
 
 from configupdater import ConfigUpdater as INIDocument
@@ -533,21 +532,15 @@ class INIFileManager(KeyValueFileManager):
         self.commit(root)
 
 
-@singledispatch
 def _as_dict(
     value: INIDocument | Section,
 ) -> dict[str, dict[str, Any]] | dict[str, Any]:
-    raise NotImplementedError
-
-
-@_as_dict.register(INIDocument)
-def _(value: INIDocument) -> dict[str, dict[str, Any]]:
-    return {k: _as_dict(v) for k, v in value.items()}
-
-
-@_as_dict.register(Section)
-def _(value: Section) -> dict[str, Any]:
-    return {option.key: option.value for option in value.iter_options()}
+    if isinstance(value, INIDocument):
+        return {k: _as_dict(v) for k, v in value.items()}
+    elif isinstance(value, Section):
+        return {option.key: option.value for option in value.iter_options()}
+    else:
+        assert_never(value)
 
 
 def _remove_option(updater: INIDocument, section_key: str, option_key: str) -> bool:

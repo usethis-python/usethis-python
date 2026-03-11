@@ -6,9 +6,11 @@ on:
     branches: ["main"]
     paths-ignore:
       - "mkdocs.yml"
+      - ".agents/**"
   pull_request:
     paths-ignore:
       - "mkdocs.yml"
+      - ".agents/**"
   schedule:
     - cron: "20 14 * * *"
 concurrency:

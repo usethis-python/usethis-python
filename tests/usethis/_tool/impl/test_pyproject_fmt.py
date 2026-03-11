@@ -9,7 +9,7 @@ from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._integrations.pre_commit import schema
 from usethis._test import change_cwd
-from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
+from usethis._tool.impl.base.pyproject_fmt import PyprojectFmtTool
 
 
 class TestPyprojectFmtTool:

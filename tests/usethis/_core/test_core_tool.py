@@ -35,8 +35,8 @@ from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
-from usethis._tool.impl.pre_commit import _SYNC_WITH_UV_VERSION
-from usethis._tool.impl.ruff import _RUFF_VERSION, RuffTool
+from usethis._tool.impl.spec.pre_commit import _SYNC_WITH_UV_VERSION
+from usethis._tool.impl.base.ruff import _RUFF_VERSION, RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 

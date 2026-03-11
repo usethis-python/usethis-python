@@ -23,49 +23,15 @@ from usethis._integrations.environ.python import get_supported_minor_python_vers
 from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._python.version import PythonVersion
-from usethis._tool.base import Tool, ToolMeta, ToolSpec
+from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
-from usethis._tool.rule import RuleConfig
+from usethis._tool.impl.spec.pytest import PytestToolSpec
 from usethis._types.backend import BackendEnum
-from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
 
 _PYTEST_PIP_CMD = "pip install pytest"
-
-
-class PytestToolSpec(ToolSpec):
-    @property
-    def meta(self) -> ToolMeta:
-        return ToolMeta(
-            name="pytest",
-            url="https://github.com/pytest-dev/pytest",
-            managed_files=[
-                Path(".pytest.ini"),
-                Path("pytest.ini"),
-                Path("tests/conftest.py"),
-            ],
-            rule_config=RuleConfig(selected=["PT"], nontests_unmanaged_ignored=["PT"]),
-        )
-
-    def raw_cmd(self) -> str:
-        return "pytest"
-
-    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
-            CoveragePyTool,
-        )
-
-        deps = [Dependency(name="pytest")]
-        if unconditional or CoveragePyTool().is_used():
-            deps += [Dependency(name="pytest-cov")]
-        return deps
-
-    def preferred_file_manager(self) -> KeyValueFileManager:
-        if (usethis_config.cpd() / "pyproject.toml").exists():
-            return PyprojectTOMLManager()
-        return PytestINIManager()
 
 
 class PytestTool(PytestToolSpec, Tool):

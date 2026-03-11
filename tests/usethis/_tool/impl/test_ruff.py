@@ -11,7 +11,7 @@ from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._integrations.pre_commit import schema
 from usethis._test import change_cwd
-from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.impl.base.ruff import RuffTool
 
 
 class TestRuffTool:

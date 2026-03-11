@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
@@ -10,36 +9,10 @@ from usethis._backend.uv.detect import is_uv_used
 from usethis._config_file import MkDocsYMLManager
 from usethis._console import how_print
 from usethis._integrations.project.name import get_project_name
-from usethis._tool.base import Tool, ToolMeta, ToolSpec
+from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.impl.spec.mkdocs import MkDocsToolSpec
 from usethis._types.backend import BackendEnum
-from usethis._types.deps import Dependency
-
-if TYPE_CHECKING:
-    from usethis._io import KeyValueFileManager
-
-
-class MkDocsToolSpec(ToolSpec):
-    @property
-    def meta(self) -> ToolMeta:
-        return ToolMeta(
-            name="MkDocs",
-            url="https://www.mkdocs.org/",
-            managed_files=[Path("mkdocs.yml")],
-        )
-
-    def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        deps = [Dependency(name="mkdocs")]
-
-        if unconditional:
-            deps.append(Dependency(name="mkdocs-material"))
-
-        return deps
-
-    def preferred_file_manager(self) -> KeyValueFileManager:
-        """If there is no currently active config file, this is the preferred one."""
-        # Should set the mkdocs.yml file manager as the preferred one
-        return MkDocsYMLManager()
 
 
 class MkDocsTool(MkDocsToolSpec, Tool):

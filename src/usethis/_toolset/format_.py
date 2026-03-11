@@ -1,5 +1,5 @@
 from usethis._core.tool import use_pyproject_fmt, use_ruff
-from usethis._tool.impl.pyproject_toml import PyprojectTOMLTool
+from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
 
 
 def use_formatters(remove: bool = False, how: bool = False):

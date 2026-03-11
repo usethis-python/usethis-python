@@ -7,7 +7,6 @@ from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
 from usethis._backend.uv.detect import is_uv_used
-from usethis._config import usethis_config
 from usethis._config_file import (
     DotCoverageRCManager,
     DotCoverageRCTOMLManager,
@@ -17,38 +16,13 @@ from usethis._console import how_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._tool.base import Tool, ToolMeta, ToolSpec
+from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
+from usethis._tool.impl.spec.coverage_py import CoveragePyToolSpec
 from usethis._types.backend import BackendEnum
-from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._io import KeyValueFileManager
-
-
-class CoveragePyToolSpec(ToolSpec):
-    @property
-    def meta(self) -> ToolMeta:
-        return ToolMeta(
-            name="Coverage.py",
-            url="https://github.com/nedbat/coveragepy",
-            managed_files=[Path(".coveragerc"), Path(".coveragerc.toml")],
-        )
-
-    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415
-            PytestTool,
-        )
-
-        deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
-        if unconditional or PytestTool().is_used():
-            deps += [Dependency(name="pytest-cov")]
-        return deps
-
-    def preferred_file_manager(self) -> KeyValueFileManager:
-        if (usethis_config.cpd() / "pyproject.toml").exists():
-            return PyprojectTOMLManager()
-        return DotCoverageRCManager()
+    pass
 
 
 class CoveragePyTool(CoveragePyToolSpec, Tool):
@@ -275,7 +249,7 @@ class CoveragePyTool(CoveragePyToolSpec, Tool):
         )
 
     def print_how_to_use(self) -> None:
-        from usethis._tool.impl.pytest import (  # to avoid circularity; # noqa: PLC0415
+        from usethis._tool.impl.base.pytest import (  # to avoid circularity;  # noqa: PLC0415
             PytestTool,
         )
 

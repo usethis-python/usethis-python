@@ -1,20 +1,19 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from usethis._console import how_print, info_print, instruct_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._tool.base import Tool, ToolMeta, ToolSpec
-from usethis._tool.impl.codespell import CodespellTool
-from usethis._tool.impl.coverage_py import CoveragePyTool
-from usethis._tool.impl.deptry import DeptryTool
-from usethis._tool.impl.import_linter import ImportLinterTool
-from usethis._tool.impl.mkdocs import MkDocsTool
-from usethis._tool.impl.pre_commit import PreCommitTool
-from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
-from usethis._tool.impl.pytest import PytestTool
-from usethis._tool.impl.requirements_txt import RequirementsTxtTool
-from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.base import Tool
+from usethis._tool.impl.base.codespell import CodespellTool
+from usethis._tool.impl.base.coverage_py import CoveragePyTool
+from usethis._tool.impl.base.deptry import DeptryTool
+from usethis._tool.impl.base.import_linter import ImportLinterTool
+from usethis._tool.impl.base.mkdocs import MkDocsTool
+from usethis._tool.impl.base.pre_commit import PreCommitTool
+from usethis._tool.impl.base.pyproject_fmt import PyprojectFmtTool
+from usethis._tool.impl.base.pytest import PytestTool
+from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
+from usethis._tool.impl.base.ruff import RuffTool
+from usethis._tool.impl.spec.pyproject_toml import PyprojectTOMLToolSpec
 
 OTHER_TOOLS: list[Tool] = [
     CodespellTool(),
@@ -28,16 +27,6 @@ OTHER_TOOLS: list[Tool] = [
     RequirementsTxtTool(),
     RuffTool(),
 ]
-
-
-class PyprojectTOMLToolSpec(ToolSpec):
-    @property
-    def meta(self) -> ToolMeta:
-        return ToolMeta(
-            name="pyproject.toml",
-            url="https://packaging.python.org/en/latest/guides/writing-pyproject-toml/",
-            managed_files=[Path("pyproject.toml")],
-        )
 
 
 class PyprojectTOMLTool(PyprojectTOMLToolSpec, Tool):

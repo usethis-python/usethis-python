@@ -11,8 +11,8 @@ from usethis._core.rule import (
 )
 from usethis._deps import get_deps_from_group
 from usethis._test import change_cwd
-from usethis._tool.impl.deptry import DeptryTool
-from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.impl.base.deptry import DeptryTool
+from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.deps import Dependency
 
 

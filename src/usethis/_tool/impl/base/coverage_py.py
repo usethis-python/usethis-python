@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from typing_extensions import assert_never
 
@@ -20,12 +19,20 @@ from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.impl.spec.coverage_py import CoveragePyToolSpec
 from usethis._types.backend import BackendEnum
-
-if TYPE_CHECKING:
-    pass
+from usethis._types.deps import Dependency
 
 
 class CoveragePyTool(CoveragePyToolSpec, Tool):
+    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        from usethis._tool.impl.base.pytest import (  # to avoid circularity;  # noqa: PLC0415
+            PytestTool,
+        )
+
+        deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
+        if unconditional or PytestTool().is_used():
+            deps += [Dependency(name="pytest-cov")]
+        return deps
+
     def config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
         # But the `latest` link doesn't yet include some latest changes regarding

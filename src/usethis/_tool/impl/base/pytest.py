@@ -27,6 +27,7 @@ from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.impl.spec.pytest import PytestToolSpec
 from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
@@ -35,6 +36,16 @@ _PYTEST_PIP_CMD = "pip install pytest"
 
 
 class PytestTool(PytestToolSpec, Tool):
+    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        from usethis._tool.impl.base.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
+            CoveragePyTool,
+        )
+
+        deps = [Dependency(name="pytest")]
+        if unconditional or CoveragePyTool().is_used():
+            deps += [Dependency(name="pytest-cov")]
+        return deps
+
     def config_spec(self) -> ConfigSpec:
         # https://docs.pytest.org/en/stable/reference/customize.html#configuration-file-formats
         # "Options from multiple configfiles candidates are never merged - the first match wins."

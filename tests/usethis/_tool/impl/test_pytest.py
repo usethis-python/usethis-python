@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+import usethis._tool.impl.base.pytest
 import usethis._tool.impl.pytest
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
@@ -219,7 +220,7 @@ pipelines:
         ):
             # Arrange
             monkeypatch.setattr(
-                usethis._tool.impl.pytest, "get_backend", lambda: BackendEnum.none
+                usethis._tool.impl.base.pytest, "get_backend", lambda: BackendEnum.none
             )
             monkeypatch.setattr(
                 "usethis._python.version.PythonVersion.from_interpreter",

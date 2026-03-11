@@ -295,13 +295,6 @@ class INIFileManager(KeyValueFileManager):
     def _validated_set(
         *, root: INIDocument, section_key: Key, option_key: Key, value: str | list[str]
     ) -> None:
-        if not isinstance(value, str | list):
-            msg = (
-                f"INI files only support strings (or lists of strings), but a "
-                f"{type(value)} was provided."
-            )
-            raise InvalidINITypeError(msg)
-
         if not isinstance(section_key, str) or not isinstance(option_key, str):
             msg = (
                 f"Only hard-coded strings are supported as keys when "
@@ -319,13 +312,6 @@ class INIFileManager(KeyValueFileManager):
     def _validated_append(
         *, root: INIDocument, section_key: Key, option_key: Key, value: str
     ) -> None:
-        if not isinstance(value, str):
-            msg = (
-                f"INI files only support strings (or lists of strings), but a "
-                f"{type(value)} was provided."
-            )
-            raise InvalidINITypeError(msg)
-
         if not isinstance(section_key, str) or not isinstance(option_key, str):
             msg = (
                 f"Only hard-coded strings are supported as keys when "

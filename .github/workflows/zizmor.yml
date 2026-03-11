@@ -6,14 +6,14 @@ on:
       - "docs/**"
       - "**/*.md"
       - "mkdocs.yml"
-      - ".agents/**"
+      - ".agents/**/*.md"
   pull_request:
     branches: ["**"]
     paths-ignore:
       - "docs/**"
       - "**/*.md"
       - "mkdocs.yml"
-      - ".agents/**"
+      - ".agents/**/*.md"
 permissions: {}
 jobs:
   zizmor:

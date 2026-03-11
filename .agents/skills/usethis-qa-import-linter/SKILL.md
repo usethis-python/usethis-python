@@ -4,7 +4,7 @@ description: Use the Import Linter software on the usethis project
 compatibility: usethis, Python, import-linter
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Import Linter
@@ -54,9 +54,14 @@ layers =
 exhaustive = true
 ```
 
+## Contract Strategy
+
+Not every module needs an associated contract for its submodules. Having contracts for every level of the module structure can lead to unnecessary maintenance overhead. Generally, it is rare to create new contracts.
+
 ## Procedure
 
 1. Ensure the module structure complies with the Import Linter configuration.
 2. Explicitly add/rename new/modified modules to their parent-level contract (to adhere to the `exhaustive` setting).
 3. For major refactorings, rationalize the module structure and update the Import Linter configuration accordingly.
-4. Run Import Linter to verify that all contracts are satisfied.
+4. Avoid creating new contracts unless explicitly instructed.
+5. Run Import Linter to verify that all contracts are satisfied.

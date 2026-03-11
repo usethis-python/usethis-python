@@ -102,7 +102,7 @@ def _get_sonarqube_exclusions() -> list[str]:
     # TypeAdapter(list).validate_python() ensures we have a list and returns a new list
     exclusions = TypeAdapter(list).validate_python(exclusions)
     for exclusion in exclusions:
-        TypeAdapter(str).validate_python(exclusion)
+        _ = TypeAdapter(str).validate_python(exclusion)
 
     return exclusions
 

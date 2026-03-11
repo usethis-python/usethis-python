@@ -30,7 +30,7 @@ app = typer.Typer(
 )
 
 rich_help_panel = "Start a New Project"
-app.command(
+_ = app.command(
     name="init",
     help="Initialize a new project with recommended defaults.",
     rich_help_panel=rich_help_panel,
@@ -39,31 +39,31 @@ app.command(
 )
 
 rich_help_panel = "Manage Tooling"
-app.command(
+_ = app.command(
     help="Add or configure recommended documentation tools.",
     rich_help_panel=rich_help_panel,
 )(
     usethis._ui.interface.doc.doc,
 )
-app.command(
+_ = app.command(
     name="format",
     help="Add or configure recommended formatters.",
     rich_help_panel=rich_help_panel,
 )(
     usethis._ui.interface.format_.format_,
 )
-app.command(
+_ = app.command(
     help="Add or configure recommended linters.", rich_help_panel=rich_help_panel
 )(
     usethis._ui.interface.lint.lint,
 )
-app.command(
+_ = app.command(
     help="Add or configure a recommended spellchecker.",
     rich_help_panel=rich_help_panel,
 )(
     usethis._ui.interface.spellcheck.spellcheck,
 )
-app.command(
+_ = app.command(
     help="Add or configure a recommended testing framework.",
     rich_help_panel=rich_help_panel,
 )(
@@ -75,18 +75,18 @@ app.add_typer(
 )
 
 rich_help_panel = "Manage Configuration"
-app.command(help="Add an author to the project.", rich_help_panel=rich_help_panel)(
+_ = app.command(help="Add an author to the project.", rich_help_panel=rich_help_panel)(
     usethis._ui.interface.author.author,
 )
-app.command(help="Enforce a docstring style.", rich_help_panel=rich_help_panel)(
+_ = app.command(help="Enforce a docstring style.", rich_help_panel=rich_help_panel)(
     usethis._ui.interface.docstyle.docstyle,
 )
-app.command(
+_ = app.command(
     help="Enable a lint rule for the project.", rich_help_panel=rich_help_panel
 )(
     usethis._ui.interface.rule.rule,
 )
-app.command(
+_ = app.command(
     help="Set the development status of the project (via trove classifiers).",
     rich_help_panel=rich_help_panel,
 )(
@@ -97,7 +97,7 @@ rich_help_panel = "Manage the README"
 app.add_typer(
     usethis._ui.interface.badge.app, name="badge", rich_help_panel=rich_help_panel
 )
-app.command(
+_ = app.command(
     help="Add a README.md file to the project.", rich_help_panel=rich_help_panel
 )(
     usethis._ui.interface.readme.readme,
@@ -107,7 +107,7 @@ rich_help_panel = "Informative"
 app.add_typer(
     usethis._ui.interface.browse.app, name="browse", rich_help_panel=rich_help_panel
 )
-app.command(
+_ = app.command(
     help="List usage of tooling and config managed by usethis.",
     rich_help_panel=rich_help_panel,
 )(
@@ -116,6 +116,8 @@ app.command(
 app.add_typer(
     usethis._ui.interface.show.app, name="show", rich_help_panel=rich_help_panel
 )
-app.command(help="Display the version of usethis.", rich_help_panel=rich_help_panel)(
+_ = app.command(
+    help="Display the version of usethis.", rich_help_panel=rich_help_panel
+)(
     usethis._ui.interface.version.version,
 )

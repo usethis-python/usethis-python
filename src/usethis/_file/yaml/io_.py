@@ -132,7 +132,7 @@ class YAMLFileManager(KeyValueFileManager):
         d = self.get().content
         for key in keys:
             try:
-                TypeAdapter(dict).validate_python(d)
+                _ = TypeAdapter(dict).validate_python(d)
             except ValidationError:
                 msg = f"Configuration value '{print_keys(keys)}' is missing."
                 raise YAMLValueMissingError(msg) from None
@@ -156,7 +156,7 @@ class YAMLFileManager(KeyValueFileManager):
 
         # Root level config - value must be a mapping.
         try:
-            TypeAdapter(dict).validate_python(content)
+            _ = TypeAdapter(dict).validate_python(content)
         except ValidationError:
             msg = "Root level configuration must be a mapping."
             raise UnexpectedYAMLValueError(msg) from None
@@ -164,7 +164,7 @@ class YAMLFileManager(KeyValueFileManager):
             raise AssertionError
 
         if not keys:
-            TypeAdapter(dict).validate_python(value)
+            _ = TypeAdapter(dict).validate_python(value)
             assert isinstance(value, dict)
             if not content or exists_ok:
                 content.update(value)
@@ -183,7 +183,7 @@ class YAMLFileManager(KeyValueFileManager):
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
             for key in keys:
-                TypeAdapter(dict).validate_python(d)
+                _ = TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d, parent = d[key], d
                 shared_keys.append(key)
@@ -221,7 +221,7 @@ class YAMLFileManager(KeyValueFileManager):
         except FileNotFoundError:
             return
         try:
-            TypeAdapter(dict).validate_python(content)
+            _ = TypeAdapter(dict).validate_python(content)
         except ValidationError:
             # N.B. by convention a del call should raise an error if the key is not found.
             msg = f"Configuration value '{print_keys(keys)}' is missing."
@@ -233,7 +233,7 @@ class YAMLFileManager(KeyValueFileManager):
         try:
             d = content
             for key in keys:
-                TypeAdapter(dict).validate_python(d)
+                _ = TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d = d[key]
         except (KeyError, ValidationError):
@@ -244,7 +244,7 @@ class YAMLFileManager(KeyValueFileManager):
         # Remove the configuration.
         d = content
         for key in keys[:-1]:
-            TypeAdapter(dict).validate_python(d)
+            _ = TypeAdapter(dict).validate_python(d)
             assert isinstance(d, dict)
             d = d[key]
         assert isinstance(d, dict)
@@ -260,12 +260,12 @@ class YAMLFileManager(KeyValueFileManager):
                 # Navigate to the parent of the section we want to check
                 parent = content
                 for key in keys[: idx - 1]:
-                    TypeAdapter(dict).validate_python(parent)
+                    _ = TypeAdapter(dict).validate_python(parent)
                     assert isinstance(parent, dict)
                     parent = parent[key]
 
                 # If the section is empty, remove it
-                TypeAdapter(dict).validate_python(parent)
+                _ = TypeAdapter(dict).validate_python(parent)
                 assert isinstance(parent, dict)
                 if not parent[keys[idx - 1]]:
                     del parent[keys[idx - 1]]
@@ -288,7 +288,7 @@ class YAMLFileManager(KeyValueFileManager):
         content = copy.deepcopy(self.get().content)
         # Root level config - value must be a mapping.
         try:
-            TypeAdapter(dict).validate_python(content)
+            _ = TypeAdapter(dict).validate_python(content)
         except ValidationError:
             msg = "Root level configuration must be a mapping."
             raise UnexpectedYAMLValueError(msg) from None
@@ -297,11 +297,11 @@ class YAMLFileManager(KeyValueFileManager):
         try:
             d = content
             for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(d)
+                _ = TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d = d[key]
             p_parent = d
-            TypeAdapter(dict).validate_python(p_parent)
+            _ = TypeAdapter(dict).validate_python(p_parent)
             assert isinstance(p_parent, dict)
             d = p_parent[keys[-1]]
         except KeyError:
@@ -312,8 +312,8 @@ class YAMLFileManager(KeyValueFileManager):
             content = mergedeep.merge(content, new_content)
             assert isinstance(content, dict)
         else:
-            TypeAdapter(dict).validate_python(p_parent)
-            TypeAdapter(list).validate_python(d)
+            _ = TypeAdapter(dict).validate_python(p_parent)
+            _ = TypeAdapter(list).validate_python(d)
             assert isinstance(p_parent, dict)
             assert isinstance(d, list)
             p_parent[keys[-1]] = d + values
@@ -336,7 +336,7 @@ class YAMLFileManager(KeyValueFileManager):
         content = copy.deepcopy(self.get()).content
         # Root level config - value must be a mapping.
         try:
-            TypeAdapter(dict).validate_python(content)
+            _ = TypeAdapter(dict).validate_python(content)
         except ValidationError:
             msg = "Root level configuration must be a mapping."
             raise UnexpectedYAMLValueError(msg) from None
@@ -345,12 +345,12 @@ class YAMLFileManager(KeyValueFileManager):
         try:
             p = content
             for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(p)
+                _ = TypeAdapter(dict).validate_python(p)
                 assert isinstance(p, dict)
                 p = p[key]
 
             p_parent = p
-            TypeAdapter(dict).validate_python(p_parent)
+            _ = TypeAdapter(dict).validate_python(p_parent)
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
         except (KeyError, ValidationError):
@@ -358,7 +358,7 @@ class YAMLFileManager(KeyValueFileManager):
             return
 
         try:
-            TypeAdapter(list).validate_python(p)
+            _ = TypeAdapter(list).validate_python(p)
         except ValidationError:
             return
         assert isinstance(p, list)

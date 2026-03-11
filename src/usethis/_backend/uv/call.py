@@ -70,7 +70,7 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         raise UVSubprocessFailedError(err) from None
 
     if change_toml and PyprojectTOMLManager().is_locked():
-        PyprojectTOMLManager().read_file()
+        _ = PyprojectTOMLManager().read_file()
 
     return output
 

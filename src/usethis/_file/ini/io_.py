@@ -68,7 +68,7 @@ class INIFileManager(KeyValueFileManager):
 
     def _parse_content(self, content: str) -> INIDocument:
         updater = INIDocument()
-        updater.read_string(content)
+        _ = updater.read_string(content)
         return updater
 
     def get(self) -> INIDocument:
@@ -196,11 +196,11 @@ class INIFileManager(KeyValueFileManager):
             if section_key not in root_dict:
                 _ = _remove_section(updater=root, section_key=section_key)
 
-        TypeAdapter(dict).validate_python(root_dict)
+        _ = TypeAdapter(dict).validate_python(root_dict)
         assert isinstance(root_dict, dict)
 
         for section_key, section_dict in root_dict.items():
-            TypeAdapter(dict).validate_python(section_dict)
+            _ = TypeAdapter(dict).validate_python(section_dict)
             assert isinstance(section_dict, dict)
 
             if section_key in root:
@@ -230,7 +230,7 @@ class INIFileManager(KeyValueFileManager):
         value: dict[str, str | list[str]],
         exists_ok: bool,
     ) -> None:
-        TypeAdapter(dict).validate_python(value)
+        _ = TypeAdapter(dict).validate_python(value)
         assert isinstance(value, dict)
 
         section_dict = value
@@ -314,7 +314,7 @@ class INIFileManager(KeyValueFileManager):
             _ensure_newline(root)
             root.add_section(section_key)
 
-        root.set(section=section_key, option=option_key, value=value)
+        _ = root.set(section=section_key, option=option_key, value=value)
 
     @staticmethod
     def _validated_append(
@@ -339,9 +339,9 @@ class INIFileManager(KeyValueFileManager):
 
         if option_key not in root[section_key]:
             option = Option(key=option_key, value=value)
-            root[section_key].add_option(option)
+            _ = root[section_key].add_option(option)
         else:
-            root[section_key][option_key].append(value)
+            _ = root[section_key][option_key].append(value)
 
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Delete a value in the INI file.
@@ -487,7 +487,9 @@ class INIFileManager(KeyValueFileManager):
 
         if len(new_values) == 0:
             # Remove the option if empty
-            _ = _remove_option(updater=root, section_key=section_key, option_key=option_key)
+            _ = _remove_option(
+                updater=root, section_key=section_key, option_key=option_key
+            )
 
             # Remove the section if empty
             if not root[section_key].options():
@@ -581,4 +583,4 @@ def _ensure_newline(root: INIDocument) -> None:
         # No newline necessary
         return
     final_section = sections[-1]
-    final_section.add_after.space(newlines=1)
+    _ = final_section.add_after.space(newlines=1)

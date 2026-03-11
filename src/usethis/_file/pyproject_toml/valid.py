@@ -64,6 +64,6 @@ def _ensure_project_name(project: Table) -> None:
 
     tick_print(f"Setting project name to '{name}' in 'pyproject.toml'.")
     if project._value:
-        project._value._insert_at(0, "name", name)
+        _ = project._value._insert_at(0, "name", name)
     else:
         project["name"] = name

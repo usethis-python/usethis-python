@@ -106,7 +106,7 @@ class TOMLFileManager(KeyValueFileManager):
             except FileNotFoundError:
                 return False
             for key in keys:
-                TypeAdapter(dict).validate_python(container)
+                _ = TypeAdapter(dict).validate_python(container)
                 assert isinstance(container, dict)
                 container = container[key]
         except (KeyError, ValidationError):
@@ -121,7 +121,7 @@ class TOMLFileManager(KeyValueFileManager):
         d = self.get()
         for key in keys:
             try:
-                TypeAdapter(dict).validate_python(d)
+                _ = TypeAdapter(dict).validate_python(d)
             except ValidationError:
                 msg = f"Configuration value '{print_keys(keys)}' is missing."
                 raise TOMLValueMissingError(msg) from None
@@ -145,9 +145,9 @@ class TOMLFileManager(KeyValueFileManager):
 
         if not keys:
             # Root level config - value must be a mapping.
-            TypeAdapter(dict).validate_python(toml_document)
+            _ = TypeAdapter(dict).validate_python(toml_document)
             assert isinstance(toml_document, dict)
-            TypeAdapter(dict).validate_python(value)
+            _ = TypeAdapter(dict).validate_python(value)
             assert isinstance(value, dict)
             if not toml_document or exists_ok:
                 toml_document.update(value)
@@ -160,7 +160,7 @@ class TOMLFileManager(KeyValueFileManager):
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
             for key in keys:
-                TypeAdapter(dict).validate_python(d)
+                _ = TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d, parent = d[key], d
                 shared_keys.append(key)
@@ -211,7 +211,7 @@ class TOMLFileManager(KeyValueFileManager):
         try:
             d = toml_document
             for key in keys:
-                TypeAdapter(dict).validate_python(d)
+                _ = TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d = d[key]
         except (KeyError, ValidationError):
@@ -222,7 +222,7 @@ class TOMLFileManager(KeyValueFileManager):
         # Remove the configuration.
         d = toml_document
         for key in keys[:-1]:
-            TypeAdapter(dict).validate_python(d)
+            _ = TypeAdapter(dict).validate_python(d)
             assert isinstance(d, dict)
             d = d[key]
         assert isinstance(d, dict)
@@ -242,19 +242,19 @@ class TOMLFileManager(KeyValueFileManager):
                 # it is possible in practice.
                 d.__delitem__(keys[-1])
             else:
-                d.remove(keys[-1])
+                _ = d.remove(keys[-1])
 
             # Cleanup: any empty sections should be removed.
             for idx in reversed(range(1, len(keys))):
                 # Navigate to the parent of the section we want to check
                 parent = toml_document
                 for key in keys[: idx - 1]:
-                    TypeAdapter(dict).validate_python(parent)
+                    _ = TypeAdapter(dict).validate_python(parent)
                     assert isinstance(parent, dict)
                     parent = parent[key]
 
                 # If the section is empty, remove it
-                TypeAdapter(dict).validate_python(parent)
+                _ = TypeAdapter(dict).validate_python(parent)
                 assert isinstance(parent, dict)
                 if not parent[keys[idx - 1]]:
                     del parent[keys[idx - 1]]
@@ -273,12 +273,12 @@ class TOMLFileManager(KeyValueFileManager):
         d = toml_document
         try:
             for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(d)
+                _ = TypeAdapter(dict).validate_python(d)
                 assert isinstance(d, dict)
                 d = d[key]
                 shared_keys.append(key)
             p_parent = d
-            TypeAdapter(dict).validate_python(p_parent)
+            _ = TypeAdapter(dict).validate_python(p_parent)
             assert isinstance(p_parent, dict)
             d = p_parent[keys[-1]]
         except KeyError:
@@ -302,7 +302,7 @@ class TOMLFileManager(KeyValueFileManager):
             raise TOMLValueMissingError(msg) from None
         else:
             try:
-                TypeAdapter(list).validate_python(d)
+                _ = TypeAdapter(list).validate_python(d)
             except ValidationError:
                 msg = (
                     f"Configuration value '{print_keys(keys)}' is not a valid list in "
@@ -330,12 +330,12 @@ class TOMLFileManager(KeyValueFileManager):
         try:
             p = toml_document
             for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(p)
+                _ = TypeAdapter(dict).validate_python(p)
                 assert isinstance(p, dict)
                 p = p[key]
 
             p_parent = p
-            TypeAdapter(dict).validate_python(p_parent)
+            _ = TypeAdapter(dict).validate_python(p_parent)
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
         except (KeyError, ValidationError):
@@ -343,7 +343,7 @@ class TOMLFileManager(KeyValueFileManager):
             return
 
         try:
-            TypeAdapter(list).validate_python(p)
+            _ = TypeAdapter(list).validate_python(p)
         except ValidationError:
             return
         assert isinstance(p, list)
@@ -386,7 +386,7 @@ def _set_value_in_existing(
     else:
         # Note that this alternative logic is just to avoid a bug:
         # https://github.com/usethis-python/usethis-python/issues/507
-        TypeAdapter(dict).validate_python(shared_container)
+        _ = TypeAdapter(dict).validate_python(shared_container)
         assert isinstance(shared_container, dict)
 
         unshared_keys = keys[len(shared_keys) :]

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from functools import singledispatch
 from typing import TYPE_CHECKING, cast
 
 from ruamel.yaml.comments import CommentedSeq
@@ -322,27 +321,25 @@ def remove_bitbucket_step_from_default(step: schema.Step) -> None:
                 remove_cache(cache)
 
 
-@singledispatch
 def _censor_step(
     item: schema.StepItem | schema.ParallelItem | schema.StageItem, *, step: schema.Step
 ) -> schema.StepItem | schema.ParallelItem | schema.StageItem | None:
     """Censor a step from a pipeline item, with None if necessary."""
-    raise NotImplementedError
+    if isinstance(item, schema.StepItem):
+        if bitbucket_steps_are_equivalent(item.step, step):
+            return None
+        return item
+    elif isinstance(item, schema.ParallelItem):
+        return _censor_parallel_item_step(item, step=step)
+    elif isinstance(item, schema.StageItem):
+        return _censor_stage_item_step(item, step=step)
+    else:
+        assert_never(item)
 
 
-@_censor_step.register(schema.StepItem)
-def _(
-    item: schema.StepItem, *, step: schema.Step
-) -> schema.StepItem | schema.ParallelItem | schema.StageItem | None:
-    if bitbucket_steps_are_equivalent(item.step, step):
-        return None
-    return item
-
-
-@_censor_step.register(schema.ParallelItem)
-def _(
+def _censor_parallel_item_step(
     item: schema.ParallelItem, *, step: schema.Step
-) -> schema.StepItem | schema.ParallelItem | schema.StageItem | None:
+) -> schema.StepItem | schema.ParallelItem | None:
     par = item.parallel.root
 
     if isinstance(par, schema.ParallelSteps):
@@ -373,10 +370,9 @@ def _(
         assert_never(par)
 
 
-@_censor_step.register(schema.StageItem)
-def _(
+def _censor_stage_item_step(
     item: schema.StageItem, *, step: schema.Step
-) -> schema.StepItem | schema.ParallelItem | schema.StageItem | None:
+) -> schema.StageItem | None:
     step1s = item.stage.steps
 
     new_step1s = []
@@ -485,33 +481,30 @@ def _get_steps_in_pipeline(pipeline: schema.Pipeline) -> list[schema.Step]:
     return steps
 
 
-@singledispatch
-def get_steps_in_pipeline_item(item) -> list[schema.Step]:
-    raise NotImplementedError
+def get_steps_in_pipeline_item(
+    item: schema.StepItem | schema.ParallelItem | schema.StageItem,
+) -> list[schema.Step]:
+    if isinstance(item, schema.StepItem):
+        return [item.step]
+    elif isinstance(item, schema.ParallelItem):
+        _p = item.parallel.root
+        if isinstance(_p, schema.ParallelSteps):
+            step_items = _p.root
+        elif isinstance(_p, schema.ParallelExpanded):
+            step_items = _p.steps.root
+        else:
+            assert_never(_p)
 
-
-@get_steps_in_pipeline_item.register(schema.StepItem)
-def _(item: schema.StepItem) -> list[schema.Step]:
-    return [item.step]
-
-
-@get_steps_in_pipeline_item.register(schema.ParallelItem)
-def _(item: schema.ParallelItem) -> list[schema.Step]:
-    _p = item.parallel.root
-    if isinstance(_p, schema.ParallelSteps):
-        step_items = _p.root
-    elif isinstance(_p, schema.ParallelExpanded):
-        step_items = _p.steps.root
+        steps = [
+            step_item.step for step_item in step_items if step_item.step is not None
+        ]
+        return steps
+    elif isinstance(item, schema.StageItem):
+        return [
+            step1tostep(step1) for step1 in item.stage.steps if step1.step is not None
+        ]
     else:
-        assert_never(_p)
-
-    steps = [step_item.step for step_item in step_items if step_item.step is not None]
-    return steps
-
-
-@get_steps_in_pipeline_item.register(schema.StageItem)
-def _(item: schema.StageItem) -> list[schema.Step]:
-    return [step1tostep(step1) for step1 in item.stage.steps if step1.step is not None]
+        assert_never(item)
 
 
 def add_placeholder_step_in_default(report_placeholder: bool = True) -> None:

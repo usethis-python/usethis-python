@@ -230,7 +230,6 @@ reportUnnecessaryTypeIgnoreComment = false
 reportUnreachable = false
 reportUnusedFunction = false
 reportUnusedCallResult = false
-reportUnusedParameter = false
 
 [tool.sync-with-uv.repo-to-package]
 "https://github.com/astral-sh/uv-pre-commit" = "uv"

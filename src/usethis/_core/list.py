@@ -8,7 +8,7 @@ from usethis._console import table_print
 from usethis._detect.ci.bitbucket import is_bitbucket_used
 from usethis._detect.readme import is_readme_used
 from usethis._tool.all_ import ALL_TOOLS
-from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.impl.base.ruff import RuffTool
 
 
 class UsageRow(BaseModel):

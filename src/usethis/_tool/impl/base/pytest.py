@@ -11,6 +11,7 @@ from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotPytestINIManager, PytestINIManager, ToxINIManager
 from usethis._console import how_print, info_print, instruct_print
+from usethis._deps import add_deps_to_group, remove_deps_from_group
 from usethis._detect.ci.bitbucket import is_bitbucket_used
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager

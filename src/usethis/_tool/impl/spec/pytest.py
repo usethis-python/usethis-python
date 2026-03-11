@@ -34,14 +34,7 @@ class PytestToolSpec(ToolSpec):
         return "pytest"
 
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.base.coverage_py import (  # to avoid circularity  # noqa: PLC0415
-            CoveragePyTool,
-        )
-
-        deps = [Dependency(name="pytest")]
-        if unconditional or CoveragePyTool().is_used():
-            deps += [Dependency(name="pytest-cov")]
-        return deps
+        return [Dependency(name="pytest")]
 
     def preferred_file_manager(self) -> KeyValueFileManager:
         if (usethis_config.cpd() / "pyproject.toml").exists():

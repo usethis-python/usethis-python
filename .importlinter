@@ -69,10 +69,29 @@ type = layers
 containers =
     usethis._tool.impl
 layers =
+    base : spec
+exhaustive = true
+
+[importlinter:contract:tool_impl_spec]
+name = usethis._tool.impl.spec
+type = layers
+containers =
+    usethis._tool.impl.spec
+layers =
+    codespell | coverage_py | deptry | import_linter | mkdocs | pre_commit | pyproject_fmt | pyproject_toml | pytest | requirements_txt | ruff
+exhaustive = true
+
+[importlinter:contract:tool_impl_base]
+name = usethis._tool.impl.base
+type = layers
+containers =
+    usethis._tool.impl.base
+layers =
     pyproject_toml
     codespell | deptry | import_linter | mkdocs | pyproject_fmt | requirements_txt
     ruff
-    pytest : coverage_py
+    coverage_py
+    pytest
     pre_commit
 exhaustive = true
 

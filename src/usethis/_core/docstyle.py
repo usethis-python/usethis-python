@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from usethis._core.tool import use_ruff
-from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.impl.base.ruff import RuffTool
 
 if TYPE_CHECKING:
     from usethis._types.docstyle import DocStyleEnum

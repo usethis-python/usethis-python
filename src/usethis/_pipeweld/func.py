@@ -85,9 +85,13 @@ class Adder(BaseModel):
         elif isinstance(component, Series):
             return self._partition_series_component(component, predecessor=predecessor)
         elif isinstance(component, Parallel):
-            return self._partition_parallel_component(component, predecessor=predecessor)
+            return self._partition_parallel_component(
+                component, predecessor=predecessor
+            )
         elif isinstance(component, DepGroup):
-            return self._partition_depgroup_component(component, predecessor=predecessor)
+            return self._partition_depgroup_component(
+                component, predecessor=predecessor
+            )
         else:
             assert_never(component)
 
@@ -490,7 +494,9 @@ def _get_instructions_for_insertion(
                 subcomponent,
                 after=after,
             )
-            if endpoint is not None and (min_endpoint is None or endpoint < min_endpoint):
+            if endpoint is not None and (
+                min_endpoint is None or endpoint < min_endpoint
+            ):
                 min_idx = idx
                 min_endpoint = endpoint
 

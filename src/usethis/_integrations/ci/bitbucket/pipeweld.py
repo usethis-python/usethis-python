@@ -302,7 +302,9 @@ def _insert_parallel_step(
                 item.parallel.root.root.append(schema.StepItem(step=step_to_insert))
             elif isinstance(item.parallel.root, schema.ParallelExpanded):
                 # Add to the expanded parallel steps
-                item.parallel.root.steps.root.append(schema.StepItem(step=step_to_insert))
+                item.parallel.root.steps.root.append(
+                    schema.StepItem(step=step_to_insert)
+                )
             else:
                 assert_never(item.parallel.root)
     elif isinstance(item, schema.StageItem):

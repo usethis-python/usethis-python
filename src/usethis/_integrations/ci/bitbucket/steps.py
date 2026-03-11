@@ -495,10 +495,14 @@ def get_steps_in_pipeline_item(
         else:
             assert_never(_p)
 
-        steps = [step_item.step for step_item in step_items if step_item.step is not None]
+        steps = [
+            step_item.step for step_item in step_items if step_item.step is not None
+        ]
         return steps
     elif isinstance(item, schema.StageItem):
-        return [step1tostep(step1) for step1 in item.stage.steps if step1.step is not None]
+        return [
+            step1tostep(step1) for step1 in item.stage.steps if step1.step is not None
+        ]
     else:
         assert_never(item)
 

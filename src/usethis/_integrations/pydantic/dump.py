@@ -37,13 +37,19 @@ def fancy_model_dump(
                       order. RootModels are ignored.
     """
     if isinstance(model, list):
-        return _fancy_model_dump_list(model, reference=reference, order_by_cls=order_by_cls)
+        return _fancy_model_dump_list(
+            model, reference=reference, order_by_cls=order_by_cls
+        )
     elif isinstance(model, dict):
-        return _fancy_model_dump_dict(model, reference=reference, order_by_cls=order_by_cls)
+        return _fancy_model_dump_dict(
+            model, reference=reference, order_by_cls=order_by_cls
+        )
     elif isinstance(model, bool | int | float | str):
         return model
     elif isinstance(model, RootModel):
-        return fancy_model_dump(model.root, reference=reference, order_by_cls=order_by_cls)
+        return fancy_model_dump(
+            model.root, reference=reference, order_by_cls=order_by_cls
+        )
     elif isinstance(model, BaseModel):
         return _fancy_model_dump_base_model(
             model, reference=reference, order_by_cls=order_by_cls

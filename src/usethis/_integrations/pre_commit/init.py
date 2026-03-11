@@ -11,4 +11,4 @@ def ensure_pre_commit_config_exists() -> None:
 
     if not path.exists():
         tick_print(f"Writing '{name}'.")
-        path.write_text("repos: []\n", encoding="utf-8")
+        _ = path.write_text("repos: []\n", encoding="utf-8")

@@ -54,8 +54,8 @@ class PreCommitConfigYAMLManager(YAMLFileManager):
         doc = self.get()
         dump = _pre_commit_fancy_dump(model, reference=doc.content)
         update_ruamel_yaml_map(doc.content, dump, preserve_comments=True)
-        self.model_validate()
-        self.commit(doc)
+        _ = self.model_validate()
+        _ = self.commit(doc)
 
 
 def _pre_commit_fancy_dump(

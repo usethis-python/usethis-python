@@ -16,7 +16,7 @@ def add_docs_dir() -> None:
     else:
         write_index = False
     if write_index:
-        (docs_dir / "index.md").write_text(
+        _ = (docs_dir / "index.md").write_text(
             f"""\
 # {get_project_name()}
 

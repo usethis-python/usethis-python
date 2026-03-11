@@ -143,13 +143,13 @@ def get_icon_mode() -> Literal["unicode", "universal", "text"]:
 
     # Try Universal (cp437 and other common encodings)
     try:
-        "✔".encode(encoding)
+        _ = "✔".encode(encoding)
         return "unicode"
     except (UnicodeEncodeError, LookupError, AttributeError):
         pass
 
     try:
-        "√".encode(encoding)
+        _ = "√".encode(encoding)
         return "universal"
     except (UnicodeEncodeError, LookupError, AttributeError):
         pass

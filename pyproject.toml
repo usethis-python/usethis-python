@@ -229,8 +229,11 @@ reportUnnecessaryIsInstance = false
 reportUnnecessaryTypeIgnoreComment = false
 reportUnreachable = false
 reportUnusedFunction = false
-reportUnusedCallResult = false
 reportUnusedParameter = false
+
+[[tool.basedpyright.executionEnvironments]]
+root = "tests"
+reportUnusedCallResult = false
 
 [tool.sync-with-uv.repo-to-package]
 "https://github.com/astral-sh/uv-pre-commit" = "uv"

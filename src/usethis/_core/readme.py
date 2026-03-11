@@ -50,5 +50,5 @@ def add_readme() -> None:
         content = ""
 
     tick_print("Writing 'README.md'.")
-    (usethis_config.cpd() / "README.md").write_text(content, encoding="utf-8")
+    _ = (usethis_config.cpd() / "README.md").write_text(content, encoding="utf-8")
     how_print("Populate 'README.md' to help users understand the project.")

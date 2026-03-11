@@ -40,7 +40,7 @@ def project_init():
         (src_dir / pkg_name).mkdir(exist_ok=True)
         init_path = src_dir / pkg_name / "__init__.py"
         if not init_path.exists():
-            init_path.write_text(
+            _ = init_path.write_text(
                 f"""\
 def hello() -> str:
     return "Hello from {project_name}!"
@@ -77,7 +77,7 @@ def write_simple_requirements_txt() -> None:
     path = usethis_config.cpd() / name
     with open(path, "w", encoding="utf-8") as f:
         # Always write -e . first
-        f.write("-e .\n")
+        _ = f.write("-e .\n")
         # Add any dependencies that exist
         project_deps = get_project_deps()
         if project_deps:
@@ -105,7 +105,7 @@ def ensure_pyproject_toml(*, author: bool = True) -> None:
     if backend is BackendEnum.uv:
         ensure_pyproject_toml_via_uv(author=author)
     elif backend is BackendEnum.none:
-        (usethis_config.cpd() / "pyproject.toml").write_text(
+        _ = (usethis_config.cpd() / "pyproject.toml").write_text(
             f"""\
 [project]
 name = "{get_project_name()}"

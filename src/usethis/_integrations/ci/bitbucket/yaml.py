@@ -119,8 +119,8 @@ class BitbucketPipelinesYAMLManager(YAMLFileManager):
         ):
             doc.content["definitions"]["script_items"] = saved_script_items
 
-        self.model_validate()
-        self.commit(doc)
+        _ = self.model_validate()
+        _ = self.commit(doc)
 
 
 def _bitbucket_fancy_dump(

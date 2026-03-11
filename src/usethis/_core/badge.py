@@ -195,7 +195,7 @@ def add_badge(badge: Badge) -> None:
     if have_added:
         output = _ensure_final_newline(output)
 
-    path.write_text(output, encoding="utf-8")
+    _ = path.write_text(output, encoding="utf-8")
 
 
 def _get_prerequisites(badge: Badge) -> list[Badge]:
@@ -280,4 +280,4 @@ def remove_badge(badge: Badge) -> None:
     if have_removed:
         output = _ensure_final_newline(output)
 
-    path.write_text(output, encoding="utf-8")
+    _ = path.write_text(output, encoding="utf-8")

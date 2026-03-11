@@ -240,7 +240,7 @@ def _(
 ) -> schema.Step | None:
     if get_pipeweld_step(item.step) == step_name:
         # Remove this item from the list
-        items.pop(idx)
+        _ = items.pop(idx)
         return item.step
     return None
 
@@ -265,14 +265,14 @@ def _(
             if get_pipeweld_step(step_item.step) == step_name:
                 # Found it - remove from the parallel block
                 extracted_step = step_item.step
-                step_items.pop(step_idx)
+                _ = step_items.pop(step_idx)
 
                 # If only one step remains in the parallel, convert to a simple step
                 if len(step_items) == 1:
                     items[idx] = step_items[0]
                 elif len(step_items) == 0:
                     # No steps left, remove the parallel item
-                    items.pop(idx)
+                    _ = items.pop(idx)
 
                 return extracted_step
     return None

@@ -14,7 +14,7 @@ def opinionated_uv_init() -> None:
     It is assumed that the pyproject.toml file doesn't already exist.
     """
     try:
-        call.call_uv_subprocess(
+        _ = call.call_uv_subprocess(
             [
                 "init",
                 "--lib",
@@ -37,7 +37,7 @@ def ensure_pyproject_toml_via_uv(*, author: bool = True) -> None:
     author_from = "auto" if author else "none"
 
     try:
-        call.call_uv_subprocess(
+        _ = call.call_uv_subprocess(
             [
                 "init",
                 "--bare",

@@ -16,4 +16,4 @@ def use_docstyle(style: DocStyleEnum) -> None:
     RuffTool().set_docstyle(style.value)
 
     if not RuffTool()._are_pydocstyle_rules_selected():
-        RuffTool().select_rules(["D2", "D3", "D4"])
+        _ = RuffTool().select_rules(["D2", "D3", "D4"])

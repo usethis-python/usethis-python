@@ -418,8 +418,8 @@ class RuffTool(RuffToolSpec, Tool):
 
         Note, this will not modify unmanaged config.
         """
-        self.deselect_rules(rule_config.selected)
-        self.unignore_rules(rule_config.ignored)
+        _ = self.deselect_rules(rule_config.selected)
+        _ = self.unignore_rules(rule_config.ignored)
 
     def set_docstyle(self, style: Literal["numpy", "google", "pep257"]) -> None:
         (file_manager,) = self.get_active_config_file_managers()

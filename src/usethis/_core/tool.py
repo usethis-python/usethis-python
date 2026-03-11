@@ -370,7 +370,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
             elif not usethis_config.frozen:
                 ensure_uv_lock()
                 tick_print("Writing 'requirements.txt'.")
-                call_uv_subprocess(
+                _ = call_uv_subprocess(
                     [
                         "export",
                         "--frozen",

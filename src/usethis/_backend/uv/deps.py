@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 def add_dep_to_group_via_uv(dep: Dependency, group: str):
     try:
-        call_uv_subprocess(
+        _ = call_uv_subprocess(
             ["add", "--group", group, str(dep)],
             change_toml=True,
         )
@@ -27,7 +27,7 @@ def add_dep_to_group_via_uv(dep: Dependency, group: str):
 
 def remove_dep_from_group_via_uv(dep: Dependency, group: str):
     try:
-        call_uv_subprocess(["remove", "--group", group, str(dep)], change_toml=True)
+        _ = call_uv_subprocess(["remove", "--group", group, str(dep)], change_toml=True)
     except UVSubprocessFailedError as err:
         msg = f"Failed to remove '{dep}' from the '{group}' dependency group:\n{err}"
         raise UVDepGroupError(msg) from None

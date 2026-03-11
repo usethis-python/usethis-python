@@ -18,29 +18,29 @@ def select_rules(rules: list[str]) -> None:
     if rules_mapping.ruff_rules and not RuffTool().is_used():
         use_ruff()
 
-    DeptryTool().select_rules(rules_mapping.deptry_rules)
-    RuffTool().select_rules(rules_mapping.ruff_rules)
+    _ = DeptryTool().select_rules(rules_mapping.deptry_rules)
+    _ = RuffTool().select_rules(rules_mapping.ruff_rules)
 
 
 def deselect_rules(rules: list[str]) -> None:
     rules_mapping = get_rules_mapping(rules)
 
-    DeptryTool().deselect_rules(rules_mapping.deptry_rules)
-    RuffTool().deselect_rules(rules_mapping.ruff_rules)
+    _ = DeptryTool().deselect_rules(rules_mapping.deptry_rules)
+    _ = RuffTool().deselect_rules(rules_mapping.ruff_rules)
 
 
 def ignore_rules(rules: list[str]) -> None:
     rules_mapping = get_rules_mapping(rules)
 
-    DeptryTool().ignore_rules(rules_mapping.deptry_rules)
-    RuffTool().ignore_rules(rules_mapping.ruff_rules)
+    _ = DeptryTool().ignore_rules(rules_mapping.deptry_rules)
+    _ = RuffTool().ignore_rules(rules_mapping.ruff_rules)
 
 
 def unignore_rules(rules: list[str]) -> None:
     rules_mapping = get_rules_mapping(rules)
 
-    DeptryTool().unignore_rules(rules_mapping.deptry_rules)
-    RuffTool().unignore_rules(rules_mapping.ruff_rules)
+    _ = DeptryTool().unignore_rules(rules_mapping.deptry_rules)
+    _ = RuffTool().unignore_rules(rules_mapping.ruff_rules)
 
 
 def get_rules_mapping(rules: list[str]) -> RulesMapping:

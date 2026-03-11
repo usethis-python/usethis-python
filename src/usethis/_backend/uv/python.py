@@ -58,4 +58,4 @@ def _parse_python_version_from_uv_output(version: str) -> str:
 
 
 def uv_python_pin(version: str) -> None:
-    call_uv_subprocess(["python", "pin", version], change_toml=False)
+    _ = call_uv_subprocess(["python", "pin", version], change_toml=False)

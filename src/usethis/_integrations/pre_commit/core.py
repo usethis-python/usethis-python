@@ -42,7 +42,7 @@ def install_pre_commit_hooks() -> None:
     if backend is BackendEnum.uv:
         tick_print("Ensuring pre-commit is installed to Git.")
         try:
-            call_uv_subprocess(["run", "pre-commit", "install"], change_toml=False)
+            _ = call_uv_subprocess(["run", "pre-commit", "install"], change_toml=False)
         except UVSubprocessFailedError as err:
             msg = f"Failed to install pre-commit in the Git repository:\n{err}"
             raise PreCommitInstallationError(msg) from None
@@ -52,7 +52,7 @@ def install_pre_commit_hooks() -> None:
             temporary=True,
         )
         try:
-            call_uv_subprocess(
+            _ = call_uv_subprocess(
                 ["run", "pre-commit", "install-hooks"], change_toml=False
             )
         except UVSubprocessFailedError as err:
@@ -79,7 +79,7 @@ def uninstall_pre_commit_hooks() -> None:
     if backend is BackendEnum.uv:
         tick_print("Ensuring pre-commit hooks are uninstalled.")
         try:
-            call_uv_subprocess(
+            _ = call_uv_subprocess(
                 ["run", "--with", "pre-commit", "pre-commit", "uninstall"],
                 change_toml=False,
             )

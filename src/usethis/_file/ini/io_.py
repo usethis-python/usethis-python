@@ -194,7 +194,7 @@ class INIFileManager(KeyValueFileManager):
         # We don't want to remove existing ones to keep their positions.
         for section_key in root.sections():
             if section_key not in root_dict:
-                _remove_section(updater=root, section_key=section_key)
+                _ = _remove_section(updater=root, section_key=section_key)
 
         TypeAdapter(dict).validate_python(root_dict)
         assert isinstance(root_dict, dict)
@@ -208,7 +208,7 @@ class INIFileManager(KeyValueFileManager):
                     # We need to remove options that are not in the new dict
                     # We don't want to remove existing ones to keep their positions.
                     if option_key not in section_dict:
-                        _remove_option(
+                        _ = _remove_option(
                             updater=root, section_key=section_key, option_key=option_key
                         )
             else:
@@ -253,7 +253,7 @@ class INIFileManager(KeyValueFileManager):
                 # We need to remove options that are not in the new dict
                 # We don't want to remove existing ones to keep their positions.
                 if option_key not in section_dict:
-                    _remove_option(
+                    _ = _remove_option(
                         updater=root, section_key=section_key, option_key=option_key
                     )
 
@@ -408,7 +408,7 @@ class INIFileManager(KeyValueFileManager):
 
             # Cleanup section if empty
             if not root[section_key].options():
-                _remove_section(updater=root, section_key=section_key)
+                _ = _remove_section(updater=root, section_key=section_key)
         else:
             msg = (
                 f"INI files do not support nested config, whereas access to "
@@ -487,11 +487,11 @@ class INIFileManager(KeyValueFileManager):
 
         if len(new_values) == 0:
             # Remove the option if empty
-            _remove_option(updater=root, section_key=section_key, option_key=option_key)
+            _ = _remove_option(updater=root, section_key=section_key, option_key=option_key)
 
             # Remove the section if empty
             if not root[section_key].options():
-                _remove_section(updater=root, section_key=section_key)
+                _ = _remove_section(updater=root, section_key=section_key)
 
         elif len(new_values) == 1:
             # If only one value left, set it directly

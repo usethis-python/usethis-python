@@ -116,7 +116,7 @@ class UsethisFileManager(Generic[DocumentT]):
         if not self.path.exists():
             return
 
-        self.path.write_text(self._dump_content())
+        _ = self.path.write_text(self._dump_content())
 
     def read_file(self) -> DocumentT:
         """Read the document from disk and store it in memory.
@@ -174,7 +174,7 @@ class UsethisFileManager(Generic[DocumentT]):
         self._content = None
 
     def unlock(self) -> None:
-        self._content_by_path.pop(self.path, None)
+        _ = self._content_by_path.pop(self.path, None)
 
 
 Key: TypeAlias = str | re.Pattern

@@ -7,14 +7,12 @@ on:
       - "docs/**"
       - "**/*.md"
       - "mkdocs.yml"
-      - ".agents/**/*.md"
   pull_request:
     branches: ["main"]
     paths-ignore:
       - "docs/**"
       - "**/*.md"
       - "mkdocs.yml"
-      - ".agents/**/*.md"
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})

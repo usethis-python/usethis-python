@@ -1,10 +1,10 @@
 ---
 name: usethis-qa-static-checks
 description: Perform static code checks
-compatibility: prek, basedpyright
+compatibility: usethis, Python, prek, basedpyright
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Static Checks

@@ -34,7 +34,7 @@ class PytestToolSpec(ToolSpec):
         return "pytest"
 
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.base.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
+        from usethis._tool.impl.base.coverage_py import (  # to avoid circularity.  # noqa: PLC0415
             CoveragePyTool,
         )
 

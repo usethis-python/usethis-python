@@ -245,7 +245,7 @@ class CoveragePyTool(CoveragePyToolSpec, Tool):
         )
 
     def print_how_to_use(self) -> None:
-        from usethis._tool.impl.base.pytest import (  # to avoid circularity; # noqa: PLC0415
+        from usethis._tool.impl.base.pytest import (  # to avoid circularity. # noqa: PLC0415
             PytestTool,
         )
 

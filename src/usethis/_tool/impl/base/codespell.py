@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from usethis._config_file import DotCodespellRCManager, SetupCFGManager
+from usethis._config_file import DotCodespellRCManager
 from usethis._console import how_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._tool.base import Tool
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.impl.spec.codespell import CodespellToolSpec

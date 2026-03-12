@@ -228,7 +228,6 @@ reportUnknownParameterType = false
 reportUnknownVariableType = false
 reportUnnecessaryComparison = false
 reportUnnecessaryIsInstance = false
-reportUnnecessaryTypeIgnoreComment = false
 reportUnusedCallResult = false
 reportUnusedParameter = false
 

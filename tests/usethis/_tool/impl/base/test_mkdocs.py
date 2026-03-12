@@ -4,7 +4,7 @@ import pytest
 
 from usethis._config_file import files_manager
 from usethis._test import change_cwd
-from usethis._tool.impl.mkdocs import MkDocsTool
+from usethis._tool.impl.base.mkdocs import MkDocsTool
 
 
 class TestMkDocsTool:

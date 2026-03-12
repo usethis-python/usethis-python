@@ -23,8 +23,8 @@ def readme(
         get_uv_badge,
     )
     from usethis._core.readme import add_readme
-    from usethis._tool.impl.pre_commit import PreCommitTool
-    from usethis._tool.impl.ruff import RuffTool
+    from usethis._tool.impl.base.pre_commit import PreCommitTool
+    from usethis._tool.impl.base.ruff import RuffTool
     from usethis.errors import UsethisError
 
     assert isinstance(backend, BackendEnum)

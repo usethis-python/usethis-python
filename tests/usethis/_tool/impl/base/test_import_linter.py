@@ -4,7 +4,7 @@ import pytest
 
 from usethis._config_file import files_manager
 from usethis._test import change_cwd
-from usethis._tool.impl.import_linter import ImportLinterTool, _is_inp_rule
+from usethis._tool.impl.base.import_linter import ImportLinterTool, _is_inp_rule
 
 
 class TestImportLinterTool:

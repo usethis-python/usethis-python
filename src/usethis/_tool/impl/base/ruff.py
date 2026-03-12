@@ -16,41 +16,23 @@ from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,
 )
 from usethis._integrations.pre_commit import schema as pre_commit_schema
-from usethis._tool.base import Tool, ToolMeta, ToolSpec
+from usethis._tool.base import Tool
 from usethis._tool.config import (
     ConfigEntry,
     ConfigItem,
     ConfigSpec,
     ensure_managed_file_exists,
 )
+from usethis._tool.impl.spec.ruff import RuffToolSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import Rule
 from usethis._types.backend import BackendEnum
-from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import Rule, RuleConfig
 
 _RUFF_VERSION = "v0.15.4"  # Manually bump this version when necessary
-
-
-class RuffToolSpec(ToolSpec):
-    @property
-    def meta(self) -> ToolMeta:
-        return ToolMeta(
-            name="Ruff",
-            url="https://github.com/astral-sh/ruff",
-            managed_files=[Path(".ruff.toml"), Path("ruff.toml")],
-        )
-
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="ruff")]
-
-    def preferred_file_manager(self) -> KeyValueFileManager:
-        if (usethis_config.cpd() / "pyproject.toml").exists():
-            return PyprojectTOMLManager()
-        return RuffTOMLManager()
 
 
 class RuffTool(RuffToolSpec, Tool):

@@ -38,13 +38,12 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d # v7.1.0
         with:
-          version: ${{ matrix.uv_version || 'latest' }}
+          version: "latest"
           enable-cache: true
-          python-version: ${{ matrix.python_version }}
+          python-version: "3.13"
 
       - name: Run pytest
         uses: pavelzw/pytest-action@510c5e90c360a185039bea56ce8b3e7e51a16507 # v2.2.0
-        if: ${{ matrix.pytest == null || matrix.pytest == 'true' }}
         with:
           emoji: false
           custom-pytest: uv run --frozen pytest

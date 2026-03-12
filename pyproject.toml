@@ -229,12 +229,12 @@ reportUnknownVariableType = false
 reportUnnecessaryComparison = false
 reportUnnecessaryIsInstance = false
 reportUnnecessaryTypeIgnoreComment = false
-reportUnreachable = false
 reportUnusedCallResult = false
 reportUnusedParameter = false
 
 [[tool.basedpyright.executionEnvironments]]
 root = "tests"
+reportUnreachable = false
 reportUnusedFunction = false
 
 [tool.sync-with-uv.repo-to-package]

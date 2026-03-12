@@ -1,7 +1,7 @@
 ---
 name: usethis-python-module-layout-modify
 description: Modify the Python module layout (create, move, rename, or delete modules)
-compatibility: usethis, Python
+compatibility: usethis, Python, pytest
 license: MIT
 metadata:
   version: "1.2"

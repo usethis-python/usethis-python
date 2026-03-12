@@ -40,3 +40,5 @@ jobs:
               run: |
                   uv run --only-group dev prek run -a
                   uv run --only-group dev basedpyright
+              env:
+                  UV_NO_DEFAULT_GROUPS: "true"

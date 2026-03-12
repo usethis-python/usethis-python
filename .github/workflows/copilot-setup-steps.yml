@@ -24,3 +24,6 @@ jobs:
               with:
                   version: "latest"
                   enable-cache: true
+
+            - name: Setup dependencies
+              run: uv sync

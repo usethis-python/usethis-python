@@ -2,14 +2,14 @@ from pathlib import Path
 
 import pytest
 
-import usethis._tool.impl.pytest
+import usethis._tool.impl.base.pytest
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.ci.bitbucket.steps import add_placeholder_step_in_default
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
-from usethis._tool.impl.pytest import PytestTool
+from usethis._tool.impl.base.pytest import PytestTool
 from usethis._types.backend import BackendEnum
 
 
@@ -219,7 +219,7 @@ pipelines:
         ):
             # Arrange
             monkeypatch.setattr(
-                usethis._tool.impl.pytest, "get_backend", lambda: BackendEnum.none
+                usethis._tool.impl.base.pytest, "get_backend", lambda: BackendEnum.none
             )
             monkeypatch.setattr(
                 "usethis._python.version.PythonVersion.from_interpreter",

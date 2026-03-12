@@ -24,17 +24,17 @@ from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_ids
 from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
 from usethis._tool.all_ import ALL_TOOLS
-from usethis._tool.impl.codespell import CodespellTool
-from usethis._tool.impl.coverage_py import CoveragePyTool
-from usethis._tool.impl.deptry import DeptryTool
-from usethis._tool.impl.import_linter import ImportLinterTool
-from usethis._tool.impl.mkdocs import MkDocsTool
-from usethis._tool.impl.pre_commit import PreCommitTool
-from usethis._tool.impl.pyproject_fmt import PyprojectFmtTool
-from usethis._tool.impl.pyproject_toml import PyprojectTOMLTool
-from usethis._tool.impl.pytest import PytestTool
-from usethis._tool.impl.requirements_txt import RequirementsTxtTool
-from usethis._tool.impl.ruff import RuffTool
+from usethis._tool.impl.base.codespell import CodespellTool
+from usethis._tool.impl.base.coverage_py import CoveragePyTool
+from usethis._tool.impl.base.deptry import DeptryTool
+from usethis._tool.impl.base.import_linter import ImportLinterTool
+from usethis._tool.impl.base.mkdocs import MkDocsTool
+from usethis._tool.impl.base.pre_commit import PreCommitTool
+from usethis._tool.impl.base.pyproject_fmt import PyprojectFmtTool
+from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
+from usethis._tool.impl.base.pytest import PytestTool
+from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
+from usethis._tool.impl.base.ruff import RuffTool
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
 

@@ -38,9 +38,9 @@ jobs:
             - name: Set up uv
               uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d # v7.1.0
               with:
-                  version: ${{ matrix.uv_version || 'latest' }}
+                  version: "latest"
                   enable-cache: true
-                  python-version: ${{ matrix.python_version }}
+                  python-version: "3.13"
 
             - name: Run benchmarks
               uses: CodSpeedHQ/action@281164b0f014a4e7badd2c02cecad9b595b70537 # v4.11.1

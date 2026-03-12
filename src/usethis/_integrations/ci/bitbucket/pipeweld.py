@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from functools import singledispatch
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 from typing_extensions import assert_never
@@ -16,7 +16,10 @@ from usethis._integrations.ci.bitbucket.init import (
 )
 from usethis._integrations.ci.bitbucket.schema_utils import step1tostep
 from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
-from usethis._pipeweld.ops import InsertParallel, InsertSuccessor, Instruction
+from usethis._pipeweld.ops import InsertParallel, InsertSuccessor
+
+if TYPE_CHECKING:
+    from usethis._pipeweld.ops import Instruction
 
 
 def get_pipeweld_step(step: schema.Step) -> str:
@@ -48,54 +51,45 @@ def get_pipeweld_pipeline_from_default(
     )
 
 
-@singledispatch
 def get_pipeweld_object(
     item: schema.StepItem | schema.ParallelItem | schema.StageItem,
 ) -> (
     str | usethis._pipeweld.containers.Parallel | usethis._pipeweld.containers.DepGroup
 ):
-    raise NotImplementedError
+    if isinstance(item, schema.StepItem):
+        return get_pipeweld_step(item.step)
+    elif isinstance(item, schema.ParallelItem):
+        parallel_steps: set[str] = set()
 
+        if item.parallel is not None:
+            if isinstance(item.parallel.root, schema.ParallelSteps):
+                step_items = item.parallel.root.root
+            elif isinstance(item.parallel.root, schema.ParallelExpanded):
+                step_items = item.parallel.root.steps.root
+            else:
+                assert_never(item.parallel.root)
 
-@get_pipeweld_object.register
-def _(item: schema.StepItem):
-    return get_pipeweld_step(item.step)
+            for step_item in step_items:
+                parallel_steps.add(get_pipeweld_step(step_item.step))
 
+        return usethis._pipeweld.containers.Parallel(frozenset(parallel_steps))
+    elif isinstance(item, schema.StageItem):
+        depgroup_steps: list[str] = []
 
-@get_pipeweld_object.register
-def _(item: schema.ParallelItem):
-    parallel_steps: set[str] = set()
-
-    if item.parallel is not None:
-        if isinstance(item.parallel.root, schema.ParallelSteps):
-            step_items = item.parallel.root.root
-        elif isinstance(item.parallel.root, schema.ParallelExpanded):
-            step_items = item.parallel.root.steps.root
+        if item.stage.name is not None:
+            name = item.stage.name
         else:
-            assert_never(item.parallel.root)
+            name = str(f"Unnamed Stage {uuid4()}")
 
-        for step_item in step_items:
-            parallel_steps.add(get_pipeweld_step(step_item.step))
+        for step in item.stage.steps:
+            depgroup_steps.append(get_pipeweld_step(step1tostep(step)))
 
-    return usethis._pipeweld.containers.Parallel(frozenset(parallel_steps))
-
-
-@get_pipeweld_object.register
-def _(item: schema.StageItem):
-    depgroup_steps: list[str] = []
-
-    if item.stage.name is not None:
-        name = item.stage.name
+        return usethis._pipeweld.containers.DepGroup(
+            series=usethis._pipeweld.containers.series(*depgroup_steps),
+            config_group=name,
+        )
     else:
-        name = str(f"Unnamed Stage {uuid4()}")
-
-    for step in item.stage.steps:
-        depgroup_steps.append(get_pipeweld_step(step1tostep(step)))
-
-    return usethis._pipeweld.containers.DepGroup(
-        series=usethis._pipeweld.containers.series(*depgroup_steps),
-        config_group=name,
-    )
+        assert_never(item)
 
 
 def apply_pipeweld_instruction(
@@ -218,7 +212,6 @@ def _extract_step_from_items(
     raise MissingStepError(msg)
 
 
-@singledispatch
 def _extract_step_from_item(
     item: schema.StepItem | schema.ParallelItem | schema.StageItem,
     *,
@@ -227,26 +220,25 @@ def _extract_step_from_item(
     idx: int,
 ) -> schema.Step | None:
     """Extract a step from an item, potentially modifying the items list."""
-    raise NotImplementedError
+    if isinstance(item, schema.StepItem):
+        if get_pipeweld_step(item.step) == step_name:
+            # Remove this item from the list
+            items.pop(idx)
+            return item.step
+        return None
+    elif isinstance(item, schema.ParallelItem):
+        return _extract_step_from_parallel_item(
+            item, step_name=step_name, items=items, idx=idx
+        )
+    elif isinstance(item, schema.StageItem):
+        # We don't extract steps from within stages as they represent deployment
+        # stages and their internal structure should be preserved.
+        return None
+    else:
+        assert_never(item)
 
 
-@_extract_step_from_item.register
-def _(
-    item: schema.StepItem,
-    *,
-    step_name: str,
-    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
-    idx: int,
-) -> schema.Step | None:
-    if get_pipeweld_step(item.step) == step_name:
-        # Remove this item from the list
-        items.pop(idx)
-        return item.step
-    return None
-
-
-@_extract_step_from_item.register
-def _(
+def _extract_step_from_parallel_item(
     item: schema.ParallelItem,
     *,
     step_name: str,
@@ -278,21 +270,6 @@ def _(
     return None
 
 
-@_extract_step_from_item.register
-def _(
-    # https://github.com/astral-sh/ruff/issues/18654
-    item: schema.StageItem,  # noqa: ARG001
-    *,
-    step_name: str,  # noqa: ARG001
-    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],  # noqa: ARG001
-    idx: int,  # noqa: ARG001
-) -> schema.Step | None:
-    # We don't extract steps from within stages as they represent deployment
-    # stages and their internal structure should be preserved.
-    return None
-
-
-@singledispatch
 def _insert_parallel_step(
     item: schema.StepItem | schema.ParallelItem | schema.StageItem,
     *,
@@ -305,103 +282,69 @@ def _insert_parallel_step(
     This function handles the logic of converting a single step to a parallel block
     or adding to an existing parallel block.
     """
-    raise NotImplementedError
-
-
-@_insert_parallel_step.register
-def _(
-    item: schema.StepItem,
-    *,
-    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
-    idx: int,
-    step_to_insert: schema.Step,
-) -> None:
-    # Replace the single step with a parallel block containing both steps
-    parallel_item = schema.ParallelItem(
-        parallel=schema.Parallel(
-            schema.ParallelSteps(
-                [
-                    schema.StepItem(step=item.step),
-                    schema.StepItem(step=step_to_insert),
-                ]
+    if isinstance(item, schema.StepItem):
+        # Replace the single step with a parallel block containing both steps
+        parallel_item = schema.ParallelItem(
+            parallel=schema.Parallel(
+                schema.ParallelSteps(
+                    [
+                        schema.StepItem(step=item.step),
+                        schema.StepItem(step=step_to_insert),
+                    ]
+                )
             )
         )
-    )
-    items[idx] = parallel_item
+        items[idx] = parallel_item
+    elif isinstance(item, schema.ParallelItem):
+        if item.parallel is not None:
+            if isinstance(item.parallel.root, schema.ParallelSteps):
+                # Add to the existing list of parallel steps
+                item.parallel.root.root.append(schema.StepItem(step=step_to_insert))
+            elif isinstance(item.parallel.root, schema.ParallelExpanded):
+                # Add to the expanded parallel steps
+                item.parallel.root.steps.root.append(
+                    schema.StepItem(step=step_to_insert)
+                )
+            else:
+                assert_never(item.parallel.root)
+    elif isinstance(item, schema.StageItem):
+        # StageItems are trickier since they aren't supported in ParallelSteps. But we
+        # never need to add them in practice anyway. The only reason this is really here
+        # is for type safety.
+        raise NotImplementedError
+    else:
+        assert_never(item)
 
 
-@_insert_parallel_step.register
-def _(
-    item: schema.ParallelItem,
-    *,
-    # https://github.com/astral-sh/ruff/issues/18654
-    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],  # noqa: ARG001
-    idx: int,  # noqa: ARG001
-    step_to_insert: schema.Step,
-) -> None:
-    if item.parallel is not None:
-        if isinstance(item.parallel.root, schema.ParallelSteps):
-            # Add to the existing list of parallel steps
-            item.parallel.root.root.append(schema.StepItem(step=step_to_insert))
-        elif isinstance(item.parallel.root, schema.ParallelExpanded):
-            # Add to the expanded parallel steps
-            item.parallel.root.steps.root.append(schema.StepItem(step=step_to_insert))
-        else:
-            assert_never(item.parallel.root)
-
-
-@_insert_parallel_step.register
-def _(
-    item: schema.StageItem,
-    *,
-    items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
-    idx: int,
-    step_to_insert: schema.Step,
-) -> None:
-    # StageItems are trickier since they aren't supported in ParallelSteps. But we
-    # never need to add them in practice anyway. The only reason this is really here
-    # is for type safety.
-    raise NotImplementedError
-
-
-@singledispatch
 def _is_insertion_necessary(
     item: schema.StepItem | schema.ParallelItem | schema.StageItem,
     *,
     instruction: Instruction,
 ) -> bool:
-    raise NotImplementedError
+    if isinstance(item, schema.StepItem):
+        return get_pipeweld_step(item.step) == instruction.after
+    elif isinstance(item, schema.ParallelItem):
+        if item.parallel is not None:
+            if isinstance(item.parallel.root, schema.ParallelSteps):
+                step_items = item.parallel.root.root
+            elif isinstance(item.parallel.root, schema.ParallelExpanded):
+                step_items = item.parallel.root.steps.root
+            else:
+                assert_never(item.parallel.root)
 
+            for step_item in step_items:
+                if get_pipeweld_step(step_item.step) == instruction.after:
+                    return True
+        return False
+    elif isinstance(item, schema.StageItem):
+        step1s = item.stage.steps.copy()
 
-@_is_insertion_necessary.register
-def _(item: schema.StepItem, *, instruction: Instruction):
-    return get_pipeweld_step(item.step) == instruction.after
+        for step1 in step1s:
+            step = step1tostep(step1)
 
-
-@_is_insertion_necessary.register
-def _(item: schema.ParallelItem, *, instruction: Instruction):
-    if item.parallel is not None:
-        if isinstance(item.parallel.root, schema.ParallelSteps):
-            step_items = item.parallel.root.root
-        elif isinstance(item.parallel.root, schema.ParallelExpanded):
-            step_items = item.parallel.root.steps.root
-        else:
-            assert_never(item.parallel.root)
-
-        for step_item in step_items:
-            if get_pipeweld_step(step_item.step) == instruction.after:
+            if get_pipeweld_step(step) == instruction.after:
                 return True
-    return False
 
-
-@_is_insertion_necessary.register
-def _(item: schema.StageItem, *, instruction: Instruction):
-    step1s = item.stage.steps.copy()
-
-    for step1 in step1s:
-        step = step1tostep(step1)
-
-        if get_pipeweld_step(step) == instruction.after:
-            return True
-
-    return False
+        return False
+    else:
+        assert_never(item)

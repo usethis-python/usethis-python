@@ -31,7 +31,7 @@ jobs:
 
             - name: Regenerate
               # Updates uv.lock, requirements.txt, and docs/requirements.txt
-              run: uv run -P $PKG_TO_BUMP prek -a uv-export
+              run: uv run -P $PKG_TO_BUMP prek -a uv-export || true
               env:
                   PKG_TO_BUMP: ${{ inputs.package }}
 

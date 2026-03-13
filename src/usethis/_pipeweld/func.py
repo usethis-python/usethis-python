@@ -489,15 +489,17 @@ def _get_instructions_for_insertion(
 
         instructions_per_sub: list[list[Instruction]] = []
         endpoints: list[str | None] = []
-        min_idx = None
-        min_endpoint = None
+        min_idx: int | None = None
+        min_endpoint: str | None = None
         for idx, subcomponent in enumerate(component.root):
             new_instructions, endpoint = _get_instructions_for_insertion(
                 subcomponent,
                 after=after,
             )
-            if endpoint is not None and (
-                min_endpoint is None or endpoint < min_endpoint
+            if (
+                new_instructions
+                and endpoint is not None
+                and (min_endpoint is None or endpoint < min_endpoint)
             ):
                 min_idx = idx
                 min_endpoint = endpoint

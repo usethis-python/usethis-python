@@ -760,6 +760,20 @@ class TestGetInstructionsForInsertion:
             ]
             assert endpoint == "A"
 
+        def test_empty_series_with_smaller_after(self):
+            # Arrange
+            component = parallel("C", series())
+            after = "A"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [InsertSuccessor(step="C", after="A")]
+            assert endpoint == "C"
+
     class TestDepGroup:
         def test_basic(self):
             # Arrange

@@ -11,3 +11,8 @@ Follow standard contributing guidelines as documented in CONTRIBUTING.md.
 ## Agent Skills
 
 The .agent/skills directory contains agent skills.
+
+### Important skills
+
+- Always run static checks using the `usethis-qa-static-checks` skill before finishing a task.
+- If modifying Python code, always use the `usethis-python-code-modify` and `usethis-python-module-layout-modify` skills.

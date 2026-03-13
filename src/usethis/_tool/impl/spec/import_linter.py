@@ -50,7 +50,7 @@ class ImportLinterToolSpec(ToolSpec):
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="import-linter")]
 
-    def preferred_file_manager(self) -> KeyValueFileManager:
+    def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotImportLinterManager()
@@ -94,7 +94,9 @@ class ImportLinterToolSpec(ToolSpec):
     def _get_resolution(self) -> ResolutionT:
         return "first"
 
-    def _get_file_manager_by_relative_path(self) -> dict[Path, KeyValueFileManager]:
+    def _get_file_manager_by_relative_path(
+        self,
+    ) -> dict[Path, KeyValueFileManager[object]]:
         return {
             Path("setup.cfg"): SetupCFGManager(),
             Path(".importlinter"): DotImportLinterManager(),

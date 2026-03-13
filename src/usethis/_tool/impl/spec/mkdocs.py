@@ -28,7 +28,7 @@ class MkDocsToolSpec(ToolSpec):
 
         return deps
 
-    def preferred_file_manager(self) -> KeyValueFileManager:
+    def preferred_file_manager(self) -> KeyValueFileManager[object]:
         """If there is no currently active config file, this is the preferred one."""
         # Should set the mkdocs.yml file manager as the preferred one
         return MkDocsYMLManager()

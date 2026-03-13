@@ -47,7 +47,7 @@ class ConfigSpec(BaseModel):
     @classmethod
     def from_flat(
         cls,
-        file_managers: list[KeyValueFileManager],
+        file_managers: list[KeyValueFileManager[object]],
         resolution: ResolutionT,
         config_items: list[ConfigItem],
     ) -> Self:
@@ -146,7 +146,7 @@ class ConfigItem(BaseModel):
         return {(usethis_config.cpd() / path).resolve() for path in self.root}
 
 
-def ensure_managed_file_exists(file_manager: UsethisFileManager) -> None:
+def ensure_managed_file_exists(file_manager: UsethisFileManager[object]) -> None:
     """Ensure a file manager's managed file exists."""
     if isinstance(file_manager, PyprojectTOMLManager):
         ensure_pyproject_toml()

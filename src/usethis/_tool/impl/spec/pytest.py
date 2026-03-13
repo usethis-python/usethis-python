@@ -30,7 +30,7 @@ class PytestToolSpec(ToolSpec):
     def raw_cmd(self) -> str:
         return "pytest"
 
-    def preferred_file_manager(self) -> KeyValueFileManager:
+    def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return PytestINIManager()

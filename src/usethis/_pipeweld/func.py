@@ -252,7 +252,8 @@ class Adder(BaseModel):
             )
             union = _union(successor_component, self.step)
             if len(container) == 1 and container[0] == union:
-                assert union is not None
+                if union is None:
+                    raise NotImplementedError
                 component[idx + 1] = union
 
             return instructions

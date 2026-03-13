@@ -742,6 +742,24 @@ class TestGetInstructionsForInsertion:
             assert instructions == [InsertSuccessor(step="B", after=None)]
             assert endpoint == "B"
 
+        def test_contains_multi_step_series(self):
+            # Arrange
+            component = parallel("A", series("B", "C"))
+            after = "0"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [
+                InsertSuccessor(step="A", after="0"),
+                InsertParallel(step="B", after="0"),
+                InsertSuccessor(step="C", after="B"),
+            ]
+            assert endpoint == "A"
+
     class TestDepGroup:
         def test_basic(self):
             # Arrange

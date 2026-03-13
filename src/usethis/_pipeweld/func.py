@@ -507,10 +507,9 @@ def _get_instructions_for_insertion(
 
         for idx in range(len(component.root)):
             if idx != min_idx and instructions_per_sub[idx]:
-                (instruction,) = instructions_per_sub[idx]
                 instructions_per_sub[idx][0] = InsertParallel(
-                    after=instruction.after,
-                    step=instruction.step,
+                    after=instructions_per_sub[idx][0].after,
+                    step=instructions_per_sub[idx][0].step,
                 )
 
         sorted_idxs = sorted(

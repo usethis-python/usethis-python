@@ -69,7 +69,12 @@ app.command(
 )(
     usethis._ui.interface.test.test,
 )
-app.add_typer(usethis._ui.interface.ci.app, name="ci", rich_help_panel=rich_help_panel)
+app.add_typer(
+    usethis._ui.interface.ci.app,
+    name="ci",
+    rich_help_panel=rich_help_panel,
+    deprecated=True,
+)
 app.add_typer(
     usethis._ui.interface.tool.app, name="tool", rich_help_panel=rich_help_panel
 )

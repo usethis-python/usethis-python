@@ -43,7 +43,7 @@ class ImportLinterTool(ImportLinterToolSpec, Tool):
             default=0,
         )
 
-        contracts: list[dict] = []
+        contracts: list[dict[str, bool | str | list[str]]] = []
         for (
             layered_architecture_by_module
         ) in layered_architecture_by_module_by_root_package.values():
@@ -63,7 +63,7 @@ class ImportLinterTool(ImportLinterToolSpec, Tool):
                 ):
                     continue
 
-                layers = []
+                layers: list[str] = []
                 for layer in layered_architecture.layers:
                     layers.append(" | ".join(sorted(layer)))
 

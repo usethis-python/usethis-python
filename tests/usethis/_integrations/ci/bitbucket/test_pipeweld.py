@@ -726,6 +726,70 @@ class TestGetInstructionsForInsertion:
             ]
             assert endpoint == "A"  # Alphabetical order wins tiebreaks
 
+        def test_contains_empty_series(self):
+            """A Parallel with an empty Series subcomponent produces a None endpoint
+            for that branch; the overall endpoint should be the min non-None endpoint."""
+            # Arrange
+            component = parallel("B", series())
+            after = None
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [InsertSuccessor(step="B", after=None)]
+            assert endpoint == "B"
+
+        def test_contains_multi_step_series(self):
+            # Arrange
+            component = parallel("A", series("B", "C"))
+            after = "0"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [
+                InsertSuccessor(step="A", after="0"),
+                InsertParallel(step="B", after="0"),
+                InsertSuccessor(step="C", after="B"),
+            ]
+            assert endpoint == "A"
+
+        def test_empty_series_with_smaller_after(self):
+            # Arrange
+            component = parallel("C", series())
+            after = "A"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [InsertSuccessor(step="C", after="A")]
+            assert endpoint == "C"
+
+        def test_all_empty_branches_preserves_after(self):
+            """When all branches are empty, no instructions are produced but the
+            endpoint should still be the original ``after`` value."""
+            # Arrange
+            component = parallel(series(), series())
+            after = "X"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == []
+            assert endpoint == "X"
+
     class TestDepGroup:
         def test_basic(self):
             # Arrange

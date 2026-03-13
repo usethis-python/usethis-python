@@ -32,22 +32,16 @@ def add_readme() -> None:
     except PyprojectTOMLError:
         project_description = None
 
-    if project_name is not None and project_description is not None:
+    if project_description is not None:
         content = f"""\
 # {project_name}
 
 {project_description}
 """
-    elif project_name is not None:
+    else:
         content = f"""\
 # {project_name}
 """
-    elif project_description is not None:
-        content = f"""\
-{project_description}
-"""
-    else:
-        content = ""
 
     tick_print("Writing 'README.md'.")
     (usethis_config.cpd() / "README.md").write_text(content, encoding="utf-8")

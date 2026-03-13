@@ -40,3 +40,5 @@ jobs:
               run: |
                   uv run --frozen prek run -a
                   uv run --frozen basedpyright
+              env:
+                  PREK_UV_SOURCE: github

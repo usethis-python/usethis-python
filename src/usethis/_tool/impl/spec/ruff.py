@@ -25,7 +25,7 @@ class RuffToolSpec(ToolSpec):
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ruff")]
 
-    def preferred_file_manager(self) -> KeyValueFileManager:
+    def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return RuffTOMLManager()

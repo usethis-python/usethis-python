@@ -32,7 +32,7 @@ class CodespellToolSpec(ToolSpec):
             managed_files=[Path(".codespellrc")],
         )
 
-    def preferred_file_manager(self) -> KeyValueFileManager:
+    def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotCodespellRCManager()

@@ -69,7 +69,7 @@ class DeptryTool(DeptryToolSpec, Tool):
 
         return rules
 
-    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
+    def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "deptry", "ignore"]

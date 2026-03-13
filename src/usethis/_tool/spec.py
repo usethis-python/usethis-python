@@ -71,7 +71,7 @@ class ToolSpec(Protocol):
         """
         return self.meta.rule_config
 
-    def preferred_file_manager(self) -> KeyValueFileManager:
+    def preferred_file_manager(self) -> KeyValueFileManager[object]:
         """If there is no currently active config file, this is the preferred one.
 
         This can vary dynamically, since often we will prefer to respect an existing

@@ -177,7 +177,7 @@ class UsethisFileManager(Generic[DocumentT]):
         self._content_by_path.pop(self.path, None)
 
 
-Key: TypeAlias = str | re.Pattern
+Key: TypeAlias = str | re.Pattern[str]
 
 
 class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):

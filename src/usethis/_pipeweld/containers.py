@@ -15,10 +15,10 @@ class Series(RootModel[list["Series | Parallel | DepGroup | str"]]):
     def __hash__(self):
         return hash((_HASH_SALT, tuple(self.root)))
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: int) -> Series | Parallel | DepGroup | str:
         return self.root[item]
 
-    def __setitem__(self, item, value):
+    def __setitem__(self, item: int, value: Series | Parallel | DepGroup | str) -> None:
         self.root[item] = value
 
     def __eq__(self, other: Any):

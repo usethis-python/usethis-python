@@ -134,7 +134,7 @@ class PytestTool(PytestToolSpec, Tool):
         how_print("Add test functions with the format 'test_*()'.")
         how_print(f"Run '{self.how_to_use_cmd()}' to run the tests.")
 
-    def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
+    def get_active_config_file_managers(self) -> set[KeyValueFileManager[object]]:
         # This is a variant of the "first" method
         config_spec = self.config_spec()
         if config_spec.resolution != "bespoke":

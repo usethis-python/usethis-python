@@ -235,7 +235,7 @@ class Tool(ToolSpec, Protocol):
             if pre_commit_config.inform_how_to_use_on_migrate:
                 self.print_how_to_use()
 
-    def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
+    def get_active_config_file_managers(self) -> set[KeyValueFileManager[object]]:
         """Get file managers for all active configuration files.
 
         Active configuration files are just those that we expect to use based on our
@@ -257,8 +257,8 @@ class Tool(ToolSpec, Protocol):
         self,
         resolution: ResolutionT,
         *,
-        file_manager_by_relative_path: dict[Path, KeyValueFileManager],
-    ) -> set[KeyValueFileManager]:
+        file_manager_by_relative_path: dict[Path, KeyValueFileManager[object]],
+    ) -> set[KeyValueFileManager[object]]:
         if resolution == "first":
             # N.B. keep this roughly in sync with the bespoke logic for pytest
             # since that logic is based on this logic.
@@ -334,7 +334,10 @@ class Tool(ToolSpec, Protocol):
                     already_added = True
 
     def _add_config_item(
-        self, config_item: ConfigItem, *, file_managers: set[KeyValueFileManager]
+        self,
+        config_item: ConfigItem,
+        *,
+        file_managers: set[KeyValueFileManager[object]],
     ) -> bool:
         """Add a specific configuration item using specified file managers.
 
@@ -603,7 +606,7 @@ class Tool(ToolSpec, Protocol):
             ):
                 remove_bitbucket_step_from_default(step)
 
-    def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:
+    def _get_select_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the configuration keys for selected rules.
 
         This is optional - tools that don't support rule selection can leave this
@@ -655,7 +658,7 @@ class Tool(ToolSpec, Protocol):
 
         return True
 
-    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
+    def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the configuration keys for ignored rules.
 
         Args:

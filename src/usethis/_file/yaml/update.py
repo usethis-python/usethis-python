@@ -64,7 +64,7 @@ def update_ruamel_yaml_map(
         cmap[key] = cmap_copy[key]
 
 
-def lcs_list_update(original: list, new: list) -> None:
+def lcs_list_update(original: list[Any], new: list[Any]) -> None:
     """Update in-place using a longest common subsequence solver.
 
     This makes `original` identical to `new`, but respects subtypes of list such as

@@ -15,7 +15,7 @@ on:
 jobs:
     bump-dev-dep:
         permissions:
-            contents: read # Required to checkout
+            contents: write # Required to commit
             pull-requests: write # Required to create PR
         runs-on: ubuntu-latest
         steps:

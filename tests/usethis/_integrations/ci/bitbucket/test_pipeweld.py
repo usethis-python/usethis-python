@@ -774,6 +774,22 @@ class TestGetInstructionsForInsertion:
             assert instructions == [InsertSuccessor(step="C", after="A")]
             assert endpoint == "C"
 
+        def test_all_empty_branches_preserves_after(self):
+            """When all branches are empty, no instructions are produced but the
+            endpoint should still be the original ``after`` value."""
+            # Arrange
+            component = parallel(series(), series())
+            after = "X"
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == []
+            assert endpoint == "X"
+
     class TestDepGroup:
         def test_basic(self):
             # Arrange

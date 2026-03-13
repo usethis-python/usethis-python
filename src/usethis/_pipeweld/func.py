@@ -506,6 +506,9 @@ def _get_instructions_for_insertion(
 
             endpoints.append(endpoint)
             instructions_per_sub.append(new_instructions)
+        if min_endpoint is None:
+            # If the existing components are empty...
+            min_endpoint = after
 
         for idx in range(len(component.root)):
             if idx != min_idx and instructions_per_sub[idx]:

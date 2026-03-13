@@ -61,16 +61,15 @@ def get_pipeweld_object(
     elif isinstance(item, schema.ParallelItem):
         parallel_steps: set[str] = set()
 
-        if item.parallel is not None:
-            if isinstance(item.parallel.root, schema.ParallelSteps):
-                step_items = item.parallel.root.root
-            elif isinstance(item.parallel.root, schema.ParallelExpanded):
-                step_items = item.parallel.root.steps.root
-            else:
-                assert_never(item.parallel.root)
+        if isinstance(item.parallel.root, schema.ParallelSteps):
+            step_items = item.parallel.root.root
+        elif isinstance(item.parallel.root, schema.ParallelExpanded):
+            step_items = item.parallel.root.steps.root
+        else:
+            assert_never(item.parallel.root)
 
-            for step_item in step_items:
-                parallel_steps.add(get_pipeweld_step(step_item.step))
+        for step_item in step_items:
+            parallel_steps.add(get_pipeweld_step(step_item.step))
 
         return usethis._pipeweld.containers.Parallel(frozenset(parallel_steps))
     elif isinstance(item, schema.StageItem):
@@ -245,28 +244,27 @@ def _extract_step_from_parallel_item(
     items: list[schema.StepItem | schema.ParallelItem | schema.StageItem],
     idx: int,
 ) -> schema.Step | None:
-    if item.parallel is not None:
-        if isinstance(item.parallel.root, schema.ParallelSteps):
-            step_items = item.parallel.root.root
-        elif isinstance(item.parallel.root, schema.ParallelExpanded):
-            step_items = item.parallel.root.steps.root
-        else:
-            assert_never(item.parallel.root)
+    if isinstance(item.parallel.root, schema.ParallelSteps):
+        step_items = item.parallel.root.root
+    elif isinstance(item.parallel.root, schema.ParallelExpanded):
+        step_items = item.parallel.root.steps.root
+    else:
+        assert_never(item.parallel.root)
 
-        for step_idx, step_item in enumerate(step_items):
-            if get_pipeweld_step(step_item.step) == step_name:
-                # Found it - remove from the parallel block
-                extracted_step = step_item.step
-                step_items.pop(step_idx)
+    for step_idx, step_item in enumerate(step_items):
+        if get_pipeweld_step(step_item.step) == step_name:
+            # Found it - remove from the parallel block
+            extracted_step = step_item.step
+            step_items.pop(step_idx)
 
-                # If only one step remains in the parallel, convert to a simple step
-                if len(step_items) == 1:
-                    items[idx] = step_items[0]
-                elif len(step_items) == 0:
-                    # No steps left, remove the parallel item
-                    items.pop(idx)
+            # If only one step remains in the parallel, convert to a simple step
+            if len(step_items) == 1:
+                items[idx] = step_items[0]
+            elif len(step_items) == 0:
+                # No steps left, remove the parallel item
+                items.pop(idx)
 
-                return extracted_step
+            return extracted_step
     return None
 
 
@@ -296,17 +294,14 @@ def _insert_parallel_step(
         )
         items[idx] = parallel_item
     elif isinstance(item, schema.ParallelItem):
-        if item.parallel is not None:
-            if isinstance(item.parallel.root, schema.ParallelSteps):
-                # Add to the existing list of parallel steps
-                item.parallel.root.root.append(schema.StepItem(step=step_to_insert))
-            elif isinstance(item.parallel.root, schema.ParallelExpanded):
-                # Add to the expanded parallel steps
-                item.parallel.root.steps.root.append(
-                    schema.StepItem(step=step_to_insert)
-                )
-            else:
-                assert_never(item.parallel.root)
+        if isinstance(item.parallel.root, schema.ParallelSteps):
+            # Add to the existing list of parallel steps
+            item.parallel.root.root.append(schema.StepItem(step=step_to_insert))
+        elif isinstance(item.parallel.root, schema.ParallelExpanded):
+            # Add to the expanded parallel steps
+            item.parallel.root.steps.root.append(schema.StepItem(step=step_to_insert))
+        else:
+            assert_never(item.parallel.root)
     elif isinstance(item, schema.StageItem):
         # StageItems are trickier since they aren't supported in ParallelSteps. But we
         # never need to add them in practice anyway. The only reason this is really here
@@ -324,17 +319,16 @@ def _is_insertion_necessary(
     if isinstance(item, schema.StepItem):
         return get_pipeweld_step(item.step) == instruction.after
     elif isinstance(item, schema.ParallelItem):
-        if item.parallel is not None:
-            if isinstance(item.parallel.root, schema.ParallelSteps):
-                step_items = item.parallel.root.root
-            elif isinstance(item.parallel.root, schema.ParallelExpanded):
-                step_items = item.parallel.root.steps.root
-            else:
-                assert_never(item.parallel.root)
+        if isinstance(item.parallel.root, schema.ParallelSteps):
+            step_items = item.parallel.root.root
+        elif isinstance(item.parallel.root, schema.ParallelExpanded):
+            step_items = item.parallel.root.steps.root
+        else:
+            assert_never(item.parallel.root)
 
-            for step_item in step_items:
-                if get_pipeweld_step(step_item.step) == instruction.after:
-                    return True
+        for step_item in step_items:
+            if get_pipeweld_step(step_item.step) == instruction.after:
+                return True
         return False
     elif isinstance(item, schema.StageItem):
         step1s = item.stage.steps.copy()

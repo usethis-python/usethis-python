@@ -6,10 +6,12 @@ on:
         branches: ["main"]
         paths-ignore:
             - "mkdocs.yml"
+            - "AGENTS.md"
             - ".agents/**/*.md"
     pull_request:
         paths-ignore:
             - "mkdocs.yml"
+            - "AGENTS.md"
             - ".agents/**/*.md"
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,3 +42,5 @@ jobs:
               run: |
                   uv run --frozen prek run -a
                   uv run --frozen basedpyright
+              env:
+                  PREK_UV_SOURCE: github

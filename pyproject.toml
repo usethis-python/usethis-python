@@ -225,7 +225,6 @@ reportUnknownArgumentType = false
 reportUnknownLambdaType = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
-reportUnnecessaryComparison = false
 reportUnnecessaryIsInstance = false
 reportUnusedCallResult = false
 reportUnusedParameter = false

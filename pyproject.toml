@@ -227,13 +227,13 @@ reportUnknownMemberType = false
 reportUnknownVariableType = false
 reportUnnecessaryIsInstance = false
 reportUnusedCallResult = false
-reportUnusedParameter = false
 
 [[tool.basedpyright.executionEnvironments]]
 root = "tests"
 reportUnknownParameterType = false
 reportUnreachable = false
 reportUnusedFunction = false
+reportUnusedParameter = false
 
 [tool.sync-with-uv.repo-to-package]
 "https://github.com/astral-sh/uv-pre-commit" = "uv"

@@ -16,6 +16,7 @@ jobs:
     bump-dev-dep:
         permissions:
             contents: read # Required to checkout
+            pull-requests: write # Required to create PR
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
@@ -37,19 +38,6 @@ jobs:
             - name: Bump
               # Updates uv.lock, requirements.txt, and docs/requirements.txt
               run: uv run -P $PKG_TO_BUMP prek -a uv-export || true
-              env:
-                  PKG_TO_BUMP: ${{ inputs.package }}
-
-            - name: Check for changes
-              run: |
-                  if [[ -n $(git status --porcelain) ]]; then
-                      echo "Changes detected. Committing and pushing..."
-                      git add uv.lock requirements.txt docs/requirements.txt
-                      git commit -m "Bump $PKG_TO_BUMP dependency"
-                      git push
-                  else
-                      echo "No changes detected. Nothing to commit."
-                  fi
               env:
                   PKG_TO_BUMP: ${{ inputs.package }}
 

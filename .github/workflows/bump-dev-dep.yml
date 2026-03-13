@@ -23,13 +23,18 @@ jobs:
               with:
                   persist-credentials: false
 
+            - name: Setup git user config
+              run: |
+                  git config --global user.name github-actions[bot]
+                  git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
+
             - name: Set up uv
               uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d # v7.1.0
               with:
                   version: "latest"
                   enable-cache: true
 
-            - name: Regenerate
+            - name: Bump
               # Updates uv.lock, requirements.txt, and docs/requirements.txt
               run: uv run -P $PKG_TO_BUMP prek -a uv-export || true
               env:

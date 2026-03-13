@@ -13,6 +13,8 @@ nav:
   - Similar Projects: similar-projects.md
   - FAQ: faq.md
   - License: about-license.md
+  - Internals:
+    - File Manager: file-manager.md
 
 theme:
   name: material

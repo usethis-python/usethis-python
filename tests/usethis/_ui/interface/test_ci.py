@@ -37,7 +37,6 @@ environment = []
         assert (
             result.output
             == """\
-DeprecationWarning: The command 'bitbucket' is deprecated.
 ⚠ 'usethis ci' is deprecated and will be removed in v0.20.0.
 ✔ Writing 'bitbucket-pipelines.yml'.
 ✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.
@@ -59,7 +58,6 @@ DeprecationWarning: The command 'bitbucket' is deprecated.
         assert result.exit_code == 0, result.output
         assert (tmp_path / "bitbucket-pipelines.yml").exists()
         assert result.output == (
-            "DeprecationWarning: The command 'bitbucket' is deprecated.\n"
             "⚠ 'usethis ci' is deprecated and will be removed in v0.20.0.\n"
             "✔ Writing 'bitbucket-pipelines.yml'.\n"
             "✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.\n"

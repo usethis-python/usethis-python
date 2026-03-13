@@ -5,11 +5,13 @@ from usethis._types.backend import BackendEnum
 from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
 
 app = typer.Typer(
-    help="Add config for Continuous Integration (CI) pipelines.", add_completion=False
+    help="Add config for Continuous Integration (CI) pipelines.",
+    add_completion=False,
+    deprecated=True,
 )
 
 
-@app.command(deprecated=True, help="Use Bitbucket Pipelines for CI.")
+@app.command(help="Use Bitbucket Pipelines for CI.")
 def bitbucket(
     remove: bool = typer.Option(
         False, "--remove", help="Remove Bitbucket Pipelines CI instead of adding it."

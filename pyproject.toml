@@ -222,7 +222,6 @@ reportMissingTypeStubs = false
 reportPrivateUsage = false
 reportUnannotatedClassAttribute = false
 reportUnknownArgumentType = false
-reportUnknownLambdaType = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
 reportUnnecessaryIsInstance = false
@@ -231,6 +230,7 @@ reportUnusedParameter = false
 
 [[tool.basedpyright.executionEnvironments]]
 root = "tests"
+reportUnknownLambdaType = false
 reportUnknownParameterType = false
 reportUnreachable = false
 reportUnusedFunction = false

@@ -726,6 +726,22 @@ class TestGetInstructionsForInsertion:
             ]
             assert endpoint == "A"  # Alphabetical order wins tiebreaks
 
+        def test_contains_empty_series(self):
+            """A Parallel with an empty Series subcomponent produces a None endpoint
+            for that branch; the overall endpoint should be the min non-None endpoint."""
+            # Arrange
+            component = parallel("B", series())
+            after = None
+
+            # Act
+            instructions, endpoint = _get_instructions_for_insertion(
+                component, after=after
+            )
+
+            # Assert
+            assert instructions == [InsertSuccessor(step="B", after=None)]
+            assert endpoint == "B"
+
     class TestDepGroup:
         def test_basic(self):
             # Arrange

@@ -465,7 +465,8 @@ def _get_instructions_for_insertion(
 
     Args:
         component: The component to insert.
-        after: The step to insert the new component after.
+        after: The step to insert the new component after. None if the component should
+               be inserted at the start of the pipeline.
 
     Returns:
         A tuple containing the instructions to insert the new component and the endpoint
@@ -486,8 +487,8 @@ def _get_instructions_for_insertion(
         if len(component.root) == 0:
             return [], after
 
-        instructions: list[Instruction] = []
-        endpoints = []
+        instructions_per_sub: list[list[Instruction]] = []
+        endpoints: list[str | None] = []
         min_idx = None
         min_endpoint = None
         for idx, subcomponent in enumerate(component.root):
@@ -502,24 +503,31 @@ def _get_instructions_for_insertion(
                 min_endpoint = endpoint
 
             endpoints.append(endpoint)
-            instructions.extend(new_instructions)
+            instructions_per_sub.append(new_instructions)
 
         for idx in range(len(component.root)):
-            if idx != min_idx:
-                instructions[idx] = InsertParallel(
-                    after=instructions[idx].after, step=instructions[idx].step
+            if idx != min_idx and instructions_per_sub[idx]:
+                (instruction,) = instructions_per_sub[idx]
+                instructions_per_sub[idx][0] = InsertParallel(
+                    after=instruction.after,
+                    step=instruction.step,
                 )
 
-        sorted_idxs = sorted(range(len(endpoints)), key=lambda k: endpoints[k])
-
-        instructions = [instructions[idx] for idx in sorted_idxs]
-
-        return instructions, min(endpoints)
-    elif isinstance(component, DepGroup):
-        return _get_instructions_for_insertion(
-            component.series,
-            after=after,
+        sorted_idxs = sorted(
+            range(len(endpoints)),
+            key=lambda k: (
+                endpoints[k] is None,
+                endpoints[k] if endpoints[k] is not None else "",
+            ),
         )
+
+        instructions = [
+            inst for idx in sorted_idxs for inst in instructions_per_sub[idx]
+        ]
+
+        return instructions, min_endpoint
+    elif isinstance(component, DepGroup):
+        return _get_instructions_for_insertion(component.series, after=after)
     else:
         assert_never(component)
 

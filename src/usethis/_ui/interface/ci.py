@@ -9,7 +9,7 @@ app = typer.Typer(
 )
 
 
-@app.command(help="Use Bitbucket Pipelines for CI.")
+@app.command(deprecated=True, help="Use Bitbucket Pipelines for CI.")
 def bitbucket(
     remove: bool = typer.Option(
         False, "--remove", help="Remove Bitbucket Pipelines CI instead of adding it."
@@ -25,11 +25,13 @@ def bitbucket(
     backend: BackendEnum = backend_opt,
 ) -> None:
     from usethis._config_file import files_manager
-    from usethis._console import err_print
+    from usethis._console import err_print, warn_print
     from usethis._core.ci import use_ci_bitbucket
     from usethis.errors import UsethisError
 
     assert isinstance(backend, BackendEnum)
+
+    warn_print("'usethis ci' is deprecated and will be removed in v0.20.0.")
 
     with (
         usethis_config.set(

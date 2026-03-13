@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from difflib import SequenceMatcher
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from ruamel.yaml.comments import (
     CommentedMap,
@@ -11,6 +11,8 @@ if TYPE_CHECKING:
     from typing import Any
 
     from usethis._file.yaml.typing_ import YAMLLiteral
+
+_T = TypeVar("_T")
 
 
 def update_ruamel_yaml_map(
@@ -64,7 +66,7 @@ def update_ruamel_yaml_map(
         cmap[key] = cmap_copy[key]
 
 
-def lcs_list_update(original: list[object], new: list[object]) -> None:
+def lcs_list_update(original: list[_T], new: list[_T]) -> None:
     """Update in-place using a longest common subsequence solver.
 
     This makes `original` identical to `new`, but respects subtypes of list such as

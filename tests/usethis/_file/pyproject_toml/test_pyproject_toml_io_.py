@@ -76,6 +76,23 @@ class TestPyprojectTOMLManager:
         with pytest.raises(PyprojectTOMLDecodeError), manager:
             manager.read_file()
 
+    def test_read_file_with_unicode_chars(self, tmp_path: Path):
+        # Unicode characters like 'ā' in comments should not cause read failures.
+
+        # Arrange
+        with change_cwd(tmp_path):
+            (tmp_path / "pyproject.toml").write_text(
+                '# Comment with unicode: ā\n[project]\nname = "foo"\n',
+                encoding="utf-8",
+            )
+            manager = PyprojectTOMLManager()
+
+        # Act & Assert (should not raise)
+        with manager:
+            result = manager.get()
+
+        assert result.value["project"]["name"] == "foo"
+
     def test_commit_and_get(self, tmp_path: Path):
         with change_cwd(tmp_path):
             # Arrange

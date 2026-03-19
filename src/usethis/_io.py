@@ -116,7 +116,7 @@ class UsethisFileManager(Generic[DocumentT]):
         if not self.path.exists():
             return
 
-        self.path.write_text(self._dump_content())
+        self.path.write_text(self._dump_content(), encoding="utf-8")
 
     def read_file(self) -> DocumentT:
         """Read the document from disk and store it in memory.
@@ -132,7 +132,7 @@ class UsethisFileManager(Generic[DocumentT]):
             )
             raise UnexpectedFileIOError(msg)
         try:
-            document = self._parse_content(self.path.read_text())
+            document = self._parse_content(self.path.read_text(encoding="utf-8"))
         except FileNotFoundError:
             msg = f"'{self.name}' not found in the current directory at '{self.path}'."
             raise FileNotFoundError(msg) from None

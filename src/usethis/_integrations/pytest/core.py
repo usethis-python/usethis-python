@@ -19,7 +19,7 @@ def add_pytest_dir() -> None:
 
     tick_print("Writing '/tests/conftest.py'.")
     (tests_dir / "conftest.py").write_text(
-        "collect_ignore_glob = []\npytest_plugins = []\n"
+        "collect_ignore_glob = []\npytest_plugins = []\n", encoding="utf-8"
     )
 
 

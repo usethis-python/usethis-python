@@ -21,5 +21,6 @@ def add_docs_dir() -> None:
 # {get_project_name()}
 
 Welcome to the documentation for {get_project_name()}.
-"""
+""",
+            encoding="utf-8",
         )

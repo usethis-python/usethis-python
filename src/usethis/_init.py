@@ -44,7 +44,8 @@ def project_init():
                 f"""\
 def hello() -> str:
     return "Hello from {project_name}!"
-"""
+""",
+                encoding="utf-8",
             )
         (src_dir / pkg_name / "py.typed").touch(exist_ok=True)
     else:
@@ -115,7 +116,8 @@ dependencies = []
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-"""
+""",
+            encoding="utf-8",
         )
     else:
         assert_never(backend)

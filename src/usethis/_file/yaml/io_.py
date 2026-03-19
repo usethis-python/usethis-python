@@ -449,7 +449,7 @@ def read_yaml(
     guess_indent: bool = True,
 ) -> Generator[YAMLDocument, None, None]:
     """A context manager to read a YAML file."""
-    with yaml_path.open(mode="r") as f:
+    with yaml_path.open(mode="r", encoding="utf-8") as f:
         try:
             yaml_document = _get_yaml_document(f, guess_indent=guess_indent)
         except YAMLError as err:

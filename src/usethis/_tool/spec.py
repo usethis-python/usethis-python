@@ -4,6 +4,9 @@ from abc import abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol
 
+from typing_extensions import assert_never
+
+from usethis._config import usethis_config
 from usethis._deps import is_dep_in_any_group
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import get_hook_ids, hook_ids_are_equivalent
@@ -17,6 +20,7 @@ if TYPE_CHECKING:
 
     from usethis._integrations.pre_commit import schema as pre_commit_schema
     from usethis._io import KeyValueFileManager
+    from usethis._tool.config import ResolutionT
     from usethis._tool.rule import Rule
     from usethis._types.deps import Dependency
 
@@ -89,6 +93,72 @@ class ToolSpec(Protocol):
         This includes the file managers and resolution methodology.
         """
         return ConfigSpec.empty()
+
+    def get_active_config_file_managers(self) -> set[KeyValueFileManager[object]]:
+        """Get file managers for all active configuration files.
+
+        Active configuration files are just those that we expect to use based on our
+        strategy for deciding on relevant files: this is a combination of the resolution
+        methodology associated with the tool, and hard-coded preferences for certain
+        files.
+
+        Most commonly, this will just be a single file manager. The active config files
+        themselves do not necessarily exist yet.
+        """
+        config_spec = self.config_spec()
+        resolution = config_spec.resolution
+        return self._get_active_config_file_managers_from_resolution(
+            resolution,
+            file_manager_by_relative_path=config_spec.file_manager_by_relative_path,
+        )
+
+    def _get_active_config_file_managers_from_resolution(
+        self,
+        resolution: ResolutionT,
+        *,
+        file_manager_by_relative_path: dict[Path, KeyValueFileManager[object]],
+    ) -> set[KeyValueFileManager[object]]:
+        if resolution == "first":
+            # N.B. keep this roughly in sync with the bespoke logic for pytest
+            # since that logic is based on this logic.
+            for (
+                relative_path,
+                file_manager,
+            ) in file_manager_by_relative_path.items():
+                path = usethis_config.cpd() / relative_path
+                if path.exists() and path.is_file():
+                    return {file_manager}
+        elif resolution == "first_content":
+            config_spec = self.config_spec()
+            for relative_path, file_manager in file_manager_by_relative_path.items():
+                path = usethis_config.cpd() / relative_path
+                if path.exists() and path.is_file():
+                    # We check whether any of the managed config exists
+                    for config_item in config_spec.config_items:
+                        if config_item.root[relative_path].keys in file_manager:
+                            return {file_manager}
+        elif resolution == "bespoke":
+            msg = (
+                "The bespoke resolution method is not yet implemented for the tool "
+                f"{self.name}."
+            )
+            raise NotImplementedError(msg)
+        else:
+            assert_never(resolution)
+
+        file_managers = file_manager_by_relative_path.values()
+        if not file_managers:
+            return set()
+
+        preferred_file_manager = self.preferred_file_manager()
+        if preferred_file_manager not in file_managers:
+            msg = (
+                f"The preferred file manager '{preferred_file_manager}' is not "
+                f"among the file managers '{file_managers}' for the tool "
+                f"'{self.name}'."
+            )
+            raise NotImplementedError(msg)
+        return {preferred_file_manager}
 
     def raw_cmd(self) -> str:
         """The default command to run the tool.

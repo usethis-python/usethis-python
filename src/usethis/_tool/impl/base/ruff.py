@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, final
 
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
@@ -206,7 +206,7 @@ class RuffTool(RuffToolSpec, Tool):
         keys = self._get_select_keys(file_manager)
         try:
             rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError):
+        except (KeyError, FileNotFoundError, ValidationError):
             rules = []
 
         return rules
@@ -218,7 +218,7 @@ class RuffTool(RuffToolSpec, Tool):
         keys = self._get_ignore_keys(file_manager)
         try:
             rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError):
+        except (KeyError, FileNotFoundError, ValidationError):
             rules = []
 
         return rules
@@ -249,7 +249,7 @@ class RuffTool(RuffToolSpec, Tool):
         keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
         try:
             rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError):
+        except (KeyError, FileNotFoundError, ValidationError):
             rules = []
 
         return rules
@@ -311,7 +311,7 @@ class RuffTool(RuffToolSpec, Tool):
         keys = self._get_docstyle_keys(file_manager)
         try:
             docstyle = TypeAdapter(str).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError):
+        except (KeyError, FileNotFoundError, ValidationError):
             docstyle = None
 
         if docstyle not in ("numpy", "google", "pep257"):

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, final
 
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from usethis._console import info_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -42,7 +42,7 @@ class DeptryTool(DeptryToolSpec, Tool):
         keys = self._get_ignore_keys(file_manager)
         try:
             rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError):
+        except (KeyError, FileNotFoundError, ValidationError):
             rules = []
 
         return rules

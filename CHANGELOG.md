@@ -4,7 +4,7 @@
 
 ### 🚧 Deprecations
 
-- The `usethis ci bitbucket` command, and the `usethis ci` command in general, is deprecated. Its removal is planned for usethis 0.20.0. For feedback and discussion, please see #1313.
+- The `usethis ci bitbucket` command, and the `usethis ci` command in general, are deprecated. Their removal is planned for usethis 0.20.0. For feedback and discussion, please see #1313.
 
 ### 🐞 Bug Fixes
 

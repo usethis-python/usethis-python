@@ -18,6 +18,8 @@ from usethis._integrations.ci.bitbucket.steps import get_steps_in_default
 from usethis._integrations.environ.python import get_supported_minor_python_versions
 from usethis._python.version import PythonVersion
 from usethis._tool.base import Tool
+from usethis._tool.heuristics import is_likely_used
+from usethis._tool.impl.spec.coverage_py import CoveragePyToolSpec
 from usethis._tool.impl.spec.pytest import PytestToolSpec
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -31,12 +33,8 @@ _PYTEST_PIP_CMD = "pip install pytest"
 class PytestTool(PytestToolSpec, Tool):
     @final
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        from usethis._tool.impl.base.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
-            CoveragePyTool,
-        )
-
         deps = [Dependency(name="pytest")]
-        if unconditional or CoveragePyTool().is_used():
+        if unconditional or is_likely_used(CoveragePyToolSpec()):
             deps += [Dependency(name="pytest-cov")]
         return deps
 

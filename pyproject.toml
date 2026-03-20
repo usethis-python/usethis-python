@@ -214,7 +214,6 @@ reportCallInDefaultInitializer = false
 reportExplicitAny = false
 reportImplicitOverride = false
 reportImplicitStringConcatenation = false
-reportImportCycles = false
 reportInvalidAbstractMethod = false
 reportMissingParameterType = false
 reportMissingTypeArgument = false

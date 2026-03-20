@@ -1,5 +1,53 @@
 # Changelog
 
+## 0.19.0
+
+### 🚧 Deprecations
+
+- The `usethis ci bitbucket` command, and the `usethis ci` command in general, is deprecated. Its removal is planned for usethis 0.20.0. For feedback and discussion, please see #1313.
+
+### 🐞 Bug Fixes
+
+- Previously, parsing of `pyproject.toml` would fail on some Unicode characters. This has been fixed by specifying the encoding explicitly.
+
+### 🧹 Maintenance
+
+- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically support for _source_ import pipelines (in addition to the legacy inline import pipelines).
+
+### 📚 Documentation
+
+- There is now documentation on how to add a new tool to usethis in `CONTRIBUTING.md`.
+
+- There is now clearer guidance in `CONTRIBUTING.md` regarding the use of docstrings in the test suite.
+
+- The [Scientific Python Library Development Guide](https://learn.scientific-python.org/development/) is now mentioned in the README.
+
+### 🔧 Internal Changes
+
+- An bug in the pipeweld utility has been fixed. The bug did not functionally affect usethis, but involved incorrect insertion behaviour of Parallel components in the presence of empty Series branches.
+
+- As of uv version 0.9.9, uv supports the [`UV_NO_DEFAULT_GROUPS`](https://docs.astral.sh/uv/reference/environment/#uv_no_default_groups) environment variable, which is now being used for CI configuration. This causes changes to tested behaviour of usethis, and so the lowest tested version of uv is now v0.9.9. Going forward, it is not recommended to use older versions of uv with usethis.
+
+- There are now various agent skills configured for agentic development.
+
+- There is now explicit environment configuration for the GitHub Copilot agent.
+
+- There are now separate GitHub Actions workflows for static checks, pytest, codspeed, and codecov analysis. This helps reduce the scope of permissions to repo secrets and generally simplifies things.
+
+- There is now a GitHub Actions workflow for manually triggering a version bump to a specific package (for development). This is mostly to improve the maintenance experience for addressing CVEs.
+
+- The `Tool` class now inherits from `ToolSpec` for the methods which do not involve dynamic inference.
+
+- Many methods on the `Tool` and `ToolSpec` classes have been renamed and reorganized for convenience, including the introduction of a `ToolMeta` abstraction for grouping basic tool metadata (name, documentation URL, etc.)
+
+- There is now a dedicated module for heuristics for detecting tool usage.
+
+- The logic for selecting CI vs. pre-commit is now abstracted into the `Tool` class instead repeated for individual tool implementations.
+
+- Various submodules of `usethis._integrations` have been promoted into their own higher level modules to accommodate these changes while preserving a layered architecture.
+
+- There are various improvements in type compliance via the enabling of various `basedpyright` rules which were previously disabled.
+
 ## 0.18.1
 
 ### 🐞 Bug Fixes

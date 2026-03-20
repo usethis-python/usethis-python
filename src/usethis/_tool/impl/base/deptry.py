@@ -1,16 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from usethis._console import info_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool.base import Tool
-from usethis._tool.config import (
-    ConfigEntry,
-    ConfigItem,
-    ConfigSpec,
-)
 from usethis._tool.impl.spec.deptry import DeptryToolSpec
 
 if TYPE_CHECKING:
@@ -19,27 +13,6 @@ if TYPE_CHECKING:
 
 
 class DeptryTool(DeptryToolSpec, Tool):
-    def config_spec(self) -> ConfigSpec:
-        # https://deptry.com/usage/#configuration
-        return ConfigSpec.from_flat(
-            file_managers=[PyprojectTOMLManager()],
-            resolution="first",
-            config_items=[
-                ConfigItem(
-                    description="Overall config",
-                    root={Path("pyproject.toml"): ConfigEntry(keys=["tool", "deptry"])},
-                ),
-                ConfigItem(
-                    description="Ignore notebooks",
-                    root={
-                        Path("pyproject.toml"): ConfigEntry(
-                            keys=["tool", "deptry", "ignore_notebooks"],
-                            get_value=lambda: False,
-                        )
-                    },
-                ),
-            ],
-        )
 
     def select_rules(self, rules: list[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Protocol
 from usethis._deps import is_dep_in_any_group
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import get_hook_ids, hook_ids_are_equivalent
+from usethis._tool.config import ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
 from usethis.errors import NoDefaultToolCommand
@@ -78,6 +79,16 @@ class ToolSpec(Protocol):
         configuration file if it exists.
         """
         return PyprojectTOMLManager()
+
+    def config_spec(self) -> ConfigSpec:
+        """Get the configuration specification for this tool.
+
+        This can be dynamically determined, e.g. based on the source directory structure
+        of the current project.
+
+        This includes the file managers and resolution methodology.
+        """
+        return ConfigSpec.empty()
 
     def raw_cmd(self) -> str:
         """The default command to run the tool.

@@ -28,7 +28,7 @@ from usethis._integrations.pre_commit.hooks import (
     hook_ids_are_equivalent,
     remove_hook,
 )
-from usethis._tool.config import ConfigSpec, NoConfigValue, ensure_managed_file_exists
+from usethis._tool.config import NoConfigValue, ensure_managed_file_exists
 from usethis._tool.heuristics import is_likely_used
 from usethis._tool.spec import ToolMeta, ToolSpec
 from usethis._types.backend import BackendEnum
@@ -123,16 +123,6 @@ class Tool(ToolSpec, Protocol):
 
         return hook_id
 
-    def config_spec(self) -> ConfigSpec:
-        """Get the configuration specification for this tool.
-
-        This can be dynamically determined, e.g. based on the source directory structure
-        of the current project.
-
-        This includes the file managers and resolution methodology.
-        """
-        return ConfigSpec.empty()
-
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project.
 
@@ -142,7 +132,7 @@ class Tool(ToolSpec, Protocol):
         3. Whether any of the tool's managed config file sections are present.
         4. Whether any of the tool's characteristic pre-commit hooks are present.
         """
-        return is_likely_used(self, self.config_spec())
+        return is_likely_used(self)
 
     def add_dev_deps(self) -> None:
         add_deps_to_group(self.dev_deps(), "dev")

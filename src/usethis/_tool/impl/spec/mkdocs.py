@@ -4,7 +4,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from usethis._config_file import MkDocsYMLManager
+from usethis._integrations.project.name import get_project_name
 from usethis._tool.base import ToolMeta, ToolSpec
+from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
@@ -32,3 +34,32 @@ class MkDocsToolSpec(ToolSpec):
         """If there is no currently active config file, this is the preferred one."""
         # Should set the mkdocs.yml file manager as the preferred one
         return MkDocsYMLManager()
+
+    def config_spec(self) -> ConfigSpec:
+        """Get the configuration specification for this tool."""
+        return ConfigSpec.from_flat(
+            file_managers=[
+                MkDocsYMLManager(),
+            ],
+            resolution="first_content",
+            config_items=[
+                ConfigItem(
+                    description="Site Name",
+                    root={
+                        Path("mkdocs.yml"): ConfigEntry(
+                            keys=["site_name"],
+                            get_value=lambda: get_project_name(),
+                        ),
+                    },
+                ),
+                ConfigItem(
+                    description="Navigation",
+                    root={
+                        Path("mkdocs.yml"): ConfigEntry(
+                            keys=["nav"],
+                            get_value=lambda: [{"Home": "index.md"}],
+                        ),
+                    },
+                ),
+            ],
+        )

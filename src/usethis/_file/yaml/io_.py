@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from io import StringIO
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import mergedeep
 import ruamel.yaml
 from pydantic import TypeAdapter, ValidationError
 from ruamel.yaml.comments import CommentedMap
@@ -16,6 +15,7 @@ from ruamel.yaml.util import load_yaml_guess_indent
 from typing_extensions import assert_never
 
 from usethis._console import info_print
+from usethis._file.merge import _deep_merge
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
@@ -309,7 +309,7 @@ class YAMLFileManager(KeyValueFileManager):
             for key in reversed(keys):
                 new_content = {key: new_content}
             assert isinstance(new_content, dict)
-            content = mergedeep.merge(content, new_content)
+            content = _deep_merge(content, new_content)
             assert isinstance(content, dict)
         else:
             TypeAdapter(dict).validate_python(p_parent)
@@ -385,7 +385,7 @@ def _set_value_in_existing(
     contents = value
     for key in reversed(keys):
         contents = {key: contents}
-    content = mergedeep.merge(content, contents)  # type: ignore[reportAssignmentType]
+    content = _deep_merge(content, contents)  # type: ignore[reportAssignmentType]
 
 
 def _validate_keys(keys: Sequence[Key]) -> list[str]:

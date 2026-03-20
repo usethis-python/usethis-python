@@ -119,7 +119,7 @@ containers =
 layers =
     pyproject_toml | setup_cfg
     ini | toml | yaml
-    dir
+    dir | merge
 exhaustive = true
 
 [importlinter:contract:ui_interface]

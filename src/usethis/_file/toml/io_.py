@@ -4,7 +4,6 @@ import copy
 import re
 from typing import TYPE_CHECKING, Any
 
-import mergedeep
 import tomlkit.api
 import tomlkit.items
 from pydantic import TypeAdapter, ValidationError
@@ -13,6 +12,7 @@ from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
 from typing_extensions import assert_never
 
+from usethis._file.merge import _deep_merge
 from usethis._file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
@@ -381,7 +381,7 @@ def _set_value_in_existing(
         contents = value
         for key in reversed(keys):
             contents = {key: contents}
-        toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
+        toml_document = _deep_merge(toml_document, contents)  # type: ignore[reportAssignmentType]
         assert isinstance(toml_document, TOMLDocument)
     else:
         # Note that this alternative logic is just to avoid a bug:
@@ -396,7 +396,7 @@ def _set_value_in_existing(
             # https://github.com/usethis-python/usethis-python/issues/558
 
             placeholder = {keys[0]: {keys[1]: {}}}
-            toml_document = mergedeep.merge(toml_document, placeholder)  # type: ignore[reportArgumentType]
+            toml_document = _deep_merge(toml_document, placeholder)  # type: ignore[reportArgumentType]
 
             contents = value
             for key in reversed(unshared_keys[1:]):

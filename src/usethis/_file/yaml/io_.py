@@ -15,6 +15,7 @@ from ruamel.yaml.util import load_yaml_guess_indent
 from typing_extensions import assert_never
 
 from usethis._console import info_print
+from usethis._file.merge import _deep_merge
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
@@ -29,7 +30,6 @@ from usethis._io import (
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
-    _deep_merge,
     print_keys,
 )
 

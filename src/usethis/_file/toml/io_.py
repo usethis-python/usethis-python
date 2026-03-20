@@ -12,6 +12,7 @@ from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
 from typing_extensions import assert_never
 
+from usethis._file.merge import _deep_merge
 from usethis._file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
@@ -26,7 +27,6 @@ from usethis._io import (
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
-    _deep_merge,
     print_keys,
 )
 

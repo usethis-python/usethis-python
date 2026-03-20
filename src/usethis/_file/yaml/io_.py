@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import re
-from collections.abc import MutableMapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from io import StringIO
@@ -30,6 +29,7 @@ from usethis._io import (
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
+    _deep_merge,
     print_keys,
 )
 
@@ -373,26 +373,6 @@ class YAMLFileManager(KeyValueFileManager):
             preserve_comments=True,
         )
         self.commit(self._content)
-
-
-def _deep_merge(
-    target: MutableMapping[Any, Any], source: MutableMapping[Any, Any]
-) -> MutableMapping[Any, Any]:
-    """Recursively merge source into target in place, returning target.
-
-    For keys present in both mappings, if both values are mappings the merge is
-    applied recursively; otherwise the source value replaces the target value.
-    """
-    for key, value in source.items():
-        if (
-            key in target
-            and isinstance(target[key], MutableMapping)
-            and isinstance(value, MutableMapping)
-        ):
-            _deep_merge(target[key], value)
-        else:
-            target[key] = value
-    return target
 
 
 def _set_value_in_existing(

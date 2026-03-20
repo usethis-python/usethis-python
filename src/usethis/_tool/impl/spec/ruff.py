@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, final
 
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 class RuffToolSpec(ToolSpec):
+    @final
     def __init__(
         self,
         linter_detection: Literal["auto", "always", "never"] = "auto",
@@ -38,6 +39,7 @@ class RuffToolSpec(ToolSpec):
             formatter_detection == "auto"
         )
 
+    @final
     @property
     def meta(self) -> ToolMeta:
         return ToolMeta(
@@ -46,14 +48,17 @@ class RuffToolSpec(ToolSpec):
             managed_files=[Path(".ruff.toml"), Path("ruff.toml")],
         )
 
+    @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ruff")]
 
+    @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return RuffTOMLManager()
 
+    @final
     def config_spec(self) -> ConfigSpec:
         # https://docs.astral.sh/ruff/configuration/#config-file-discovery
 

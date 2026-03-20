@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import final
 
 from typing_extensions import assert_never
 
@@ -16,6 +17,7 @@ _SYNC_WITH_UV_VERSION = "v0.5.0"  # Manually bump this version when necessary
 
 
 class PreCommitToolSpec(ToolSpec):
+    @final
     @property
     def meta(self) -> ToolMeta:
         return ToolMeta(
@@ -24,12 +26,15 @@ class PreCommitToolSpec(ToolSpec):
             managed_files=[Path(".pre-commit-config.yaml")],
         )
 
+    @final
     def raw_cmd(self) -> str:
         return pre_commit_raw_cmd
 
+    @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pre-commit")]
 
+    @final
     def pre_commit_config(self) -> PreCommitConfig:
         """Get the pre-commit configurations for the tool."""
         backend = get_backend()

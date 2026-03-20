@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import final
 
 from typing_extensions import assert_never
 
@@ -17,6 +18,7 @@ from usethis._types.deps import Dependency
 
 
 class DeptryToolSpec(ToolSpec):
+    @final
     @property
     def meta(self) -> ToolMeta:
         return ToolMeta(
@@ -24,13 +26,16 @@ class DeptryToolSpec(ToolSpec):
             url="https://github.com/fpgmaas/deptry",
         )
 
+    @final
     def raw_cmd(self) -> str:
         _dir = get_source_dir_str()
         return f"deptry {_dir}"
 
+    @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="deptry")]
 
+    @final
     def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()
 
@@ -74,6 +79,7 @@ class DeptryToolSpec(ToolSpec):
         else:
             assert_never(backend)
 
+    @final
     def config_spec(self) -> ConfigSpec:
         # https://deptry.com/usage/#configuration
         return ConfigSpec.from_flat(

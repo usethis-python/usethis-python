@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from usethis._config import usethis_config
 from usethis._config_file import (
@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 
 
 class CoveragePyToolSpec(ToolSpec):
+    @final
     @property
     def meta(self) -> ToolMeta:
         return ToolMeta(
@@ -28,11 +29,13 @@ class CoveragePyToolSpec(ToolSpec):
             managed_files=[Path(".coveragerc"), Path(".coveragerc.toml")],
         )
 
+    @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotCoverageRCManager()
 
+    @final
     def config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference
         # But the `latest` link doesn't yet include some latest changes regarding

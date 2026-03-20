@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from usethis._config import usethis_config
 from usethis._console import info_print
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 
 class ImportLinterTool(ImportLinterToolSpec, Tool):
+    @final
     def is_used(self) -> bool:
         """Check if the Import Linter tool is used in the project."""
         # We suppress the warning about assumptions regarding the package name.
@@ -20,6 +21,7 @@ class ImportLinterTool(ImportLinterToolSpec, Tool):
         with usethis_config.set(quiet=True):
             return super().is_used()
 
+    @final
     def print_how_to_use(self) -> None:
         if not _is_inp_rule_selected():
             # If Ruff is used, we enable the INP rules instead.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import final
 
 from typing_extensions import assert_never
 
@@ -13,6 +14,7 @@ from usethis._types.backend import BackendEnum
 
 
 class RequirementsTxtToolSpec(ToolSpec):
+    @final
     @property
     def meta(self) -> ToolMeta:
         return ToolMeta(
@@ -21,6 +23,7 @@ class RequirementsTxtToolSpec(ToolSpec):
             managed_files=[Path("requirements.txt")],
         )
 
+    @final
     def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()
 

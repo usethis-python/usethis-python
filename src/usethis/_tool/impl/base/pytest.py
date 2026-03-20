@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from typing_extensions import assert_never
 
@@ -29,6 +29,7 @@ _PYTEST_PIP_CMD = "pip install pytest"
 
 
 class PytestTool(PytestToolSpec, Tool):
+    @final
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         from usethis._tool.impl.base.coverage_py import (  # to avoid circularity;  # noqa: PLC0415
             CoveragePyTool,
@@ -39,6 +40,7 @@ class PytestTool(PytestToolSpec, Tool):
             deps += [Dependency(name="pytest-cov")]
         return deps
 
+    @final
     def print_how_to_use(self) -> None:
         how_print(
             "Add test files to the '/tests' directory with the format 'test_*.py'."
@@ -46,6 +48,7 @@ class PytestTool(PytestToolSpec, Tool):
         how_print("Add test functions with the format 'test_*()'.")
         how_print(f"Run '{self.how_to_use_cmd()}' to run the tests.")
 
+    @final
     def get_active_config_file_managers(self) -> set[KeyValueFileManager[object]]:
         # This is a variant of the "first" method
         config_spec = self.config_spec()
@@ -105,6 +108,7 @@ class PytestTool(PytestToolSpec, Tool):
             raise NotImplementedError(msg)
         return {preferred_file_manager}
 
+    @final
     def get_bitbucket_steps(
         self, *, matrix_python: bool = True
     ) -> list[bitbucket_schema.Step]:
@@ -150,6 +154,7 @@ class PytestTool(PytestToolSpec, Tool):
             steps.append(step)
         return steps
 
+    @final
     def get_managed_bitbucket_step_names(self) -> list[str]:
         names = set()
         for step in get_steps_in_default():
@@ -164,6 +169,7 @@ class PytestTool(PytestToolSpec, Tool):
 
         return sorted(names)
 
+    @final
     def update_bitbucket_steps(self, *, matrix_python: bool = True) -> None:
         """Update the pytest-related Bitbucket Pipelines steps.
 

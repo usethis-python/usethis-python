@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import final
+
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
@@ -12,6 +14,7 @@ from usethis._types.deps import Dependency
 
 
 class CoveragePyTool(CoveragePyToolSpec, Tool):
+    @final
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         from usethis._tool.impl.base.pytest import (  # to avoid circularity;  # noqa: PLC0415
             PytestTool,
@@ -22,6 +25,7 @@ class CoveragePyTool(CoveragePyToolSpec, Tool):
             deps += [Dependency(name="pytest-cov")]
         return deps
 
+    @final
     def print_how_to_use(self) -> None:
         from usethis._tool.impl.base.pytest import (  # to avoid circularity;  # noqa: PLC0415
             PytestTool,

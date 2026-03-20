@@ -24,7 +24,7 @@
 
 ### 🔧 Internal Changes
 
-- An bug in the pipeweld utility has been fixed. The bug did not functionally affect usethis, but involved incorrect insertion behaviour of Parallel components in the presence of empty Series branches.
+- A bug in the pipeweld utility has been fixed. The bug did not functionally affect usethis, but involved incorrect insertion behaviour of Parallel components in the presence of empty Series branches.
 
 - As of uv version 0.9.9, uv supports the [`UV_NO_DEFAULT_GROUPS`](https://docs.astral.sh/uv/reference/environment/#uv_no_default_groups) environment variable, which is now being used for CI configuration. This causes changes to tested behaviour of usethis, and so the lowest tested version of uv is now v0.9.9. Going forward, it is not recommended to use older versions of uv with usethis.
 

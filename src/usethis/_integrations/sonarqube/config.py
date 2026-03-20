@@ -92,9 +92,7 @@ def _is_sonarqube_verbose() -> bool:
         verbose = TypeAdapter(bool).validate_python(
             PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]]
         )
-    except (FileNotFoundError, KeyError):
-        verbose = False
-    except ValidationError:
+    except (FileNotFoundError, KeyError, ValidationError):
         verbose = False
 
     return verbose

@@ -42,7 +42,7 @@
 
 - There is now a dedicated module for heuristics for detecting tool usage.
 
-- The logic for selecting CI vs. pre-commit is now abstracted into the `Tool` class instead repeated for individual tool implementations.
+- The logic for selecting CI vs. pre-commit is now abstracted into the `Tool` class instead of being repeated for individual tool implementations.
 
 - Various submodules of `usethis._integrations` have been promoted into their own higher level modules to accommodate these changes while preserving a layered architecture.
 

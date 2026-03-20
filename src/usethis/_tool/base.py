@@ -28,7 +28,7 @@ from usethis._integrations.pre_commit.hooks import (
     hook_ids_are_equivalent,
     remove_hook,
 )
-from usethis._tool.config import ConfigSpec, NoConfigValue, ensure_managed_file_exists
+from usethis._tool.config import NoConfigValue, ensure_managed_file_exists
 from usethis._tool.heuristics import is_likely_used
 from usethis._tool.spec import ToolMeta, ToolSpec
 from usethis._types.backend import BackendEnum
@@ -38,10 +38,8 @@ from usethis.errors import (
 )
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from usethis._io import KeyValueFileManager
-    from usethis._tool.config import ConfigItem, ResolutionT
+    from usethis._tool.config import ConfigItem
     from usethis._tool.rule import Rule
 
 __all__ = ["Tool", "ToolMeta", "ToolSpec"]
@@ -123,16 +121,6 @@ class Tool(ToolSpec, Protocol):
 
         return hook_id
 
-    def config_spec(self) -> ConfigSpec:
-        """Get the configuration specification for this tool.
-
-        This can be dynamically determined, e.g. based on the source directory structure
-        of the current project.
-
-        This includes the file managers and resolution methodology.
-        """
-        return ConfigSpec.empty()
-
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project.
 
@@ -142,7 +130,7 @@ class Tool(ToolSpec, Protocol):
         3. Whether any of the tool's managed config file sections are present.
         4. Whether any of the tool's characteristic pre-commit hooks are present.
         """
-        return is_likely_used(self, self.config_spec())
+        return is_likely_used(self)
 
     def add_dev_deps(self) -> None:
         add_deps_to_group(self.dev_deps(), "dev")
@@ -234,72 +222,6 @@ class Tool(ToolSpec, Protocol):
             # the new way to do things.
             if pre_commit_config.inform_how_to_use_on_migrate:
                 self.print_how_to_use()
-
-    def get_active_config_file_managers(self) -> set[KeyValueFileManager[object]]:
-        """Get file managers for all active configuration files.
-
-        Active configuration files are just those that we expect to use based on our
-        strategy for deciding on relevant files: this is a combination of the resolution
-        methodology associated with the tool, and hard-coded preferences for certain
-        files.
-
-        Most commonly, this will just be a single file manager. The active config files
-        themselves do not necessarily exist yet.
-        """
-        config_spec = self.config_spec()
-        resolution = config_spec.resolution
-        return self._get_active_config_file_managers_from_resolution(
-            resolution,
-            file_manager_by_relative_path=config_spec.file_manager_by_relative_path,
-        )
-
-    def _get_active_config_file_managers_from_resolution(
-        self,
-        resolution: ResolutionT,
-        *,
-        file_manager_by_relative_path: dict[Path, KeyValueFileManager[object]],
-    ) -> set[KeyValueFileManager[object]]:
-        if resolution == "first":
-            # N.B. keep this roughly in sync with the bespoke logic for pytest
-            # since that logic is based on this logic.
-            for (
-                relative_path,
-                file_manager,
-            ) in file_manager_by_relative_path.items():
-                path = usethis_config.cpd() / relative_path
-                if path.exists() and path.is_file():
-                    return {file_manager}
-        elif resolution == "first_content":
-            config_spec = self.config_spec()
-            for relative_path, file_manager in file_manager_by_relative_path.items():
-                path = usethis_config.cpd() / relative_path
-                if path.exists() and path.is_file():
-                    # We check whether any of the managed config exists
-                    for config_item in config_spec.config_items:
-                        if config_item.root[relative_path].keys in file_manager:
-                            return {file_manager}
-        elif resolution == "bespoke":
-            msg = (
-                "The bespoke resolution method is not yet implemented for the tool "
-                f"{self.name}."
-            )
-            raise NotImplementedError(msg)
-        else:
-            assert_never(resolution)
-
-        file_managers = file_manager_by_relative_path.values()
-        if not file_managers:
-            return set()
-
-        preferred_file_manager = self.preferred_file_manager()
-        if preferred_file_manager not in file_managers:
-            msg = (
-                f"The preferred file manager '{preferred_file_manager}' is not "
-                f"among the file managers '{file_managers}' for the tool "
-                f"'{self.name}'."
-            )
-            raise NotImplementedError(msg)
-        return {preferred_file_manager}
 
     def is_config_present(self) -> bool:
         """Whether any of the tool's managed config sections are present."""

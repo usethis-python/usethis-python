@@ -58,7 +58,7 @@ class TestIsLikelyUsed:
             (tmp_path / "simple_tool.cfg").touch()
 
             # Act
-            result = is_likely_used(tool, tool.config_spec())
+            result = is_likely_used(tool)
 
         # Assert
         assert result
@@ -70,7 +70,7 @@ class TestIsLikelyUsed:
             (tmp_path / "simple_tool.cfg").mkdir()
 
             # Act
-            result = is_likely_used(tool, tool.config_spec())
+            result = is_likely_used(tool)
 
         # Assert
         assert not result
@@ -84,7 +84,7 @@ class TestIsLikelyUsed:
             )
 
             # Act
-            result = is_likely_used(tool, tool.config_spec())
+            result = is_likely_used(tool)
 
         # Assert
         assert result
@@ -95,19 +95,26 @@ class TestIsLikelyUsed:
 
         # Act
         with change_cwd(uv_init_dir), PyprojectTOMLManager():
-            result = is_likely_used(tool, tool.config_spec())
+            result = is_likely_used(tool)
 
         # Assert
         assert not result
 
     def test_empty_config_spec(self, tmp_path: Path):
-        # Arrange
-        tool = SimpleTool()
-        empty_spec = ConfigSpec.empty()
+        # Arrange - a tool with empty config spec
+        class EmptyConfigTool(Tool):
+            @property
+            def meta(self) -> ToolMeta:
+                return ToolMeta(name="empty_tool")
+
+            def print_how_to_use(self) -> None:
+                how_print("How to use empty_tool")
+
+        tool = EmptyConfigTool()
 
         # Act
         with change_cwd(tmp_path):
-            result = is_likely_used(tool, empty_spec)
+            result = is_likely_used(tool)
 
         # Assert
         assert not result

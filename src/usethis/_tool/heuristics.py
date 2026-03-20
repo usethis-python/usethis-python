@@ -6,11 +6,10 @@ from usethis._console import warn_print
 from usethis.errors import FileConfigError
 
 if TYPE_CHECKING:
-    from usethis._tool.config import ConfigSpec
     from usethis._tool.spec import ToolSpec
 
 
-def is_likely_used(tool_spec: ToolSpec, config_spec: ConfigSpec) -> bool:
+def is_likely_used(tool_spec: ToolSpec) -> bool:
     """Determine whether a tool is likely used in the current project.
 
     Four heuristics are used:
@@ -21,7 +20,6 @@ def is_likely_used(tool_spec: ToolSpec, config_spec: ConfigSpec) -> bool:
 
     Args:
         tool_spec: The tool specification to check.
-        config_spec: The configuration specification for the tool.
 
     Returns:
         True if the tool is likely used, False otherwise.
@@ -39,7 +37,7 @@ def is_likely_used(tool_spec: ToolSpec, config_spec: ConfigSpec) -> bool:
 
     if not _is_used:
         try:
-            _is_used = config_spec.is_present()
+            _is_used = tool_spec.config_spec().is_present()
         except FileConfigError as err:
             decode_err_by_name[err.name] = err
 

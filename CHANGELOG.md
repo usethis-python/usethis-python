@@ -12,7 +12,7 @@
 
 ### 🧹 Maintenance
 
-- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically support for _source_ import pipelines (in addition to the legacy inline import pipelines).
+- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically _source_ import pipelines (in addition to the legacy inline import pipelines).
 
 ### 📚 Documentation
 

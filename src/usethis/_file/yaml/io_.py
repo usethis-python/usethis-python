@@ -125,7 +125,7 @@ class YAMLFileManager(KeyValueFileManager):
 
         return True
 
-    def __getitem__(self, item: Sequence[Key]) -> Any:
+    def __getitem__(self, item: Sequence[Key]) -> object:
         keys = item
         keys = _validate_keys(keys)
 

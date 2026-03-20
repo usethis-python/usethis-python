@@ -484,7 +484,7 @@ pipelines:
                 (uv_init_dir / "tests" / "conftest.py").touch()
 
                 with change_cwd(uv_init_dir), files_manager():
-                    PyprojectTOMLManager()[["project"]]["requires-python"] = (
+                    PyprojectTOMLManager()[["project", "requires-python"]] = (
                         ">=3.12,<3.14"
                     )
 
@@ -596,7 +596,7 @@ pipelines:
             (uv_init_dir / "tests" / "conftest.py").touch()
 
             with change_cwd(uv_init_dir), files_manager():
-                PyprojectTOMLManager()[["project"]]["requires-python"] = ">=3.12,<3.14"
+                PyprojectTOMLManager()[["project", "requires-python"]] = ">=3.12,<3.14"
 
                 # Act
                 use_ci_bitbucket()
@@ -623,7 +623,7 @@ pipelines:
                 change_cwd(uv_init_dir),
                 files_manager(),
             ):
-                PyprojectTOMLManager()[["project"]]["requires-python"] = ">=3.12,<3.14"
+                PyprojectTOMLManager()[["project", "requires-python"]] = ">=3.12,<3.14"
 
                 # Act
                 use_ci_bitbucket(matrix_python=False)

@@ -48,7 +48,7 @@ class TestBitbucket:
         with change_cwd(uv_init_repo_dir):
             # Arrange
             with PyprojectTOMLManager() as mgr:
-                mgr[["project"]]["requires-python"] = ">=3.12,<3.14"
+                mgr[["project", "requires-python"]] = ">=3.12,<3.14"
 
             for tool_command in ALL_TOOL_COMMANDS:
                 if not usethis_config.offline:
@@ -173,7 +173,7 @@ pipelines:
         (uv_init_dir / "tests" / "conftest.py").touch()
 
         with PyprojectTOMLManager() as mgr:
-            mgr[["project"]]["requires-python"] = ">=3.12,<3.14"
+            mgr[["project", "requires-python"]] = ">=3.12,<3.14"
 
         # Act
         runner = CliRunner()
@@ -196,7 +196,7 @@ pipelines:
         (uv_init_dir / "tests" / "conftest.py").touch()
 
         with PyprojectTOMLManager() as mgr:
-            mgr[["project"]]["requires-python"] = ">=3.12,<3.14"
+            mgr[["project", "requires-python"]] = ">=3.12,<3.14"
 
         # Act
         runner = CliRunner()

@@ -189,7 +189,7 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
         raise NotImplementedError
 
     @abstractmethod
-    def __getitem__(self, keys: Sequence[Key]) -> Any:
+    def __getitem__(self, keys: Sequence[Key]) -> object:
         raise NotImplementedError
 
     def __setitem__(self, keys: Sequence[Key], value: Any) -> None:

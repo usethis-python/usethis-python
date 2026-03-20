@@ -80,6 +80,7 @@ def _get_sonarqube_project_key() -> str:
     except FileNotFoundError:
         msg = "Could not find 'pyproject.toml' for SonarQube project key at 'tool.usethis.sonarqube.project-key'."
         raise MissingProjectKeyError(msg) from None
+    project_key = TypeAdapter(str).validate_python(project_key)
     _validate_project_key(project_key)
     return project_key
 

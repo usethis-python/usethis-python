@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from pydantic import TypeAdapter
 
 import usethis._backend.dispatch
 import usethis._python.version
@@ -1558,9 +1559,11 @@ root_package = "a"
                     len(
                         [
                             rule
-                            for rule in RuffTOMLManager()[
-                                ["lint", "per-file-ignores", "tests/**"]
-                            ]
+                            for rule in TypeAdapter(list[str]).validate_python(
+                                RuffTOMLManager()[
+                                    ["lint", "per-file-ignores", "tests/**"]
+                                ]
+                            )
                             if rule == "INP"
                         ]
                     )
@@ -2753,9 +2756,9 @@ minversion = "7\""""
                 use_pytest()
 
                 # Assert
-                default_groups = PyprojectTOMLManager()[
-                    ["tool", "uv", "default-groups"]
-                ]
+                default_groups = TypeAdapter(list[str]).validate_python(
+                    PyprojectTOMLManager()[["tool", "uv", "default-groups"]]
+                )
                 assert "test" in default_groups
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2768,7 +2771,9 @@ minversion = "7\""""
                 use_pytest()
 
                 # Assert
-                default_groups = UVTOMLManager()[["default-groups"]]
+                default_groups = TypeAdapter(list[str]).validate_python(
+                    UVTOMLManager()[["default-groups"]]
+                )
                 assert "test" in default_groups
 
         @pytest.mark.usefixtures("_vary_network_conn")

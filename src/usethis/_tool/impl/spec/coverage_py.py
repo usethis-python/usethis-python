@@ -4,7 +4,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from usethis._config import usethis_config
-from usethis._config_file import DotCoverageRCManager, DotCoverageRCTOMLManager, ToxINIManager
+from usethis._config_file import (
+    DotCoverageRCManager,
+    DotCoverageRCTOMLManager,
+    ToxINIManager,
+)
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.layout import get_source_dir_str

@@ -13,7 +13,6 @@ if TYPE_CHECKING:
 
 
 class DeptryTool(DeptryToolSpec, Tool):
-
     def select_rules(self, rules: list[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
         if rules:

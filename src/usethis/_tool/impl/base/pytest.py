@@ -6,13 +6,10 @@ from typing import TYPE_CHECKING
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
-from usethis._config_file import DotPytestINIManager, PytestINIManager, ToxINIManager
 from usethis._console import how_print, info_print, instruct_print
 from usethis._detect.ci.bitbucket import is_bitbucket_used
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor as BitbucketScriptItemAnchor,

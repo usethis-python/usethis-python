@@ -11,7 +11,6 @@ from usethis._types.backend import BackendEnum
 
 
 class MkDocsTool(MkDocsToolSpec, Tool):
-
     def print_how_to_use(self) -> None:
         backend = get_backend()
         if backend is BackendEnum.uv and is_uv_used():

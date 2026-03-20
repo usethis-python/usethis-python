@@ -1189,6 +1189,49 @@ exhaustive_ignores =
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
+        def test_version_excluded(
+            self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        ):
+            """_version.py is auto-excluded into exhaustive_ignores.
+
+            Ref: https://github.com/usethis-python/usethis-python/issues/1423
+            """
+            # Arrange
+            (tmp_path / ".importlinter").touch()
+            (tmp_path / "a").mkdir()
+            (tmp_path / "a" / "__init__.py").touch()
+            (tmp_path / "a" / "b.py").touch()
+            (tmp_path / "a" / "c.py").touch()
+            (tmp_path / "a" / "_version.py").touch()
+
+            monkeypatch.syspath_prepend(str(tmp_path))
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_import_linter()
+
+            # Assert
+            contents = (tmp_path / ".importlinter").read_text()
+            assert contents == (
+                """\
+[importlinter]
+root_packages =
+    a
+
+[importlinter:contract:0]
+name = a
+type = layers
+layers =
+    b | c
+containers =
+    a
+exhaustive = True
+exhaustive_ignores =
+    _version
+"""
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_existing_ini_match(self, tmp_path: Path):
             # Arrange
             (tmp_path / ".importlinter").write_text(

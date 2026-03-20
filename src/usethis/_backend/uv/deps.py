@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pydantic import TypeAdapter
+
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.errors import (
     UVDepGroupError,
@@ -37,9 +39,13 @@ def get_default_groups_via_uv() -> list[str]:
     """Get the default dependency groups from the uv configuration."""
     try:
         if UVTOMLManager().path.exists():
-            default_groups = UVTOMLManager()[["default-groups"]]
+            default_groups = TypeAdapter(list[str]).validate_python(
+                UVTOMLManager()[["default-groups"]]
+            )
         else:
-            default_groups = PyprojectTOMLManager()[["tool", "uv", "default-groups"]]
+            default_groups = TypeAdapter(list[str]).validate_python(
+                PyprojectTOMLManager()[["tool", "uv", "default-groups"]]
+            )
         if not isinstance(default_groups, list):
             default_groups = []
     except KeyError:

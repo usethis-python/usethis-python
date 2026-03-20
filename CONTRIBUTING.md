@@ -140,7 +140,24 @@ Tool implementations are defined in classes in the `usethis._tool.impl` module. 
 - Declare this new submodule in the `.importlinter` configuration to architecturally describe its dependency relationships with other tools' submodules. For example, does your tool integrate with pre-commit? It should be in a higher layer module than the `pre-commit` submodule.
 - Define a `usethis._tool.base.ToolSpec` subclass, e.g. for a tool named Xyz, define a class `XyzToolSpec(ToolSpec)`.
 - Start by implementing its `name` property method, then work through the other methods. Most method have default implementations, but even in those cases you will need to consider them individually and determine an appropriate implementation. For example, methods which specify the tool's dependencies default to empty dependencies, but you shouldn't rely on this.
+- Mark all methods in your `ToolSpec` subclass with the `@typing.final` decorator. This prevents the methods from being accidentally overridden in the `Tool` subclass, ensuring a clean separation between static tool specification and runtime behavior. For properties, use `@final` above `@property`. For example:
+
+  ```python
+  from typing import final
+
+  class XyzToolSpec(ToolSpec):
+      @final
+      @property
+      def meta(self) -> ToolMeta:
+          ...
+
+      @final
+      def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+          ...
+  ```
+
 - Then, define a subclass of the `ToolSpec` subclass you just created, which also subclasses `usethis._tool.base.Tool`, e.g. for a tool named Xyz, define a class `XyzTool(XyzToolSpec, Tool)`. The only method this usually requires a non-default implementation for is `config_spec` to specify which configuration sections should be set up for the tool (and which sections the tool manages). However, you may find it helpful to provide custom implementations for other methods as well, e.g. `print_how_to_use`.
+- Mark all methods in your `Tool` subclass with `@final` as well, to prevent further subclassing from overriding them.
 - Include a comment with a URL linking to the tool's source repo for reference.
 
 #### Register your `Tool` subclass

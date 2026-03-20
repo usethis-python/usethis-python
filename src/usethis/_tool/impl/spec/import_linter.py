@@ -3,7 +3,7 @@ from __future__ import annotations
 import functools
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from typing_extensions import assert_never
 
@@ -38,6 +38,7 @@ IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
 
 
 class ImportLinterToolSpec(ToolSpec):
+    @final
     @property
     def meta(self) -> ToolMeta:
         return ToolMeta(
@@ -49,17 +50,21 @@ class ImportLinterToolSpec(ToolSpec):
             ),
         )
 
+    @final
     def raw_cmd(self) -> str:
         return "lint-imports"
 
+    @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="import-linter")]
 
+    @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotImportLinterManager()
 
+    @final
     def config_spec(self) -> ConfigSpec:
         # https://import-linter.readthedocs.io/en/stable/usage.html
 
@@ -220,6 +225,7 @@ class ImportLinterToolSpec(ToolSpec):
             ],
         )
 
+    @final
     def _are_active_ini_contracts(self) -> bool:
         # Consider active config manager, and see if there's a matching regex
         # for the contract in the INI file.
@@ -231,6 +237,7 @@ class ImportLinterToolSpec(ToolSpec):
             return False
         return [re.compile("importlinter:contract:.*")] in file_manager
 
+    @final
     def _is_root_package_singular(self) -> bool:
         (file_manager,) = self._get_active_config_file_managers_from_resolution(
             self._get_resolution(),
@@ -244,6 +251,7 @@ class ImportLinterToolSpec(ToolSpec):
             msg = f"Unsupported file manager: '{file_manager}'."
             raise NotImplementedError(msg)
 
+    @final
     def _get_layered_architecture_by_module_by_root_package(
         self,
     ) -> dict[str, dict[str, LayeredArchitecture]]:
@@ -280,9 +288,11 @@ class ImportLinterToolSpec(ToolSpec):
 
         return layered_architecture_by_module_by_root_package
 
+    @final
     def _get_resolution(self) -> ResolutionT:
         return "first"
 
+    @final
     def _get_file_manager_by_relative_path(
         self,
     ) -> dict[Path, KeyValueFileManager[object]]:
@@ -292,6 +302,7 @@ class ImportLinterToolSpec(ToolSpec):
             Path("pyproject.toml"): PyprojectTOMLManager(),
         }
 
+    @final
     def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()
 

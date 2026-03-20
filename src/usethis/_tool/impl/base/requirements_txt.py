@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import final
+
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
@@ -11,6 +13,7 @@ from usethis._types.backend import BackendEnum
 
 
 class RequirementsTxtTool(RequirementsTxtToolSpec, Tool):
+    @final
     def print_how_to_use(self) -> None:
         install_method = self.get_install_method()
         backend = get_backend()

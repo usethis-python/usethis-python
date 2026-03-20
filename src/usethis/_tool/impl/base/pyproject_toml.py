@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import final
+
 from usethis._console import how_print, info_print, instruct_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool.base import Tool
@@ -30,12 +32,14 @@ OTHER_TOOLS: list[Tool] = [
 
 
 class PyprojectTOMLTool(PyprojectTOMLToolSpec, Tool):
+    @final
     def print_how_to_use(self) -> None:
         how_print("Populate 'pyproject.toml' with the project configuration.")
         info_print(
             "Learn more at https://packaging.python.org/en/latest/guides/writing-pyproject-toml/"
         )
 
+    @final
     def remove_managed_files(self) -> None:
         # https://github.com/usethis-python/usethis-python/issues/416
         # We need to step through the tools and see if pyproject.toml is the active

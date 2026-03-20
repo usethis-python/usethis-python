@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import final
+
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
@@ -11,6 +13,7 @@ from usethis._types.backend import BackendEnum
 
 
 class MkDocsTool(MkDocsToolSpec, Tool):
+    @final
     def print_how_to_use(self) -> None:
         backend = get_backend()
         if backend is BackendEnum.uv and is_uv_used():

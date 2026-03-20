@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from typing_extensions import assert_never
 
@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 
 class PytestToolSpec(ToolSpec):
+    @final
     @property
     def meta(self) -> ToolMeta:
         return ToolMeta(
@@ -34,14 +35,17 @@ class PytestToolSpec(ToolSpec):
             rule_config=RuleConfig(selected=["PT"], nontests_unmanaged_ignored=["PT"]),
         )
 
+    @final
     def raw_cmd(self) -> str:
         return "pytest"
 
+    @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return PytestINIManager()
 
+    @final
     def config_spec(self) -> ConfigSpec:
         # https://docs.pytest.org/en/stable/reference/customize.html#configuration-file-formats
         # "Options from multiple configfiles candidates are never merged - the first match wins."

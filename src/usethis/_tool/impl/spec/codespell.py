@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 from usethis._config import usethis_config
 from usethis._config_file import DotCodespellRCManager
@@ -26,6 +26,7 @@ _CODESPELL_VERSION = "v2.4.1"  # Manually bump this version when necessary
 
 
 class CodespellToolSpec(ToolSpec):
+    @final
     @property
     def meta(self) -> ToolMeta:
         return ToolMeta(
@@ -34,14 +35,17 @@ class CodespellToolSpec(ToolSpec):
             managed_files=[Path(".codespellrc")],
         )
 
+    @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotCodespellRCManager()
 
+    @final
     def raw_cmd(self) -> str:
         return "codespell"
 
+    @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="codespell")]
 
@@ -61,6 +65,7 @@ class CodespellToolSpec(ToolSpec):
 
         return deps
 
+    @final
     def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
             pre_commit_schema.UriRepo(
@@ -75,6 +80,7 @@ class CodespellToolSpec(ToolSpec):
             requires_venv=False,
         )
 
+    @final
     def config_spec(self) -> ConfigSpec:
         # https://github.com/codespell-project/codespell?tab=readme-ov-file#using-a-config-file
 

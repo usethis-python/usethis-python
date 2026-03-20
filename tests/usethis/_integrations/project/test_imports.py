@@ -204,6 +204,87 @@ import salut.e
         assert arch.layers == [{"f", "g"}, {"d", "e"}, {"a", "b", "c"}]
         assert arch.excluded == set()
 
+    def test_version_excluded_with_others(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """_version is excluded even when sharing a layer with other modules.
+
+        Ref: https://github.com/usethis-python/usethis-python/issues/1423
+        """
+        # Arrange
+        (tmp_path / "salut").mkdir()
+        (tmp_path / "salut" / "__init__.py").touch()
+        (tmp_path / "salut" / "a.py").touch()
+        (tmp_path / "salut" / "b.py").touch()
+        (tmp_path / "salut" / "_version.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        with change_cwd(tmp_path):
+            graph = _get_graph("salut")
+            arch = _get_module_layered_architecture("salut", graph=graph)
+
+        # Assert
+        assert arch.layers == [{"a", "b"}]
+        assert arch.excluded == {"_version"}
+
+    def test_version_excluded_sole_in_layer(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """_version is excluded even when it is the sole module in its layer.
+
+        The empty layer should be cleaned up.
+
+        Ref: https://github.com/usethis-python/usethis-python/issues/1423
+        """
+        # Arrange
+        (tmp_path / "salut").mkdir()
+        (tmp_path / "salut" / "__init__.py").touch()
+        (tmp_path / "salut" / "a.py").touch()
+        (tmp_path / "salut" / "b.py").write_text("""\
+import salut.a
+""")
+        (tmp_path / "salut" / "_version.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        with change_cwd(tmp_path):
+            graph = _get_graph("salut")
+            arch = _get_module_layered_architecture("salut", graph=graph)
+
+        # Assert
+        assert arch.layers == [{"b"}, {"a"}]
+        assert arch.excluded == {"_version"}
+
+    def test_version_excluded_with_deps(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """_version is excluded even when other modules import it.
+
+        Ref: https://github.com/usethis-python/usethis-python/issues/1423
+        """
+        # Arrange
+        (tmp_path / "salut").mkdir()
+        (tmp_path / "salut" / "__init__.py").touch()
+        (tmp_path / "salut" / "a.py").write_text("""\
+import salut._version
+""")
+        (tmp_path / "salut" / "b.py").touch()
+        (tmp_path / "salut" / "_version.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        with change_cwd(tmp_path):
+            graph = _get_graph("salut")
+            arch = _get_module_layered_architecture("salut", graph=graph)
+
+        # Assert
+        assert arch.layers == [{"a"}, {"b"}]
+        assert arch.excluded == {"_version"}
+
 
 class TestGetChildDependencies:
     def test_three(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):

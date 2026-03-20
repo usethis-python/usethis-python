@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import copy
 import re
+from collections.abc import MutableMapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from io import StringIO
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import mergedeep
 import ruamel.yaml
 from pydantic import TypeAdapter, ValidationError
 from ruamel.yaml.comments import CommentedMap
@@ -309,7 +309,7 @@ class YAMLFileManager(KeyValueFileManager):
             for key in reversed(keys):
                 new_content = {key: new_content}
             assert isinstance(new_content, dict)
-            content = mergedeep.merge(content, new_content)
+            content = _deep_merge(content, new_content)
             assert isinstance(content, dict)
         else:
             TypeAdapter(dict).validate_python(p_parent)
@@ -375,6 +375,26 @@ class YAMLFileManager(KeyValueFileManager):
         self.commit(self._content)
 
 
+def _deep_merge(
+    target: MutableMapping[Any, Any], source: MutableMapping[Any, Any]
+) -> MutableMapping[Any, Any]:
+    """Recursively merge source into target in place, returning target.
+
+    For keys present in both mappings, if both values are mappings the merge is
+    applied recursively; otherwise the source value replaces the target value.
+    """
+    for key, value in source.items():
+        if (
+            key in target
+            and isinstance(target[key], MutableMapping)
+            and isinstance(value, MutableMapping)
+        ):
+            _deep_merge(target[key], value)
+        else:
+            target[key] = value
+    return target
+
+
 def _set_value_in_existing(
     *, content: YAMLLiteral, keys: Sequence[Key], value: Any
 ) -> None:
@@ -385,7 +405,7 @@ def _set_value_in_existing(
     contents = value
     for key in reversed(keys):
         contents = {key: contents}
-    content = mergedeep.merge(content, contents)  # type: ignore[reportAssignmentType]
+    content = _deep_merge(content, contents)  # type: ignore[reportAssignmentType]
 
 
 def _validate_keys(keys: Sequence[Key]) -> list[str]:

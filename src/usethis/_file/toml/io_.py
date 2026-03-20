@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import copy
 import re
+from collections.abc import MutableMapping
 from typing import TYPE_CHECKING, Any
 
-import mergedeep
 import tomlkit.api
 import tomlkit.items
 from pydantic import TypeAdapter, ValidationError
@@ -354,6 +354,26 @@ class TOMLFileManager(KeyValueFileManager):
         self.commit(toml_document)
 
 
+def _deep_merge(
+    target: MutableMapping[Any, Any], source: MutableMapping[Any, Any]
+) -> MutableMapping[Any, Any]:
+    """Recursively merge source into target in place, returning target.
+
+    For keys present in both mappings, if both values are mappings the merge is
+    applied recursively; otherwise the source value replaces the target value.
+    """
+    for key, value in source.items():
+        if (
+            key in target
+            and isinstance(target[key], MutableMapping)
+            and isinstance(value, MutableMapping)
+        ):
+            _deep_merge(target[key], value)
+        else:
+            target[key] = value
+    return target
+
+
 def _set_value_in_existing(
     *,
     toml_document: TOMLDocument,
@@ -381,7 +401,7 @@ def _set_value_in_existing(
         contents = value
         for key in reversed(keys):
             contents = {key: contents}
-        toml_document = mergedeep.merge(toml_document, contents)  # type: ignore[reportAssignmentType]
+        toml_document = _deep_merge(toml_document, contents)  # type: ignore[reportAssignmentType]
         assert isinstance(toml_document, TOMLDocument)
     else:
         # Note that this alternative logic is just to avoid a bug:
@@ -396,7 +416,7 @@ def _set_value_in_existing(
             # https://github.com/usethis-python/usethis-python/issues/558
 
             placeholder = {keys[0]: {keys[1]: {}}}
-            toml_document = mergedeep.merge(toml_document, placeholder)  # type: ignore[reportArgumentType]
+            toml_document = _deep_merge(toml_document, placeholder)  # type: ignore[reportArgumentType]
 
             contents = value
             for key in reversed(unshared_keys[1:]):

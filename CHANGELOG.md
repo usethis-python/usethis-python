@@ -38,7 +38,7 @@
 
 - The `Tool` class now inherits from `ToolSpec` for the methods which do not involve dynamic inference.
 
-- Many methods on the `Tool` and `ToolSpec` classes have been renamed and reorganized for convenience, including the introduction of a `ToolMeta` abstraction for grouping basic tool metadata (name, documentation URL, etc.)
+- Many methods on the `Tool` and `ToolSpec` classes have been renamed and reorganized for convenience, including the introduction of a `ToolMeta` abstraction for grouping basic tool metadata (name, documentation URL, etc.).
 
 - There is now a dedicated module for heuristics for detecting tool usage.
 

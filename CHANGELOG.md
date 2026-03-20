@@ -12,7 +12,7 @@
 
 ### 🧹 Maintenance
 
-- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically support for _source_ import pipelines (in addition to the legacy inline import pipelines).
+- The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically _source_ import pipelines (in addition to the legacy inline import pipelines).
 
 ### 📚 Documentation
 
@@ -24,7 +24,7 @@
 
 ### 🔧 Internal Changes
 
-- An bug in the pipeweld utility has been fixed. The bug did not functionally affect usethis, but involved incorrect insertion behaviour of Parallel components in the presence of empty Series branches.
+- A bug in the pipeweld utility has been fixed. The bug did not functionally affect usethis, but involved incorrect insertion behaviour of Parallel components in the presence of empty Series branches.
 
 - As of uv version 0.9.9, uv supports the [`UV_NO_DEFAULT_GROUPS`](https://docs.astral.sh/uv/reference/environment/#uv_no_default_groups) environment variable, which is now being used for CI configuration. This causes changes to tested behaviour of usethis, and so the lowest tested version of uv is now v0.9.9. Going forward, it is not recommended to use older versions of uv with usethis.
 
@@ -38,11 +38,11 @@
 
 - The `Tool` class now inherits from `ToolSpec` for the methods which do not involve dynamic inference.
 
-- Many methods on the `Tool` and `ToolSpec` classes have been renamed and reorganized for convenience, including the introduction of a `ToolMeta` abstraction for grouping basic tool metadata (name, documentation URL, etc.)
+- Many methods on the `Tool` and `ToolSpec` classes have been renamed and reorganized for convenience, including the introduction of a `ToolMeta` abstraction for grouping basic tool metadata (name, documentation URL, etc.).
 
 - There is now a dedicated module for heuristics for detecting tool usage.
 
-- The logic for selecting CI vs. pre-commit is now abstracted into the `Tool` class instead repeated for individual tool implementations.
+- The logic for selecting CI vs. pre-commit is now abstracted into the `Tool` class instead of being repeated for individual tool implementations.
 
 - Various submodules of `usethis._integrations` have been promoted into their own higher level modules to accommodate these changes while preserving a layered architecture.
 

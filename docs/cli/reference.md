@@ -254,27 +254,6 @@ For `usethis tool ruff`, in addition to the above options, you can also specify:
 - `--linter` to add or remove specifically the linter component of Ruff (default; or `--no-linter` to opt-out)
 - `--formatter` to add or remove specifically the formatter component of Ruff (default; or `--no-formatter` to opt-out)
 
-## `usethis ci`
-
-Add Continuous Integration pipelines to the project.
-
-Currently supported platforms:
-
-- `usethis ci bitbcuket` - Use [Bitbucket Pipelines](https://bitbucket.org/product/features/pipelines): a CI/CD service for Bitbucket.
-
-Supported options:
-
-- `--remove` to remove the CI configuration instead of adding it
-- `--offline` to disable network access and rely on caches
-- `--quiet` to suppress output
-- `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
-- `--backend` to specify a package manager backend to use. The default is to auto-detect.
-
-  Possible values:
-  - `auto` to auto-detect the backend (default)
-  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
-  - `none` to not use a package manager backend and display messages for some operations.
-
 ## `usethis badge`
 
 Add badges to the README file.

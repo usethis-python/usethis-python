@@ -35,16 +35,4 @@ $ uvx usethis tool pytest
 ☐ Run 'uv run pytest' to run the tests.
 ```
 
-There are also commands to configure aspects other than tools. For example, to configure [Bitbucket Pipelines](https://www.atlassian.com/software/bitbucket/features/pipelines), run:
-
-```console
-$ uvx usethis ci bitbucket
-✔ Writing 'bitbucket-pipelines.yml'.
-✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.
-✔ Adding 'Run Ruff' to default pipeline in 'bitbucket-pipelines.yml'.
-✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
-✔ Adding 'Test on 3.14' to default pipeline in 'bitbucket-pipelines.yml'.
-☐ Run your pipeline via the Bitbucket website.
-```
-
 See the [CLI Reference](../cli/reference.md) for a full list of available commands.

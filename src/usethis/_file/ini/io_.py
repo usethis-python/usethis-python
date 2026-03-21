@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import configparser
 import re
+from abc import ABCMeta
 from typing import TYPE_CHECKING
 
 from configupdater import ConfigUpdater as INIDocument
@@ -38,7 +39,7 @@ if TYPE_CHECKING:
     )
 
 
-class INIFileManager(KeyValueFileManager):
+class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
     _content_by_path: ClassVar[dict[Path, INIDocument | None]] = {}
 
     def __enter__(self) -> Self:

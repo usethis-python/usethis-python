@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import re
+from abc import ABCMeta
 from contextlib import contextmanager
 from dataclasses import dataclass
 from io import StringIO
@@ -44,7 +45,7 @@ if TYPE_CHECKING:
     from usethis._io import Key
 
 
-class YAMLFileManager(KeyValueFileManager):
+class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
     """An abstract class for managing YAML files."""
 
     _content_by_path: ClassVar[dict[Path, YAMLDocument | None]] = {}

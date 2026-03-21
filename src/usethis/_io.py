@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Generic, TypeAlias, TypeVar
 
 from typing_extensions import assert_never
@@ -29,7 +29,7 @@ class UnexpectedFileIOError(UsethisError, IOError):
     """Raised when an unexpected attempt is made to read or write the pyproject.toml file."""
 
 
-class UsethisFileManager(Generic[DocumentT]):
+class UsethisFileManager(Generic[DocumentT], metaclass=ABCMeta):
     """Manages file access with deferred writes using a context manager.
 
     This class implements the Command Pattern, encapsulating file operations. It defers
@@ -180,7 +180,7 @@ class UsethisFileManager(Generic[DocumentT]):
 Key: TypeAlias = str | re.Pattern[str]
 
 
-class KeyValueFileManager(UsethisFileManager, Generic[DocumentT]):
+class KeyValueFileManager(UsethisFileManager, Generic[DocumentT], metaclass=ABCMeta):
     """A manager for files which store (at least some) values in key-value mappings."""
 
     @abstractmethod

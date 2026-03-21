@@ -13,6 +13,12 @@ class TestUsethisFileManager:
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
+                def _dump_content(self) -> str:
+                    raise NotImplementedError
+
+                def _parse_content(self, content: str) -> None:
+                    raise NotImplementedError
+
             with change_cwd(tmp_path):
                 manager = MyUsethisFileManager()
 
@@ -30,6 +36,12 @@ class TestUsethisFileManager:
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
+                def _dump_content(self) -> str:
+                    raise NotImplementedError
+
+                def _parse_content(self, content: str) -> None:
+                    raise NotImplementedError
+
             manager = MyUsethisFileManager()
             other_manager = MyUsethisFileManager()
 
@@ -45,6 +57,12 @@ class TestUsethisFileManager:
                 @property
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
+
+                def _dump_content(self) -> str:
+                    raise NotImplementedError
+
+                def _parse_content(self, content: str) -> None:
+                    raise NotImplementedError
 
             manager = MyUsethisFileManager()
             other_manager = object()
@@ -62,6 +80,12 @@ class TestUsethisFileManager:
                 @property
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
+
+                def _dump_content(self) -> str:
+                    raise NotImplementedError
+
+                def _parse_content(self, content: str) -> None:
+                    raise NotImplementedError
 
             with change_cwd(tmp_path):
                 manager = MyUsethisFileManager()

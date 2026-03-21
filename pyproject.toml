@@ -213,7 +213,6 @@ reportCallInDefaultInitializer = false
 reportExplicitAny = false
 reportImplicitOverride = false
 reportImplicitStringConcatenation = false
-reportInvalidAbstractMethod = false
 reportMissingParameterType = false
 reportMissingTypeArgument = false
 reportPrivateUsage = false

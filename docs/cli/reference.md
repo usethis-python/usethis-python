@@ -5,7 +5,7 @@
 Initialize a new Python project with recommended defaults, including:
 
 - a `pyproject.toml` file and relevant configuration,
-- recommended linters, formatters, spellcheckers, and test frameworks (all opt-out),
+- recommended linters, formatters, spellcheckers, type checkers, and test frameworks (all opt-out),
 - docstring style enforcement (opt-in),
 - the pre-commit framework (opt-in),
 - CI services (opt-in),
@@ -19,6 +19,7 @@ Supported options:
 - `--lint` to add recommended linters (default; or `--no-lint` to opt-out)
 - `--spellcheck` to add a recommended spellchecker (default; or `--no-spellcheck` to opt-out)
 - `--test` to add a recommended testing framework (default; or `--no-test` to opt-out)
+- `--typecheck` to add a recommended type checker (default; or `--no-typecheck` to opt-out)
 - `--pre-commit` to add the pre-commit framework for git hooks (but the default is `--no-pre-commit`)
 - `--ci` to add a CI service configuration
 
@@ -172,6 +173,32 @@ Possible values:
 
 See [`usethis tool`](#usethis-tool) for more information.
 
+## `usethis typecheck`
+
+Add a recommended type checker to the project (namely, [ty](https://docs.astral.sh/ty/)), including:
+
+- declared & installed dependencies with `uv add`,
+- relevant configuration, and
+- any other relevant directories or tool-bespoke configuration files.
+
+Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies with `uv add`.
+
+Supported options:
+
+- `--remove` to remove the tool instead of adding it
+- `--how` to only print how to use the tool, with no other side effects
+- `--offline` to disable network access and rely on caches
+- `--frozen` to leave the virtual environment and lockfile unchanged
+- `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+
+  Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
+
+See [`usethis tool`](#usethis-tool) for more information.
+
 ## `usethis tool`
 
 Add a new tool to a Python project, including:
@@ -192,6 +219,7 @@ declaring dependencies with `uv add`.
 - `usethis tool pre-commit` - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
 - `usethis tool pyproject-fmt` - Use the [pyproject-fmt formatter](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
 - `usethis tool ruff` - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+- `usethis tool ty` - Use [ty](https://docs.astral.sh/ty/): an extremely fast Python type checker.
 
 ### Testing
 

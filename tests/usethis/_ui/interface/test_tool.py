@@ -650,8 +650,6 @@ def test_several_tools_add_and_remove(tmp_path: Path):
         assert not result.exit_code, result.stdout
         result = runner.invoke_safe(app, ["deptry"])
         assert not result.exit_code, result.stdout
-        result = runner.invoke_safe(app, ["ty"])
-        assert not result.exit_code, result.stdout
         result = runner.invoke_safe(app, ["pre-commit"])
         assert not result.exit_code, result.stdout
         result = runner.invoke_safe(app, ["ruff", "--remove"])

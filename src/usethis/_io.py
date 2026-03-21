@@ -39,7 +39,7 @@ class UsethisFileManager(Generic[DocumentT], metaclass=ABCMeta):
 
     # https://github.com/python/mypy/issues/5144
     # The Any in this expression should be identified with DocumentT
-    _content_by_path: ClassVar[dict[Path, Any | None]] = {}  # pyright: ignore[reportExplicitAny]
+    _content_by_path: ClassVar[dict[Path, Any | None]] = {}
 
     @property
     @abstractmethod

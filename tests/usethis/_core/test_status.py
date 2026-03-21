@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import TypeAdapter
 
 from usethis._core.status import use_development_status
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -23,9 +24,9 @@ class TestUseDevelopmentStatus:
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
         with PyprojectTOMLManager() as mgr:
-            assert (
-                "Development Status :: 1 - Planning" in mgr[["project", "classifiers"]]
-            )
+            assert "Development Status :: 1 - Planning" in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '1 - Planning'.\n"
@@ -44,9 +45,9 @@ class TestUseDevelopmentStatus:
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
         with PyprojectTOMLManager() as mgr:
-            assert (
-                "Development Status :: 1 - Planning" in mgr[["project", "classifiers"]]
-            )
+            assert "Development Status :: 1 - Planning" in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '1 - Planning'.\n"
@@ -65,9 +66,9 @@ class TestUseDevelopmentStatus:
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
         with PyprojectTOMLManager() as mgr:
-            assert (
-                "Development Status :: 2 - Pre-Alpha" in mgr[["project", "classifiers"]]
-            )
+            assert "Development Status :: 2 - Pre-Alpha" in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '2 - Pre-Alpha'.\n"
@@ -86,7 +87,9 @@ class TestUseDevelopmentStatus:
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
         with PyprojectTOMLManager() as mgr:
-            assert "Development Status :: 3 - Alpha" in mgr[["project", "classifiers"]]
+            assert "Development Status :: 3 - Alpha" in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '3 - Alpha'.\n"
@@ -105,7 +108,9 @@ class TestUseDevelopmentStatus:
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
         with PyprojectTOMLManager() as mgr:
-            assert "Development Status :: 4 - Beta" in mgr[["project", "classifiers"]]
+            assert "Development Status :: 4 - Beta" in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '4 - Beta'.\n"
@@ -124,10 +129,9 @@ class TestUseDevelopmentStatus:
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
         with PyprojectTOMLManager() as mgr:
-            assert (
-                "Development Status :: 5 - Production/Stable"
-                in mgr[["project", "classifiers"]]
-            )
+            assert "Development Status :: 5 - Production/Stable" in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '5 - Production/Stable'.\n"
@@ -146,7 +150,9 @@ class TestUseDevelopmentStatus:
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
         with PyprojectTOMLManager() as mgr:
-            assert "Development Status :: 6 - Mature" in mgr[["project", "classifiers"]]
+            assert "Development Status :: 6 - Mature" in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '6 - Mature'.\n"
@@ -165,9 +171,9 @@ class TestUseDevelopmentStatus:
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
         with PyprojectTOMLManager() as mgr:
-            assert (
-                "Development Status :: 7 - Inactive" in mgr[["project", "classifiers"]]
-            )
+            assert "Development Status :: 7 - Inactive" in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '7 - Inactive'.\n"
@@ -215,9 +221,9 @@ classifiers = [
         )
         with PyprojectTOMLManager() as mgr:
             assert mgr[["project", "classifiers"]] == ["Development Status :: 4 - Beta"]
-            assert (
-                "Development Status :: 3 - Alpha" not in mgr[["project", "classifiers"]]
-            )
+            assert "Development Status :: 3 - Alpha" not in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '4 - Beta'.\n"
@@ -252,12 +258,12 @@ classifiers = [
             assert mgr[["project", "classifiers"]] == [
                 "Development Status :: 5 - Production/Stable"
             ]
-            assert (
-                "Development Status :: 3 - Alpha" not in mgr[["project", "classifiers"]]
-            )
-            assert (
-                "Development Status :: 4 - Beta" not in mgr[["project", "classifiers"]]
-            )
+            assert "Development Status :: 3 - Alpha" not in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
+            assert "Development Status :: 4 - Beta" not in TypeAdapter(
+                list[str]
+            ).validate_python(mgr[["project", "classifiers"]])
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting the development status to '5 - Production/Stable'.\n"

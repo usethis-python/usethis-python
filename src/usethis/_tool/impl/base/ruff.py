@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, final
 
+from pydantic import TypeAdapter, ValidationError
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
@@ -30,7 +31,7 @@ from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
-    from usethis._tool.rule import Rule, RuleConfig
+    from usethis._tool.rule import RuleConfig
 
 _RUFF_VERSION = "v0.15.4"  # Manually bump this version when necessary
 
@@ -204,8 +205,8 @@ class RuffTool(RuffToolSpec, Tool):
 
         keys = self._get_select_keys(file_manager)
         try:
-            rules: list[Rule] = file_manager[keys]
-        except (KeyError, FileNotFoundError):
+            rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
+        except (KeyError, FileNotFoundError, ValidationError):
             rules = []
 
         return rules
@@ -216,8 +217,8 @@ class RuffTool(RuffToolSpec, Tool):
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
         try:
-            rules: list[Rule] = file_manager[keys]
-        except (KeyError, FileNotFoundError):
+            rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
+        except (KeyError, FileNotFoundError, ValidationError):
             rules = []
 
         return rules
@@ -247,8 +248,8 @@ class RuffTool(RuffToolSpec, Tool):
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
         try:
-            rules: list[Rule] = file_manager[keys]
-        except (KeyError, FileNotFoundError):
+            rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
+        except (KeyError, FileNotFoundError, ValidationError):
             rules = []
 
         return rules
@@ -309,8 +310,8 @@ class RuffTool(RuffToolSpec, Tool):
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_docstyle_keys(file_manager)
         try:
-            docstyle = file_manager[keys]
-        except (KeyError, FileNotFoundError):
+            docstyle = TypeAdapter(str).validate_python(file_manager[keys])
+        except (KeyError, FileNotFoundError, ValidationError):
             docstyle = None
 
         if docstyle not in ("numpy", "google", "pep257"):

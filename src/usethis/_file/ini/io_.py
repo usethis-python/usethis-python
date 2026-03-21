@@ -113,7 +113,7 @@ class INIFileManager(KeyValueFileManager):
                     return True
         return False
 
-    def __getitem__(self, item: Sequence[Key]) -> Any:
+    def __getitem__(self, item: Sequence[Key]) -> object:
         keys = item
 
         root = self.get()

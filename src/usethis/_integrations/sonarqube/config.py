@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -71,38 +71,40 @@ sonar.verbose={"true" if verbose else "false"}
 
 def _get_sonarqube_project_key() -> str:
     try:
-        project_key = PyprojectTOMLManager()[
-            ["tool", "usethis", "sonarqube", "project-key"]
-        ]
+        project_key = TypeAdapter(str).validate_python(
+            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "project-key"]]
+        )
     except KeyError:
         msg = "Could not find SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
         raise MissingProjectKeyError(msg) from None
     except FileNotFoundError:
         msg = "Could not find 'pyproject.toml' for SonarQube project key at 'tool.usethis.sonarqube.project-key'."
         raise MissingProjectKeyError(msg) from None
+    except ValidationError:
+        msg = "SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml' must be a string."
+        raise InvalidSonarQubeProjectKeyError(msg) from None
     _validate_project_key(project_key)
     return project_key
 
 
 def _is_sonarqube_verbose() -> bool:
     try:
-        verbose = PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]]
-    except (FileNotFoundError, KeyError):
+        verbose = TypeAdapter(bool).validate_python(
+            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]]
+        )
+    except (FileNotFoundError, KeyError, ValidationError):
         verbose = False
-    verbose = TypeAdapter(bool).validate_python(verbose)
 
     return verbose
 
 
 def _get_sonarqube_exclusions() -> list[str]:
     try:
-        exclusions = PyprojectTOMLManager()[
-            ["tool", "usethis", "sonarqube", "exclusions"]
-        ]
-    except (FileNotFoundError, KeyError):
+        exclusions = TypeAdapter(list).validate_python(
+            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "exclusions"]]
+        )
+    except (FileNotFoundError, KeyError, ValidationError):
         exclusions = []
-    # TypeAdapter(list).validate_python() ensures we have a list and returns a new list
-    exclusions = TypeAdapter(list).validate_python(exclusions)
     for exclusion in exclusions:
         TypeAdapter(str).validate_python(exclusion)
 

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import TypeAdapter
 
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
@@ -257,9 +258,9 @@ line-length = 88
                 pyproject = PyprojectTOMLManager()
                 # Should not have per-file-ignores for tests/** since tests dir doesn't exist
                 if ["tool", "ruff", "lint", "per-file-ignores"] in pyproject:
-                    per_file_ignores = pyproject[
-                        ["tool", "ruff", "lint", "per-file-ignores"]
-                    ]
+                    per_file_ignores = TypeAdapter(dict[str, object]).validate_python(
+                        pyproject[["tool", "ruff", "lint", "per-file-ignores"]]
+                    )
                     assert "tests/**" not in per_file_ignores, (
                         "Should not add tests/** ignore when tests directory doesn't exist"
                     )

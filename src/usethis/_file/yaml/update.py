@@ -8,11 +8,12 @@ from ruamel.yaml.comments import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import Any
 
     from usethis._file.yaml.typing_ import YAMLLiteral
 
-_T = TypeVar("_T")
+_T = TypeVar("_T", bound=object)
 
 
 def update_ruamel_yaml_map(
@@ -116,7 +117,7 @@ def lcs_list_update(original: list[_T], new: list[_T]) -> None:
                 original_idx += 1
 
 
-def _shared_id_sequences(*seqs: list[Any]) -> list[list[int]]:
+def _shared_id_sequences(*seqs: Sequence[object]) -> Sequence[list[int]]:
     """Map list elements to integers which are equal iff the objects are with __eq__."""
     # Don't use "in" because that would mean the elements must be hashable,
     # which we don't want to require. This means we have to loop over every element,

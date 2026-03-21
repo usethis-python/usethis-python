@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import typer
 
@@ -358,7 +358,7 @@ def ty(
         _run_tool(use_ty, remove=remove, how=how)
 
 
-def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: Any):
+def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: object):
     from usethis._console import err_print
     from usethis.errors import UsethisError
 

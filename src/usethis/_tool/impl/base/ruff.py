@@ -30,6 +30,8 @@ from usethis._tool.rule import Rule
 from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from usethis._io import KeyValueFileManager
     from usethis._tool.rule import RuleConfig
 
@@ -224,7 +226,7 @@ class RuffTool(RuffToolSpec, Tool):
         return rules
 
     @final
-    def ignore_rules_in_glob(self, rules: list[Rule], *, glob: str) -> None:
+    def ignore_rules_in_glob(self, rules: Sequence[Rule], *, glob: str) -> None:
         """Ignore Ruff rules in the project for a specific glob pattern."""
         rules = sorted(set(rules) - set(self.get_ignored_rules_in_glob(glob)))
 

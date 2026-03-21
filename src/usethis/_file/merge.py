@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import MutableMapping
-from typing import Any
+from typing import Any, TypeVar
+
+T = TypeVar("T", bound=MutableMapping[Any, Any])
 
 
-def _deep_merge(
-    target: MutableMapping[Any, Any], source: MutableMapping[Any, Any]
-) -> MutableMapping[Any, Any]:
+def _deep_merge(target: T, source: MutableMapping[Any, Any]) -> T:
     """Recursively merge source into target in place, returning target.
 
     For keys present in both mappings, if both values are mappings the merge is

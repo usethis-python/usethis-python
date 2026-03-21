@@ -279,7 +279,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
         )
         self.commit(self._content)
 
-    def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+    def extend_list(self, *, keys: Sequence[Key], values: Sequence[Any]) -> None:
         """Extend a list in the configuration file."""
         if not keys:
             msg = "At least one ID key must be provided."
@@ -317,7 +317,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
             TypeAdapter(list).validate_python(d)
             assert isinstance(p_parent, dict)
             assert isinstance(d, list)
-            p_parent[keys[-1]] = d + values
+            p_parent[keys[-1]] = d + list(values)
 
         assert self._content is not None  # We have called .get() already.
         update_ruamel_yaml_map(
@@ -327,7 +327,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
         )
         self.commit(self._content)
 
-    def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+    def remove_from_list(self, *, keys: Sequence[Key], values: Sequence[Any]) -> None:
         """Remove values from a list in the configuration file."""
         if not keys:
             msg = "At least one ID key must be provided."
@@ -386,7 +386,7 @@ def _set_value_in_existing(
     contents = value
     for key in reversed(keys):
         contents = {key: contents}
-    content = _deep_merge(content, contents)  # type: ignore[reportAssignmentType]
+    content = _deep_merge(content, contents)
 
 
 def _validate_keys(keys: Sequence[Key]) -> list[str]:

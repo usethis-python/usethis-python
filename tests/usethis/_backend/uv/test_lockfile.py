@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -102,7 +101,7 @@ dependencies = []
 
         called = False
 
-        def mock_call_uv_subprocess(*_: Any, **__: Any) -> str:
+        def mock_call_uv_subprocess(*_: object, **__: object) -> str:
             nonlocal called
             called = True
             return ""

@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from pydantic import BaseModel, RootModel
-
-if TYPE_CHECKING:
-    from typing import Any
-
 
 _HASH_SALT = "e6fdde87-adc6-42f6-8e66-4aabe4ba05f2"
 
@@ -21,7 +15,7 @@ class Series(RootModel[list["Series | Parallel | DepGroup | str"]]):
     def __setitem__(self, item: int, value: Series | Parallel | DepGroup | str) -> None:
         self.root[item] = value
 
-    def __eq__(self, other: Any):
+    def __eq__(self, other: object):
         if not isinstance(other, Series):
             return False
         return self.root == other.root
@@ -37,7 +31,7 @@ class Parallel(RootModel[frozenset["Series | Parallel | DepGroup | str"]]):
     def __or__(self, other: Parallel) -> Parallel:
         return Parallel(self.root | other.root)
 
-    def __eq__(self, other: Any):
+    def __eq__(self, other: object):
         if not isinstance(other, Parallel):
             return False
 

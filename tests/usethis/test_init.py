@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -37,7 +36,7 @@ class TestProjectInit:
 
     def test_subprocess_failed(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
-        def mock_call_uv_subprocess(*_: Any, **__: Any) -> None:
+        def mock_call_uv_subprocess(*_: object, **__: object) -> None:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(
@@ -180,7 +179,7 @@ class TestEnsurePyprojectTOML:
 
     def test_subprocess_failed(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
         # Arrange
-        def mock_call_uv_subprocess(*_: Any, **__: Any) -> None:
+        def mock_call_uv_subprocess(*_: object, **__: object) -> None:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(

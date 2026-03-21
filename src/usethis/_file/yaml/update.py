@@ -8,11 +8,12 @@ from ruamel.yaml.comments import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import Any
 
     from usethis._file.yaml.typing_ import YAMLLiteral
 
-_T = TypeVar("_T")
+_T = TypeVar("_T", bound=object)
 
 
 def update_ruamel_yaml_map(
@@ -66,7 +67,7 @@ def update_ruamel_yaml_map(
         cmap[key] = cmap_copy[key]
 
 
-def lcs_list_update(original: list[_T], new: list[_T]) -> None:
+def lcs_list_update(original: Sequence[_T], new: Sequence[_T]) -> None:
     """Update in-place using a longest common subsequence solver.
 
     This makes `original` identical to `new`, but respects subtypes of list such as
@@ -74,6 +75,8 @@ def lcs_list_update(original: list[_T], new: list[_T]) -> None:
     that doesn't lose important metadata associated with individual list items.
     """
     # N.B. this implementation is somewhat AI-generated.
+    original = list(original)  # Make a mutable copy of the original sequence
+    new = list(new)  # Make a mutable copy of the new sequence
 
     # Create shared integer mappings for unhashable sequences
     int_original, int_new = _shared_id_sequences(original, new)
@@ -116,7 +119,7 @@ def lcs_list_update(original: list[_T], new: list[_T]) -> None:
                 original_idx += 1
 
 
-def _shared_id_sequences(*seqs: list[Any]) -> list[list[int]]:
+def _shared_id_sequences(*seqs: Sequence[object]) -> Sequence[list[int]]:
     """Map list elements to integers which are equal iff the objects are with __eq__."""
     # Don't use "in" because that would mean the elements must be hashable,
     # which we don't want to require. This means we have to loop over every element,

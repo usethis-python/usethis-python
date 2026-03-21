@@ -67,7 +67,7 @@ def update_ruamel_yaml_map(
         cmap[key] = cmap_copy[key]
 
 
-def lcs_list_update(original: Sequence[_T], new: Sequence[_T]) -> None:
+def lcs_list_update(original: list[_T], new: list[_T]) -> None:
     """Update in-place using a longest common subsequence solver.
 
     This makes `original` identical to `new`, but respects subtypes of list such as
@@ -75,8 +75,6 @@ def lcs_list_update(original: Sequence[_T], new: Sequence[_T]) -> None:
     that doesn't lose important metadata associated with individual list items.
     """
     # N.B. this implementation is somewhat AI-generated.
-    original = list(original)  # Make a mutable copy of the original sequence
-    new = list(new)  # Make a mutable copy of the new sequence
 
     # Create shared integer mappings for unhashable sequences
     int_original, int_new = _shared_id_sequences(original, new)

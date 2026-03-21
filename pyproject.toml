@@ -216,7 +216,6 @@ reportImplicitStringConcatenation = false
 reportInvalidAbstractMethod = false
 reportMissingParameterType = false
 reportMissingTypeArgument = false
-reportMissingTypeStubs = false
 reportPrivateUsage = false
 reportUnannotatedClassAttribute = false
 reportUnknownArgumentType = false

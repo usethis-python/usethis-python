@@ -75,7 +75,6 @@ Additionally, the command line reference documentation can be viewed with `useth
 - [`usethis lint`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
 - [`usethis spellcheck`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
 - [`usethis test`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest) with [Coverage.py](https://github.com/nedbat/coveragepy)).
-- [`usethis ci`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-ci) — Add/Configure a specified CI service.
 - [`usethis tool`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-tool) — Add/Configure specific tools individually.
   - [`usethis tool codespell`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.
   - [`usethis tool deptry`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.
@@ -145,18 +144,6 @@ $ uvx usethis tool pytest
 ☐ Run 'uv run pytest' to run the tests.
 ```
 
-There are also commands to configure aspects other than tools. For example, to configure [Bitbucket Pipelines](https://www.atlassian.com/software/bitbucket/features/pipelines), run:
-
-```console
-$ uvx usethis ci bitbucket
-✔ Writing 'bitbucket-pipelines.yml'.
-✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.
-✔ Adding 'Run Ruff' to default pipeline in 'bitbucket-pipelines.yml'.
-✔ Adding 'Test on 3.13' to default pipeline in 'bitbucket-pipelines.yml'.
-✔ Adding 'Test on 3.14' to default pipeline in 'bitbucket-pipelines.yml'.
-☐ Run your pipeline via the Bitbucket website.
-```
-
 See the [CLI Reference](https://usethis.readthedocs.io/en/stable/cli/reference) for a full list of available commands.
 
 ## 📚 Similar Projects
@@ -190,7 +177,6 @@ If you're not interested in templating automations, then [configurator](https://
 
 Major features planned are:
 
-- Support for automated GitHub Actions workflows ([#57](https://github.com/usethis-python/usethis-python/issues/57)), and
 - Support for a typechecker (likely ty, [#838](https://github.com/usethis-python/usethis-python/issues/838)).
 
 Other features are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.

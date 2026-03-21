@@ -11,7 +11,6 @@
 - [`usethis lint`](reference.md#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
 - [`usethis spellcheck`](reference.md#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
 - [`usethis test`](reference.md#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest) with [Coverage.py](https://github.com/nedbat/coveragepy)).
-- [`usethis ci`](reference.md#usethis-ci) — Add/Configure a specified CI service.
 - [`usethis tool`](reference.md#usethis-tool) — Add/Configure specific tools individually.
   - [`usethis tool codespell`](reference.md#code-quality-tools) - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.
   - [`usethis tool deptry`](reference.md#code-quality-tools) - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.

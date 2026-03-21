@@ -22,6 +22,7 @@ _HOOK_ORDER = [
     "ruff",  # Alias used for ruff-check
     "ruff-check",  # ruff-check followed by ruff-format seems to be the recommended way by Astral
     "ruff-format",
+    "ty",
     "deptry",
     "lint_imports",  # Alias used for import-linter used in the Import Linter docs, see https://github.com/usethis-python/usethis-python/issues/1022
     "import-linter",

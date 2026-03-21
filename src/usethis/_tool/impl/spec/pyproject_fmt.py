@@ -10,7 +10,7 @@ from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.deps import Dependency
 
-_PYPROJECT_FMT_VERSION = "v2.16.2"  # Manually bump this version when necessary
+_PYPROJECT_FMT_VERSION = "v2.20.0"  # Manually bump this version when necessary
 
 
 class PyprojectFmtToolSpec(ToolSpec):

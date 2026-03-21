@@ -582,6 +582,52 @@ line-length = 88
         )
 
 
+class TestTy:
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            if not usethis_config.offline:
+                result = runner.invoke_safe(app, ["ty"])
+            else:
+                result = runner.invoke_safe(app, ["ty", "--offline"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["ty", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'ty check' to run the ty type checker.
+"""
+        )
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_remove(self, tmp_path: Path):
+        # Arrange
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            if not usethis_config.offline:
+                runner.invoke_safe(app, ["ty"])
+            else:
+                runner.invoke_safe(app, ["ty", "--offline"])
+
+            # Act
+            result = runner.invoke_safe(app, ["ty", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+
 @pytest.mark.benchmark
 def test_several_tools_add_and_remove(tmp_path: Path):
     # Arrange
@@ -603,6 +649,8 @@ def test_several_tools_add_and_remove(tmp_path: Path):
         result = runner.invoke_safe(app, ["ruff"])
         assert not result.exit_code, result.stdout
         result = runner.invoke_safe(app, ["deptry"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke_safe(app, ["ty"])
         assert not result.exit_code, result.stdout
         result = runner.invoke_safe(app, ["pre-commit"])
         assert not result.exit_code, result.stdout

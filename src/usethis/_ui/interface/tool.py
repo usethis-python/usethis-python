@@ -331,6 +331,33 @@ def ruff(
         _run_tool(use_ruff, remove=remove, how=how, linter=linter, formatter=formatter)
 
 
+@app.command(
+    name="ty",
+    help="Use the ty type checker: an extremely fast Python type checker.",
+    rich_help_panel="Code Quality Tools",
+)
+def ty(
+    remove: bool = remove_opt,
+    how: bool = how_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    frozen: bool = frozen_opt,
+    backend: BackendEnum = backend_opt,
+) -> None:
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_ty
+
+    assert isinstance(backend, BackendEnum)
+
+    with (
+        usethis_config.set(
+            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+        ),
+        files_manager(),
+    ):
+        _run_tool(use_ty, remove=remove, how=how)
+
+
 def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: Any):
     from usethis._console import err_print
     from usethis.errors import UsethisError
@@ -354,4 +381,5 @@ ALL_TOOL_COMMANDS: list[str] = [
     "pytest",
     "requirements.txt",
     "ruff",
+    "ty",
 ]

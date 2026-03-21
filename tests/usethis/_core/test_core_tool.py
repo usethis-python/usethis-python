@@ -28,6 +28,7 @@ from usethis._core.tool import (
     use_requirements_txt,
     use_ruff,
     use_tool,
+    use_ty,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -78,6 +79,7 @@ class TestAllBitbucketCompatibleSteps:
             "pyproject-fmt",
             "pytest",
             "Ruff",
+            "ty",
         }
 
 
@@ -4281,3 +4283,136 @@ class TestUseTool:
         with change_cwd(uv_init_dir), files_manager():
             for tool in ALL_TOOLS:
                 use_tool(tool)
+
+
+class TestTy:
+    class TestAdd:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_dependency_added(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ty()
+
+                # Assert
+                (dev_dep,) = [d for d in get_deps_from_group("dev") if d.name == "ty"]
+            assert dev_dep == Dependency(name="ty")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_config(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Arrange
+            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                add_deps_to_group([Dependency(name="ty")], "dev")
+
+            capfd.readouterr()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ty()
+
+            # Assert - ty has no default config values, so no config is written
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ("☐ Run 'uv run ty check' to run the ty type checker.\n")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_bitbucket_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_ci_bitbucket()
+                capfd.readouterr()
+
+                # Act
+                use_ty()
+
+            # Assert
+            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
+            assert "ty" in contents
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_pre_commit_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_ty()
+
+                # Assert
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "ty" for dep in dev_deps)
+
+                hook_names = get_hook_ids()
+                assert "ty" in hook_names
+
+    class TestRemove:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_removes_config(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_ty()
+
+                # Act
+                use_ty(remove=True)
+
+            # Assert
+            assert "[tool.ty]" not in (uv_init_dir / "pyproject.toml").read_text()
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_removes_dependency(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_ty()
+
+                # Act
+                use_ty(remove=True)
+
+                # Assert
+                deps = get_deps_from_group("dev")
+            assert not any(dep.name == "ty" for dep in deps)
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_removes_managed_ty_toml(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_ty()
+                (uv_init_dir / "ty.toml").touch()
+
+                # Act
+                use_ty(remove=True)
+
+            # Assert
+            assert not (uv_init_dir / "ty.toml").exists()
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_removes_managed_dot_ty_toml(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_ty()
+                (uv_init_dir / ".ty.toml").write_text(
+                    """\
+[rules]
+possibly-unresolved-reference = "warn"
+"""
+                )
+
+                # Act
+                use_ty(remove=True)
+
+            # Assert
+            assert not (uv_init_dir / ".ty.toml").exists()
+
+    class TestHow:
+        def test_how(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_ty(how=True)
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "☐ Run 'ty check' to run the ty type checker.\n"

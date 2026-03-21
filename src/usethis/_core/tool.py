@@ -35,6 +35,7 @@ from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
 from usethis._tool.impl.base.pytest import PytestTool
 from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
+from usethis._tool.impl.base.ty import TyTool
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
 
@@ -513,7 +514,31 @@ def _get_basic_rule_config() -> RuleConfig:
     return rule_config
 
 
-def use_tool(
+def use_ty(*, remove: bool = False, how: bool = False) -> None:
+    tool = TyTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
+
+    if not remove:
+        ensure_dep_declaration_file()
+
+        tool.add_dev_deps()
+        tool.update_bitbucket_steps()
+        tool.add_pre_commit_config()
+
+        tool.add_configs()
+        tool.print_how_to_use()
+    else:
+        tool.remove_bitbucket_steps()
+        tool.remove_configs()
+        tool.remove_pre_commit_repo_configs()
+        tool.remove_dev_deps()
+        tool.remove_managed_files()
+
+
+def use_tool(  # noqa: PLR0912
     tool: SupportedToolType,
     *,
     remove: bool = False,
@@ -553,6 +578,8 @@ def use_tool(
         use_requirements_txt(remove=remove, how=how)
     elif isinstance(tool, RuffTool):
         use_ruff(remove=remove, how=how)
+    elif isinstance(tool, TyTool):
+        use_ty(remove=remove, how=how)
     else:
         # Having the assert_never here is effectively a way of testing cases are
         # exhaustively handled, which ensures it is kept up to date with ALL_TOOLS,

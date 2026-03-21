@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias
+from typing import TYPE_CHECKING, Literal, TypeAlias
 
 from pydantic import BaseModel, InstanceOf
 
@@ -104,7 +104,7 @@ class ConfigEntry(BaseModel):
     """
 
     keys: list[Key]
-    get_value: Callable[[], Any] = _get_no_config_value
+    get_value: Callable[[], object] = _get_no_config_value
 
 
 class ConfigItem(BaseModel):

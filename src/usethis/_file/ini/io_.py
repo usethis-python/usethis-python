@@ -147,7 +147,11 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
             raise KeyError(msg)
 
     def set_value(
-        self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
+        self,
+        *,
+        keys: Sequence[Key],
+        value: object,
+        exists_ok: bool = False,
     ) -> None:
         """Set a value in the INI file.
 
@@ -156,19 +160,24 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
         root = self.get()
 
         if len(keys) == 0:
+            value = TypeAdapter(dict[str, dict[str, str | list[str]]]).validate_python(
+                value
+            )
             self._set_value_in_root(root=root, value=value, exists_ok=exists_ok)
         elif len(keys) == 1:
             (section_key,) = keys
+            value = TypeAdapter(dict[str, str | list[str]]).validate_python(value)
             self._set_value_in_section(
                 root=root, section_key=keys[0], value=value, exists_ok=exists_ok
             )
         elif len(keys) == 2:
             (section_key, option_key) = keys
+            cast_value = TypeAdapter(str | list[str]).validate_python(value)
             self._set_value_in_option(
                 root=root,
                 section_key=section_key,
                 option_key=option_key,
-                value=value,
+                value=cast_value,
                 exists_ok=exists_ok,
             )
         else:
@@ -271,7 +280,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
         root: INIDocument,
         section_key: Key,
         option_key: Key,
-        value: str,
+        value: str | list[str],
         exists_ok: bool,
     ) -> None:
         if not isinstance(section_key, str) or not isinstance(option_key, str):
@@ -408,7 +417,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         self.commit(root)
 
-    def extend_list(self, *, keys: Sequence[Key], values: list[str]) -> None:
+    def extend_list(self, *, keys: Sequence[Key], values: Sequence[object]) -> None:
         """Extend a list in the INI file.
 
         An empty list of keys corresponds to the root of the document.
@@ -429,6 +438,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
+            values = TypeAdapter(list[str]).validate_python(values)
             self._extend_list_in_option(
                 root=root, section_key=section_key, option_key=option_key, values=values
             )
@@ -443,7 +453,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
     @staticmethod
     def _extend_list_in_option(
-        *, root: INIDocument, section_key: Key, option_key: Key, values: list[str]
+        *, root: INIDocument, section_key: Key, option_key: Key, values: Sequence[str]
     ) -> None:
         for value in values:
             INIFileManager._validated_append(
@@ -452,7 +462,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
     @staticmethod
     def _remove_from_list_in_option(
-        *, root: INIDocument, section_key: Key, option_key: Key, values: list[str]
+        *, root: INIDocument, section_key: Key, option_key: Key, values: Sequence[str]
     ) -> None:
         if section_key not in root:
             return
@@ -485,7 +495,9 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
         elif len(new_values) > 1:
             root[section_key][option_key].set_values(new_values)
 
-    def remove_from_list(self, *, keys: Sequence[Key], values: list[str]) -> None:
+    def remove_from_list(
+        self, *, keys: Sequence[Key], values: Sequence[object]
+    ) -> None:
         """Remove values from a list in the INI file.
 
         An empty list of keys corresponds to the root of the document.
@@ -506,6 +518,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
+            values = TypeAdapter(list[str]).validate_python(values)
             self._remove_from_list_in_option(
                 root=root, section_key=section_key, option_key=option_key, values=values
             )

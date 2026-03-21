@@ -1422,7 +1422,7 @@ key3 = value3
             file_manager = MagicMock()
             tool = MockToolForRuleTests(file_manager=file_manager, selected_rules=[])
             # Override to simulate a tool without selection support
-            tool._get_select_keys = lambda file_manager: super(  # type: ignore[method-assign]
+            tool._get_select_keys = lambda file_manager: super(  # ty: ignore[invalid-assignment]
                 MockToolForRuleTests, tool
             )._get_select_keys(file_manager)
 

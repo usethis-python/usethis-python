@@ -38,6 +38,8 @@ from usethis.errors import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from usethis._io import KeyValueFileManager
     from usethis._tool.config import ConfigItem
     from usethis._tool.rule import Rule
@@ -549,7 +551,7 @@ class Tool(ToolSpec, Protocol):
         )
         raise UnhandledConfigEntryError(msg)
 
-    def select_rules(self, rules: list[Rule]) -> bool:
+    def select_rules(self, rules: Sequence[Rule]) -> bool:
         """Select the rules managed by the tool.
 
         These rules are not validated; it is assumed they are valid rules for the tool,
@@ -598,7 +600,7 @@ class Tool(ToolSpec, Protocol):
         )
         raise UnhandledConfigEntryError(msg)
 
-    def ignore_rules(self, rules: list[Rule]) -> bool:
+    def ignore_rules(self, rules: Sequence[Rule]) -> bool:
         """Ignore rules managed by the tool.
 
         Ignoring a rule is different from deselecting it - it means that even if it
@@ -664,7 +666,7 @@ class Tool(ToolSpec, Protocol):
 
         return True
 
-    def deselect_rules(self, rules: list[Rule]) -> bool:
+    def deselect_rules(self, rules: Sequence[Rule]) -> bool:
         """Deselect the rules managed by the tool.
 
         Any rules that aren't already selected are ignored.

@@ -193,7 +193,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
                 # The configuration is already present, but we're allowed to overwrite it.
                 parent[keys[-1]] = value
 
-        self.commit(toml_document)  # type: ignore[reportAssignmentType]
+        self.commit(toml_document)
 
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Delete a value in the TOML file.
@@ -262,7 +262,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         self.commit(toml_document)
 
-    def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+    def extend_list(self, *, keys: Sequence[Key], values: Sequence[Any]) -> None:
         if not keys:
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
@@ -311,7 +311,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
                 )
                 raise TOMLValueInvalidError(msg) from None
             assert isinstance(d, list)
-            p_parent[keys[-1]] = d + values
+            p_parent[keys[-1]] = d + list(values)
 
         self.commit(toml_document)
 
@@ -382,7 +382,7 @@ def _set_value_in_existing(
         contents = value
         for key in reversed(keys):
             contents = {key: contents}
-        toml_document = _deep_merge(toml_document, contents)  # type: ignore[reportAssignmentType]
+        toml_document = _deep_merge(toml_document, contents)
         assert isinstance(toml_document, TOMLDocument)
     else:
         # Note that this alternative logic is just to avoid a bug:
@@ -397,13 +397,22 @@ def _set_value_in_existing(
             # https://github.com/usethis-python/usethis-python/issues/558
 
             placeholder = {keys[0]: {keys[1]: {}}}
-            toml_document = _deep_merge(toml_document, placeholder)  # type: ignore[reportArgumentType]
+            toml_document = _deep_merge(toml_document, placeholder)
 
             contents = value
             for key in reversed(unshared_keys[1:]):
                 contents = {key: contents}
 
-            shared_container[keys[1]] = contents  # pyright: ignore[reportArgumentType]
+            # Check it's not a pattern-based key, which isn't supported in TOML files.
+            key = keys[1]
+            if isinstance(key, re.Pattern):
+                msg = (
+                    f"Regex-based keys are not currently supported in TOML files: "
+                    f"{print_keys(keys)}"
+                )
+                raise NotImplementedError(msg)
+
+            shared_container[key] = contents
         else:
             shared_container[_get_unified_key(unshared_keys)] = value
 

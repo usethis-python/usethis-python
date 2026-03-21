@@ -11,12 +11,14 @@ from usethis._tool.impl.spec.deptry import DeptryToolSpec
 from usethis._tool.rule import Rule
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from usethis._io import KeyValueFileManager
 
 
 class DeptryTool(DeptryToolSpec, Tool):
     @final
-    def select_rules(self, rules: list[Rule]) -> bool:
+    def select_rules(self, rules: Sequence[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
         if rules:
             info_print(f"All {self.name} rules are always implicitly selected.")
@@ -32,7 +34,7 @@ class DeptryTool(DeptryToolSpec, Tool):
         return []
 
     @final
-    def deselect_rules(self, rules: list[Rule]) -> bool:
+    def deselect_rules(self, rules: Sequence[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
         return False
 

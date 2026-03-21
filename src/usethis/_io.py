@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Generic, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
 from typing_extensions import assert_never
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
     from types import TracebackType
-    from typing import Any, ClassVar
+    from typing import ClassVar
 
     from typing_extensions import Self
 
@@ -192,7 +192,7 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT], metaclass=ABCM
     def __getitem__(self, keys: Sequence[Key]) -> object:
         raise NotImplementedError
 
-    def __setitem__(self, keys: Sequence[Key], value: Any) -> None:
+    def __setitem__(self, keys: Sequence[Key], value: object) -> None:
         """Set a value in the configuration file."""
         return self.set_value(keys=keys, value=value, exists_ok=True)
 
@@ -202,13 +202,13 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT], metaclass=ABCM
 
     @abstractmethod
     def set_value(
-        self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
+        self, *, keys: Sequence[Key], value: object, exists_ok: bool = False
     ) -> None:
         """Set a value in the configuration file."""
         raise NotImplementedError
 
     @abstractmethod
-    def extend_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+    def extend_list(self, *, keys: Sequence[Key], values: Sequence[object]) -> None:
         """Extend a list in the configuration file.
 
         This method will always extend the list, even if it results in duplicates.
@@ -216,7 +216,9 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT], metaclass=ABCM
         raise NotImplementedError
 
     @abstractmethod
-    def remove_from_list(self, *, keys: Sequence[Key], values: list[Any]) -> None:
+    def remove_from_list(
+        self, *, keys: Sequence[Key], values: Sequence[object]
+    ) -> None:
         """Remove values from a list in the configuration file."""
         raise NotImplementedError
 

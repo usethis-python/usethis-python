@@ -4,7 +4,7 @@ import os
 import socket
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any
+from typing import IO, TYPE_CHECKING
 
 from typer.testing import CliRunner as TyperCliRunner  # noqa: TID251
 
@@ -47,10 +47,10 @@ class CliRunner(TyperCliRunner):
         self,
         app: Typer,
         args: str | Sequence[str] | None = None,
-        input: bytes | str | IO[Any] | None = None,  # noqa: A002
+        input: bytes | str | IO[str] | None = None,  # noqa: A002
         env: Mapping[str, str] | None = None,
         color: bool = False,
-        **extra: Any,
+        **extra: object,
     ) -> Result:
         return self.invoke(
             app,
@@ -66,11 +66,11 @@ class CliRunner(TyperCliRunner):
         self,
         app: Typer,
         args: str | Sequence[str] | None = None,
-        input: bytes | str | IO[Any] | None = None,  # noqa: A002
+        input: bytes | str | IO[str] | None = None,  # noqa: A002
         env: Mapping[str, str] | None = None,
         catch_exceptions: bool = True,
         color: bool = False,
-        **extra: Any,
+        **extra: object,
     ) -> Result:
         if catch_exceptions:
             msg = "`catch_exceptions=True` is forbidden in usethis tests. Use `.invoke_safe()` instead."

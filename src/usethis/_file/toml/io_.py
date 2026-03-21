@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import re
+from abc import ABCMeta
 from typing import TYPE_CHECKING, Any
 
 import tomlkit.api
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
     from usethis._io import Key
 
 
-class TOMLFileManager(KeyValueFileManager):
+class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
     """An abstract class for managing TOML files."""
 
     _content_by_path: ClassVar[dict[Path, TOMLDocument | None]] = {}

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Protocol
 
@@ -42,7 +42,7 @@ class ToolMeta:
     url: str | None = None  # For documentation purposes
 
 
-class ToolSpec(Protocol):
+class ToolSpec(Protocol, metaclass=ABCMeta):
     @property
     @abstractmethod
     def meta(self) -> ToolMeta: ...

@@ -213,6 +213,18 @@ sonar.exclusions=tests/*
             with pytest.raises(MissingProjectKeyError):
                 get_sonar_project_properties()
 
+    def test_non_string_project_key_raises(self, tmp_path: Path):
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Arrange
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "project-key"], value=123
+            )
+
+            # Act, Assert
+            with pytest.raises(InvalidSonarQubeProjectKeyError):
+                get_sonar_project_properties()
+
     def test_patch_version_ignored(self, tmp_path: Path):
         with change_cwd(tmp_path), PyprojectTOMLManager():
             # Arrange

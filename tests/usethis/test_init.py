@@ -15,6 +15,7 @@ from usethis._init import (
 )
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
+from usethis._types.build_backend import BuildBackendEnum
 
 
 class TestProjectInit:
@@ -83,6 +84,49 @@ class TestProjectInit:
 
             # Assert
             assert manager[["build-system", "build-backend"]] == "hatchling.build"
+
+    def test_build_backend_is_flit_for_none_backend(self, tmp_path: Path):
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager() as manager,
+            usethis_config.set(
+                backend=BackendEnum.none, build_backend=BuildBackendEnum.flit
+            ),
+        ):
+            # Act
+            project_init()
+
+            # Assert
+            assert manager[["build-system", "build-backend"]] == "flit_core.buildapi"
+
+    def test_build_backend_is_setuptools_for_none_backend(self, tmp_path: Path):
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager() as manager,
+            usethis_config.set(
+                backend=BackendEnum.none, build_backend=BuildBackendEnum.setuptools
+            ),
+        ):
+            # Act
+            project_init()
+
+            # Assert
+            assert (
+                manager[["build-system", "build-backend"]]
+                == "setuptools.build_meta"
+            )
+
+    def test_build_backend_uv_for_uv_backend(self, tmp_path: Path):
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager() as manager,
+            usethis_config.set(build_backend=BuildBackendEnum.uv),
+        ):
+            # Act
+            project_init()
+
+            # Assert
+            assert manager[["build-system", "build-backend"]] == "uv_build"
 
 
 class TestEnsurePyprojectTOML:

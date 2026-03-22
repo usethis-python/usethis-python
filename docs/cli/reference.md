@@ -52,6 +52,18 @@ Supported options:
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
 
+- `--build-backend` to specify the build backend for the project. Defaults to `hatch`.
+
+  Possible values:
+  - `hatch` for [Hatchling](https://hatch.pypa.io/) (default)
+  - `uv` for [uv](https://docs.astral.sh/uv/concepts/build-backend/)
+  - `flit` for [Flit](https://flit.pypa.io/)
+  - `pdm` for [PDM](https://pdm-backend.fming.dev/)
+  - `setuptools` for [Setuptools](https://setuptools.pypa.io/)
+  - `maturin` for [Maturin](https://www.maturin.rs/) (Rust)
+  - `scikit` for [scikit-build-core](https://scikit-build-core.readthedocs.io/) (C/C++)
+  - `poetry` for [Poetry](https://python-poetry.org/)
+
 ## `usethis arch`
 
 Add recommended architecture analysis tools to the project (namely, [Import Linter](https://import-linter.readthedocs.io/en/stable/)), including:

@@ -209,7 +209,6 @@ rules.possibly-missing-attribute = "ignore"
 ignore = [ "src/usethis/_version.py" ]
 reportAny = false
 reportAssignmentType = false
-reportCallInDefaultInitializer = false
 reportExplicitAny = false
 reportImplicitStringConcatenation = false
 reportMissingParameterType = false

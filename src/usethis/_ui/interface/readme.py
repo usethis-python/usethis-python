@@ -4,13 +4,13 @@ import typer
 
 from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
-from usethis._ui.options import backend_opt, quiet_opt
+from usethis._ui.options import backend_opt, badges_opt, quiet_opt
 
 
 def readme(
     quiet: bool = quiet_opt,
     backend: BackendEnum = backend_opt,
-    badges: bool = typer.Option(False, "--badges", help="Add relevant badges"),
+    badges: bool = badges_opt,
 ) -> None:
     from usethis._backend.uv.detect import is_uv_used
     from usethis._config_file import files_manager

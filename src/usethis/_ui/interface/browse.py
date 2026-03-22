@@ -1,7 +1,7 @@
 import typer
 
 from usethis._config import usethis_config
-from usethis._ui.options import offline_opt, quiet_opt
+from usethis._ui.options import browser_opt, offline_opt, quiet_opt
 
 app = typer.Typer(
     help="Visit important project-related web pages.", add_completion=False
@@ -12,9 +12,7 @@ app = typer.Typer(
 def pypi(
     package: str,
     *,
-    browser: bool = typer.Option(
-        False, "--browser", help="Open the URL in the default web browser."
-    ),
+    browser: bool = browser_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:

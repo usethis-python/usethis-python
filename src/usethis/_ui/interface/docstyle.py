@@ -5,13 +5,17 @@ import typer
 from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._types.docstyle import DocStyleEnum
-from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
+from usethis._ui.options import (
+    backend_opt,
+    docstyle_style_arg,
+    frozen_opt,
+    offline_opt,
+    quiet_opt,
+)
 
 
 def docstyle(
-    style: DocStyleEnum = typer.Argument(
-        default="google", help="Docstring style to enforce."
-    ),
+    style: DocStyleEnum = docstyle_style_arg,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,

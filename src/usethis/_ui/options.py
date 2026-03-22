@@ -9,6 +9,7 @@ from usethis._config import (
     REMOVE_DEFAULT,
 )
 
+# shared options
 offline_opt = typer.Option(OFFLINE_DEFAULT, "--offline", help="Disable network access")
 quiet_opt = typer.Option(QUIET_DEFAULT, "--quiet", help="Suppress output")
 how_opt = typer.Option(
@@ -26,4 +27,100 @@ frozen_opt = typer.Option(
 )
 backend_opt = typer.Option(
     BACKEND_DEFAULT, "--backend", help="Package manager backend to use."
+)
+
+# author command options
+author_name_opt = typer.Option(..., "--name", help="Author name")
+author_email_opt = typer.Option("", "--email", help="Author email")
+author_overwrite_opt = typer.Option(
+    False, "--overwrite", help="Overwrite any existing authors"
+)
+
+# browse command options
+browser_opt = typer.Option(
+    False, "--browser", help="Open the URL in the default web browser."
+)
+
+# ci command options
+ci_remove_opt = typer.Option(
+    False, "--remove", help="Remove Bitbucket Pipelines CI instead of adding it."
+)
+matrix_python_opt = typer.Option(
+    True,
+    "--matrix-python/--no-matrix-python",
+    help="Test against multiple Python versions.",
+)
+
+# docstyle command options
+docstyle_style_arg = typer.Argument(
+    default="google", help="Docstring style to enforce."
+)
+
+# init command options
+init_arch_opt = typer.Option(
+    False, "--arch/--no-arch", help="Add recommended architecture analysis tools."
+)
+init_doc_opt = typer.Option(
+    True, "--doc/--no-doc", help="Add a recommended documentation framework."
+)
+init_format_opt = typer.Option(
+    True, "--format/--no-format", help="Add recommended formatters."
+)
+init_lint_opt = typer.Option(True, "--lint/--no-lint", help="Add recommended linters.")
+init_spellcheck_opt = typer.Option(
+    True,
+    "--spellcheck/--no-spellcheck",
+    help="Add a recommended spellchecker.",
+)
+init_test_opt = typer.Option(
+    True,
+    "--test/--no-test",
+    help="Add a recommended testing framework.",
+)
+init_typecheck_opt = typer.Option(
+    True,
+    "--typecheck/--no-typecheck",
+    help="Add a recommended type checker.",
+)
+init_hook_opt = typer.Option(
+    False,
+    "--hook/--no-hook",
+    help="Add a recommended git hook framework.",
+)
+init_ci_opt = typer.Option(
+    None,
+    "--ci",
+    help="Add a CI service configuration.",
+)
+init_docstyle_opt = typer.Option(
+    None,
+    "--docstyle",
+    help="Set a docstring style convention for the project.",
+)
+init_status_opt = typer.Option(
+    "planning",
+    "--status",
+    help="Set the development status of the project.",
+)
+init_path_arg = typer.Argument(
+    None,
+    help="The path to use for the project. Defaults to the current working directory.",
+)
+
+# readme command options
+badges_opt = typer.Option(False, "--badges", help="Add relevant badges")
+
+# status command options
+status_arg = typer.Argument(default=..., help="Docstring style to enforce.")
+
+# ruff command options
+linter_opt = typer.Option(
+    True,
+    "--linter/--no-linter",
+    help="Add or remove specifically the Ruff linter.",
+)
+formatter_opt = typer.Option(
+    True,
+    "--formatter/--no-formatter",
+    help="Add or remove specifically the Ruff formatter.",
 )

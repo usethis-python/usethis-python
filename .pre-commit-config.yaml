@@ -44,6 +44,11 @@ repos:
       - id: pyproject-fmt
         args: [--max-supported-python=3.14]
         priority: 0
+  - repo: https://github.com/15r10nk/format-dedent
+    rev: 882bbd5699dd4340b076f680e4beb51c48d8ebe0
+    hooks:
+      - id: format-dedent
+        priority: 0
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.3
     hooks:

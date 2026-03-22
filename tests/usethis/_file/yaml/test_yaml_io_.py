@@ -97,6 +97,25 @@ class TestYAMLFileManager:
                 assert isinstance(manager._content, YAMLDocument)
                 assert isinstance(manager._content.content, CommentedMap)
 
+        def test_empty_file(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").touch()
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                # Act
+                manager.read_file()
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert isinstance(manager._content.content, CommentedMap)
+                assert len(manager._content.content) == 0
+
         def test_file_not_found(self, tmp_path: Path):
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
@@ -239,6 +258,38 @@ class TestYAMLFileManager:
                 # Act, Assert
                 assert manager.__contains__(["key"])
 
+        def test_empty_file_no_keys(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").touch()
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                assert manager.__contains__([])
+
+        def test_empty_file_key_missing(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").touch()
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                assert not manager.__contains__(["key"])
+
         def test_single_map_two_keys(self, tmp_path: Path):
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
@@ -343,6 +394,22 @@ outer:
 
                 # Assert
                 assert value == "value"
+
+        def test_empty_file(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").touch()
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                assert manager[[]] == {}
 
         def test_empty_keys(self, tmp_path: Path):
             # Arrange

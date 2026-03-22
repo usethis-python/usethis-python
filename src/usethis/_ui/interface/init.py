@@ -14,6 +14,9 @@ from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
 
 
 def init(
+    arch: bool = typer.Option(
+        False, "--arch/--no-arch", help="Add recommended architecture analysis tools."
+    ),
     doc: bool = typer.Option(
         True, "--doc/--no-doc", help="Add a recommended documentation framework."
     ),
@@ -93,6 +96,7 @@ def init(
     ):
         try:
             _init(
+                arch=arch,
                 doc=doc,
                 format_=format_,
                 lint=lint,
@@ -111,6 +115,7 @@ def init(
 
 def _init(  # noqa: PLR0915
     *,
+    arch: bool,
     doc: bool,
     format_: bool,
     lint: bool,
@@ -129,6 +134,7 @@ def _init(  # noqa: PLR0915
     from usethis._core.status import use_development_status
     from usethis._core.tool import use_pre_commit
     from usethis._init import project_init
+    from usethis._toolset.arch import use_arch_tools
     from usethis._toolset.doc import use_doc_frameworks
     from usethis._toolset.format_ import use_formatters
     from usethis._toolset.lint import use_linters
@@ -183,6 +189,11 @@ def _init(  # noqa: PLR0915
         with usethis_config.set(instruct_only=True):
             use_typecheckers()
         use_typecheckers(how=True)
+    if arch:
+        tick_print("Adding recommended architecture analysis tools.")
+        with usethis_config.set(instruct_only=True):
+            use_arch_tools()
+        use_arch_tools(how=True)
 
     if ci is not None:
         assert isinstance(ci, CIServiceEnum)

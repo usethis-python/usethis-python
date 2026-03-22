@@ -6,6 +6,7 @@
 
 ## Manage Tooling
 
+- [`usethis arch`](reference.md#usethis-arch) — Add/Configure recommended architecture analysis tools (namely, [Import Linter](https://import-linter.readthedocs.io/en/stable/)).
 - [`usethis doc`](reference.md#usethis-doc) — Add/Configure recommended documentation tools (namely, [MkDocs](https://www.mkdocs.org/)).
 - [`usethis format`](reference.md#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
 - [`usethis lint`](reference.md#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).

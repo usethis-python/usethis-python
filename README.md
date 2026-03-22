@@ -70,6 +70,7 @@ Additionally, the command line reference documentation can be viewed with `useth
 
 ### Manage Tooling
 
+- [`usethis arch`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-arch) — Add/Configure recommended architecture analysis tools (namely, [Import Linter](https://import-linter.readthedocs.io/en/stable/)).
 - [`usethis doc`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-doc) — Add/Configure recommended documentation tools (namely, [MkDocs](https://www.mkdocs.org/)).
 - [`usethis format`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
 - [`usethis lint`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).

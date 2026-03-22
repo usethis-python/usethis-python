@@ -20,12 +20,12 @@ from usethis._file.ini.errors import (
     UnexpectedINIIOError,
     UnexpectedINIOpenError,
 )
-from usethis._io import (
+from usethis._file.manager import (
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
-    print_keys,
 )
+from usethis._file.print_ import print_keys
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -34,9 +34,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
-    from usethis._io import (
-        Key,
-    )
+    from usethis._file.types_ import Key
 
 
 class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):

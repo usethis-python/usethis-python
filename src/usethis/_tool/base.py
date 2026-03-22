@@ -40,7 +40,8 @@ from usethis.errors import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from usethis._io import Key, KeyValueFileManager
+    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.types_ import Key
     from usethis._tool.config import ConfigItem
     from usethis._tool.rule import Rule
 

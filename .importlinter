@@ -20,7 +20,7 @@ layers =
     _integrations
     _backend
     _file
-    _io | _subprocess | _console | _python
+    _subprocess | _console | _python
     _config
     _types | errors
     _pipeweld
@@ -119,7 +119,9 @@ containers =
 layers =
     pyproject_toml | setup_cfg
     ini | toml | yaml
-    dir | merge
+    manager 
+    print_ | dir | merge
+    types_ 
 exhaustive = true
 
 [importlinter:contract:ui_interface]
@@ -128,7 +130,7 @@ type = layers
 containers =
     usethis._ui.interface
 layers =
-    author | badge | browse | ci | doc | docstyle | format_ | hook | init | lint | list | readme | rule | show | spellcheck | status | test | tool | typecheck | version
+    arch | author | badge | browse | ci | doc | docstyle | format_ | hook | init | lint | list | readme | rule | show | spellcheck | status | test | tool | typecheck | version
 exhaustive = true
 
 [importlinter:contract:pipeweld]

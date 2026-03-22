@@ -31,7 +31,7 @@ from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._io import KeyValueFileManager
+    from usethis._file.manager import KeyValueFileManager
     from usethis._tool.config import ResolutionT
 
 IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3

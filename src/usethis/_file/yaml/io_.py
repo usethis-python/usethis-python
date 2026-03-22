@@ -16,7 +16,13 @@ from ruamel.yaml.util import load_yaml_guess_indent
 from typing_extensions import assert_never, override
 
 from usethis._console import info_print
+from usethis._file.manager import (
+    KeyValueFileManager,
+    UnexpectedFileIOError,
+    UnexpectedFileOpenError,
+)
 from usethis._file.merge import _deep_merge
+from usethis._file.print_ import print_keys
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
@@ -27,12 +33,6 @@ from usethis._file.yaml.errors import (
     YAMLValueMissingError,
 )
 from usethis._file.yaml.update import update_ruamel_yaml_map
-from usethis._io import (
-    KeyValueFileManager,
-    UnexpectedFileIOError,
-    UnexpectedFileOpenError,
-    print_keys,
-)
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Sequence
@@ -41,8 +41,8 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
+    from usethis._file.types_ import Key
     from usethis._file.yaml.typing_ import YAMLLiteral
-    from usethis._io import Key
 
 
 class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):

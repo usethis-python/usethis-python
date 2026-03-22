@@ -2,6 +2,7 @@
 
 import typer
 
+import usethis._ui.interface.arch
 import usethis._ui.interface.author
 import usethis._ui.interface.badge
 import usethis._ui.interface.browse
@@ -41,6 +42,12 @@ app.command(
 )
 
 rich_help_panel = "Manage Tooling"
+app.command(
+    help="Add or configure recommended architecture analysis tools.",
+    rich_help_panel=rich_help_panel,
+)(
+    usethis._ui.interface.arch.arch,
+)
 app.command(
     help="Add or configure recommended documentation tools.",
     rich_help_panel=rich_help_panel,

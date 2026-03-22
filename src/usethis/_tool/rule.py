@@ -68,7 +68,9 @@ class RuleConfig(BaseModel):
         self.unmanaged_selected = []
         self.unmanaged_ignored = []
         # tests_ignored, nontests_ignored, tests_unmanaged_ignored, and
-        # nontests_unmanaged_ignored are preserved as they are test-related.
+        # nontests_unmanaged_ignored are preserved because they are per-file-ignores
+        # specific to test directories and should not be cleared when removing global
+        # rules.
         return self
 
     @property

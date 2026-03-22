@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, TypeAlias
 
 from pydantic import BaseModel, Field
+from typing_extensions import override
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -79,6 +80,7 @@ class RuleConfig(BaseModel):
         """Check if the rule config has any tests-related rules."""
         return bool(self.tests_unmanaged_ignored or self.nontests_unmanaged_ignored)
 
+    @override
     def __repr__(self) -> str:
         """Representation which omits empty-list fields."""
         args: list[str] = []

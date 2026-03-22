@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
+from typing_extensions import override
 
 from usethis._file.yaml.io_ import YAMLFileManager
 from usethis._file.yaml.update import update_ruamel_yaml_map
@@ -29,6 +30,7 @@ class BitbucketPipelinesYAMLManager(YAMLFileManager):
     """Class to manage the bitbucket-pipelines.yml file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path("bitbucket-pipelines.yml")
 

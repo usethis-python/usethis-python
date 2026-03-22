@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
+from typing_extensions import override
+
 from usethis._config import usethis_config
 from usethis._config_file import (
     DotCoverageRCManager,
@@ -22,6 +24,7 @@ if TYPE_CHECKING:
 class CoveragePyToolSpec(ToolSpec):
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="Coverage.py",
@@ -29,12 +32,14 @@ class CoveragePyToolSpec(ToolSpec):
             managed_files=[Path(".coveragerc"), Path(".coveragerc.toml")],
         )
 
+    @override
     @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotCoverageRCManager()
 
+    @override
     @final
     def config_spec(self) -> ConfigSpec:
         # https://coverage.readthedocs.io/en/latest/config.html#configuration-reference

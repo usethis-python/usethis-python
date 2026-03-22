@@ -188,7 +188,7 @@
 
 ### 📚 Documentation
 
-- The [FAQ](https://usethis.readthedocs.io/en/stable/faq/) now explicitly explains whether `uv` is necessary to use `usethis`, and gives some guidance for Poetry users.
+- The [FAQ](https://usethis.readthedocs.io/en/stable/faq/) now explicitly explains whether uv is necessary to use `usethis`, and gives some guidance for Poetry users.
 
 - Instructions for implementing a new `usethis badge` command in usethis have been added to the CONTRIBUTING.md file.
 
@@ -230,11 +230,11 @@
 
 ### 🚀 New Features
 
-- Most commands now accept a `--backend` option to specify the package manager backend to use. Up to this point, `uv` was the only supported backend. Now, a `--backend=none` option is available to use usethis without `uv`. This is a step toward supporting other backends such as Poetry in the future. When unspecified, heuristics will be used to determine the backend.
+- Most commands now accept a `--backend` option to specify the package manager backend to use. Up to this point, uv was the only supported backend. Now, a `--backend=none` option is available to use usethis without uv. This is a step toward supporting other backends such as Poetry in the future. When unspecified, heuristics will be used to determine the backend.
 
-- The use of `pyproject.toml` in a project is no longer assumed or imposed on a project when not using the `uv` backend.
+- The use of `pyproject.toml` in a project is no longer assumed or imposed on a project when not using the uv backend.
 
-- `pre-commit` configurations are now more conventional, preferring URL-based repo configuration instead of local repos with `language: system`. The previous behaviour was designed to ensure synchronization of versions between the `uv` lockfile and the `pre-commit` configuration, but this is now provided by the `sync-with-uv` pre-commit hook, which is added automatically when using `pre-commit` with `uv`.
+- `pre-commit` configurations are now more conventional, preferring URL-based repo configuration instead of local repos with `language: system`. The previous behaviour was designed to ensure synchronization of versions between the uv lockfile and the `pre-commit` configuration, but this is now provided by the `sync-with-uv` pre-commit hook, which is added automatically when using `pre-commit` with uv.
 
 - When using `usethis author`, a message with the author's name is now outputted in the console.
 
@@ -272,7 +272,7 @@
 
 ### 🔧 Internal Changes
 
-- The CI configuration has been overhauled. `uv` is used in more conventional ways. A runner has been added for bleeding edge dependency versions. The CI now runs on a cron schedule. `zizmor` has been added for security scanning. Permissions are more tightly scoped and explained. All actions have been bumped to their latest versions.
+- The CI configuration has been overhauled. uv is used in more conventional ways. A runner has been added for bleeding edge dependency versions. The CI now runs on a cron schedule. `zizmor` has been added for security scanning. Permissions are more tightly scoped and explained. All actions have been bumped to their latest versions.
 
 - The pre-commit hooks have been migrated to use `prek` rather than `pre-commit` for development.
 
@@ -286,7 +286,7 @@
 
 ### 🐞 Bug Fixes
 
-- When subprocessing `uv`, the `usethis init` command will no longer use the default for `--build-backend`, and instead will always explicitly use `hatch`. This may change in the future if the default supported build backend for `usethis` becomes `uv_build`, which is the new default for `uv` v0.8.0. This change avoids creating broken config which mixes `uv_build` with `hatch` config.
+- When subprocessing uv, the `usethis init` command will no longer use the default for `--build-backend`, and instead will always explicitly use `hatch`. This may change in the future if the default supported build backend for `usethis` becomes `uv_build`, which is the new default for uv v0.8.0. This change avoids creating broken config which mixes `uv_build` with `hatch` config.
 
 - When adding Import Linter while using Ruff, the `INP` rules are selected, but ignored for the tests directory. However, no message would be displayed in cases where those rules were already selected but not already ignored. Now, a message will be displayed in this case.
 
@@ -316,7 +316,7 @@
 
 ### 🔧 Internal Changes
 
-- Changes to the `CI` and the test suite have been made to support `uv` v0.8.0. Newer features of `uv` are now required in the CI configuration, meaning the lowest tested version of `uv` is now v0.6.8. Going forward, it is not recommended to use older versions of `uv` with `usethis`.
+- Changes to the CI and the test suite have been made to support uv v0.8.0. Newer features of uv are now required in the CI configuration, meaning the lowest tested version of uv is now v0.6.8. Going forward, it is not recommended to use older versions of uv with `usethis`.
 
 ## 0.15.0
 

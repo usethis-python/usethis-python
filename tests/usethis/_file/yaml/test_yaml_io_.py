@@ -15,6 +15,7 @@ from ruamel.yaml.scalarfloat import ScalarFloat
 from ruamel.yaml.scalarint import BinaryInt, HexCapsInt, HexInt, OctalInt, ScalarInt
 from ruamel.yaml.scalarstring import FoldedScalarString, LiteralScalarString
 from ruamel.yaml.timestamp import TimeStamp
+from typing_extensions import override
 
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
@@ -34,6 +35,7 @@ class TestYAMLFileManager:
         # Arrange
         class MyYAMLFileManager(YAMLFileManager):
             @property
+            @override
             def relative_path(self) -> Path:
                 return Path("my_yaml_file.yaml")
 
@@ -48,6 +50,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -61,6 +64,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -78,6 +82,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -96,6 +101,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("non_existent.yaml")
 
@@ -111,6 +117,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -126,6 +133,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -144,6 +152,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -163,6 +172,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -178,6 +188,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -197,6 +208,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -215,6 +227,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -230,6 +243,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -245,6 +259,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -260,6 +275,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -275,6 +291,7 @@ class TestYAMLFileManager:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -297,6 +314,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -311,6 +329,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -329,6 +348,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -344,6 +364,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -368,6 +389,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -384,6 +406,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -401,6 +424,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -419,6 +443,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -438,6 +463,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -457,6 +483,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -479,6 +506,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -505,6 +533,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -530,6 +559,7 @@ outer: ["inner"]
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -552,6 +582,7 @@ outer: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -572,6 +603,7 @@ outer: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -591,6 +623,7 @@ outer: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -617,6 +650,7 @@ other: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("non_existent.yaml")
 
@@ -631,6 +665,7 @@ other: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -650,6 +685,7 @@ other: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -669,6 +705,7 @@ other: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -690,6 +727,7 @@ outer: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -710,6 +748,7 @@ outer: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -731,6 +770,7 @@ outer: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -750,6 +790,7 @@ outer: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -770,6 +811,7 @@ outer: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -794,6 +836,7 @@ outer: value
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -826,6 +869,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -851,6 +895,7 @@ items:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -870,6 +915,7 @@ items:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -894,6 +940,7 @@ items:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -922,6 +969,7 @@ items:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 
@@ -954,6 +1002,7 @@ outer:
             # Arrange
             class MyYAMLFileManager(YAMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("my_yaml_file.yaml")
 

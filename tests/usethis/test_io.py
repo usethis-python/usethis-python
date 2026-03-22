@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from typing_extensions import override
+
 from usethis._io import UsethisFileManager
 from usethis._test import change_cwd
 
@@ -10,12 +12,15 @@ class TestUsethisFileManager:
             # Arrange
             class MyUsethisFileManager(UsethisFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
+                @override
                 def _dump_content(self) -> str:
                     raise NotImplementedError
 
+                @override
                 def _parse_content(self, content: str) -> None:
                     raise NotImplementedError
 
@@ -33,12 +38,15 @@ class TestUsethisFileManager:
             # Arrange
             class MyUsethisFileManager(UsethisFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
+                @override
                 def _dump_content(self) -> str:
                     raise NotImplementedError
 
+                @override
                 def _parse_content(self, content: str) -> None:
                     raise NotImplementedError
 
@@ -55,12 +63,15 @@ class TestUsethisFileManager:
             # Arrange
             class MyUsethisFileManager(UsethisFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
+                @override
                 def _dump_content(self) -> str:
                     raise NotImplementedError
 
+                @override
                 def _parse_content(self, content: str) -> None:
                     raise NotImplementedError
 
@@ -78,12 +89,15 @@ class TestUsethisFileManager:
             # Arrange
             class MyUsethisFileManager(UsethisFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
+                @override
                 def _dump_content(self) -> str:
                     raise NotImplementedError
 
+                @override
                 def _parse_content(self, content: str) -> None:
                     raise NotImplementedError
 

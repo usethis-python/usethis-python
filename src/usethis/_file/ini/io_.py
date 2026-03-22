@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from configupdater import ConfigUpdater as INIDocument
 from configupdater import Option, Section
 from pydantic import TypeAdapter
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._file.ini.errors import (
     INIDecodeError,
@@ -42,12 +42,14 @@ if TYPE_CHECKING:
 class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
     _content_by_path: ClassVar[dict[Path, INIDocument | None]] = {}
 
+    @override
     def __enter__(self) -> Self:
         try:
             return super().__enter__()
         except UnexpectedFileOpenError as err:
             raise UnexpectedINIOpenError(err) from None
 
+    @override
     def read_file(self) -> INIDocument:
         try:
             return super().read_file()
@@ -59,6 +61,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
             msg = f"Failed to decode '{self.name}':\n{err}"
             raise INIDecodeError(msg) from None
 
+    @override
     def _dump_content(self) -> str:
         if self._content is None:
             msg = "Content is None, cannot dump."
@@ -66,18 +69,22 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         return str(self._content)
 
+    @override
     def _parse_content(self, content: str) -> INIDocument:
         updater = INIDocument()
         updater.read_string(content)
         return updater
 
+    @override
     def get(self) -> INIDocument:
         return super().get()
 
+    @override
     def commit(self, document: INIDocument) -> None:
         return super().commit(document)
 
     @property
+    @override
     def _content(self) -> INIDocument | None:
         return super()._content
 
@@ -85,12 +92,14 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
     def _content(self, value: INIDocument | None) -> None:
         self._content_by_path[self.path] = value
 
+    @override
     def _validate_lock(self) -> None:
         try:
             super()._validate_lock()
         except UnexpectedFileIOError as err:
             raise UnexpectedINIIOError(err) from None
 
+    @override
     def __contains__(self, keys: Sequence[Key]) -> bool:
         """Check if the INI file contains a value at the given key.
 
@@ -114,6 +123,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
                     return True
         return False
 
+    @override
     def __getitem__(self, item: Sequence[Key]) -> object:
         keys = item
 
@@ -146,6 +156,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
             )
             raise KeyError(msg)
 
+    @override
     def set_value(
         self,
         *,
@@ -338,6 +349,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
         else:
             root[section_key][option_key].append(value)
 
+    @override
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Delete a value in the INI file.
 
@@ -417,6 +429,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         self.commit(root)
 
+    @override
     def extend_list(self, *, keys: Sequence[Key], values: Sequence[object]) -> None:
         """Extend a list in the INI file.
 
@@ -495,6 +508,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
         elif len(new_values) > 1:
             root[section_key][option_key].set_values(new_values)
 
+    @override
     def remove_from_list(
         self, *, keys: Sequence[Key], values: Sequence[object]
     ) -> None:

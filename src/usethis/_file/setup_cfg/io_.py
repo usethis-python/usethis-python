@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from typing_extensions import override
+
 from usethis._file.ini.errors import (
     INIDecodeError,
     ININotFoundError,
@@ -35,15 +37,18 @@ class SetupCFGManager(INIFileManager):
     """Manages the setup.cfg file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path("setup.cfg")
 
+    @override
     def __enter__(self) -> Self:
         try:
             return super().__enter__()
         except UnexpectedINIOpenError as err:
             raise UnexpectedSetupCFGOpenError(err) from None
 
+    @override
     def read_file(self) -> INIDocument:
         try:
             return super().read_file()
@@ -54,12 +59,14 @@ class SetupCFGManager(INIFileManager):
         except INIDecodeError as err:
             raise SetupCFGDecodeError(err) from None
 
+    @override
     def _validate_lock(self) -> None:
         try:
             super()._validate_lock()
         except UnexpectedINIIOError as err:
             raise UnexpectedSetupCFGIOError(err) from None
 
+    @override
     def set_value(
         self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
@@ -69,6 +76,7 @@ class SetupCFGManager(INIFileManager):
         except INIValueAlreadySetError as err:
             raise SetupCFGValueAlreadySetError(err) from None
 
+    @override
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Remove a value from the pyproject.toml configuration file."""
         try:

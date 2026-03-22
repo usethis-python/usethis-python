@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing_extensions import override
+
 from usethis.errors import FileConfigError, UsethisError
 
 
@@ -15,6 +17,7 @@ class BitbucketPipelinesYAMLSchemaError(FileConfigError):
     """Raised when there the 'bitbucket-pipelines.yml' file does not conform to the expected schema."""
 
     @property
+    @override
     def name(self) -> str:
         """The name of the file that has a configuration error."""
         return "bitbucket-pipelines.yml"

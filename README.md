@@ -6,7 +6,7 @@
 
 [![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/usethis-python/usethis-python/main/assets/badge/v1.json)](https://github.com/usethis-python/usethis-python)
 [![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
-![PyPI License](https://img.shields.io/pypi/l/usethis.svg)
+[![PyPI License](https://img.shields.io/pypi/l/usethis.svg)](https://github.com/usethis-python/usethis-python?tab=MIT-1-ov-file)
 [![PyPI Supported Versions](https://img.shields.io/pypi/pyversions/usethis.svg)](https://pypi.python.org/pypi/usethis)
 [![Docs](https://app.readthedocs.org/projects/usethis/badge/?version=stable)](https://usethis.readthedocs.io/en/stable/)
 

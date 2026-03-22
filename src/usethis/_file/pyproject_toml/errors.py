@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing_extensions import override
+
 from usethis._file.toml.errors import (
     TOMLDecodeError,
     TOMLError,
@@ -28,6 +30,7 @@ class PyprojectTOMLDecodeError(TOMLDecodeError, PyprojectTOMLError):
     """Raised when a pyproject.toml file cannot be decoded."""
 
     @property
+    @override
     def name(self) -> str:
         """The name of the file that could not be decoded."""
         return "pyproject.toml"
@@ -45,6 +48,7 @@ class PyprojectTOMLProjectSectionError(FileConfigError, PyprojectTOMLError):
     """Raised when the 'project' section is missing or invalid in 'pyproject.toml'."""
 
     @property
+    @override
     def name(self) -> str:
         """The name of the file that has a configuration error."""
         return "pyproject.toml"

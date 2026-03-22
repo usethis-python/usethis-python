@@ -13,7 +13,7 @@ from pydantic import TypeAdapter, ValidationError
 from ruamel.yaml.comments import CommentedMap
 from ruamel.yaml.error import YAMLError
 from ruamel.yaml.util import load_yaml_guess_indent
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._console import info_print
 from usethis._file.merge import _deep_merge
@@ -50,12 +50,14 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
     _content_by_path: ClassVar[dict[Path, YAMLDocument | None]] = {}
 
+    @override
     def __enter__(self) -> Self:
         try:
             return super().__enter__()
         except UnexpectedFileOpenError as err:
             raise UnexpectedYAMLOpenError(err) from None
 
+    @override
     def read_file(self) -> YAMLDocument:
         try:
             return super().read_file()
@@ -67,6 +69,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
             msg = f"Failed to decode '{self.name}':\n{err}"
             raise YAMLDecodeError(msg) from None
 
+    @override
     def _dump_content(self) -> str:
         """Return the content of the document as a string."""
         if self._content is None:
@@ -79,17 +82,21 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
             content = output.getvalue()
         return content
 
+    @override
     def get(self) -> YAMLDocument:
         return super().get()
 
+    @override
     def commit(self, document: YAMLDocument) -> None:
         return super().commit(document)
 
+    @override
     def _parse_content(self, content: str) -> YAMLDocument:
         """Parse the content of the document."""
         return _get_yaml_document(StringIO(content), guess_indent=True)
 
     @property
+    @override
     def _content(self) -> YAMLDocument | None:
         return self._content_by_path.get(self.path)
 
@@ -97,12 +104,14 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
     def _content(self, value: YAMLDocument | None) -> None:
         self._content_by_path[self.path] = value
 
+    @override
     def _validate_lock(self) -> None:
         try:
             super()._validate_lock()
         except UnexpectedFileIOError as err:
             raise UnexpectedYAMLIOError(err) from None
 
+    @override
     def __contains__(self, keys: Sequence[Key]) -> bool:
         """Check if the YAML file contains a value.
 
@@ -126,6 +135,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         return True
 
+    @override
     def __getitem__(self, item: Sequence[Key]) -> object:
         keys = item
         keys = _validate_keys(keys)
@@ -145,6 +155,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         return d
 
+    @override
     def set_value(
         self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
@@ -210,6 +221,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
         )
         self.commit(self._content)
 
+    @override
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Delete a value in the TOML file.
 
@@ -279,6 +291,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
         )
         self.commit(self._content)
 
+    @override
     def extend_list(self, *, keys: Sequence[Key], values: Sequence[Any]) -> None:
         """Extend a list in the configuration file."""
         if not keys:
@@ -327,6 +340,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
         )
         self.commit(self._content)
 
+    @override
     def remove_from_list(self, *, keys: Sequence[Key], values: Sequence[Any]) -> None:
         """Remove values from a list in the configuration file."""
         if not keys:

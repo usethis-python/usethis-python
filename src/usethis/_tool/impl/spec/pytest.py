@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 class PytestToolSpec(ToolSpec):
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="pytest",
@@ -35,16 +36,19 @@ class PytestToolSpec(ToolSpec):
             rule_config=RuleConfig(selected=["PT"], nontests_unmanaged_ignored=["PT"]),
         )
 
+    @override
     @final
     def raw_cmd(self) -> str:
         return "pytest"
 
+    @override
     @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return PytestINIManager()
 
+    @override
     @final
     def config_spec(self) -> ConfigSpec:
         # https://docs.pytest.org/en/stable/reference/customize.html#configuration-file-formats

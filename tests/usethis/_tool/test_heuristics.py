@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from typing_extensions import override
+
 from usethis._console import how_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema
@@ -16,12 +18,15 @@ class SimpleTool(Tool):
     """Minimal tool for testing is_likely_used."""
 
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(name="simple_tool", managed_files=[Path("simple_tool.cfg")])
 
+    @override
     def print_how_to_use(self) -> None:
         how_print("How to use simple_tool")
 
+    @override
     def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
             schema.UriRepo(
@@ -31,6 +36,7 @@ class SimpleTool(Tool):
             requires_venv=False,
         )
 
+    @override
     def config_spec(self) -> ConfigSpec:
         return ConfigSpec(
             file_manager_by_relative_path={
@@ -104,9 +110,11 @@ class TestIsLikelyUsed:
         # Arrange - a tool with empty config spec
         class EmptyConfigTool(Tool):
             @property
+            @override
             def meta(self) -> ToolMeta:
                 return ToolMeta(name="empty_tool")
 
+            @override
             def print_how_to_use(self) -> None:
                 how_print("How to use empty_tool")
 

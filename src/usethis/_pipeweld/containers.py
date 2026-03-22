@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from pydantic import BaseModel, RootModel
+from typing_extensions import override
 
 _HASH_SALT = "e6fdde87-adc6-42f6-8e66-4aabe4ba05f2"
 
 
 class Series(RootModel[list["Series | Parallel | DepGroup | str"]]):
+    @override
     def __hash__(self):
         return hash((_HASH_SALT, tuple(self.root)))
 
@@ -15,6 +17,7 @@ class Series(RootModel[list["Series | Parallel | DepGroup | str"]]):
     def __setitem__(self, item: int, value: Series | Parallel | DepGroup | str) -> None:
         self.root[item] = value
 
+    @override
     def __eq__(self, other: object):
         if not isinstance(other, Series):
             return False
@@ -25,12 +28,14 @@ class Series(RootModel[list["Series | Parallel | DepGroup | str"]]):
 
 
 class Parallel(RootModel[frozenset["Series | Parallel | DepGroup | str"]]):
+    @override
     def __hash__(self):
         return hash((_HASH_SALT, frozenset(self)))
 
     def __or__(self, other: Parallel) -> Parallel:
         return Parallel(self.root | other.root)
 
+    @override
     def __eq__(self, other: object):
         if not isinstance(other, Parallel):
             return False
@@ -47,6 +52,7 @@ class DepGroup(BaseModel):
     series: Series
     config_group: str
 
+    @override
     def __hash__(self):
         return hash((_HASH_SALT, hash(self.series), self.config_group))
 

@@ -11,7 +11,7 @@ from pydantic import TypeAdapter, ValidationError
 from tomlkit import TOMLDocument
 from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._file.merge import _deep_merge
 from usethis._file.toml.errors import (
@@ -48,12 +48,14 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
     _content_by_path: ClassVar[dict[Path, TOMLDocument | None]] = {}
 
+    @override
     def __enter__(self) -> Self:
         try:
             return super().__enter__()
         except UnexpectedFileOpenError as err:
             raise UnexpectedTOMLOpenError(err) from None
 
+    @override
     def read_file(self) -> TOMLDocument:
         try:
             return super().read_file()
@@ -65,6 +67,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
             msg = f"Failed to decode '{self.name}':\n{err}"
             raise TOMLDecodeError(msg) from None
 
+    @override
     def _dump_content(self) -> str:
         if self._content is None:
             msg = "Content is None, cannot dump."
@@ -72,16 +75,20 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         return tomlkit.api.dumps(self._content)
 
+    @override
     def _parse_content(self, content: str) -> TOMLDocument:
         return tomlkit.api.parse(content)
 
+    @override
     def get(self) -> TOMLDocument:
         return super().get()
 
+    @override
     def commit(self, document: TOMLDocument) -> None:
         return super().commit(document)
 
     @property
+    @override
     def _content(self) -> TOMLDocument | None:
         return super()._content
 
@@ -89,12 +96,14 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
     def _content(self, value: TOMLDocument | None) -> None:
         self._content_by_path[self.path] = value
 
+    @override
     def _validate_lock(self) -> None:
         try:
             super()._validate_lock()
         except UnexpectedFileIOError as err:
             raise UnexpectedTOMLIOError(err) from None
 
+    @override
     def __contains__(self, keys: Sequence[Key]) -> bool:
         """Check if the TOML file contains a value.
 
@@ -115,6 +124,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         return True
 
+    @override
     def __getitem__(self, item: Sequence[Key]) -> object:
         keys = item
         keys = _validate_keys(keys)
@@ -134,6 +144,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         return d
 
+    @override
     def set_value(
         self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
@@ -195,6 +206,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         self.commit(toml_document)
 
+    @override
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Delete a value in the TOML file.
 
@@ -262,6 +274,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         self.commit(toml_document)
 
+    @override
     def extend_list(self, *, keys: Sequence[Key], values: Sequence[Any]) -> None:
         if not keys:
             msg = "At least one ID key must be provided."
@@ -315,6 +328,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
 
         self.commit(toml_document)
 
+    @override
     def remove_from_list(self, *, keys: Sequence[Key], values: Collection[Any]) -> None:
         """Remove values from a list in the TOML file.
 

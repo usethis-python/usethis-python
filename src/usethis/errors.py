@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing_extensions import override
+
 
 class UsethisError(Exception):
     """Base class for all errors."""
@@ -24,6 +26,7 @@ class FileDecodeError(FileConfigError):
     """Raised when a file is unexpectedly not decodable."""
 
     @property
+    @override
     def name(self) -> str:
         """The name of the file that could not be decoded.
 

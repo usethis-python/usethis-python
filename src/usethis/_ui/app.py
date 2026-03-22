@@ -9,6 +9,7 @@ import usethis._ui.interface.ci
 import usethis._ui.interface.doc
 import usethis._ui.interface.docstyle
 import usethis._ui.interface.format_
+import usethis._ui.interface.hook
 import usethis._ui.interface.init
 import usethis._ui.interface.lint
 import usethis._ui.interface.list
@@ -52,6 +53,12 @@ app.command(
     rich_help_panel=rich_help_panel,
 )(
     usethis._ui.interface.format_.format_,
+)
+app.command(
+    help="Add or configure a recommended git hook framework.",
+    rich_help_panel=rich_help_panel,
+)(
+    usethis._ui.interface.hook.hook,
 )
 app.command(
     help="Add or configure recommended linters.", rich_help_panel=rich_help_panel

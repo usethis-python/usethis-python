@@ -12,14 +12,14 @@ from usethis._ui.app import app
 
 class TestInit:
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_pre_commit_included(self, tmp_path: Path):
+    def test_hook_included(self, tmp_path: Path):
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
             if not usethis_config.offline:
-                result = runner.invoke_safe(app, ["init", "--pre-commit"])
+                result = runner.invoke_safe(app, ["init", "--hook"])
             else:
-                result = runner.invoke_safe(app, ["init", "--pre-commit", "--offline"])
+                result = runner.invoke_safe(app, ["init", "--hook", "--offline"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -29,7 +29,7 @@ class TestInit:
             "✔ Writing 'README.md'.\n"
             "☐ Populate 'README.md' to help users understand the project.\n"
             "✔ Setting the development status to '1 - Planning'.\n"
-            "✔ Adding the pre-commit framework.\n"
+            "✔ Adding a recommended git hook framework.\n"
             "☐ Run 'uv run pre-commit run -a' to run the hooks manually.\n"
             "✔ Adding recommended documentation tools.\n"
             "☐ Run 'uv run mkdocs build' to build the documentation.\n"
@@ -100,7 +100,7 @@ class TestInit:
                     "bitbucket",
                     "--docstyle",
                     "numpy",
-                    "--pre-commit",
+                    "--hook",
                     "--status",
                     "production",
                 ],
@@ -114,7 +114,7 @@ class TestInit:
             "✔ Writing 'README.md'.\n"
             "☐ Populate 'README.md' to help users understand the project.\n"
             "✔ Setting the development status to '5 - Production/Stable'.\n"
-            "✔ Adding the pre-commit framework.\n"
+            "✔ Adding a recommended git hook framework.\n"
             "☐ Run 'uv run pre-commit run -a' to run the hooks manually.\n"
             "✔ Adding recommended documentation tools.\n"
             "☐ Run 'uv run mkdocs build' to build the documentation.\n"

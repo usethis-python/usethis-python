@@ -3617,7 +3617,7 @@ docstring-code-format = true
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_ruf059_ignored_in_tests(self, uv_init_dir: Path):
-            # https://github.com/usethis-python/usethis-python/issues/907
+            # https://github.com/usethis-python/usethis-python/issues/1186
             # Arrange
             (uv_init_dir / "tests").mkdir()
 

@@ -86,6 +86,45 @@ class TestRuff:
         assert result.exit_code == 0, result.output
 
 
+class TestTy:
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["ty"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_remove(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["ty", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_show(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["ty", "--show"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == "[![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)\n"
+        )
+
+
 class TestSocket:
     def test_add(self, tmp_path: Path):
         # Act

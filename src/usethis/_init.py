@@ -15,7 +15,6 @@ from usethis._integrations.project.name import get_project_name
 from usethis._types.backend import BackendEnum
 from usethis._types.build_backend import BuildBackendEnum
 
-
 _BUILD_SYSTEM_CONFIG: dict[BuildBackendEnum, tuple[list[str], str]] = {
     BuildBackendEnum.hatch: (["hatchling"], "hatchling.build"),
     BuildBackendEnum.uv: (["uv_build>=0.10.12,<0.11.0"], "uv_build"),

@@ -111,10 +111,7 @@ class TestProjectInit:
             project_init()
 
             # Assert
-            assert (
-                manager[["build-system", "build-backend"]]
-                == "setuptools.build_meta"
-            )
+            assert manager[["build-system", "build-backend"]] == "setuptools.build_meta"
 
     def test_build_backend_uv_for_uv_backend(self, tmp_path: Path):
         with (

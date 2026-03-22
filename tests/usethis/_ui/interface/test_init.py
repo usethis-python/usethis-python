@@ -229,9 +229,7 @@ class TestInit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app, ["init", "--build-backend", "uv"]
-            )
+            result = runner.invoke_safe(app, ["init", "--build-backend", "uv"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -243,9 +241,7 @@ class TestInit:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app, ["init", "--build-backend", "flit"]
-            )
+            result = runner.invoke_safe(app, ["init", "--build-backend", "flit"])
 
         # Assert
         assert result.exit_code == 0, result.output

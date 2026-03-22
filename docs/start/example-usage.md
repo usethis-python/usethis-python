@@ -11,7 +11,6 @@ You can also configure individual tools one-by-one. For example, to add Ruff on 
 
 <!--
 ```python
-import shutil
 import tempfile
 from pathlib import Path
 
@@ -25,8 +24,8 @@ from usethis._ui.interface.tool import app
 _cached_warn_print.cache_clear()
 get_icon_mode.cache_clear()
 
-tmpdir = Path(tempfile.mkdtemp())
-try:
+with tempfile.TemporaryDirectory() as tmpdir:
+    tmpdir = Path(tmpdir)
     with change_cwd(tmpdir):
         call_uv_subprocess(
             ["init", "--lib", "--python", "3.13", "--vcs", "none"],
@@ -49,8 +48,6 @@ try:
         "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
         "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
     )
-finally:
-    shutil.rmtree(tmpdir)
 ```
 -->
 
@@ -70,7 +67,6 @@ As another example, to use pytest, run:
 
 <!--
 ```python
-import shutil
 import tempfile
 from pathlib import Path
 
@@ -82,8 +78,8 @@ from usethis._ui.interface.tool import app
 _cached_warn_print.cache_clear()
 get_icon_mode.cache_clear()
 
-tmpdir = Path(tempfile.mkdtemp())
-try:
+with tempfile.TemporaryDirectory() as tmpdir:
+    tmpdir = Path(tmpdir)
     (tmpdir / "pyproject.toml").write_text(
         "[project]\n"
         'name = "example"\n'
@@ -108,8 +104,6 @@ try:
         "☐ Add test functions with the format 'test_*()'.\n"
         "☐ Run 'uv run pytest' to run the tests.\n"
     )
-finally:
-    shutil.rmtree(tmpdir)
 ```
 -->
 

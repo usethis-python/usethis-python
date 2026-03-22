@@ -75,6 +75,7 @@ Additionally, the command line reference documentation can be viewed with `useth
 - [`usethis lint`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
 - [`usethis spellcheck`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
 - [`usethis test`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest) with [Coverage.py](https://github.com/nedbat/coveragepy)).
+- [`usethis typecheck`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-typecheck) — Add/Configure a recommended type checker (namely, [ty](https://docs.astral.sh/ty/)).
 - [`usethis tool`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-tool) — Add/Configure specific tools individually.
   - [`usethis tool codespell`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.
   - [`usethis tool deptry`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.
@@ -82,6 +83,7 @@ Additionally, the command line reference documentation can be viewed with `useth
   - [`usethis tool pre-commit`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
   - [`usethis tool pyproject-fmt`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [pyproject-fmt formatter](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
   - [`usethis tool ruff`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+  - [`usethis tool ty`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use [ty](https://docs.astral.sh/ty/): an extremely fast Python type checker.
   - [`usethis tool coverage.py`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
   - [`usethis tool pytest`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
   - [`usethis tool mkdocs`](https://usethis.readthedocs.io/en/stable/cli/reference#documentation) - Use [MkDocs](https://www.mkdocs.org/): Generate project documentation sites with Markdown.
@@ -173,13 +175,7 @@ If you're not interested in templating automations, then [configurator](https://
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Socket](https://badge.socket.dev/pypi/package/usethis)](https://socket.dev/pypi/package/usethis/overview)
 
-### Roadmap
-
-Major features planned are:
-
-- Support for a typechecker (likely ty, [#838](https://github.com/usethis-python/usethis-python/issues/838)).
-
-Other features are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.
+Feature requests are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.
 
 ### Contributing
 

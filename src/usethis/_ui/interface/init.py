@@ -33,6 +33,11 @@ def init(
         "--test/--no-test",
         help="Add a recommended testing framework.",
     ),
+    typecheck: bool = typer.Option(
+        True,
+        "--typecheck/--no-typecheck",
+        help="Add a recommended type checker.",
+    ),
     pre_commit: bool = typer.Option(
         False,
         "--pre-commit/--no-pre-commit",
@@ -93,6 +98,7 @@ def init(
                 lint=lint,
                 spellcheck=spellcheck,
                 test=test,
+                typecheck=typecheck,
                 pre_commit=pre_commit,
                 ci=ci,
                 docstyle=docstyle,
@@ -110,6 +116,7 @@ def _init(  # noqa: PLR0915
     lint: bool,
     spellcheck: bool,
     test: bool,
+    typecheck: bool,
     pre_commit: bool,
     ci: CIServiceEnum | None,
     docstyle: DocStyleEnum | None,
@@ -127,6 +134,7 @@ def _init(  # noqa: PLR0915
     from usethis._toolset.lint import use_linters
     from usethis._toolset.spellcheck import use_spellcheckers
     from usethis._toolset.test import use_test_frameworks
+    from usethis._toolset.typecheck import use_typecheckers
 
     project_init()
     add_readme()
@@ -170,6 +178,11 @@ def _init(  # noqa: PLR0915
         with usethis_config.set(instruct_only=True):
             use_test_frameworks()
         use_test_frameworks(how=True)
+    if typecheck:
+        tick_print("Adding recommended type checkers.")
+        with usethis_config.set(instruct_only=True):
+            use_typecheckers()
+        use_typecheckers(how=True)
 
     if ci is not None:
         assert isinstance(ci, CIServiceEnum)

@@ -11,6 +11,7 @@
 - [`usethis lint`](reference.md#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
 - [`usethis spellcheck`](reference.md#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
 - [`usethis test`](reference.md#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest) with [Coverage.py](https://github.com/nedbat/coveragepy)).
+- [`usethis typecheck`](reference.md#usethis-typecheck) — Add/Configure a recommended type checker (namely, [ty](https://docs.astral.sh/ty/)).
 - [`usethis tool`](reference.md#usethis-tool) — Add/Configure specific tools individually.
   - [`usethis tool codespell`](reference.md#code-quality-tools) - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.
   - [`usethis tool deptry`](reference.md#code-quality-tools) - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.
@@ -18,6 +19,7 @@
   - [`usethis tool pre-commit`](reference.md#code-quality-tools) - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
   - [`usethis tool pyproject-fmt`](reference.md#code-quality-tools) - Use the [pyproject-fmt formatter](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
   - [`usethis tool ruff`](reference.md#code-quality-tools) - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+  - [`usethis tool ty`](reference.md#code-quality-tools) - Use [ty](https://docs.astral.sh/ty/): an extremely fast Python type checker.
   - [`usethis tool coverage.py`](reference.md#testing) - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
   - [`usethis tool pytest`](reference.md#testing) - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
   - [`usethis tool mkdocs`](reference.md#documentation) - Use [MkDocs](https://www.mkdocs.org/): Generate project documentation sites with Markdown.

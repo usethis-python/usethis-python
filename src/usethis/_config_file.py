@@ -27,6 +27,7 @@ def files_manager() -> Iterator[None]:
         DotCoverageRCManager(),
         DotCoverageRCTOMLManager(),
         DotRuffTOMLManager(),
+        DotTyTOMLManager(),
         DotPytestINIManager(),
         DotImportLinterManager(),
         MkDocsYMLManager(),
@@ -34,6 +35,7 @@ def files_manager() -> Iterator[None]:
         PytestINIManager(),
         RuffTOMLManager(),
         ToxINIManager(),
+        TyTOMLManager(),
         UVTOMLManager(),
     ):
         yield
@@ -117,3 +119,19 @@ class ToxINIManager(INIFileManager):
     @property
     def relative_path(self) -> Path:
         return Path("tox.ini")
+
+
+class DotTyTOMLManager(TOMLFileManager):
+    """Class to manage the .ty.toml file."""
+
+    @property
+    def relative_path(self) -> Path:
+        return Path(".ty.toml")
+
+
+class TyTOMLManager(TOMLFileManager):
+    """Class to manage the ty.toml file."""
+
+    @property
+    def relative_path(self) -> Path:
+        return Path("ty.toml")

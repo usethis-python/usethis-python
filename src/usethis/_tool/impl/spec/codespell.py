@@ -22,7 +22,7 @@ from usethis._types.deps import Dependency
 if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
 
-_CODESPELL_VERSION = "v2.4.1"  # Manually bump this version when necessary
+_CODESPELL_VERSION = "v2.4.2"  # Manually bump this version when necessary
 
 
 class CodespellToolSpec(ToolSpec):

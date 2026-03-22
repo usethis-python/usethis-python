@@ -15,6 +15,7 @@ from usethis._tool.impl.base.pyproject_fmt import PyprojectFmtTool
 from usethis._tool.impl.base.pytest import PytestTool
 from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
+from usethis._tool.impl.base.ty import TyTool
 from usethis._tool.impl.spec.pyproject_toml import PyprojectTOMLToolSpec
 
 OTHER_TOOLS: list[Tool] = [
@@ -28,6 +29,7 @@ OTHER_TOOLS: list[Tool] = [
     PytestTool(),
     RequirementsTxtTool(),
     RuffTool(),
+    TyTool(),
 ]
 
 

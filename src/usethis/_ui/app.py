@@ -19,6 +19,7 @@ import usethis._ui.interface.spellcheck
 import usethis._ui.interface.status
 import usethis._ui.interface.test
 import usethis._ui.interface.tool
+import usethis._ui.interface.typecheck
 import usethis._ui.interface.version
 
 app = typer.Typer(
@@ -68,6 +69,12 @@ app.command(
     rich_help_panel=rich_help_panel,
 )(
     usethis._ui.interface.test.test,
+)
+app.command(
+    help="Add or configure a recommended type checker.",
+    rich_help_panel=rich_help_panel,
+)(
+    usethis._ui.interface.typecheck.typecheck,
 )
 app.add_typer(
     usethis._ui.interface.ci.app,

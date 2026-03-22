@@ -13,6 +13,7 @@ from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
 from usethis._tool.impl.base.pytest import PytestTool
 from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
+from usethis._tool.impl.base.ty import TyTool
 
 SupportedToolType: TypeAlias = (
     CodespellTool
@@ -26,6 +27,7 @@ SupportedToolType: TypeAlias = (
     | PytestTool
     | RequirementsTxtTool
     | RuffTool
+    | TyTool
 )
 
 ALL_TOOLS: list[SupportedToolType] = [
@@ -41,4 +43,5 @@ ALL_TOOLS: list[SupportedToolType] = [
     PytestTool(),
     RequirementsTxtTool(),
     RuffTool(),
+    TyTool(),
 ]

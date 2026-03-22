@@ -12,8 +12,8 @@ from usethis._tool.impl.spec.mkdocs import MkDocsToolSpec
 from usethis._types.backend import BackendEnum
 
 
+@final
 class MkDocsTool(MkDocsToolSpec, Tool):
-    @final
     def print_how_to_use(self) -> None:
         backend = get_backend()
         if backend is BackendEnum.uv and is_uv_used():

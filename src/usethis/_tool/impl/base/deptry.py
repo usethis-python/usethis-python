@@ -16,15 +16,14 @@ if TYPE_CHECKING:
     from usethis._io import KeyValueFileManager
 
 
+@final
 class DeptryTool(DeptryToolSpec, Tool):
-    @final
     def select_rules(self, rules: Sequence[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
         if rules:
             info_print(f"All {self.name} rules are always implicitly selected.")
         return False
 
-    @final
     def selected_rules(self) -> list[Rule]:
         """No notion of selection for deptry.
 
@@ -33,12 +32,10 @@ class DeptryTool(DeptryToolSpec, Tool):
         """
         return []
 
-    @final
     def deselect_rules(self, rules: Sequence[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
         return False
 
-    @final
     def ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
@@ -49,7 +46,6 @@ class DeptryTool(DeptryToolSpec, Tool):
 
         return rules
 
-    @final
     def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):

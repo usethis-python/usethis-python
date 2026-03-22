@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import final
 
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -20,21 +20,25 @@ from usethis._types.deps import Dependency
 class DeptryToolSpec(ToolSpec):
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="deptry",
             url="https://github.com/fpgmaas/deptry",
         )
 
+    @override
     @final
     def raw_cmd(self) -> str:
         _dir = get_source_dir_str()
         return f"deptry {_dir}"
 
+    @override
     @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="deptry")]
 
+    @override
     @final
     def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()
@@ -79,6 +83,7 @@ class DeptryToolSpec(ToolSpec):
         else:
             assert_never(backend)
 
+    @override
     @final
     def config_spec(self) -> ConfigSpec:
         # https://deptry.com/usage/#configuration

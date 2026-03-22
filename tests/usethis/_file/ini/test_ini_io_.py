@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from configupdater import ConfigUpdater
+from typing_extensions import override
 
 from usethis._file.ini.errors import (
     INIDecodeError,
@@ -24,6 +25,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -44,6 +46,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("invalid.ini")
 
@@ -62,6 +65,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("non_existent.ini")
 
@@ -77,6 +81,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -91,6 +96,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -111,6 +117,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -130,6 +137,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -143,6 +151,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -157,6 +166,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -174,6 +184,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -191,6 +202,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -208,6 +220,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -225,6 +238,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -242,6 +256,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -259,6 +274,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -273,6 +289,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -290,6 +307,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -307,6 +325,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -324,6 +343,7 @@ class TestINIFileManager:
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -346,6 +366,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -361,6 +382,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -378,6 +400,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -395,6 +418,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -413,6 +437,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -432,6 +457,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -451,6 +477,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -468,6 +495,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -485,6 +513,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -502,6 +531,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -520,6 +550,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -547,6 +578,7 @@ key = value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -578,6 +610,7 @@ key = other
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -607,6 +640,7 @@ other_key=other_value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -631,6 +665,7 @@ key = new_value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -662,6 +697,7 @@ key = other
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -693,6 +729,7 @@ new_key = new_value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -720,6 +757,7 @@ key = other
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -758,6 +796,7 @@ key = new_value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -792,6 +831,7 @@ key2 = new_value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -816,6 +856,7 @@ key2 = new_value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -839,6 +880,7 @@ key = value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -862,6 +904,7 @@ key = value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -886,6 +929,7 @@ key = new_value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -910,6 +954,7 @@ key = value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -933,6 +978,7 @@ key =
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -958,6 +1004,7 @@ key =
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -983,6 +1030,7 @@ key =
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1011,6 +1059,7 @@ key =
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1038,6 +1087,7 @@ new_key = new_value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1060,6 +1110,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1088,6 +1139,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1115,6 +1167,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1138,6 +1191,7 @@ key1 = value1
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1161,6 +1215,7 @@ key1 = value1
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1183,6 +1238,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1213,6 +1269,7 @@ key1 = value1
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1231,6 +1288,7 @@ key1 = value1
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1261,6 +1319,7 @@ key3 = value3
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1282,6 +1341,7 @@ key_that = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1312,6 +1372,7 @@ key = value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1342,6 +1403,7 @@ other = value3
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1371,6 +1433,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1392,6 +1455,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1413,6 +1477,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1435,6 +1500,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1458,6 +1524,7 @@ key = new_value
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1487,6 +1554,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1522,6 +1590,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1543,6 +1612,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1564,6 +1634,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1586,6 +1657,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1603,6 +1675,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1623,6 +1696,7 @@ key2 = value2
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 
@@ -1647,6 +1721,7 @@ key1 =
             # Arrange
             class MyINIFileManager(INIFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("valid.ini")
 

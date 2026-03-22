@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from typing_extensions import override
+
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLDecodeError,
     PyprojectTOMLNotFoundError,
@@ -35,15 +37,18 @@ class PyprojectTOMLManager(TOMLFileManager):
     """Manages the pyproject.toml file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path("pyproject.toml")
 
+    @override
     def __enter__(self) -> Self:
         try:
             return super().__enter__()
         except UnexpectedTOMLOpenError as err:
             raise UnexpectedPyprojectTOMLOpenError(err) from None
 
+    @override
     def read_file(self) -> TOMLDocument:
         try:
             return super().read_file()
@@ -54,12 +59,14 @@ class PyprojectTOMLManager(TOMLFileManager):
         except TOMLDecodeError as err:
             raise PyprojectTOMLDecodeError(err) from None
 
+    @override
     def _validate_lock(self) -> None:
         try:
             super()._validate_lock()
         except UnexpectedTOMLIOError as err:
             raise UnexpectedPyprojectTOMLIOError(err) from None
 
+    @override
     def set_value(
         self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
@@ -69,6 +76,7 @@ class PyprojectTOMLManager(TOMLFileManager):
         except TOMLValueAlreadySetError as err:
             raise PyprojectTOMLValueAlreadySetError(err) from None
 
+    @override
     def __delitem__(self, keys: Sequence[Key]) -> None:
         """Remove a value from the pyproject.toml configuration file."""
         try:

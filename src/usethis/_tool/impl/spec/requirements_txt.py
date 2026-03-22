@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import final
 
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
 from usethis._integrations.pre_commit import schema as pre_commit_schema
@@ -16,6 +16,7 @@ from usethis._types.backend import BackendEnum
 class RequirementsTxtToolSpec(ToolSpec):
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="requirements.txt",
@@ -23,6 +24,7 @@ class RequirementsTxtToolSpec(ToolSpec):
             managed_files=[Path("requirements.txt")],
         )
 
+    @override
     @final
     def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()

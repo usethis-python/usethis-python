@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
+from typing_extensions import override
+
 from usethis._config_file import MkDocsYMLManager
 from usethis._integrations.project.name import get_project_name
 from usethis._tool.base import ToolMeta, ToolSpec
@@ -16,6 +18,7 @@ if TYPE_CHECKING:
 class MkDocsToolSpec(ToolSpec):
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="MkDocs",
@@ -23,6 +26,7 @@ class MkDocsToolSpec(ToolSpec):
             managed_files=[Path("mkdocs.yml")],
         )
 
+    @override
     @final
     def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="mkdocs")]
@@ -32,12 +36,14 @@ class MkDocsToolSpec(ToolSpec):
 
         return deps
 
+    @override
     @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         """If there is no currently active config file, this is the preferred one."""
         # Should set the mkdocs.yml file manager as the preferred one
         return MkDocsYMLManager()
 
+    @override
     @final
     def config_spec(self) -> ConfigSpec:
         """Get the configuration specification for this tool."""

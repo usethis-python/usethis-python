@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
 from usethis._config import usethis_config
@@ -26,6 +26,7 @@ if TYPE_CHECKING:
 class TyToolSpec(ToolSpec):
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="ty",
@@ -33,20 +34,24 @@ class TyToolSpec(ToolSpec):
             managed_files=[Path("ty.toml"), Path(".ty.toml")],
         )
 
+    @override
     @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return TyTOMLManager()
 
+    @override
     @final
     def raw_cmd(self) -> str:
         return "ty check"
 
+    @override
     @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ty")]
 
+    @override
     @final
     def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()
@@ -90,6 +95,7 @@ class TyToolSpec(ToolSpec):
         else:
             assert_never(backend)
 
+    @override
     @final
     def config_spec(self) -> ConfigSpec:
         # https://docs.astral.sh/ty/configuration/

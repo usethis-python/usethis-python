@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from typing_extensions import override
 
 from usethis._config_file import files_manager
 from usethis._console import how_print
@@ -28,9 +29,11 @@ class DefaultTool(Tool):
     """
 
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(name="default_tool")
 
+    @override
     def print_how_to_use(self) -> None:
         how_print("How to use default_tool")
 
@@ -42,6 +45,7 @@ class MyTool(Tool):
     """
 
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="my_tool",
@@ -49,9 +53,11 @@ class MyTool(Tool):
             rule_config=RuleConfig(selected=["MYRULE"]),
         )
 
+    @override
     def print_how_to_use(self) -> None:
         how_print("How to use my_tool")
 
+    @override
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [
             Dependency(name=self.name),
@@ -62,6 +68,7 @@ class MyTool(Tool):
             deps.append(Dependency(name="pytest"))
         return deps
 
+    @override
     def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
             schema.UriRepo(
@@ -71,6 +78,7 @@ class MyTool(Tool):
             requires_venv=False,
         )
 
+    @override
     def config_spec(self) -> ConfigSpec:
         return ConfigSpec(
             file_manager_by_relative_path={
@@ -94,12 +102,15 @@ class MyTool(Tool):
 
 class TwoHooksTool(Tool):
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(name="two_hooks_tool")
 
+    @override
     def print_how_to_use(self) -> None:
         how_print("How to use two_hooks_tool")
 
+    @override
     def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
             schema.UriRepo(
@@ -134,24 +145,31 @@ class MockToolForRuleTests(Tool):
         self._select_keys = select_keys or ["tool", "mocktool", "select"]
 
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(name=self._name)
 
+    @override
     def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
         return {self._file_manager}
 
-    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:  # noqa: ARG002
+    @override
+    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         return self._ignore_keys
 
-    def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:  # noqa: ARG002
+    @override
+    def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:
         return self._select_keys
 
+    @override
     def ignored_rules(self) -> list[Rule]:
         return self._ignored_rules
 
+    @override
     def selected_rules(self) -> list[Rule]:
         return self._selected_rules
 
+    @override
     def print_how_to_use(self) -> None:
         pass
 
@@ -400,12 +418,15 @@ class TestTool:
             # Arrange
             class ThisTool(Tool):
                 @property
+                @override
                 def meta(self) -> ToolMeta:
                     return ToolMeta(name="my_tool")
 
+                @override
                 def print_how_to_use(self) -> None:
                     how_print("How to use my_tool")
 
+                @override
                 def config_spec(self) -> ConfigSpec:
                     # Should use setup.cfg instead of pyproject.toml
                     return ConfigSpec(
@@ -425,6 +446,7 @@ class TestTool:
                         ],
                     )
 
+                @override
                 def preferred_file_manager(self) -> KeyValueFileManager:
                     return SetupCFGManager()
 
@@ -523,14 +545,17 @@ repos:
             # Arrange
             class NoRepoConfigsTool(Tool):
                 @property
+                @override
                 def meta(self) -> ToolMeta:
                     return ToolMeta(name="no_repo_configs_tool")
 
+                @override
                 def pre_commit_config(self) -> PreCommitConfig:
                     return PreCommitConfig(
                         repo_configs=[], inform_how_to_use_on_migrate=False
                     )
 
+                @override
                 def print_how_to_use(self) -> None:
                     how_print("How to use no_repo_configs_tool")
 
@@ -547,12 +572,15 @@ repos:
             # Arrange
             class MultiRepoTool(Tool):
                 @property
+                @override
                 def meta(self) -> ToolMeta:
                     return ToolMeta(name="multi_repo_tool")
 
+                @override
                 def print_how_to_use(self) -> None:
                     how_print("How to use multi_repo_tool")
 
+                @override
                 def pre_commit_config(self) -> PreCommitConfig:
                     return PreCommitConfig(
                         repo_configs=[
@@ -868,12 +896,15 @@ repos:
             # Arrange
             class TwoRepoTool(Tool):
                 @property
+                @override
                 def meta(self) -> ToolMeta:
                     return ToolMeta(name="two_repo_tool")
 
+                @override
                 def print_how_to_use(self) -> None:
                     how_print("How to use two_repo_tool")
 
+                @override
                 def pre_commit_config(self) -> PreCommitConfig:
                     return PreCommitConfig(
                         repo_configs=[
@@ -930,9 +961,11 @@ repos:
             # Arrange
             class NoConfigTool(Tool):
                 @property
+                @override
                 def meta(self) -> ToolMeta:
                     return ToolMeta(name="no_config_tool")
 
+                @override
                 def print_how_to_use(self) -> None:
                     how_print("How to use no_config_tool")
 
@@ -949,12 +982,15 @@ repos:
             # Arrange
             class ThisTool(Tool):
                 @property
+                @override
                 def meta(self) -> ToolMeta:
                     return ToolMeta(name="mytool")
 
+                @override
                 def print_how_to_use(self) -> None:
                     how_print("How to use mytool")
 
+                @override
                 def config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
                         file_manager_by_relative_path={
@@ -1000,12 +1036,15 @@ key = "value"
             # Arrange
             class ThisTool(Tool):
                 @property
+                @override
                 def meta(self) -> ToolMeta:
                     return ToolMeta(name="mytool")
 
+                @override
                 def print_how_to_use(self) -> None:
                     how_print("How to use this_tool")
 
+                @override
                 def config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
                         file_manager_by_relative_path={
@@ -1056,12 +1095,15 @@ root_packages = ["example"]
             # Arrange
             class ThisTool(Tool):
                 @property
+                @override
                 def meta(self) -> ToolMeta:
                     return ToolMeta(name="mytool")
 
+                @override
                 def print_how_to_use(self) -> None:
                     how_print("How to use this_tool")
 
+                @override
                 def config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
                         file_manager_by_relative_path={
@@ -1079,6 +1121,7 @@ root_packages = ["example"]
                         ],
                     )
 
+                @override
                 def preferred_file_manager(self) -> KeyValueFileManager:
                     return SetupCFGManager()
 
@@ -1096,12 +1139,15 @@ root_packages = ["example"]
             # Arrange
             class ThisTool(Tool):
                 @property
+                @override
                 def meta(self) -> ToolMeta:
                     return ToolMeta(name="mytool")
 
+                @override
                 def print_how_to_use(self) -> None:
                     how_print("How to use this_tool")
 
+                @override
                 def config_spec(self) -> ConfigSpec:
                     return ConfigSpec(
                         file_manager_by_relative_path={
@@ -1119,6 +1165,7 @@ root_packages = ["example"]
                         ],
                     )
 
+                @override
                 def preferred_file_manager(self) -> KeyValueFileManager:
                     return SetupCFGManager()
 
@@ -1489,6 +1536,7 @@ key3 = value3
             file_manager = MagicMock()
 
             class MyMock(MockToolForRuleTests):
+                @override
                 def _get_select_keys(
                     self, file_manager: KeyValueFileManager
                 ) -> list[str]:

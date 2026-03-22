@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING
 
 from typer.testing import CliRunner as TyperCliRunner  # noqa: TID251
+from typing_extensions import override
 
 from usethis._config import usethis_config
 
@@ -62,11 +63,12 @@ class CliRunner(TyperCliRunner):
             **extra,
         )
 
-    def invoke(  # noqa: PLR0913
+    @override
+    def invoke(
         self,
         app: Typer,
         args: str | Sequence[str] | None = None,
-        input: bytes | str | IO[str] | None = None,  # noqa: A002
+        input: bytes | str | IO[str] | None = None,
         env: Mapping[str, str] | None = None,
         catch_exceptions: bool = True,
         color: bool = False,

@@ -56,6 +56,8 @@ class TestTypecheck:
         assert result.exit_code == 0, result.output
         assert result.output == (
             "☐ Add the dev dependency 'ty'.\n"
+            "✔ Writing 'ty.toml'.\n"
+            "✔ Adding ty config to 'ty.toml'.\n"
             "☐ Run 'ty check' to run the ty type checker.\n"
         )
 
@@ -72,5 +74,6 @@ class TestTypecheck:
         assert result.exit_code == 0, result.output
         assert result.output == (
             "☐ Add the dev dependency 'ty'.\n"
+            "✔ Adding ty config to 'pyproject.toml'.\n"
             "☐ Run 'ty check' to run the ty type checker.\n"
         )

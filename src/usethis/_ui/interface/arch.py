@@ -20,7 +20,7 @@ def arch(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
-    """Add recommended architecture tools to the project."""
+    """Add recommended architecture analysis tools to the project."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._toolset.arch import use_arch_tools

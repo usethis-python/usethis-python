@@ -15,7 +15,7 @@ from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
 
 def init(
     arch: bool = typer.Option(
-        False, "--arch/--no-arch", help="Add recommended architecture tools."
+        False, "--arch/--no-arch", help="Add recommended architecture analysis tools."
     ),
     doc: bool = typer.Option(
         True, "--doc/--no-doc", help="Add a recommended documentation framework."
@@ -190,7 +190,7 @@ def _init(  # noqa: PLR0915
             use_typecheckers()
         use_typecheckers(how=True)
     if arch:
-        tick_print("Adding recommended architecture tools.")
+        tick_print("Adding recommended architecture analysis tools.")
         with usethis_config.set(instruct_only=True):
             use_arch_tools()
         use_arch_tools(how=True)

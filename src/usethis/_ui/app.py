@@ -42,7 +42,7 @@ app.command(
 
 rich_help_panel = "Manage Tooling"
 app.command(
-    help="Add or configure recommended architecture tools.",
+    help="Add or configure recommended architecture analysis tools.",
     rich_help_panel=rich_help_panel,
 )(
     usethis._ui.interface.arch.arch,

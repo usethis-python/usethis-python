@@ -14,7 +14,7 @@ Initialize a new Python project with recommended defaults, including:
 
 Supported options:
 
-- `--arch` to add recommended architecture tools (but the default is `--no-arch`)
+- `--arch` to add recommended architecture analysis tools (but the default is `--no-arch`)
 - `--doc` to add recommended documentation tools (default; or `--no-doc` to opt-out)
 - `--format` to add recommended formatters (default; or `--no-format` to opt-out)
 - `--lint` to add recommended linters (default; or `--no-lint` to opt-out)
@@ -54,7 +54,7 @@ Supported options:
 
 ## `usethis arch`
 
-Add recommended architecture tools to the project (namely, [Import Linter](https://import-linter.readthedocs.io/en/stable/)), including:
+Add recommended architecture analysis tools to the project (namely, [Import Linter](https://import-linter.readthedocs.io/en/stable/)), including:
 
 - declared & installed dependencies via `uv add`,
 - relevant configuration, and

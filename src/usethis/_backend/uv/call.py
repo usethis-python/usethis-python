@@ -82,10 +82,9 @@ def _prepare_pyproject_write() -> None:
     if is_pyproject_toml and is_locked:
         ensure_pyproject_validity()
         PyprojectTOMLManager().write_file()
-        PyprojectTOMLManager()._content = None  # Basically a cache clear
+        PyprojectTOMLManager().revert()
     elif not is_pyproject_toml and is_locked:
-        # Similarly; cache clear
-        PyprojectTOMLManager()._content = None
+        PyprojectTOMLManager().revert()
     elif is_pyproject_toml:
         with PyprojectTOMLManager():
             ensure_pyproject_validity()

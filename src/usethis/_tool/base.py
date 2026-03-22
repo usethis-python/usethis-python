@@ -500,11 +500,11 @@ class Tool(ToolSpec, Protocol):
         """
         # If pre-commit is being used, we assume the tool is running via pre-commit,
         # and we don't need to add a separate Bitbucket step for it.
-        self._unconditional_update_bitbucket_steps(
+        self.unconditional_update_bitbucket_steps(
             matrix_python=matrix_python, skip_add=is_pre_commit_used()
         )
 
-    def _unconditional_update_bitbucket_steps(
+    def unconditional_update_bitbucket_steps(
         self, *, matrix_python: bool = True, skip_add: bool = False
     ) -> None:
         if not is_bitbucket_used() or not self.is_used():

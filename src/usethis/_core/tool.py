@@ -244,7 +244,7 @@ def _add_bitbucket_linter_steps_to_default() -> None:
         tools: list[Tool] = [PyprojectFmtTool(), DeptryTool(), RuffTool()]
         for tool in tools:
             if tool.is_used():
-                tool._unconditional_update_bitbucket_steps()
+                tool.unconditional_update_bitbucket_steps()
 
 
 def _remove_bitbucket_linter_steps_from_default() -> None:
@@ -441,7 +441,7 @@ def use_ruff(
         # See docstring. Basically, `usethis docstyle` manages the pydocstyle rules,
         # so we want to allow the user to subsequently call `usethis tool ruff` and
         # still get non-minimal default rules.
-        all(tool._is_pydocstyle_rule(rule) for rule in tool.selected_rules())
+        all(tool.is_pydocstyle_rule(rule) for rule in tool.selected_rules())
         # Another situation where we add default rules is when there are no rules
         # selected yet (and we haven't explicitly been requested to add minimal config).
         or not tool.selected_rules()

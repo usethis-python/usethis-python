@@ -28,11 +28,11 @@ def add_caches(cache_by_name: dict[str, schema.Cache]) -> None:
 
     mgr = BitbucketPipelinesYAMLManager()
     model = mgr.model_validate()
-    _add_caches_via_model(cache_by_name, model=model)
+    add_caches_via_model(cache_by_name, model=model)
     mgr.commit_model(model)
 
 
-def _add_caches_via_model(
+def add_caches_via_model(
     cache_by_name: dict[str, schema.Cache], *, model: schema.PipelinesConfiguration
 ) -> None:
     if model.definitions is None:

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import re
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
 from usethis._config import usethis_config
 from usethis.errors import UsethisError
@@ -16,6 +15,8 @@ if TYPE_CHECKING:
     from typing import ClassVar
 
     from typing_extensions import Self
+
+    from usethis._file.types_ import Key
 
 
 DocumentT = TypeVar("DocumentT")
@@ -29,7 +30,7 @@ class UnexpectedFileIOError(UsethisError, IOError):
     """Raised when an unexpected attempt is made to read or write the pyproject.toml file."""
 
 
-class UsethisFileManager(Generic[DocumentT], metaclass=ABCMeta):
+class FileManager(Generic[DocumentT], metaclass=ABCMeta):
     """Manages file access with deferred writes using a context manager.
 
     This class implements the Command Pattern, encapsulating file operations. It defers
@@ -53,7 +54,7 @@ class UsethisFileManager(Generic[DocumentT], metaclass=ABCMeta):
 
     @override
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, UsethisFileManager):
+        if not isinstance(other, FileManager):
             return NotImplemented
 
         return self.relative_path == other.relative_path
@@ -181,10 +182,7 @@ class UsethisFileManager(Generic[DocumentT], metaclass=ABCMeta):
         self._content_by_path.pop(self.path, None)
 
 
-Key: TypeAlias = str | re.Pattern[str]
-
-
-class KeyValueFileManager(UsethisFileManager, Generic[DocumentT], metaclass=ABCMeta):
+class KeyValueFileManager(FileManager, Generic[DocumentT], metaclass=ABCMeta):
     """A manager for files which store (at least some) values in key-value mappings."""
 
     @abstractmethod
@@ -225,30 +223,3 @@ class KeyValueFileManager(UsethisFileManager, Generic[DocumentT], metaclass=ABCM
     ) -> None:
         """Remove values from a list in the configuration file."""
         raise NotImplementedError
-
-
-def print_keys(keys: Sequence[Key]) -> str:
-    r"""Convert a list of keys to a string.
-
-    Args:
-        keys: A list of keys.
-
-    Returns:
-        A string representation of the keys.
-
-    Examples:
-        >>> print_keys(["tool", "ruff", "line-length"])
-        'tool.ruff.line-length'
-        >>> print_keys([re.compile(r"importlinter:contracts:.*")])
-        '<REGEX("importlinter:contracts:.*")>'
-    """
-    components: list[str] = []
-    for key in keys:
-        if isinstance(key, str):
-            components.append(key)
-        elif isinstance(key, re.Pattern):
-            components.append(f'<REGEX("{key.pattern}")>')
-        else:
-            assert_never(key)
-
-    return ".".join(components)

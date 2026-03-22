@@ -7,14 +7,15 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 from pydantic import BaseModel, InstanceOf
 
 from usethis._config import usethis_config
+from usethis._file.manager import KeyValueFileManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.types_ import Key
 from usethis._init import ensure_pyproject_toml
-from usethis._io import Key, KeyValueFileManager
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from usethis._io import UsethisFileManager
+    from usethis._file.manager import FileManager
 
 ResolutionT: TypeAlias = Literal["first", "first_content", "bespoke"]
 
@@ -146,7 +147,7 @@ class ConfigItem(BaseModel):
         return {(usethis_config.cpd() / path).resolve() for path in self.root}
 
 
-def ensure_managed_file_exists(file_manager: UsethisFileManager[object]) -> None:
+def ensure_managed_file_exists(file_manager: FileManager[object]) -> None:
     """Ensure a file manager's managed file exists."""
     if isinstance(file_manager, PyprojectTOMLManager):
         ensure_pyproject_toml()

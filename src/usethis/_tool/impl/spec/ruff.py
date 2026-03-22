@@ -13,7 +13,7 @@ from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._io import KeyValueFileManager
+    from usethis._file.manager import KeyValueFileManager
 
 
 class RuffToolSpec(ToolSpec):

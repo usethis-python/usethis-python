@@ -32,7 +32,7 @@ from usethis._types.backend import BackendEnum
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from usethis._io import KeyValueFileManager
+    from usethis._file.manager import KeyValueFileManager
     from usethis._tool.rule import RuleConfig
 
 _RUFF_VERSION = "v0.15.7"  # Manually bump this version when necessary

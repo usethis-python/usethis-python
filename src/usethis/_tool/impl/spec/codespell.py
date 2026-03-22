@@ -22,7 +22,7 @@ from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._io import KeyValueFileManager
+    from usethis._file.manager import KeyValueFileManager
 
 _CODESPELL_VERSION = "v2.4.2"  # Manually bump this version when necessary
 

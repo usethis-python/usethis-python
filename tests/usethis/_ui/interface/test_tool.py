@@ -446,35 +446,6 @@ class TestRuff:
             else:
                 call_subprocess(["usethis", "tool", "ruff", "--offline"])
 
-    def test_readme_example(self, uv_init_dir: Path):
-        """This example is used the README.md file.
-
-        Note carefully! If this test is updated, the README.md file must be
-        updated too.
-        """
-        # Act
-        runner = CliRunner()
-        with change_cwd(uv_init_dir):
-            result = runner.invoke_safe(app, ["ruff"])
-
-        # Assert
-        assert result.exit_code == 0, result.output
-        assert (
-            result.output
-            # ###################################
-            # See docstring!
-            # ###################################
-            == """\
-✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.
-✔ Adding Ruff config to 'pyproject.toml'.
-✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 
-'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
-✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
-☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
-☐ Run 'uv run ruff format' to run the Ruff formatter.
-"""
-        )
-
     def test_how(self, tmp_path: Path):
         # Act
         runner = CliRunner()
@@ -519,50 +490,6 @@ class TestPytest:
 
         # Assert
         assert result.exit_code == 0, result.output
-
-    def test_readme_example(self, tmp_path: Path):
-        """This example is used the README.md file.
-
-        Note carefully! If this test is updated, the README.md file must be
-        updated too.
-        """
-        # Arrange
-        # We've already run ruff...
-        (tmp_path / "pyproject.toml").write_text("""\
-[project]
-name = "example"
-version = "0.1.0"     
-
-[tool.ruff]
-line-length = 88                                       
-""")
-
-        # Act
-        runner = CliRunner()
-        with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app,
-                [
-                    "pytest",
-                    "--backend=uv",  # N.B. --backend=uv since we've run Ruff and uv would be inferred
-                ],
-            )
-
-        # Assert
-        assert result.exit_code == 0, result.output
-        assert (
-            result.output
-            == """\
-✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.
-✔ Adding pytest config to 'pyproject.toml'.
-✔ Creating '/tests'.
-✔ Writing '/tests/conftest.py'.
-✔ Selecting Ruff rule 'PT' in 'pyproject.toml'.
-☐ Add test files to the '/tests' directory with the format 'test_*.py'.
-☐ Add test functions with the format 'test_*()'.
-☐ Run 'uv run pytest' to run the tests.
-"""
-        )
 
     def test_how(self, tmp_path: Path):
         # Act

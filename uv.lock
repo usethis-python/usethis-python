@@ -1203,6 +1203,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pytest-codeblocks"
+version = "0.17.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a5/99/1ee3017a525dcb36566f0523938fbc20fb33ef8bf957205fafe6659f3a60/pytest_codeblocks-0.17.0.tar.gz", hash = "sha256:446e1babd182f54b4f113d567737a22f5405cade144c08a0085b2985247943d5", size = 11176, upload-time = "2023-09-17T19:17:31.05Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fa/2c/503f797c7ac1e35d81944f8fbcf3ea7a1965e435676570a833035d8d0937/pytest_codeblocks-0.17.0-py3-none-any.whl", hash = "sha256:b2aed8e66c3ce65435630783b391e7c7ae46f80b8220d3fa1bb7c689b36e78ad", size = 7716, upload-time = "2023-09-17T19:17:29.506Z" },
+]
+
+[[package]]
 name = "pytest-codspeed"
 version = "4.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1717,6 +1729,7 @@ test = [
     { name = "coverage", extra = ["toml"] },
     { name = "gitpython" },
     { name = "pytest" },
+    { name = "pytest-codeblocks" },
     { name = "pytest-codspeed" },
     { name = "pytest-cov" },
     { name = "pytest-md" },
@@ -1764,6 +1777,7 @@ test = [
     { name = "coverage", extras = ["toml"], specifier = ">=7.7.1" },
     { name = "gitpython", specifier = ">=3.1.44" },
     { name = "pytest", specifier = ">=8.3.5" },
+    { name = "pytest-codeblocks", specifier = ">=0.17.0" },
     { name = "pytest-codspeed", specifier = ">=3.2.0" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
     { name = "pytest-md", specifier = ">=0.2.0" },

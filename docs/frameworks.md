@@ -1,3 +1,5 @@
+<!--pytest-codeblocks:skipfile-->
+
 # Using Frameworks with usethis
 
 If you are adopting a specific framework like Django, FastAPI, or Dagster, the following approaches may be useful to you. They require that you have `uv` installed. Please [open an issue](https://github.com/usethis-python/usethis-python/issues) is you use a framework which is not listed below.

@@ -1,4 +1,5 @@
 import difflib
+import re
 from pathlib import Path
 
 
@@ -22,7 +23,9 @@ def test_assemble_readme_from_docs(usethis_dev_dir: Path):
 
     parts.append(cli_overview_content)
     parts.append(
-        _get_doc_file(usethis_dev_dir / "docs" / "start" / "example-usage.md")
+        _strip_html_comments(
+            _get_doc_file(usethis_dev_dir / "docs" / "start" / "example-usage.md")
+        )
         .replace(  # README uses absolute links, docs use relative links
             "](detailed-example.md)",
             "](https://usethis.readthedocs.io/en/stable/start/detailed-example)",
@@ -89,3 +92,10 @@ def _demote_headers(content: str) -> str:
         new_lines.append(line)
 
     return "\n".join(new_lines)
+
+
+def _strip_html_comments(content: str) -> str:
+    """Strip HTML comments (e.g. pytest-codeblocks test blocks) and tidy up."""
+    content = re.sub(r"<!--.*?-->\n?", "", content, flags=re.DOTALL)
+    content = re.sub(r"\n{3,}", "\n\n", content)
+    return content

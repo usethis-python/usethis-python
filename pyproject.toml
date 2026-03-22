@@ -71,6 +71,7 @@ test = [
   "coverage[toml]>=7.7.1",
   "gitpython>=3.1.44",
   "pytest>=8.3.5",
+  "pytest-codeblocks>=0.17.0",
   "pytest-codspeed>=3.2.0",
   "pytest-cov>=6.0.0",
   "pytest-md>=0.2.0",
@@ -163,7 +164,7 @@ ignore-words-list = [ "edn" ]
 keep_full_version = true
 
 [tool.pytest.ini_options]
-testpaths = [ "tests", "src" ]
+testpaths = [ "tests", "src", "docs" ]
 addopts = [
   "--import-mode=importlib",
   "-ra",
@@ -171,6 +172,7 @@ addopts = [
   "--strict-config",
   "--strict-markers",
   "--doctest-modules",
+  "--codeblocks",
 ]
 doctest_optionflags = "NORMALIZE_WHITESPACE"
 filterwarnings = [ "error" ]

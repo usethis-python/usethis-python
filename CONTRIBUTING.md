@@ -101,6 +101,8 @@ To ensure the `--quiet` flag is always effective, avoid using simple `print` sta
 The usethis name should not be capitalized (i.e. not Usethis or UseThis), even at the
 beginning of a sentence. It should only be styled in monospace as `usethis` when referring to the command itself.
 
+Similarly, uv should not be styled in monospace as `uv` unless referring to the CLI command itself.
+
 These colours are used in branding materials:
 
 - Green: #00c000

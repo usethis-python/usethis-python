@@ -6,7 +6,7 @@ from typing import Any, TypeVar
 T = TypeVar("T", bound=MutableMapping[Any, Any])
 
 
-def _deep_merge(target: T, source: MutableMapping[Any, Any]) -> T:
+def deep_merge(target: T, source: MutableMapping[Any, Any]) -> T:
     """Recursively merge source into target in place, returning target.
 
     For keys present in both mappings, if both values are mappings the merge is
@@ -18,7 +18,7 @@ def _deep_merge(target: T, source: MutableMapping[Any, Any]) -> T:
             and isinstance(target[key], MutableMapping)
             and isinstance(value, MutableMapping)
         ):
-            _deep_merge(target[key], value)
+            deep_merge(target[key], value)
         else:
             target[key] = value
     return target

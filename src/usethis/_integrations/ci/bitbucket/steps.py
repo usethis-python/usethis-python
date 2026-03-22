@@ -15,7 +15,7 @@ from usethis._integrations.ci.bitbucket.anchor import (
     ScriptItemAnchor,
     anchor_name_from_script_item,
 )
-from usethis._integrations.ci.bitbucket.cache import _add_caches_via_model, remove_cache
+from usethis._integrations.ci.bitbucket.cache import add_caches_via_model, remove_cache
 from usethis._integrations.ci.bitbucket.errors import (
     UnexpectedImportPipelineError,
 )
@@ -412,7 +412,7 @@ def _add_step_caches_via_model(
                 )
                 raise NotImplementedError(msg) from None
             cache_by_name[name] = cache
-        _add_caches_via_model(cache_by_name, model=model)
+        add_caches_via_model(cache_by_name, model=model)
 
 
 def bitbucket_steps_are_equivalent(

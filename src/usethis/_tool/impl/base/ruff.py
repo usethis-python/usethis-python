@@ -322,12 +322,12 @@ class RuffTool(RuffToolSpec, Tool):
         for rule in rules:
             if rule == "ALL":
                 return True
-            if self._is_pydocstyle_rule(rule):
+            if self.is_pydocstyle_rule(rule):
                 return True
         return False
 
     @staticmethod
-    def _is_pydocstyle_rule(rule: Rule) -> bool:
+    def is_pydocstyle_rule(rule: Rule) -> bool:
         return [d for d in rule if d.isalpha()] == ["D"]
 
     @override

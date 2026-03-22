@@ -21,7 +21,7 @@ from usethis._file.manager import (
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
 )
-from usethis._file.merge import _deep_merge
+from usethis._file.merge import deep_merge
 from usethis._file.print_ import print_keys
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
@@ -323,7 +323,7 @@ class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
             for key in reversed(keys):
                 new_content = {key: new_content}
             assert isinstance(new_content, dict)
-            content = _deep_merge(content, new_content)
+            content = deep_merge(content, new_content)
             assert isinstance(content, dict)
         else:
             TypeAdapter(dict).validate_python(p_parent)
@@ -400,7 +400,7 @@ def _set_value_in_existing(
     contents = value
     for key in reversed(keys):
         contents = {key: contents}
-    content = _deep_merge(content, contents)
+    content = deep_merge(content, contents)
 
 
 def _validate_keys(keys: Sequence[Key]) -> list[str]:

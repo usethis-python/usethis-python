@@ -186,7 +186,7 @@ class PytestTool(PytestToolSpec, Tool):
         # need to inform the user
         # Call _unconditional_update_bitbucket_steps directly to bypass the
         # pre-commit check in the base class
-        self._unconditional_update_bitbucket_steps(matrix_python=matrix_python)
+        self.unconditional_update_bitbucket_steps(matrix_python=matrix_python)
 
         backend = get_backend()
 

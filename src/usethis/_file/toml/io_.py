@@ -18,7 +18,7 @@ from usethis._file.manager import (
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
 )
-from usethis._file.merge import _deep_merge
+from usethis._file.merge import deep_merge
 from usethis._file.print_ import print_keys
 from usethis._file.toml.errors import (
     TOMLDecodeError,
@@ -396,7 +396,7 @@ def _set_value_in_existing(
         contents = value
         for key in reversed(keys):
             contents = {key: contents}
-        toml_document = _deep_merge(toml_document, contents)
+        toml_document = deep_merge(toml_document, contents)
         assert isinstance(toml_document, TOMLDocument)
     else:
         # Note that this alternative logic is just to avoid a bug:
@@ -411,7 +411,7 @@ def _set_value_in_existing(
             # https://github.com/usethis-python/usethis-python/issues/558
 
             placeholder = {keys[0]: {keys[1]: {}}}
-            toml_document = _deep_merge(toml_document, placeholder)
+            toml_document = deep_merge(toml_document, placeholder)
 
             contents = value
             for key in reversed(unshared_keys[1:]):

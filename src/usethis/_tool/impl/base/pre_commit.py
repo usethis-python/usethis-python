@@ -77,7 +77,7 @@ class PreCommitTool(PreCommitToolSpec, Tool):
             matrix_python: Whether to use a Python version matrix. When False,
                            only the current development version is used.
         """
-        self._unconditional_update_bitbucket_steps(matrix_python=matrix_python)
+        self.unconditional_update_bitbucket_steps(matrix_python=matrix_python)
 
     @override
     def migrate_config_to_pre_commit(self) -> None:

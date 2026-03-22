@@ -109,6 +109,10 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
         self._validate_lock()
         self._content = document
 
+    def revert(self) -> None:
+        """Clear the stored document without writing to disk."""
+        self._content = None
+
     def write_file(self) -> None:
         """Write the stored document to disk if there are changes."""
         self._validate_lock()

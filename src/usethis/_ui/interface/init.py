@@ -18,9 +18,9 @@ from usethis._ui.options import (
     init_doc_opt,
     init_docstyle_opt,
     init_format_opt,
+    init_hook_opt,
     init_lint_opt,
     init_path_arg,
-    init_pre_commit_opt,
     init_spellcheck_opt,
     init_status_opt,
     init_test_opt,
@@ -38,7 +38,7 @@ def init(
     spellcheck: bool = init_spellcheck_opt,
     test: bool = init_test_opt,
     typecheck: bool = init_typecheck_opt,
-    pre_commit: bool = init_pre_commit_opt,
+    hook: bool = init_hook_opt,
     ci: CIServiceEnum | None = init_ci_opt,
     docstyle: DocStyleEnum | None = init_docstyle_opt,
     status: DevelopmentStatusEnum = init_status_opt,
@@ -81,7 +81,7 @@ def init(
                 spellcheck=spellcheck,
                 test=test,
                 typecheck=typecheck,
-                pre_commit=pre_commit,
+                hook=hook,
                 ci=ci,
                 docstyle=docstyle,
                 status=status,
@@ -100,7 +100,7 @@ def _init(  # noqa: PLR0915
     spellcheck: bool,
     test: bool,
     typecheck: bool,
-    pre_commit: bool,
+    hook: bool,
     ci: CIServiceEnum | None,
     docstyle: DocStyleEnum | None,
     status: DevelopmentStatusEnum,
@@ -110,11 +110,11 @@ def _init(  # noqa: PLR0915
     from usethis._core.docstyle import use_docstyle
     from usethis._core.readme import add_readme
     from usethis._core.status import use_development_status
-    from usethis._core.tool import use_pre_commit
     from usethis._init import project_init
     from usethis._toolset.arch import use_arch_tools
     from usethis._toolset.doc import use_doc_frameworks
     from usethis._toolset.format_ import use_formatters
+    from usethis._toolset.hook import use_hook_framework
     from usethis._toolset.lint import use_linters
     from usethis._toolset.spellcheck import use_spellcheckers
     from usethis._toolset.test import use_test_frameworks
@@ -126,11 +126,11 @@ def _init(  # noqa: PLR0915
     assert isinstance(status, DevelopmentStatusEnum)
     use_development_status(status)
 
-    if pre_commit:
-        tick_print("Adding the pre-commit framework.")
+    if hook:
+        tick_print("Adding a recommended git hook framework.")
         with usethis_config.set(instruct_only=True):
-            use_pre_commit()
-        use_pre_commit(how=True)
+            use_hook_framework()
+        use_hook_framework(how=True)
 
     if doc:
         tick_print("Adding recommended documentation tools.")

@@ -82,10 +82,10 @@ init_typecheck_opt = typer.Option(
     "--typecheck/--no-typecheck",
     help="Add a recommended type checker.",
 )
-init_pre_commit_opt = typer.Option(
+init_hook_opt = typer.Option(
     False,
-    "--pre-commit/--no-pre-commit",
-    help="Add the pre-commit framework for git hooks.",
+    "--hook/--no-hook",
+    help="Add a recommended git hook framework.",
 )
 init_ci_opt = typer.Option(
     None,

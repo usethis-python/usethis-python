@@ -63,7 +63,7 @@ def _ensure_project_name(project: Table) -> None:
     name = get_project_name_from_dir()
 
     tick_print(f"Setting project name to '{name}' in 'pyproject.toml'.")
-    if project._value:
-        project._value._insert_at(0, "name", name)
+    if project.value:
+        project._value._insert_at(0, "name", name)  # pyright: ignore[reportPrivateUsage]
     else:
         project["name"] = name

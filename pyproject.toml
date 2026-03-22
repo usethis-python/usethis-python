@@ -213,7 +213,6 @@ reportExplicitAny = false
 reportImplicitStringConcatenation = false
 reportMissingParameterType = false
 reportMissingTypeArgument = false
-reportPrivateUsage = false
 reportUnknownArgumentType = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
@@ -222,6 +221,7 @@ reportUnusedCallResult = false
 
 [[tool.basedpyright.executionEnvironments]]
 root = "tests"
+reportPrivateUsage = false
 reportUnannotatedClassAttribute = false
 reportUnknownLambdaType = false
 reportUnknownParameterType = false

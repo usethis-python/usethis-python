@@ -7,7 +7,7 @@ from usethis._tool.base import Tool
 from usethis._tool.impl.spec.ty import TyToolSpec
 
 
+@final
 class TyTool(TyToolSpec, Tool):
-    @final
     def print_how_to_use(self) -> None:
         how_print(f"Run '{self.how_to_use_cmd()}' to run the {self.name} type checker.")

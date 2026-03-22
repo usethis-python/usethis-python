@@ -15,15 +15,14 @@ from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 
+@final
 class CoveragePyTool(CoveragePyToolSpec, Tool):
-    @final
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
         if unconditional or is_likely_used(PytestToolSpec()):
             deps += [Dependency(name="pytest-cov")]
         return deps
 
-    @final
     def print_how_to_use(self) -> None:
         backend = get_backend()
 

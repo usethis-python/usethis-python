@@ -12,8 +12,8 @@ from usethis._tool.impl.spec.requirements_txt import RequirementsTxtToolSpec
 from usethis._types.backend import BackendEnum
 
 
+@final
 class RequirementsTxtTool(RequirementsTxtToolSpec, Tool):
-    @final
     def print_how_to_use(self) -> None:
         install_method = self.get_install_method()
         backend = get_backend()

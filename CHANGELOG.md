@@ -94,7 +94,7 @@
 
 - By default, usethis will now explicitly include dev dependencies in `requirements.txt` export configuration when using `usethis tool requirements.txt`. Previously this was implicit via the editable install `-e .` declaration.
 
-- There is now a `usethis show backend` command which emits the inferred backend (currently; one of uv or `none`).
+- There is now a `usethis show backend` command which emits the inferred backend (currently; one of `uv` or `none`).
 
 ### 🐞 Bug Fixes
 

@@ -10,65 +10,43 @@ from usethis._types.backend import BackendEnum
 from usethis._types.ci import CIServiceEnum
 from usethis._types.docstyle import DocStyleEnum
 from usethis._types.status import DevelopmentStatusEnum
-from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
+from usethis._ui.options import (
+    backend_opt,
+    frozen_opt,
+    init_arch_opt,
+    init_ci_opt,
+    init_doc_opt,
+    init_docstyle_opt,
+    init_format_opt,
+    init_lint_opt,
+    init_path_arg,
+    init_pre_commit_opt,
+    init_spellcheck_opt,
+    init_status_opt,
+    init_test_opt,
+    init_typecheck_opt,
+    offline_opt,
+    quiet_opt,
+)
 
 
 def init(
-    arch: bool = typer.Option(
-        False, "--arch/--no-arch", help="Add recommended architecture analysis tools."
-    ),
-    doc: bool = typer.Option(
-        True, "--doc/--no-doc", help="Add a recommended documentation framework."
-    ),
-    format_: bool = typer.Option(
-        True, "--format/--no-format", help="Add recommended formatters."
-    ),
-    lint: bool = typer.Option(
-        True, "--lint/--no-lint", help="Add recommended linters."
-    ),
-    spellcheck: bool = typer.Option(
-        True,
-        "--spellcheck/--no-spellcheck",
-        help="Add a recommended spellchecker.",
-    ),
-    test: bool = typer.Option(
-        True,
-        "--test/--no-test",
-        help="Add a recommended testing framework.",
-    ),
-    typecheck: bool = typer.Option(
-        True,
-        "--typecheck/--no-typecheck",
-        help="Add a recommended type checker.",
-    ),
-    pre_commit: bool = typer.Option(
-        False,
-        "--pre-commit/--no-pre-commit",
-        help="Add the pre-commit framework for git hooks.",
-    ),
-    ci: CIServiceEnum | None = typer.Option(
-        None,
-        "--ci",
-        help="Add a CI service configuration.",
-    ),
-    docstyle: DocStyleEnum | None = typer.Option(
-        None,
-        "--docstyle",
-        help="Set a docstring style convention for the project.",
-    ),
-    status: DevelopmentStatusEnum = typer.Option(
-        "planning",
-        "--status",
-        help="Set the development status of the project.",
-    ),
+    arch: bool = init_arch_opt,
+    doc: bool = init_doc_opt,
+    format_: bool = init_format_opt,
+    lint: bool = init_lint_opt,
+    spellcheck: bool = init_spellcheck_opt,
+    test: bool = init_test_opt,
+    typecheck: bool = init_typecheck_opt,
+    pre_commit: bool = init_pre_commit_opt,
+    ci: CIServiceEnum | None = init_ci_opt,
+    docstyle: DocStyleEnum | None = init_docstyle_opt,
+    status: DevelopmentStatusEnum = init_status_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
-    path: str | None = typer.Argument(
-        None,
-        help="The path to use for the project. Defaults to the current working directory.",
-    ),
+    path: str | None = init_path_arg,
 ) -> None:
     """Initialize a new project with recommended tooling."""
     from usethis._config_file import files_manager

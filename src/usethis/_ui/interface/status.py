@@ -5,13 +5,11 @@ import typer
 from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._types.status import DevelopmentStatusEnum
-from usethis._ui.options import backend_opt, quiet_opt
+from usethis._ui.options import backend_opt, quiet_opt, status_arg
 
 
 def status(
-    status: DevelopmentStatusEnum = typer.Argument(
-        default=..., help="Docstring style to enforce."
-    ),
+    status: DevelopmentStatusEnum = status_arg,
     quiet: bool = quiet_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:

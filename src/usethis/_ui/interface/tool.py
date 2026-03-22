@@ -8,8 +8,10 @@ from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._ui.options import (
     backend_opt,
+    formatter_opt,
     frozen_opt,
     how_opt,
+    linter_opt,
     offline_opt,
     quiet_opt,
     remove_opt,
@@ -306,16 +308,8 @@ def ruff(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
-    linter: bool = typer.Option(
-        True,
-        "--linter/--no-linter",
-        help="Add or remove specifically the Ruff linter.",
-    ),
-    formatter: bool = typer.Option(
-        True,
-        "--formatter/--no-formatter",
-        help="Add or remove specifically the Ruff formatter.",
-    ),
+    linter: bool = linter_opt,
+    formatter: bool = formatter_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ruff

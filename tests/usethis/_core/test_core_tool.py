@@ -3629,9 +3629,7 @@ docstring-code-format = true
                 assert "RUF059" in RuffTool().get_ignored_rules_in_glob("tests/**")
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_ruf059_not_ignored_in_tests_without_tests_dir(
-            self, uv_init_dir: Path
-        ):
+        def test_ruf059_not_ignored_in_tests_without_tests_dir(self, uv_init_dir: Path):
             # Arrange - no tests/ directory
 
             # Act

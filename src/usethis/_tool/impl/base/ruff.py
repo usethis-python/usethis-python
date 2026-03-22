@@ -291,9 +291,7 @@ class RuffTool(RuffToolSpec, Tool):
         ):
             # Only add test-related directory ignore rules if the tests directory exists
             if (usethis_config.cpd() / "tests").exists():
-                self.ignore_rules_in_glob(
-                    rule_config.tests_ignored, glob="tests/**"
-                )
+                self.ignore_rules_in_glob(rule_config.tests_ignored, glob="tests/**")
                 self.ignore_rules_in_glob(
                     rule_config.nontests_ignored, glob="!tests/**/*.py"
                 )
@@ -312,9 +310,7 @@ class RuffTool(RuffToolSpec, Tool):
         self.deselect_rules(rule_config.selected)
         self.unignore_rules(rule_config.ignored)
         self.unignore_rules_in_glob(rule_config.tests_ignored, glob="tests/**")
-        self.unignore_rules_in_glob(
-            rule_config.nontests_ignored, glob="!tests/**/*.py"
-        )
+        self.unignore_rules_in_glob(rule_config.nontests_ignored, glob="!tests/**/*.py")
 
     def set_docstyle(self, style: Literal["numpy", "google", "pep257"]) -> None:
         (file_manager,) = self.get_active_config_file_managers()

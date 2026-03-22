@@ -14,7 +14,7 @@ from usethis._tool.rule import Rule
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from usethis._io import KeyValueFileManager
+    from usethis._file.manager import KeyValueFileManager
 
 
 @final

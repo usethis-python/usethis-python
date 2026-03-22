@@ -17,7 +17,7 @@ from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
-    from usethis._io import KeyValueFileManager
+    from usethis._file.manager import KeyValueFileManager
 
 
 class PytestToolSpec(ToolSpec):

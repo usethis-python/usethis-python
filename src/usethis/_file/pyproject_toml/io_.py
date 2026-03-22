@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from tomlkit import TOMLDocument
     from typing_extensions import Self
 
-    from usethis._io import Key
+    from usethis._file.types_ import Key
 
 
 class PyprojectTOMLManager(TOMLFileManager):

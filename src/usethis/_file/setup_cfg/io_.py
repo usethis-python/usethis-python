@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from configupdater import ConfigUpdater as INIDocument
     from typing_extensions import Self
 
-    from usethis._io import Key
+    from usethis._file.types_ import Key
 
 
 class SetupCFGManager(INIFileManager):

@@ -13,7 +13,13 @@ from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
 from typing_extensions import assert_never, override
 
+from usethis._file.manager import (
+    KeyValueFileManager,
+    UnexpectedFileIOError,
+    UnexpectedFileOpenError,
+)
 from usethis._file.merge import _deep_merge
+from usethis._file.print_ import print_keys
 from usethis._file.toml.errors import (
     TOMLDecodeError,
     TOMLNotFoundError,
@@ -23,13 +29,7 @@ from usethis._file.toml.errors import (
     UnexpectedTOMLIOError,
     UnexpectedTOMLOpenError,
 )
-from usethis._io import (
-    Key,
-    KeyValueFileManager,
-    UnexpectedFileIOError,
-    UnexpectedFileOpenError,
-    print_keys,
-)
+from usethis._file.types_ import Key
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Sequence
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from tomlkit.items import Item
     from typing_extensions import Never, Self
 
-    from usethis._io import Key
+    from usethis._file.types_ import Key
 
 
 class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):

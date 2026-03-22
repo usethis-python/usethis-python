@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
+from typing_extensions import override
+
 from usethis._config import usethis_config
 from usethis._config_file import DotCodespellRCManager
 from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
@@ -28,6 +30,7 @@ _CODESPELL_VERSION = "v2.4.2"  # Manually bump this version when necessary
 class CodespellToolSpec(ToolSpec):
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="Codespell",
@@ -35,16 +38,19 @@ class CodespellToolSpec(ToolSpec):
             managed_files=[Path(".codespellrc")],
         )
 
+    @override
     @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotCodespellRCManager()
 
+    @override
     @final
     def raw_cmd(self) -> str:
         return "codespell"
 
+    @override
     @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="codespell")]
@@ -65,6 +71,7 @@ class CodespellToolSpec(ToolSpec):
 
         return deps
 
+    @override
     @final
     def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
@@ -80,6 +87,7 @@ class CodespellToolSpec(ToolSpec):
             requires_venv=False,
         )
 
+    @override
     @final
     def config_spec(self) -> ConfigSpec:
         # https://github.com/codespell-project/codespell?tab=readme-ov-file#using-a-config-file

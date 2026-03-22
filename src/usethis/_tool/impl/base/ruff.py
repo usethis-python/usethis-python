@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, final
 
 from pydantic import TypeAdapter, ValidationError
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
 from usethis._backend.uv.detect import is_uv_used
@@ -39,6 +39,7 @@ _RUFF_VERSION = "v0.15.7"  # Manually bump this version when necessary
 
 
 class RuffTool(RuffToolSpec, Tool):
+    @override
     @final
     def print_how_to_use(self) -> None:
         """Print how to use the Ruff tool."""
@@ -103,6 +104,7 @@ class RuffTool(RuffToolSpec, Tool):
         else:
             assert_never(install_method)
 
+    @override
     @final
     def pre_commit_config(self) -> PreCommitConfig:
         repo_configs: list[PreCommitRepoConfig] = []
@@ -133,6 +135,7 @@ class RuffTool(RuffToolSpec, Tool):
             inform_how_to_use_on_migrate=True,  # The pre-commit commands are not simpler than the venv-based commands
         )
 
+    @override
     @final
     def get_bitbucket_steps(
         self, *, matrix_python: bool = True
@@ -200,6 +203,7 @@ class RuffTool(RuffToolSpec, Tool):
 
         return steps
 
+    @override
     @final
     def selected_rules(self) -> list[Rule]:
         """Get the Ruff rules selected in the project."""
@@ -213,6 +217,7 @@ class RuffTool(RuffToolSpec, Tool):
 
         return rules
 
+    @override
     @final
     def ignored_rules(self) -> list[Rule]:
         """Get the Ruff rules ignored in the project."""
@@ -339,6 +344,7 @@ class RuffTool(RuffToolSpec, Tool):
     def _is_pydocstyle_rule(rule: Rule) -> bool:
         return [d for d in rule if d.isalpha()] == ["D"]
 
+    @override
     @final
     def _get_select_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the keys for the selected rules in the given file manager."""
@@ -349,6 +355,7 @@ class RuffTool(RuffToolSpec, Tool):
         else:
             return super()._get_select_keys(file_manager)
 
+    @override
     @final
     def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""

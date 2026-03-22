@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import final
 
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
 from usethis._config import usethis_config
@@ -13,6 +13,7 @@ from usethis._types.backend import BackendEnum
 
 
 class RequirementsTxtTool(RequirementsTxtToolSpec, Tool):
+    @override
     @final
     def print_how_to_use(self) -> None:
         install_method = self.get_install_method()

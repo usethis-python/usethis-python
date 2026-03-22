@@ -6,6 +6,8 @@ import re
 from dataclasses import dataclass
 from sysconfig import get_python_version as _get_python_version
 
+from typing_extensions import override
+
 
 class PythonVersionParseError(ValueError):
     """Raised when a Python version string cannot be parsed."""
@@ -48,6 +50,7 @@ class PythonVersion:
         """Return (major, minor) as integers."""
         return (int(self.major), int(self.minor))
 
+    @override
     def __str__(self) -> str:
         """Return full version string."""
         if self.patch is None:

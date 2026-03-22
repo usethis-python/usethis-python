@@ -4,6 +4,7 @@ import pytest
 import tomlkit
 import tomlkit.api
 import tomlkit.items
+from typing_extensions import override
 
 from usethis._file.toml.errors import (
     TOMLValueAlreadySetError,
@@ -20,6 +21,7 @@ class TestTOMLFileManager:
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -35,6 +37,7 @@ class TestTOMLFileManager:
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -48,6 +51,7 @@ class TestTOMLFileManager:
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -62,6 +66,7 @@ class TestTOMLFileManager:
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -78,6 +83,7 @@ a = "b"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -98,6 +104,7 @@ a = "b"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -116,6 +123,7 @@ a = "b"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -134,6 +142,7 @@ a = "b"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -177,6 +186,7 @@ convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -258,6 +268,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -274,6 +285,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -294,6 +306,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -313,6 +326,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -331,6 +345,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -347,6 +362,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -366,6 +382,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("myfile.toml")
 
@@ -385,6 +402,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("myfile.toml")
 
@@ -406,6 +424,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -422,6 +441,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -441,6 +461,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -459,6 +480,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -475,6 +497,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -494,6 +517,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("myfile.toml")
 
@@ -511,6 +535,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -529,6 +554,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -545,6 +571,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -561,6 +588,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("myfile.toml")
 
@@ -577,6 +605,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("myfile.toml")
 
@@ -597,6 +626,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -615,6 +645,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -631,6 +662,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -651,6 +683,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -669,6 +702,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("pyproject.toml")
 
@@ -687,6 +721,7 @@ lint.pydocstyle.convention = "pep257"
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
+                @override
                 def relative_path(self) -> Path:
                     return Path("myfile.toml")
 

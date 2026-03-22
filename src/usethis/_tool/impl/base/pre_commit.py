@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, final
 
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
 from usethis._console import how_print
@@ -20,14 +20,17 @@ if TYPE_CHECKING:
 
 
 class PreCommitTool(PreCommitToolSpec, Tool):
+    @override
     @final
     def is_used(self) -> bool:
         return is_pre_commit_used()
 
+    @override
     @final
     def print_how_to_use(self) -> None:
         how_print(f"Run '{self.how_to_use_cmd()}' to run the hooks manually.")
 
+    @override
     @final
     def get_bitbucket_steps(
         self,
@@ -66,6 +69,7 @@ class PreCommitTool(PreCommitToolSpec, Tool):
         else:
             assert_never(backend)
 
+    @override
     @final
     def update_bitbucket_steps(self, *, matrix_python: bool = True) -> None:
         """Add Bitbucket steps associated with pre-commit, and remove outdated ones.
@@ -78,10 +82,12 @@ class PreCommitTool(PreCommitToolSpec, Tool):
         """
         self._unconditional_update_bitbucket_steps(matrix_python=matrix_python)
 
+    @override
     @final
     def migrate_config_to_pre_commit(self) -> None:
         pass
 
+    @override
     @final
     def migrate_config_from_pre_commit(self) -> None:
         pass

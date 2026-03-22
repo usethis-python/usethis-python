@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, final
 
 from pydantic import TypeAdapter, ValidationError
+from typing_extensions import override
 
 from usethis._console import info_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
 
 
 class DeptryTool(DeptryToolSpec, Tool):
+    @override
     @final
     def select_rules(self, rules: Sequence[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
@@ -24,6 +26,7 @@ class DeptryTool(DeptryToolSpec, Tool):
             info_print(f"All {self.name} rules are always implicitly selected.")
         return False
 
+    @override
     @final
     def selected_rules(self) -> list[Rule]:
         """No notion of selection for deptry.
@@ -33,11 +36,13 @@ class DeptryTool(DeptryToolSpec, Tool):
         """
         return []
 
+    @override
     @final
     def deselect_rules(self, rules: Sequence[Rule]) -> bool:
         """Does nothing for deptry - all rules are automatically enabled by default."""
         return False
 
+    @override
     @final
     def ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()
@@ -49,6 +54,7 @@ class DeptryTool(DeptryToolSpec, Tool):
 
         return rules
 
+    @override
     @final
     def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""

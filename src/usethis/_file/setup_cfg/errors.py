@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing_extensions import override
+
 from usethis._file.ini.errors import (
     INIDecodeError,
     INIError,
@@ -23,6 +25,7 @@ class SetupCFGDecodeError(INIDecodeError, SetupCFGError):
     """Raised when a setup.cfg file cannot be decoded."""
 
     @property
+    @override
     def name(self) -> str:
         """The name of the file that could not be decoded."""
         return "setup.cfg"

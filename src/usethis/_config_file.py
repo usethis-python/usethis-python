@@ -4,6 +4,8 @@ import contextlib
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from typing_extensions import override
+
 from usethis._backend.uv.toml import UVTOMLManager
 from usethis._file.ini.io_ import INIFileManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -45,6 +47,7 @@ class DotCodespellRCManager(INIFileManager):
     """Class to manage the .codespellrc file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path(".codespellrc")
 
@@ -53,6 +56,7 @@ class DotCoverageRCManager(INIFileManager):
     """Class to manage the .coveragerc file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path(".coveragerc")
 
@@ -61,6 +65,7 @@ class DotCoverageRCTOMLManager(TOMLFileManager):
     """Class to manage the .coveragerc.toml file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path(".coveragerc.toml")
 
@@ -69,6 +74,7 @@ class DotImportLinterManager(INIFileManager):
     """Class to manage the .importlinter file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path(".importlinter")
 
@@ -77,6 +83,7 @@ class DotPytestINIManager(INIFileManager):
     """Class to manage the .pytest.ini file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path(".pytest.ini")
 
@@ -85,6 +92,7 @@ class DotRuffTOMLManager(TOMLFileManager):
     """Class to manage the .ruff.toml file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path(".ruff.toml")
 
@@ -93,6 +101,7 @@ class MkDocsYMLManager(YAMLFileManager):
     """Class to manage the mkdocs.yml file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path("mkdocs.yml")
 
@@ -101,6 +110,7 @@ class PytestINIManager(INIFileManager):
     """Class to manage the pytest.ini file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path("pytest.ini")
 
@@ -109,6 +119,7 @@ class RuffTOMLManager(TOMLFileManager):
     """Class to manage the ruff.toml file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path("ruff.toml")
 
@@ -117,6 +128,7 @@ class ToxINIManager(INIFileManager):
     """Class to manage the tox.ini file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path("tox.ini")
 
@@ -125,6 +137,7 @@ class DotTyTOMLManager(TOMLFileManager):
     """Class to manage the .ty.toml file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path(".ty.toml")
 
@@ -133,5 +146,6 @@ class TyTOMLManager(TOMLFileManager):
     """Class to manage the ty.toml file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path("ty.toml")

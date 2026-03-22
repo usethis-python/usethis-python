@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, final
 
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
 from usethis._config import usethis_config
@@ -31,6 +31,7 @@ _PYTEST_PIP_CMD = "pip install pytest"
 
 
 class PytestTool(PytestToolSpec, Tool):
+    @override
     @final
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="pytest")]
@@ -38,6 +39,7 @@ class PytestTool(PytestToolSpec, Tool):
             deps += [Dependency(name="pytest-cov")]
         return deps
 
+    @override
     @final
     def print_how_to_use(self) -> None:
         how_print(
@@ -46,6 +48,7 @@ class PytestTool(PytestToolSpec, Tool):
         how_print("Add test functions with the format 'test_*()'.")
         how_print(f"Run '{self.how_to_use_cmd()}' to run the tests.")
 
+    @override
     @final
     def get_active_config_file_managers(self) -> set[KeyValueFileManager[object]]:
         # This is a variant of the "first" method
@@ -106,6 +109,7 @@ class PytestTool(PytestToolSpec, Tool):
             raise NotImplementedError(msg)
         return {preferred_file_manager}
 
+    @override
     @final
     def get_bitbucket_steps(
         self, *, matrix_python: bool = True
@@ -152,6 +156,7 @@ class PytestTool(PytestToolSpec, Tool):
             steps.append(step)
         return steps
 
+    @override
     @final
     def get_managed_bitbucket_step_names(self) -> list[str]:
         names: set[str] = set()
@@ -167,6 +172,7 @@ class PytestTool(PytestToolSpec, Tool):
 
         return sorted(names)
 
+    @override
     @final
     def update_bitbucket_steps(self, *, matrix_python: bool = True) -> None:
         """Update the pytest-related Bitbucket Pipelines steps.

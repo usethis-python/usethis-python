@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, final
 
+from typing_extensions import override
+
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -41,6 +43,7 @@ class RuffToolSpec(ToolSpec):
 
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="Ruff",
@@ -48,16 +51,19 @@ class RuffToolSpec(ToolSpec):
             managed_files=[Path(".ruff.toml"), Path("ruff.toml")],
         )
 
+    @override
     @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="ruff")]
 
+    @override
     @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return RuffTOMLManager()
 
+    @override
     @final
     def config_spec(self) -> ConfigSpec:
         # https://docs.astral.sh/ruff/configuration/#config-file-discovery

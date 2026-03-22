@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 from ruamel.yaml.comments import CommentedMap
+from typing_extensions import override
 
 from usethis._file.yaml.io_ import YAMLFileManager
 from usethis._file.yaml.update import update_ruamel_yaml_map
@@ -24,6 +25,7 @@ class PreCommitConfigYAMLManager(YAMLFileManager):
     """Class to manage the .pre-commit-config.yaml file."""
 
     @property
+    @override
     def relative_path(self) -> Path:
         return Path(".pre-commit-config.yaml")
 

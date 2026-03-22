@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import final
 
+from typing_extensions import override
+
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._tool.base import ToolMeta, ToolSpec
@@ -16,6 +18,7 @@ _PYPROJECT_FMT_VERSION = "v2.20.0"  # Manually bump this version when necessary
 class PyprojectFmtToolSpec(ToolSpec):
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="pyproject-fmt",
@@ -23,14 +26,17 @@ class PyprojectFmtToolSpec(ToolSpec):
             url="https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt",
         )
 
+    @override
     @final
     def raw_cmd(self) -> str:
         return "pyproject-fmt pyproject.toml"
 
+    @override
     @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="pyproject-fmt")]
 
+    @override
     @final
     def pre_commit_config(self) -> PreCommitConfig:
         return PreCommitConfig.from_single_repo(
@@ -42,6 +48,7 @@ class PyprojectFmtToolSpec(ToolSpec):
             requires_venv=False,
         )
 
+    @override
     @final
     def config_spec(self) -> ConfigSpec:
         # https://pyproject-fmt.readthedocs.io/en/latest/#configuration-via-file

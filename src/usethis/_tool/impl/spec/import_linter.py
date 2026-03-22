@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
 from usethis._config import usethis_config
@@ -40,6 +40,7 @@ IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
 class ImportLinterToolSpec(ToolSpec):
     @final
     @property
+    @override
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="Import Linter",
@@ -50,20 +51,24 @@ class ImportLinterToolSpec(ToolSpec):
             ),
         )
 
+    @override
     @final
     def raw_cmd(self) -> str:
         return "lint-imports"
 
+    @override
     @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         return [Dependency(name="import-linter")]
 
+    @override
     @final
     def preferred_file_manager(self) -> KeyValueFileManager[object]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotImportLinterManager()
 
+    @override
     @final
     def config_spec(self) -> ConfigSpec:
         # https://import-linter.readthedocs.io/en/stable/usage.html
@@ -304,6 +309,7 @@ class ImportLinterToolSpec(ToolSpec):
             Path("pyproject.toml"): PyprojectTOMLManager(),
         }
 
+    @override
     @final
     def pre_commit_config(self) -> PreCommitConfig:
         backend = get_backend()

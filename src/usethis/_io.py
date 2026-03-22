@@ -4,7 +4,7 @@ import re
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
-from typing_extensions import assert_never
+from typing_extensions import assert_never, override
 
 from usethis._config import usethis_config
 from usethis.errors import UsethisError
@@ -50,12 +50,14 @@ class UsethisFileManager(Generic[DocumentT], metaclass=ABCMeta):
     def __init__(self) -> None:
         self.path = (usethis_config.cpd() / self.relative_path).resolve()
 
+    @override
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, UsethisFileManager):
             return NotImplemented
 
         return self.relative_path == other.relative_path
 
+    @override
     def __hash__(self) -> int:
         return hash((self.__class__.__name__, self.relative_path))
 
@@ -63,6 +65,7 @@ class UsethisFileManager(Generic[DocumentT], metaclass=ABCMeta):
     def name(self) -> str:
         return self.relative_path.name
 
+    @override
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.relative_path.as_posix()!r})"
 

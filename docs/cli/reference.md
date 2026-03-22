@@ -14,6 +14,7 @@ Initialize a new Python project with recommended defaults, including:
 
 Supported options:
 
+- `--arch` to add recommended architecture tools (but the default is `--no-arch`)
 - `--doc` to add recommended documentation tools (default; or `--no-doc` to opt-out)
 - `--format` to add recommended formatters (default; or `--no-format` to opt-out)
 - `--lint` to add recommended linters (default; or `--no-lint` to opt-out)
@@ -50,6 +51,32 @@ Supported options:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
+
+## `usethis arch`
+
+Add recommended architecture tools to the project (namely, [Import Linter](https://import-linter.readthedocs.io/en/stable/)), including:
+
+- declared & installed dependencies via `uv add`,
+- relevant configuration, and
+- any other relevant directories or tool-bespoke configuration files.
+
+Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies via `uv add`.
+
+Supported options:
+
+- `--remove` to remove the tool instead of adding it
+- `--how` to only print how to use the tool, with no other side effects
+- `--offline` to disable network access and rely on caches
+- `--frozen` to leave the virtual environment and lockfile unchanged
+- `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+
+  Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
+
+See [`usethis tool`](#usethis-tool) for more information.
 
 ## `usethis doc`
 

@@ -30,9 +30,9 @@ if TYPE_CHECKING:
 _PYTEST_PIP_CMD = "pip install pytest"
 
 
+@final
 class PytestTool(PytestToolSpec, Tool):
     @override
-    @final
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="pytest")]
         if unconditional or is_likely_used(CoveragePyToolSpec()):
@@ -40,7 +40,6 @@ class PytestTool(PytestToolSpec, Tool):
         return deps
 
     @override
-    @final
     def print_how_to_use(self) -> None:
         how_print(
             "Add test files to the '/tests' directory with the format 'test_*.py'."
@@ -49,7 +48,6 @@ class PytestTool(PytestToolSpec, Tool):
         how_print(f"Run '{self.how_to_use_cmd()}' to run the tests.")
 
     @override
-    @final
     def get_active_config_file_managers(self) -> set[KeyValueFileManager[object]]:
         # This is a variant of the "first" method
         config_spec = self.config_spec()
@@ -110,7 +108,6 @@ class PytestTool(PytestToolSpec, Tool):
         return {preferred_file_manager}
 
     @override
-    @final
     def get_bitbucket_steps(
         self, *, matrix_python: bool = True
     ) -> list[bitbucket_schema.Step]:
@@ -157,7 +154,6 @@ class PytestTool(PytestToolSpec, Tool):
         return steps
 
     @override
-    @final
     def get_managed_bitbucket_step_names(self) -> list[str]:
         names: set[str] = set()
         for step in get_steps_in_default():
@@ -173,7 +169,6 @@ class PytestTool(PytestToolSpec, Tool):
         return sorted(names)
 
     @override
-    @final
     def update_bitbucket_steps(self, *, matrix_python: bool = True) -> None:
         """Update the pytest-related Bitbucket Pipelines steps.
 

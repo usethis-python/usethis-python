@@ -17,6 +17,10 @@ if TYPE_CHECKING:
 
 
 class RuffToolSpec(ToolSpec):
+    linter_detection: Literal["auto", "always", "never"]
+    formatter_detection: Literal["auto", "always", "never"]
+    is_auto_detection: bool
+
     @final
     def __init__(
         self,
@@ -33,10 +37,8 @@ class RuffToolSpec(ToolSpec):
                                  default, it will be determined using heuristics
                                  automatically, but this can be over-ridden.
         """
-        self.linter_detection: Literal["auto", "always", "never"] = linter_detection
-        self.formatter_detection: Literal["auto", "always", "never"] = (
-            formatter_detection
-        )
+        self.linter_detection = linter_detection
+        self.formatter_detection = formatter_detection
         self.is_auto_detection = (linter_detection == "auto") and (
             formatter_detection == "auto"
         )

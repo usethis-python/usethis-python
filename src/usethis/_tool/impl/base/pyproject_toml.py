@@ -35,9 +35,9 @@ OTHER_TOOLS: list[Tool] = [
 ]
 
 
+@final
 class PyprojectTOMLTool(PyprojectTOMLToolSpec, Tool):
     @override
-    @final
     def print_how_to_use(self) -> None:
         how_print("Populate 'pyproject.toml' with the project configuration.")
         info_print(
@@ -45,7 +45,6 @@ class PyprojectTOMLTool(PyprojectTOMLToolSpec, Tool):
         )
 
     @override
-    @final
     def remove_managed_files(self) -> None:
         # https://github.com/usethis-python/usethis-python/issues/416
         # We need to step through the tools and see if pyproject.toml is the active

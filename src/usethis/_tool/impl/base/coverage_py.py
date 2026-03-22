@@ -15,9 +15,9 @@ from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 
+@final
 class CoveragePyTool(CoveragePyToolSpec, Tool):
     @override
-    @final
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
         if unconditional or is_likely_used(PytestToolSpec()):
@@ -25,7 +25,6 @@ class CoveragePyTool(CoveragePyToolSpec, Tool):
         return deps
 
     @override
-    @final
     def print_how_to_use(self) -> None:
         backend = get_backend()
 

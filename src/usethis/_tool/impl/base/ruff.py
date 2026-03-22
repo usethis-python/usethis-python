@@ -38,15 +38,14 @@ if TYPE_CHECKING:
 _RUFF_VERSION = "v0.15.7"  # Manually bump this version when necessary
 
 
+@final
 class RuffTool(RuffToolSpec, Tool):
     @override
-    @final
     def print_how_to_use(self) -> None:
         """Print how to use the Ruff tool."""
         self.print_how_to_use_linter()
         self.print_how_to_use_formatter()
 
-    @final
     def print_how_to_use_linter(self) -> None:
         if not self.is_linter_used():
             return
@@ -76,7 +75,6 @@ class RuffTool(RuffToolSpec, Tool):
         else:
             assert_never(install_method)
 
-    @final
     def print_how_to_use_formatter(self) -> None:
         if not self.is_formatter_used():
             return
@@ -105,7 +103,6 @@ class RuffTool(RuffToolSpec, Tool):
             assert_never(install_method)
 
     @override
-    @final
     def pre_commit_config(self) -> PreCommitConfig:
         repo_configs: list[PreCommitRepoConfig] = []
         if self.is_linter_used():
@@ -136,7 +133,6 @@ class RuffTool(RuffToolSpec, Tool):
         )
 
     @override
-    @final
     def get_bitbucket_steps(
         self, *, matrix_python: bool = True
     ) -> list[bitbucket_schema.Step]:
@@ -204,7 +200,6 @@ class RuffTool(RuffToolSpec, Tool):
         return steps
 
     @override
-    @final
     def selected_rules(self) -> list[Rule]:
         """Get the Ruff rules selected in the project."""
         (file_manager,) = self.get_active_config_file_managers()
@@ -218,7 +213,6 @@ class RuffTool(RuffToolSpec, Tool):
         return rules
 
     @override
-    @final
     def ignored_rules(self) -> list[Rule]:
         """Get the Ruff rules ignored in the project."""
         (file_manager,) = self.get_active_config_file_managers()
@@ -230,7 +224,6 @@ class RuffTool(RuffToolSpec, Tool):
 
         return rules
 
-    @final
     def ignore_rules_in_glob(self, rules: Sequence[Rule], *, glob: str) -> None:
         """Ignore Ruff rules in the project for a specific glob pattern."""
         rules = sorted(set(rules) - set(self.get_ignored_rules_in_glob(glob)))
@@ -249,7 +242,6 @@ class RuffTool(RuffToolSpec, Tool):
         keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
         file_manager.extend_list(keys=keys, values=rules)
 
-    @final
     def get_ignored_rules_in_glob(self, glob: str) -> list[Rule]:
         """Get the Ruff rules ignored in the project for a specific glob pattern."""
         (file_manager,) = self.get_active_config_file_managers()
@@ -261,7 +253,6 @@ class RuffTool(RuffToolSpec, Tool):
 
         return rules
 
-    @final
     def apply_rule_config(self, rule_config: RuleConfig) -> None:
         """Apply the Ruff rules associated with a rule config to the project.
 
@@ -289,7 +280,6 @@ class RuffTool(RuffToolSpec, Tool):
                     rule_config.nontests_unmanaged_ignored, glob="!tests/**/*.py"
                 )
 
-    @final
     def remove_rule_config(self, rule_config: RuleConfig) -> None:
         """Remove the Ruff rules associated with a rule config from the project.
 
@@ -298,7 +288,6 @@ class RuffTool(RuffToolSpec, Tool):
         self.deselect_rules(rule_config.selected)
         self.unignore_rules(rule_config.ignored)
 
-    @final
     def set_docstyle(self, style: Literal["numpy", "google", "pep257"]) -> None:
         (file_manager,) = self.get_active_config_file_managers()
 
@@ -311,7 +300,6 @@ class RuffTool(RuffToolSpec, Tool):
         tick_print(msg)
         file_manager[self._get_docstyle_keys(file_manager)] = style
 
-    @final
     def get_docstyle(self) -> Literal["numpy", "google", "pep257"] | None:
         """Get the docstring style set in the project."""
         (file_manager,) = self.get_active_config_file_managers()
@@ -327,8 +315,7 @@ class RuffTool(RuffToolSpec, Tool):
 
         return docstyle
 
-    @final
-    def _are_pydocstyle_rules_selected(self) -> bool:
+    def are_pydocstyle_rules_selected(self) -> bool:
         """Check if pydocstyle rules are selected in the configuration."""
         # If "ALL" is selected, or any rule whose alphabetical part is "D".
         rules = self.selected_rules()
@@ -339,13 +326,11 @@ class RuffTool(RuffToolSpec, Tool):
                 return True
         return False
 
-    @final
     @staticmethod
     def _is_pydocstyle_rule(rule: Rule) -> bool:
         return [d for d in rule if d.isalpha()] == ["D"]
 
     @override
-    @final
     def _get_select_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the keys for the selected rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
@@ -356,7 +341,6 @@ class RuffTool(RuffToolSpec, Tool):
             return super()._get_select_keys(file_manager)
 
     @override
-    @final
     def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
@@ -366,7 +350,6 @@ class RuffTool(RuffToolSpec, Tool):
         else:
             return super()._get_ignore_keys(file_manager)
 
-    @final
     def _get_per_file_ignore_keys(
         self, file_manager: KeyValueFileManager[object], *, glob: str
     ) -> list[str]:
@@ -382,7 +365,6 @@ class RuffTool(RuffToolSpec, Tool):
             )
             raise NotImplementedError(msg)
 
-    @final
     def _get_docstyle_keys(
         self, file_manager: KeyValueFileManager[object]
     ) -> list[str]:
@@ -398,7 +380,6 @@ class RuffTool(RuffToolSpec, Tool):
             )
             raise NotImplementedError(msg)
 
-    @final
     def is_linter_used(self) -> bool:
         """Check if the linter is used in the project.
 
@@ -417,7 +398,6 @@ class RuffTool(RuffToolSpec, Tool):
             self.is_auto_detection and self.is_no_subtool_config_present()
         )
 
-    @final
     def is_linter_config_present(self) -> bool:
         return ConfigSpec.from_flat(
             file_managers=[
@@ -440,7 +420,6 @@ class RuffTool(RuffToolSpec, Tool):
             ],
         ).is_present()
 
-    @final
     def is_formatter_used(self) -> bool:
         """Check if the formatter is used in the project.
 
@@ -459,7 +438,6 @@ class RuffTool(RuffToolSpec, Tool):
             self.is_auto_detection and self.is_no_subtool_config_present()
         )
 
-    @final
     def is_formatter_config_present(self) -> bool:
         return ConfigSpec.from_flat(
             file_managers=[
@@ -482,7 +460,6 @@ class RuffTool(RuffToolSpec, Tool):
             ],
         ).is_present()
 
-    @final
     def is_no_subtool_config_present(self) -> bool:
         """Check if no subtool config is present."""
         return (

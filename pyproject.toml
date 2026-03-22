@@ -215,7 +215,6 @@ reportImplicitStringConcatenation = false
 reportMissingParameterType = false
 reportMissingTypeArgument = false
 reportPrivateUsage = false
-reportUnannotatedClassAttribute = false
 reportUnknownArgumentType = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
@@ -224,11 +223,22 @@ reportUnusedCallResult = false
 
 [[tool.basedpyright.executionEnvironments]]
 root = "tests"
+reportUnannotatedClassAttribute = false
 reportUnknownLambdaType = false
 reportUnknownParameterType = false
 reportUnreachable = false
 reportUnusedFunction = false
 reportUnusedParameter = false
+
+[[tool.basedpyright.executionEnvironments]]
+# Particularly interested in avoiding the auto-generated schema script
+root = "src/usethis/_integrations/ci/bitbucket"
+reportUnannotatedClassAttribute = false
+
+[[tool.basedpyright.executionEnvironments]]
+# Particularly interested in avoiding the auto-generated schema script
+root = "src/usethis/_integrations/pre_commit"
+reportUnannotatedClassAttribute = false
 
 [tool.sync-with-uv.repo-to-package]
 "https://github.com/astral-sh/uv-pre-commit" = "uv"

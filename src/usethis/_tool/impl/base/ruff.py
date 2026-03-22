@@ -105,7 +105,7 @@ class RuffTool(RuffToolSpec, Tool):
 
     @final
     def pre_commit_config(self) -> PreCommitConfig:
-        repo_configs = []
+        repo_configs: list[PreCommitRepoConfig] = []
         if self.is_linter_used():
             repo_configs.append(
                 PreCommitRepoConfig(
@@ -139,7 +139,7 @@ class RuffTool(RuffToolSpec, Tool):
     ) -> list[bitbucket_schema.Step]:
         backend = get_backend()
 
-        steps = []
+        steps: list[bitbucket_schema.Step] = []
         if self.is_linter_used():
             if backend is BackendEnum.uv:
                 steps.append(
@@ -209,7 +209,7 @@ class RuffTool(RuffToolSpec, Tool):
         try:
             rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
         except (KeyError, FileNotFoundError, ValidationError):
-            rules = []
+            rules: list[Rule] = []
 
         return rules
 
@@ -221,7 +221,7 @@ class RuffTool(RuffToolSpec, Tool):
         try:
             rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
         except (KeyError, FileNotFoundError, ValidationError):
-            rules = []
+            rules: list[Rule] = []
 
         return rules
 
@@ -252,7 +252,7 @@ class RuffTool(RuffToolSpec, Tool):
         try:
             rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
         except (KeyError, FileNotFoundError, ValidationError):
-            rules = []
+            rules: list[Rule] = []
 
         return rules
 

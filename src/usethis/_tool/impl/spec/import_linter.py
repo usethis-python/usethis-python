@@ -144,7 +144,7 @@ class ImportLinterToolSpec(ToolSpec):
         # contracts, so we need to check if there are any contracts.
         are_active_ini_contracts = self._are_active_ini_contracts()
 
-        ini_contracts_config_items = []
+        ini_contracts_config_items: list[ConfigItem] = []
         for idx, contract in enumerate(contracts):
             if are_active_ini_contracts:
                 continue
@@ -263,12 +263,14 @@ class ImportLinterToolSpec(ToolSpec):
             _importlinter_warn_no_packages_found(name)
             root_packages = [name]
 
-        layered_architecture_by_module_by_root_package = {}
+        layered_architecture_by_module_by_root_package: dict[
+            str, dict[str, LayeredArchitecture]
+        ] = {}
         for root_package in root_packages:
             try:
                 layered_architecture_by_module = get_layered_architectures(root_package)
             except ImportGraphBuildFailedError:
-                layered_architecture_by_module = {}
+                layered_architecture_by_module: dict[str, LayeredArchitecture] = {}
 
             if not layered_architecture_by_module:
                 layered_architecture_by_module = {

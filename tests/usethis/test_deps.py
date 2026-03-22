@@ -833,7 +833,7 @@ class TestIsDepSatisfiedIn:
     def test_empty(self):
         # Arrange
         dep = Dependency(name="pytest")
-        in_ = []
+        in_: list[Dependency] = []
 
         # Act
         result = is_dep_satisfied_in(dep, in_=in_)

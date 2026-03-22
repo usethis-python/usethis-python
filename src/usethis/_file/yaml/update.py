@@ -127,11 +127,11 @@ def _shared_id_sequences(*seqs: Sequence[object]) -> Sequence[list[int]]:
     # we can store this information as a list of elements, where the index corresponds
     # to the integer representation.
 
-    iseqs = []
-    rep = []
+    iseqs: list[list[int]] = []
+    rep: list[object] = []
 
     for seq in seqs:
-        iseq = []
+        iseq: list[int] = []
         for element in seq:
             for idx, rep_element in enumerate(rep):
                 if element == rep_element:

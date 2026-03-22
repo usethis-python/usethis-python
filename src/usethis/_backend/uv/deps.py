@@ -47,6 +47,6 @@ def get_default_groups_via_uv() -> list[str]:
                 PyprojectTOMLManager()[["tool", "uv", "default-groups"]]
             )
     except (KeyError, ValidationError):
-        default_groups = []
+        default_groups: list[str] = []
 
     return default_groups

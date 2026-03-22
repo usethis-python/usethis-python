@@ -47,7 +47,7 @@ def get_layered_architectures(pkg_name: str) -> dict[str, LayeredArchitecture]:
     """
     graph = _get_graph(pkg_name)
 
-    arch_by_module = {}
+    arch_by_module: dict[str, LayeredArchitecture] = {}
 
     for module in sorted(graph.modules):
         arch = _get_module_layered_architecture(module, graph=graph)
@@ -61,14 +61,14 @@ def _get_module_layered_architecture(
 ) -> LayeredArchitecture:
     deps_by_module = _get_child_dependencies(module, graph=graph)
 
-    layered = set()
-    layers = []
+    layered: set[str] = set()
+    layers: list[set[str]] = []
 
     for _ in range(len(deps_by_module)):
         # Form a layer: cycle through all siblings. For ones with no deps, add them
         # to the layer and ignore them in the next iteration.
 
-        layer = set()
+        layer: set[str] = set()
         for m, deps in deps_by_module.items():
             if m in layered:
                 continue
@@ -83,7 +83,7 @@ def _get_module_layered_architecture(
         layers.append(layer)
         layered.update(layer)
 
-    excluded = set()
+    excluded: set[str] = set()
     for m in deps_by_module:
         if m not in layered:
             excluded.add(m)
@@ -124,7 +124,7 @@ def _get_child_dependencies(
     """
     children = sorted(graph.find_children(module))
 
-    deps_by_module = {}
+    deps_by_module: dict[str, set[str]] = {}
     for child in children:
         downstreams = graph.find_upstream_modules(module=child, as_package=True)
         downstreams = _filter_to_submodule(downstreams, submodule=module)
@@ -135,7 +135,7 @@ def _get_child_dependencies(
 
 
 def _filter_to_submodule(modules: set[str], *, submodule: str) -> set[str]:
-    filtered = set()
+    filtered: set[str] = set()
     for module in modules:
         if module.startswith(submodule + "."):
             filtered.add(_narrow_to_submodule(module, submodule=submodule))

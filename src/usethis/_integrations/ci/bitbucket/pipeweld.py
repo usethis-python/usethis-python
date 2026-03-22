@@ -36,7 +36,7 @@ def get_pipeweld_pipeline_from_default(
     default = model.pipelines.default
 
     if default is None:
-        items = []
+        items: list[schema.StepItem | schema.ParallelItem | schema.StageItem] = []
     elif isinstance(default.root, schema.ImportPipeline):
         msg = (
             "Cannot add step to default pipeline in 'bitbucket-pipelines.yml' because "
@@ -117,7 +117,7 @@ def apply_pipeweld_instruction_via_model(
     default = pipelines.default
 
     if default is None:
-        items = []
+        items: list[schema.StepItem | schema.ParallelItem | schema.StageItem] = []
     elif isinstance(default.root, schema.ImportPipeline):
         msg = (
             f"Cannot add step '{step_to_insert.name}' to default pipeline in "

@@ -62,7 +62,7 @@ class TestAllBitbucketCompatibleSteps:
     def test_names_regression(self, tmp_path: Path):
         # See https://github.com/usethis-python/usethis-python/issues/981
         with change_cwd(tmp_path), files_manager():
-            names = set()
+            names: set[str] = set()
             for tool in ALL_TOOLS:
                 steps = tool.get_bitbucket_steps()
                 if steps:

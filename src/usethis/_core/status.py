@@ -25,7 +25,7 @@ def use_development_status(
             mgr[["project", "classifiers"]]
         )
     except (KeyError, ValidationError):
-        existing_classifiers = []
+        existing_classifiers: list[str] = []
     existing_status_classifiers = {
         classifier
         for classifier in existing_classifiers

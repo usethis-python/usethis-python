@@ -113,7 +113,7 @@ def insert_repo(
     # after the last precedent
 
     inserted = False
-    repos = []
+    repos: list[schema.LocalRepo | schema.UriRepo | schema.MetaRepo] = []
 
     if predecessor is None:
         # If there is no predecessor, we can just append the new repo
@@ -124,7 +124,7 @@ def insert_repo(
     for existing_repo in existing_repos:
         existing_hooks = existing_repo.hooks
         if existing_hooks is None:
-            existing_hooks = []
+            existing_hooks: list[schema.HookDefinition] = []
 
         # Add the existing repos, because they need to be in the final list too!
         # One is exception is that we don't include the placeholder from now on, since

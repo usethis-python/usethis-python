@@ -26,7 +26,7 @@ def get_supported_uv_minor_python_versions() -> list[PythonVersion]:
     except (MissingRequiresPythonError, PyprojectTOMLNotFoundError):
         return [PythonVersion.from_interpreter()]
 
-    versions = set()
+    versions: set[str] = set()
     for version in get_available_uv_python_versions():
         # N.B. a standard range won't include alpha versions.
         if requires_python.contains(version):

@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, RootModel
 
 from usethis._integrations.pydantic.dump import fancy_model_dump
+from usethis._integrations.pydantic.typing_ import ModelRepresentation
 
 
 class TestFancyModelDump:
@@ -286,7 +287,7 @@ class TestFancyModelDump:
                 x: int = 1
 
             mm = MyModel(x=1)
-            ref = {}
+            ref: dict[str, ModelRepresentation] = {}
 
             # Act
             output = fancy_model_dump(mm, reference=ref)

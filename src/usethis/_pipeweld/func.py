@@ -99,7 +99,7 @@ class Adder(BaseModel):
         self, component: Series, *, predecessor: str | None
     ) -> tuple[Partition, list[Instruction]]:
         partitions: list[Partition] = []
-        instructions = []
+        instructions: list[Instruction] = []
         for subcomponent in component.root:
             partition, these_instructions = self.partition_component(
                 subcomponent,
@@ -411,7 +411,7 @@ def _parallel_merge_partitions(
         or top_ranked_prerequisite_endpoints
     )
 
-    instructions = []
+    instructions: list[Instruction] = []
     if prerequisite_component is not None:
         new_instructions, _ = _get_instructions_for_insertion(
             prerequisite_component, after=predecessor
@@ -475,7 +475,7 @@ def _get_instructions_for_insertion(
     if isinstance(component, str):
         return [InsertSuccessor(after=after, step=component)], component
     elif isinstance(component, Series):
-        instructions = []
+        instructions: list[Instruction] = []
         for subcomponent in component.root:
             new_instructions, endpoint = _get_instructions_for_insertion(
                 subcomponent, after=after
@@ -589,7 +589,7 @@ def get_endpoint(component: str | Series | DepGroup | Parallel) -> str:
         msg = "No endpoints are defined for a Series with no steps."
         raise ValueError(msg)
     elif isinstance(component, Parallel):
-        endpoints = []
+        endpoints: list[str] = []
         for subcomponent in component.root:
             with contextlib.suppress(ValueError):
                 endpoints.append(get_endpoint(subcomponent))

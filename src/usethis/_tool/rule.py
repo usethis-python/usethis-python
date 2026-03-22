@@ -81,7 +81,7 @@ class RuleConfig(BaseModel):
 
     def __repr__(self) -> str:
         """Representation which omits empty-list fields."""
-        args = []
+        args: list[str] = []
         if self.selected:
             args.append(f"selected={self.selected}")
         if self.ignored:

@@ -72,7 +72,7 @@ def _fancy_model_dump_list(
     if not isinstance(reference, list):
         reference = []
 
-    x = []
+    x: list[ModelRepresentation] = []
     for value, ref in zip_longest(model, reference, fillvalue=_FILL_VALUE):
         if value is _FILL_VALUE:
             # we've exhausted all the content.
@@ -96,7 +96,7 @@ def _fancy_model_dump_dict(
 ) -> ModelRepresentation:
     if order_by_cls is None:
         order_by_cls = {}
-    d = {}
+    d: dict[str, ModelRepresentation] = {}
     for key, value in model.items():
         if reference is None:
             value_ref = None
@@ -122,7 +122,7 @@ def _fancy_model_dump_base_model(
     if order_by_cls is None:
         order_by_cls = {}
 
-    d = {}
+    d: dict[str, ModelRepresentation] = {}
     for key, value in model:
         default_value = model.__class__.model_fields[key].default
 
@@ -158,7 +158,7 @@ def _fancy_model_dump_base_model(
     except KeyError:
         return d
 
-    ordered_d = {}
+    ordered_d: dict[str, ModelRepresentation] = {}
     for key in order:
         if key in d:
             ordered_d[key] = d.pop(key)

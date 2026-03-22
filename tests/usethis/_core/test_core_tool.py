@@ -4309,10 +4309,11 @@ class TestTy:
             with change_cwd(uv_init_dir), files_manager():
                 use_ty()
 
-            # Assert - ty has no default config values, so no config is written
+            # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert out == ("☐ Run 'uv run ty check' to run the ty type checker.\n")
+            assert "Adding ty config to 'pyproject.toml'." in out
+            assert "☐ Run 'uv run ty check' to run the ty type checker.\n" in out
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_bitbucket_integration(

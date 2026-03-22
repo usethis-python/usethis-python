@@ -103,20 +103,53 @@ repos: []
             assert out == "☐ Run 'ty check' to run the ty type checker.\n"
 
     class TestAddConfig:
-        def test_no_config_written_by_default(self, tmp_path: Path):
-            """ty's config_spec has no values to add, only a sentinel for removal."""
+        def test_src_include_written_to_pyproject(self, tmp_path: Path):
+            """ty's config_spec adds src.include to pyproject.toml."""
             # Arrange
             (tmp_path / "pyproject.toml").write_text("[project]\nname = 'example'\n")
+            (tmp_path / "src").mkdir()
 
             # Act
             with change_cwd(tmp_path), files_manager():
                 TyTool().add_configs()
 
-            # Assert - no [tool.ty] section is added since there are no default values
-            assert "[tool.ty]" not in (tmp_path / "pyproject.toml").read_text()
+            # Assert
+            content = (tmp_path / "pyproject.toml").read_text()
+            assert "tool.ty.src" in content
+            assert "include" in content
+
+        def test_src_include_src_layout(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("[project]\nname = 'example'\n")
+            (tmp_path / "src").mkdir()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                TyTool().add_configs()
+
+            # Assert
+            content = (tmp_path / "pyproject.toml").read_text()
+            assert '"src"' in content
+            assert '"tests"' in content
+
+        def test_src_include_root_layout(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("[project]\nname = 'example'\n")
+            pkg_dir = tmp_path / "mypackage"
+            pkg_dir.mkdir()
+            (pkg_dir / "__init__.py").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                TyTool().add_configs()
+
+            # Assert
+            content = (tmp_path / "pyproject.toml").read_text()
+            assert '"mypackage"' in content
+            assert '"tests"' in content
 
     class TestConfigSpec:
-        def test_pyproject_toml_keys(self):
+        def test_pyproject_toml_overall_keys(self):
             # Arrange
             tool = TyTool()
 
@@ -124,13 +157,13 @@ repos: []
             result = tool.config_spec()
 
             # Assert
-            config_item, *_ = result.config_items
-            assert isinstance(config_item, ConfigItem)
-            assert config_item.root[Path("pyproject.toml")] == ConfigEntry(
+            overall_item = result.config_items[0]
+            assert isinstance(overall_item, ConfigItem)
+            assert overall_item.root[Path("pyproject.toml")] == ConfigEntry(
                 keys=["tool", "ty"]
             )
 
-        def test_ty_toml_keys(self):
+        def test_ty_toml_overall_keys(self):
             # Arrange
             tool = TyTool()
 
@@ -138,11 +171,11 @@ repos: []
             result = tool.config_spec()
 
             # Assert
-            config_item, *_ = result.config_items
-            assert isinstance(config_item, ConfigItem)
-            assert config_item.root[Path("ty.toml")] == ConfigEntry(keys=[])
+            overall_item = result.config_items[0]
+            assert isinstance(overall_item, ConfigItem)
+            assert overall_item.root[Path("ty.toml")] == ConfigEntry(keys=[])
 
-        def test_dot_ty_toml_keys(self):
+        def test_dot_ty_toml_overall_keys(self):
             # Arrange
             tool = TyTool()
 
@@ -150,9 +183,9 @@ repos: []
             result = tool.config_spec()
 
             # Assert
-            config_item, *_ = result.config_items
-            assert isinstance(config_item, ConfigItem)
-            assert config_item.root[Path(".ty.toml")] == ConfigEntry(keys=[])
+            overall_item = result.config_items[0]
+            assert isinstance(overall_item, ConfigItem)
+            assert overall_item.root[Path(".ty.toml")] == ConfigEntry(keys=[])
 
         def test_three_file_managers(self):
             # Arrange
@@ -164,6 +197,56 @@ repos: []
             # Assert
             paths = set(result.file_manager_by_relative_path.keys())
             assert paths == {Path(".ty.toml"), Path("ty.toml"), Path("pyproject.toml")}
+
+        def test_two_config_items(self):
+            # Arrange
+            tool = TyTool()
+
+            # Act
+            result = tool.config_spec()
+
+            # Assert
+            assert len(result.config_items) == 2
+            assert result.config_items[0].description == "Overall config"
+            assert result.config_items[1].description == "Source include"
+
+        def test_src_include_pyproject_keys(self):
+            # Arrange
+            tool = TyTool()
+
+            # Act
+            result = tool.config_spec()
+
+            # Assert
+            src_item = result.config_items[1]
+            assert src_item.root[Path("pyproject.toml")].keys == [
+                "tool",
+                "ty",
+                "src",
+                "include",
+            ]
+
+        def test_src_include_ty_toml_keys(self):
+            # Arrange
+            tool = TyTool()
+
+            # Act
+            result = tool.config_spec()
+
+            # Assert
+            src_item = result.config_items[1]
+            assert src_item.root[Path("ty.toml")].keys == ["src", "include"]
+
+        def test_src_include_dot_ty_toml_keys(self):
+            # Arrange
+            tool = TyTool()
+
+            # Act
+            result = tool.config_spec()
+
+            # Assert
+            src_item = result.config_items[1]
+            assert src_item.root[Path(".ty.toml")].keys == ["src", "include"]
 
     class TestRemoveConfig:
         def test_removes_ty_section_from_pyproject(self, tmp_path: Path):

@@ -4,7 +4,7 @@ from pathlib import Path
 
 def test_assemble_readme_from_docs(usethis_dev_dir: Path):
     """The README should be kept in-sync with the corresponding doc packages."""
-    parts = []
+    parts: list[str] = []
 
     # Main sections
     parts.append(
@@ -78,7 +78,7 @@ def _demote_headers(content: str) -> str:
     lines = content.splitlines()
     in_block = False
 
-    new_lines = []
+    new_lines: list[str] = []
     for line in lines:
         if line.startswith("```"):
             in_block = not in_block

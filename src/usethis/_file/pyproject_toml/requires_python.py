@@ -77,7 +77,7 @@ def get_required_minor_python_versions() -> list[PythonVersion]:
     # always deal with just major version 3 in practice.
     min_minor_in_spec = min(all_minors)
 
-    supported_versions = []
+    supported_versions: list[PythonVersion] = []
     # Generate all major.minor combinations in range
     # Basically, do a sophisticated brute-force search
     for major in range(min_version[0], max_version[0] + 1):
@@ -101,7 +101,7 @@ def get_required_minor_python_versions() -> list[PythonVersion]:
 
             # Get patch versions mentioned for this major.minor in the specifier
             # The extremes will lie +/- 1 from any named patch version
-            patches_to_check = set()
+            patches_to_check: set[int] = set()
             major_minor_key = (major, minor)
             if major_minor_key in patches_by_short:
                 for patch in patches_by_short[major_minor_key]:

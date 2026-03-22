@@ -45,7 +45,7 @@ class DeptryTool(DeptryToolSpec, Tool):
         try:
             rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
         except (KeyError, FileNotFoundError, ValidationError):
-            rules = []
+            rules: list[Rule] = []
 
         return rules
 

@@ -40,7 +40,7 @@ from usethis.errors import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from usethis._io import KeyValueFileManager
+    from usethis._io import Key, KeyValueFileManager
     from usethis._tool.config import ConfigItem
     from usethis._tool.rule import Rule
 
@@ -338,7 +338,7 @@ class Tool(ToolSpec, Protocol):
         # using at least a shared subset of those e.g. ["tool", "ruff"], and
         # preferentially add to the highest-priority file manager which already has
         # config at that shared key sequence.
-        shared_keys = []
+        shared_keys: list[Key] = []
         for key in entry.keys:
             shared_keys.append(key)
             new_file_managers = [

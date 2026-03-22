@@ -356,7 +356,7 @@ class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
         elif len(keys) == 2:
             (section_key, option_key) = keys
 
-            section_strkeys = []
+            section_strkeys: list[str] = []
             for section_strkey in _itermatches(self.get().sections(), key=section_key):
                 section_strkeys.append(section_strkey)
 

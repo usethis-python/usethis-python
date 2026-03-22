@@ -104,7 +104,7 @@ def _get_sonarqube_exclusions() -> list[str]:
             PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "exclusions"]]
         )
     except (FileNotFoundError, KeyError, ValidationError):
-        exclusions = []
+        exclusions: list[str] = []
     for exclusion in exclusions:
         TypeAdapter(str).validate_python(exclusion)
 

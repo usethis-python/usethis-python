@@ -375,7 +375,7 @@ def _censor_stage_item_step(
 ) -> schema.StageItem | None:
     step1s = item.stage.steps
 
-    new_step1s = []
+    new_step1s: list[schema.Step1] = []
     for step1 in step1s:
         if bitbucket_steps_are_equivalent(step1tostep(step1), step):
             continue
@@ -474,7 +474,7 @@ def _get_steps_in_pipeline(pipeline: schema.Pipeline) -> list[schema.Step]:
 
     items = pipeline.root.root
 
-    steps = []
+    steps: list[schema.Step] = []
     for item in items:
         steps.extend(get_steps_in_pipeline_item(item))
 

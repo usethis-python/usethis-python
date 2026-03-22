@@ -114,7 +114,7 @@ def insert_repo(
     # after the last precedent
 
     inserted = False
-    repos = []
+    repos: list[schema.LocalRepo | schema.UriRepo | schema.MetaRepo] = []
 
     if predecessor is None:
         # If there is no predecessor, we can just append the new repo

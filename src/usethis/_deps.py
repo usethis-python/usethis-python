@@ -120,7 +120,7 @@ def register_default_group(group: str) -> None:
     default_groups = get_default_groups()
 
     # Choose which groups we want to add
-    groups_to_add = []
+    groups_to_add: list[str] = []
     if group not in default_groups:
         groups_to_add.append(group)
         # Add "dev" if section is empty or if we're adding a new group and "dev" isn't present

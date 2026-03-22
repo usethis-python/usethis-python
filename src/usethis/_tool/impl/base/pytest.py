@@ -117,7 +117,7 @@ class PytestTool(PytestToolSpec, Tool):
 
         backend = get_backend()
 
-        steps = []
+        steps: list[bitbucket_schema.Step] = []
         for version in versions:
             if backend is BackendEnum.uv:
                 step = bitbucket_schema.Step(
@@ -154,7 +154,7 @@ class PytestTool(PytestToolSpec, Tool):
 
     @final
     def get_managed_bitbucket_step_names(self) -> list[str]:
-        names = set()
+        names: set[str] = set()
         for step in get_steps_in_default():
             if step.name is not None:
                 match = re.match(r"^Test on 3\.\d{1,2}$", step.name)

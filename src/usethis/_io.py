@@ -238,7 +238,7 @@ def print_keys(keys: Sequence[Key]) -> str:
         >>> print_keys([re.compile(r"importlinter:contracts:.*")])
         '<REGEX("importlinter:contracts:.*")>'
     """
-    components = []
+    components: list[str] = []
     for key in keys:
         if isinstance(key, str):
             components.append(key)

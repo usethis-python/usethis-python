@@ -2452,9 +2452,7 @@ pipelines:
 
                 # Assert - Dep should still be present exactly once (not duplicated)
                 dev_deps_after = get_deps_from_group("dev")
-                ruff_deps_after = [
-                    dep for dep in dev_deps_after if dep.name == "ruff"
-                ]
+                ruff_deps_after = [dep for dep in dev_deps_after if dep.name == "ruff"]
                 assert len(ruff_deps_after) == 1
                 assert ruff_deps_after == ruff_deps_before
 

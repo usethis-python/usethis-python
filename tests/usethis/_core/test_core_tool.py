@@ -2943,7 +2943,7 @@ def test_foo():
             # Assert
             with change_cwd(tmp_path), files_manager():
                 contents = (tmp_path / "ruff.toml").read_text()
-                assert """"tests/**" = ["INP"]""" in contents
+                assert """"tests/**" = ["RUF059", "INP"]""" in contents
 
         class TestBitbucketIntegration:
             def test_no_backend(
@@ -3614,6 +3614,32 @@ docstring-code-format = true
 
                 # Assert
                 assert RuffTOMLManager()[["line-length"]] == 100
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruf059_ignored_in_tests(self, uv_init_dir: Path):
+            # https://github.com/usethis-python/usethis-python/issues/907
+            # Arrange
+            (uv_init_dir / "tests").mkdir()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+                # Assert
+                assert "RUF059" in RuffTool().get_ignored_rules_in_glob("tests/**")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruf059_not_ignored_in_tests_without_tests_dir(
+            self, uv_init_dir: Path
+        ):
+            # Arrange - no tests/ directory
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+                # Assert
+                assert "RUF059" not in RuffTool().get_ignored_rules_in_glob("tests/**")
 
         def test_only_add_linter(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]

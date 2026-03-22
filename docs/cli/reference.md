@@ -7,7 +7,7 @@ Initialize a new Python project with recommended defaults, including:
 - a `pyproject.toml` file and relevant configuration,
 - recommended linters, formatters, spellcheckers, type checkers, and test frameworks (all opt-out),
 - docstring style enforcement (opt-in),
-- the pre-commit framework (opt-in),
+- a recommended git hook framework (opt-in),
 - CI services (opt-in),
 - declared & installed dependencies via `uv add`, and
 - any other relevant directories or tool-bespoke configuration files.
@@ -21,7 +21,7 @@ Supported options:
 - `--spellcheck` to add a recommended spellchecker (default; or `--no-spellcheck` to opt-out)
 - `--test` to add a recommended testing framework (default; or `--no-test` to opt-out)
 - `--typecheck` to add a recommended type checker (default; or `--no-typecheck` to opt-out)
-- `--pre-commit` to add the pre-commit framework for git hooks (but the default is `--no-pre-commit`)
+- `--hook` to add a recommended git hook framework (but the default is `--no-hook`)
 - `--ci` to add a CI service configuration
 
   Possible values:
@@ -104,6 +104,32 @@ Add recommended formatters to the project (namely, [Ruff](https://docs.astral.sh
 
 - declared & installed dependencies via `uv add`,
 - relevant `pyproject.toml` configuration, and
+- any other relevant directories or tool-bespoke configuration files.
+
+Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies via `uv add`.
+
+Supported options:
+
+- `--remove` to remove the tool instead of adding it
+- `--how` to only print how to use the tool, with no other side effects
+- `--offline` to disable network access and rely on caches
+- `--frozen` to leave the virtual environment and lockfile unchanged
+- `--quiet` to suppress output
+- `--backend` to specify a package manager backend to use. The default is to auto-detect.
+
+  Possible values:
+  - `auto` to auto-detect the backend (default)
+  - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
+  - `none` to not use a package manager backend and display messages for some operations.
+
+See [`usethis tool`](#usethis-tool) for more information.
+
+## `usethis hook`
+
+Add a recommended git hook framework to the project (namely, [pre-commit](https://github.com/pre-commit/pre-commit)), including:
+
+- declared & installed dependencies via `uv add`,
+- relevant configuration, and
 - any other relevant directories or tool-bespoke configuration files.
 
 Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies via `uv add`.

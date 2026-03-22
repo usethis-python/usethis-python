@@ -4361,7 +4361,7 @@ class TestTy:
                 use_ty(remove=True)
 
             # Assert
-            assert "[tool.ty]" not in (uv_init_dir / "pyproject.toml").read_text()
+            assert "[tool.ty" not in (uv_init_dir / "pyproject.toml").read_text()
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_removes_dependency(self, uv_init_dir: Path):

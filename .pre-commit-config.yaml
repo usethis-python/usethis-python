@@ -52,6 +52,18 @@ repos:
         priority: 0
       - id: ruff-format
         priority: 0
+  - repo: https://github.com/DavidAnson/markdownlint-cli2
+    rev: v0.22.0
+    hooks:
+      - id: markdownlint-cli2
+        args: ["--fix"]
+        priority: 0
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.8.1
+    hooks:
+      - id: prettier
+        types_or: [markdown]
+        priority: 0
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:

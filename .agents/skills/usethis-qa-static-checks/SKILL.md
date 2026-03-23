@@ -12,7 +12,7 @@ metadata:
 To perform static checks on the codebase, run:
 
 ```bash
-uv run prek run -a
+uv run prek -a
 uv run basedpyright
 ```
 

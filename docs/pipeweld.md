@@ -29,7 +29,7 @@ The informal notation above indicates a pipeline of two parallel steps A and B i
 We can also consider more a more complicated pipeline in the below diagram:
 
 ```Text
-(A | B | (C + D)) + E + (F | G) 
+(A | B | (C + D)) + E + (F | G)
 ```
 
 Here, A and B are in parallel with the series of steps C and D; those steps are all in series with step E, and then finally also in series we have the parallel steps F and G.

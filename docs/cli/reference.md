@@ -26,12 +26,14 @@ Supported options:
 
   Possible values:
   - `bitbucket` for [Bitbucket Pipelines](https://bitbucket.org/product/features/pipelines)
+
 - `--docstyle` to set a docstring style convention for the project.
 
   Possible values:
   - `numpy` for [NumPy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard)
   - `google` for [Google docstring style](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
   - `pep257` for [PEP 257 docstring style](https://www.python.org/dev/peps/pep-0257/)
+
 - `--status` to set the development status of the project. Defaults to `planning`.
 
   Possible values:
@@ -42,6 +44,7 @@ Supported options:
   - `production` or `5` for "Development Status :: 5 - Production/Stable"
   - `mature` or `6` for "Development Status :: 6 - Mature"
   - `inactive` or `7` for "Development Status :: 7 - Inactive"
+
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
@@ -194,7 +197,7 @@ Supported options:
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -219,7 +222,7 @@ Supported options:
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
-Possible values:
+  Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.

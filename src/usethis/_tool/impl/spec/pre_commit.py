@@ -12,8 +12,7 @@ from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
-
-_SYNC_WITH_UV_VERSION = "v0.5.0"  # Manually bump this version when necessary
+from usethis._versions import _SYNC_WITH_UV_VERSION
 
 
 class PreCommitToolSpec(ToolSpec):

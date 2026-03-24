@@ -20,11 +20,10 @@ from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.deps import Dependency
+from usethis._versions import _CODESPELL_VERSION
 
 if TYPE_CHECKING:
     from usethis._file.manager import KeyValueFileManager
-
-_CODESPELL_VERSION = "v2.4.2"  # Manually bump this version when necessary
 
 
 class CodespellToolSpec(ToolSpec):

@@ -2,10 +2,10 @@ from pathlib import Path
 
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit.version import (
-    PRE_COMMIT_VERSION,
     get_minimum_pre_commit_version,
     get_pre_commit_version,
 )
+from usethis._versions import PRE_COMMIT_VERSION
 from usethis._test import change_cwd
 
 

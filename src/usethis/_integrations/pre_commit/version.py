@@ -1,7 +1,6 @@
 from usethis._config import usethis_config
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
-
-PRE_COMMIT_VERSION = "4.5.1"
+from usethis._versions import PRE_COMMIT_VERSION
 
 
 def get_pre_commit_version() -> str:

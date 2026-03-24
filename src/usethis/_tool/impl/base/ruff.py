@@ -28,14 +28,13 @@ from usethis._tool.impl.spec.ruff import RuffToolSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import Rule
 from usethis._types.backend import BackendEnum
+from usethis._versions import _RUFF_VERSION
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from usethis._file.manager import KeyValueFileManager
     from usethis._tool.rule import RuleConfig
-
-_RUFF_VERSION = "v0.15.7"  # Manually bump this version when necessary
 
 
 @final

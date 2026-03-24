@@ -11,6 +11,7 @@ from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import how_print, tick_print
+from usethis._fallback import FALLBACK_RUFF_VERSION
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -28,7 +29,6 @@ from usethis._tool.impl.spec.ruff import RuffToolSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import Rule
 from usethis._types.backend import BackendEnum
-from usethis._versions import FALLBACK_RUFF_VERSION
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

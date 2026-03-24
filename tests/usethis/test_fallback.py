@@ -3,9 +3,7 @@ import os
 import pytest
 
 from usethis._config import usethis_config
-from usethis._integrations.ci.github.errors import GitHubTagError
-from usethis._integrations.ci.github.tags import get_github_latest_tag
-from usethis._versions import (
+from usethis._fallback import (
     FALLBACK_CODESPELL_VERSION,
     FALLBACK_PRE_COMMIT_VERSION,
     FALLBACK_PYPROJECT_FMT_VERSION,
@@ -13,6 +11,8 @@ from usethis._versions import (
     FALLBACK_SYNC_WITH_UV_VERSION,
     FALLBACK_UV_VERSION,
 )
+from usethis._integrations.ci.github.errors import GitHubTagError
+from usethis._integrations.ci.github.tags import get_github_latest_tag
 
 
 def _skip_on_github_error(err: GitHubTagError) -> None:

@@ -7,6 +7,7 @@ from typing_extensions import override
 
 from usethis._config import usethis_config
 from usethis._config_file import DotCodespellRCManager
+from usethis._fallback import FALLBACK_CODESPELL_VERSION
 from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.pyproject_toml.requires_python import (
@@ -20,7 +21,6 @@ from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.deps import Dependency
-from usethis._versions import FALLBACK_CODESPELL_VERSION
 
 if TYPE_CHECKING:
     from usethis._file.manager import KeyValueFileManager

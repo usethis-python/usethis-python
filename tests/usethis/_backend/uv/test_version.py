@@ -4,8 +4,8 @@ import pytest
 
 from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._backend.uv.version import get_uv_version
+from usethis._fallback import FALLBACK_UV_VERSION
 from usethis._test import change_cwd
-from usethis._versions import FALLBACK_UV_VERSION
 
 
 class TestGetUVVersion:

@@ -6,13 +6,13 @@ from typing import final
 from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
+from usethis._fallback import FALLBACK_SYNC_WITH_UV_VERSION
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._integrations.pre_commit.cmd_ import pre_commit_raw_cmd
 from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
-from usethis._versions import FALLBACK_SYNC_WITH_UV_VERSION
 
 
 class PreCommitToolSpec(ToolSpec):

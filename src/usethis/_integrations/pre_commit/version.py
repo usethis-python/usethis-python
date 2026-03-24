@@ -1,6 +1,6 @@
 from usethis._config import usethis_config
+from usethis._fallback import FALLBACK_PRE_COMMIT_VERSION
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
-from usethis._versions import FALLBACK_PRE_COMMIT_VERSION
 
 
 def get_pre_commit_version() -> str:

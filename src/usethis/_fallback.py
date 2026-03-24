@@ -1,8 +1,8 @@
-"""Central module for hard-coded version constants.
+"""Central module for hard-coded fallback version constants.
 
 These versions are manually bumped when necessary. Each constant corresponds to a
 recent release of the respective tool. Associated up-to-dateness tests are in
-``tests/usethis/test_versions.py``.
+``tests/usethis/test_fallback.py``.
 """
 
 FALLBACK_UV_VERSION = "0.10.12"

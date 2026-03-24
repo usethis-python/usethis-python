@@ -31,6 +31,7 @@ from usethis._core.tool import (
     use_ty,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
+from usethis._fallback import FALLBACK_RUFF_VERSION, FALLBACK_SYNC_WITH_UV_VERSION
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
@@ -40,7 +41,6 @@ from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
-from usethis._versions import FALLBACK_RUFF_VERSION, FALLBACK_SYNC_WITH_UV_VERSION
 
 
 class TestAllHooksList:

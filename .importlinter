@@ -27,7 +27,7 @@ layers =
     _file
     _subprocess | _console | _python
     _config
-    _types | errors | _versions
+    _types | errors | _fallback
     _pipeweld
 exhaustive = true
 exhaustive_ignores =

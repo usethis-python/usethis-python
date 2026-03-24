@@ -36,7 +36,6 @@ jobs:
               with:
                   version: "latest"
                   enable-cache: true
-                  python-version: "3.14"
 
             - name: Run checks
               run: |

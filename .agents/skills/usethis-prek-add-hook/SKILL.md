@@ -1,7 +1,7 @@
 ---
 name: usethis-prek-add-hook
 description: Add a prek hook for dev
-compatibility: usethis, prek, pre-commit, YAML
+compatibility: usethis, prek, git
 license: MIT
 metadata:
   version: "1.0"

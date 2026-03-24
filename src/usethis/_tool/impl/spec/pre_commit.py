@@ -12,7 +12,7 @@ from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
-from usethis._versions import SYNC_WITH_UV_VERSION
+from usethis._versions import FALLBACK_SYNC_WITH_UV_VERSION
 
 
 class PreCommitToolSpec(ToolSpec):
@@ -46,7 +46,7 @@ class PreCommitToolSpec(ToolSpec):
             return PreCommitConfig.from_single_repo(
                 pre_commit_schema.UriRepo(
                     repo="https://github.com/tsvikas/sync-with-uv",
-                    rev=SYNC_WITH_UV_VERSION,
+                    rev=FALLBACK_SYNC_WITH_UV_VERSION,
                     hooks=[pre_commit_schema.HookDefinition(id="sync-with-uv")],
                 ),
                 requires_venv=False,

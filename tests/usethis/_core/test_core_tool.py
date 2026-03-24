@@ -40,7 +40,7 @@ from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
-from usethis._versions import RUFF_VERSION, SYNC_WITH_UV_VERSION
+from usethis._versions import FALLBACK_RUFF_VERSION, FALLBACK_SYNC_WITH_UV_VERSION
 
 
 class TestAllHooksList:
@@ -725,7 +725,7 @@ class TestDeptry:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: local
@@ -893,7 +893,7 @@ dev = []
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: local
@@ -1907,7 +1907,7 @@ class TestPreCommit:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
 """
@@ -1985,7 +1985,7 @@ repos:
         entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
 """
@@ -3435,7 +3435,7 @@ class TestRequirementsTxt:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: local
@@ -3961,11 +3961,11 @@ select = ["F"]
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-check
 """
@@ -3999,15 +3999,15 @@ repos:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-check
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-format
 """
@@ -4040,11 +4040,11 @@ repos:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-format
 """
@@ -4078,11 +4078,11 @@ repos:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-format
 """

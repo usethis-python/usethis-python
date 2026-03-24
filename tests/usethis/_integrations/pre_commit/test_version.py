@@ -6,7 +6,7 @@ from usethis._integrations.pre_commit.version import (
     get_pre_commit_version,
 )
 from usethis._test import change_cwd
-from usethis._versions import PRE_COMMIT_VERSION
+from usethis._versions import FALLBACK_PRE_COMMIT_VERSION
 
 
 class TestGetMinimumPreCommitVersion:
@@ -79,7 +79,7 @@ repos:
             result = get_pre_commit_version()
 
         # Assert
-        assert result == PRE_COMMIT_VERSION
+        assert result == FALLBACK_PRE_COMMIT_VERSION
 
     def test_falls_back_to_hardcoded_when_minimum_not_declared(self, tmp_path: Path):
         # Arrange
@@ -96,4 +96,4 @@ repos:
             result = get_pre_commit_version()
 
         # Assert
-        assert result == PRE_COMMIT_VERSION
+        assert result == FALLBACK_PRE_COMMIT_VERSION

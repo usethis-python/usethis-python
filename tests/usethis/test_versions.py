@@ -6,12 +6,12 @@ from usethis._config import usethis_config
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._versions import (
-    CODESPELL_VERSION,
+    FALLBACK_CODESPELL_VERSION,
+    FALLBACK_PRE_COMMIT_VERSION,
+    FALLBACK_PYPROJECT_FMT_VERSION,
+    FALLBACK_RUFF_VERSION,
+    FALLBACK_SYNC_WITH_UV_VERSION,
     FALLBACK_UV_VERSION,
-    PRE_COMMIT_VERSION,
-    PYPROJECT_FMT_VERSION,
-    RUFF_VERSION,
-    SYNC_WITH_UV_VERSION,
 )
 
 
@@ -49,7 +49,7 @@ class TestPreCommitVersion:
         try:
             assert (
                 get_github_latest_tag(owner="pre-commit", repo="pre-commit")
-                == f"v{PRE_COMMIT_VERSION}"
+                == f"v{FALLBACK_PRE_COMMIT_VERSION}"
             )
         except GitHubTagError as err:
             _skip_on_github_error(err)
@@ -65,7 +65,7 @@ class TestRuffVersion:
         try:
             assert (
                 get_github_latest_tag(owner="astral-sh", repo="ruff-pre-commit")
-                == RUFF_VERSION
+                == FALLBACK_RUFF_VERSION
             )
         except GitHubTagError as err:
             _skip_on_github_error(err)
@@ -81,7 +81,7 @@ class TestSyncWithUVVersion:
         try:
             assert (
                 get_github_latest_tag(owner="tsvikas", repo="sync-with-uv")
-                == SYNC_WITH_UV_VERSION
+                == FALLBACK_SYNC_WITH_UV_VERSION
             )
         except GitHubTagError as err:
             _skip_on_github_error(err)
@@ -97,7 +97,7 @@ class TestCodespellVersion:
         try:
             assert (
                 get_github_latest_tag(owner="codespell-project", repo="codespell")
-                == CODESPELL_VERSION
+                == FALLBACK_CODESPELL_VERSION
             )
         except GitHubTagError as err:
             _skip_on_github_error(err)
@@ -115,7 +115,7 @@ class TestPyprojectFmtVersion:
             # at https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt
             assert (
                 get_github_latest_tag(owner="tox-dev", repo="pyproject-fmt")
-                == PYPROJECT_FMT_VERSION
+                == FALLBACK_PYPROJECT_FMT_VERSION
             )
         except GitHubTagError as err:
             _skip_on_github_error(err)

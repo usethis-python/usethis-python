@@ -1,18 +1,18 @@
 from usethis._config import usethis_config
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
-from usethis._versions import PRE_COMMIT_VERSION
+from usethis._versions import FALLBACK_PRE_COMMIT_VERSION
 
 
 def get_pre_commit_version() -> str:
     """Get an inferred pre-commit version for usethis to target.
 
     If no version can be inferred, a hard-coded version is used, corresponding to a
-    recent release (see `PRE_COMMIT_VERSION`).
+    recent release (see `FALLBACK_PRE_COMMIT_VERSION`).
     """
     version = get_minimum_pre_commit_version()
     if version is not None:
         return version
-    return PRE_COMMIT_VERSION
+    return FALLBACK_PRE_COMMIT_VERSION
 
 
 def get_minimum_pre_commit_version() -> str | None:

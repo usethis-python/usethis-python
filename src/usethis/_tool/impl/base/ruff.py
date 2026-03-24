@@ -28,7 +28,7 @@ from usethis._tool.impl.spec.ruff import RuffToolSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import Rule
 from usethis._types.backend import BackendEnum
-from usethis._versions import RUFF_VERSION
+from usethis._versions import FALLBACK_RUFF_VERSION
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -109,7 +109,7 @@ class RuffTool(RuffToolSpec, Tool):
                 PreCommitRepoConfig(
                     repo=pre_commit_schema.UriRepo(
                         repo="https://github.com/astral-sh/ruff-pre-commit",
-                        rev=RUFF_VERSION,
+                        rev=FALLBACK_RUFF_VERSION,
                         hooks=[pre_commit_schema.HookDefinition(id="ruff-check")],
                     ),
                     requires_venv=False,
@@ -120,7 +120,7 @@ class RuffTool(RuffToolSpec, Tool):
                 PreCommitRepoConfig(
                     repo=pre_commit_schema.UriRepo(
                         repo="https://github.com/astral-sh/ruff-pre-commit",
-                        rev=RUFF_VERSION,
+                        rev=FALLBACK_RUFF_VERSION,
                         hooks=[pre_commit_schema.HookDefinition(id="ruff-format")],
                     ),
                     requires_venv=False,

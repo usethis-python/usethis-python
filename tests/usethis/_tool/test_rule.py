@@ -25,8 +25,7 @@ class TestRepr:
 
     def test_tests_ignored(self):
         assert (
-            repr(RuleConfig(tests_ignored=["A"]))
-            == "RuleConfig(tests_ignored=['A'])"
+            repr(RuleConfig(tests_ignored=["A"])) == "RuleConfig(tests_ignored=['A'])"
         )
 
     def test_nontests_ignored(self):

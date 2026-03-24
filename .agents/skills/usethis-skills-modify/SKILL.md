@@ -26,7 +26,7 @@ Every time a `SKILL.md` file is modified, its `metadata.version` must be increme
 - Fixing typos or formatting
 - Changing metadata fields other than `version`
 
-The version follows a `MAJOR.MINOR` format (e.g. `"1.0"`, `"1.1"`, `"2.0"`). Increment the minor version for most changes (e.g. `"1.1"` → `"1.2"`). Increment the major version for substantial rewrites.
+The version follows a `MAJOR.MINOR` format (e.g. `"1.0"`, `"1.1"`, `"2.0"`). Increment the minor version for adding new aspects, minor fixes, etc. (e.g. `"1.1"` → `"1.2"`). Increment the major version when intending to change the behaviour of the skill in a more fundamental way.
 
 ### Why version incrementing matters
 

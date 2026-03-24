@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 
-from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd

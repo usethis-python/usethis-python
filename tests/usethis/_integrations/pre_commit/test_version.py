@@ -5,8 +5,8 @@ from usethis._integrations.pre_commit.version import (
     get_minimum_pre_commit_version,
     get_pre_commit_version,
 )
-from usethis._versions import PRE_COMMIT_VERSION
 from usethis._test import change_cwd
+from usethis._versions import PRE_COMMIT_VERSION
 
 
 class TestGetMinimumPreCommitVersion:

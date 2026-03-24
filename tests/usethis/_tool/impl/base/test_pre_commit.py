@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pytest
-
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._test import change_cwd

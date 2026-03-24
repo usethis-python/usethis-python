@@ -7,7 +7,7 @@ recent release of the respective tool. Associated up-to-dateness tests are in
 
 FALLBACK_UV_VERSION = "0.10.12"
 PRE_COMMIT_VERSION = "4.5.1"
-_RUFF_VERSION = "v0.15.7"
-_SYNC_WITH_UV_VERSION = "v0.5.0"
-_PYPROJECT_FMT_VERSION = "v2.20.0"
-_CODESPELL_VERSION = "v2.4.2"
+RUFF_VERSION = "v0.15.7"
+SYNC_WITH_UV_VERSION = "v0.5.0"
+PYPROJECT_FMT_VERSION = "v2.20.0"
+CODESPELL_VERSION = "v2.4.2"

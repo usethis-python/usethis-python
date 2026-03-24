@@ -6,12 +6,12 @@ from usethis._config import usethis_config
 from usethis._integrations.ci.github.errors import GitHubTagError
 from usethis._integrations.ci.github.tags import get_github_latest_tag
 from usethis._versions import (
+    CODESPELL_VERSION,
     FALLBACK_UV_VERSION,
     PRE_COMMIT_VERSION,
-    _CODESPELL_VERSION,
-    _PYPROJECT_FMT_VERSION,
-    _RUFF_VERSION,
-    _SYNC_WITH_UV_VERSION,
+    PYPROJECT_FMT_VERSION,
+    RUFF_VERSION,
+    SYNC_WITH_UV_VERSION,
 )
 
 
@@ -21,9 +21,7 @@ def _skip_on_github_error(err: GitHubTagError) -> None:
         or "rate limit exceeded for url" in str(err)
         or "Read timed out." in str(err)
     ):
-        pytest.skip(
-            "Failed to fetch GitHub tags (connection issues); skipping test"
-        )
+        pytest.skip("Failed to fetch GitHub tags (connection issues); skipping test")
 
 
 class TestFallbackUVVersion:
@@ -65,8 +63,9 @@ class TestRuffVersion:
             pytest.skip("Avoid flaky pipelines by testing version bumps manually")
 
         try:
-            assert _RUFF_VERSION == get_github_latest_tag(
-                owner="astral-sh", repo="ruff-pre-commit"
+            assert (
+                get_github_latest_tag(owner="astral-sh", repo="ruff-pre-commit")
+                == RUFF_VERSION
             )
         except GitHubTagError as err:
             _skip_on_github_error(err)
@@ -80,8 +79,9 @@ class TestSyncWithUVVersion:
             pytest.skip("Avoid flaky pipelines by testing version bumps manually")
 
         try:
-            assert _SYNC_WITH_UV_VERSION == get_github_latest_tag(
-                owner="tsvikas", repo="sync-with-uv"
+            assert (
+                get_github_latest_tag(owner="tsvikas", repo="sync-with-uv")
+                == SYNC_WITH_UV_VERSION
             )
         except GitHubTagError as err:
             _skip_on_github_error(err)
@@ -95,8 +95,9 @@ class TestCodespellVersion:
             pytest.skip("Avoid flaky pipelines by testing version bumps manually")
 
         try:
-            assert _CODESPELL_VERSION == get_github_latest_tag(
-                owner="codespell-project", repo="codespell"
+            assert (
+                get_github_latest_tag(owner="codespell-project", repo="codespell")
+                == CODESPELL_VERSION
             )
         except GitHubTagError as err:
             _skip_on_github_error(err)
@@ -112,8 +113,9 @@ class TestPyprojectFmtVersion:
         try:
             # N.B. this is the pre-commit mirror, it can lag behind the main repo
             # at https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt
-            assert _PYPROJECT_FMT_VERSION == get_github_latest_tag(
-                owner="tox-dev", repo="pyproject-fmt"
+            assert (
+                get_github_latest_tag(owner="tox-dev", repo="pyproject-fmt")
+                == PYPROJECT_FMT_VERSION
             )
         except GitHubTagError as err:
             _skip_on_github_error(err)

@@ -1,7 +1,7 @@
 ---
 name: usethis-skills-modify
 description: Modify agent skills (SKILL.md files)
-compatibility: GitHub Copilot, agent skills
+compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
   version: "1.0"

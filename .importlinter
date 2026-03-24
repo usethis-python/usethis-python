@@ -135,7 +135,7 @@ type = layers
 containers =
     usethis._ui.interface
 layers =
-    arch | author | badge | browse | ci | doc | docstyle | format_ | hook | init | lint | list | readme | rule | show | spellcheck | status | test | tool | typecheck | version
+    arch | author | badge | browse | doc | docstyle | format_ | hook | init | lint | list | readme | rule | show | spellcheck | status | test | tool | typecheck | version
 exhaustive = true
 
 [importlinter:contract:pipeweld]

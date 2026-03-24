@@ -6,7 +6,7 @@ One of the significant motivations for usethis is to make it easier for develope
 
 ## Why not CI Configuration?
 
-Until v0.19.0, usethis provided a `usethis ci` command, but this was deprecated for removal. It's worth giving some of the rationale for why, since it helps to clarify the philosophy of usethis.
+Until v0.19.0, usethis provided a `usethis ci` command, but this was removed in v0.20.0. It's worth giving some of the rationale for why, since it helps to clarify the philosophy of usethis.
 
 - There are many different CI providers, external services, and configurations that people might want to use. That variety is in tension with the usethis philosophy of generally providing a single, opinionated way to do things. There's often an element of setting up broader infrastructure, API keys, etc. and altogether this makes it very difficult to automate effectively.
 

@@ -41,16 +41,6 @@ browser_opt = typer.Option(
     False, "--browser", help="Open the URL in the default web browser."
 )
 
-# ci command options
-ci_remove_opt = typer.Option(
-    False, "--remove", help="Remove Bitbucket Pipelines CI instead of adding it."
-)
-matrix_python_opt = typer.Option(
-    True,
-    "--matrix-python/--no-matrix-python",
-    help="Test against multiple Python versions.",
-)
-
 # docstyle command options
 docstyle_style_arg = typer.Argument(
     default="google", help="Docstring style to enforce."

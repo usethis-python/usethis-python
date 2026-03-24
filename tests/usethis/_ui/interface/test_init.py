@@ -237,18 +237,6 @@ class TestInit:
         content = (tmp_path / "pyproject.toml").read_text()
         assert 'build-backend = "uv_build"' in content
 
-    def test_build_backend_flit(self, tmp_path: Path):
-        # Act
-        runner = CliRunner()
-        with change_cwd(tmp_path):
-            result = runner.invoke_safe(app, ["init", "--build-backend", "flit"])
-
-        # Assert
-        assert result.exit_code == 0, result.output
-        assert (tmp_path / "pyproject.toml").exists()
-        content = (tmp_path / "pyproject.toml").read_text()
-        assert 'build-backend = "flit_core.buildapi"' in content
-
     def test_build_backend_default_is_hatch(self, tmp_path: Path):
         # Act
         runner = CliRunner()

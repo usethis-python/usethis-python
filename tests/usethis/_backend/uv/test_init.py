@@ -27,15 +27,3 @@ class TestOpinionatedUVINit:
 
             # Assert
             assert manager[["build-system", "build-backend"]] == "uv_build"
-
-    def test_build_backend_is_flit(self, tmp_path: Path):
-        with (
-            change_cwd(tmp_path),
-            PyprojectTOMLManager() as manager,
-            usethis_config.set(build_backend=BuildBackendEnum.flit),
-        ):
-            # Act
-            opinionated_uv_init()
-
-            # Assert
-            assert manager[["build-system", "build-backend"]] == "flit_core.buildapi"

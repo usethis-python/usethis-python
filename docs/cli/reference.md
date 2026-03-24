@@ -57,12 +57,6 @@ Supported options:
   Possible values:
   - `hatch` for [Hatchling](https://hatch.pypa.io/) (default)
   - `uv` for [uv](https://docs.astral.sh/uv/concepts/build-backend/)
-  - `flit` for [Flit](https://flit.pypa.io/)
-  - `pdm` for [PDM](https://pdm-backend.fming.dev/)
-  - `setuptools` for [Setuptools](https://setuptools.pypa.io/)
-  - `maturin` for [Maturin](https://www.maturin.rs/) (Rust)
-  - `scikit` for [scikit-build-core](https://scikit-build-core.readthedocs.io/) (C/C++)
-  - `poetry` for [Poetry](https://python-poetry.org/)
 
 ## `usethis arch`
 

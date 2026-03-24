@@ -18,15 +18,6 @@ from usethis._types.build_backend import BuildBackendEnum
 _BUILD_SYSTEM_CONFIG: dict[BuildBackendEnum, tuple[list[str], str]] = {
     BuildBackendEnum.hatch: (["hatchling"], "hatchling.build"),
     BuildBackendEnum.uv: (["uv_build>=0.10.12,<0.11.0"], "uv_build"),
-    BuildBackendEnum.flit: (["flit_core>=3.2,<4"], "flit_core.buildapi"),
-    BuildBackendEnum.pdm: (["pdm-backend"], "pdm.backend"),
-    BuildBackendEnum.setuptools: (["setuptools>=61"], "setuptools.build_meta"),
-    BuildBackendEnum.maturin: (["maturin>=1.0,<2.0"], "maturin"),
-    BuildBackendEnum.scikit: (
-        ["scikit-build-core>=0.12", "pybind11>=3"],
-        "scikit_build_core.build",
-    ),
-    BuildBackendEnum.poetry: (["poetry-core>=2,<3"], "poetry.core.masonry.api"),
 }
 
 

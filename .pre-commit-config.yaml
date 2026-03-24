@@ -73,6 +73,14 @@ repos:
         priority: 0
   - repo: local
     hooks:
+      - id: format-dedent
+        name: format-dedent
+        entry: uv run --frozen --offline format-dedent --write
+        language: system
+        types: [python]
+        priority: 1
+  - repo: local
+    hooks:
       - id: deptry
         name: deptry
         entry: uv run --frozen --offline deptry src

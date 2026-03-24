@@ -94,6 +94,63 @@ project-key = "fun"
         # Assert
         assert result.exit_code == 1, result.output
 
+    def test_project_key_option(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """
+[tool.coverage.xml.output]
+"""
+        )
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["sonarqube", "--project-key", "my-project"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "sonar.projectKey=my-project" in result.output
+
+    def test_project_key_option_overrides_pyproject(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """
+[tool.usethis.sonarqube]
+project-key = "from-pyproject"
+
+[tool.coverage.xml.output]
+"""
+        )
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["sonarqube", "--project-key", "from-cli"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "sonar.projectKey=from-cli" in result.output
+
+    def test_project_key_option_invalid(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """
+[tool.coverage.xml.output]
+"""
+        )
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["sonarqube", "--project-key", "invalid key!"]
+            )
+
+        # Assert
+        assert result.exit_code == 1, result.output
+
     def test_invalid_pyproject(self, tmp_path: Path):
         # Arrange
         (tmp_path / "pyproject.toml").write_text("[")

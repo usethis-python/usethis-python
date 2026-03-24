@@ -15,7 +15,7 @@ from usethis._integrations.sonarqube.errors import (
 from usethis._python.version import PythonVersion, PythonVersionParseError
 
 
-def get_sonar_project_properties() -> str:
+def get_sonar_project_properties(*, project_key: str | None = None) -> str:
     """Get contents for (or from) the sonar-project.properties file."""
     path = usethis_config.cpd() / "sonar-project.properties"
     if path.exists() and path.is_file():
@@ -31,7 +31,10 @@ def get_sonar_project_properties() -> str:
     except (FileNotFoundError, PythonVersionParseError):
         python_version = PythonVersion.from_interpreter().to_short_string()
 
-    project_key = _get_sonarqube_project_key()
+    if project_key is not None:
+        _validate_project_key(project_key)
+    else:
+        project_key = _get_sonarqube_project_key()
     verbose = _is_sonarqube_verbose()
     exclusions = _get_sonarqube_exclusions()
 

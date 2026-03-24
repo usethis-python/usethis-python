@@ -29,6 +29,10 @@ class RuleConfig(BaseModel):
         ignored: Managed ignored rules.
         unmanaged_selected: Unmanaged selected rules.
         unmanaged_ignored: Unmanaged ignored rules.
+        tests_ignored: Managed cases of rules ignored for specifically the tests
+                       directory.
+        nontests_ignored: Managed cases of rules ignored for specifically non-test
+                          directories (using !tests/**/*.py glob).
         tests_unmanaged_ignored: Unmanaged cases of rules ignored for specifically the
                                  tests directory.
         nontests_unmanaged_ignored: Unmanaged cases of rules ignored for specifically
@@ -39,6 +43,8 @@ class RuleConfig(BaseModel):
     ignored: list[Rule] = Field(default_factory=list)
     unmanaged_selected: list[Rule] = Field(default_factory=list)
     unmanaged_ignored: list[Rule] = Field(default_factory=list)
+    tests_ignored: list[Rule] = Field(default_factory=list)
+    nontests_ignored: list[Rule] = Field(default_factory=list)
     tests_unmanaged_ignored: list[Rule] = Field(default_factory=list)
     nontests_unmanaged_ignored: list[Rule] = Field(default_factory=list)
 
@@ -61,6 +67,10 @@ class RuleConfig(BaseModel):
         self.ignored = []
         self.unmanaged_selected = []
         self.unmanaged_ignored = []
+        # tests_ignored, nontests_ignored, tests_unmanaged_ignored, and
+        # nontests_unmanaged_ignored are preserved because they are per-file-ignores
+        # specific to test directories and should not be cleared when removing global
+        # rules.
         return self
 
     @property
@@ -71,6 +81,8 @@ class RuleConfig(BaseModel):
             and not self.ignored
             and not self.unmanaged_selected
             and not self.unmanaged_ignored
+            and not self.tests_ignored
+            and not self.nontests_ignored
             and not self.tests_unmanaged_ignored
             and not self.nontests_unmanaged_ignored
         )
@@ -78,7 +90,12 @@ class RuleConfig(BaseModel):
     @property
     def is_related_to_tests(self) -> bool:
         """Check if the rule config has any tests-related rules."""
-        return bool(self.tests_unmanaged_ignored or self.nontests_unmanaged_ignored)
+        return bool(
+            self.tests_ignored
+            or self.nontests_ignored
+            or self.tests_unmanaged_ignored
+            or self.nontests_unmanaged_ignored
+        )
 
     @override
     def __repr__(self) -> str:
@@ -92,6 +109,10 @@ class RuleConfig(BaseModel):
             args.append(f"unmanaged_selected={self.unmanaged_selected}")
         if self.unmanaged_ignored:
             args.append(f"unmanaged_ignored={self.unmanaged_ignored}")
+        if self.tests_ignored:
+            args.append(f"tests_ignored={self.tests_ignored}")
+        if self.nontests_ignored:
+            args.append(f"nontests_ignored={self.nontests_ignored}")
         if self.tests_unmanaged_ignored:
             args.append(f"tests_unmanaged_ignored={self.tests_unmanaged_ignored}")
         if self.nontests_unmanaged_ignored:
@@ -120,6 +141,8 @@ class RuleConfig(BaseModel):
         new.ignored = self.ignored + other.ignored
         new.unmanaged_selected = self.unmanaged_selected + other.unmanaged_selected
         new.unmanaged_ignored = self.unmanaged_ignored + other.unmanaged_ignored
+        new.tests_ignored = self.tests_ignored + other.tests_ignored
+        new.nontests_ignored = self.nontests_ignored + other.nontests_ignored
         new.tests_unmanaged_ignored = (
             self.tests_unmanaged_ignored + other.tests_unmanaged_ignored
         )

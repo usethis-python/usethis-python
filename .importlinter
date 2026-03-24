@@ -2,6 +2,11 @@
 root_packages =
     usethis
 
+[importlinter:contract:acyclic-siblings]
+name = Acyclic Siblings
+type = acyclic_siblings
+ancestors = usethis
+
 [importlinter:contract:usethis]
 name = usethis
 type = layers

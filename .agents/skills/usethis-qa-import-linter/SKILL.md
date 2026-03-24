@@ -21,7 +21,7 @@ uv run lint-imports
 
 ## Configuration File
 
-This project uses the `.importlinter` INI file to configure Import Linter. You specify _contracts_ which need to be complied with between modules' imports. For the `usethis` project, we mainly use the `layers` contract: earlier listed "higher" layers are not allowed to import from any "lower" layers. 
+This project uses the `.importlinter` INI file to configure Import Linter. You specify _contracts_ which need to be complied with between modules' imports. For the `usethis` project, we mainly use the `layers` contract: earlier listed "higher" layers are not allowed to import from any "lower" layers.
 
 ### Example Structure
 

@@ -2,7 +2,14 @@ import typer
 
 from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
-from usethis._ui.options import backend_opt, frozen_opt, offline_opt, quiet_opt
+from usethis._ui.options import (
+    backend_opt,
+    ci_remove_opt,
+    frozen_opt,
+    matrix_python_opt,
+    offline_opt,
+    quiet_opt,
+)
 
 app = typer.Typer(
     help="Add config for Continuous Integration (CI) pipelines.",
@@ -13,14 +20,8 @@ app = typer.Typer(
 
 @app.command(help="Use Bitbucket Pipelines for CI.")
 def bitbucket(
-    remove: bool = typer.Option(
-        False, "--remove", help="Remove Bitbucket Pipelines CI instead of adding it."
-    ),
-    matrix_python: bool = typer.Option(
-        True,
-        "--matrix-python/--no-matrix-python",
-        help="Test against multiple Python versions.",
-    ),
+    remove: bool = ci_remove_opt,
+    matrix_python: bool = matrix_python_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,

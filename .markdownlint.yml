@@ -1,0 +1,4 @@
+line-length:
+  line_length: 999 # Effectively soft-wrapping
+no-inline-html: false
+no-duplicate-heading: false

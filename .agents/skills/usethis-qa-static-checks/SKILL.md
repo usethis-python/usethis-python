@@ -4,7 +4,7 @@ description: Perform static code checks
 compatibility: usethis, Python, prek, basedpyright
 license: MIT
 metadata:
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Static Checks
@@ -12,7 +12,7 @@ metadata:
 To perform static checks on the codebase, run:
 
 ```bash
-uv run prek run -a
+uv run prek -a
 uv run basedpyright
 ```
 

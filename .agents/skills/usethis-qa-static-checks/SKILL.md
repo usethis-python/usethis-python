@@ -4,7 +4,7 @@ description: Perform static code checks
 compatibility: usethis, Python, prek, basedpyright
 license: MIT
 metadata:
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Static Checks

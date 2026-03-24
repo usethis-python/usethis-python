@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/usethis-python/usethis-python/refs/heads/main/docs/logo.svg"><br>
+  <img src="https://raw.githubusercontent.com/usethis-python/usethis-python/refs/heads/main/docs/logo.svg" alt="usethis logo" ><br>
 </h1>
 
 # usethis
@@ -110,6 +110,9 @@ Additionally, the command line reference documentation can be viewed with `useth
 - [`usethis version`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-version) — Display the current version of usethis.
 - [`usethis browse pypi`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-browse-pypi-package) — Display or open the PyPI landing page associated with another project.
 - [`usethis show`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) — Show a specific piece of information about the project.
+  - [`usethis show backend`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) - Show the inferred project manager backend, e.g. 'uv' or 'none'.
+  - [`usethis show name`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) - Show the name of the project.
+  - [`usethis show sonarqube`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) - Show appropriate contents of a `sonar-projects.properties` file for SonarQube analysis.
 
 ## 💡 Example Usage
 

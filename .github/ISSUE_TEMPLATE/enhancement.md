@@ -1,10 +1,9 @@
 ---
 name: Enhancement Request
 about: A high-level description of a feature or other enhancement you'd like
-title: ''
-labels: ''
+title: ""
+labels: ""
 assignees: nathanjmcdougall
-
 ---
 
 **Motivation**

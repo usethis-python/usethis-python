@@ -2074,6 +2074,24 @@ repos:
                 dev_deps = get_deps_from_group("dev")
                 assert any(dep.name == "codespell" for dep in dev_deps)
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_used(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                use_ruff()
+
+                # Act
+                use_pre_commit()
+
+                # Assert
+                hook_names = get_hook_ids()
+                assert "ruff-check" in hook_names
+                assert "ruff-format" in hook_names
+
+                # Issue #1126: Deps should remain even when using pre-commit
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps)
+
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_repo_dir: Path):
@@ -2391,6 +2409,52 @@ pipelines:
                 ]
                 assert len(codespell_deps_after) == 1
                 assert codespell_deps_after == codespell_deps_before
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_deps_not_removed_when_migrating_to_pre_commit(
+            self, uv_init_dir: Path
+        ):
+            """Test that Ruff deps are NOT removed when migrating to pre-commit."""
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange - Add Ruff first
+                use_ruff()
+
+                # Verify dep is present before migration
+                dev_deps_before = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps_before)
+
+                # Act - Add pre-commit (which triggers migration)
+                use_pre_commit()
+
+                # Assert - Dep should STILL be present after migration (issue #1126)
+                dev_deps_after = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps_after)
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_deps_not_added_when_migrating_from_pre_commit(
+            self, uv_init_dir: Path
+        ):
+            """Test that Ruff deps are NOT re-added when migrating from pre-commit."""
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange - Add pre-commit first, then Ruff
+                use_pre_commit()
+                use_ruff()
+
+                # Verify dep is present before removal
+                dev_deps_before = get_deps_from_group("dev")
+                ruff_deps_before = [
+                    dep for dep in dev_deps_before if dep.name == "ruff"
+                ]
+                assert len(ruff_deps_before) == 1
+
+                # Act - Remove pre-commit (which triggers migration)
+                use_pre_commit(remove=True)
+
+                # Assert - Dep should still be present exactly once (not duplicated)
+                dev_deps_after = get_deps_from_group("dev")
+                ruff_deps_after = [dep for dep in dev_deps_after if dep.name == "ruff"]
+                assert len(ruff_deps_after) == 1
+                assert ruff_deps_after == ruff_deps_before
 
 
 class TestPyprojectFmt:
@@ -3843,9 +3907,12 @@ select = ["F"]
 
                 # Assert
                 hook_names = get_hook_ids()
+                assert "ruff-format" in hook_names
+                assert "ruff-check" in hook_names
 
-            assert "ruff-format" in hook_names
-            assert "ruff-check" in hook_names
+                # Issue #1126: Deps should remain even when using pre-commit
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_after(self, uv_init_repo_dir: Path):
@@ -3858,9 +3925,12 @@ select = ["F"]
 
                 # Assert
                 hook_names = get_hook_ids()
+                assert "ruff-format" in hook_names
+                assert "ruff-check" in hook_names
 
-            assert "ruff-format" in hook_names
-            assert "ruff-check" in hook_names
+                # Issue #1126: Deps should be added even when pre-commit is used
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove(

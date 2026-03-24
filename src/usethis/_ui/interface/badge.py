@@ -49,6 +49,20 @@ def ruff(
         _badge_effect(get_ruff_badge(), remove=remove, show=show)
 
 
+@app.command(help="Add a badge for the ty type checker.")
+def ty(
+    remove: bool = remove_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    show: bool = show_opt,
+) -> None:
+    from usethis._config_file import files_manager
+    from usethis._core.badge import get_ty_badge
+
+    with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+        _badge_effect(get_ty_badge(), remove=remove, show=show)
+
+
 @app.command(help="Add a badge for the pre-commit framework.")
 def pre_commit(
     remove: bool = remove_opt,

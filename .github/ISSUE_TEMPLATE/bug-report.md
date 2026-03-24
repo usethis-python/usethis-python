@@ -1,10 +1,9 @@
 ---
 name: Bug Report
 about: Describe a bug or anything else that seems wrong
-title: ''
-labels: 'bug'
+title: ""
+labels: "bug"
 assignees: nathanjmcdougall
-
 ---
 
 **Background**

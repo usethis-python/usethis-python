@@ -21,6 +21,10 @@ def is_rule_covered_by(rule: Rule, parent: Rule) -> bool:
     For example, "TC001" is covered by "TC", and any rule is covered by "ALL".
 
     A rule does not cover itself. "ALL" is never covered by a specific rule.
+
+    Rule codes consist of a letter prefix (the group) followed by optional digits
+    (the specific rule). A parent only covers a child if they share the same letter
+    prefix; for example, "F" covers "F101" but not "FLY" or "FLY001".
     """
     if parent == rule:
         return False
@@ -28,7 +32,13 @@ def is_rule_covered_by(rule: Rule, parent: Rule) -> bool:
         return True
     if rule == "ALL":
         return False
-    return rule.startswith(parent)
+    if not rule.startswith(parent):
+        return False
+    # After the parent prefix, the next character in the child (if any) must be a
+    # digit. This prevents "F" from covering "FLY" (next char 'L' is a letter,
+    # meaning FLY is a separate rule group).
+    rest = rule[len(parent) :]
+    return rest == "" or rest[0].isdigit()
 
 
 @dataclass(frozen=True)

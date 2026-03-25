@@ -23,6 +23,22 @@ class TestIsRuleCoveredBy:
     def test_unrelated(self):
         assert not is_rule_covered_by("E501", "TC")
 
+    def test_different_group_same_first_letter(self):
+        # FLY is a separate rule group from F
+        assert not is_rule_covered_by("FLY", "F")
+
+    def test_different_group_specific_rule(self):
+        # FLY001 belongs to FLY, not F
+        assert not is_rule_covered_by("FLY001", "F")
+
+    def test_same_group_digit_prefix(self):
+        # F101 is a subrule of F1
+        assert is_rule_covered_by("F101", "F1")
+
+    def test_same_group_specific_from_group(self):
+        # F101 is a subrule of F
+        assert is_rule_covered_by("F101", "F")
+
     def test_all_does_not_cover_itself(self):
         assert not is_rule_covered_by("ALL", "ALL")
 
@@ -91,6 +107,24 @@ class TestReconcileRules:
     def test_preserves_unrelated_existing(self):
         result = reconcile_rules(["A", "B"], ["C"])
         assert result.to_add == ["C"]
+        assert result.to_remove == []
+
+    def test_different_group_same_first_letter_not_absorbed(self):
+        # "FLY" should not be absorbed by existing "F"
+        result = reconcile_rules(["F"], ["FLY"])
+        assert result.to_add == ["FLY"]
+        assert result.to_remove == []
+
+    def test_group_does_not_replace_different_group(self):
+        # "F" should not replace existing "FLY001"
+        result = reconcile_rules(["FLY001"], ["F"])
+        assert result.to_add == ["F"]
+        assert result.to_remove == []
+
+    def test_incoming_dedup_different_groups(self):
+        # "F" and "FLY" incoming; both should survive since they're different groups
+        result = reconcile_rules([], ["F", "FLY"])
+        assert result.to_add == ["F", "FLY"]
         assert result.to_remove == []
 
     def test_is_noop_when_no_changes(self):

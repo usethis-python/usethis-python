@@ -4,7 +4,7 @@ description: Create new agent skills (SKILL.md files) following best practices f
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Creating Agent Skills
@@ -24,8 +24,28 @@ Use kebab-case (lowercase with hyphens). The name should clearly communicate wha
 
 Prefer specific, descriptive names over vague ones:
 
-- **Good:** `usethis-qa-static-checks`, `usethis-prek-add-hook`
+- **Good:** `usethis-qa-static-checks`, `usethis-prek-hook-bespoke-create`
 - **Bad:** `helper`, `utils`, `tools`
+
+### Hierarchical naming
+
+Organize names from general to specific, using a hierarchical structure: `<project>-<domain>-<topic>-<subtopic>-<action>`. This keeps related skills grouped together and makes names predictable.
+
+- Start with the project prefix (e.g. `usethis-`).
+- Follow with the domain or category (e.g. `python-`, `qa-`, `prek-`).
+- Then the topic (e.g. `code`, `hook`, `skills`).
+- Optionally narrow with a subtopic (e.g. `bespoke`).
+- End with a specific action if the skill is narrow in scope (e.g. `create`, `modify`).
+
+For example, skills about bespoke prek hooks would be named:
+
+- `usethis-prek-hook-bespoke` — general guidance on bespoke hooks (topic-level skill)
+- `usethis-prek-hook-bespoke-create` — creating a new bespoke hook
+- `usethis-prek-hook-bespoke-modify` — modifying an existing bespoke hook
+
+**Bad:** `usethis-prek-bespoke-hook` — this breaks the general-to-specific order by placing the subtopic (`bespoke`) before the topic (`hook`).
+
+When in doubt, think about how the name would sort alphabetically alongside related skills. Related skills should cluster together.
 
 ## YAML frontmatter format
 
@@ -119,6 +139,7 @@ If content grows beyond this, split details into separate reference files in the
 Before finalizing a new skill, verify:
 
 - [ ] Name is descriptive and uses kebab-case
+- [ ] Name follows general-to-specific hierarchical order
 - [ ] YAML frontmatter has all required fields (`name`, `description`, `compatibility`, `license`, `metadata.version`)
 - [ ] Version is a quoted string in `"MAJOR.MINOR"` format (e.g. `"1.0"`)
 - [ ] Description includes what the skill does and when to use it

@@ -21,19 +21,19 @@ The `.agents/skills` directory contains agent skills.
 
 <!-- This list is validated by the hooks/check-skills-documented hook. -->
 
-| Skill | Description |
-|-------|-------------|
-| `github-actions-update` | Update GitHub Actions workflows |
-| `usethis-file-remove` | Remove files from the project |
-| `usethis-pre-commit` | Guidance on pre-commit hooks — this project uses prek, not pre-commit directly |
-| `usethis-prek-add-hook` | Add a prek hook for dev |
-| `usethis-python-code` | Guidelines for Python code design decisions such as when to share vs. duplicate code |
-| `usethis-python-code-modify` | Modify Python code (e.g. refactor, add new code, or delete code) |
-| `usethis-python-enum` | Style and testing conventions for working with Python enums |
-| `usethis-python-module-layout-modify` | Modify the Python module layout (create, move, rename, or delete modules) |
-| `usethis-python-ruff` | Guidelines for complying with Ruff linter rules instead of suppressing them |
-| `usethis-qa-import-linter` | Use the Import Linter software on the usethis project |
-| `usethis-qa-static-checks` | Perform static code checks |
-| `usethis-skills-create` | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability |
-| `usethis-skills-modify` | Modify agent skills (SKILL.md files) |
-| `usethis-test-with-coverage` | Write tests that achieve full code coverage and verify coverage locally before pushing |
+| Skill                                 | Description                                                                                                           |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `github-actions-update`               | Update GitHub Actions workflows                                                                                       |
+| `usethis-file-remove`                 | Remove files from the project                                                                                         |
+| `usethis-pre-commit`                  | Guidance on pre-commit hooks — this project uses prek, not pre-commit directly                                        |
+| `usethis-prek-add-hook`               | Add a prek hook for dev                                                                                               |
+| `usethis-python-code`                 | Guidelines for Python code design decisions such as when to share vs. duplicate code                                  |
+| `usethis-python-code-modify`          | Modify Python code (e.g. refactor, add new code, or delete code)                                                      |
+| `usethis-python-enum`                 | Style and testing conventions for working with Python enums                                                           |
+| `usethis-python-module-layout-modify` | Modify the Python module layout (create, move, rename, or delete modules)                                             |
+| `usethis-python-ruff`                 | Guidelines for complying with Ruff linter rules instead of suppressing them                                           |
+| `usethis-qa-import-linter`            | Use the Import Linter software on the usethis project                                                                 |
+| `usethis-qa-static-checks`            | Perform static code checks                                                                                            |
+| `usethis-skills-create`               | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability |
+| `usethis-skills-modify`               | Modify agent skills (SKILL.md files)                                                                                  |
+| `usethis-test-with-coverage`          | Write tests that achieve full code coverage and verify coverage locally before pushing                                |

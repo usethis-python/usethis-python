@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Check that all skills in .agents/skills/ are mentioned in AGENTS.md.
+
+agents_md="AGENTS.md"
+skills_dir=".agents/skills"
+
+if [ ! -f "$agents_md" ]; then
+    echo "ERROR: $agents_md not found."
+    exit 1
+fi
+
+if [ ! -d "$skills_dir" ]; then
+    echo "ERROR: $skills_dir directory not found."
+    exit 1
+fi
+
+missing=()
+for skill_dir in "$skills_dir"/*/; do
+    skill_name=$(basename "$skill_dir")
+    if ! grep -q "$skill_name" "$agents_md"; then
+        missing+=("$skill_name")
+    fi
+done
+
+if [ ${#missing[@]} -gt 0 ]; then
+    echo "ERROR: The following skills are not mentioned in $agents_md:"
+    for skill in "${missing[@]}"; do
+        echo "  - $skill"
+    done
+    echo ""
+    echo "Please add them to the skills registry in $agents_md."
+    exit 1
+fi
+
+echo "All skills are documented in $agents_md."

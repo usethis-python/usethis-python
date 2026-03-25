@@ -532,7 +532,6 @@ repos:
         )
 
         out, _ = capfd.readouterr()
-        # Keep these messages in sync with the ones used for bitbucket
         assert out == (
             "✔ Writing '.pre-commit-config.yaml'.\n"
             "✔ Adding placeholder hook to '.pre-commit-config.yaml'.\n"

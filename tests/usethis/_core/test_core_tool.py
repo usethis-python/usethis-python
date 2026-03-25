@@ -8,13 +8,11 @@ import pytest
 from pydantic import TypeAdapter
 
 import usethis._backend.dispatch
-import usethis._python.version
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.link_mode import ensure_symlink_mode
 from usethis._backend.uv.toml import UVTOMLManager
 from usethis._config import usethis_config
 from usethis._config_file import RuffTOMLManager, files_manager
-from usethis._core.ci import use_ci_bitbucket
 from usethis._core.tool import (
     use_codespell,
     use_coverage_py,
@@ -59,30 +57,6 @@ class TestAllHooksList:
                     assert hook_name in _HOOK_ORDER
 
 
-class TestAllBitbucketCompatibleSteps:
-    def test_names_regression(self, tmp_path: Path):
-        # See https://github.com/usethis-python/usethis-python/issues/981
-        with change_cwd(tmp_path), files_manager():
-            names: set[str] = set()
-            for tool in ALL_TOOLS:
-                steps = tool.get_bitbucket_steps()
-                if steps:
-                    names.add(tool.name)
-
-        # Until https://github.com/usethis-python/usethis-python/issues/981 is resolved,
-        # if this test changes, make sure to update `use_ci_bitbucket`.
-        assert names == {
-            "Codespell",
-            "deptry",
-            "Import Linter",
-            "pre-commit",
-            "pyproject-fmt",
-            "pytest",
-            "Ruff",
-            "ty",
-        }
-
-
 class TestCodespell:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -112,31 +86,6 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             out, err = capfd.readouterr()
             assert not err
             assert out == (
-                "✔ Adding Codespell config to 'pyproject.toml'.\n"
-                "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
-            )
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_bitbucket_integration(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            with change_cwd(uv_init_dir), files_manager():
-                # Arrange
-                use_ci_bitbucket()
-                capfd.readouterr()
-
-                # Act
-                use_codespell()
-
-            # Assert
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            assert "codespell" in contents
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Install the dependency 'codespell'.\n"
-                "✔ Adding 'Run Codespell' to default pipeline in 'bitbucket-pipelines.yml'.\n"
                 "✔ Adding Codespell config to 'pyproject.toml'.\n"
                 "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
             )
@@ -755,33 +704,6 @@ repos:
                 "☐ Run 'uv run pre-commit run -a' to run the hooks manually.\n"
             )
 
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_bitbucket_integration_no_pre_commit(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir), files_manager():
-                # Arrange
-                use_ci_bitbucket()
-
-                # Act
-                use_deptry()
-
-            # Assert
-            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
-            assert "deptry" in contents
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_bitbucket_integration_with_pre_commit(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir), files_manager():
-                # Arrange
-                use_ci_bitbucket()
-                use_pre_commit()
-
-                # Act
-                use_deptry()
-
-            # Assert
-            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
-            assert "deptry" not in contents
-
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_dep(self, uv_init_dir: Path):
@@ -794,20 +716,6 @@ repos:
 
                 # Assert
                 assert not get_deps_from_group("dev")
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_bitbucket_integration(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir), files_manager():
-                # Arrange
-                use_ci_bitbucket()
-                use_deptry()
-
-                # Act
-                use_deptry(remove=True)
-
-            # Assert
-            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
-            assert "deptry" not in contents
 
         def test_use_deptry_removes_config(self, tmp_path: Path):
             """Test that use_deptry removes the tool's config when removing."""
@@ -1767,25 +1675,6 @@ repos:
                 "☐ Run 'uv run lint-imports' to run Import Linter.\n"
             )
 
-    class TestBitbucketIntegration:
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_config_file(self, tmp_path: Path):
-            # Arrange
-            (tmp_path / "bitbucket-pipelines.yml").write_text("""\
-image: atlassian/default-image:3
-""")
-
-            # Act
-            with change_cwd(tmp_path), files_manager():
-                use_import_linter()
-
-            # Assert
-            assert (tmp_path / "bitbucket-pipelines.yml").exists()
-            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
-            assert "Import Linter" in contents
-            assert "lint-imports" in contents
-            assert "placeholder" not in contents
-
 
 class TestMkDocs:
     class TestAdd:
@@ -2234,117 +2123,6 @@ repos:
             # Assert
             assert not (uv_init_repo_dir / "pyproject.toml").exists()
 
-    class TestBitbucketIntegration:
-        def test_prexisting(self, uv_init_repo_dir: Path):
-            # Arrange
-            (uv_init_repo_dir / "bitbucket-pipelines.yml").write_text(
-                """\
-image: atlassian/default-image:3
-"""
-            )
-
-            with change_cwd(uv_init_repo_dir), files_manager():
-                # Act
-                use_pre_commit()
-
-            # Assert
-            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
-            assert "pre-commit" in contents
-
-        def test_remove(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-            # Arrange
-            with change_cwd(uv_init_dir), files_manager():
-                use_pre_commit()
-            capfd.readouterr()
-            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
-                """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: Run pre-commit
-            script:
-              - echo "Hello, World!"
-"""
-            )
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_pre_commit(remove=True)
-
-            # Assert
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            assert (
-                contents
-                == """\
-image: atlassian/default-image:3
-definitions:
-    caches:
-        uv: ~/.cache/uv
-    script_items:
-      - &install-uv |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        source $HOME/.local/bin/env
-        export UV_LINK_MODE=copy
-        uv --version
-pipelines:
-    default:
-      - step:
-            name: Placeholder - add your own steps!
-            caches:
-              - uv
-            script:
-              - *install-uv
-              - echo 'Hello, world!'
-"""
-            )
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Removing 'Run pre-commit' from default pipeline in 'bitbucket-pipelines.yml'.\n"
-                "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
-                "✔ Removing '.pre-commit-config.yaml'.\n"
-                "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
-            )
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_remove_subsumed_tools(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir), files_manager():
-                # Arrange
-                use_ci_bitbucket()
-                # other tools moved to pre-commit, which should be removed
-                use_deptry()
-                use_ruff()
-
-                # Act
-                use_pre_commit()
-
-            # Assert
-            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
-            assert "pre-commit" in contents
-            assert "deptry" not in contents
-            assert "ruff" not in contents
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_add_unsubsumed_tools(self, uv_init_repo_dir: Path):
-            with change_cwd(uv_init_repo_dir), files_manager():
-                # Arrange
-                use_ci_bitbucket()
-                use_pre_commit()
-                # other tools moved from pre-commit, which should be added
-                use_deptry()
-                use_ruff()
-
-                # Act
-                use_pre_commit(remove=True)
-
-            # Assert
-            contents = (uv_init_repo_dir / "bitbucket-pipelines.yml").read_text()
-            assert "pre-commit" not in contents
-            assert "deptry" in contents
-            assert "ruff" in contents
-
     class TestMultipleIntegrations:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_hooks_run_all_tools_empty_repo(self, uv_env_dir: Path):
@@ -2510,32 +2288,6 @@ keep_full_version = true
                     "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
-        def test_bitbucket_integration(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            # Arrange
-            with change_cwd(uv_init_dir), files_manager():
-                use_ci_bitbucket()
-                capfd.readouterr()
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_pyproject_fmt()
-
-            # Assert
-            assert (
-                "pyproject-fmt" in (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            )
-            out, err = capfd.readouterr()
-            assert not err
-            assert out == (
-                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Install the dependency 'pyproject-fmt'.\n"
-                "✔ Adding 'Run pyproject-fmt' to default pipeline in 'bitbucket-pipelines.yml'.\n"
-                "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
-                "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
-            )
-
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
@@ -2586,20 +2338,6 @@ foo = "bar"
 
             # Assert
             assert (uv_init_dir / "pyproject.toml").read_text() == ""
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_bitbucket_integration(self, uv_init_dir: Path):
-            with change_cwd(uv_init_dir), files_manager():
-                # Arrange
-                use_ci_bitbucket()
-                use_pyproject_fmt()
-
-                # Act
-                use_pyproject_fmt(remove=True)
-
-            # Assert
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            assert "pyproject-fmt" not in contents
 
         def test_doesnt_add_pyproject(self, tmp_path: Path):
             # No pyproject.toml file to begin with...
@@ -2758,18 +2496,6 @@ xfail_strict = true
 log_cli_level = "INFO"
 minversion = "7\""""
             )
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_bitbucket_integration(self, uv_init_dir: Path):
-            with change_cwd(uv_init_dir), files_manager():
-                # Arrange
-                use_ci_bitbucket()
-
-                # Act
-                use_pytest()
-
-            # Assert
-            assert "pytest" in (uv_init_dir / "bitbucket-pipelines.yml").read_text()
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_coverage_integration(
@@ -3009,77 +2735,6 @@ def test_foo():
                 contents = (tmp_path / "ruff.toml").read_text()
                 assert """"tests/**" = ["RUF059", "INP"]""" in contents
 
-        class TestBitbucketIntegration:
-            def test_no_backend(
-                self,
-                tmp_path: Path,
-                capfd: pytest.CaptureFixture[str],
-                monkeypatch: pytest.MonkeyPatch,
-            ):
-                # Arrange
-
-                # Set the Python version to 3.10
-                monkeypatch.setattr(
-                    usethis._python.version,
-                    "_get_python_version",
-                    lambda: "3.10.0",
-                )
-
-                with (
-                    change_cwd(tmp_path),
-                    files_manager(),
-                    usethis_config.set(backend=BackendEnum.none),
-                ):
-                    use_ci_bitbucket()
-
-                    # Act
-                    use_pytest()
-
-                # Assert
-                assert (tmp_path / "bitbucket-pipelines.yml").read_text() == (
-                    """\
-image: atlassian/default-image:3
-definitions:
-    script_items:
-      - &ensure-venv |
-        python -m venv .venv
-        source .venv/bin/activate
-pipelines:
-    default:
-      - step:
-            name: Test on 3.10
-            script:
-              - *ensure-venv
-              - pip install pytest
-              - pytest -x --junitxml=test-reports/report.xml
-            image: python:3.10
-"""
-                )
-                out, err = capfd.readouterr()
-                assert not err
-                assert out == (
-                    """\
-✔ Writing 'bitbucket-pipelines.yml'.
-✔ Adding placeholder step to default pipeline in 'bitbucket-pipelines.yml'.
-☐ Remove the placeholder pipeline step in 'bitbucket-pipelines.yml'.
-☐ Replace it with your own pipeline steps.
-☐ Alternatively, use 'usethis tool' to add other tools and their steps.
-ℹ Consider `usethis tool pytest` to test your code for the pipeline.
-☐ Run your pipeline via the Bitbucket website.
-☐ Add the test dependency 'pytest'.
-✔ Writing 'pytest.ini'.
-✔ Adding pytest config to 'pytest.ini'.
-✔ Creating '/tests'.
-✔ Writing '/tests/conftest.py'.
-✔ Adding 'Test on 3.10' to default pipeline in 'bitbucket-pipelines.yml'.
-☐ Declare your test dependencies in 'bitbucket-pipelines.yml'.
-ℹ Add test dependencies to this line: 'pip install pytest'
-☐ Add test files to the '/tests' directory with the format 'test_*.py'.
-☐ Add test functions with the format 'test_*()'.
-☐ Run 'pytest' to run the tests.
-"""  # noqa: RUF001
-                )
-
     class TestRemove:
         class TestRuffIntegration:
             def test_deselected(self, uv_init_dir: Path):
@@ -3161,133 +2816,6 @@ select = ["PT"]
 
                     # Assert
                     assert not get_deps_from_group("test")
-
-        class TestBitbucketIntegration:
-            def test_remove(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-                # Arrange
-                with (
-                    change_cwd(uv_init_dir),
-                    files_manager(),
-                    usethis_config.set(quiet=True),
-                ):
-                    use_pytest()
-
-                (uv_init_dir / "bitbucket-pipelines.yml").write_text(
-                    """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: Test on 3.12
-            script:
-              - uv run --python 3.12 pytest -x --junitxml=test-reports/report.xml
-"""
-                )
-
-                # Act
-                with change_cwd(uv_init_dir), files_manager():
-                    use_pytest(remove=True)
-
-                # Assert
-                contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-                assert (
-                    contents
-                    == """\
-image: atlassian/default-image:3
-definitions:
-    caches:
-        uv: ~/.cache/uv
-    script_items:
-      - &install-uv |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        source $HOME/.local/bin/env
-        export UV_LINK_MODE=copy
-        uv --version
-pipelines:
-    default:
-      - step:
-            name: Placeholder - add your own steps!
-            caches:
-              - uv
-            script:
-              - *install-uv
-              - echo 'Hello, world!'
-"""
-                )
-                out, err = capfd.readouterr()
-                assert not err
-                assert out.replace("\n", "").replace(" ", "") == (
-                    "✔ Removing 'Test on 3.12' from default pipeline in 'bitbucket-pipelines.yml'.\n"
-                    "✔ Adding cache 'uv' definition to 'bitbucket-pipelines.yml'.\n"
-                    "✔ Removing pytest config from 'pyproject.toml'.\n"
-                    "✔ Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'.\n"
-                    "✔ Removing '/tests'.\n"
-                ).replace("\n", "").replace(" ", "")
-
-            def test_remove_no_backend(
-                self,
-                tmp_path: Path,
-                capfd: pytest.CaptureFixture[str],
-                monkeypatch: pytest.MonkeyPatch,
-            ):
-                # Set the Python version to 3.10
-                monkeypatch.setattr(
-                    usethis._python.version,
-                    "_get_python_version",
-                    lambda: "3.10.0",
-                )
-
-                # Arrange
-                with (
-                    change_cwd(tmp_path),
-                    files_manager(),
-                    usethis_config.set(quiet=True, backend=BackendEnum.none),
-                ):
-                    use_pytest()
-
-                (tmp_path / "bitbucket-pipelines.yml").write_text(
-                    """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: Test on 3.10
-            image: python:3.10
-            script:
-              - pytest -x --junitxml=test-reports/report.xml
-"""
-                )
-
-                # Act
-                with (
-                    change_cwd(tmp_path),
-                    files_manager(),
-                    usethis_config.set(backend=BackendEnum.none),
-                ):
-                    use_pytest(remove=True)
-
-                # Assert
-                contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
-                assert (
-                    contents
-                    == """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: Placeholder - add your own steps!
-            script:
-              - echo 'Hello, world!'
-"""
-                )
-                out, err = capfd.readouterr()
-                assert not err
-                assert out.replace("\n", "").replace(" ", "") == (
-                    "✔ Removing 'Test on 3.10' from default pipeline in 'bitbucket-pipelines.yml'.\n"
-                    "✔ Removing pytest config from 'pytest.ini'.\n"
-                    "✔ Removing '/tests'.\n"
-                    "✔ Removing 'pytest.ini'.\n"
-                ).replace("\n", "").replace(" ", "")
 
         def test_coverage_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
@@ -4181,119 +3709,6 @@ repos:
 """
             )
 
-    class TestBitbucketIntegration:
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_add_linter_only(self, tmp_path: Path):
-            # Arrange
-            (tmp_path / "bitbucket-pipelines.yml").write_text("""\
-image: atlassian/default-image:3
-""")
-
-            # Act
-            with change_cwd(tmp_path), files_manager():
-                use_ruff(linter=True, formatter=False)
-
-            # Assert
-            assert (tmp_path / "bitbucket-pipelines.yml").exists()
-            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
-            assert "ruff check" in contents
-            assert "ruff format" not in contents
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_add_formatter_only(self, tmp_path: Path):
-            # Arrange
-            (tmp_path / "bitbucket-pipelines.yml").write_text("""\
-image: atlassian/default-image:3
-""")
-
-            # Act
-            with change_cwd(tmp_path), files_manager():
-                use_ruff(linter=False, formatter=True)
-
-            # Assert
-            assert (tmp_path / "bitbucket-pipelines.yml").exists()
-            contents = (tmp_path / "bitbucket-pipelines.yml").read_text()
-            assert "ruff check" not in contents
-            assert "ruff format" in contents
-
-        def test_remove_linter_only(self, uv_init_dir: Path):
-            # Arrange
-            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
-                """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: Run Ruff
-            script:
-              - uv run ruff check --fix --force-exclude
-"""
-            )
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff(linter=True, formatter=False, remove=True)
-
-            # Assert
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            assert (
-                contents
-                == """\
-image: atlassian/default-image:3
-definitions:
-    caches:
-        uv: ~/.cache/uv
-    script_items:
-      - &install-uv |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        source $HOME/.local/bin/env
-        export UV_LINK_MODE=copy
-        uv --version
-pipelines:
-    default:
-      - step:
-            name: Placeholder - add your own steps!
-            caches:
-              - uv
-            script:
-              - *install-uv
-              - echo 'Hello, world!'
-"""
-            )
-
-        def test_remove_formatter_only_unchanged(self, uv_init_dir: Path):
-            # Arrange
-            (uv_init_dir / "bitbucket-pipelines.yml").write_text(
-                """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: Run Ruff
-            script:
-              - uv run ruff check --fix --force-exclude
-"""
-            )
-
-            # Act
-            with change_cwd(uv_init_dir), files_manager():
-                use_ruff(linter=False, formatter=True, remove=True)
-
-            # Assert
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            assert (
-                contents
-                == """\
-image: atlassian/default-image:3
-pipelines:
-    default:
-      - step:
-            name: Run Ruff
-            script:
-              - uv run ruff check --fix --force-exclude
-"""
-            )
-
     class TestConfig:
         def test_removed(self, uv_init_dir: Path):
             # Arrange
@@ -4408,22 +3823,6 @@ class TestTy:
             assert not err
             assert "Adding ty config to 'pyproject.toml'." in out
             assert "☐ Run 'uv run ty check' to run the ty type checker.\n" in out
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_bitbucket_integration(
-            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
-        ):
-            with change_cwd(uv_init_dir), files_manager():
-                # Arrange
-                use_ci_bitbucket()
-                capfd.readouterr()
-
-                # Act
-                use_ty()
-
-            # Assert
-            contents = (uv_init_dir / "bitbucket-pipelines.yml").read_text()
-            assert "ty" in contents
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_integration(

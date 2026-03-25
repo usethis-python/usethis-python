@@ -88,57 +88,6 @@ class TestInit:
         # Assert
         assert result.exit_code == 0, result.output
 
-    def test_bitbucket_docstyle_and_status(self, tmp_path: Path):
-        # Act
-        runner = CliRunner()
-        with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app,
-                [
-                    "init",
-                    "--ci",
-                    "bitbucket",
-                    "--docstyle",
-                    "numpy",
-                    "--hook",
-                    "--status",
-                    "production",
-                ],
-            )
-
-        # Assert
-        assert result.exit_code == 0, result.output
-        assert (tmp_path / "pyproject.toml").exists()
-        assert result.output == (
-            "✔ Writing 'pyproject.toml' and initializing project.\n"
-            "✔ Writing 'README.md'.\n"
-            "☐ Populate 'README.md' to help users understand the project.\n"
-            "✔ Setting the development status to '5 - Production/Stable'.\n"
-            "✔ Adding a recommended git hook framework.\n"
-            "☐ Run 'uv run pre-commit run -a' to run the hooks manually.\n"
-            "✔ Adding recommended documentation tools.\n"
-            "☐ Run 'uv run mkdocs build' to build the documentation.\n"
-            "☐ Run 'uv run mkdocs serve' to serve the documentation locally.\n"
-            "✔ Adding recommended linters.\n"
-            "☐ Run 'uv run deptry src' to run deptry.\n"
-            "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
-            "✔ Adding recommended formatters.\n"
-            "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
-            "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
-            "✔ Setting docstring style to numpy.\n"
-            "✔ Adding recommended spellcheckers.\n"
-            "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
-            "✔ Adding recommended test frameworks.\n"
-            "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
-            "☐ Add test functions with the format 'test_*()'.\n"
-            "☐ Run 'uv run pytest' to run the tests.\n"
-            "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
-            "✔ Adding recommended type checkers.\n"
-            "☐ Run 'uv run ty check' to run the ty type checker.\n"
-            "✔ Adding Bitbucket Pipelines configuration.\n"
-            "☐ Run your pipeline via the Bitbucket website.\n"
-        )
-
     def test_arch_included(self, tmp_path: Path):
         # Act
         runner = CliRunner()

@@ -9,18 +9,7 @@ from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._console import how_print, tick_print
 from usethis._deps import add_deps_to_group, remove_deps_from_group
-from usethis._detect.ci.bitbucket import is_bitbucket_used
 from usethis._detect.pre_commit import is_pre_commit_used
-from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
-from usethis._integrations.ci.bitbucket.anchor import (
-    ScriptItemAnchor as BitbucketScriptItemAnchor,
-)
-from usethis._integrations.ci.bitbucket.steps import (
-    add_bitbucket_step_in_default,
-    bitbucket_steps_are_equivalent,
-    get_steps_in_default,
-    remove_bitbucket_step_from_default,
-)
 from usethis._integrations.pre_commit.cmd_ import pre_commit_raw_cmd
 from usethis._integrations.pre_commit.hooks import (
     add_repo,
@@ -34,7 +23,6 @@ from usethis._tool.rule import reconcile_rules
 from usethis._tool.spec import ToolMeta, ToolSpec
 from usethis._types.backend import BackendEnum
 from usethis.errors import (
-    NoDefaultToolCommand,
     UnhandledConfigEntryError,
 )
 
@@ -68,8 +56,7 @@ class Tool(ToolSpec, Protocol):
         This method returns the command string for running the tool, which varies
         based on the current backend (e.g., "uv", "none"), along with installation
         method (e.g. virtual environment/development dependency versus pre-commit).
-        This is used to avoid duplication in get_bitbucket_steps methods and help
-        messages.
+        This is used to avoid duplication in help messages.
 
         Returns:
             The command string for running the tool for how-to-use instructions.
@@ -422,115 +409,6 @@ class Tool(ToolSpec, Protocol):
         if self.is_pre_commit_config_present():
             return "pre-commit"
         return None
-
-    def get_bitbucket_steps(
-        self, *, matrix_python: bool = True
-    ) -> list[bitbucket_schema.Step]:
-        """Get the Bitbucket pipeline step associated with this tool.
-
-        By default, this creates a single step using the tool's (default) command.
-        Tools can override this method for more complex step requirements (e.g., pytest
-        with multiple Python versions, or Ruff with separate linter/formatter steps).
-
-        Args:
-            matrix_python: Whether to use a Python version matrix. When False,
-                           only the current development version is used.
-        """
-        # N.B. the default implementation doesn't need matrix_python,
-        # but it's included in the signature to allow for it to be used, e.g. for pytest
-
-        try:
-            cmd = self.how_to_use_cmd()
-        except NoDefaultToolCommand:
-            return []
-
-        backend = get_backend()
-        if backend is BackendEnum.uv:
-            return [
-                bitbucket_schema.Step(
-                    name=f"Run {self.name}",
-                    caches=["uv"],
-                    script=bitbucket_schema.Script(
-                        [
-                            BitbucketScriptItemAnchor(name="install-uv"),
-                            cmd,
-                        ]
-                    ),
-                )
-            ]
-        elif backend is BackendEnum.none:
-            return [
-                bitbucket_schema.Step(
-                    name=f"Run {self.name}",
-                    script=bitbucket_schema.Script(
-                        [
-                            BitbucketScriptItemAnchor(name="ensure-venv"),
-                            cmd,
-                        ]
-                    ),
-                )
-            ]
-        else:
-            assert_never(backend)
-
-    def get_managed_bitbucket_step_names(self) -> list[str]:
-        """These are the names of the Bitbucket steps that are managed by this tool.
-
-        They should be removed if they are not currently active according to
-        `get_bitbucket_steps`. They should also be removed if the tool is removed.
-        """
-        return [
-            step.name for step in self.get_bitbucket_steps() if step.name is not None
-        ]
-
-    def remove_bitbucket_steps(self) -> None:
-        """Remove the Bitbucket steps associated with this tool."""
-        for step in get_steps_in_default():
-            if step.name in self.get_managed_bitbucket_step_names():
-                remove_bitbucket_step_from_default(step)
-
-    def update_bitbucket_steps(self, *, matrix_python: bool = True) -> None:
-        """Add Bitbucket steps associated with this tool, and remove outdated ones.
-
-        Only runs if Bitbucket is used in the project. If pre-commit is being used,
-        this method short-circuits since the tool will run via pre-commit instead.
-
-        Args:
-            matrix_python: Whether to use a Python version matrix. When False,
-                           only the current development version is used.
-        """
-        # If pre-commit is being used, we assume the tool is running via pre-commit,
-        # and we don't need to add a separate Bitbucket step for it.
-        self.unconditional_update_bitbucket_steps(
-            matrix_python=matrix_python, skip_add=is_pre_commit_used()
-        )
-
-    def unconditional_update_bitbucket_steps(
-        self, *, matrix_python: bool = True, skip_add: bool = False
-    ) -> None:
-        if not is_bitbucket_used() or not self.is_used():
-            return
-
-        # Add the new steps
-        steps = self.get_bitbucket_steps(matrix_python=matrix_python)
-        if not skip_add:
-            for step in steps:
-                add_bitbucket_step_in_default(step)
-
-        # Remove any old steps that are not actively managed by this tool
-        managed_names = self.get_managed_bitbucket_step_names()
-
-        # Early return if there are no steps to add and no managed steps to clean up
-        # This avoids unnecessarily reading the Bitbucket YAML file (which would
-        # initialize an empty file with {})
-        if not steps and not managed_names:
-            return
-
-        for step in get_steps_in_default():
-            if step.name in managed_names and not any(
-                bitbucket_steps_are_equivalent(step, step_) for step_ in steps
-            ):
-                remove_bitbucket_step_from_default(step)
 
     def _get_select_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
         """Get the configuration keys for selected rules.

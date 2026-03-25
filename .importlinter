@@ -28,7 +28,6 @@ layers =
     _subprocess | _console | _python
     _config
     _types | errors | _fallback
-    _pipeweld
 exhaustive = true
 exhaustive_ignores =
     _version
@@ -51,7 +50,7 @@ containers =
     usethis._core
 layers =
     badge | docstyle | list | rule
-    author | browse | ci | readme | show | status | tool
+    author | browse | readme | show | status | tool
 exhaustive = true
 
 [importlinter:contract:tool]
@@ -138,22 +137,11 @@ layers =
     arch | author | badge | browse | doc | docstyle | format_ | hook | init | lint | list | readme | rule | show | spellcheck | status | test | tool | typecheck | version
 exhaustive = true
 
-[importlinter:contract:pipeweld]
-name = usethis._pipeweld
-type = layers
-containers =
-    usethis._pipeweld
-layers =
-    func
-    result
-    containers | ops
-exhaustive = true
-
 [importlinter:contract:integrations_ci]
 name = usethis._integrations.ci
 type = layers
 containers =
     usethis._integrations.ci
 layers =
-    bitbucket | github
+    github
 exhaustive = true

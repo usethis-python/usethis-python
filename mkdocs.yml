@@ -15,8 +15,6 @@ nav:
     - Similar Projects: about/similar-projects.md
     - FAQ: about/faq.md
     - License: about/about-license.md
-    - Internal Utilities:
-      - Pipeweld: pipeweld.md
 
 theme:
   name: material

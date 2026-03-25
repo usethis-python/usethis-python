@@ -77,7 +77,7 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_managed_files()
 
 
-(*, remove: bool = False, how: bool = False) -> None:
+def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
     tool = CoveragePyTool()
 
     if how:

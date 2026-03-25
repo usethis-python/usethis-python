@@ -336,6 +336,40 @@ lint.per-file-ignores."tests/**" = ["INP"]
 """
             )
 
+    class TestUnignoreRulesInGlob:
+        def test_removes_rule(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.ruff]
+lint.select = [ "RUF" ]
+lint.per-file-ignores."tests/**" = ["RUF059"]
+""")
+
+            with change_cwd(tmp_path), files_manager():
+                # Act
+                RuffTool().unignore_rules_in_glob(["RUF059"], glob="tests/**")
+
+            # Assert
+            contents = (tmp_path / "pyproject.toml").read_text()
+            assert "RUF059" not in contents
+
+        def test_no_op_when_not_ignored(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.ruff]
+lint.select = [ "RUF" ]
+""")
+
+            with change_cwd(tmp_path), files_manager():
+                # Act
+                RuffTool().unignore_rules_in_glob(["RUF059"], glob="tests/**")
+
+            # Assert - no changes, no output
+            out, _err = capfd.readouterr()
+            assert "RUF059" not in out
+
     class TestAddConfig:
         def test_empty_dir(self, tmp_path: Path):
             # Expect ruff.toml to be preferred

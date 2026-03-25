@@ -47,8 +47,6 @@ class TestInit:
             "☐ Add test functions with the format 'test_*()'.\n"
             "☐ Run 'uv run pytest' to run the tests.\n"
             "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
-            "✔ Adding recommended type checkers.\n"
-            "☐ Run 'uv run ty check' to run the ty type checker.\n"
         )
 
         # Check the pre-commit hooks are added in the correct order
@@ -59,7 +57,6 @@ class TestInit:
                 "pyproject-fmt",
                 "ruff-check",
                 "ruff-format",
-                "ty",
                 "deptry",
                 "codespell",
             ]
@@ -118,8 +115,6 @@ class TestInit:
             "☐ Add test functions with the format 'test_*()'.\n"
             "☐ Run 'uv run pytest' to run the tests.\n"
             "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
-            "✔ Adding recommended type checkers.\n"
-            "☐ Run 'uv run ty check' to run the ty type checker.\n"
             "✔ Adding recommended architecture analysis tools.\n"
             "☐ Run 'uv run lint-imports' to run Import Linter.\n"
         )
@@ -169,9 +164,6 @@ class TestInit:
             "☐ Add test functions with the format 'test_*()'.\n"
             "☐ Run 'pytest' to run the tests.\n"
             "☐ Run 'pytest --cov' to run your tests with Coverage.py.\n"
-            "✔ Adding recommended type checkers.\n"
-            "☐ Add the dev dependency 'ty'.\n"
-            "☐ Run 'ty check' to run the ty type checker.\n"
         )
 
     def test_build_backend_uv(self, tmp_path: Path):

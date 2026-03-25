@@ -20,7 +20,6 @@ jobs:
     analyze:
         name: Analyze
         permissions:
-            contents: read # required for actions/checkout
             pull-requests: write # Required for bot comments
             id-token: write # Required for OIDC authentication with CodSpeed
         runs-on: "ubuntu-latest"
@@ -37,18 +36,18 @@ jobs:
                   git config --global user.name placeholder
                   git config --global user.email placeholder@example.com
 
+            - name: Set up uv
+              uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d # v7.1.0
+              with:
+                  version: "latest"
+                  enable-cache: true
+
             # N.B. codspeed interacts with some quite low-level Python internals and
             # it doesn't always work well with the python-build-standalone releases
             # provided via uv. We've been recommended by CodSpeed support to use this
             # step.
             - name: Set up Python
               uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
-
-            - name: Set up uv
-              uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d # v7.1.0
-              with:
-                  version: "latest"
-                  enable-cache: true
 
             - name: Run benchmarks
               uses: CodSpeedHQ/action@281164b0f014a4e7badd2c02cecad9b595b70537 # v4.11.1

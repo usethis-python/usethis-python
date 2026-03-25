@@ -26,8 +26,6 @@ def typecheck(
     from usethis._toolset.typecheck import use_typecheckers
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend

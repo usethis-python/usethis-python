@@ -26,8 +26,6 @@ def test(
     from usethis._toolset.test import use_test_frameworks
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend

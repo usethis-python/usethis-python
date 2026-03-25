@@ -52,9 +52,6 @@ def init(
     from usethis._console import err_print, instruct_print
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-    assert isinstance(build_backend, BuildBackendEnum)
-
     if path is not None:
         path_ = Path(path)
         if not path_.exists():
@@ -121,7 +118,6 @@ def _init(  # noqa: PLR0915
     project_init()
     add_readme()
 
-    assert isinstance(status, DevelopmentStatusEnum)
     use_development_status(status)
 
     if hook:
@@ -147,7 +143,6 @@ def _init(  # noqa: PLR0915
         use_formatters(how=True)
     if docstyle is not None:
         tick_print(f"Setting docstring style to {docstyle.value}.")
-        assert isinstance(docstyle, DocStyleEnum)
         with usethis_config.set(instruct_only=True):
             use_docstyle(style=docstyle)
     if spellcheck:

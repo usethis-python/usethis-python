@@ -26,8 +26,6 @@ def spellcheck(
     from usethis._toolset.spellcheck import use_spellcheckers
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend

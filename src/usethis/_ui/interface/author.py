@@ -25,8 +25,6 @@ def author(
     from usethis._core.author import add_author
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     if not email:
         email_arg = None
     else:

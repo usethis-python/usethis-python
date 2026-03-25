@@ -39,8 +39,6 @@ def codespell(
     from usethis._config_file import files_manager
     from usethis._core.tool import use_codespell
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend
@@ -73,8 +71,6 @@ def coverage_py(
     from usethis._config_file import files_manager
     from usethis._core.tool import use_coverage_py
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend
@@ -100,8 +96,6 @@ def deptry(
     from usethis._config_file import files_manager
     from usethis._core.tool import use_deptry
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend
@@ -126,8 +120,6 @@ def import_linter(
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_import_linter
-
-    assert isinstance(backend, BackendEnum)
 
     with (
         usethis_config.set(
@@ -179,8 +171,6 @@ def pre_commit(
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pre_commit
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend
@@ -205,8 +195,6 @@ def pyproject_fmt(
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_fmt
-
-    assert isinstance(backend, BackendEnum)
 
     with (
         usethis_config.set(
@@ -233,8 +221,6 @@ def pyproject_toml(
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_toml
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend
@@ -257,8 +243,6 @@ def pytest(
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pytest
-
-    assert isinstance(backend, BackendEnum)
 
     with (
         usethis_config.set(
@@ -284,8 +268,6 @@ def requirements_txt(
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_requirements_txt
-
-    assert isinstance(backend, BackendEnum)
 
     with (
         usethis_config.set(
@@ -314,8 +296,6 @@ def ruff(
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ruff
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend
@@ -340,8 +320,6 @@ def ty(
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ty
-
-    assert isinstance(backend, BackendEnum)
 
     with (
         usethis_config.set(

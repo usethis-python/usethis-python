@@ -1,5 +1,5 @@
 ---
-name: usethis-prek-bespoke-hook
+name: usethis-prek-hook-bespoke-create
 description: Write bespoke prek hooks as Python scripts for custom project-specific checks
 compatibility: usethis, prek, git, Python
 license: MIT

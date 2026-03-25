@@ -26,5 +26,11 @@ jobs:
                   enable-cache: true
                   activate-environment: true
 
+            - name: Set up Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+
+            - name: Install external agent skills
+              run: npx skills experimental_install
+
             - name: Setup dependencies
               run: uv sync

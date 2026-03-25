@@ -163,3 +163,7 @@ cython_debug/
 
 # Windsurf config
 .windsurfrules
+
+# Agent config
+.agents/skills/*
+!.agents/skills/usethis-*

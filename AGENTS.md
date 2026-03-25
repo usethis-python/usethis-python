@@ -12,18 +12,13 @@ Follow standard contributing guidelines as documented in CONTRIBUTING.md.
 
 The `.agents/skills` directory contains agent skills.
 
-### Important skills
-
-- Always run static checks using the `usethis-qa-static-checks` skill before finishing a task.
-- If modifying Python code, always use the `usethis-python-code`, `usethis-python-code-modify`, and `usethis-python-module-layout-modify` skills.
-
 ### Skills registry
 
-<!-- This list is validated by the hooks/check-skills-documented.py hook. -->
+#### usethis-specific skills
 
 | Skill                                 | Description                                                                                                           |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `github-actions-update`               | Update GitHub Actions workflows                                                                                       |
+| `usethis-github-actions-update`       | Update GitHub Actions workflows                                                                                       |
 | `usethis-file-remove`                 | Remove files from the project                                                                                         |
 | `usethis-pre-commit`                  | Guidance on pre-commit hooks — this project uses prek, not pre-commit directly                                        |
 | `usethis-prek-add-hook`               | Add a prek hook for dev                                                                                               |
@@ -38,5 +33,22 @@ The `.agents/skills` directory contains agent skills.
 | `usethis-qa-import-linter`            | Use the Import Linter software on the usethis project                                                                 |
 | `usethis-qa-static-checks`            | Perform static code checks                                                                                            |
 | `usethis-skills-create`               | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability |
+| `usethis-skills-external-add`         | Add an external (community) skill and document it in AGENTS.md                                                        |
 | `usethis-skills-modify`               | Modify agent skills (SKILL.md files)                                                                                  |
 | `usethis-test-with-coverage`          | Write tests that achieve full code coverage and verify coverage locally before pushing                                |
+
+#### External skills
+
+External skills can be installed via `npx skills experimental_install` if they are not present.
+
+| Skill                    | Source                | Description                                                             |
+| ------------------------ | --------------------- | ----------------------------------------------------------------------- |
+| `codspeed-optimize`      | `CodSpeedHQ/codspeed` | Optimize code for performance using CodSpeed benchmarks and flamegraphs |
+| `codspeed-setup-harness` | `CodSpeedHQ/codspeed` | Set up performance benchmarks and the CodSpeed harness for a project    |
+
+### Important Instructions about Skills usage
+
+- ALWAYS use relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
+- ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task
+  is complete, always run this skill to check for any issues before finishing.
+- ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.

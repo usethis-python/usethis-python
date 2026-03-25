@@ -127,7 +127,7 @@ def _get_layered_architecture_by_module_by_root_package() -> (
         try:
             layered_architecture_by_module = get_layered_architectures(root_package)
         except ImportGraphBuildFailedError:
-            layered_architecture_by_module: dict[str, LayeredArchitecture] = {}
+            layered_architecture_by_module = {}
 
         if not layered_architecture_by_module:
             layered_architecture_by_module = {
@@ -177,18 +177,23 @@ def _get_import_linter_config_ini() -> str:
         lines.append(f"[importlinter:contract:{idx}]")
         lines.append(f"name = {contract['name']}")
         lines.append(f"type = {contract['type']}")
-        _append_ini_list(lines, "layers", contract["layers"])
-        _append_ini_list(lines, "containers", contract["containers"])
+        contract_layers = contract["layers"]
+        assert isinstance(contract_layers, list)
+        _append_ini_list(lines, "layers", contract_layers)
+        contract_containers = contract["containers"]
+        assert isinstance(contract_containers, list)
+        _append_ini_list(lines, "containers", contract_containers)
         lines.append(f"exhaustive = {contract['exhaustive']}")
         if "exhaustive_ignores" in contract:
-            _append_ini_list(lines, "exhaustive_ignores", contract["exhaustive_ignores"])
+            contract_ignores = contract["exhaustive_ignores"]
+            assert isinstance(contract_ignores, list)
+            _append_ini_list(lines, "exhaustive_ignores", contract_ignores)
 
     return "\n".join(lines)
 
 
-def _append_ini_list(lines: list[str], key: str, values: object) -> None:
+def _append_ini_list(lines: list[str], key: str, values: list[str]) -> None:
     """Append a key-value pair to the INI lines, handling list values."""
-    assert isinstance(values, list)
     if len(values) == 1:
         lines.append(f"{key} = {values[0]}")
     else:

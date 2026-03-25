@@ -26,7 +26,12 @@ Every time a `SKILL.md` file is modified, its `metadata.version` must be increme
 - Fixing typos or formatting
 - Changing metadata fields other than `version`
 
-The version follows a `MAJOR.MINOR` format (e.g. `"1.0"`, `"1.1"`, `"2.0"`). Increment the minor version for adding new aspects, minor fixes, etc. (e.g. `"1.1"` → `"1.2"`). Increment the major version when intending to change the behaviour of the skill in a more fundamental way.
+The version follows a `MAJOR.MINOR` format (e.g. `"1.0"`, `"1.1"`, `"2.0"`).
+
+- **Minor version bump** (e.g. `"1.1"` → `"1.2"`): Use for most changes, including adding new guidance or instructions on top of existing ones, rewording, fixing typos, expanding examples, or making minor corrections. If the fundamental approach of the skill remains the same, it's a minor bump.
+- **Major version bump** (e.g. `"1.2"` → `"2.0"`): Use only when the fundamental approach or strategy of the skill is being replaced, reversed, or overhauled. A major bump means the previous version's guidance was flawed or is being abandoned in favour of a substantially different approach.
+
+When in doubt, use a minor version bump. Adding extra guidance to a skill is not a fundamental change — it's a refinement.
 
 ### Why version incrementing matters
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, TypeAlias
 
 from pydantic import BaseModel, Field
@@ -30,17 +31,32 @@ def is_rule_covered_by(rule: Rule, parent: Rule) -> bool:
     return rule.startswith(parent)
 
 
+@dataclass(frozen=True)
+class RuleReconciliation:
+    """Result of reconciling incoming rules with existing rules.
+
+    Attributes:
+        to_add: Rules that should be added to the configuration.
+        to_remove: Existing rules that are now subsumed and should be removed.
+    """
+
+    to_add: list[Rule] = field(default_factory=list)
+    to_remove: list[Rule] = field(default_factory=list)
+
+    @property
+    def is_noop(self) -> bool:
+        """Whether the reconciliation results in no changes."""
+        return not self.to_add and not self.to_remove
+
+
 def reconcile_rules(
     existing: Sequence[Rule], incoming: Sequence[Rule]
-) -> tuple[list[Rule], list[Rule]]:
+) -> RuleReconciliation:
     """Determine which rules to add and which existing rules to remove.
 
     Respects the rule code hierarchy: more general rules subsume more specific
     ones. For example, adding "TC" when "TC001" already exists will replace
     "TC001" with "TC". Adding "TC001" when "TC" already exists is a no-op.
-
-    Returns:
-        A tuple of (rules_to_add, rules_to_remove).
     """
     # Filter out incoming rules already covered by existing rules
     incoming_filtered: list[Rule] = []
@@ -71,7 +87,9 @@ def reconcile_rules(
         ):
             to_remove.append(existing_rule)
 
-    return sorted(incoming_deduped), sorted(to_remove)
+    return RuleReconciliation(
+        to_add=sorted(incoming_deduped), to_remove=sorted(to_remove)
+    )
 
 
 class RuleConfig(BaseModel):

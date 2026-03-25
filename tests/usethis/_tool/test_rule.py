@@ -29,69 +29,77 @@ class TestIsRuleCoveredBy:
 
 class TestReconcileRules:
     def test_no_overlap(self):
-        to_add, to_remove = reconcile_rules(["A"], ["B"])
-        assert to_add == ["B"]
-        assert to_remove == []
+        result = reconcile_rules(["A"], ["B"])
+        assert result.to_add == ["B"]
+        assert result.to_remove == []
 
     def test_exact_duplicate(self):
-        to_add, to_remove = reconcile_rules(["A"], ["A"])
-        assert to_add == []
-        assert to_remove == []
+        result = reconcile_rules(["A"], ["A"])
+        assert result.to_add == []
+        assert result.to_remove == []
 
     def test_incoming_covered_by_existing(self):
         # "TC001" is covered by existing "TC"
-        to_add, to_remove = reconcile_rules(["TC"], ["TC001"])
-        assert to_add == []
-        assert to_remove == []
+        result = reconcile_rules(["TC"], ["TC001"])
+        assert result.to_add == []
+        assert result.to_remove == []
 
     def test_incoming_covered_by_all(self):
-        to_add, to_remove = reconcile_rules(["ALL"], ["TC001"])
-        assert to_add == []
-        assert to_remove == []
+        result = reconcile_rules(["ALL"], ["TC001"])
+        assert result.to_add == []
+        assert result.to_remove == []
 
     def test_incoming_replaces_specific(self):
         # Adding "TC" should replace existing "TC001"
-        to_add, to_remove = reconcile_rules(["TC001"], ["TC"])
-        assert to_add == ["TC"]
-        assert to_remove == ["TC001"]
+        result = reconcile_rules(["TC001"], ["TC"])
+        assert result.to_add == ["TC"]
+        assert result.to_remove == ["TC001"]
 
     def test_incoming_replaces_multiple_specific(self):
         # Adding "TC" should replace both "TC001" and "TC002"
-        to_add, to_remove = reconcile_rules(["TC001", "TC002"], ["TC"])
-        assert to_add == ["TC"]
-        assert to_remove == ["TC001", "TC002"]
+        result = reconcile_rules(["TC001", "TC002"], ["TC"])
+        assert result.to_add == ["TC"]
+        assert result.to_remove == ["TC001", "TC002"]
 
     def test_all_replaces_everything(self):
-        to_add, to_remove = reconcile_rules(["A", "B", "TC001"], ["ALL"])
-        assert to_add == ["ALL"]
-        assert to_remove == ["A", "B", "TC001"]
+        result = reconcile_rules(["A", "B", "TC001"], ["ALL"])
+        assert result.to_add == ["ALL"]
+        assert result.to_remove == ["A", "B", "TC001"]
 
     def test_incoming_dedup(self):
         # Both "TC" and "TC001" incoming; only "TC" should survive
-        to_add, to_remove = reconcile_rules([], ["TC", "TC001"])
-        assert to_add == ["TC"]
-        assert to_remove == []
+        result = reconcile_rules([], ["TC", "TC001"])
+        assert result.to_add == ["TC"]
+        assert result.to_remove == []
 
     def test_empty_incoming(self):
-        to_add, to_remove = reconcile_rules(["A", "B"], [])
-        assert to_add == []
-        assert to_remove == []
+        result = reconcile_rules(["A", "B"], [])
+        assert result.to_add == []
+        assert result.to_remove == []
 
     def test_empty_existing(self):
-        to_add, to_remove = reconcile_rules([], ["A", "B"])
-        assert to_add == ["A", "B"]
-        assert to_remove == []
+        result = reconcile_rules([], ["A", "B"])
+        assert result.to_add == ["A", "B"]
+        assert result.to_remove == []
 
     def test_mixed_scenario(self):
         # Mixed: group replaces specific while unrelated rules are preserved
-        to_add, to_remove = reconcile_rules(["E", "TC001", "D100"], ["TC", "F"])
-        assert to_add == ["F", "TC"]
-        assert to_remove == ["TC001"]
+        result = reconcile_rules(["E", "TC001", "D100"], ["TC", "F"])
+        assert result.to_add == ["F", "TC"]
+        assert result.to_remove == ["TC001"]
 
     def test_preserves_unrelated_existing(self):
-        to_add, to_remove = reconcile_rules(["A", "B"], ["C"])
-        assert to_add == ["C"]
-        assert to_remove == []
+        result = reconcile_rules(["A", "B"], ["C"])
+        assert result.to_add == ["C"]
+        assert result.to_remove == []
+
+    def test_is_noop_when_no_changes(self):
+        result = reconcile_rules(["A"], ["A"])
+        assert result.is_noop
+
+    def test_is_not_noop_when_adding(self):
+        result = reconcile_rules(["A"], ["B"])
+        assert not result.is_noop
 
 
 class TestRepr:

@@ -22,7 +22,6 @@ from usethis._tool.heuristics import is_likely_used
 from usethis._tool.spec import ToolMeta, ToolSpec
 from usethis._types.backend import BackendEnum
 from usethis.errors import (
-    NoDefaultToolCommand,
     UnhandledConfigEntryError,
 )
 

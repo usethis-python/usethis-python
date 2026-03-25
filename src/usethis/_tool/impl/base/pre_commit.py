@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, final
+from typing import final
 
 from typing_extensions import override
 
@@ -8,9 +8,6 @@ from usethis._console import how_print
 from usethis._detect.pre_commit import is_pre_commit_used
 from usethis._tool.base import Tool
 from usethis._tool.impl.spec.pre_commit import PreCommitToolSpec
-
-if TYPE_CHECKING:
-    from usethis._python.version import PythonVersion
 
 
 @final

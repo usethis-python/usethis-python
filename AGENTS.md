@@ -14,5 +14,5 @@ The .agent/skills directory contains agent skills.
 
 ### Important skills
 
-- Always run static checks using the `usethis-qa-static-checks` skill before finishing a task.
+- **Always** run static checks using the `usethis-qa-static-checks` skill before finishing a task. This is mandatory for every task, no matter how small the change. Do not skip this step.
 - If modifying Python code, always use the `usethis-python-code`, `usethis-python-code-modify`, and `usethis-python-module-layout-modify` skills.

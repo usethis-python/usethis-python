@@ -12,6 +12,7 @@ on:
                 options:
                     - black
                     - pygments
+                    - requests
                     - urllib
 jobs:
     bump-dev-dep:

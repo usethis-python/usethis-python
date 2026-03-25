@@ -47,7 +47,7 @@ class TestInit:
             "☐ Add test functions with the format 'test_*()'.\n"
             "☐ Run 'uv run pytest' to run the tests.\n"
             "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
-            )
+        )
 
         # Check the pre-commit hooks are added in the correct order
         with change_cwd(tmp_path), PreCommitConfigYAMLManager():

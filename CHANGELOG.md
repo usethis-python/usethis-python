@@ -1,5 +1,69 @@
 # Changelog
 
+## 0.20.0
+
+### 💥 Changes
+
+- The `usethis ci` command (and `usethis ci bitbucket` subcommand) has been removed, including all related code and documentation. The rationale is documented at [this page of the documentation site](https://usethis.readthedocs.io/en/stable/about/philosophy/); also see #1313.
+
+- The `--pre-commit` option for `usethis init` has been renamed to `--hook` to be more general and to align with the new `usethis hook` command. This is partly in view of providing support for other Git hook tools in the future (specifically; [prek](https://prek.j178.dev/)).
+
+### 🚀 New Features
+
+- There is now a `usethis tool ty` command to manage the `ty` type checker from Astral. There is also a higher-level `usethis typecheck` command which has the same effect, and an opt-in `--typecheck` option for `usethis init`. There is also an associated `usethis badge ty` command to add a badge for `ty` to the README.
+
+- There is now a `usethis arch` command to manage architecture analysis tools such as Import Linter; currently this wraps `usethis tool import-linter`. There is also an opt-in `--arch` option for `usethis init`.
+
+- There is now a `usethis hook` command to manage Git hook tools; currently this wraps `usethis tool pre-commit`. There is also an opt-in `--hook` option for `usethis init`.
+
+- `usethis init` now accepts a `--build-backend` option to specify the build backend to use in the generated `pyproject.toml` file. The default is `--build-backend=hatch`, which is the default, but now `uv_build` is also supported via `--build-backend=uv`.
+
+- The `usethis show sonarqube` command is now considered ready for use. It now supports a `--project-key` option to specify the SonarQube project key, in addition to the previous method of using a dedicated `tool.usethis.sonarqube.project-key` configuration in `pyproject.toml`.
+
+- Ruff rule hierarchies are now respected. For example, when `"ALL"` is selected, then other rules won't be explicitly added to the select list. Similarly, if `"F"` is ignored, then `"F401"` won't be explicitly ignored.
+
+### 🐞 Bug Fixes
+
+- Read-only operations on YAML files will no longer modify the file with cosmetic changes. There should also be a small performance improvement associated with avoiding unnecessary writes. It was incorrectly reported that this issue was fully resolved in v0.17.0, and the release notes have been retrospectively updated accordingly.
+
+### 🦾 Robustness
+
+- Submodules named `_version.py` in project packages will now be automatically excluded from the inferred Import Linter contracts, since these are often dynamically generated via tools such as `setuptools_scm` and `hatch-vcs`, and are not typical modules.
+
+- The [`RUF059`](https://docs.astral.sh/ruff/rules/unused-unpacked-variable/) Ruff rule (`unused-unpacked-variable`) is now ignored by default for the `tests` directory, since tests often include unused variables which aren't used and so the rule is overly strict.
+
+### 📚 Documentation
+
+- The various `usethis show` commands are now explicitly documented in the README.
+
+### 📦 Packaging
+
+- The `mergedeep` dependency has been removed, since the package has been unmaintained since 2021.
+
+### 🔧 Internal Changes
+
+- Import cycles have now been broken through the `is_likely_used` heuristic function which provides the canonical heuristic for determining whether a tool is used based on its `ToolSpec`. A lack of import cycles is now enforced by both Import Linter and basedpyright.
+
+- The `config_spec` method has been moved into `ToolSpec` to align more with the intention that `ToolSpec` corresponds to aspects of the tool specification which are unopinionated and are based on the inherent design of the tool (whereas the `Tool` subclass may involve various heuristics and opinionated decisions).
+
+- The `Tool` class is now marked as `@final` to discourage subclassing. Likewise, `ToolSpec` methods are protected with `@final` to avoid inadvertently overriding its methods in the `Tool` subclass. Similarly, the `@override` decorator is explicitly used for methods which are providing an override implementation of an abstract method from the base class in `Tool` implementation subclasses.
+
+- There is improved type compliance through the reduced use of `typing.Any`, especially for the `KeyValueFileManager` implementation. Some of this has been achieved through increased runtime validation with `pydantic`, which should improve the intelligibility of error messages when invalid data is encountered in configuration files such as `pyproject.toml`.
+
+- `UsethisFileManager` has been renamed to `FileManager` with view to pull the file manager logic into a separate dependency in the future (see #1256). To the same end, the `usethis._io` module containing the `FileManager` and `KeyValueFileManager` definitions has been consolidated into the `usethis._file` module, as well as the `print_keys` function and the `Key` type alias.
+
+- There is now a `FileManager.revert()` method to reduce the need to access private attributes. Various other internal methods have been renamed to promote them from private usage to better reflect their usage.
+
+- `FileManager` and `KeyValueFileManager` are now explicitly marked as abstract base classes.
+
+- All `typer.Option` objects now reside in a central module at `usethis._ui.options`. This helps bring consistency within modules and helps bring attention to potential duplication of options across modules to improve the overall consistency of the CLI.
+
+- There is now a central `usethis._fallback` module for fallback versions of various packages. These provide the hard-coded values which are used when dynamic inference is not possible, such as when a backend such as `uv` is unavailable, or when populating pre-commit configuration.
+
+- `codecov` and `codspeed` workflows no longer run for doc-only changes.
+
+- There are now linter and formatters for markdown (enforced via `prek`). This is mostly to help facilitate the development and maintenance of agent skills.
+
 ## 0.19.0
 
 ### 🚧 Deprecations
@@ -174,11 +238,11 @@
 
 - When running `usethis tool requirements.txt` with `--backend=none`, the how-to-use message misleadingly implies that a pre-existing `requirements.txt` file would be modified; this message no longer displays in this case.
 
+- Read-only operations on YAML files will no longer modify the file with cosmetic changes in some cases. A full fix will be included in a future release.
+
 ### 🦾 Robustness
 
 - Unrecognized entries (i.e. not found in the [JSON Schema Store](https://www.schemastore.org/)) in `.pre-commit-config.yaml` and `bitbucket-pipelines.yml` files will no longer cause validation errors or be dropped. Other minor improvements to the schema validation logic have also been made to improve robustness when roundtripping files.
-
-- Read-only operations on YAML files will no longer modify the file with cosmetic changes. There should also be a small performance improvement associated with avoiding unnecessary writes.
 
 - The `usethis ci bitbucket` command will add the `pre-commit` cache to `pre-commit` steps when using the `--backend=none` behaviour.
 

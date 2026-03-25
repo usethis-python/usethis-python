@@ -14,5 +14,5 @@ def show_name() -> None:
     plain_print(get_project_name())
 
 
-def show_sonarqube_config() -> None:
-    plain_print(get_sonar_project_properties())
+def show_sonarqube_config(*, project_key: str | None = None) -> None:
+    plain_print(get_sonar_project_properties(project_key=project_key))

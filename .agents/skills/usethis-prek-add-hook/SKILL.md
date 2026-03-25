@@ -4,7 +4,7 @@ description: Add a prek hook for dev
 compatibility: usethis, prek, git
 license: MIT
 metadata:
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Adding a prek Hook
@@ -41,7 +41,7 @@ repos:
 
 The `rev` field **must** be a tag (e.g. `v2.1.0`), not a hard-coded commit SHA (e.g. `5630322d0f5b6675af7e16051cc3de22`). Tags are human-readable, easy to update, and clearly communicate the version being used.
 
-If the repository does not have any tagged releases, wait until a tag is available before adding the hook, or raise this as a concern.
+If the repository does not have any tagged releases, do not use a remote hook. Instead, use a **local hook** with `uv run` (see the "Local hooks" section below). This avoids the need for a tag while still running the tool correctly. Ensure the tool is added as a dev dependency with `uv add --dev` so that `uv run` can invoke it.
 
 ### Local hooks
 

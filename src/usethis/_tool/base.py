@@ -19,6 +19,7 @@ from usethis._integrations.pre_commit.hooks import (
 )
 from usethis._tool.config import NoConfigValue, ensure_managed_file_exists
 from usethis._tool.heuristics import is_likely_used
+from usethis._tool.rule import reconcile_rules
 from usethis._tool.spec import ToolMeta, ToolSpec
 from usethis._types.backend import BackendEnum
 from usethis.errors import (
@@ -436,6 +437,10 @@ class Tool(ToolSpec, Protocol):
         These rules are not validated; it is assumed they are valid rules for the tool,
         and that the tool will be able to manage them.
 
+        Respects rule code hierarchy: if a more general rule is already selected, more
+        specific rules will not be added. If a more general rule is being added, more
+        specific existing rules will be removed.
+
         Args:
             rules: The rules to select. If any of these rules are already selected, they
                    will be skipped.
@@ -443,21 +448,31 @@ class Tool(ToolSpec, Protocol):
         Returns:
             True if any rules were selected, False if no rules were selected.
         """
-        rules = sorted(set(rules) - set(self.selected_rules()))
+        existing = self.selected_rules()
+        reconciliation = reconcile_rules(existing=existing, incoming=list(rules))
 
-        if not rules:
+        if reconciliation.is_noop:
             return False
-
-        rules_str = ", ".join([f"'{rule}'" for rule in rules])
-        s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
         ensure_managed_file_exists(file_manager)
-        tick_print(
-            f"Selecting {self.name} rule{s} {rules_str} in '{file_manager.name}'."
-        )
         keys = self._get_select_keys(file_manager)
-        file_manager.extend_list(keys=keys, values=rules)
+
+        if reconciliation.to_remove:
+            remove_str = ", ".join([f"'{rule}'" for rule in reconciliation.to_remove])
+            s = "" if len(reconciliation.to_remove) == 1 else "s"
+            tick_print(
+                f"Deselecting {self.name} rule{s} {remove_str} in '{file_manager.name}'."
+            )
+            file_manager.remove_from_list(keys=keys, values=reconciliation.to_remove)
+
+        if reconciliation.to_add:
+            add_str = ", ".join([f"'{rule}'" for rule in reconciliation.to_add])
+            s = "" if len(reconciliation.to_add) == 1 else "s"
+            tick_print(
+                f"Selecting {self.name} rule{s} {add_str} in '{file_manager.name}'."
+            )
+            file_manager.extend_list(keys=keys, values=reconciliation.to_add)
 
         return True
 
@@ -489,6 +504,10 @@ class Tool(ToolSpec, Protocol):
         These rules are not validated; it is assumed they are valid rules for the tool,
         and that the tool will be able to manage them.
 
+        Respects rule code hierarchy: if a more general rule is already ignored, more
+        specific rules will not be added. If a more general rule is being added, more
+        specific existing rules will be removed.
+
         Args:
             rules: The rules to ignore. If any of these rules are already ignored, they
                    will be skipped.
@@ -496,21 +515,31 @@ class Tool(ToolSpec, Protocol):
         Returns:
             True if any rules were ignored, False if no rules were ignored.
         """
-        rules = sorted(set(rules) - set(self.ignored_rules()))
+        existing = self.ignored_rules()
+        reconciliation = reconcile_rules(existing=existing, incoming=list(rules))
 
-        if not rules:
+        if reconciliation.is_noop:
             return False
-
-        rules_str = ", ".join([f"'{rule}'" for rule in rules])
-        s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
         ensure_managed_file_exists(file_manager)
-        tick_print(
-            f"Ignoring {self.name} rule{s} {rules_str} in '{file_manager.name}'."
-        )
         keys = self._get_ignore_keys(file_manager)
-        file_manager.extend_list(keys=keys, values=rules)
+
+        if reconciliation.to_remove:
+            remove_str = ", ".join([f"'{rule}'" for rule in reconciliation.to_remove])
+            s = "" if len(reconciliation.to_remove) == 1 else "s"
+            tick_print(
+                f"No longer ignoring {self.name} rule{s} {remove_str} in '{file_manager.name}'."
+            )
+            file_manager.remove_from_list(keys=keys, values=reconciliation.to_remove)
+
+        if reconciliation.to_add:
+            add_str = ", ".join([f"'{rule}'" for rule in reconciliation.to_add])
+            s = "" if len(reconciliation.to_add) == 1 else "s"
+            tick_print(
+                f"Ignoring {self.name} rule{s} {add_str} in '{file_manager.name}'."
+            )
+            file_manager.extend_list(keys=keys, values=reconciliation.to_add)
 
         return True
 

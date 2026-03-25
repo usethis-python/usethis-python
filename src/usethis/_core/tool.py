@@ -468,7 +468,7 @@ def _get_basic_rule_config() -> RuleConfig:
             "SIM108",  # https://github.com/usethis-python/usethis-python/issues/118
         ],
         tests_ignored=[
-            "RUF059",  # https://github.com/usethis-python/usethis-python/issues/907
+            "RUF059",  # https://github.com/usethis-python/usethis-python/issues/1186
         ],
     )
 

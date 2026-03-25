@@ -1,14 +1,105 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, TypeAlias
 
 from pydantic import BaseModel, Field
 from typing_extensions import override
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from typing_extensions import Self
 
 Rule: TypeAlias = str
+
+
+def is_rule_covered_by(rule: Rule, parent: Rule) -> bool:
+    """Check if a rule is covered (subsumed) by a more general rule.
+
+    A rule is covered if a more general rule would already include it.
+    For example, "TC001" is covered by "TC", and any rule is covered by "ALL".
+
+    A rule does not cover itself. "ALL" is never covered by a specific rule.
+
+    Rule codes consist of a letter prefix (the group) followed by optional digits
+    (the specific rule). A parent only covers a child if they share the same letter
+    prefix; for example, "F" covers "F101" but not "FLY" or "FLY001".
+    """
+    if parent == rule:
+        return False
+    if parent == "ALL":
+        return True
+    if rule == "ALL":
+        return False
+    if not rule.startswith(parent):
+        return False
+    # After the parent prefix, the next character in the child (if any) must be a
+    # digit. This prevents "F" from covering "FLY" (next char 'L' is a letter,
+    # meaning FLY is a separate rule group).
+    rest = rule[len(parent) :]
+    return rest == "" or rest[0].isdigit()
+
+
+@dataclass(frozen=True)
+class RuleReconciliation:
+    """Result of reconciling incoming rules with existing rules.
+
+    Attributes:
+        to_add: Rules that should be added to the configuration.
+        to_remove: Existing rules that are now subsumed and should be removed.
+    """
+
+    to_add: list[Rule] = field(default_factory=list)
+    to_remove: list[Rule] = field(default_factory=list)
+
+    @property
+    def is_noop(self) -> bool:
+        """Whether the reconciliation results in no changes."""
+        return not self.to_add and not self.to_remove
+
+
+def reconcile_rules(
+    existing: Sequence[Rule], incoming: Sequence[Rule]
+) -> RuleReconciliation:
+    """Determine which rules to add and which existing rules to remove.
+
+    Respects the rule code hierarchy: more general rules subsume more specific
+    ones. For example, adding "TC" when "TC001" already exists will replace
+    "TC001" with "TC". Adding "TC001" when "TC" already exists is a no-op.
+    """
+    # Filter out incoming rules already covered by existing rules
+    incoming_filtered: list[Rule] = []
+    for rule in incoming:
+        if rule in existing:
+            continue
+        if any(is_rule_covered_by(rule, e) for e in existing):
+            continue
+        incoming_filtered.append(rule)
+
+    # Among the filtered incoming rules, remove those covered by other incoming
+    incoming_deduped: list[Rule] = []
+    for rule in incoming_filtered:
+        if any(
+            is_rule_covered_by(rule, other)
+            for other in incoming_filtered
+            if other != rule
+        ):
+            continue
+        if rule not in incoming_deduped:
+            incoming_deduped.append(rule)
+
+    # Determine which existing rules are now subsumed by incoming rules
+    to_remove: list[Rule] = []
+    for existing_rule in existing:
+        if any(
+            is_rule_covered_by(existing_rule, new_rule) for new_rule in incoming_deduped
+        ):
+            to_remove.append(existing_rule)
+
+    return RuleReconciliation(
+        to_add=sorted(incoming_deduped), to_remove=sorted(to_remove)
+    )
 
 
 class RuleConfig(BaseModel):

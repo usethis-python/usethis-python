@@ -120,6 +120,78 @@ select = ["A"]
                 # Assert
                 assert RuffTool().selected_rules() == ["A"]
 
+        def test_specific_absorbed_by_existing_group(self, tmp_path: Path):
+            # Adding "TC001" when "TC" exists should be a no-op
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["TC"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = RuffTool().select_rules(["TC001"])
+
+                # Assert
+                assert RuffTool().selected_rules() == ["TC"]
+            assert not result
+
+        def test_specific_absorbed_by_all(self, tmp_path: Path):
+            # Adding any rule when "ALL" exists should be a no-op
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["ALL"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = RuffTool().select_rules(["TC001"])
+
+                # Assert
+                assert RuffTool().selected_rules() == ["ALL"]
+            assert not result
+
+        def test_group_replaces_specific(self, tmp_path: Path):
+            # Adding "TC" when "TC001" exists should replace "TC001" with "TC"
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["TC001"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = RuffTool().select_rules(["TC"])
+
+                # Assert
+                assert RuffTool().selected_rules() == ["TC"]
+            assert result
+
+        def test_all_replaces_everything(self, tmp_path: Path):
+            # Adding "ALL" should replace all existing rules
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+select = ["A", "TC001", "E501"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = RuffTool().select_rules(["ALL"])
+
+                # Assert
+                assert RuffTool().selected_rules() == ["ALL"]
+            assert result
+
     class TestDeselectRules:
         def test_no_pyproject_toml(self, tmp_path: Path):
             # Act
@@ -220,6 +292,42 @@ ignore = ["A"]
 
                 # Assert
                 assert RuffTool().ignored_rules() == ["A"]
+
+        def test_specific_absorbed_by_existing_group(self, tmp_path: Path):
+            # Adding "TC001" when "TC" is already ignored should be a no-op
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+ignore = ["TC"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = RuffTool().ignore_rules(["TC001"])
+
+                # Assert
+                assert RuffTool().ignored_rules() == ["TC"]
+            assert not result
+
+        def test_group_replaces_specific(self, tmp_path: Path):
+            # Adding "TC" when "TC001" is ignored should replace "TC001" with "TC"
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text(
+                """\
+[tool.ruff.lint]
+ignore = ["TC001"]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                result = RuffTool().ignore_rules(["TC"])
+
+                # Assert
+                assert RuffTool().ignored_rules() == ["TC"]
+            assert result
 
     class TestIsLinterUsed:
         def test_neither_subtool_has_config_assume_both_used(self, tmp_path: Path):
@@ -335,6 +443,36 @@ lint.select = [ "INP" ]
 lint.per-file-ignores."tests/**" = ["INP"]
 """
             )
+
+        def test_specific_absorbed_by_existing_group(self, tmp_path: Path):
+            # Adding "TC001" per-file-ignore when "TC" is already ignored should be a no-op
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["TC"]
+""")
+
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                # Act
+                RuffTool().ignore_rules_in_glob(["TC001"], glob="tests/**")
+
+                # Assert
+                assert RuffTool().get_ignored_rules_in_glob("tests/**") == ["TC"]
+
+        def test_group_replaces_specific(self, tmp_path: Path):
+            # Adding "TC" per-file-ignore when "TC001" exists should replace it
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["TC001"]
+""")
+
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                # Act
+                RuffTool().ignore_rules_in_glob(["TC"], glob="tests/**")
+
+                # Assert
+                assert RuffTool().get_ignored_rules_in_glob("tests/**") == ["TC"]
 
     class TestUnignoreRulesInGlob:
         def test_removes_rule(self, tmp_path: Path):

@@ -23,7 +23,7 @@ from usethis._tool.config import (
 )
 from usethis._tool.impl.spec.ruff import RuffToolSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
-from usethis._tool.rule import Rule
+from usethis._tool.rule import Rule, reconcile_rules
 from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
@@ -153,22 +153,37 @@ class RuffTool(RuffToolSpec, Tool):
         return rules
 
     def ignore_rules_in_glob(self, rules: Sequence[Rule], *, glob: str) -> None:
-        """Ignore Ruff rules in the project for a specific glob pattern."""
-        rules = sorted(set(rules) - set(self.get_ignored_rules_in_glob(glob)))
+        """Ignore Ruff rules in the project for a specific glob pattern.
 
-        if not rules:
+        Respects rule code hierarchy: if a more general rule is already ignored for the
+        glob, more specific rules will not be added. If a more general rule is being
+        added, more specific existing rules will be removed.
+        """
+        existing = self.get_ignored_rules_in_glob(glob)
+        reconciliation = reconcile_rules(existing=existing, incoming=list(rules))
+
+        if reconciliation.is_noop:
             return
-
-        rules_str = ", ".join([f"'{rule}'" for rule in rules])
-        s = "" if len(rules) == 1 else "s"
 
         (file_manager,) = self.get_active_config_file_managers()
         ensure_managed_file_exists(file_manager)
-        tick_print(
-            f"Ignoring {self.name} rule{s} {rules_str} for '{glob}' in '{file_manager.name}'."
-        )
         keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
-        file_manager.extend_list(keys=keys, values=rules)
+
+        if reconciliation.to_remove:
+            remove_str = ", ".join([f"'{rule}'" for rule in reconciliation.to_remove])
+            s = "" if len(reconciliation.to_remove) == 1 else "s"
+            tick_print(
+                f"No longer ignoring {self.name} rule{s} {remove_str} for '{glob}' in '{file_manager.name}'."
+            )
+            file_manager.remove_from_list(keys=keys, values=reconciliation.to_remove)
+
+        if reconciliation.to_add:
+            add_str = ", ".join([f"'{rule}'" for rule in reconciliation.to_add])
+            s = "" if len(reconciliation.to_add) == 1 else "s"
+            tick_print(
+                f"Ignoring {self.name} rule{s} {add_str} for '{glob}' in '{file_manager.name}'."
+            )
+            file_manager.extend_list(keys=keys, values=reconciliation.to_add)
 
     def unignore_rules_in_glob(self, rules: Sequence[Rule], *, glob: str) -> None:
         """Stop ignoring Ruff rules in the project for a specific glob pattern."""

@@ -41,6 +41,7 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
     # https://github.com/python/mypy/issues/5144
     # The Any in this expression should be identified with DocumentT
     _content_by_path: ClassVar[dict[Path, Any | None]] = {}
+    _initial_dump_by_path: ClassVar[dict[Path, str]] = {}
     path: Path
 
     @property
@@ -125,7 +126,16 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
         if not self.path.exists():
             return
 
-        self.path.write_text(self._dump_content(), encoding="utf-8")
+        new_content = self._dump_content()
+
+        # Skip writing if the serialized content hasn't changed since it was
+        # first read. This avoids cosmetic-only modifications introduced by
+        # round-tripping through serializers (e.g. ruamel.yaml).
+        initial_dump = self._initial_dump_by_path.get(self.path)
+        if initial_dump is not None and new_content == initial_dump:
+            return
+
+        self.path.write_text(new_content, encoding="utf-8")
 
     def read_file(self) -> DocumentT:
         """Read the document from disk and store it in memory.
@@ -147,6 +157,10 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
             raise FileNotFoundError(msg) from None
 
         self._content = document
+
+        # Store the initial serialized form so we can detect whether any
+        # structural changes were made at write time.
+        self._initial_dump_by_path[self.path] = self._dump_content()
 
         return document
 
@@ -184,6 +198,7 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
 
     def unlock(self) -> None:
         self._content_by_path.pop(self.path, None)
+        self._initial_dump_by_path.pop(self.path, None)
 
 
 class KeyValueFileManager(FileManager, Generic[DocumentT], metaclass=ABCMeta):

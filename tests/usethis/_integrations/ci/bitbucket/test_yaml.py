@@ -161,16 +161,8 @@ pipelines:
             mgr.model_validate()
             # Read-only, no commit needed
 
-        # Assert
-        # Note: YAML round-tripping may normalize formatting (e.g., remove unnecessary quotes)
-        expected = """\
-pipelines:
-    default:
-      - step:
-            script:
-              - echo
-"""
-        assert (tmp_path / "bitbucket-pipelines.yml").read_text() == expected
+        # Assert - file should not be modified since no structural changes were made.
+        assert (tmp_path / "bitbucket-pipelines.yml").read_text() == content_str
 
 
 class TestOrderByCls:

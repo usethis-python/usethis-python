@@ -4,7 +4,7 @@ description: Add a prek hook for dev
 compatibility: usethis, prek, git
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Adding a prek Hook
@@ -63,10 +63,24 @@ repos:
 
 Every hook **must** have an explicit `priority` field. prek uses `priority` to enable concurrent execution of hooks — hooks at the same priority level run in parallel, while different priority levels run sequentially (lower numbers first). See the [prek priority documentation](https://prek.j178.dev/configuration/#priority) for more details.
 
-Use the following guidelines:
+### Avoiding write conflicts
 
-- **`priority: 0`** — Fast, file-level checks (linters, formatters, validators). These are the majority of hooks.
-- **`priority: 1`** — Slower, project-wide checks (type checkers, import linters, dependency checkers). These run after the fast checks complete.
+Hooks at the same priority level run concurrently. If two hooks both **write** to the same files (e.g. two formatters targeting Python files), they **must not** share a priority level — otherwise they will produce conflicted writes. Assign them to different priority levels so they run sequentially.
+
+Read-only hooks (pure linters, validators, checkers) do not cause write conflicts and can safely share a priority level with other hooks, even those that write.
+
+### Ordering: bespoke before comprehensive
+
+When multiple hooks modify the same files at different priority levels, always run the **less advanced / more bespoke** tool **before** the **more sophisticated / more comprehensive** tool. This means:
+
+- Niche, single-purpose formatters or fixers → **lower** priority number (run first).
+- General-purpose, comprehensive formatters or linters (e.g. Ruff) → **higher** priority number (run after).
+
+This ordering ensures that the comprehensive tool gets the final say and can clean up any style inconsistencies introduced by the bespoke tool.
+
+### Choosing a priority level
+
+When adding a new hook, inspect the existing `.pre-commit-config.yaml` to determine the correct priority level. If the new hook writes to files already covered by another hook at a given priority level, use a **different** priority level and follow the ordering principle above. Introduce a new priority level if needed — there is no fixed limit on the number of levels.
 
 ## Adding as a dev dependency
 

@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import typer
 
 from usethis._config import usethis_config
-from usethis._types.config_format import ConfigFormatEnum  # noqa: TC001
+from usethis._types.config_format import ConfigFormatEnum
 from usethis._ui.options import offline_opt, quiet_opt
 
 app = typer.Typer(
@@ -95,6 +97,7 @@ def import_linter(
     from usethis._core.show import show_import_linter_config
     from usethis.errors import UsethisError
 
+    assert isinstance(format_, ConfigFormatEnum)
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
         try:
             show_import_linter_config(format_=format_)

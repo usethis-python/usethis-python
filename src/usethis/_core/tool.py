@@ -11,7 +11,6 @@ from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.lockfile import ensure_uv_lock
 from usethis._config import usethis_config
 from usethis._console import info_print, instruct_print, tick_print
-from usethis._detect.ci.bitbucket import is_bitbucket_used
 from usethis._file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._init import ensure_dep_declaration_file, write_simple_requirements_txt
 from usethis._integrations.mkdocs.core import add_docs_dir
@@ -41,7 +40,6 @@ from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
     from usethis._tool.all_ import SupportedToolType
-    from usethis._tool.base import Tool
 
 # Note - all these functions invoke ensure_dep_declaratiom_file() at the start, since
 # declaring dependencies in pyproject.toml requires that file to exist.
@@ -68,20 +66,18 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
         ensure_dep_declaration_file()
 
         tool.add_dev_deps()
-        tool.update_bitbucket_steps()
         tool.add_pre_commit_config()
 
         tool.add_configs()
         tool.print_how_to_use()
     else:
-        tool.remove_bitbucket_steps()
         tool.remove_configs()
         tool.remove_pre_commit_repo_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()
 
 
-def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
+(*, remove: bool = False, how: bool = False) -> None:
     tool = CoveragePyTool()
 
     if how:
@@ -111,7 +107,6 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
         ensure_dep_declaration_file()
 
         tool.add_dev_deps()
-        tool.update_bitbucket_steps()
         tool.add_pre_commit_config()
 
         tool.add_configs()
@@ -119,7 +114,6 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
     else:
         tool.remove_pre_commit_repo_configs()
         tool.remove_configs()
-        tool.remove_bitbucket_steps()
         tool.remove_dev_deps()
         tool.remove_managed_files()
 
@@ -138,13 +132,11 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
         tool.add_configs()
         if RuffTool().is_used():
             RuffTool().apply_rule_config(tool.rule_config)
-        tool.update_bitbucket_steps()
         tool.add_pre_commit_config()
 
         tool.print_how_to_use()
     else:
         tool.remove_pre_commit_repo_configs()
-        tool.remove_bitbucket_steps()
         if RuffTool().is_used():
             RuffTool().remove_rule_config(tool.rule_config)
         tool.remove_configs()
@@ -202,16 +194,8 @@ def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
                 "Run 'uv run pre-commit install' to install pre-commit to Git."
             )
 
-        tool.update_bitbucket_steps()
-        if is_bitbucket_used():
-            _remove_bitbucket_linter_steps_from_default()
-
         tool.print_how_to_use()
     else:
-        tool.remove_bitbucket_steps()
-        if is_bitbucket_used():
-            _add_bitbucket_linter_steps_to_default()
-
         try:
             uninstall_pre_commit_hooks()
         except PreCommitInstallationError:
@@ -237,24 +221,6 @@ def _add_all_tools_pre_commit_configs():
             _tool.add_pre_commit_config()
 
 
-def _add_bitbucket_linter_steps_to_default() -> None:
-    # This order of adding tools should be synced with the order hard-coded
-    # in the function which adds steps.
-    if is_bitbucket_used():
-        tools: list[Tool] = [PyprojectFmtTool(), DeptryTool(), RuffTool()]
-        for tool in tools:
-            if tool.is_used():
-                tool.unconditional_update_bitbucket_steps()
-
-
-def _remove_bitbucket_linter_steps_from_default() -> None:
-    # This order of removing tools should be synced with the order hard-coded
-    # in the function which adds steps.
-    PyprojectFmtTool().remove_bitbucket_steps()
-    DeptryTool().remove_bitbucket_steps()
-    RuffTool().remove_bitbucket_steps()
-
-
 def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
     tool = PyprojectFmtTool()
 
@@ -266,13 +232,11 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
         ensure_dep_declaration_file()
 
         tool.add_dev_deps()
-        tool.update_bitbucket_steps()
         tool.add_pre_commit_config()
 
         tool.add_configs()
         tool.print_how_to_use()
     else:
-        tool.remove_bitbucket_steps()
         tool.remove_configs()
         tool.remove_pre_commit_repo_configs()
         tool.remove_dev_deps()
@@ -324,15 +288,11 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         if RuffTool().is_used():
             RuffTool().apply_rule_config(rule_config)
 
-        PytestTool().update_bitbucket_steps()
-
         tool.print_how_to_use()
 
         if CoveragePyTool().is_used():
             CoveragePyTool().print_how_to_use()
     else:
-        PytestTool().remove_bitbucket_steps()
-
         if RuffTool().is_used():
             RuffTool().remove_rule_config(tool.rule_config)
         tool.remove_configs()
@@ -466,7 +426,6 @@ def use_ruff(
 
         if linter:
             tool.apply_rule_config(rule_config)
-        tool.update_bitbucket_steps()
         tool.add_pre_commit_config()
 
         tool.print_how_to_use()
@@ -477,7 +436,6 @@ def use_ruff(
         )
 
         tool.remove_pre_commit_repo_configs()
-        tool.remove_bitbucket_steps()
         tool.remove_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()
@@ -528,13 +486,11 @@ def use_ty(*, remove: bool = False, how: bool = False) -> None:
         ensure_dep_declaration_file()
 
         tool.add_dev_deps()
-        tool.update_bitbucket_steps()
         tool.add_pre_commit_config()
 
         tool.add_configs()
         tool.print_how_to_use()
     else:
-        tool.remove_bitbucket_steps()
         tool.remove_configs()
         tool.remove_pre_commit_repo_configs()
         tool.remove_dev_deps()

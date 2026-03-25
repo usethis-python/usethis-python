@@ -78,11 +78,6 @@ init_hook_opt = typer.Option(
     "--hook/--no-hook",
     help="Add a recommended git hook framework.",
 )
-init_ci_opt = typer.Option(
-    None,
-    "--ci",
-    help="Add a CI service configuration.",
-)
 init_docstyle_opt = typer.Option(
     None,
     "--docstyle",

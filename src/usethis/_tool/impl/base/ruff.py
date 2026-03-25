@@ -13,10 +13,6 @@ from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import how_print, tick_print
 from usethis._fallback import FALLBACK_RUFF_VERSION
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
-from usethis._integrations.ci.bitbucket.anchor import (
-    ScriptItemAnchor as BitbucketScriptItemAnchor,
-)
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._tool.base import Tool
 from usethis._tool.config import (
@@ -130,73 +126,6 @@ class RuffTool(RuffToolSpec, Tool):
             repo_configs=repo_configs,
             inform_how_to_use_on_migrate=True,  # The pre-commit commands are not simpler than the venv-based commands
         )
-
-    @override
-    def get_bitbucket_steps(
-        self, *, matrix_python: bool = True
-    ) -> list[bitbucket_schema.Step]:
-        backend = get_backend()
-
-        steps: list[bitbucket_schema.Step] = []
-        if self.is_linter_used():
-            if backend is BackendEnum.uv:
-                steps.append(
-                    bitbucket_schema.Step(
-                        name=f"Run {self.name}",
-                        caches=["uv"],
-                        script=bitbucket_schema.Script(
-                            [
-                                BitbucketScriptItemAnchor(name="install-uv"),
-                                "uv run ruff check --fix",
-                            ]
-                        ),
-                    )
-                )
-            elif backend is BackendEnum.none:
-                steps.append(
-                    bitbucket_schema.Step(
-                        name=f"Run {self.name}",
-                        script=bitbucket_schema.Script(
-                            [
-                                BitbucketScriptItemAnchor(name="ensure-venv"),
-                                "ruff check --fix",
-                            ]
-                        ),
-                    )
-                )
-            else:
-                assert_never(backend)
-
-        if self.is_formatter_used():
-            if backend is BackendEnum.uv:
-                steps.append(
-                    bitbucket_schema.Step(
-                        name=f"Run {self.name} Formatter",
-                        caches=["uv"],
-                        script=bitbucket_schema.Script(
-                            [
-                                BitbucketScriptItemAnchor(name="install-uv"),
-                                "uv run ruff format",
-                            ]
-                        ),
-                    )
-                )
-            elif backend is BackendEnum.none:
-                steps.append(
-                    bitbucket_schema.Step(
-                        name=f"Run {self.name} Formatter",
-                        script=bitbucket_schema.Script(
-                            [
-                                BitbucketScriptItemAnchor(name="ensure-venv"),
-                                "ruff format",
-                            ]
-                        ),
-                    )
-                )
-            else:
-                assert_never(backend)
-
-        return steps
 
     @override
     def selected_rules(self) -> list[Rule]:

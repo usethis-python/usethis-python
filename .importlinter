@@ -51,7 +51,7 @@ containers =
     usethis._core
 layers =
     badge | docstyle | list | rule
-    author | browse | ci | readme | show | status | tool
+    author | browse | readme | show | status | tool
 exhaustive = true
 
 [importlinter:contract:tool]
@@ -155,5 +155,5 @@ type = layers
 containers =
     usethis._integrations.ci
 layers =
-    bitbucket | github
+    github
 exhaustive = true

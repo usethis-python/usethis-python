@@ -13,7 +13,7 @@ External skills are sourced from third-party repositories rather than written lo
 
 ## Procedure
 
-1. Install the skill using `npx skills add <source>` (e.g. `npx skills add CodSpeedHQ/codspeed`).
+1. Install the skills using `npx skills add <source> --skill '*' --agent github-copilot --yes` (e.g. `npx skills add CodSpeedHQ/codspeed --skill '*' --agent github-copilot --yes`).
 2. Note the skill name(s) added to `skills-lock.json`.
 3. Add each new skill to the external skills registry in `AGENTS.md`.
 4. Verify the hook passes: `python hooks/check-skills-documented.py`.
@@ -23,7 +23,7 @@ External skills are sourced from third-party repositories rather than written lo
 To **add a new** external skill, run from the repository root:
 
 ```commandline
-npx skills add <github-org>/<repo>
+npx skills add <github-org>/<repo> --skill '*' --agent github-copilot --yes
 ```
 
 This adds the skill entry to `skills-lock.json`. Multiple skills may be added from a single source.

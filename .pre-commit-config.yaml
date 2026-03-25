@@ -42,6 +42,14 @@ repos:
       - id: pyproject-fmt
         args: [--max-supported-python=3.14]
         priority: 0
+  - repo: local
+    hooks:
+      - id: format-dedent
+        name: format-dedent
+        entry: uv run --frozen --offline format-dedent --write
+        language: system
+        types: [python]
+        priority: 0
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.3
     hooks:

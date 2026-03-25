@@ -419,6 +419,15 @@ wheels = [
 ]
 
 [[package]]
+name = "format-dedent"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/50/28/a325598ee3c35d075f65166817bc0e4858705133fc6928d839bdee05521b/format_dedent-0.1.1.tar.gz", hash = "sha256:7083bee13baa0218913fd47c55973b677ee58bbc56b8742be8ede4a87c64c2e0", size = 20256, upload-time = "2025-11-11T22:36:22.486Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/46/98/23da7b172727585f77caef46255d3ad19acc905c39a9137cec49b9fe89d1/format_dedent-0.1.1-py3-none-any.whl", hash = "sha256:14eae90481e2c3498e9591a2f9849377f76364575d18166ca1a76f7c2eb32d37", size = 12234, upload-time = "2025-11-11T22:36:21.209Z" },
+]
+
+[[package]]
 name = "genson"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1699,6 +1708,7 @@ dev = [
     { name = "codespell" },
     { name = "datamodel-code-generator", extra = ["http"] },
     { name = "deptry" },
+    { name = "format-dedent" },
     { name = "import-linter" },
     { name = "jinja2" },
     { name = "prek" },
@@ -1746,6 +1756,7 @@ dev = [
     { name = "codespell", specifier = ">=2.4.1" },
     { name = "datamodel-code-generator", extras = ["http"], specifier = ">=0.35.0" },
     { name = "deptry", specifier = ">=0.23.0" },
+    { name = "format-dedent", specifier = ">=0.1.1" },
     { name = "import-linter", specifier = ">=2.11" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "prek", specifier = ">=0.2.23" },

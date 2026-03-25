@@ -32,6 +32,8 @@ def plain_print(msg: str | Exception) -> None:
         or usethis_config.alert_only
         or usethis_config.instruct_only
     ):
+        # markup=False prevents Rich from interpreting bracket-enclosed text
+        # (e.g. "[tool.importlinter]") as Rich markup tags and stripping them.
         Console(force_terminal=False, soft_wrap=True).print(msg, markup=False)
 
 

@@ -16,7 +16,7 @@
 
 - There is now a `usethis hook` command to manage Git hook tools; currently this wraps `usethis tool pre-commit`. There is also an opt-in `--hook` option for `usethis init`.
 
-- `usethis init` now accepts a `--build-backend` option to specify the build backend to use in the generated `pyproject.toml` file. The default is `--build-backend=hatch`, which is the default, but now `uv_build` is also supported via `--build-backend=uv`.
+- `usethis init` now accepts a `--build-backend` option to specify the build backend to use in the generated `pyproject.toml` file. By default, the build backend is `hatch` (equivalent to `--build-backend=hatch`), but `uv_build` is also supported via `--build-backend=uv`.
 
 - The `usethis show sonarqube` command is now considered ready for use. It now supports a `--project-key` option to specify the SonarQube project key, in addition to the previous method of using a dedicated `tool.usethis.sonarqube.project-key` configuration in `pyproject.toml`.
 

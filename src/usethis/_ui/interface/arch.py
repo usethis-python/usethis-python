@@ -26,8 +26,6 @@ def arch(
     from usethis._toolset.arch import use_arch_tools
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend

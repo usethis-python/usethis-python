@@ -69,7 +69,7 @@ init_test_opt = typer.Option(
     help="Add a recommended testing framework.",
 )
 init_typecheck_opt = typer.Option(
-    True,
+    False,
     "--typecheck/--no-typecheck",
     help="Add a recommended type checker.",
 )
@@ -77,11 +77,6 @@ init_hook_opt = typer.Option(
     False,
     "--hook/--no-hook",
     help="Add a recommended git hook framework.",
-)
-init_ci_opt = typer.Option(
-    None,
-    "--ci",
-    help="Add a CI service configuration.",
 )
 init_docstyle_opt = typer.Option(
     None,

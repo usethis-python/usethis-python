@@ -5,7 +5,8 @@
 Initialize a new Python project with recommended defaults, including:
 
 - a `pyproject.toml` file and relevant configuration,
-- recommended linters, formatters, spellcheckers, type checkers, and test frameworks (all opt-out),
+- recommended linters, formatters, spellcheckers, and test frameworks (all opt-out),
+- a recommended type checker (opt-in),
 - docstring style enforcement (opt-in),
 - a recommended git hook framework (opt-in),
 - CI services (opt-in),
@@ -20,13 +21,8 @@ Supported options:
 - `--lint` to add recommended linters (default; or `--no-lint` to opt-out)
 - `--spellcheck` to add a recommended spellchecker (default; or `--no-spellcheck` to opt-out)
 - `--test` to add a recommended testing framework (default; or `--no-test` to opt-out)
-- `--typecheck` to add a recommended type checker (default; or `--no-typecheck` to opt-out)
+- `--typecheck` to add a recommended type checker (but the default is `--no-typecheck`)
 - `--hook` to add a recommended git hook framework (but the default is `--no-hook`)
-- `--ci` to add a CI service configuration
-
-  Possible values:
-  - `bitbucket` for [Bitbucket Pipelines](https://bitbucket.org/product/features/pipelines)
-
 - `--docstyle` to set a docstring style convention for the project.
 
   Possible values:

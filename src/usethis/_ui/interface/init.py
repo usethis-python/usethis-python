@@ -3,12 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import typer
-from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._types.build_backend import BuildBackendEnum
-from usethis._types.ci import CIServiceEnum
 from usethis._types.docstyle import DocStyleEnum
 from usethis._types.status import DevelopmentStatusEnum
 from usethis._ui.options import (
@@ -16,7 +14,6 @@ from usethis._ui.options import (
     frozen_opt,
     init_arch_opt,
     init_build_backend_opt,
-    init_ci_opt,
     init_doc_opt,
     init_docstyle_opt,
     init_format_opt,
@@ -41,7 +38,6 @@ def init(
     test: bool = init_test_opt,
     typecheck: bool = init_typecheck_opt,
     hook: bool = init_hook_opt,
-    ci: CIServiceEnum | None = init_ci_opt,
     docstyle: DocStyleEnum | None = init_docstyle_opt,
     status: DevelopmentStatusEnum = init_status_opt,
     offline: bool = offline_opt,
@@ -55,9 +51,6 @@ def init(
     from usethis._config_file import files_manager
     from usethis._console import err_print, instruct_print
     from usethis.errors import UsethisError
-
-    assert isinstance(backend, BackendEnum)
-    assert isinstance(build_backend, BuildBackendEnum)
 
     if path is not None:
         path_ = Path(path)
@@ -87,7 +80,6 @@ def init(
                 test=test,
                 typecheck=typecheck,
                 hook=hook,
-                ci=ci,
                 docstyle=docstyle,
                 status=status,
             )
@@ -106,12 +98,10 @@ def _init(  # noqa: PLR0915
     test: bool,
     typecheck: bool,
     hook: bool,
-    ci: CIServiceEnum | None,
     docstyle: DocStyleEnum | None,
     status: DevelopmentStatusEnum,
 ):
     from usethis._console import tick_print
-    from usethis._core.ci import print_how_to_use_ci_bitbucket, use_ci_bitbucket
     from usethis._core.docstyle import use_docstyle
     from usethis._core.readme import add_readme
     from usethis._core.status import use_development_status
@@ -128,7 +118,6 @@ def _init(  # noqa: PLR0915
     project_init()
     add_readme()
 
-    assert isinstance(status, DevelopmentStatusEnum)
     use_development_status(status)
 
     if hook:
@@ -154,7 +143,6 @@ def _init(  # noqa: PLR0915
         use_formatters(how=True)
     if docstyle is not None:
         tick_print(f"Setting docstring style to {docstyle.value}.")
-        assert isinstance(docstyle, DocStyleEnum)
         with usethis_config.set(instruct_only=True):
             use_docstyle(style=docstyle)
     if spellcheck:
@@ -177,13 +165,3 @@ def _init(  # noqa: PLR0915
         with usethis_config.set(instruct_only=True):
             use_arch_tools()
         use_arch_tools(how=True)
-
-    if ci is not None:
-        assert isinstance(ci, CIServiceEnum)
-        if ci is CIServiceEnum.bitbucket:
-            tick_print("Adding Bitbucket Pipelines configuration.")
-            with usethis_config.set(instruct_only=True):
-                use_ci_bitbucket()
-            print_how_to_use_ci_bitbucket()
-        else:
-            assert_never(ci)

@@ -5,14 +5,13 @@ from rich.table import Table
 from typing_extensions import assert_never
 
 from usethis._console import table_print
-from usethis._detect.ci.bitbucket import is_bitbucket_used
 from usethis._detect.readme import is_readme_used
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.base.ruff import RuffTool
 
 
 class UsageRow(BaseModel):
-    category: Literal["tool", "ci", "config", ""]
+    category: Literal["tool", "config", ""]
     name: str
     status: Literal["used", "unused"] | Literal["numpy", "google", "pep257"]
 
@@ -67,13 +66,11 @@ def _rich_status(
 
 
 def _rich_category(
-    category: Literal["tool", "ci", "config", ""],
+    category: Literal["tool", "config", ""],
 ) -> str:
     """Get richly formatted category."""
     if category == "tool":
         return "[bold]Tool[/bold]"
-    elif category == "ci":
-        return "[bold]CI[/bold]"
     elif category == "config":
         return "[bold]Config[/bold]"
     elif category == "":
@@ -99,15 +96,6 @@ def get_usage_table() -> UsageTable:
             table.rows.append(
                 UsageRow(category="tool", name=tool.name, status="unused")
             )
-
-    # CI
-    if is_bitbucket_used():
-        bitbucket_status = "used"
-    else:
-        bitbucket_status = "unused"
-    table.rows.append(
-        UsageRow(category="ci", name="Bitbucket Pipelines", status=bitbucket_status)
-    )
 
     # Config
     docstyle_status = RuffTool().get_docstyle()

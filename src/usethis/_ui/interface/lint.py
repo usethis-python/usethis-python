@@ -26,8 +26,6 @@ def lint(
     from usethis._toolset.lint import use_linters
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend

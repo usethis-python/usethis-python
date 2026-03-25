@@ -18,9 +18,6 @@ def status(
     from usethis._core.status import use_development_status
     from usethis.errors import UsethisError
 
-    assert isinstance(status, DevelopmentStatusEnum)
-    assert isinstance(backend, BackendEnum)
-
     with usethis_config.set(quiet=quiet, backend=backend), files_manager():
         try:
             use_development_status(status)

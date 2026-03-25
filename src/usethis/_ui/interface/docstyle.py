@@ -26,9 +26,6 @@ def docstyle(
     from usethis._core.docstyle import use_docstyle
     from usethis.errors import UsethisError
 
-    assert isinstance(style, DocStyleEnum)
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend

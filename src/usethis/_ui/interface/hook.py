@@ -26,8 +26,6 @@ def hook(
     from usethis._toolset.hook import use_hook_framework
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend

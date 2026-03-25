@@ -6,7 +6,6 @@ import usethis._ui.interface.arch
 import usethis._ui.interface.author
 import usethis._ui.interface.badge
 import usethis._ui.interface.browse
-import usethis._ui.interface.ci
 import usethis._ui.interface.doc
 import usethis._ui.interface.docstyle
 import usethis._ui.interface.format_
@@ -89,12 +88,6 @@ app.command(
     rich_help_panel=rich_help_panel,
 )(
     usethis._ui.interface.typecheck.typecheck,
-)
-app.add_typer(
-    usethis._ui.interface.ci.app,
-    name="ci",
-    rich_help_panel=rich_help_panel,
-    deprecated=True,
 )
 app.add_typer(
     usethis._ui.interface.tool.app, name="tool", rich_help_panel=rich_help_panel

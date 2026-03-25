@@ -4,7 +4,7 @@ description: Add a prek hook for dev
 compatibility: usethis, prek, git
 license: MIT
 metadata:
-  version: "2.0"
+  version: "1.1"
 ---
 
 # Adding a prek Hook
@@ -56,7 +56,7 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
-        priority: 2
+        priority: 1
 ```
 
 ## Setting the `priority` field
@@ -78,13 +78,9 @@ When multiple hooks modify the same files at different priority levels, always r
 
 This ordering ensures that the comprehensive tool gets the final say and can clean up any style inconsistencies introduced by the bespoke tool.
 
-### Priority level guidelines
+### Choosing a priority level
 
-- **`priority: 0`** — Fast, file-level checks and bespoke formatters or fixers. These are the first hooks to run.
-- **`priority: 1`** — Fast, comprehensive formatters and linters (e.g. Ruff). These run after the bespoke hooks and normalize the codebase.
-- **`priority: 2`** — Slower, project-wide checks (type checkers, import linters, dependency checkers). These run last.
-
-When adding a new hook, inspect the existing `.pre-commit-config.yaml` to determine the correct priority level. If the new hook writes to files already covered by another hook at a given priority level, use a **different** priority level and follow the ordering principle above.
+When adding a new hook, inspect the existing `.pre-commit-config.yaml` to determine the correct priority level. If the new hook writes to files already covered by another hook at a given priority level, use a **different** priority level and follow the ordering principle above. Introduce a new priority level if needed — there is no fixed limit on the number of levels.
 
 ## Adding as a dev dependency
 

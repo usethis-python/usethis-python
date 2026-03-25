@@ -83,10 +83,7 @@ class TestReconcileRules:
         assert to_remove == []
 
     def test_mixed_scenario(self):
-        # Existing: ["E", "TC001", "D100"]
-        # Incoming: ["TC", "F"]
-        # TC covers TC001 -> remove TC001, add TC
-        # F is new -> add F
+        # Mixed: group replaces specific while unrelated rules are preserved
         to_add, to_remove = reconcile_rules(["E", "TC001", "D100"], ["TC", "F"])
         assert to_add == ["F", "TC"]
         assert to_remove == ["TC001"]

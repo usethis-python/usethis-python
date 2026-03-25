@@ -28,9 +28,9 @@ from usethis._integrations.pre_commit.hooks import (
     hook_ids_are_equivalent,
     remove_hook,
 )
-from usethis._tool.rule import reconcile_rules
 from usethis._tool.config import NoConfigValue, ensure_managed_file_exists
 from usethis._tool.heuristics import is_likely_used
+from usethis._tool.rule import reconcile_rules
 from usethis._tool.spec import ToolMeta, ToolSpec
 from usethis._types.backend import BackendEnum
 from usethis.errors import (

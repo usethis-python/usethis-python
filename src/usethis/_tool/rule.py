@@ -66,7 +66,9 @@ def reconcile_rules(
     # Determine which existing rules are now subsumed by incoming rules
     to_remove: list[Rule] = []
     for existing_rule in existing:
-        if any(is_rule_covered_by(existing_rule, new_rule) for new_rule in incoming_deduped):
+        if any(
+            is_rule_covered_by(existing_rule, new_rule) for new_rule in incoming_deduped
+        ):
             to_remove.append(existing_rule)
 
     return sorted(incoming_deduped), sorted(to_remove)

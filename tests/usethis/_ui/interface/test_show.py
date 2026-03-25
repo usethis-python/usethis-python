@@ -173,17 +173,13 @@ class TestImportLinter:
         (tmp_path / "mypkg" / "__init__.py").touch()
         (tmp_path / "mypkg" / "a.py").touch()
         (tmp_path / "mypkg" / "b.py").write_text("import mypkg.a\n")
-        (tmp_path / "mypkg" / "c.py").write_text(
-            "import mypkg.a\nimport mypkg.b\n"
-        )
+        (tmp_path / "mypkg" / "c.py").write_text("import mypkg.a\nimport mypkg.b\n")
         monkeypatch.syspath_prepend(str(tmp_path))
 
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app, ["import-linter", "--format", "toml"]
-            )
+            result = runner.invoke_safe(app, ["import-linter", "--format", "toml"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -198,17 +194,13 @@ class TestImportLinter:
         (tmp_path / "mypkg" / "__init__.py").touch()
         (tmp_path / "mypkg" / "a.py").touch()
         (tmp_path / "mypkg" / "b.py").write_text("import mypkg.a\n")
-        (tmp_path / "mypkg" / "c.py").write_text(
-            "import mypkg.a\nimport mypkg.b\n"
-        )
+        (tmp_path / "mypkg" / "c.py").write_text("import mypkg.a\nimport mypkg.b\n")
         monkeypatch.syspath_prepend(str(tmp_path))
 
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app, ["import-linter", "--format", "ini"]
-            )
+            result = runner.invoke_safe(app, ["import-linter", "--format", "ini"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -232,9 +224,7 @@ class TestImportLinter:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app, ["import-linter", "--format", "toml"]
-            )
+            result = runner.invoke_safe(app, ["import-linter", "--format", "toml"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -256,9 +246,7 @@ class TestImportLinter:
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app, ["import-linter", "--format", "ini"]
-            )
+            result = runner.invoke_safe(app, ["import-linter", "--format", "ini"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -274,17 +262,13 @@ class TestImportLinter:
         (tmp_path / "mypkg" / "__init__.py").touch()
         (tmp_path / "mypkg" / "a.py").touch()
         (tmp_path / "mypkg" / "b.py").write_text("import mypkg.a\n")
-        (tmp_path / "mypkg" / "c.py").write_text(
-            "import mypkg.a\nimport mypkg.b\n"
-        )
+        (tmp_path / "mypkg" / "c.py").write_text("import mypkg.a\nimport mypkg.b\n")
         monkeypatch.syspath_prepend(str(tmp_path))
 
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app, ["import-linter", "--format", "toml"]
-            )
+            result = runner.invoke_safe(app, ["import-linter", "--format", "toml"])
 
         # Assert
         assert result.exit_code == 0, result.output
@@ -300,17 +284,13 @@ class TestImportLinter:
         (tmp_path / "mypkg" / "__init__.py").touch()
         (tmp_path / "mypkg" / "a.py").touch()
         (tmp_path / "mypkg" / "b.py").write_text("import mypkg.a\n")
-        (tmp_path / "mypkg" / "c.py").write_text(
-            "import mypkg.a\nimport mypkg.b\n"
-        )
+        (tmp_path / "mypkg" / "c.py").write_text("import mypkg.a\nimport mypkg.b\n")
         monkeypatch.syspath_prepend(str(tmp_path))
 
         # Act
         runner = CliRunner()
         with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app, ["import-linter", "--format", "ini"]
-            )
+            result = runner.invoke_safe(app, ["import-linter", "--format", "ini"])
 
         # Assert
         assert result.exit_code == 0, result.output

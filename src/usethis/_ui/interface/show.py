@@ -1,7 +1,7 @@
 import typer
 
 from usethis._config import usethis_config
-from usethis._types.config_format import ConfigFormatEnum
+from usethis._types.config_format import ConfigFormatEnum  # noqa: TC001
 from usethis._ui.options import offline_opt, quiet_opt
 
 app = typer.Typer(
@@ -86,7 +86,7 @@ def sonarqube(
     help="Show the import-linter configuration for the project.",
 )
 def import_linter(
-    format: ConfigFormatEnum = config_format_opt,
+    format_: ConfigFormatEnum = config_format_opt,
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
@@ -97,7 +97,7 @@ def import_linter(
 
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
         try:
-            show_import_linter_config(format=format)
+            show_import_linter_config(format_=format_)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

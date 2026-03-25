@@ -18,8 +18,9 @@ The `.agents/skills` directory contains agent skills.
 
 | Skill                                 | Description                                                                                                           |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `usethis-cli-modify`                  | Update GitHub Actions workflows                                                                                       |
+| `usethis-file-remove`                 | Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync                            |
 | `usethis-github-actions-update`       | Update GitHub Actions workflows                                                                                       |
-| `usethis-file-remove`                 | Remove files from the project                                                                                         |
 | `usethis-pre-commit`                  | Guidance on pre-commit hooks — this project uses prek, not pre-commit directly                                        |
 | `usethis-prek-add-hook`               | Add a prek hook for dev                                                                                               |
 | `usethis-prek-hook-bespoke-create`    | Write bespoke prek hooks as Python scripts for custom project-specific checks                                         |
@@ -48,7 +49,7 @@ External skills can be installed via `npx skills experimental_install` if they a
 
 ### Important Instructions about Skills usage
 
-- ALWAYS use relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
+- ALWAYS use possibly relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
 - ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task
   is complete, always run this skill to check for any issues before finishing.
 - ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.

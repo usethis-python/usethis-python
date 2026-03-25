@@ -81,7 +81,7 @@ This ordering ensures that the comprehensive tool gets the final say and can cle
 ### Priority level guidelines
 
 - **`priority: 0`** — Fast, file-level checks and bespoke formatters or fixers. These are the first hooks to run.
-- **`priority: 1`** — Fast, comprehensive formatters and linters (e.g. Ruff). These run after the bespoke hooks and normalise the codebase.
+- **`priority: 1`** — Fast, comprehensive formatters and linters (e.g. Ruff). These run after the bespoke hooks and normalize the codebase.
 - **`priority: 2`** — Slower, project-wide checks (type checkers, import linters, dependency checkers). These run last.
 
 When adding a new hook, inspect the existing `.pre-commit-config.yaml` to determine the correct priority level. If the new hook writes to files already covered by another hook at a given priority level, use a **different** priority level and follow the ordering principle above.

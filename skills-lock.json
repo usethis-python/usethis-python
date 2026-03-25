@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "codspeed-optimize": {
+      "source": "CodSpeedHQ/codspeed",
+      "sourceType": "github",
+      "computedHash": "7645f43a7a8ca9705a9a8e7367ac1f4ad9d8822ba94230e2b38381c05957d5c5"
+    },
+    "codspeed-setup-harness": {
+      "source": "CodSpeedHQ/codspeed",
+      "sourceType": "github",
+      "computedHash": "bd861b140b75372438d0dbbf5b697e563a80d567bc8bb2b3f2880cdfe41ef27f"
+    }
+  }
+}

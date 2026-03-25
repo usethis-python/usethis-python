@@ -4,7 +4,7 @@ description: Create new agent skills (SKILL.md files) following best practices f
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.3"
 ---
 
 # Creating Agent Skills
@@ -16,11 +16,14 @@ When creating a new skill:
 1. Choose a descriptive name and create the directory `.agents/skills/<skill-name>/`.
 2. Create a `SKILL.md` file with the required YAML frontmatter.
 3. Write the skill content following the content guidelines below.
-4. Review the skill against the quality checklist at the end.
+4. Add a row for the new skill to the usethis-specific skills table in `AGENTS.md` (under `### Skills registry` → `#### usethis-specific skills`).
+5. Review the skill against the quality checklist at the end.
 
 ## Naming the skill
 
 Use kebab-case (lowercase with hyphens). The name should clearly communicate what the skill does at a glance.
+
+**All skill names must start with the `usethis-` prefix.** This is enforced by the `check-skills-documented` hook.
 
 Prefer specific, descriptive names over vague ones:
 
@@ -149,3 +152,4 @@ Before finalizing a new skill, verify:
 - [ ] Terminology is consistent throughout
 - [ ] Content is concise — no unnecessary explanations
 - [ ] SKILL.md body is under 500 lines
+- [ ] Skill is added to the usethis-specific skills table in `AGENTS.md`

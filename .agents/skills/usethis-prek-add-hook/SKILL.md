@@ -4,7 +4,7 @@ description: Add a prek hook for dev
 compatibility: usethis, prek, git
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Adding a prek Hook
@@ -17,7 +17,8 @@ This project uses [prek](https://prek.j178.dev/) to manage Git hooks. Hooks are 
 
 1. Add the hook entry to `.pre-commit-config.yaml`.
 2. Set the `priority` field on the hook.
-3. If the tool is available as a Python package, add it as a dev dependency with `uv add --dev`.
+3. Place the hook entry at the correct position in the file.
+4. If the tool is available as a Python package, add it as a dev dependency with `uv add --dev`.
 
 ## Adding a hook entry
 
@@ -81,6 +82,20 @@ This ordering ensures that the comprehensive tool gets the final say and can cle
 ### Choosing a priority level
 
 When adding a new hook, inspect the existing `.pre-commit-config.yaml` to determine the correct priority level. If the new hook writes to files already covered by another hook at a given priority level, use a **different** priority level and follow the ordering principle above. Introduce a new priority level if needed — there is no fixed limit on the number of levels.
+
+## Placement within the file
+
+Beyond priority levels, the **position** of a hook entry within `.pre-commit-config.yaml` matters for readability and maintainability. Follow these principles when deciding where to insert a new hook entry:
+
+### Configuration hooks before code hooks
+
+Place hooks that operate on **meta-programming or configuration files** (e.g. dependency syncing, pyproject.toml validation/formatting, lock file exports) **before** hooks that operate on **source code** (e.g. code formatters, linters, type checkers). This keeps the file logically structured: project setup and configuration concerns come first, then code quality concerns.
+
+### Similar-purpose hooks close together
+
+Place a new hook **close to existing hooks with a similar purpose or motivation**. For example, a new code formatter should be placed near other code formatters, not at the opposite end of the file from them. If two hooks need to be at different priority levels (e.g. to avoid write conflicts), they may still be placed adjacently in the file — priority ordering does not require physical separation.
+
+Within the same priority group, **re-order hooks** if needed to maintain cosmetic proximity between the newly added hook and the most closely related existing hooks.
 
 ## Adding as a dev dependency
 

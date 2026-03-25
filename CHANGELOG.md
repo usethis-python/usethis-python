@@ -30,7 +30,7 @@
 
 - Submodules named `_version.py` in project packages will now be automatically excluded from the inferred Import Linter contracts, since these are often dynamically generated via tools such as `setuptools_scm` and `hatch-vcs`, and are not typical modules.
 
-- The [`RUF059`](https://docs.astral.sh/ruff/rules/unused-unpacked-variable/) Ruff rule (`unused-unpacked-variable`) is now ignored by default for the `tests` directory, since tests often include unused variables which aren't used and so the rule is overly strict.
+- The [`RUF059`](https://docs.astral.sh/ruff/rules/unused-unpacked-variable/) Ruff rule (`unused-unpacked-variable`) is now ignored by default for the `tests` directory, since tests often include intentionally unused variables and the rule is overly strict in that context.
 
 ### 📚 Documentation
 

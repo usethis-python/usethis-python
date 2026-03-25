@@ -42,6 +42,24 @@ class TestINIFileManager:
                 pass
 
     class TestReadFile:
+        def test_empty_file(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                result = manager.read_file()
+
+            # Assert
+            assert list(result.sections()) == []
+
         def test_invalid_file(self, tmp_path: Path):
             # Arrange
             class MyINIFileManager(INIFileManager):
@@ -162,6 +180,42 @@ class TestINIFileManager:
             assert result["section"]["key"].value == "value"
 
     class TestContains:
+        def test_empty_file_no_keys(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                result = [] in manager
+
+            # Assert
+            assert result is True
+
+        def test_empty_file_section_missing(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                result = ["section"] in manager
+
+            # Assert
+            assert result is False
+
         def test_option_key_exists(self, tmp_path: Path):
             # Arrange
             class MyINIFileManager(INIFileManager):
@@ -362,6 +416,24 @@ key_that = value2
             assert result is True
 
     class TestGetItem:
+        def test_empty_file(self, tmp_path: Path):
+            # Arrange
+            class MyINIFileManager(INIFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("valid.ini")
+
+            valid_file = tmp_path / "valid.ini"
+            valid_file.touch()
+
+            # Act
+            with change_cwd(tmp_path), MyINIFileManager() as manager:
+                result = manager[[]]
+
+            # Assert
+            assert result == {}
+
         def test_file_doesnt_exist_raises(self, tmp_path: Path):
             # Arrange
             class MyINIFileManager(INIFileManager):

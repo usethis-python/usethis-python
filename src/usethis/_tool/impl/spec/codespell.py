@@ -7,6 +7,7 @@ from typing_extensions import override
 
 from usethis._config import usethis_config
 from usethis._config_file import DotCodespellRCManager
+from usethis._fallback import FALLBACK_CODESPELL_VERSION
 from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.pyproject_toml.requires_python import (
@@ -23,8 +24,6 @@ from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._file.manager import KeyValueFileManager
-
-_CODESPELL_VERSION = "v2.4.2"  # Manually bump this version when necessary
 
 
 class CodespellToolSpec(ToolSpec):
@@ -77,7 +76,7 @@ class CodespellToolSpec(ToolSpec):
         return PreCommitConfig.from_single_repo(
             pre_commit_schema.UriRepo(
                 repo="https://github.com/codespell-project/codespell",
-                rev=_CODESPELL_VERSION,
+                rev=FALLBACK_CODESPELL_VERSION,
                 hooks=[
                     pre_commit_schema.HookDefinition(
                         id="codespell", additional_dependencies=["tomli"]

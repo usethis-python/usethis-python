@@ -31,14 +31,14 @@ from usethis._core.tool import (
     use_ty,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
+from usethis._fallback import FALLBACK_RUFF_VERSION, FALLBACK_SYNC_WITH_UV_VERSION
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
-from usethis._tool.impl.base.ruff import _RUFF_VERSION, RuffTool
-from usethis._tool.impl.spec.pre_commit import _SYNC_WITH_UV_VERSION
+from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
@@ -725,7 +725,7 @@ class TestDeptry:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: local
@@ -893,7 +893,7 @@ dev = []
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: local
@@ -1907,7 +1907,7 @@ class TestPreCommit:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
 """
@@ -1985,7 +1985,7 @@ repos:
         entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
 """
@@ -3435,7 +3435,7 @@ class TestRequirementsTxt:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: local
@@ -3985,11 +3985,11 @@ select = ["F"]
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-check
 """
@@ -4023,15 +4023,15 @@ repos:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-check
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-format
 """
@@ -4064,11 +4064,11 @@ repos:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-format
 """
@@ -4102,11 +4102,11 @@ repos:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-format
 """

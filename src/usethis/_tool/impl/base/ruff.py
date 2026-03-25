@@ -11,6 +11,7 @@ from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import how_print, tick_print
+from usethis._fallback import FALLBACK_RUFF_VERSION
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -34,8 +35,6 @@ if TYPE_CHECKING:
 
     from usethis._file.manager import KeyValueFileManager
     from usethis._tool.rule import RuleConfig
-
-_RUFF_VERSION = "v0.15.7"  # Manually bump this version when necessary
 
 
 @final
@@ -110,7 +109,7 @@ class RuffTool(RuffToolSpec, Tool):
                 PreCommitRepoConfig(
                     repo=pre_commit_schema.UriRepo(
                         repo="https://github.com/astral-sh/ruff-pre-commit",
-                        rev=_RUFF_VERSION,
+                        rev=FALLBACK_RUFF_VERSION,
                         hooks=[pre_commit_schema.HookDefinition(id="ruff-check")],
                     ),
                     requires_venv=False,
@@ -121,7 +120,7 @@ class RuffTool(RuffToolSpec, Tool):
                 PreCommitRepoConfig(
                     repo=pre_commit_schema.UriRepo(
                         repo="https://github.com/astral-sh/ruff-pre-commit",
-                        rev=_RUFF_VERSION,
+                        rev=FALLBACK_RUFF_VERSION,
                         hooks=[pre_commit_schema.HookDefinition(id="ruff-format")],
                     ),
                     requires_venv=False,

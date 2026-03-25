@@ -4,8 +4,7 @@ from packaging.version import Version
 
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.errors import UVSubprocessFailedError
-
-FALLBACK_UV_VERSION = "0.10.12"
+from usethis._fallback import FALLBACK_UV_VERSION
 
 
 def get_uv_version() -> str:

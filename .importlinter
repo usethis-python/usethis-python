@@ -28,6 +28,7 @@ layers =
     _subprocess | _console | _python
     _config
     _types | errors | _fallback
+    _pipeweld
 exhaustive = true
 exhaustive_ignores =
     _version
@@ -135,6 +136,17 @@ containers =
     usethis._ui.interface
 layers =
     arch | author | badge | browse | doc | docstyle | format_ | hook | init | lint | list | readme | rule | show | spellcheck | status | test | tool | typecheck | version
+exhaustive = true
+
+[importlinter:contract:pipeweld]
+name = usethis._pipeweld
+type = layers
+containers =
+    usethis._pipeweld
+layers =
+    func
+    result
+    containers | ops
 exhaustive = true
 
 [importlinter:contract:integrations_ci]

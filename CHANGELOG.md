@@ -62,7 +62,7 @@
 
 - `codecov` and `codspeed` workflows no longer run for doc-only changes.
 
-- There are now linter and formatters for markdown (enforced via `prek`). This is mostly to help facilitate the development and maintenance of agent skills.
+- There are now linters and formatters for markdown (enforced via `prek`). This is mostly to help facilitate the development and maintenance of agent skills.
 
 ## 0.19.0
 

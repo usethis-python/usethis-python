@@ -7,6 +7,7 @@ from typing_extensions import assert_never
 
 from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
+from usethis._types.build_backend import BuildBackendEnum
 from usethis._types.ci import CIServiceEnum
 from usethis._types.docstyle import DocStyleEnum
 from usethis._types.status import DevelopmentStatusEnum
@@ -14,6 +15,7 @@ from usethis._ui.options import (
     backend_opt,
     frozen_opt,
     init_arch_opt,
+    init_build_backend_opt,
     init_ci_opt,
     init_doc_opt,
     init_docstyle_opt,
@@ -46,6 +48,7 @@ def init(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    build_backend: BuildBackendEnum = init_build_backend_opt,
     path: str | None = init_path_arg,
 ) -> None:
     """Initialize a new project with recommended tooling."""
@@ -54,6 +57,7 @@ def init(
     from usethis.errors import UsethisError
 
     assert isinstance(backend, BackendEnum)
+    assert isinstance(build_backend, BuildBackendEnum)
 
     if path is not None:
         path_ = Path(path)
@@ -68,6 +72,7 @@ def init(
             quiet=quiet,
             frozen=frozen,
             backend=backend,
+            build_backend=build_backend,
             project_dir=path,
         ),
         files_manager(),

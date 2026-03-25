@@ -2,6 +2,7 @@ import typer
 
 from usethis._config import (
     BACKEND_DEFAULT,
+    BUILD_BACKEND_DEFAULT,
     FROZEN_DEFAULT,
     HOW_DEFAULT,
     OFFLINE_DEFAULT,
@@ -95,6 +96,11 @@ init_status_opt = typer.Option(
 init_path_arg = typer.Argument(
     None,
     help="The path to use for the project. Defaults to the current working directory.",
+)
+init_build_backend_opt = typer.Option(
+    BUILD_BACKEND_DEFAULT,
+    "--build-backend",
+    help="The build backend to use for the project.",
 )
 
 # readme command options

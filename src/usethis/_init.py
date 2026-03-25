@@ -10,9 +10,30 @@ from usethis._backend.uv.init import (
 from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._deps import get_project_deps
+from usethis._fallback import (
+    FALLBACK_HATCHLING_VERSION,
+    FALLBACK_UV_VERSION,
+    next_breaking_version,
+)
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.name import get_project_name
 from usethis._types.backend import BackendEnum
+from usethis._types.build_backend import BuildBackendEnum
+
+_BUILD_SYSTEM_CONFIG: dict[BuildBackendEnum, tuple[list[str], str]] = {
+    BuildBackendEnum.hatch: (
+        [
+            f"hatchling>={FALLBACK_HATCHLING_VERSION},<{next_breaking_version(FALLBACK_HATCHLING_VERSION)}"
+        ],
+        "hatchling.build",
+    ),
+    BuildBackendEnum.uv: (
+        [
+            f"uv_build>={FALLBACK_UV_VERSION},<{next_breaking_version(FALLBACK_UV_VERSION)}"
+        ],
+        "uv_build",
+    ),
+}
 
 
 def project_init():
@@ -103,9 +124,12 @@ def ensure_pyproject_toml(*, author: bool = True) -> None:
 
     tick_print("Writing 'pyproject.toml'.")
     backend = get_backend()
+    build_backend = usethis_config.build_backend
     if backend is BackendEnum.uv:
         ensure_pyproject_toml_via_uv(author=author)
     elif backend is BackendEnum.none:
+        requires, build_backend_str = _BUILD_SYSTEM_CONFIG[build_backend]
+        requires_str = ", ".join(f'"{r}"' for r in requires)
         (usethis_config.cpd() / "pyproject.toml").write_text(
             f"""\
 [project]
@@ -114,15 +138,15 @@ version = "0.1.0"
 dependencies = []
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = [{requires_str}]
+build-backend = "{build_backend_str}"
 """,
             encoding="utf-8",
         )
     else:
         assert_never(backend)
 
-    if not (
+    if build_backend is BuildBackendEnum.hatch and not (
         (usethis_config.cpd() / "src").exists()
         and (usethis_config.cpd() / "src").is_dir()
     ):

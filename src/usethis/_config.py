@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from usethis._types.backend import BackendEnum
+from usethis._types.build_backend import BuildBackendEnum
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -17,6 +18,7 @@ FROZEN_DEFAULT = False
 OFFLINE_DEFAULT = False
 QUIET_DEFAULT = False
 BACKEND_DEFAULT = "auto"
+BUILD_BACKEND_DEFAULT = "hatch"
 
 
 @dataclass
@@ -47,6 +49,7 @@ class UsethisConfig:
     instruct_only: bool = False
     backend: BackendEnum = BackendEnum(BACKEND_DEFAULT)  # noqa: RUF009
     inferred_backend: Literal[BackendEnum.uv, BackendEnum.none] | None = None
+    build_backend: BuildBackendEnum = BuildBackendEnum(BUILD_BACKEND_DEFAULT)  # noqa: RUF009
     disable_pre_commit: bool = False
     subprocess_verbose: bool = False
     project_dir: Path | None = None
@@ -61,6 +64,7 @@ class UsethisConfig:
         alert_only: bool | None = None,
         instruct_only: bool | None = None,
         backend: BackendEnum | None = None,
+        build_backend: BuildBackendEnum | None = None,
         disable_pre_commit: bool | None = None,
         subprocess_verbose: bool | None = None,
         project_dir: Path | str | None = None,
@@ -73,6 +77,7 @@ class UsethisConfig:
         old_instruct_only = self.instruct_only
         old_backend = self.backend
         old_inferred_backend = self.inferred_backend
+        old_build_backend = self.build_backend
         old_disable_pre_commit = self.disable_pre_commit
         old_subprocess_verbose = self.subprocess_verbose
         old_project_dir = self.project_dir
@@ -89,6 +94,8 @@ class UsethisConfig:
             instruct_only = self.instruct_only
         if backend is None:
             backend = self.backend
+        if build_backend is None:
+            build_backend = self.build_backend
         if disable_pre_commit is None:
             disable_pre_commit = old_disable_pre_commit
         if subprocess_verbose is None:
@@ -104,6 +111,7 @@ class UsethisConfig:
         self.backend = backend
         if backend is not BackendEnum.auto:
             self.inferred_backend = backend
+        self.build_backend = build_backend
         self.disable_pre_commit = disable_pre_commit
         self.subprocess_verbose = subprocess_verbose
         if isinstance(project_dir, str):
@@ -117,6 +125,7 @@ class UsethisConfig:
         self.instruct_only = old_instruct_only
         self.backend = old_backend
         self.inferred_backend = old_inferred_backend
+        self.build_backend = old_build_backend
         self.disable_pre_commit = old_disable_pre_commit
         self.subprocess_verbose = old_subprocess_verbose
         self.project_dir = old_project_dir

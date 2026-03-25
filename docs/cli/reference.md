@@ -55,6 +55,12 @@ Supported options:
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
 
+- `--build-backend` to specify the build backend for the project. Defaults to `hatch`.
+
+  Possible values:
+  - `hatch` for [Hatchling](https://hatch.pypa.io/) (default)
+  - `uv` for [uv](https://docs.astral.sh/uv/concepts/build-backend/)
+
 ## `usethis arch`
 
 Add recommended architecture analysis tools to the project (namely, [Import Linter](https://import-linter.readthedocs.io/en/stable/)), including:

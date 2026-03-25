@@ -1,10 +1,8 @@
 import json
 
-from packaging.version import Version
-
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.errors import UVSubprocessFailedError
-from usethis._fallback import FALLBACK_UV_VERSION
+from usethis._fallback import FALLBACK_UV_VERSION, next_breaking_version
 
 
 def get_uv_version() -> str:
@@ -26,7 +24,4 @@ def next_breaking_uv_version(version: str) -> str:
     For versions with major >= 1, bumps the major version (e.g. 1.0.2 -> 2.0.0).
     For versions with major == 0, bumps the minor version (e.g. 0.10.2 -> 0.11.0).
     """
-    v = Version(version)
-    if v.major >= 1:
-        return f"{v.major + 1}.0.0"
-    return f"0.{v.minor + 1}.0"
+    return next_breaking_version(version)

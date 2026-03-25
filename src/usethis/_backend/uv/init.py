@@ -19,7 +19,7 @@ def opinionated_uv_init() -> None:
                 "init",
                 "--lib",
                 "--build-backend",
-                "hatch",
+                usethis_config.build_backend.value,
                 usethis_config.cpd().as_posix(),
             ],
             change_toml=True,
@@ -43,8 +43,8 @@ def ensure_pyproject_toml_via_uv(*, author: bool = True) -> None:
                 "--bare",
                 "--vcs=none",
                 f"--author-from={author_from}",
-                "--build-backend",  # https://github.com/usethis-python/usethis-python/issues/347
-                "hatch",  # until https://github.com/astral-sh/uv/issues/3957
+                "--build-backend",
+                usethis_config.build_backend.value,
                 usethis_config.cpd().as_posix(),
             ],
             change_toml=True,

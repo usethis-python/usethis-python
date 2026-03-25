@@ -9,12 +9,14 @@ from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import PyprojectTOMLInitError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import (
+    _BUILD_SYSTEM_CONFIG,
     ensure_pyproject_toml,
     project_init,
     write_simple_requirements_txt,
 )
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
+from usethis._types.build_backend import BuildBackendEnum
 
 
 class TestProjectInit:
@@ -83,6 +85,23 @@ class TestProjectInit:
 
             # Assert
             assert manager[["build-system", "build-backend"]] == "hatchling.build"
+
+    def test_build_backend_uv_for_uv_backend(self, tmp_path: Path):
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager() as manager,
+            usethis_config.set(build_backend=BuildBackendEnum.uv),
+        ):
+            # Act
+            project_init()
+
+            # Assert
+            assert manager[["build-system", "build-backend"]] == "uv_build"
+
+
+class TestBuildSystemConfig:
+    def test_keys_match_enum(self):
+        assert set(_BUILD_SYSTEM_CONFIG.keys()) == set(BuildBackendEnum)
 
 
 class TestEnsurePyprojectTOML:

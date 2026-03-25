@@ -224,3 +224,26 @@ class TestInit:
             "☐ Add the dev dependency 'ty'.\n"
             "☐ Run 'ty check' to run the ty type checker.\n"
         )
+
+    def test_build_backend_uv(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["init", "--build-backend", "uv"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (tmp_path / "pyproject.toml").exists()
+        content = (tmp_path / "pyproject.toml").read_text()
+        assert 'build-backend = "uv_build"' in content
+
+    def test_build_backend_default_is_hatch(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["init"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        content = (tmp_path / "pyproject.toml").read_text()
+        assert 'build-backend = "hatchling.build"' in content

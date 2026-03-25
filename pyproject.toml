@@ -57,6 +57,7 @@ dev = [
   "codespell>=2.4.1",
   "datamodel-code-generator[http]>=0.35.0",
   "deptry>=0.23.0",
+  "format-dedent>=0.1.1",
   "import-linter>=2.11",
   "jinja2>=3.1.6",
   "prek>=0.2.23",

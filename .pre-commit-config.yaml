@@ -11,8 +11,6 @@ repos:
       - id: uv-sync
         priority: 0
       - id: uv-export
-        priority: 0
-      - id: uv-export
         args: ["--frozen", "--only-group=doc", "--output-file=docs/requirements.txt", "--quiet"]
         priority: 0
   - repo: https://github.com/pre-commit/pre-commit-hooks

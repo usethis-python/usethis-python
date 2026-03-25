@@ -41,6 +41,7 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
     # https://github.com/python/mypy/issues/5144
     # The Any in this expression should be identified with DocumentT
     _content_by_path: ClassVar[dict[Path, Any | None]] = {}
+    _dirty_by_path: ClassVar[dict[Path, bool]] = {}
     path: Path
 
     @property
@@ -108,10 +109,12 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
         """Store the given document in memory for deferred writing."""
         self._validate_lock()
         self._content = document
+        self._dirty_by_path[self.path] = True
 
     def revert(self) -> None:
         """Clear the stored document without writing to disk."""
         self._content = None
+        self._dirty_by_path[self.path] = False
 
     def write_file(self) -> None:
         """Write the stored document to disk if there are changes."""
@@ -119,6 +122,10 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
 
         if self._content is None:
             # No changes made, nothing to write.
+            return
+
+        if not self._dirty_by_path.get(self.path, False):
+            # Content was read but not modified via commit().
             return
 
         # Also, if the file has since been deleted, we should not write it.
@@ -181,9 +188,11 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
 
     def lock(self) -> None:
         self._content = None
+        self._dirty_by_path[self.path] = False
 
     def unlock(self) -> None:
         self._content_by_path.pop(self.path, None)
+        self._dirty_by_path.pop(self.path, None)
 
 
 class KeyValueFileManager(FileManager, Generic[DocumentT], metaclass=ABCMeta):

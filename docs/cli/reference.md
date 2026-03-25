@@ -459,6 +459,7 @@ Show a piece of information about the project.
 Currently supported subcommands:
 
 - `usethis show backend` to show the inferred project manager backend, e.g. 'uv' or 'none'. This is the default backend used, i.e. when `--backend=auto` is specified.
+- `usethis show import-linter` to show the import-linter configuration for the project. Requires `--format` option with value `toml` (for `pyproject.toml` format) or `ini` (for `.importlinter` file format).
 - `usethis show name` to show the name of the project.
 - `usethis show sonarqube` to show appropriate contents of a `sonar-projects.properties` file for SonarQube analysis.
 

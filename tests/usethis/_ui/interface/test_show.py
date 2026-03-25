@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from usethis._config import usethis_config
 from usethis._test import CliRunner, change_cwd
 from usethis._types.backend import BackendEnum
@@ -162,3 +164,156 @@ project-key = "from-pyproject"
 
         # Assert
         assert result.exit_code == 1, result.output
+
+
+class TestImportLinter:
+    def test_toml_format(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Arrange
+        (tmp_path / "mypkg").mkdir()
+        (tmp_path / "mypkg" / "__init__.py").touch()
+        (tmp_path / "mypkg" / "a.py").touch()
+        (tmp_path / "mypkg" / "b.py").write_text("import mypkg.a\n")
+        (tmp_path / "mypkg" / "c.py").write_text(
+            "import mypkg.a\nimport mypkg.b\n"
+        )
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["import-linter", "--format", "toml"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "[tool.importlinter]" in result.output
+        assert "root_packages" in result.output
+        assert "[[tool.importlinter.contracts]]" in result.output
+        assert '"mypkg"' in result.output
+
+    def test_ini_format(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # Arrange
+        (tmp_path / "mypkg").mkdir()
+        (tmp_path / "mypkg" / "__init__.py").touch()
+        (tmp_path / "mypkg" / "a.py").touch()
+        (tmp_path / "mypkg" / "b.py").write_text("import mypkg.a\n")
+        (tmp_path / "mypkg" / "c.py").write_text(
+            "import mypkg.a\nimport mypkg.b\n"
+        )
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["import-linter", "--format", "ini"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "[importlinter]" in result.output
+        assert "root_package = mypkg" in result.output
+        assert "[importlinter:contract:0]" in result.output
+
+    def test_toml_multiple_packages(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "myproject"\nversion = "0.1.0"\n'
+        )
+        (tmp_path / "a").mkdir()
+        (tmp_path / "a" / "__init__.py").touch()
+        (tmp_path / "b").mkdir()
+        (tmp_path / "b" / "__init__.py").touch()
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["import-linter", "--format", "toml"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert 'root_packages = ["a", "b"]' in result.output
+
+    def test_ini_multiple_packages(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "myproject"\nversion = "0.1.0"\n'
+        )
+        (tmp_path / "a").mkdir()
+        (tmp_path / "a" / "__init__.py").touch()
+        (tmp_path / "b").mkdir()
+        (tmp_path / "b" / "__init__.py").touch()
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["import-linter", "--format", "ini"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "root_packages =" in result.output
+        assert "    a" in result.output
+        assert "    b" in result.output
+
+    def test_toml_contract_content(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        (tmp_path / "mypkg").mkdir()
+        (tmp_path / "mypkg" / "__init__.py").touch()
+        (tmp_path / "mypkg" / "a.py").touch()
+        (tmp_path / "mypkg" / "b.py").write_text("import mypkg.a\n")
+        (tmp_path / "mypkg" / "c.py").write_text(
+            "import mypkg.a\nimport mypkg.b\n"
+        )
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["import-linter", "--format", "toml"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert 'name = "mypkg"' in result.output
+        assert 'type = "layers"' in result.output
+        assert "exhaustive = true" in result.output
+
+    def test_ini_contract_content(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        (tmp_path / "mypkg").mkdir()
+        (tmp_path / "mypkg" / "__init__.py").touch()
+        (tmp_path / "mypkg" / "a.py").touch()
+        (tmp_path / "mypkg" / "b.py").write_text("import mypkg.a\n")
+        (tmp_path / "mypkg" / "c.py").write_text(
+            "import mypkg.a\nimport mypkg.b\n"
+        )
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["import-linter", "--format", "ini"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "name = mypkg" in result.output
+        assert "type = layers" in result.output
+        assert "exhaustive = True" in result.output

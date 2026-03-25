@@ -34,9 +34,7 @@ def main() -> int:
         for skill in missing:
             print(f"  - {skill}", file=sys.stderr)
         print(file=sys.stderr)
-        print(
-            "Please add them to the skills registry in AGENTS.md.", file=sys.stderr
-        )
+        print("Please add them to the skills registry in AGENTS.md.", file=sys.stderr)
         return 1
 
     print("All skills are documented in AGENTS.md.")

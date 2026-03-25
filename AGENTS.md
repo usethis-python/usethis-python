@@ -34,6 +34,7 @@ The `.agents/skills` directory contains agent skills.
 | `usethis-python-functions`            | Guidelines for Python function design, including return types and signature simplicity                                |
 | `usethis-python-module-layout-modify` | Modify the Python module layout (create, move, rename, or delete modules)                                             |
 | `usethis-python-ruff`                 | Guidelines for complying with Ruff linter rules instead of suppressing them                                           |
+| `usethis-python-test-affected-find`   | Identify tests that are potentially affected by code changes, to catch regressions before CI                          |
 | `usethis-qa-import-linter`            | Use the Import Linter software on the usethis project                                                                 |
 | `usethis-qa-static-checks`            | Perform static code checks                                                                                            |
 | `usethis-skills-create`               | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability |

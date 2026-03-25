@@ -449,11 +449,13 @@ def edit_yaml(
 ) -> Generator[YAMLDocument, None, None]:
     """A context manager to modify a YAML file in-place, with managed read and write."""
     with read_yaml(yaml_path, guess_indent=guess_indent) as yaml_document:
+        original_content = copy.deepcopy(yaml_document.content)
+
         yield yaml_document
-        start_empty = not yaml_document.content
-        if start_empty and not yaml_document.content:
-            # No change
+
+        if yaml_document.content == original_content:
             return
+
         yaml_document.roundtripper.dump(yaml_document.content, stream=yaml_path)
 
 

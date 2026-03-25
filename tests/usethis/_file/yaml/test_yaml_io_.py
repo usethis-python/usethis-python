@@ -166,6 +166,47 @@ class TestYAMLFileManager:
             ):
                 manager.read_file()
 
+    class TestWriteFile:
+        def test_no_cosmetic_changes(self, tmp_path: Path):
+            """Reading a YAML file and exiting the manager should not modify it."""
+
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            original = "key: 'value'\n"
+            (tmp_path / "my_yaml_file.yaml").write_text(original)
+
+            # Act - only read, no modifications
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.get()  # Trigger a read without making structural changes
+
+            # Assert - file should be unchanged
+            assert (tmp_path / "my_yaml_file.yaml").read_text() == original
+
+        def test_structural_changes_written(self, tmp_path: Path):
+            """Structural changes should still be written."""
+
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value\n")
+
+            # Act - make a structural change
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.set_value(keys=["new_key"], value="new_value")
+
+            # Assert - file should contain the new value
+            contents = (tmp_path / "my_yaml_file.yaml").read_text()
+            assert "new_key" in contents
+
     class TestDumpContent:
         def test_dump_content(self):
             # Arrange
@@ -1350,9 +1391,6 @@ hello: world
                 assert len(content) == 0
 
     class TestRoundTrip:
-        @pytest.mark.xfail(
-            reason="Not providing this guarantee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
-        )
         def test_single_quote_preserved(self, tmp_path: Path):
             path = tmp_path / "x.yml"
             path.write_text(
@@ -1374,9 +1412,6 @@ x: 'hi'
 """
             )
 
-        @pytest.mark.xfail(
-            reason="Not providing this guarantee yet. ruamel.yaml isn't easily able to cope with perfect round-tripping"
-        )
         def test_single_quoted_preserved(self, tmp_path: Path):
             path = tmp_path / "x.yml"
             path.write_text(
@@ -1448,30 +1483,21 @@ x:
 
     def test_no_guess_indent(self, tmp_path: Path):
         path = tmp_path / "x.yml"
-        path.write_text(
-            """\
+        original = """\
 x:
 -    y:
      z:
      -    w
 """
-        )
+        path.write_text(original)
 
         # Act
         with change_cwd(tmp_path), edit_yaml(path, guess_indent=False) as _:
             pass
 
-        # Assert
+        # Assert - file should not be modified since no structural changes were made.
         contents = path.read_text()
-        assert (
-            contents
-            == """\
-x:
-  - y:
-    z:
-      - w
-"""
-        )
+        assert contents == original
 
     def test_invalid_indentation(self, tmp_path: Path):
         # Arrange

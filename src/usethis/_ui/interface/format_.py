@@ -26,8 +26,6 @@ def format_(
     from usethis._toolset.format_ import use_formatters
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(
             offline=offline, quiet=quiet, frozen=frozen, backend=backend

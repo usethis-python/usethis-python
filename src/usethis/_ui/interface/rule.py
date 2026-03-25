@@ -30,8 +30,6 @@ def rule(
     )
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     with (
         usethis_config.set(offline=offline, quiet=quiet, backend=backend),
         files_manager(),

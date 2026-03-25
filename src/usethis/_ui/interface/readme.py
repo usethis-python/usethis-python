@@ -27,8 +27,6 @@ def readme(
     from usethis._tool.impl.base.ruff import RuffTool
     from usethis.errors import UsethisError
 
-    assert isinstance(backend, BackendEnum)
-
     with usethis_config.set(quiet=quiet, backend=backend), files_manager():
         try:
             add_readme()

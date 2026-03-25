@@ -12,7 +12,6 @@ from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._file.toml.io_ import TOMLFileManager
 from usethis._file.yaml.io_ import YAMLFileManager
-from usethis._integrations.ci.bitbucket.yaml import BitbucketPipelinesYAMLManager
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 
 if TYPE_CHECKING:
@@ -24,7 +23,6 @@ def files_manager() -> Iterator[None]:
     with (
         PyprojectTOMLManager(),
         SetupCFGManager(),
-        BitbucketPipelinesYAMLManager(),
         DotCodespellRCManager(),
         DotCoverageRCManager(),
         DotCoverageRCTOMLManager(),

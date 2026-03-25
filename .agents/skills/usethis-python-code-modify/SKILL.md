@@ -4,7 +4,7 @@ description: Modify Python code (e.g. refactor, add new code, or delete code)
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Modifying Python code
@@ -41,6 +41,17 @@ When you modify code, check whether the change affects areas that are documented
 - **Guides in CONTRIBUTING.md**: The "Guides" section in `CONTRIBUTING.md` documents step-by-step processes for common tasks like adding a new tool or adding a new badge. If your change modifies the classes, functions, or patterns described in these guides (e.g. `Tool`, `ToolSpec`, `ConfigSpec`, `use_*` functions, `typer` commands, badge functions), read the relevant guide and check whether it still accurately describes the current code. Update it if not.
 - **Conventions in CONTRIBUTING.md**: The "Conventions" section documents project-wide conventions (e.g. `plain_print` instead of `print`, branding rules). If your change introduces a new convention or modifies an existing one, update this section.
 - **README.md**: If your change adds, removes, or renames CLI commands or tool integrations, update `README.md` to reflect this.
+
+## Document auxiliary changes with comments
+
+When working on a task, you may discover pre-existing issues that need fixing but are not directly related to the main change. For example, a test might fail due to a latent bug or a missing argument unrelated to your feature. When you fix such an issue, always add a brief code comment explaining why the change was made.
+
+Without a comment, reviewers lack the context to understand why a seemingly unrelated change was included. A short comment prevents confusion during review and preserves the rationale for future readers.
+
+### Procedure
+
+1. If you make a code change that is auxiliary to your main task — i.e. it fixes a pre-existing or latent issue you encountered along the way — add a code comment at the point of the change explaining the reason.
+2. Keep the comment concise: one or two lines explaining the problem and why the fix is necessary.
 
 ## Run static checks after finishing modifications
 

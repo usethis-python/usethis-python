@@ -4,7 +4,7 @@ description: Add a prek hook for dev
 compatibility: usethis, prek, git
 license: MIT
 metadata:
-  version: "1.2"
+  version: "1.4"
 ---
 
 # Adding a prek Hook
@@ -41,7 +41,7 @@ repos:
 
 The `rev` field **must** be a tag (e.g. `v2.1.0`), not a hard-coded commit SHA (e.g. `5630322d0f5b6675af7e16051cc3de22`). Tags are human-readable, easy to update, and clearly communicate the version being used.
 
-If the repository does not have any tagged releases, wait until a tag is available before adding the hook, or raise this as a concern.
+If the repository does not have any tagged releases, do not use a remote hook. Instead, use a **local hook** with `uv run` (see the "Local hooks" section below). This avoids the need for a tag while still running the tool correctly. Ensure the tool is added as a dev dependency with `uv add --dev` so that `uv run` can invoke it.
 
 ### Local hooks
 
@@ -82,6 +82,16 @@ This ordering ensures that the comprehensive tool gets the final say and can cle
 ### Choosing a priority level
 
 When adding a new hook, inspect the existing `.pre-commit-config.yaml` to determine the correct priority level. If the new hook writes to files already covered by another hook at a given priority level, use a **different** priority level and follow the ordering principle above. Introduce a new priority level if needed — there is no fixed limit on the number of levels.
+
+### Changing priorities of existing hooks
+
+**Do not hesitate to change the priorities of existing hooks.** When a new hook needs to be inserted at a priority level that is already occupied by a conflicting hook, the correct action is to **bump the priority of the existing hook** (or the new hook) to create the necessary separation. This is expected and encouraged — it is a normal part of maintaining a correct hook configuration.
+
+Specifically:
+
+- **Minimizing the diff is not a concern.** Changing the `priority` field on several existing hooks to make room for a new one is perfectly acceptable. Correctness of the priority assignments always takes precedence over keeping the diff small.
+- **Cascade priority changes as needed.** If bumping one hook's priority creates a new conflict with another hook at the target level, bump that hook too. Continue until all write-conflicting hooks have distinct priority levels.
+- **Re-examine the full priority ordering** after every addition. Adding a new hook is an opportunity to ensure the entire priority structure is correct, not just the slot for the new hook.
 
 ## Placement within the file
 

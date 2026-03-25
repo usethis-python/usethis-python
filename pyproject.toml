@@ -231,11 +231,6 @@ reportUnusedParameter = false
 
 [[tool.basedpyright.executionEnvironments]]
 # Particularly interested in avoiding the auto-generated schema script
-root = "src/usethis/_integrations/ci/bitbucket"
-reportUnannotatedClassAttribute = false
-
-[[tool.basedpyright.executionEnvironments]]
-# Particularly interested in avoiding the auto-generated schema script
 root = "src/usethis/_integrations/pre_commit"
 reportUnannotatedClassAttribute = false
 

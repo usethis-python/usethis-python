@@ -285,6 +285,36 @@ import salut._version
         assert arch.layers == [{"a"}, {"b"}]
         assert arch.excluded == {"_version"}
 
+    def test_version_not_excluded_in_submodule(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """_version is not excluded from submodule layer contracts.
+
+        Only top-level packages should exclude _version, since VCS plugins
+        (e.g. setuptools-scm, hatch-vcs) only auto-generate it at the root.
+
+        Ref: https://github.com/usethis-python/usethis-python/issues/1432
+        """
+        # Arrange
+        (tmp_path / "salut").mkdir()
+        (tmp_path / "salut" / "__init__.py").touch()
+        (tmp_path / "salut" / "b").mkdir()
+        (tmp_path / "salut" / "b" / "__init__.py").touch()
+        (tmp_path / "salut" / "b" / "c.py").touch()
+        (tmp_path / "salut" / "b" / "d.py").touch()
+        (tmp_path / "salut" / "b" / "_version.py").touch()
+
+        monkeypatch.syspath_prepend(str(tmp_path))
+
+        # Act
+        with change_cwd(tmp_path):
+            graph = _get_graph("salut")
+            arch = _get_module_layered_architecture("salut.b", graph=graph)
+
+        # Assert
+        assert arch.layers == [{"_version", "c", "d"}]
+        assert arch.excluded == set()
+
 
 class TestGetChildDependencies:
     def test_three(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):

@@ -22,11 +22,6 @@ Supported options:
 - `--test` to add a recommended testing framework (default; or `--no-test` to opt-out)
 - `--typecheck` to add a recommended type checker (default; or `--no-typecheck` to opt-out)
 - `--hook` to add a recommended git hook framework (but the default is `--no-hook`)
-- `--ci` to add a CI service configuration
-
-  Possible values:
-  - `bitbucket` for [Bitbucket Pipelines](https://bitbucket.org/product/features/pipelines)
-
 - `--docstyle` to set a docstring style convention for the project.
 
   Possible values:

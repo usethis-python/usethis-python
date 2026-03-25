@@ -182,7 +182,7 @@ class TestYAMLFileManager:
 
             # Act - only read, no modifications
             with change_cwd(tmp_path), MyYAMLFileManager() as manager:
-                manager.get()
+                manager.get()  # Trigger a read without making structural changes
 
             # Assert - file should be unchanged
             assert (tmp_path / "my_yaml_file.yaml").read_text() == original

@@ -449,28 +449,14 @@ def edit_yaml(
 ) -> Generator[YAMLDocument, None, None]:
     """A context manager to modify a YAML file in-place, with managed read and write."""
     with read_yaml(yaml_path, guess_indent=guess_indent) as yaml_document:
-        # Compute initial dump for change detection.
-        with StringIO() as output:
-            yaml_document.roundtripper.dump(yaml_document.content, output)
-            initial_dump = output.getvalue()
+        original_content = copy.deepcopy(yaml_document.content)
 
         yield yaml_document
 
-        start_empty = not yaml_document.content
-        if start_empty and not yaml_document.content:
-            # No change
+        if yaml_document.content == original_content:
             return
 
-        # Dump to string and compare to initial dump to avoid cosmetic-only
-        # modifications from round-tripping through ruamel.yaml.
-        with StringIO() as output:
-            yaml_document.roundtripper.dump(yaml_document.content, output)
-            new_content = output.getvalue()
-
-        if new_content == initial_dump:
-            return
-
-        yaml_path.write_text(new_content, encoding="utf-8")
+        yaml_document.roundtripper.dump(yaml_document.content, stream=yaml_path)
 
 
 @contextmanager

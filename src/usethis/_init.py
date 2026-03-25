@@ -10,14 +10,29 @@ from usethis._backend.uv.init import (
 from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._deps import get_project_deps
+from usethis._fallback import (
+    FALLBACK_HATCHLING_VERSION,
+    FALLBACK_UV_VERSION,
+    next_breaking_version,
+)
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.name import get_project_name
 from usethis._types.backend import BackendEnum
 from usethis._types.build_backend import BuildBackendEnum
 
 _BUILD_SYSTEM_CONFIG: dict[BuildBackendEnum, tuple[list[str], str]] = {
-    BuildBackendEnum.hatch: (["hatchling"], "hatchling.build"),
-    BuildBackendEnum.uv: (["uv_build>=0.10.12,<0.11.0"], "uv_build"),
+    BuildBackendEnum.hatch: (
+        [
+            f"hatchling>={FALLBACK_HATCHLING_VERSION},<{next_breaking_version(FALLBACK_HATCHLING_VERSION)}"
+        ],
+        "hatchling.build",
+    ),
+    BuildBackendEnum.uv: (
+        [
+            f"uv_build>={FALLBACK_UV_VERSION},<{next_breaking_version(FALLBACK_UV_VERSION)}"
+        ],
+        "uv_build",
+    ),
 }
 
 

@@ -36,11 +36,10 @@ jobs:
               with:
                   version: "latest"
                   enable-cache: true
-                  python-version: "3.14"
 
             - name: Run checks
               run: |
-                  uv run --frozen prek run -a
+                  uv run --frozen prek -a
                   uv run --frozen basedpyright
               env:
                   PREK_UV_SOURCE: github

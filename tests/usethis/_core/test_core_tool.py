@@ -31,14 +31,14 @@ from usethis._core.tool import (
     use_ty,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
+from usethis._fallback import FALLBACK_RUFF_VERSION, FALLBACK_SYNC_WITH_UV_VERSION
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
-from usethis._tool.impl.base.ruff import _RUFF_VERSION, RuffTool
-from usethis._tool.impl.spec.pre_commit import _SYNC_WITH_UV_VERSION
+from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
@@ -725,7 +725,7 @@ class TestDeptry:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: local
@@ -893,7 +893,7 @@ dev = []
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: local
@@ -1907,7 +1907,7 @@ class TestPreCommit:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
 """
@@ -1985,7 +1985,7 @@ repos:
         entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
         language: system
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
 """
@@ -2073,6 +2073,24 @@ repos:
                 # Issue #1020: Deps should remain even when using pre-commit
                 dev_deps = get_deps_from_group("dev")
                 assert any(dep.name == "codespell" for dep in dev_deps)
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_used(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                use_ruff()
+
+                # Act
+                use_pre_commit()
+
+                # Assert
+                hook_names = get_hook_ids()
+                assert "ruff-check" in hook_names
+                assert "ruff-format" in hook_names
+
+                # Issue #1126: Deps should remain even when using pre-commit
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps)
 
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2391,6 +2409,52 @@ pipelines:
                 ]
                 assert len(codespell_deps_after) == 1
                 assert codespell_deps_after == codespell_deps_before
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_deps_not_removed_when_migrating_to_pre_commit(
+            self, uv_init_dir: Path
+        ):
+            """Test that Ruff deps are NOT removed when migrating to pre-commit."""
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange - Add Ruff first
+                use_ruff()
+
+                # Verify dep is present before migration
+                dev_deps_before = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps_before)
+
+                # Act - Add pre-commit (which triggers migration)
+                use_pre_commit()
+
+                # Assert - Dep should STILL be present after migration (issue #1126)
+                dev_deps_after = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps_after)
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruff_deps_not_added_when_migrating_from_pre_commit(
+            self, uv_init_dir: Path
+        ):
+            """Test that Ruff deps are NOT re-added when migrating from pre-commit."""
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange - Add pre-commit first, then Ruff
+                use_pre_commit()
+                use_ruff()
+
+                # Verify dep is present before removal
+                dev_deps_before = get_deps_from_group("dev")
+                ruff_deps_before = [
+                    dep for dep in dev_deps_before if dep.name == "ruff"
+                ]
+                assert len(ruff_deps_before) == 1
+
+                # Act - Remove pre-commit (which triggers migration)
+                use_pre_commit(remove=True)
+
+                # Assert - Dep should still be present exactly once (not duplicated)
+                dev_deps_after = get_deps_from_group("dev")
+                ruff_deps_after = [dep for dep in dev_deps_after if dep.name == "ruff"]
+                assert len(ruff_deps_after) == 1
+                assert ruff_deps_after == ruff_deps_before
 
 
 class TestPyprojectFmt:
@@ -2943,7 +3007,7 @@ def test_foo():
             # Assert
             with change_cwd(tmp_path), files_manager():
                 contents = (tmp_path / "ruff.toml").read_text()
-                assert """"tests/**" = ["INP"]""" in contents
+                assert """"tests/**" = ["RUF059", "INP"]""" in contents
 
         class TestBitbucketIntegration:
             def test_no_backend(
@@ -3371,7 +3435,7 @@ class TestRequirementsTxt:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: local
@@ -3615,6 +3679,30 @@ docstring-code-format = true
                 # Assert
                 assert RuffTOMLManager()[["line-length"]] == 100
 
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruf059_ignored_in_tests(self, uv_init_dir: Path):
+            # https://github.com/usethis-python/usethis-python/issues/1186
+            # Arrange
+            (uv_init_dir / "tests").mkdir()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+                # Assert
+                assert "RUF059" in RuffTool().get_ignored_rules_in_glob("tests/**")
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_ruf059_not_ignored_in_tests_without_tests_dir(self, uv_init_dir: Path):
+            # Arrange - no tests/ directory
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff()
+
+                # Assert
+                assert "RUF059" not in RuffTool().get_ignored_rules_in_glob("tests/**")
+
         def test_only_add_linter(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -3819,9 +3907,12 @@ select = ["F"]
 
                 # Assert
                 hook_names = get_hook_ids()
+                assert "ruff-format" in hook_names
+                assert "ruff-check" in hook_names
 
-            assert "ruff-format" in hook_names
-            assert "ruff-check" in hook_names
+                # Issue #1126: Deps should remain even when using pre-commit
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_use_after(self, uv_init_repo_dir: Path):
@@ -3834,9 +3925,12 @@ select = ["F"]
 
                 # Assert
                 hook_names = get_hook_ids()
+                assert "ruff-format" in hook_names
+                assert "ruff-check" in hook_names
 
-            assert "ruff-format" in hook_names
-            assert "ruff-check" in hook_names
+                # Issue #1126: Deps should be added even when pre-commit is used
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "ruff" for dep in dev_deps)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_remove(
@@ -3891,11 +3985,11 @@ select = ["F"]
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-check
 """
@@ -3929,15 +4023,15 @@ repos:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-check
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-format
 """
@@ -3970,11 +4064,11 @@ repos:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-format
 """
@@ -4008,11 +4102,11 @@ repos:
                 f"""\
 repos:
   - repo: https://github.com/tsvikas/sync-with-uv
-    rev: {_SYNC_WITH_UV_VERSION}
+    rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: {_RUFF_VERSION}
+    rev: {FALLBACK_RUFF_VERSION}
     hooks:
       - id: ruff-format
 """

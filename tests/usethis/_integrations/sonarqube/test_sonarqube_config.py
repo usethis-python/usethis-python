@@ -336,6 +336,65 @@ sonar.exclusions=tests/*
             with pytest.raises(CoverageReportConfigNotFoundError):
                 get_sonar_project_properties()
 
+    def test_project_key_argument(self, tmp_path: Path):
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+
+            # Act
+            result = get_sonar_project_properties(project_key="cli-key")
+
+        # Assert
+        assert (
+            result
+            == """\
+sonar.projectKey=cli-key
+sonar.language=py
+sonar.python.version=3.12
+sonar.sources=./
+sonar.tests=./tests
+sonar.python.coverage.reportPaths=coverage.xml
+sonar.verbose=false
+sonar.exclusions=tests/*
+"""
+        )
+
+    def test_project_key_argument_overrides_pyproject(self, tmp_path: Path):
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "project-key"],
+                value="from-pyproject",
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+
+            # Act
+            result = get_sonar_project_properties(project_key="from-cli")
+
+        # Assert
+        assert "sonar.projectKey=from-cli\n" in result
+
+    def test_project_key_argument_invalid(self, tmp_path: Path):
+        with change_cwd(tmp_path), PyprojectTOMLManager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+
+            # Act, Assert
+            with pytest.raises(InvalidSonarQubeProjectKeyError):
+                get_sonar_project_properties(project_key="invalid key!")
+
     def test_flat_layout_exclusions_already_has_tests(self, tmp_path: Path):
         # When using flat layout and tests/* is already in exclusions,
         # it should not be added again.

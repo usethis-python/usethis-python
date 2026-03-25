@@ -6,14 +6,13 @@ from typing import final
 from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
+from usethis._fallback import FALLBACK_SYNC_WITH_UV_VERSION
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._integrations.pre_commit.cmd_ import pre_commit_raw_cmd
 from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
-
-_SYNC_WITH_UV_VERSION = "v0.5.0"  # Manually bump this version when necessary
 
 
 class PreCommitToolSpec(ToolSpec):
@@ -47,7 +46,7 @@ class PreCommitToolSpec(ToolSpec):
             return PreCommitConfig.from_single_repo(
                 pre_commit_schema.UriRepo(
                     repo="https://github.com/tsvikas/sync-with-uv",
-                    rev=_SYNC_WITH_UV_VERSION,
+                    rev=FALLBACK_SYNC_WITH_UV_VERSION,
                     hooks=[pre_commit_schema.HookDefinition(id="sync-with-uv")],
                 ),
                 requires_venv=False,

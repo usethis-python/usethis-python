@@ -509,6 +509,9 @@ def _get_basic_rule_config() -> RuleConfig:
             "PLR2004",  # https://github.com/usethis-python/usethis-python/issues/105
             "SIM108",  # https://github.com/usethis-python/usethis-python/issues/118
         ],
+        tests_ignored=[
+            "RUF059",  # https://github.com/usethis-python/usethis-python/issues/907
+        ],
     )
 
     return rule_config

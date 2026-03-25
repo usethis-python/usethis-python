@@ -5,14 +5,13 @@ from typing import final
 
 from typing_extensions import override
 
+from usethis._fallback import FALLBACK_PYPROJECT_FMT_VERSION
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
 from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.deps import Dependency
-
-_PYPROJECT_FMT_VERSION = "v2.20.0"  # Manually bump this version when necessary
 
 
 class PyprojectFmtToolSpec(ToolSpec):
@@ -42,7 +41,7 @@ class PyprojectFmtToolSpec(ToolSpec):
         return PreCommitConfig.from_single_repo(
             pre_commit_schema.UriRepo(
                 repo="https://github.com/tox-dev/pyproject-fmt",
-                rev=_PYPROJECT_FMT_VERSION,
+                rev=FALLBACK_PYPROJECT_FMT_VERSION,
                 hooks=[pre_commit_schema.HookDefinition(id="pyproject-fmt")],
             ),
             requires_venv=False,

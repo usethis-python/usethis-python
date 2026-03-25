@@ -15,7 +15,7 @@ These are in `.github/workflows/`.
 
 Avoid redundant glob patterns. For in this example:
 
-```
+```yaml
 on:
   push:
     paths-ignore:

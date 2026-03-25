@@ -1,15 +1,9 @@
-import os
 from pathlib import Path
 
 import pytest
 
-from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
-from usethis._core.tool import use_ruff
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.ci.github.errors import GitHubTagError
-from usethis._integrations.ci.github.tags import get_github_latest_tag
-from usethis._integrations.pre_commit import schema
 from usethis._test import change_cwd
 from usethis._tool.impl.base.ruff import RuffTool
 
@@ -342,6 +336,40 @@ lint.per-file-ignores."tests/**" = ["INP"]
 """
             )
 
+    class TestUnignoreRulesInGlob:
+        def test_removes_rule(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.ruff]
+lint.select = [ "RUF" ]
+lint.per-file-ignores."tests/**" = ["RUF059"]
+""")
+
+            with change_cwd(tmp_path), files_manager():
+                # Act
+                RuffTool().unignore_rules_in_glob(["RUF059"], glob="tests/**")
+
+            # Assert
+            contents = (tmp_path / "pyproject.toml").read_text()
+            assert "RUF059" not in contents
+
+        def test_no_op_when_not_ignored(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.ruff]
+lint.select = [ "RUF" ]
+""")
+
+            with change_cwd(tmp_path), files_manager():
+                # Act
+                RuffTool().unignore_rules_in_glob(["RUF059"], glob="tests/**")
+
+            # Assert - no changes, no output
+            out, _err = capfd.readouterr()
+            assert "RUF059" not in out
+
     class TestAddConfig:
         def test_empty_dir(self, tmp_path: Path):
             # Expect ruff.toml to be preferred
@@ -371,31 +399,3 @@ lint.per-file-ignores."tests/**" = ["INP"]
             assert not (tmp_path / ".ruff.toml").exists()
             assert (tmp_path / "pyproject.toml").exists()
             assert not (tmp_path / "ruff.toml").exists()
-
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self, tmp_path: Path):
-        if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
-
-        with change_cwd(tmp_path), files_manager():
-            # Arrange
-            use_ruff(formatter=False)
-
-            # Act
-            (config,) = RuffTool().pre_commit_config().repo_configs
-        repo = config.repo
-        assert isinstance(repo, schema.UriRepo)
-        try:
-            assert repo.rev == get_github_latest_tag(
-                owner="astral-sh", repo="ruff-pre-commit"
-            )
-        except GitHubTagError as err:
-            if (
-                usethis_config.offline
-                or "rate limit exceeded for url" in str(err)
-                or "Read timed out." in str(err)
-            ):
-                pytest.skip(
-                    "Failed to fetch GitHub tags (connection issues); skipping test"
-                )
-            raise err

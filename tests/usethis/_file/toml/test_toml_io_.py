@@ -47,6 +47,34 @@ class TestTOMLFileManager:
             with change_cwd(tmp_path), MyTOMLFileManager() as manager:
                 assert [] in manager
 
+        def test_empty_file_no_keys(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act, Assert
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                assert [] in manager
+
+        def test_empty_file_key_missing(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act, Assert
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                assert ["a"] not in manager
+
         def test_list_of_keys_not_in_scalar(self, tmp_path: Path) -> None:
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
@@ -78,6 +106,20 @@ a = "b"
             # Act, Assert
             with change_cwd(tmp_path), MyTOMLFileManager() as manager:
                 assert manager[[]] == {"tool": {"usethis": {"a": "b"}}}
+
+        def test_empty_file(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").touch()
+
+            # Act, Assert
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                assert manager[[]] == {}
 
         def test_scalar_not_mapping(self, tmp_path: Path) -> None:
             # Arrange

@@ -7,6 +7,13 @@ app = typer.Typer(
     help="Show information about the current project.", add_completion=False
 )
 
+# show sonarqube options
+project_key_opt = typer.Option(
+    None,
+    "--project-key",
+    help="SonarQube project key. If not provided, will be read from 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'.",
+)
+
 
 @app.command(help="Show the inferred project manager backend, e.g. 'uv' or 'none'.")
 def backend(
@@ -51,6 +58,7 @@ def name(
 def sonarqube(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    project_key: str | None = project_key_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._console import err_print
@@ -59,7 +67,7 @@ def sonarqube(
 
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
         try:
-            show_sonarqube_config()
+            show_sonarqube_config(project_key=project_key)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

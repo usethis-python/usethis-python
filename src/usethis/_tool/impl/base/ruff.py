@@ -11,6 +11,7 @@ from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import how_print, tick_print
+from usethis._fallback import FALLBACK_RUFF_VERSION
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.ci.bitbucket import schema as bitbucket_schema
 from usethis._integrations.ci.bitbucket.anchor import (
@@ -34,8 +35,6 @@ if TYPE_CHECKING:
 
     from usethis._file.manager import KeyValueFileManager
     from usethis._tool.rule import RuleConfig
-
-_RUFF_VERSION = "v0.15.7"  # Manually bump this version when necessary
 
 
 @final
@@ -110,7 +109,7 @@ class RuffTool(RuffToolSpec, Tool):
                 PreCommitRepoConfig(
                     repo=pre_commit_schema.UriRepo(
                         repo="https://github.com/astral-sh/ruff-pre-commit",
-                        rev=_RUFF_VERSION,
+                        rev=FALLBACK_RUFF_VERSION,
                         hooks=[pre_commit_schema.HookDefinition(id="ruff-check")],
                     ),
                     requires_venv=False,
@@ -121,7 +120,7 @@ class RuffTool(RuffToolSpec, Tool):
                 PreCommitRepoConfig(
                     repo=pre_commit_schema.UriRepo(
                         repo="https://github.com/astral-sh/ruff-pre-commit",
-                        rev=_RUFF_VERSION,
+                        rev=FALLBACK_RUFF_VERSION,
                         hooks=[pre_commit_schema.HookDefinition(id="ruff-format")],
                     ),
                     requires_venv=False,
@@ -242,6 +241,24 @@ class RuffTool(RuffToolSpec, Tool):
         keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
         file_manager.extend_list(keys=keys, values=rules)
 
+    def unignore_rules_in_glob(self, rules: Sequence[Rule], *, glob: str) -> None:
+        """Stop ignoring Ruff rules in the project for a specific glob pattern."""
+        rules = sorted(set(rules) & set(self.get_ignored_rules_in_glob(glob)))
+
+        if not rules:
+            return
+
+        rules_str = ", ".join([f"'{rule}'" for rule in rules])
+        s = "" if len(rules) == 1 else "s"
+
+        (file_manager,) = self.get_active_config_file_managers()
+        ensure_managed_file_exists(file_manager)
+        tick_print(
+            f"No longer ignoring {self.name} rule{s} {rules_str} for '{glob}' in '{file_manager.name}'."
+        )
+        keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
+        file_manager.remove_from_list(keys=keys, values=rules)
+
     def get_ignored_rules_in_glob(self, glob: str) -> list[Rule]:
         """Get the Ruff rules ignored in the project for a specific glob pattern."""
         (file_manager,) = self.get_active_config_file_managers()
@@ -273,6 +290,10 @@ class RuffTool(RuffToolSpec, Tool):
         ):
             # Only add test-related directory ignore rules if the tests directory exists
             if (usethis_config.cpd() / "tests").exists():
+                self.ignore_rules_in_glob(rule_config.tests_ignored, glob="tests/**")
+                self.ignore_rules_in_glob(
+                    rule_config.nontests_ignored, glob="!tests/**/*.py"
+                )
                 self.ignore_rules_in_glob(
                     rule_config.tests_unmanaged_ignored, glob="tests/**"
                 )
@@ -287,6 +308,8 @@ class RuffTool(RuffToolSpec, Tool):
         """
         self.deselect_rules(rule_config.selected)
         self.unignore_rules(rule_config.ignored)
+        self.unignore_rules_in_glob(rule_config.tests_ignored, glob="tests/**")
+        self.unignore_rules_in_glob(rule_config.nontests_ignored, glob="!tests/**/*.py")
 
     def set_docstyle(self, style: Literal["numpy", "google", "pep257"]) -> None:
         (file_manager,) = self.get_active_config_file_managers()

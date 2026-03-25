@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from usethis._config_file import files_manager
+from usethis._fallback import FALLBACK_PRE_COMMIT_VERSION
 from usethis._integrations.pre_commit.version import (
-    PRE_COMMIT_VERSION,
     get_minimum_pre_commit_version,
     get_pre_commit_version,
 )
@@ -79,7 +79,7 @@ repos:
             result = get_pre_commit_version()
 
         # Assert
-        assert result == PRE_COMMIT_VERSION
+        assert result == FALLBACK_PRE_COMMIT_VERSION
 
     def test_falls_back_to_hardcoded_when_minimum_not_declared(self, tmp_path: Path):
         # Arrange
@@ -96,4 +96,4 @@ repos:
             result = get_pre_commit_version()
 
         # Assert
-        assert result == PRE_COMMIT_VERSION
+        assert result == FALLBACK_PRE_COMMIT_VERSION

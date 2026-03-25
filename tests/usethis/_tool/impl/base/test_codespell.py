@@ -1,13 +1,9 @@
-import os
 from pathlib import Path
 
 import pytest
 
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
-from usethis._integrations.ci.github.errors import GitHubTagError
-from usethis._integrations.ci.github.tags import get_github_latest_tag
-from usethis._integrations.pre_commit import schema
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.impl.base.codespell import CodespellTool
@@ -137,29 +133,6 @@ repos:
             out, err = capfd.readouterr()
             assert not err
             assert out == ("☐ Run 'codespell' to run the Codespell spellchecker.\n")
-
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self):
-        if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
-
-        (config,) = CodespellTool().pre_commit_config().repo_configs
-        repo = config.repo
-        assert isinstance(repo, schema.UriRepo)
-        try:
-            assert repo.rev == get_github_latest_tag(
-                owner="codespell-project", repo="codespell"
-            )
-        except GitHubTagError as err:
-            if (
-                usethis_config.offline
-                or "rate limit exceeded for url" in str(err)
-                or "Read timed out." in str(err)
-            ):
-                pytest.skip(
-                    "Failed to fetch GitHub tags (connection issues); skipping test"
-                )
-            raise err
 
     class TestAddConfig:
         def test_empty_dir(self, tmp_path: Path):

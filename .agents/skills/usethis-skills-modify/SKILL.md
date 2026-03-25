@@ -4,7 +4,7 @@ description: Modify agent skills (SKILL.md files)
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Modifying Agent Skills
@@ -31,6 +31,16 @@ The version follows a `MAJOR.MINOR` format (e.g. `"1.0"`, `"1.1"`, `"2.0"`). Inc
 ### Why version incrementing matters
 
 Incrementing the version on every change helps ensure that merge conflicts are detected when two people modify the same skill concurrently. Without versioning, two independent changes to a skill could be silently merged at the git level even though the combined result may be inconsistent or contradictory. The version bump forces a conflict, prompting a human review.
+
+## Content quality guidelines
+
+When modifying skill content, maintain these principles:
+
+- **Describe procedures, not state.** Skills should explain how to approach situations, not describe the current state of the codebase. State descriptions become outdated; procedures remain valid. See the `usethis-skills-create` skill for detailed guidance.
+- **Keep content general.** Write instructions that remain valid as the codebase evolves. Avoid embedding specific file paths, class names, or constants unless strictly necessary.
+- **Be concise.** Only include information the agent doesn't already know. If a paragraph doesn't justify its token cost, remove it.
+- **Avoid time-sensitive information.** Don't include current version numbers, file counts, or lists that grow over time.
+- **Use consistent terminology.** Don't introduce synonyms for concepts that already have established terms in the skill.
 
 ## YAML frontmatter format
 

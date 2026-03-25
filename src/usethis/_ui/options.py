@@ -69,7 +69,7 @@ init_test_opt = typer.Option(
     help="Add a recommended testing framework.",
 )
 init_typecheck_opt = typer.Option(
-    True,
+    False,
     "--typecheck/--no-typecheck",
     help="Add a recommended type checker.",
 )

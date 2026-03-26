@@ -458,6 +458,10 @@ Currently supported subcommands:
 - `usethis show name` to show the name of the project.
 - `usethis show sonarqube` to show appropriate contents of a `sonar-projects.properties` file for SonarQube analysis.
 
+Supported options:
+
+- `--output-file` to write the output to a file instead of stdout. This is useful to avoid issues when shell redirects (e.g. `> file.txt`) create the file before the command runs, which can influence the behaviour of `usethis show`.
+
 ## `usethis browse pypi <package>`
 
 Display or open the PyPI landing page associated with another project.

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import typer
 
 from usethis._config import usethis_config
@@ -14,11 +16,19 @@ project_key_opt = typer.Option(
     help="SonarQube project key. If not provided, will be read from 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'.",
 )
 
+# show output file option
+output_file_opt = typer.Option(
+    None,
+    "--output-file",
+    help="Write output to this file instead of stdout.",
+)
+
 
 @app.command(help="Show the inferred project manager backend, e.g. 'uv' or 'none'.")
 def backend(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    output_file: Path | None = output_file_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._console import err_print
@@ -27,7 +37,7 @@ def backend(
 
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
         try:
-            show_backend()
+            show_backend(output_file=output_file)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None
@@ -37,6 +47,7 @@ def backend(
 def name(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
+    output_file: Path | None = output_file_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._console import err_print
@@ -45,7 +56,7 @@ def name(
 
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
         try:
-            show_name()
+            show_name(output_file=output_file)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None
@@ -59,6 +70,7 @@ def sonarqube(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     project_key: str | None = project_key_opt,
+    output_file: Path | None = output_file_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._console import err_print
@@ -67,7 +79,7 @@ def sonarqube(
 
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
         try:
-            show_sonarqube_config(project_key=project_key)
+            show_sonarqube_config(project_key=project_key, output_file=output_file)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

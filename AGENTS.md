@@ -35,12 +35,13 @@ The `.agents/skills` directory contains agent skills.
 | `usethis-qa-static-checks`            | Perform static code checks                                                                                            |
 | `usethis-skills-create`               | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability |
 | `usethis-skills-external-add`         | Add an external (community) skill and document it in AGENTS.md                                                        |
+| `usethis-skills-external-install`     | Install/reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)                    |
 | `usethis-skills-modify`               | Modify agent skills (SKILL.md files)                                                                                  |
 | `usethis-test-with-coverage`          | Write tests that achieve full code coverage and verify coverage locally before pushing                                |
 
 #### External skills
 
-External skills can be installed via `npx skills experimental_install` if they are not present.
+External skills can be installed if they are not present — see the `usethis-skills-external-install` skill.
 
 | Skill                    | Source                | Description                                                             |
 | ------------------------ | --------------------- | ----------------------------------------------------------------------- |

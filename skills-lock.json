@@ -4,12 +4,12 @@
     "codspeed-optimize": {
       "source": "CodSpeedHQ/codspeed",
       "sourceType": "github",
-      "computedHash": "7645f43a7a8ca9705a9a8e7367ac1f4ad9d8822ba94230e2b38381c05957d5c5"
+      "computedHash": "8521003ae5faf606e129f18139fa6eb401821c41f8948dd8e45f0db8d40e46b3"
     },
     "codspeed-setup-harness": {
       "source": "CodSpeedHQ/codspeed",
       "sourceType": "github",
-      "computedHash": "bd861b140b75372438d0dbbf5b697e563a80d567bc8bb2b3f2880cdfe41ef27f"
+      "computedHash": "587a58bc7498635347ee7a7eba66ac17c75430db7543be4af7eaab74533a6714"
     }
   }
 }

@@ -297,6 +297,7 @@ Supported options:
 
 - `--remove` to remove the tool instead of adding it
 - `--how` to only print how to use the tool, with no other side effects
+- `--no-hook` to skip adding or removing git hook configuration
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output

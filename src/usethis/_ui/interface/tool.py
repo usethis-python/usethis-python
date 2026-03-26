@@ -12,6 +12,7 @@ from usethis._ui.options import (
     frozen_opt,
     how_opt,
     linter_opt,
+    no_hook_opt,
     offline_opt,
     quiet_opt,
     remove_opt,
@@ -35,13 +36,18 @@ def codespell(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_codespell
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -67,13 +73,18 @@ def coverage_py(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_coverage_py
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -92,13 +103,18 @@ def deptry(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_deptry
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -117,13 +133,18 @@ def import_linter(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_import_linter
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -142,13 +163,18 @@ def mkdocs(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_mkdocs
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -167,13 +193,18 @@ def pre_commit(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pre_commit
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -192,13 +223,18 @@ def pyproject_fmt(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_fmt
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -217,13 +253,18 @@ def pyproject_toml(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_toml
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -240,13 +281,18 @@ def pytest(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pytest
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -265,13 +311,18 @@ def requirements_txt(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_requirements_txt
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -292,13 +343,18 @@ def ruff(
     backend: BackendEnum = backend_opt,
     linter: bool = linter_opt,
     formatter: bool = formatter_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ruff
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -317,13 +373,18 @@ def ty(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ty
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):

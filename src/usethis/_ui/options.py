@@ -29,6 +29,9 @@ frozen_opt = typer.Option(
 backend_opt = typer.Option(
     BACKEND_DEFAULT, "--backend", help="Package manager backend to use."
 )
+no_hook_opt = typer.Option(
+    False, "--no-hook", help="Don't add or remove git hook configuration."
+)
 
 # author command options
 author_name_opt = typer.Option(..., "--name", help="Author name")

@@ -4,7 +4,7 @@ description: Add an external (community) skill to the project from a third-party
 compatibility: usethis, agent skills, npx, markdown
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Adding External Skills
@@ -17,7 +17,7 @@ External skills are sourced from third-party repositories rather than written lo
 2. Install the skills using `npx skills add <source> --skill '*' --agent github-copilot --yes` (e.g. `npx skills add CodSpeedHQ/codspeed --skill '*' --agent github-copilot --yes`).
 3. Note the skill name(s) added to `skills-lock.json`.
 4. Add each new skill to the external skills registry in `AGENTS.md`.
-5. Verify the hook passes: `python hooks/check-skills-documented.py`.
+5. Verify the hook passes: `uv run prek check-skills-documented`.
 
 ## Line endings and reproducible hashes
 

@@ -7,6 +7,7 @@ from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.pre_commit.hooks import get_hook_ids
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 from usethis._test import CliRunner, change_cwd
 from usethis._tool.all_ import ALL_TOOLS
@@ -688,8 +689,6 @@ class TestNoHook:
 
             # Assert: codespell hook should NOT be added to pre-commit config
             with files_manager():
-                from usethis._integrations.pre_commit.hooks import get_hook_ids
-
                 hook_ids = get_hook_ids()
                 assert "codespell" not in hook_ids
 
@@ -705,8 +704,6 @@ class TestNoHook:
 
             # Verify codespell hook was added
             with files_manager():
-                from usethis._integrations.pre_commit.hooks import get_hook_ids
-
                 hook_ids = get_hook_ids()
                 assert "codespell" in hook_ids
 
@@ -733,10 +730,11 @@ class TestNoHook:
             result = runner.invoke_safe(app, ["ruff", "--frozen", "--no-hook"])
             assert result.exit_code == 0, result.output
 
-            # Assert: ruff hooks should NOT be added to pre-commit config
+            # Assert: ruff was configured but hooks were NOT added
             with files_manager():
-                from usethis._integrations.pre_commit.hooks import get_hook_ids
-
+                assert (uv_init_dir / "pyproject.toml").read_text().__contains__(
+                    "[tool.ruff"
+                )
                 hook_ids = get_hook_ids()
                 assert "ruff-check" not in hook_ids
                 assert "ruff-format" not in hook_ids

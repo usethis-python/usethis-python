@@ -28,9 +28,13 @@ jobs:
 
             - name: Set up Node.js
               uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+              with:
+                  cache: "npm"
 
             - name: Install external agent skills
-              run: npx skills experimental_install
+              run: |
+                  npx skills experimental_install
+                  git diff --exit-code skills-lock.json
 
             - name: Setup dependencies
               run: uv sync

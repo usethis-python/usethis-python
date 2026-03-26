@@ -456,7 +456,24 @@ Currently supported subcommands:
 
 - `usethis show backend` to show the inferred project manager backend, e.g. 'uv' or 'none'. This is the default backend used, i.e. when `--backend=auto` is specified.
 - `usethis show name` to show the name of the project.
-- `usethis show sonarqube` to show appropriate contents of a `sonar-projects.properties` file for SonarQube analysis.
+- `usethis show sonarqube` to show appropriate contents of a `sonar-project.properties` file for SonarQube analysis.
+
+### `usethis show sonarqube`
+
+Show the contents of a `sonar-project.properties` file for SonarQube analysis.
+
+If a `sonar-project.properties` file already exists in the project root, its contents are returned as-is. In this case, the `--project-key` option and `tool.usethis.sonarqube.project-key` in `pyproject.toml` are both ignored.
+
+If no `sonar-project.properties` file exists, the contents are constructed from `pyproject.toml` configuration. In this case, a project key is required:
+
+- If `--project-key` is provided, it is used.
+- Otherwise, `tool.usethis.sonarqube.project-key` from `pyproject.toml` is used.
+
+Additional configuration in `pyproject.toml`:
+
+- `tool.usethis.sonarqube.verbose` (bool, default `false`) — sets `sonar.verbose`.
+- `tool.usethis.sonarqube.exclusions` (list of strings, default `[]`) — sets `sonar.exclusions`.
+- `tool.coverage.xml.output` (string, required) — sets `sonar.python.coverage.reportPaths`.
 
 Supported options:
 

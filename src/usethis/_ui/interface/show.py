@@ -3,7 +3,7 @@ from pathlib import Path
 import typer
 
 from usethis._config import usethis_config
-from usethis._ui.options import offline_opt, quiet_opt
+from usethis._ui.options import offline_opt, output_file_opt, quiet_opt
 
 app = typer.Typer(
     help="Show information about the current project.", add_completion=False
@@ -14,13 +14,6 @@ project_key_opt = typer.Option(
     None,
     "--project-key",
     help="SonarQube project key. If not provided, will be read from 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'.",
-)
-
-# show output file option
-output_file_opt = typer.Option(
-    None,
-    "--output-file",
-    help="Write output to this file instead of stdout.",
 )
 
 

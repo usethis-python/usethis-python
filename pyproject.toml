@@ -107,56 +107,6 @@ required-version = ">=0.9.9"              # Sync with README
 default-groups = [ "test", "dev", "doc" ]
 link-mode = "symlink"
 
-[tool.ruff]
-line-length = 88
-
-format.docstring-code-format = true
-
-lint.select = [
-  "A",
-  "ARG",
-  "B",
-  "C4",
-  "D",
-  "E4",
-  "E7",
-  "E9",
-  "EM",
-  "ERA",
-  "F",
-  "FIX002",
-  "FLY",
-  "FURB",
-  "I",
-  "INP",
-  "PLC0415",
-  "PLE",
-  "PLR",
-  "PT",
-  "RUF",
-  "S",
-  "SIM",
-  "TC",
-  "TID",
-  "UP",
-]
-lint.ignore = [ "PLR2004", "S101", "SIM108" ]
-lint.per-file-ignores."!tests/**/*.py" = [ "ARG002", "PT" ]
-lint.per-file-ignores."hooks/**" = [ "D", "INP001" ]
-lint.per-file-ignores."src/usethis/_ui/interface/**/*.py" = [ "PLR0913", "TC001" ]
-lint.per-file-ignores."tests/**" = [ "D", "INP", "S603", "TC" ]
-lint.flake8-bugbear.extend-immutable-calls = [ "typer.Argument", "typer.Option" ]
-lint.flake8-builtins.strict-checking = true
-lint.flake8-tidy-imports.banned-api."functools.singledispatch".msg = "Use if-branch isinstance logic instead of singledispatch."
-lint.flake8-tidy-imports.banned-api."functools.singledispatchmethod".msg = "Use if-branch isinstance logic instead of singledispatchmethod."
-lint.flake8-tidy-imports.banned-api."typer.testing.CliRunner".msg = "Use `usethis._test.CliRunner` instead of `typer.CliRunner`."
-lint.flake8-type-checking.quote-annotations = true
-lint.flake8-type-checking.runtime-evaluated-base-classes = [ "pydantic.BaseModel" ]
-lint.flake8-type-checking.runtime-evaluated-decorators = [ "typer.Typer.command" ]
-lint.flake8-type-checking.strict = true
-lint.pydocstyle.convention = "google"
-lint.future-annotations = true
-
 [tool.codespell]
 skip = [ "site" ]
 ignore-words-list = [ "edn" ]
@@ -190,6 +140,7 @@ exclude_also = [
   "if TYPE_CHECKING:",
   "raise AssertionError",
   "raise NotImplementedError",
+  "msg = [\"']",
   "assert_never(.*)",
   "class .*\\bProtocol\\):",
   "@(abc\\.)?abstractmethod",
@@ -212,7 +163,6 @@ ignore = [ "src/usethis/_version.py" ]
 reportAny = false
 reportExplicitAny = false
 reportImplicitStringConcatenation = false
-reportMissingTypeArgument = false
 reportUnknownArgumentType = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
@@ -232,6 +182,7 @@ reportUnusedParameter = false
 [[tool.basedpyright.executionEnvironments]]
 # Particularly interested in avoiding the auto-generated schema script
 root = "src/usethis/_integrations/pre_commit"
+reportMissingTypeArgument = false
 reportUnannotatedClassAttribute = false
 
 [tool.sync-with-uv.repo-to-package]

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, cast
 
 from typing_extensions import override
 
@@ -21,7 +21,13 @@ if TYPE_CHECKING:
     from usethis._file.types_ import Key
 
 
-DocumentT = TypeVar("DocumentT")
+class Document(Protocol):
+    """Protocol for the document type managed by FileManager."""
+
+    pass
+
+
+DocumentT = TypeVar("DocumentT", covariant=True)
 
 
 class UnexpectedFileOpenError(UsethisError):
@@ -107,7 +113,7 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
         else:
             return self._content
 
-    def commit(self, document: DocumentT) -> None:
+    def commit(self, document: DocumentT) -> None:  # pyright: ignore[reportGeneralTypeIssues] not modifying DocumentT so safe to use covariant type variable here
         """Store the given document in memory for deferred writing."""
         self._validate_lock()
         self._content = document
@@ -171,7 +177,7 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
 
     @property
     def _content(self) -> DocumentT | None:
-        return self._content_by_path.get(self.path)
+        return cast("DocumentT | None", self._content_by_path.get(self.path))
 
     @_content.setter
     def _content(self, value: DocumentT | None) -> None:
@@ -197,7 +203,9 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
         self._dirty_by_path.pop(self.path, None)
 
 
-class KeyValueFileManager(FileManager, Generic[DocumentT], metaclass=ABCMeta):
+class KeyValueFileManager(
+    FileManager[DocumentT], Generic[DocumentT], metaclass=ABCMeta
+):
     """A manager for files which store (at least some) values in key-value mappings."""
 
     @abstractmethod

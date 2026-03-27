@@ -5,6 +5,7 @@ import pytest
 from usethis._core.badge import (
     Badge,
     add_badge,
+    get_bitbucket_badge,
     get_pre_commit_badge,
     get_pypi_badge,
     get_ruff_badge,
@@ -767,6 +768,7 @@ class TestAllBadgesMarkdownValid:
             add_badge(get_ty_badge())
             add_badge(get_pre_commit_badge())
             add_badge(get_usethis_badge())
+            add_badge(get_bitbucket_badge())
             add_badge(get_socket_badge())
 
         # Assert

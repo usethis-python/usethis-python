@@ -66,7 +66,7 @@ class TestGetBackend:
         # Assert
         assert result == BackendEnum.none
 
-    def test_poetry_used(self, tmp_path: Path, capfd: pytest.CaptureFixture):
+    def test_poetry_used(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         (tmp_path / "poetry.lock").touch()
 

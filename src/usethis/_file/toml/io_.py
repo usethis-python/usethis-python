@@ -45,7 +45,7 @@ if TYPE_CHECKING:
     from usethis._file.types_ import Key
 
 
-class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
+class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
     """An abstract class for managing TOML files."""
 
     _content_by_path: ClassVar[dict[Path, TOMLDocument | None]] = {}

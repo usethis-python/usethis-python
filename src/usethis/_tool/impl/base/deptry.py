@@ -16,7 +16,7 @@ from usethis._tool.rule import Rule
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
 
 
 @final
@@ -54,7 +54,9 @@ class DeptryTool(DeptryToolSpec, Tool):
         return rules
 
     @override
-    def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
+    def _get_ignore_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "deptry", "ignore"]

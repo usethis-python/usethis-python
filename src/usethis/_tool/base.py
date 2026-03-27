@@ -31,7 +31,7 @@ from usethis.errors import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
     from usethis._file.types_ import Key
     from usethis._tool.config import ConfigItem
     from usethis._tool.rule import Rule
@@ -256,7 +256,7 @@ class Tool(ToolSpec, Protocol):
         self,
         config_item: ConfigItem,
         *,
-        file_managers: set[KeyValueFileManager[object]],
+        file_managers: set[KeyValueFileManager[Document]],
     ) -> bool:
         """Add a specific configuration item using specified file managers.
 
@@ -416,7 +416,9 @@ class Tool(ToolSpec, Protocol):
             return "pre-commit"
         return None
 
-    def _get_select_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
+    def _get_select_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         """Get the configuration keys for selected rules.
 
         This is optional - tools that don't support rule selection can leave this
@@ -482,7 +484,9 @@ class Tool(ToolSpec, Protocol):
 
         return True
 
-    def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
+    def _get_ignore_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         """Get the configuration keys for ignored rules.
 
         Args:

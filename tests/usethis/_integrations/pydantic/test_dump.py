@@ -23,7 +23,7 @@ class TestFancyModelDump:
 
     def test_list_remove_element(self):
         # Arrange
-        class MyRootModel(RootModel):
+        class MyRootModel(RootModel[list[int]]):
             root: list[int]
 
         mrm = MyRootModel([1, 3])
@@ -51,7 +51,7 @@ class TestFancyModelDump:
     class TestRootModel:
         def test_singleton_list(self):
             # Arrange
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[list[int]]):
                 root: list[int]
 
             mrm = MyRootModel([2])
@@ -68,7 +68,7 @@ class TestFancyModelDump:
                 x: Literal[0, 1] = 1
                 y: Literal[0, 1] = 0
 
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[list[MySubModel]]):
                 root: list[MySubModel]
 
             mrm = MyRootModel(
@@ -93,7 +93,7 @@ class TestFancyModelDump:
 
         def test_mismatch_list_ref(self):
             # Arrange
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[list[int]]):
                 root: list[int]
 
             mrm = MyRootModel([2])
@@ -106,7 +106,7 @@ class TestFancyModelDump:
 
         def test_constant(self):
             # Arrange
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[str]):
                 root: str
 
             mrm = MyRootModel("yo")
@@ -126,7 +126,7 @@ class TestFancyModelDump:
                 z: int = 1
                 w: int
 
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[MySubModel]):
                 root: MySubModel
 
             mrm = MyRootModel(MySubModel(x=-1, y=1, z=1, w=2))
@@ -139,7 +139,7 @@ class TestFancyModelDump:
 
     def test_bool_type(self):
         # Arrange
-        class MyRootModel(RootModel):
+        class MyRootModel(RootModel[list[bool]]):
             root: list[bool]
 
         mrm = MyRootModel([False, True])
@@ -169,10 +169,10 @@ class TestFancyModelDump:
 
         def test_rootmodel(self):
             # Arrange
-            class MyInnerModel(RootModel):
+            class MyInnerModel(RootModel[list[str]]):
                 root: list[str]
 
-            class MyOuterModel(RootModel):
+            class MyOuterModel(RootModel[list[MyInnerModel]]):
                 root: list[MyInnerModel]
 
             mom = MyOuterModel([MyInnerModel(["hello"])])

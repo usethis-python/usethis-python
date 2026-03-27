@@ -58,7 +58,6 @@ authors = [
         assert (tmp_path / "pyproject.toml").read_text() == (
             """\
 
-
 [[project.authors]]
 name = "First Contributor"
 [[project.authors]]

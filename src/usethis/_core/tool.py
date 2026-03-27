@@ -339,6 +339,9 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
                     ],
                     change_toml=False,
                 )
+        elif backend is BackendEnum.poetry:
+            # Poetry uses poetry export for requirements.txt generation
+            write_simple_requirements_txt()
         elif backend is BackendEnum.none:
             # Simply dump the dependencies list to requirements.txt
             if usethis_config.backend is BackendEnum.auto:

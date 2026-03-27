@@ -15,6 +15,10 @@ from usethis._backend.uv.deps import (
     remove_dep_from_group_via_uv,
 )
 from usethis._backend.uv.errors import UVDepGroupError
+from usethis._backend.poetry.deps import (
+    add_dep_to_group_via_poetry,
+    remove_dep_from_group_via_poetry,
+)
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -138,6 +142,9 @@ def add_default_groups(groups: list[str]) -> None:
     backend = get_backend()
     if backend is BackendEnum.uv:
         add_default_groups_via_uv(groups)
+    elif backend is BackendEnum.poetry:
+        # Poetry installs all dependency groups by default
+        pass
     elif backend is BackendEnum.none:
         # This is not really a meaningful concept without a package manager
         pass
@@ -149,6 +156,9 @@ def get_default_groups() -> list[str]:
     backend = get_backend()
     if backend is BackendEnum.uv:
         return get_default_groups_via_uv()
+    elif backend is BackendEnum.poetry:
+        # Poetry installs all dependency groups by default
+        return []
     elif backend is BackendEnum.none:
         # This is not really a meaningful concept without a package manager
         return []
@@ -189,6 +199,12 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
         )
         for dep in _deps:
             remove_dep_from_group_via_uv(dep, group)
+    elif backend is BackendEnum.poetry:
+        tick_print(
+            f"Removing dependenc{ies} {deps_str} from the '{group}' group in 'pyproject.toml'."
+        )
+        for dep in _deps:
+            remove_dep_from_group_via_poetry(dep, group)
     elif backend is BackendEnum.none:
         instruct_print(f"Remove the {group} dependenc{ies} {deps_str}.")
     else:
@@ -221,6 +237,10 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
         tick_print(
             f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
         )
+    elif backend is BackendEnum.poetry:
+        tick_print(
+            f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
+        )
     elif backend is BackendEnum.none:
         instruct_print(f"Add the {group} dependenc{ies} {deps_str}.")
     else:
@@ -233,6 +253,8 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     for dep in to_add_deps:
         if backend is BackendEnum.uv:
             add_dep_to_group_via_uv(dep, group)
+        elif backend is BackendEnum.poetry:
+            add_dep_to_group_via_poetry(dep, group)
         elif backend is BackendEnum.none:
             # We've already used a combined message
             pass
@@ -242,6 +264,9 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     # Register the group - don't do this before adding the deps in case that step fails
     if backend is BackendEnum.uv:
         register_default_group(group)
+    elif backend is BackendEnum.poetry:
+        # Poetry installs all dependency groups by default
+        pass
     elif backend is BackendEnum.none:
         # This is not really a meaningful concept without a package manager
         pass

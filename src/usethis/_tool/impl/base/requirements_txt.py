@@ -25,7 +25,7 @@ class RequirementsTxtTool(RequirementsTxtToolSpec, Tool):
                 how_print(
                     "Run 'uv run pre-commit run -a uv-export' to write 'requirements.txt'."
                 )
-            elif backend is BackendEnum.none:
+            elif backend in (BackendEnum.poetry, BackendEnum.none):
                 how_print(
                     "Run 'pre-commit run -a uv-export' to write 'requirements.txt'."
                 )
@@ -36,7 +36,7 @@ class RequirementsTxtTool(RequirementsTxtToolSpec, Tool):
                 how_print(
                     "Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
                 )
-            elif backend is BackendEnum.none:
+            elif backend in (BackendEnum.poetry, BackendEnum.none):
                 if not (usethis_config.cpd() / "requirements.txt").exists():
                     how_print(
                         "Run 'usethis tool requirements.txt' to write 'requirements.txt'."

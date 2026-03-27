@@ -64,6 +64,24 @@ class DeptryToolSpec(ToolSpec):
                 requires_venv=True,
                 inform_how_to_use_on_migrate=False,
             )
+        elif backend is BackendEnum.poetry:
+            return PreCommitConfig.from_single_repo(
+                pre_commit_schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        pre_commit_schema.HookDefinition(
+                            id="deptry",
+                            name="deptry",
+                            entry=f"poetry run deptry {_dir}",
+                            language=get_system_language(),
+                            always_run=True,
+                            pass_filenames=False,
+                        )
+                    ],
+                ),
+                requires_venv=True,
+                inform_how_to_use_on_migrate=False,
+            )
         elif backend is BackendEnum.none:
             return PreCommitConfig.from_single_repo(
                 pre_commit_schema.LocalRepo(

@@ -335,6 +335,25 @@ class ImportLinterToolSpec(ToolSpec):
                 requires_venv=True,
                 inform_how_to_use_on_migrate=False,
             )
+        elif backend is BackendEnum.poetry:
+            return PreCommitConfig.from_single_repo(
+                pre_commit_schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        pre_commit_schema.HookDefinition(
+                            id="import-linter",
+                            name="import-linter",
+                            pass_filenames=False,
+                            entry="poetry run lint-imports",
+                            language=get_system_language(),
+                            require_serial=True,
+                            always_run=True,
+                        )
+                    ],
+                ),
+                requires_venv=True,
+                inform_how_to_use_on_migrate=False,
+            )
         elif backend is BackendEnum.none:
             return PreCommitConfig.from_single_repo(
                 pre_commit_schema.LocalRepo(

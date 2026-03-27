@@ -12,4 +12,5 @@ class BackendEnum(Enum):
 
     auto = "auto"
     uv = "uv"
+    poetry = "poetry"
     none = "none"

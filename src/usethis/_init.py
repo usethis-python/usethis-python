@@ -9,6 +9,10 @@ from usethis._backend.uv.init import (
     ensure_pyproject_toml_via_uv,
     opinionated_uv_init,
 )
+from usethis._backend.poetry.init import (
+    ensure_pyproject_toml_via_poetry,
+    opinionated_poetry_init,
+)
 from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._deps import get_project_deps
@@ -47,6 +51,8 @@ def project_init():
     backend = get_backend()
     if backend is BackendEnum.uv:
         opinionated_uv_init()
+    elif backend is BackendEnum.poetry:
+        opinionated_poetry_init()
     elif backend is BackendEnum.none:
         # pyproject.toml
         with usethis_config.set(instruct_only=True):
@@ -113,6 +119,8 @@ def ensure_dep_declaration_file() -> None:
     backend = get_backend()
     if backend is BackendEnum.uv:
         ensure_pyproject_toml()
+    elif backend is BackendEnum.poetry:
+        ensure_pyproject_toml()
     elif backend is BackendEnum.none:
         # No dependencies are interacted with; we just display messages.
         pass
@@ -129,6 +137,8 @@ def ensure_pyproject_toml(*, author: bool = True) -> None:
     build_backend = usethis_config.build_backend
     if backend is BackendEnum.uv:
         ensure_pyproject_toml_via_uv(author=author)
+    elif backend is BackendEnum.poetry:
+        ensure_pyproject_toml_via_poetry(author=author)
     elif backend is BackendEnum.none:
         requires, build_backend_str = _BUILD_SYSTEM_CONFIG[build_backend]
         requires_str = ", ".join(f'"{r}"' for r in requires)

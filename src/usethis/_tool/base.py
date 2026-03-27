@@ -8,6 +8,7 @@ from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
 from usethis._backend.uv.detect import is_uv_used
+from usethis._backend.poetry.detect import is_poetry_used
 from usethis._config import usethis_config
 from usethis._console import how_print, tick_print
 from usethis._deps import add_deps_to_group, remove_deps_from_group
@@ -75,14 +76,18 @@ class Tool(ToolSpec, Protocol):
         if install_method == "pre-commit":
             if backend is BackendEnum.uv and is_uv_used():
                 return f"uv run {pre_commit_raw_cmd} {self.how_to_use_pre_commit_hook_id()}"
-            elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            elif backend is BackendEnum.poetry and is_poetry_used():
+                return f"poetry run {pre_commit_raw_cmd} {self.how_to_use_pre_commit_hook_id()}"
+            elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
                 return f"{pre_commit_raw_cmd} {self.how_to_use_pre_commit_hook_id()}"
             else:
                 assert_never(backend)
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv and is_uv_used():
                 return f"uv run {self.raw_cmd()}"
-            elif backend is BackendEnum.none or backend is BackendEnum.uv:
+            elif backend is BackendEnum.poetry and is_poetry_used():
+                return f"poetry run {self.raw_cmd()}"
+            elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
                 return self.raw_cmd()
             else:
                 assert_never(backend)

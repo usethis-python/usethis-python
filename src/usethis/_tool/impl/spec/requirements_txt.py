@@ -49,7 +49,7 @@ class RequirementsTxtToolSpec(ToolSpec):
                 ),
                 requires_venv=True,
             )
-        elif backend is BackendEnum.none:
+        elif backend in (BackendEnum.poetry, BackendEnum.none):
             # Need a backend to generate requirements.txt files
             return PreCommitConfig(repo_configs=[], inform_how_to_use_on_migrate=False)
         else:

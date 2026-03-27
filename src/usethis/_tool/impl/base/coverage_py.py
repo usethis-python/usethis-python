@@ -8,6 +8,7 @@ from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
 from usethis._backend.uv.detect import is_uv_used
+from usethis._backend.poetry.detect import is_poetry_used
 from usethis._console import how_print
 from usethis._tool.base import Tool
 from usethis._tool.heuristics import is_likely_used
@@ -35,7 +36,11 @@ class CoveragePyTool(CoveragePyToolSpec, Tool):
                 how_print(
                     f"Run 'uv run pytest --cov' to run your tests with {self.name}."
                 )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
+            elif backend is BackendEnum.poetry and is_poetry_used():
+                how_print(
+                    f"Run 'poetry run pytest --cov' to run your tests with {self.name}."
+                )
+            elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
                 how_print(f"Run 'pytest --cov' to run your tests with {self.name}.")
             else:
                 assert_never(backend)
@@ -43,7 +48,11 @@ class CoveragePyTool(CoveragePyToolSpec, Tool):
             how_print(
                 f"Run 'uv run coverage help' to see available {self.name} commands."
             )
-        elif backend in (BackendEnum.none, BackendEnum.uv):
+        elif backend is BackendEnum.poetry and is_poetry_used():
+            how_print(
+                f"Run 'poetry run coverage help' to see available {self.name} commands."
+            )
+        elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
             how_print(f"Run 'coverage help' to see available {self.name} commands.")
         else:
             assert_never(backend)

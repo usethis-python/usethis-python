@@ -29,7 +29,9 @@ def add_author(
 
         # Moving the authors list to the end of the project table to avoid a bug in tomlkit
         # Suspected to be similar to this https://github.com/python-poetry/tomlkit/issues/381
-        full = PyprojectTOMLManager()[["project", "authors"]]
+        full_raw = PyprojectTOMLManager()[["project", "authors"]]
+        assert isinstance(full_raw, list)
+        full = [dict(item) for item in full_raw]
         del PyprojectTOMLManager()[["project", "authors"]]
         PyprojectTOMLManager()[["project", "authors"]] = full
     else:

@@ -55,8 +55,6 @@ class TyToolSpec(ToolSpec):
         return PreCommitConfig.from_system_hook(
             hook_id="ty",
             entry="ty check",
-            always_run=True,
-            pass_filenames=False,
         )
 
     @override

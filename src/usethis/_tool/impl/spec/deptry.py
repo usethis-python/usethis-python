@@ -43,8 +43,6 @@ class DeptryToolSpec(ToolSpec):
         return PreCommitConfig.from_system_hook(
             hook_id="deptry",
             entry=f"deptry {_dir}",
-            always_run=True,
-            pass_filenames=False,
         )
 
     @override

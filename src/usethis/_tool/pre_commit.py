@@ -70,9 +70,6 @@ class PreCommitConfig(BaseModel):
         *,
         hook_id: str,
         entry: str,
-        pass_filenames: bool | None = None,
-        always_run: bool | None = None,
-        require_serial: bool | None = None,
     ) -> Self:
         """Create a PreCommitConfig for a local system hook.
 
@@ -82,9 +79,6 @@ class PreCommitConfig(BaseModel):
         Args:
             hook_id: The hook identifier; also used as the hook display name.
             entry: The base command to run (without uv prefix).
-            pass_filenames: Whether to pass filenames to the hook.
-            always_run: Whether to always run the hook.
-            require_serial: Whether to require serial execution.
         """
         backend: Literal[BackendEnum.uv, BackendEnum.none] = get_backend()
         if backend is BackendEnum.uv:
@@ -103,9 +97,8 @@ class PreCommitConfig(BaseModel):
                         name=hook_id,
                         entry=full_entry,
                         language=get_system_language(),
-                        pass_filenames=pass_filenames,
-                        always_run=always_run,
-                        require_serial=require_serial,
+                        pass_filenames=False,
+                        always_run=True,
                     )
                 ],
             ),

@@ -85,12 +85,11 @@ class TestFromSystemHook:
 
         assert config.inform_how_to_use_on_migrate is False
 
-    def test_pass_filenames(self, tmp_path: Path):
+    def test_pass_filenames_is_false(self, tmp_path: Path):
         with change_cwd(tmp_path), files_manager():
             config = PreCommitConfig.from_system_hook(
                 hook_id="test-hook",
                 entry="test-cmd",
-                pass_filenames=False,
             )
 
         repo = config.repo_configs[0].repo
@@ -98,31 +97,17 @@ class TestFromSystemHook:
         assert repo.hooks is not None
         assert repo.hooks[0].pass_filenames is False
 
-    def test_always_run(self, tmp_path: Path):
+    def test_always_run_is_true(self, tmp_path: Path):
         with change_cwd(tmp_path), files_manager():
             config = PreCommitConfig.from_system_hook(
                 hook_id="test-hook",
                 entry="test-cmd",
-                always_run=True,
             )
 
         repo = config.repo_configs[0].repo
         assert isinstance(repo, schema.LocalRepo)
         assert repo.hooks is not None
         assert repo.hooks[0].always_run is True
-
-    def test_require_serial(self, tmp_path: Path):
-        with change_cwd(tmp_path), files_manager():
-            config = PreCommitConfig.from_system_hook(
-                hook_id="test-hook",
-                entry="test-cmd",
-                require_serial=True,
-            )
-
-        repo = config.repo_configs[0].repo
-        assert isinstance(repo, schema.LocalRepo)
-        assert repo.hooks is not None
-        assert repo.hooks[0].require_serial is True
 
     def test_system_language_set(self, tmp_path: Path):
         with change_cwd(tmp_path), files_manager():

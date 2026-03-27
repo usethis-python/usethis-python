@@ -313,9 +313,6 @@ class ImportLinterToolSpec(ToolSpec):
         return PreCommitConfig.from_system_hook(
             hook_id="import-linter",
             entry="lint-imports",
-            pass_filenames=False,
-            require_serial=True,
-            always_run=True,
         )
 
 

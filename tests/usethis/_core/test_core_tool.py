@@ -420,6 +420,7 @@ exclude_also =
     if TYPE_CHECKING:
     raise AssertionError
     raise NotImplementedError
+    msg = ["']
     assert_never(.*)
     class .*\\bProtocol\\):
     @(abc\\.)?abstractmethod
@@ -449,6 +450,7 @@ exclude_also =
     if TYPE_CHECKING:
     raise AssertionError
     raise NotImplementedError
+    msg = ["']
     assert_never(.*)
     class .*\\bProtocol\\):
     @(abc\\.)?abstractmethod

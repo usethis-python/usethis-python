@@ -29,11 +29,10 @@ def main() -> int:
         path = SRC_DIR / test_py.relative_to("tests")
         std_path = path.parent / path.name.removeprefix("test_")
         underscore_path = path.parent / ("_" + path.name.removeprefix("test_"))
-        std_parent_path = path.parent / path.name.removeprefix(
-            "test_" + path.parent.name.strip("_") + "_"
-        )
+        parent_prefix = "test_" + path.parent.name.strip("_") + "_"
+        std_parent_path = path.parent / path.name.removeprefix(parent_prefix)
         underscore_parent_path = path.parent / (
-            "_" + path.name.removeprefix("test_" + path.parent.name.strip("_") + "_")
+            "_" + path.name.removeprefix(parent_prefix)
         )
 
         if (

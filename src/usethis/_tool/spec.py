@@ -1,4 +1,9 @@
-"""Abstract tool specification base classes."""
+"""Abstract tool specification base classes.
+
+ToolSpec captures the factual, non-opinionated aspects of a third-party tool: its
+metadata, dependencies, configuration locations, and pre-commit definitions. These are
+stable and inherent to the tool itself.
+"""
 
 from __future__ import annotations
 
@@ -45,6 +50,19 @@ class ToolMeta:
 
 
 class ToolSpec(Protocol, metaclass=ABCMeta):
+    """Factual specification of a third-party tool.
+
+    ToolSpec captures non-opinionated, stable information about how a third-party tool
+    works: its name, managed files, dependencies, configuration file locations, and
+    pre-commit hook definitions. Implementations should stick to describing what is
+    inherently true about the tool itself, independent of any pragmatic decisions about
+    how to best use it in a project.
+
+    Contrast with `Tool`, which extends ToolSpec and adds opinionated, heuristic, and
+    potentially less stable aspects — such as how to decide whether the tool is "in use",
+    how to add or remove configuration, and how to present instructions to users.
+    """
+
     @property
     @abstractmethod
     def meta(self) -> ToolMeta: ...
@@ -73,8 +91,10 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
     def rule_config(self) -> RuleConfig:
         """Get the linter rule configuration associated with this tool.
 
-        This is a static, opinionated configuration which usethis uses when adding the
-        tool (and managing this and other tools when adding and removing, etc.).
+        This captures which rule codes are inherently associated with the tool and
+        which usethis manages when the tool is added or removed. This is part of the
+        tool's factual specification, although the choice of which rules to select and
+        ignore is an opinionated decision by usethis.
         """
         return self.meta.rule_config
 

@@ -1,4 +1,9 @@
-"""Base classes for tool implementations."""
+"""Base classes for tool implementations.
+
+Tool extends ToolSpec with opinionated, heuristic operations that manage a tool's
+presence in a project: adding/removing configuration and dependencies, detecting usage,
+and providing how-to-use instructions. These involve side-effects and pragmatic decisions.
+"""
 
 from __future__ import annotations
 
@@ -40,6 +45,19 @@ __all__ = ["Tool", "ToolMeta", "ToolSpec"]
 
 
 class Tool(ToolSpec, Protocol):
+    """Opinionated operations for managing a third-party tool in a project.
+
+    Tool extends ToolSpec with heuristic and pragmatic methods that consider real-world
+    usage patterns: adding and removing dependencies, managing configuration files,
+    detecting whether a tool is in use, and presenting how-to-use instructions. These
+    aspects involve side-effects (mutating project state) and opinionated decisions (e.g.
+    which heuristics determine tool usage, how to migrate configuration), making them
+    potentially less stable than the factual ToolSpec layer.
+
+    Contrast with `ToolSpec`, which captures only the non-opinionated, factual information
+    about the tool itself.
+    """
+
     def print_how_to_use(self) -> None:
         """Print instructions for using the tool.
 
@@ -90,7 +108,12 @@ class Tool(ToolSpec, Protocol):
             assert_never(install_method)
 
     def how_to_use_pre_commit_hook_id(self) -> str:
-        """The pre-commit hook ID to use when explaining how to run via pre-commit."""
+        """The pre-commit hook ID to use when explaining how to run via pre-commit.
+
+        Note: this extracts factual information from the pre-commit config and could
+        arguably live in ToolSpec, but is placed here since it is specific to
+        how-to-use instruction logic.
+        """
         pre_commit_repos = self.get_pre_commit_repos()
         try:
             (pre_commit_repo,) = pre_commit_repos
@@ -221,7 +244,11 @@ class Tool(ToolSpec, Protocol):
                 self.print_how_to_use()
 
     def is_config_present(self) -> bool:
-        """Whether any of the tool's managed config sections are present."""
+        """Whether any of the tool's managed config sections are present.
+
+        Note: this is a read-only query and could arguably live in ToolSpec, but is
+        placed here since it is primarily used by Tool's mutating operations.
+        """
         return self.config_spec().is_present()
 
     def add_configs(self) -> None:

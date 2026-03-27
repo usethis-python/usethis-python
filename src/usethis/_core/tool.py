@@ -324,7 +324,8 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
             tool.add_pre_commit_config()
             tool.add_configs()
             if backend is BackendEnum.uv:
-                add_deps_to_group([Dependency(name="uv")], "uv", default=False)
+                with usethis_config.set(quiet=True):
+                    add_deps_to_group([Dependency(name="uv")], "uv", default=False)
 
         if path.exists():
             # requirements file already exists - short circuit; only need to explain how
@@ -364,7 +365,8 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
     else:
         tool.remove_pre_commit_repo_configs()
         tool.remove_configs()
-        remove_deps_from_group([Dependency(name="uv")], "uv")
+        with usethis_config.set(quiet=True):
+            remove_deps_from_group([Dependency(name="uv")], "uv")
         tool.remove_managed_files()
 
 

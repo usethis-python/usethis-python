@@ -2981,7 +2981,6 @@ repos:
             assert out == (
                 "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
                 "✔ Adding requirements.txt config to 'pyproject.toml'.\n"
-                "✔ Adding dependency 'uv' to the 'uv' group in 'pyproject.toml'.\n"
                 "✔ Writing 'requirements.txt'.\n"
                 "☐ Run 'uv run pre-commit run -a uv-export' to write 'requirements.txt'.\n"
             )

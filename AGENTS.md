@@ -16,38 +16,38 @@ The `.agents/skills` directory contains agent skills.
 
 #### usethis-specific skills
 
-| Skill                                 | Description                                                                                                           |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `usethis-cli-modify`                  | Update GitHub Actions workflows                                                                                       |
-| `usethis-file-remove`                 | Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync                            |
-| `usethis-github-actions-update`       | Update GitHub Actions workflows                                                                                       |
-| `usethis-pre-commit`                  | Guidance on pre-commit hooks — this project uses prek, not pre-commit directly                                        |
-| `usethis-prek-add-hook`               | Add a prek hook for dev                                                                                               |
-| `usethis-prek-hook-bespoke-create`    | Write bespoke prek hooks as Python scripts for custom project-specific checks                                         |
-| `usethis-python-code`                 | Guidelines for Python code design decisions such as when to share vs. duplicate code                                  |
-| `usethis-python-code-modify`          | Modify Python code (e.g. refactor, add new code, or delete code)                                                      |
-| `usethis-python-enum`                 | Style and testing conventions for working with Python enums                                                           |
-| `usethis-python-functions`            | Guidelines for Python function design, including return types and signature simplicity                                |
-| `usethis-python-module-layout-modify` | Modify the Python module layout (create, move, rename, or delete modules)                                             |
-| `usethis-python-ruff`                 | Guidelines for complying with Ruff linter rules instead of suppressing them                                           |
-| `usethis-python-test-affected-find`   | Identify tests that are potentially affected by code changes, to catch regressions before CI                          |
-| `usethis-qa-import-linter`            | Use the Import Linter software on the usethis project                                                                 |
-| `usethis-qa-static-checks`            | Perform static code checks                                                                                            |
-| `usethis-skills-create`               | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability |
-| `usethis-skills-external-add`         | Add an external (community) skill and document it in AGENTS.md                                                        |
-| `usethis-skills-external-install`     | Install/reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)                    |
-| `usethis-skills-modify`               | Modify agent skills (SKILL.md files)                                                                                  |
-| `usethis-test-with-coverage`          | Write tests that achieve full code coverage and verify coverage locally before pushing                                |
+| Skill                                 | Description                                                                                                           | When to use                                                     |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `usethis-cli-modify`                  | Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync                            | Modifying anything under the `_ui` package                      |
+| `usethis-file-remove`                 | Remove files from the project                                                                                         | Removing files from the project                                 |
+| `usethis-github-actions-update`       | Update GitHub Actions workflows                                                                                       | Modifying files in `.github/workflows/`                         |
+| `usethis-pre-commit`                  | Guidance on pre-commit hooks — this project uses prek, not pre-commit directly                                        | Questions about pre-commit hooks                                |
+| `usethis-prek-add-hook`               | Add a prek hook for dev                                                                                               | Adding or modifying hooks in `.pre-commit-config.yaml`          |
+| `usethis-prek-hook-bespoke-create`    | Write bespoke prek hooks as Python scripts for custom project-specific checks                                         | Creating custom project-specific prek hooks                     |
+| `usethis-python-code`                 | Guidelines for Python code design decisions such as when to share vs. duplicate code                                  | Making code architecture and design decisions                   |
+| `usethis-python-code-modify`          | Modify Python code (e.g. refactor, add new code, or delete code)                                                      | Making changes to Python source code                            |
+| `usethis-python-enum`                 | Style and testing conventions for working with Python enums                                                           | Working with Python enums                                       |
+| `usethis-python-functions`            | Guidelines for Python function design, including return types and signature simplicity                                | Designing function signatures or return types                   |
+| `usethis-python-module-layout-modify` | Modify the Python module layout (create, move, rename, or delete modules)                                             | Creating, moving, renaming, or deleting Python modules          |
+| `usethis-python-ruff`                 | Guidelines for complying with Ruff linter rules instead of suppressing them                                           | Ruff flags a violation you need to address                      |
+| `usethis-python-test-affected-find`   | Identify tests that are potentially affected by code changes, to catch regressions before CI                          | After making code changes, before pushing                       |
+| `usethis-qa-import-linter`            | Use the Import Linter software on the usethis project                                                                 | Enforcing architecture and import contracts                     |
+| `usethis-qa-static-checks`            | Perform static code checks                                                                                            | Before submitting any changes for review                        |
+| `usethis-skills-create`               | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability | Creating a new agent skill                                      |
+| `usethis-skills-external-add`         | Add an external (community) skill and document it in AGENTS.md                                                        | Adding external skills from third-party sources                 |
+| `usethis-skills-external-install`     | Install/reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)                    | External skills from `skills-lock.json` are missing locally     |
+| `usethis-skills-modify`               | Modify agent skills (SKILL.md files)                                                                                  | Modifying any `SKILL.md` file                                   |
+| `usethis-test-with-coverage`          | Write tests that achieve full code coverage and verify coverage locally before pushing                                | Writing tests or verifying code coverage                        |
 
 #### External skills
 
 External skills can be installed if they are not present — see the `usethis-skills-external-install` skill.
 
-| Skill                    | Source                | Description                                                                           |
-| ------------------------ | --------------------- | ------------------------------------------------------------------------------------- |
-| `codspeed-optimize`      | `CodSpeedHQ/codspeed` | Optimize code for performance using CodSpeed benchmarks and flamegraphs               |
-| `codspeed-setup-harness` | `CodSpeedHQ/codspeed` | Set up performance benchmarks and the CodSpeed harness for a project                  |
-| `find-skills`            | `vercel-labs/skills`  | Discover and install agent skills from the open skills ecosystem for new capabilities |
+| Skill                    | Source                | Description                                                                           | When to use                                                        |
+| ------------------------ | --------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `codspeed-optimize`      | `CodSpeedHQ/codspeed` | Optimize code for performance using CodSpeed benchmarks and flamegraphs               | Optimizing code for performance or analyzing bottlenecks           |
+| `codspeed-setup-harness` | `CodSpeedHQ/codspeed` | Set up performance benchmarks and the CodSpeed harness for a project                  | Setting up benchmarks or configuring CodSpeed                      |
+| `find-skills`            | `vercel-labs/skills`  | Discover and install agent skills from the open skills ecosystem for new capabilities | Looking for functionality that might exist as an installable skill |
 
 ### Important Instructions about Skills usage
 

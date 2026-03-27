@@ -43,6 +43,9 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
         )
     except SubprocessFailedError as err:
         raise PoetrySubprocessFailedError(err) from None
+    except FileNotFoundError:
+        msg = "Poetry is not installed or not found on PATH."
+        raise PoetrySubprocessFailedError(msg) from None
 
     if change_toml and PyprojectTOMLManager().is_locked():
         PyprojectTOMLManager().read_file()

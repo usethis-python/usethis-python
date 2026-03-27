@@ -249,7 +249,7 @@ External skills can be installed if they are not present — see the `usethis-sk
   This applies to ALL changes, including small follow-up tasks and minor edits.
   No code change is too small to skip static checks.
 - ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.
-- ALWAYS reference the relevant issue ID in PR descriptions using the fully qualified format, e.g. `usethis-python/usethis-python#123`. This ensures traceability between PRs and the issues they address.
+- ALWAYS reference the relevant issue ID in PR descriptions using a closing keyword, e.g. `Resolves #123`. This ensures traceability between PRs and the issues they address.
 
 ## Lessons
 

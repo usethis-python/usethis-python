@@ -6,6 +6,8 @@ from usethis._config_file import files_manager
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.hooks import (
     _get_placeholder_repo_config,
+    _get_predecessor_from_solution,
+    _linearize,
     add_placeholder_hook,
     add_repo,
     get_hook_ids,
@@ -14,6 +16,7 @@ from usethis._integrations.pre_commit.hooks import (
     remove_hook,
 )
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
+from usethis._pipeweld.containers import parallel, series
 from usethis._test import change_cwd
 
 
@@ -655,3 +658,186 @@ class TestHooksAreEquivalent:
             schema.HookDefinition(id="ruff-check"),
             schema.HookDefinition(id="ruff"),
         )
+
+
+class TestLinearize:
+    def test_single_string(self):
+        assert _linearize("A", new_step="A", existing_hooks=[]) == ["A"]
+
+    def test_series_of_strings(self):
+        assert _linearize(
+            series("A", "B", "C"), new_step="D", existing_hooks=["A", "B", "C"]
+        ) == ["A", "B", "C"]
+
+    def test_parallel_new_step_last(self):
+        result = _linearize(
+            parallel("A", "B"), new_step="B", existing_hooks=["A"]
+        )
+        assert result == ["A", "B"]
+
+    def test_parallel_preserves_existing_order(self):
+        result = _linearize(
+            parallel("B", "A"), new_step="C", existing_hooks=["A", "B"]
+        )
+        assert result == ["A", "B"]
+
+    def test_series_with_parallel(self):
+        result = _linearize(
+            series(parallel("foo", "new"), "codespell"),
+            new_step="new",
+            existing_hooks=["foo", "codespell"],
+        )
+        assert result == ["foo", "new", "codespell"]
+
+
+class TestGetPredecessorFromSolution:
+    def test_new_step_first(self):
+        result = _get_predecessor_from_solution(
+            series("new", "codespell"),
+            new_step="new",
+            existing_hooks=["codespell"],
+        )
+        assert result is None
+
+    def test_new_step_after_existing(self):
+        result = _get_predecessor_from_solution(
+            series("pyproject-fmt", "new"),
+            new_step="new",
+            existing_hooks=["pyproject-fmt"],
+        )
+        assert result == "pyproject-fmt"
+
+    def test_new_step_in_parallel_group(self):
+        result = _get_predecessor_from_solution(
+            series(parallel("foo", "new"), "codespell"),
+            new_step="new",
+            existing_hooks=["foo", "codespell"],
+        )
+        assert result == "foo"
+
+    def test_new_step_only(self):
+        result = _get_predecessor_from_solution(
+            series("new"),
+            new_step="new",
+            existing_hooks=[],
+        )
+        assert result is None
+
+
+class TestAddRepoPipeweld:
+    """Integration tests for pipeweld-based hook insertion."""
+
+    def test_insert_between_nondependent_and_postrequisite(self, tmp_path: Path):
+        """Insert a recognized hook between an unrecognized hook and a postrequisite."""
+        with change_cwd(tmp_path), files_manager():
+            # Set up: foo (unrecognized) then codespell (recognized, late in order)
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="foo",
+                            name="foo",
+                            entry="foo .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                ),
+            )
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Act: add ruff-format (comes before codespell, after foo)
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="ruff-format",
+                            name="ruff-format",
+                            entry="ruff format .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Assert: ruff-format should be between foo and codespell
+            assert get_hook_ids() == ["foo", "ruff-format", "codespell"]
+
+    def test_insert_with_prerequisite_present(self, tmp_path: Path):
+        """Insert a hook after an existing prerequisite."""
+        with change_cwd(tmp_path), files_manager():
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="ruff-check",
+                            name="ruff-check",
+                            entry="ruff check .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="ruff-format",
+                            name="ruff-format",
+                            entry="ruff format .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            assert get_hook_ids() == ["ruff-check", "ruff-format"]
+
+    def test_insert_before_postrequisite_only(self, tmp_path: Path):
+        """Insert a hook before an existing postrequisite when no predecessor exists."""
+        with change_cwd(tmp_path), files_manager():
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="ruff-check",
+                            name="ruff-check",
+                            entry="ruff check .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            assert get_hook_ids() == ["ruff-check", "codespell"]

@@ -12,6 +12,8 @@ from usethis._integrations.pre_commit.init import (
 )
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
+from usethis._pipeweld.containers import DepGroup, Parallel, Series, series
+from usethis._pipeweld.func import Adder
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -67,39 +69,34 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
         mgr.commit_model(model)
     else:
         # There are existing hooks so we need to know where to insert the new hook.
-
-        # Get the precendents, i.e. hooks occurring before the new hook
-        # Also the successors, i.e. hooks occurring after the new hook
+        # Use pipeweld to determine the correct insertion position based on the
+        # canonical hook ordering.
         try:
             hook_idx = _HOOK_ORDER.index(hook_config.id)
         except ValueError:
             msg = f"Hook '{hook_config.id}' not recognized."
             raise NotImplementedError(msg) from None
-        precedents = _HOOK_ORDER[:hook_idx]
-        successors = _HOOK_ORDER[hook_idx + 1 :]
 
-        existing_precedents = [hook for hook in existing_hooks if hook in precedents]
-        existing_successors = [hook for hook in existing_hooks if hook in successors]
+        prerequisites = set(_HOOK_ORDER[:hook_idx])
+        postrequisites = set(_HOOK_ORDER[hook_idx + 1 :])
 
-        # Add immediately after the last precedecessor.
-        # If there isn't one, we want to add as late as possible without violating
-        # order, i.e. before the first successor, if there is one.
-        if existing_precedents:
-            last_precedent = existing_precedents[-1]
-        elif not existing_successors:
-            last_precedent = existing_hooks[-1]
-        else:
-            first_successor = existing_successors[0]
-            first_successor_idx = existing_hooks.index(first_successor)
-            if first_successor_idx == 0:
-                last_precedent = None
-            else:
-                last_precedent = existing_hooks[first_successor_idx - 1]
+        pipeline = series(*existing_hooks)
+        adder = Adder(
+            pipeline=pipeline,
+            step=hook_config.id,
+            prerequisites=prerequisites,
+            postrequisites=postrequisites,
+        )
+        result = adder.add()
+
+        predecessor = _get_predecessor_from_solution(
+            result.solution, hook_config.id, existing_hooks
+        )
 
         model.repos = insert_repo(
             repo_to_insert=repo,
             existing_repos=model.repos,
-            predecessor=last_precedent,
+            predecessor=predecessor,
         )
 
         mgr.commit_model(model)
@@ -153,6 +150,57 @@ def insert_repo(
                 inserted = True
 
     return repos
+
+
+def _get_predecessor_from_solution(
+    solution: Series, new_step: str, existing_hooks: list[str]
+) -> str | None:
+    """Extract the predecessor for the new step from the pipeweld solution."""
+    flat = _linearize(solution, new_step, existing_hooks)
+    idx = flat.index(new_step)
+    if idx == 0:
+        return None
+    return flat[idx - 1]
+
+
+def _linearize(
+    component: Series | Parallel | DepGroup | str,
+    new_step: str,
+    existing_hooks: list[str],
+) -> list[str]:
+    """Flatten a pipeweld solution to a linear list of hook IDs.
+
+    Within parallel groups, existing hooks maintain their relative order and
+    the new hook is placed after all existing hooks.
+    """
+    if isinstance(component, str):
+        return [component]
+    if isinstance(component, Series):
+        result: list[str] = []
+        for sub in component.root:
+            result.extend(_linearize(sub, new_step, existing_hooks))
+        return result
+    if isinstance(component, Parallel):
+        sublists = [
+            _linearize(sub, new_step, existing_hooks) for sub in component.root
+        ]
+        all_items = [item for sublist in sublists for item in sublist]
+
+        def sort_key(item: str) -> tuple[int, int]:
+            if item == new_step:
+                return (1, 0)
+            try:
+                return (0, existing_hooks.index(item))
+            except ValueError:
+                return (0, len(existing_hooks))
+
+        all_items.sort(key=sort_key)
+        return all_items
+    if isinstance(component, DepGroup):
+        return _linearize(component.series, new_step, existing_hooks)
+
+    msg = f"Unknown component type: {type(component)}"
+    raise TypeError(msg)
 
 
 def _report_adding_repo(

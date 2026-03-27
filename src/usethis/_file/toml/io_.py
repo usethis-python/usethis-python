@@ -327,7 +327,7 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
                 raise TOMLValueInvalidError(msg) from None
             assert isinstance(d, list)
             for value in values:
-                d.append(value)
+                d.insert(len(d), value)
 
         self.commit(toml_document)
 

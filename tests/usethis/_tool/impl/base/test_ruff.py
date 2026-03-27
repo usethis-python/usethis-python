@@ -351,7 +351,9 @@ lint.ignore = [
             contents = (tmp_path / "ruff.toml").read_text()
             assert "# This is too strict for dunder methods." in contents
             assert "# Prevents using df.loc[lambda _: ..." in contents
-            assert "# This is controversial, ABC's don't always need methods." in contents
+            assert (
+                "# This is controversial, ABC's don't always need methods." in contents
+            )
             assert (
                 "# This is controversial, calls to `dict` can be more idiomatic than {}."
                 in contents

@@ -4,15 +4,7 @@ on:
     workflow_dispatch:
     push:
         branches: ["main"]
-        paths-ignore:
-            - "mkdocs.yml"
-            - "AGENTS.md"
-            - ".agents/**/*.md"
     pull_request:
-        paths-ignore:
-            - "mkdocs.yml"
-            - "AGENTS.md"
-            - ".agents/**/*.md"
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true

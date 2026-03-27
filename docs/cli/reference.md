@@ -477,7 +477,7 @@ Additional configuration in `pyproject.toml`:
 
 Supported options:
 
-- `--output-file` to write the output to a file instead of stdout. This is useful to avoid issues when shell redirects (e.g. `> file.txt`) create the file before the command runs, which can influence the behaviour of `usethis show`.
+- `--output-file` to write the output to a file instead of stdout.
 
 ## `usethis browse pypi <package>`
 

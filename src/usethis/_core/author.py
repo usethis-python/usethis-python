@@ -1,5 +1,7 @@
 """Author metadata management for pyproject.toml."""
 
+from collections.abc import Mapping
+
 from usethis._console import tick_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import ensure_pyproject_toml
@@ -31,7 +33,10 @@ def add_author(
         # Suspected to be similar to this https://github.com/python-poetry/tomlkit/issues/381
         full_raw = PyprojectTOMLManager()[["project", "authors"]]
         assert isinstance(full_raw, list)
-        full = [dict(item) for item in full_raw]
+        full = []
+        for item in full_raw:
+            assert isinstance(item, Mapping)
+            full.append(dict(item))
         del PyprojectTOMLManager()[["project", "authors"]]
         PyprojectTOMLManager()[["project", "authors"]] = full
     else:

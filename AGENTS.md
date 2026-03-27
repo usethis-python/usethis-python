@@ -56,3 +56,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 - ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task
   is complete, always run this skill to check for any issues before finishing.
 - ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.
+
+## Lessons
+
+When you are working on a problem, you are almost always going to encounter a difficulty. This is great - it's an opportunity for learning. ALWAYS make a note explicitly of what lessons you are drawing as you complete a task or when receiving user feedback. Try and keep this structured: consider the root cause of the difficulty, and how you overcame it. After finishing work on a task, report back all your lessons. Finally, try and update the relevant skills with any new insights you've drawn, to help future agents, and/or create a new skill.

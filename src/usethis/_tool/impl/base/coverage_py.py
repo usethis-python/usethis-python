@@ -7,8 +7,8 @@ from typing import final
 from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.detect import is_uv_used
 from usethis._backend.poetry.detect import is_poetry_used
+from usethis._backend.uv.detect import is_uv_used
 from usethis._console import how_print
 from usethis._tool.base import Tool
 from usethis._tool.heuristics import is_likely_used

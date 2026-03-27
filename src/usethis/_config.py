@@ -50,7 +50,9 @@ class UsethisConfig:
     alert_only: bool = False
     instruct_only: bool = False
     backend: BackendEnum = BackendEnum(BACKEND_DEFAULT)  # noqa: RUF009
-    inferred_backend: Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none] | None = None
+    inferred_backend: (
+        Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none] | None
+    ) = None
     build_backend: BuildBackendEnum = BuildBackendEnum(BUILD_BACKEND_DEFAULT)  # noqa: RUF009
     disable_pre_commit: bool = False
     subprocess_verbose: bool = False

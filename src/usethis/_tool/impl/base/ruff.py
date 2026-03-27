@@ -9,8 +9,8 @@ from pydantic import TypeAdapter, ValidationError
 from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.detect import is_uv_used
 from usethis._backend.poetry.detect import is_poetry_used
+from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import how_print, tick_print

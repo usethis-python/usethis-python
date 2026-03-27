@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.call import call_uv_subprocess
-from usethis._backend.uv.detect import is_uv_used
-from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._backend.poetry.call import call_poetry_subprocess
 from usethis._backend.poetry.detect import is_poetry_used
 from usethis._backend.poetry.errors import PoetrySubprocessFailedError
+from usethis._backend.uv.call import call_uv_subprocess
+from usethis._backend.uv.detect import is_uv_used
+from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._config import usethis_config
 from usethis._console import info_print, instruct_print, tick_print
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
@@ -36,62 +38,70 @@ def install_pre_commit_hooks() -> None:
     backend = get_backend()
 
     if usethis_config.frozen:
-        if backend is BackendEnum.uv and is_uv_used():
-            instruct_print("Run 'uv run pre-commit install' to register pre-commit.")
-        elif backend is BackendEnum.poetry and is_poetry_used():
-            instruct_print(
-                "Run 'poetry run pre-commit install' to register pre-commit."
-            )
-        elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
-            instruct_print("Run 'pre-commit install' to register pre-commit.")
-        else:
-            assert_never(backend)
+        _instruct_pre_commit_install(backend)
         return
 
     if backend is BackendEnum.uv:
-        tick_print("Ensuring pre-commit is installed to Git.")
-        try:
-            call_uv_subprocess(["run", "pre-commit", "install"], change_toml=False)
-        except UVSubprocessFailedError as err:
-            msg = f"Failed to install pre-commit in the Git repository:\n{err}"
-            raise PreCommitInstallationError(msg) from None
-        tick_print("Ensuring pre-commit hooks are installed.")
-        info_print(
-            "This may take a minute or so while the hooks are downloaded.",
-            temporary=True,
-        )
-        try:
-            call_uv_subprocess(
-                ["run", "pre-commit", "install-hooks"], change_toml=False
-            )
-        except UVSubprocessFailedError as err:
-            msg = f"Failed to install pre-commit hooks:\n{err}"
-            raise PreCommitInstallationError(msg) from None
+        _run_pre_commit_install_via_uv()
     elif backend is BackendEnum.poetry:
-        tick_print("Ensuring pre-commit is installed to Git.")
-        try:
-            call_poetry_subprocess(
-                ["run", "pre-commit", "install"], change_toml=False
-            )
-        except PoetrySubprocessFailedError as err:
-            msg = f"Failed to install pre-commit in the Git repository:\n{err}"
-            raise PreCommitInstallationError(msg) from None
-        tick_print("Ensuring pre-commit hooks are installed.")
-        info_print(
-            "This may take a minute or so while the hooks are downloaded.",
-            temporary=True,
-        )
-        try:
-            call_poetry_subprocess(
-                ["run", "pre-commit", "install-hooks"], change_toml=False
-            )
-        except PoetrySubprocessFailedError as err:
-            msg = f"Failed to install pre-commit hooks:\n{err}"
-            raise PreCommitInstallationError(msg) from None
+        _run_pre_commit_install_via_poetry()
     elif backend is BackendEnum.none:
         instruct_print("Run 'pre-commit install' to install pre-commit to Git.")
     else:
         assert_never(backend)
+
+
+def _instruct_pre_commit_install(
+    backend: Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none],
+) -> None:
+    if backend is BackendEnum.uv and is_uv_used():
+        instruct_print("Run 'uv run pre-commit install' to register pre-commit.")
+    elif backend is BackendEnum.poetry and is_poetry_used():
+        instruct_print("Run 'poetry run pre-commit install' to register pre-commit.")
+    elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
+        instruct_print("Run 'pre-commit install' to register pre-commit.")
+    else:
+        assert_never(backend)
+
+
+def _run_pre_commit_install_via_uv() -> None:
+    tick_print("Ensuring pre-commit is installed to Git.")
+    try:
+        call_uv_subprocess(["run", "pre-commit", "install"], change_toml=False)
+    except UVSubprocessFailedError as err:
+        msg = f"Failed to install pre-commit in the Git repository:\n{err}"
+        raise PreCommitInstallationError(msg) from None
+    tick_print("Ensuring pre-commit hooks are installed.")
+    info_print(
+        "This may take a minute or so while the hooks are downloaded.",
+        temporary=True,
+    )
+    try:
+        call_uv_subprocess(["run", "pre-commit", "install-hooks"], change_toml=False)
+    except UVSubprocessFailedError as err:
+        msg = f"Failed to install pre-commit hooks:\n{err}"
+        raise PreCommitInstallationError(msg) from None
+
+
+def _run_pre_commit_install_via_poetry() -> None:
+    tick_print("Ensuring pre-commit is installed to Git.")
+    try:
+        call_poetry_subprocess(["run", "pre-commit", "install"], change_toml=False)
+    except PoetrySubprocessFailedError as err:
+        msg = f"Failed to install pre-commit in the Git repository:\n{err}"
+        raise PreCommitInstallationError(msg) from None
+    tick_print("Ensuring pre-commit hooks are installed.")
+    info_print(
+        "This may take a minute or so while the hooks are downloaded.",
+        temporary=True,
+    )
+    try:
+        call_poetry_subprocess(
+            ["run", "pre-commit", "install-hooks"], change_toml=False
+        )
+    except PoetrySubprocessFailedError as err:
+        msg = f"Failed to install pre-commit hooks:\n{err}"
+        raise PreCommitInstallationError(msg) from None
 
 
 def uninstall_pre_commit_hooks() -> None:

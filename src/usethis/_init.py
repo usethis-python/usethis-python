@@ -5,13 +5,13 @@ import re
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.init import (
-    ensure_pyproject_toml_via_uv,
-    opinionated_uv_init,
-)
 from usethis._backend.poetry.init import (
     ensure_pyproject_toml_via_poetry,
     opinionated_poetry_init,
+)
+from usethis._backend.uv.init import (
+    ensure_pyproject_toml_via_uv,
+    opinionated_uv_init,
 )
 from usethis._config import usethis_config
 from usethis._console import tick_print
@@ -117,9 +117,7 @@ def write_simple_requirements_txt() -> None:
 def ensure_dep_declaration_file() -> None:
     """Ensure that the file where dependencies are declared exists, if necessary."""
     backend = get_backend()
-    if backend is BackendEnum.uv:
-        ensure_pyproject_toml()
-    elif backend is BackendEnum.poetry:
+    if backend is BackendEnum.uv or backend is BackendEnum.poetry:
         ensure_pyproject_toml()
     elif backend is BackendEnum.none:
         # No dependencies are interacted with; we just display messages.

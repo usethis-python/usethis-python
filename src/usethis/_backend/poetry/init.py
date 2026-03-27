@@ -13,15 +13,16 @@ def ensure_pyproject_toml_via_poetry(*, author: bool = True) -> None:
 
     It is assumed that the pyproject.toml file doesn't already exist.
     """
+    args = [
+        "init",
+        "--name",
+        usethis_config.cpd().name,
+    ]
+    if not author:
+        args.append("--author=none")
+
     try:
-        call_poetry_subprocess(
-            [
-                "init",
-                "--name",
-                usethis_config.cpd().name,
-            ],
-            change_toml=True,
-        )
+        call_poetry_subprocess(args, change_toml=True)
     except PoetrySubprocessFailedError as err:
         msg = f"Failed to create a pyproject.toml file:\n{err}"
         raise PyprojectTOMLInitError(msg) from None

@@ -12,7 +12,12 @@ usethis                           # usethis: Automate Python project setup and d
 ├── _backend                      # Backend dispatch and tool-specific backend implementations.
 │   ├── dispatch                  # Backend selection and dispatch logic.
 │   ├── poetry                    # Poetry backend implementation.
-│   │   └── detect                # Detection of Poetry usage in a project.
+│   │   ├── available             # Check whether the Poetry CLI is available.
+│   │   ├── call                  # Subprocess wrappers for invoking Poetry commands.
+│   │   ├── deps                  # Dependency group operations via the Poetry backend.
+│   │   ├── detect                # Detection of Poetry usage in a project.
+│   │   ├── errors                # Error types for the Poetry backend.
+│   │   └── init                  # Project initialization via Poetry.
 │   └── uv                        # uv backend implementation.
 │       ├── available             # Check whether the uv CLI is available.
 │       ├── call                  # Subprocess wrappers for invoking uv commands.

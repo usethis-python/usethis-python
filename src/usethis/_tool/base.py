@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Literal, Protocol
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
-from usethis._backend.uv.detect import is_uv_used
 from usethis._backend.poetry.detect import is_poetry_used
+from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._console import how_print, tick_print
 from usethis._deps import add_deps_to_group, remove_deps_from_group

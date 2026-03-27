@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 import pydantic
 from packaging.requirements import Requirement
 from pydantic import TypeAdapter
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
+from usethis._backend.poetry.deps import (
+    add_dep_to_group_via_poetry,
+    remove_dep_from_group_via_poetry,
+)
 from usethis._backend.uv.call import add_default_groups_via_uv
 from usethis._backend.uv.deps import (
     add_dep_to_group_via_uv,
@@ -15,10 +21,6 @@ from usethis._backend.uv.deps import (
     remove_dep_from_group_via_uv,
 )
 from usethis._backend.uv.errors import UVDepGroupError
-from usethis._backend.poetry.deps import (
-    add_dep_to_group_via_poetry,
-    remove_dep_from_group_via_poetry,
-)
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -233,11 +235,7 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     # Message regarding declaration of the dependencies
     deps_str = ", ".join([f"'{dep}'" for dep in to_add_deps])
     ies = "y" if len(to_add_deps) == 1 else "ies"
-    if backend is BackendEnum.uv:
-        tick_print(
-            f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
-        )
-    elif backend is BackendEnum.poetry:
+    if backend is BackendEnum.uv or backend is BackendEnum.poetry:
         tick_print(
             f"Adding dependenc{ies} {deps_str} to the '{group}' group in 'pyproject.toml'."
         )
@@ -250,25 +248,30 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     # a combined workflow.
     if usethis_config.frozen:
         instruct_print(f"Install the dependenc{ies} {deps_str}.")
-    for dep in to_add_deps:
-        if backend is BackendEnum.uv:
-            add_dep_to_group_via_uv(dep, group)
-        elif backend is BackendEnum.poetry:
-            add_dep_to_group_via_poetry(dep, group)
-        elif backend is BackendEnum.none:
-            # We've already used a combined message
-            pass
-        else:
-            assert_never(backend)
+    _install_deps_to_group(backend, to_add_deps, group)
 
     # Register the group - don't do this before adding the deps in case that step fails
     if backend is BackendEnum.uv:
         register_default_group(group)
-    elif backend is BackendEnum.poetry:
-        # Poetry installs all dependency groups by default
+    elif backend in (BackendEnum.poetry, BackendEnum.none):
+        # Poetry installs all dependency groups by default; no-op for none backend
         pass
+    else:
+        assert_never(backend)
+
+
+def _install_deps_to_group(
+    backend: Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none],
+    deps: list[Dependency],
+    group: str,
+) -> None:
+    if backend is BackendEnum.uv:
+        for dep in deps:
+            add_dep_to_group_via_uv(dep, group)
+    elif backend is BackendEnum.poetry:
+        for dep in deps:
+            add_dep_to_group_via_poetry(dep, group)
     elif backend is BackendEnum.none:
-        # This is not really a meaningful concept without a package manager
         pass
     else:
         assert_never(backend)

@@ -213,7 +213,6 @@ reportAny = false
 reportAssignmentType = false
 reportExplicitAny = false
 reportImplicitStringConcatenation = false
-reportMissingParameterType = false
 reportMissingTypeArgument = false
 reportUnknownArgumentType = false
 reportUnknownMemberType = false

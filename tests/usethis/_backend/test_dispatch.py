@@ -46,7 +46,7 @@ class TestGetBackend:
     ):
         # Arrange
 
-        def mock_call_uv_subprocess(*_, **__):
+        def mock_call_uv_subprocess(*_: object, **__: object):
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(

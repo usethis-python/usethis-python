@@ -24,7 +24,7 @@ class TestGetUVVersion:
 
     def test_mock_subprocess_failure(self, monkeypatch: pytest.MonkeyPatch):
         # Arrange
-        def mock_call_uv_subprocess(*_, **__) -> str:
+        def mock_call_uv_subprocess(*_: object, **__: object) -> str:
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(

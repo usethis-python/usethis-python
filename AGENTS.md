@@ -16,28 +16,29 @@ The `.agents/skills` directory contains agent skills.
 
 #### usethis-specific skills
 
-| Skill                                 | Description                                                                                                           |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `usethis-cli-modify`                  | Update GitHub Actions workflows                                                                                       |
-| `usethis-file-remove`                 | Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync                            |
-| `usethis-github-actions-update`       | Update GitHub Actions workflows                                                                                       |
-| `usethis-pre-commit`                  | Guidance on pre-commit hooks — this project uses prek, not pre-commit directly                                        |
-| `usethis-prek-add-hook`               | Add a prek hook for dev                                                                                               |
-| `usethis-prek-hook-bespoke-create`    | Write bespoke prek hooks as Python scripts for custom project-specific checks                                         |
-| `usethis-python-code`                 | Guidelines for Python code design decisions such as when to share vs. duplicate code                                  |
-| `usethis-python-code-modify`          | Modify Python code (e.g. refactor, add new code, or delete code)                                                      |
-| `usethis-python-enum`                 | Style and testing conventions for working with Python enums                                                           |
-| `usethis-python-functions`            | Guidelines for Python function design, including return types and signature simplicity                                |
-| `usethis-python-module-layout-modify` | Modify the Python module layout (create, move, rename, or delete modules)                                             |
-| `usethis-python-ruff`                 | Guidelines for complying with Ruff linter rules instead of suppressing them                                           |
-| `usethis-python-test-affected-find`   | Identify tests that are potentially affected by code changes, to catch regressions before CI                          |
-| `usethis-qa-import-linter`            | Use the Import Linter software on the usethis project                                                                 |
-| `usethis-qa-static-checks`            | Perform static code checks                                                                                            |
-| `usethis-skills-create`               | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability |
-| `usethis-skills-external-add`         | Add an external (community) skill and document it in AGENTS.md                                                        |
-| `usethis-skills-external-install`     | Install/reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)                    |
-| `usethis-skills-modify`               | Modify agent skills (SKILL.md files)                                                                                  |
-| `usethis-test-with-coverage`          | Write tests that achieve full code coverage and verify coverage locally before pushing                                |
+| Skill                                 | Description                                                                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `usethis-cli-modify`                  | Update GitHub Actions workflows                                                                                         |
+| `usethis-file-remove`                 | Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync                              |
+| `usethis-github-actions-update`       | Update GitHub Actions workflows                                                                                         |
+| `usethis-github-issue-create`         | Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development |
+| `usethis-pre-commit`                  | Guidance on pre-commit hooks — this project uses prek, not pre-commit directly                                          |
+| `usethis-prek-add-hook`               | Add a prek hook for dev                                                                                                 |
+| `usethis-prek-hook-bespoke-create`    | Write bespoke prek hooks as Python scripts for custom project-specific checks                                           |
+| `usethis-python-code`                 | Guidelines for Python code design decisions such as when to share vs. duplicate code                                    |
+| `usethis-python-code-modify`          | Modify Python code (e.g. refactor, add new code, or delete code)                                                        |
+| `usethis-python-enum`                 | Style and testing conventions for working with Python enums                                                             |
+| `usethis-python-functions`            | Guidelines for Python function design, including return types and signature simplicity                                  |
+| `usethis-python-module-layout-modify` | Modify the Python module layout (create, move, rename, or delete modules)                                               |
+| `usethis-python-ruff`                 | Guidelines for complying with Ruff linter rules instead of suppressing them                                             |
+| `usethis-python-test-affected-find`   | Identify tests that are potentially affected by code changes, to catch regressions before CI                            |
+| `usethis-qa-import-linter`            | Use the Import Linter software on the usethis project                                                                   |
+| `usethis-qa-static-checks`            | Perform static code checks                                                                                              |
+| `usethis-skills-create`               | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability   |
+| `usethis-skills-external-add`         | Add an external (community) skill and document it in AGENTS.md                                                          |
+| `usethis-skills-external-install`     | Install/reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)                      |
+| `usethis-skills-modify`               | Modify agent skills (SKILL.md files)                                                                                    |
+| `usethis-test-with-coverage`          | Write tests that achieve full code coverage and verify coverage locally before pushing                                  |
 
 #### External skills
 

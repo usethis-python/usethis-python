@@ -26,115 +26,37 @@ def _skip_on_github_error(err: GitHubTagError) -> None:
         pytest.skip("Failed to fetch GitHub tags (connection issues); skipping test")
 
 
-class TestFallbackUVVersion:
+class TestLatestVersion:
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self):
-        if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
-
-        try:
-            assert (
-                get_github_latest_tag(owner="astral-sh", repo="uv")
-                == FALLBACK_UV_VERSION
-            )
-        except GitHubTagError as err:
-            _skip_on_github_error(err)
-            raise err
-
-
-class TestFallbackHatchlingVersion:
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self):
-        if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
-
-        try:
-            assert (
-                get_github_latest_tag(owner="pypa", repo="hatch")
-                == f"hatchling-v{FALLBACK_HATCHLING_VERSION}"
-            )
-        except GitHubTagError as err:
-            _skip_on_github_error(err)
-            raise err
-
-
-class TestPreCommitVersion:
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self):
-        if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
-
-        try:
-            assert (
-                get_github_latest_tag(owner="pre-commit", repo="pre-commit")
-                == f"v{FALLBACK_PRE_COMMIT_VERSION}"
-            )
-        except GitHubTagError as err:
-            _skip_on_github_error(err)
-            raise err
-
-
-class TestRuffVersion:
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self):
-        if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
-
-        try:
-            assert (
-                get_github_latest_tag(owner="astral-sh", repo="ruff-pre-commit")
-                == FALLBACK_RUFF_VERSION
-            )
-        except GitHubTagError as err:
-            _skip_on_github_error(err)
-            raise err
-
-
-class TestSyncWithUVVersion:
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self):
-        if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
-
-        try:
-            assert (
-                get_github_latest_tag(owner="tsvikas", repo="sync-with-uv")
-                == FALLBACK_SYNC_WITH_UV_VERSION
-            )
-        except GitHubTagError as err:
-            _skip_on_github_error(err)
-            raise err
-
-
-class TestCodespellVersion:
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self):
-        if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
-
-        try:
-            assert (
-                get_github_latest_tag(owner="codespell-project", repo="codespell")
-                == FALLBACK_CODESPELL_VERSION
-            )
-        except GitHubTagError as err:
-            _skip_on_github_error(err)
-            raise err
-
-
-class TestPyprojectFmtVersion:
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_latest_version(self):
-        if os.getenv("CI"):
-            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
-
-        try:
+    @pytest.mark.parametrize(
+        ("owner", "repo", "expected_tag"),
+        [
+            ("astral-sh", "uv", FALLBACK_UV_VERSION),
+            ("pypa", "hatch", f"hatchling-v{FALLBACK_HATCHLING_VERSION}"),
+            ("pre-commit", "pre-commit", f"v{FALLBACK_PRE_COMMIT_VERSION}"),
+            ("astral-sh", "ruff-pre-commit", FALLBACK_RUFF_VERSION),
+            ("tsvikas", "sync-with-uv", FALLBACK_SYNC_WITH_UV_VERSION),
+            ("codespell-project", "codespell", FALLBACK_CODESPELL_VERSION),
             # N.B. this is the pre-commit mirror, it can lag behind the main repo
             # at https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt
-            assert (
-                get_github_latest_tag(owner="tox-dev", repo="pyproject-fmt")
-                == FALLBACK_PYPROJECT_FMT_VERSION
-            )
+            ("tox-dev", "pyproject-fmt", FALLBACK_PYPROJECT_FMT_VERSION),
+        ],
+        ids=[
+            "uv",
+            "hatchling",
+            "pre-commit",
+            "ruff",
+            "sync-with-uv",
+            "codespell",
+            "pyproject-fmt",
+        ],
+    )
+    def test_latest_version(self, owner: str, repo: str, expected_tag: str):
+        if os.getenv("CI"):
+            pytest.skip("Avoid flaky pipelines by testing version bumps manually")
+
+        try:
+            assert get_github_latest_tag(owner=owner, repo=repo) == expected_tag
         except GitHubTagError as err:
             _skip_on_github_error(err)
             raise err

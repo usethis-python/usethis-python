@@ -732,8 +732,10 @@ class TestNoHook:
 
             # Assert: ruff was configured but hooks were NOT added
             with files_manager():
-                assert (uv_init_dir / "pyproject.toml").read_text().__contains__(
-                    "[tool.ruff"
+                assert (
+                    (uv_init_dir / "pyproject.toml")
+                    .read_text()
+                    .__contains__("[tool.ruff")
                 )
                 hook_ids = get_hook_ids()
                 assert "ruff-check" not in hook_ids

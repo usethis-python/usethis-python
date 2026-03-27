@@ -30,7 +30,9 @@ backend_opt = typer.Option(
     BACKEND_DEFAULT, "--backend", help="Package manager backend to use."
 )
 no_hook_opt = typer.Option(
-    False, "--no-hook", help="Don't add or modify git hook configuration, e.g. pre-commit"
+    False,
+    "--no-hook",
+    help="Don't add or modify git hook configuration, e.g. pre-commit",
 )
 
 # author command options

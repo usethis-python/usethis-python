@@ -1,3 +1,5 @@
+"""Symlink link-mode configuration for uv."""
+
 import contextlib
 
 from usethis._backend.uv.toml import UVTOMLManager

@@ -1,3 +1,5 @@
+"""Documentation toolset."""
+
 from usethis._core.tool import use_mkdocs
 
 

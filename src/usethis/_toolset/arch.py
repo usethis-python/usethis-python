@@ -1,3 +1,5 @@
+"""Architecture enforcement toolset."""
+
 from usethis._core.tool import use_import_linter
 
 

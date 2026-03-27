@@ -1,3 +1,5 @@
+"""Spell checking toolset."""
+
 from usethis._core.tool import use_codespell
 
 

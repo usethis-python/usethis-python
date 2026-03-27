@@ -1,3 +1,5 @@
+"""CLI commands for code formatting tools."""
+
 import typer
 
 from usethis._config import usethis_config

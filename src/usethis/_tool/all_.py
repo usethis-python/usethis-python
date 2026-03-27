@@ -1,3 +1,5 @@
+"""Registry of all available tools."""
+
 from __future__ import annotations
 
 from typing import TypeAlias

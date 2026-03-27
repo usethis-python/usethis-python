@@ -1,3 +1,5 @@
+"""Result types for pipeline welding."""
+
 from __future__ import annotations
 
 from pydantic import BaseModel

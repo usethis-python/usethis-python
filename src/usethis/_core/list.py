@@ -1,3 +1,5 @@
+"""List tools and their usage status."""
+
 from typing import Literal
 
 from pydantic import BaseModel

@@ -1,3 +1,5 @@
+"""Test utilities and fixtures for the usethis test suite."""
+
 from __future__ import annotations
 
 import os

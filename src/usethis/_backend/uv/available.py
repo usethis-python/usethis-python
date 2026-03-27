@@ -1,3 +1,5 @@
+"""Check whether the uv CLI is available."""
+
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.errors import UVSubprocessFailedError
 

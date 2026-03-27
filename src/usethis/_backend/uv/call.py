@@ -1,3 +1,5 @@
+"""Subprocess wrappers for invoking uv commands."""
+
 from __future__ import annotations
 
 from usethis._backend.uv.errors import UVSubprocessFailedError

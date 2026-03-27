@@ -1,3 +1,5 @@
+"""Linting toolset."""
+
 from usethis._core.tool import use_deptry, use_ruff
 
 

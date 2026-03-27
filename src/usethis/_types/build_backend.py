@@ -1,3 +1,5 @@
+"""Build backend enumeration for packaging tool selection."""
+
 from enum import Enum
 
 

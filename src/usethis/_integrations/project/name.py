@@ -1,3 +1,5 @@
+"""Project name resolution with fallback heuristics."""
+
 from usethis._file.dir import get_project_name_from_dir
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectSectionError,

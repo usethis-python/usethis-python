@@ -1,3 +1,5 @@
+"""Subprocess invocation utilities."""
+
 from __future__ import annotations
 
 import subprocess

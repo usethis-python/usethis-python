@@ -1,3 +1,5 @@
+"""Development status enumeration for classifiers."""
+
 from enum import Enum
 
 

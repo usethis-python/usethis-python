@@ -1,3 +1,5 @@
+"""Removal of the pyproject.toml file."""
+
 from __future__ import annotations
 
 from usethis._config import usethis_config

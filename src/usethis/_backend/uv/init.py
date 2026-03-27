@@ -1,3 +1,5 @@
+"""Project initialization via uv."""
+
 from __future__ import annotations
 
 from usethis._backend.uv import (  # Use this style to allow test mocking

@@ -1,3 +1,5 @@
+"""CLI commands for architecture enforcement tools."""
+
 import typer
 
 from usethis._config import usethis_config

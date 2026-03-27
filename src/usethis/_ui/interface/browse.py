@@ -1,3 +1,5 @@
+"""CLI commands for browsing project resources."""
+
 import typer
 
 from usethis._config import usethis_config

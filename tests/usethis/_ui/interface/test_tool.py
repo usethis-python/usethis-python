@@ -43,6 +43,49 @@ class TestCodespell:
 """
         )
 
+    def test_no_hook_skips_pre_commit(self, uv_init_dir: Path):
+        """Test that --no-hook skips adding hooks when adding codespell."""
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            # Arrange: set up pre-commit first
+            result = runner.invoke_safe(app, ["pre-commit", "--frozen"])
+            assert result.exit_code == 0, result.output
+
+            # Act: add codespell with --no-hook
+            result = runner.invoke_safe(app, ["codespell", "--frozen", "--no-hook"])
+            assert result.exit_code == 0, result.output
+
+            # Assert: codespell hook should NOT be added to pre-commit config
+            with files_manager():
+                hook_ids = get_hook_ids()
+                assert "codespell" not in hook_ids
+
+    def test_no_hook_remove_preserves_hook(self, uv_init_dir: Path):
+        """Test that --no-hook with --remove does not remove hooks."""
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            # Arrange: add pre-commit and codespell (with hooks)
+            result = runner.invoke_safe(app, ["pre-commit", "--frozen"])
+            assert result.exit_code == 0, result.output
+            result = runner.invoke_safe(app, ["codespell", "--frozen"])
+            assert result.exit_code == 0, result.output
+
+            # Verify codespell hook was added
+            with files_manager():
+                hook_ids = get_hook_ids()
+                assert "codespell" in hook_ids
+
+            # Act: remove codespell with --no-hook
+            result = runner.invoke_safe(
+                app, ["codespell", "--remove", "--frozen", "--no-hook"]
+            )
+            assert result.exit_code == 0, result.output
+
+            # Assert: codespell hook should still be in pre-commit config
+            with files_manager():
+                hook_ids = get_hook_ids()
+                assert "codespell" in hook_ids
+
 
 class TestCoverage:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -506,6 +549,29 @@ class TestRuff:
             # Act, Assert
             call_uv_subprocess(["run", "ruff", "check", "."], change_toml=False)
 
+    def test_no_hook_skips_pre_commit(self, uv_init_dir: Path):
+        """Test that --no-hook works for ruff too."""
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            # Arrange: set up pre-commit first
+            result = runner.invoke_safe(app, ["pre-commit", "--frozen"])
+            assert result.exit_code == 0, result.output
+
+            # Act: add ruff with --no-hook
+            result = runner.invoke_safe(app, ["ruff", "--frozen", "--no-hook"])
+            assert result.exit_code == 0, result.output
+
+            # Assert: ruff was configured but hooks were NOT added
+            with files_manager():
+                assert (
+                    (uv_init_dir / "pyproject.toml")
+                    .read_text()
+                    .__contains__("[tool.ruff")
+                )
+                hook_ids = get_hook_ids()
+                assert "ruff-check" not in hook_ids
+                assert "ruff-format" not in hook_ids
+
 
 class TestPytest:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -672,71 +738,3 @@ def test_app_commands_match_list():
     names = [command.name for command in commands]
     names.remove("coverage")  # Deprecated
     assert set(names) == set(ALL_TOOL_COMMANDS)
-
-
-class TestNoHook:
-    def test_codespell_no_hook_skips_pre_commit(self, uv_init_dir: Path):
-        """Test that --no-hook skips adding hooks when adding codespell."""
-        runner = CliRunner()
-        with change_cwd(uv_init_dir):
-            # Arrange: set up pre-commit first
-            result = runner.invoke_safe(app, ["pre-commit", "--frozen"])
-            assert result.exit_code == 0, result.output
-
-            # Act: add codespell with --no-hook
-            result = runner.invoke_safe(app, ["codespell", "--frozen", "--no-hook"])
-            assert result.exit_code == 0, result.output
-
-            # Assert: codespell hook should NOT be added to pre-commit config
-            with files_manager():
-                hook_ids = get_hook_ids()
-                assert "codespell" not in hook_ids
-
-    def test_codespell_no_hook_remove_preserves_hook(self, uv_init_dir: Path):
-        """Test that --no-hook with --remove does not remove hooks."""
-        runner = CliRunner()
-        with change_cwd(uv_init_dir):
-            # Arrange: add pre-commit and codespell (with hooks)
-            result = runner.invoke_safe(app, ["pre-commit", "--frozen"])
-            assert result.exit_code == 0, result.output
-            result = runner.invoke_safe(app, ["codespell", "--frozen"])
-            assert result.exit_code == 0, result.output
-
-            # Verify codespell hook was added
-            with files_manager():
-                hook_ids = get_hook_ids()
-                assert "codespell" in hook_ids
-
-            # Act: remove codespell with --no-hook
-            result = runner.invoke_safe(
-                app, ["codespell", "--remove", "--frozen", "--no-hook"]
-            )
-            assert result.exit_code == 0, result.output
-
-            # Assert: codespell hook should still be in pre-commit config
-            with files_manager():
-                hook_ids = get_hook_ids()
-                assert "codespell" in hook_ids
-
-    def test_ruff_no_hook_skips_pre_commit(self, uv_init_dir: Path):
-        """Test that --no-hook works for ruff too."""
-        runner = CliRunner()
-        with change_cwd(uv_init_dir):
-            # Arrange: set up pre-commit first
-            result = runner.invoke_safe(app, ["pre-commit", "--frozen"])
-            assert result.exit_code == 0, result.output
-
-            # Act: add ruff with --no-hook
-            result = runner.invoke_safe(app, ["ruff", "--frozen", "--no-hook"])
-            assert result.exit_code == 0, result.output
-
-            # Assert: ruff was configured but hooks were NOT added
-            with files_manager():
-                assert (
-                    (uv_init_dir / "pyproject.toml")
-                    .read_text()
-                    .__contains__("[tool.ruff")
-                )
-                hook_ids = get_hook_ids()
-                assert "ruff-check" not in hook_ids
-                assert "ruff-format" not in hook_ids

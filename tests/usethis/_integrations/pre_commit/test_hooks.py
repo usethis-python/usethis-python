@@ -670,15 +670,11 @@ class TestLinearize:
         ) == ["A", "B", "C"]
 
     def test_parallel_new_step_last(self):
-        result = _linearize(
-            parallel("A", "B"), new_step="B", existing_hooks=["A"]
-        )
+        result = _linearize(parallel("A", "B"), new_step="B", existing_hooks=["A"])
         assert result == ["A", "B"]
 
     def test_parallel_preserves_existing_order(self):
-        result = _linearize(
-            parallel("B", "A"), new_step="C", existing_hooks=["A", "B"]
-        )
+        result = _linearize(parallel("B", "A"), new_step="C", existing_hooks=["A", "B"])
         assert result == ["A", "B"]
 
     def test_series_with_parallel(self):

@@ -155,7 +155,11 @@ def insert_repo(
 def _get_predecessor_from_solution(
     solution: Series, new_step: str, existing_hooks: list[str]
 ) -> str | None:
-    """Extract the predecessor for the new step from the pipeweld solution."""
+    """Find the hook that should immediately precede the new step.
+
+    Returns the hook ID that should come before ``new_step`` in the linearized
+    solution, or ``None`` if the new step should be inserted first.
+    """
     flat = _linearize(solution, new_step, existing_hooks)
     idx = flat.index(new_step)
     if idx == 0:
@@ -168,25 +172,25 @@ def _linearize(
     new_step: str,
     existing_hooks: list[str],
 ) -> list[str]:
-    """Flatten a pipeweld solution to a linear list of hook IDs.
+    """Flatten a pipeweld solution component to a linear list of hook IDs.
 
-    Within parallel groups, existing hooks maintain their relative order and
-    the new hook is placed after all existing hooks.
+    Within parallel groups, existing hooks maintain their relative order from
+    ``existing_hooks`` and the new hook is placed after all existing hooks.
     """
     if isinstance(component, str):
         return [component]
-    if isinstance(component, Series):
+    elif isinstance(component, Series):
         result: list[str] = []
         for sub in component.root:
             result.extend(_linearize(sub, new_step, existing_hooks))
         return result
-    if isinstance(component, Parallel):
-        sublists = [
-            _linearize(sub, new_step, existing_hooks) for sub in component.root
-        ]
+    elif isinstance(component, Parallel):
+        sublists = [_linearize(sub, new_step, existing_hooks) for sub in component.root]
         all_items = [item for sublist in sublists for item in sublist]
 
         def sort_key(item: str) -> tuple[int, int]:
+            # Existing hooks sort by their original position (priority 0);
+            # the new hook sorts last (priority 1).
             if item == new_step:
                 return (1, 0)
             try:
@@ -196,11 +200,8 @@ def _linearize(
 
         all_items.sort(key=sort_key)
         return all_items
-    if isinstance(component, DepGroup):
+    else:
         return _linearize(component.series, new_step, existing_hooks)
-
-    msg = f"Unknown component type: {type(component)}"
-    raise TypeError(msg)
 
 
 def _report_adding_repo(

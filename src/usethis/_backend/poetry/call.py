@@ -38,9 +38,7 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
     new_args = [*new_args, "--no-interaction"]
 
     try:
-        output = call_subprocess(
-            new_args, cwd=usethis_config.cpd() if args[0] != "init" else None
-        )
+        output = call_subprocess(new_args, cwd=usethis_config.cpd())
     except SubprocessFailedError as err:
         raise PoetrySubprocessFailedError(err) from None
     except FileNotFoundError:

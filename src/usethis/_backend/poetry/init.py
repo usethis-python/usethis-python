@@ -11,15 +11,17 @@ from usethis._file.pyproject_toml.errors import PyprojectTOMLInitError
 def ensure_pyproject_toml_via_poetry(*, author: bool = True) -> None:
     """Create a pyproject.toml file using `poetry init`.
 
+    Poetry does not support controlling author inclusion via CLI flags,
+    so the ``author`` parameter is accepted for API compatibility but ignored.
+
     It is assumed that the pyproject.toml file doesn't already exist.
     """
+    _ = author
     args = [
         "init",
         "--name",
         usethis_config.cpd().name,
     ]
-    if not author:
-        args.append("--author=none")
 
     try:
         call_poetry_subprocess(args, change_toml=True)

@@ -80,6 +80,16 @@ repos:
         priority: 0
   - repo: local
     hooks:
+      - id: check-doc-sync
+        name: check-doc-sync
+        entry: uv run --frozen --offline hooks/check-doc-sync.py
+        args: ["AGENTS.md"]
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 0
+  - repo: local
+    hooks:
       - id: export-module-tree
         name: export-module-tree
         entry: uv run --frozen --offline hooks/export-module-tree.py

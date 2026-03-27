@@ -16,9 +16,7 @@ class TestAddDepToGroupViaPoetry:
     def test_success(self, monkeypatch: pytest.MonkeyPatch):
         captured_args: list[str] = []
 
-        def mock_call_poetry_subprocess(
-            args: list[str], *, change_toml: bool
-        ) -> str:
+        def mock_call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
             _ = change_toml
             captured_args.extend(args)
             return ""
@@ -54,9 +52,7 @@ class TestRemoveDepFromGroupViaPoetry:
     def test_success(self, monkeypatch: pytest.MonkeyPatch):
         captured_args: list[str] = []
 
-        def mock_call_poetry_subprocess(
-            args: list[str], *, change_toml: bool
-        ) -> str:
+        def mock_call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
             _ = change_toml
             captured_args.extend(args)
             return ""
@@ -84,7 +80,5 @@ class TestRemoveDepFromGroupViaPoetry:
         )
 
         dep = Dependency(name="pytest")
-        with pytest.raises(
-            PoetryDepGroupError, match="Failed to remove 'pytest'"
-        ):
+        with pytest.raises(PoetryDepGroupError, match="Failed to remove 'pytest'"):
             remove_dep_from_group_via_poetry(dep, "test")

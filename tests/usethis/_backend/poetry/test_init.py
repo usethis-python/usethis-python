@@ -17,9 +17,7 @@ class TestEnsurePyprojectTomlViaPoetry:
     def test_success(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
         captured_args: list[str] = []
 
-        def mock_call_poetry_subprocess(
-            args: list[str], *, change_toml: bool
-        ) -> str:
+        def mock_call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
             _ = change_toml
             captured_args.extend(args)
             return ""
@@ -30,9 +28,7 @@ class TestEnsurePyprojectTomlViaPoetry:
             mock_call_poetry_subprocess,
         )
 
-        with usethis_config.set(
-            backend=BackendEnum.poetry, project_dir=tmp_path
-        ):
+        with usethis_config.set(backend=BackendEnum.poetry, project_dir=tmp_path):
             ensure_pyproject_toml_via_poetry()
 
         assert captured_args == ["init", "--name", tmp_path.name]
@@ -51,9 +47,7 @@ class TestEnsurePyprojectTomlViaPoetry:
         )
 
         with (
-            usethis_config.set(
-                backend=BackendEnum.poetry, project_dir=tmp_path
-            ),
+            usethis_config.set(backend=BackendEnum.poetry, project_dir=tmp_path),
             pytest.raises(PyprojectTOMLInitError),
         ):
             ensure_pyproject_toml_via_poetry()
@@ -72,9 +66,7 @@ class TestEnsurePyprojectTomlViaPoetry:
             mock_call_poetry_subprocess,
         )
 
-        with usethis_config.set(
-            backend=BackendEnum.poetry, project_dir=tmp_path
-        ):
+        with usethis_config.set(backend=BackendEnum.poetry, project_dir=tmp_path):
             # Should not raise, regardless of author value
             ensure_pyproject_toml_via_poetry(author=False)
 
@@ -83,9 +75,7 @@ class TestOpinionatedPoetryInit:
     def test_success(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
         captured_args: list[str] = []
 
-        def mock_call_poetry_subprocess(
-            args: list[str], *, change_toml: bool
-        ) -> str:
+        def mock_call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
             _ = change_toml
             captured_args.extend(args)
             return ""
@@ -96,9 +86,7 @@ class TestOpinionatedPoetryInit:
             mock_call_poetry_subprocess,
         )
 
-        with usethis_config.set(
-            backend=BackendEnum.poetry, project_dir=tmp_path
-        ):
+        with usethis_config.set(backend=BackendEnum.poetry, project_dir=tmp_path):
             opinionated_poetry_init()
 
         assert captured_args == ["init", "--name", tmp_path.name]
@@ -117,9 +105,7 @@ class TestOpinionatedPoetryInit:
         )
 
         with (
-            usethis_config.set(
-                backend=BackendEnum.poetry, project_dir=tmp_path
-            ),
+            usethis_config.set(backend=BackendEnum.poetry, project_dir=tmp_path),
             pytest.raises(PoetryInitError),
         ):
             opinionated_poetry_init()

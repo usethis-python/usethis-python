@@ -4,8 +4,12 @@ from __future__ import annotations
 
 from typing import Literal
 
+from typing_extensions import assert_never
+
+from usethis._backend.poetry.call import call_poetry_subprocess
 from usethis._backend.poetry.detect import is_poetry_used
 from usethis._backend.uv.available import is_uv_available
+from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
@@ -29,3 +33,26 @@ def get_backend() -> Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.non
         usethis_config.inferred_backend = BackendEnum.none
 
     return usethis_config.inferred_backend
+
+
+def call_backend_subprocess(
+    args: list[str],
+    *,
+    change_toml: bool,
+    backend: Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none],
+) -> str:
+    """Dispatch a subprocess call to the appropriate backend.
+
+    Raises:
+        BackendSubprocessFailedError: If the subprocess fails (via the
+            backend-specific subclass).
+    """
+    if backend is BackendEnum.uv:
+        return call_uv_subprocess(args, change_toml=change_toml)
+    elif backend is BackendEnum.poetry:
+        return call_poetry_subprocess(args, change_toml=change_toml)
+    elif backend is BackendEnum.none:
+        msg = "Cannot call a backend subprocess when no backend is active."
+        raise ValueError(msg)
+    else:
+        assert_never(backend)

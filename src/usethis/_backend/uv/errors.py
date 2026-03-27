@@ -2,7 +2,13 @@
 
 from __future__ import annotations
 
-from usethis.errors import DepGroupError, UsethisError
+from usethis.errors import (
+    BackendSubprocessFailedError as _BackendSubprocessFailedError,
+)
+from usethis.errors import (
+    DepGroupError,
+    UsethisError,
+)
 
 
 class UVError(UsethisError):
@@ -13,7 +19,7 @@ class UVDepGroupError(DepGroupError):
     """Raised when adding or removing a dependency from a group fails."""
 
 
-class UVSubprocessFailedError(UVError):
+class UVSubprocessFailedError(UVError, _BackendSubprocessFailedError):
     """Raised when a subprocess call to uv fails."""
 
 

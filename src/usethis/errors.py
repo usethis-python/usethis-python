@@ -36,6 +36,13 @@ class FileDecodeError(FileConfigError):
         raise NotImplementedError
 
 
+class BackendSubprocessFailedError(UsethisError):
+    """Base class for backend subprocess failures.
+
+    Both UVSubprocessFailedError and PoetrySubprocessFailedError inherit from this.
+    """
+
+
 class ForbiddenBackendError(UsethisError):
     """Raised when an unexpected attempt to use a particular backend.
 

@@ -1,3 +1,5 @@
+"""YAML file manager for the pre-commit configuration."""
+
 from __future__ import annotations
 
 from pathlib import Path

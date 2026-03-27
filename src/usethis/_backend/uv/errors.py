@@ -1,3 +1,5 @@
+"""Error types for the uv backend."""
+
 from __future__ import annotations
 
 from usethis.errors import DepGroupError, UsethisError

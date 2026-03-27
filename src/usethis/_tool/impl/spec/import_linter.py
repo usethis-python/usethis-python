@@ -1,3 +1,5 @@
+"""Import Linter tool specification."""
+
 from __future__ import annotations
 
 import functools

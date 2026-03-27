@@ -1,3 +1,5 @@
+"""GitHub repository tag fetching."""
+
 from __future__ import annotations
 
 import requests

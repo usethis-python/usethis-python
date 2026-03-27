@@ -1,3 +1,5 @@
+"""README file creation and management."""
+
 from __future__ import annotations
 
 from usethis._config import usethis_config

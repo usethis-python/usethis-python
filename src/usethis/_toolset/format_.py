@@ -1,3 +1,5 @@
+"""Code formatting toolset."""
+
 from usethis._core.tool import use_pyproject_fmt, use_ruff
 from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
 

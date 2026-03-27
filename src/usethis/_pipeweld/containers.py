@@ -1,3 +1,5 @@
+"""Container data structures for pipeline compositions."""
+
 from __future__ import annotations
 
 from pydantic import BaseModel, RootModel

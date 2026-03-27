@@ -1,3 +1,5 @@
+"""Python version requirement queries from pyproject.toml."""
+
 from __future__ import annotations
 
 from packaging.specifiers import SpecifierSet

@@ -1,3 +1,5 @@
+"""Base file manager classes for configuration file I/O."""
+
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod

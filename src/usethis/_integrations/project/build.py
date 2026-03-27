@@ -1,3 +1,5 @@
+"""Build system detection for the project."""
+
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 
 

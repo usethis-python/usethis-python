@@ -1,3 +1,5 @@
+"""CLI commands for README management."""
+
 from __future__ import annotations
 
 import typer

@@ -1,3 +1,5 @@
+"""Abstract tool specification base classes."""
+
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod

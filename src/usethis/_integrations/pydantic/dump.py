@@ -1,3 +1,5 @@
+"""Pydantic model serialization helpers."""
+
 from __future__ import annotations
 
 from itertools import zip_longest

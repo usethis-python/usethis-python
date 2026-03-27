@@ -1,3 +1,5 @@
+"""CLI commands for docstring style configuration."""
+
 from __future__ import annotations
 
 import typer

@@ -1,3 +1,5 @@
+"""Error types for GitHub CI operations."""
+
 from __future__ import annotations
 
 from usethis.errors import UsethisError

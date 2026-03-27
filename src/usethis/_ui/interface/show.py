@@ -1,3 +1,5 @@
+"""CLI commands for showing project information."""
+
 from pathlib import Path
 
 import typer

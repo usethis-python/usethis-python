@@ -1,3 +1,5 @@
+"""Shared type aliases for file operations."""
+
 import re
 from typing import TypeAlias
 

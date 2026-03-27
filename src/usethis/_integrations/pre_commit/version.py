@@ -1,3 +1,5 @@
+"""Pre-commit version inference."""
+
 from usethis._config import usethis_config
 from usethis._fallback import FALLBACK_PRE_COMMIT_VERSION
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager

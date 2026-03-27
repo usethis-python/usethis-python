@@ -1,3 +1,5 @@
+"""Project initialization and build system setup."""
+
 import re
 
 from typing_extensions import assert_never

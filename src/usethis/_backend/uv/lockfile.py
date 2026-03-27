@@ -1,3 +1,5 @@
+"""Lock file creation and management for uv."""
+
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
 from usethis._console import tick_print

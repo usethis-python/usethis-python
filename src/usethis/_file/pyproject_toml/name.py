@@ -1,3 +1,5 @@
+"""Project name and description extraction from pyproject.toml."""
+
 from __future__ import annotations
 
 from pydantic import TypeAdapter, ValidationError

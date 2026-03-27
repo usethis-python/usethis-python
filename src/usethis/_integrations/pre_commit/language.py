@@ -1,3 +1,5 @@
+"""Pre-commit language keyword resolution."""
+
 from packaging.version import Version
 
 from usethis._integrations.pre_commit import schema

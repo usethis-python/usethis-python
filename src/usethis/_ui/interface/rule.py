@@ -1,3 +1,5 @@
+"""CLI commands for linter rule management."""
+
 import typer
 
 from usethis._config import usethis_config

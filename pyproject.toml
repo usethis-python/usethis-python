@@ -210,7 +210,6 @@ rules.possibly-missing-attribute = "ignore"
 [tool.basedpyright]
 ignore = [ "src/usethis/_version.py" ]
 reportAny = false
-reportAssignmentType = false
 reportExplicitAny = false
 reportImplicitStringConcatenation = false
 reportMissingParameterType = false

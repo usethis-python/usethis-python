@@ -14,13 +14,13 @@ class TestPyPI:
         assert not err
         assert "☐ Open URL <https://pypi.org/project/numpy/>." in out
 
-    def test_open_in_browser(self, monkeypatch):
+    def test_open_in_browser(self, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         class MockLaunch:
             def __init__(self):
                 self.url = None
 
-            def __call__(self, url):
+            def __call__(self, url: str):
                 self.url = url
 
         mock_launch = MockLaunch()

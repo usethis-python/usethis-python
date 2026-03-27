@@ -13,7 +13,7 @@ class TestIsUVAvailable:
     def test_mock_not_available(self, monkeypatch: pytest.MonkeyPatch):
         # Arrange
 
-        def mock_call_uv_subprocess(*_, **__):
+        def mock_call_uv_subprocess(*_: object, **__: object):
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(

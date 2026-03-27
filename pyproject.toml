@@ -212,7 +212,6 @@ ignore = [ "src/usethis/_version.py" ]
 reportAny = false
 reportExplicitAny = false
 reportImplicitStringConcatenation = false
-reportMissingParameterType = false
 reportMissingTypeArgument = false
 reportUnknownArgumentType = false
 reportUnknownMemberType = false

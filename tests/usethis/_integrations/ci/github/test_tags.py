@@ -12,7 +12,7 @@ from usethis._integrations.ci.github.tags import (
 
 class TestGetGitHubLatestTag:
     def test_mock(self, monkeypatch: pytest.MonkeyPatch):
-        def mock_get(*_, **__):
+        def mock_get(*_: object, **__: object):
             class MockResponse:
                 def json(self):
                     return [{"name": "v1.0.0"}]
@@ -27,7 +27,7 @@ class TestGetGitHubLatestTag:
         assert get_github_latest_tag(owner="foo", repo="bar") == "v1.0.0"
 
     def test_http_error(self, monkeypatch: pytest.MonkeyPatch):
-        def mock_get(*_, **__):
+        def mock_get(*_: object, **__: object):
             class MockResponse:
                 def raise_for_status(self):
                     msg = "Failed to fetch tags."
@@ -41,7 +41,7 @@ class TestGetGitHubLatestTag:
             get_github_latest_tag(owner="foo", repo="bar")
 
     def test_no_tags(self, monkeypatch: pytest.MonkeyPatch):
-        def mock_get(*_, **__):
+        def mock_get(*_: object, **__: object):
             class MockResponse:
                 def json(self):
                     return []

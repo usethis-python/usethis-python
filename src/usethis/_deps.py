@@ -219,8 +219,17 @@ def is_dep_in_any_group(dep: Dependency) -> bool:
     )
 
 
-def add_deps_to_group(deps: list[Dependency], group: str) -> None:
-    """Add a package as a non-build dependency using PEP 735 dependency groups."""
+def add_deps_to_group(
+    deps: list[Dependency], group: str, *, default: bool = True
+) -> None:
+    """Add a package as a non-build dependency using PEP 735 dependency groups.
+
+    Args:
+        deps: The dependencies to add to the group.
+        group: The name of the dependency group.
+        default: Whether to register the group as a default group. Set to False
+                 for groups that should be declared but not installed by default.
+    """
     existing_group = get_deps_from_group(group)
 
     to_add_deps = [
@@ -251,6 +260,13 @@ def add_deps_to_group(deps: list[Dependency], group: str) -> None:
     _install_deps_to_group(backend, to_add_deps, group)
 
     # Register the group - don't do this before adding the deps in case that step fails
+    if default:
+        _register_default_group(group, backend=backend)
+
+
+def _register_default_group(
+    group: str, *, backend: Literal[BackendEnum.uv, BackendEnum.none]
+) -> None:
     if backend is BackendEnum.uv:
         register_default_group(group)
     elif backend in (BackendEnum.poetry, BackendEnum.none):

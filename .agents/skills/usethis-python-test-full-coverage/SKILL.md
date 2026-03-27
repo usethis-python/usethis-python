@@ -1,5 +1,5 @@
 ---
-name: usethis-test-with-coverage
+name: usethis-python-test-full-coverage
 description: Write tests that achieve full code coverage and verify coverage locally before pushing
 compatibility: usethis, Python, pytest, coverage
 license: MIT

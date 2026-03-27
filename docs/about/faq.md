@@ -18,7 +18,7 @@ However, there are some known limitations for YAML files. In Python, there is cu
 
 ## Is uv absolutely necessary to use usethis?
 
-No, although it is highly recommended for new projects, since it is a modern and easy-to-use tool for managing Python projects. If you don't have uv installed, usethis will automatically avoid using it.
+No, although it is highly recommended for new projects, since it is a modern and easy-to-use tool for managing Python projects. If you don't have uv installed, usethis will automatically avoid using it. See [Backends](backends.md) for more details on how usethis selects and uses a package manager backend.
 
 If you have uv installed but you want to avoid using it for a specific project, you should use the `--backend=none` option when running usethis commands. In the future, it is planned that usethis will support additional backends for managing Python projects, for example Poetry.
 

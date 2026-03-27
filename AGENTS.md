@@ -59,8 +59,9 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 ## Module Structure
 
-```text
 <!-- sync:docs/module-tree.txt -->
+
+```text
 usethis                           # usethis: Automate Python project setup and development tasks that are otherwise performed manually.
 ├── __main__                      # The CLI application for usethis.
 ├── _config                       # Global configuration state for usethis.
@@ -247,8 +248,9 @@ usethis                           # usethis: Automate Python project setup and d
         ├── tool                  # CLI commands for individual tool management.
         ├── typecheck             # CLI commands for type checking tools.
         └── version               # CLI commands for displaying version information.
-<!-- /sync:docs/module-tree.txt -->
 ```
+
+<!-- /sync:docs/module-tree.txt -->
 
 ## Lessons
 

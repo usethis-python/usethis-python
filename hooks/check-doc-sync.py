@@ -19,6 +19,21 @@ from pathlib import Path
 _SYNC_START = re.compile(r"^<!--\s*sync:(\S+)\s*-->$")
 # Pattern matches <!-- /sync:some/path --> and captures the path.
 _SYNC_END = re.compile(r"^<!--\s*/sync:(\S+)\s*-->$")
+# Pattern matches a markdown fenced code block opening (e.g. ```text).
+_CODEBLOCK_FENCE = re.compile(r"^```\w*$")
+
+
+def _strip_codeblock(text: str) -> str:
+    """Strip a surrounding markdown fenced code block, if present."""
+    stripped = text.strip()
+    lines = stripped.splitlines()
+    if (
+        len(lines) >= 2
+        and _CODEBLOCK_FENCE.match(lines[0])
+        and lines[-1].strip() == "```"
+    ):
+        return "\n".join(lines[1:-1])
+    return stripped
 
 
 def _find_sync_blocks(text: str) -> list[tuple[str, str]]:
@@ -80,7 +95,7 @@ def main() -> int:
 
             expected = source.read_text(encoding="utf-8")
 
-            if actual_content.strip() != expected.strip():
+            if _strip_codeblock(actual_content) != expected.strip():
                 print(
                     f"ERROR: Content in {path} between sync:{source_path} markers "
                     f"is out of sync with {source}.",

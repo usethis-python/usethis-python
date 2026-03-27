@@ -265,7 +265,9 @@ def add_deps_to_group(
 
 
 def _register_default_group(
-    group: str, *, backend: Literal[BackendEnum.uv, BackendEnum.none]
+    group: str,
+    *,
+    backend: Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none],
 ) -> None:
     if backend is BackendEnum.uv:
         register_default_group(group)

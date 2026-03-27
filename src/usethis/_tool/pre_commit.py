@@ -80,9 +80,13 @@ class PreCommitConfig(BaseModel):
             hook_id: The hook identifier; also used as the hook display name.
             entry: The base command to run (without uv prefix).
         """
-        backend: Literal[BackendEnum.uv, BackendEnum.none] = get_backend()
+        backend: Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none] = (
+            get_backend()
+        )
         if backend is BackendEnum.uv:
             full_entry = f"uv run --frozen --offline {entry}"
+        elif backend is BackendEnum.poetry:
+            full_entry = f"poetry run {entry}"
         elif backend is BackendEnum.none:
             full_entry = entry
         else:

@@ -2,7 +2,19 @@ from pathlib import Path
 
 import pytest
 
-from usethis._core.badge import Badge, add_badge, is_badge, remove_badge
+from usethis._core.badge import (
+    Badge,
+    add_badge,
+    get_pre_commit_badge,
+    get_pypi_badge,
+    get_ruff_badge,
+    get_socket_badge,
+    get_ty_badge,
+    get_usethis_badge,
+    get_uv_badge,
+    is_badge,
+    remove_badge,
+)
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 
@@ -734,3 +746,31 @@ And some text
 
         # Assert
         assert path.read_text() == content
+
+
+class TestAllBadgesMarkdownValid:
+    """Test that adding all badges in sequence produces valid markdown.
+
+    The expected output is stored as a canonical .md file and validated by prek
+    (markdownlint + prettier), ensuring the generated markdown is always valid.
+    """
+
+    def test_all_badges(self, bare_dir: Path):
+        # Arrange
+        (bare_dir / "pyproject.toml").write_text('[project]\nname = "my-project"\n')
+
+        # Act
+        with change_cwd(bare_dir), PyprojectTOMLManager():
+            add_badge(get_pypi_badge())
+            add_badge(get_uv_badge())
+            add_badge(get_ruff_badge())
+            add_badge(get_ty_badge())
+            add_badge(get_pre_commit_badge())
+            add_badge(get_usethis_badge())
+            add_badge(get_socket_badge())
+
+        # Assert
+        expected = (
+            Path(__file__).parent / "assets" / "expected_all_badges.md"
+        ).read_text()
+        assert (bare_dir / "README.md").read_text() == expected

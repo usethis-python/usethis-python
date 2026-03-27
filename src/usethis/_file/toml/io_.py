@@ -326,7 +326,8 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
                 )
                 raise TOMLValueInvalidError(msg) from None
             assert isinstance(d, list)
-            p_parent[keys[-1]] = d + list(values)
+            for value in values:
+                d.append(value)
 
         self.commit(toml_document)
 
@@ -365,8 +366,9 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
             return
         assert isinstance(p, list)
 
-        new_values = [value for value in p if value not in values]
-        p_parent[keys[-1]] = new_values
+        for value in list(values):
+            while value in p:
+                p.remove(value)
 
         self.commit(toml_document)
 

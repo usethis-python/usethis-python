@@ -1,3 +1,5 @@
+"""Open project-related URLs in a browser."""
+
 from __future__ import annotations
 
 import typer

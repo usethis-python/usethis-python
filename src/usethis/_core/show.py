@@ -1,3 +1,5 @@
+"""Display project information."""
+
 from __future__ import annotations
 
 from usethis._backend.dispatch import get_backend

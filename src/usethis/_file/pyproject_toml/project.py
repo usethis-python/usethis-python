@@ -1,3 +1,5 @@
+"""Access the [project] section of pyproject.toml."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

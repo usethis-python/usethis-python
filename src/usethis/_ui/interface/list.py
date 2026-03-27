@@ -1,3 +1,5 @@
+"""CLI commands for showing out the full usage table."""
+
 from __future__ import annotations
 
 import typer

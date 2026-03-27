@@ -1,3 +1,5 @@
+"""Backend enumeration for package manager selection."""
+
 from enum import Enum
 
 

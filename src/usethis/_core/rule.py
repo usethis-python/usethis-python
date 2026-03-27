@@ -1,3 +1,5 @@
+"""Linter rule selection and configuration."""
+
 from pydantic import BaseModel
 
 from usethis._core.tool import use_deptry, use_ruff

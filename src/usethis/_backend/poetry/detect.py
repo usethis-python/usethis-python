@@ -1,3 +1,5 @@
+"""Detection of Poetry usage in a project."""
+
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 

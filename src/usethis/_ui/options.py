@@ -1,3 +1,5 @@
+"""Shared Typer option definitions."""
+
 import typer
 
 from usethis._config import (

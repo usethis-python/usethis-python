@@ -1,3 +1,5 @@
+"""pytest directory and configuration setup."""
+
 from __future__ import annotations
 
 import shutil

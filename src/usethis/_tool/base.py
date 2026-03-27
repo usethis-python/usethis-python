@@ -1,3 +1,5 @@
+"""Base classes for tool implementations."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, Protocol

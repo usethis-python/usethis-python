@@ -1,3 +1,5 @@
+"""CLI commands for git hook framework tools."""
+
 import typer
 
 from usethis._config import usethis_config

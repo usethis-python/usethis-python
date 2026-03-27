@@ -1,3 +1,5 @@
+"""CLI commands for development status configuration."""
+
 from __future__ import annotations
 
 import typer

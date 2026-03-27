@@ -1,3 +1,5 @@
+"""Dependency management operations for project dependency groups."""
+
 from __future__ import annotations
 
 import pydantic

@@ -1,3 +1,5 @@
+"""CLI commands for managing project authors."""
+
 from __future__ import annotations
 
 import typer

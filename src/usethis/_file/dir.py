@@ -1,3 +1,5 @@
+"""Project directory name utilities."""
+
 from usethis._config import usethis_config
 
 

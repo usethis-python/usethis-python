@@ -1,3 +1,5 @@
+"""CLI commands for documentation tools."""
+
 from __future__ import annotations
 
 import typer

@@ -1,3 +1,5 @@
+"""Git hook framework toolset."""
+
 from usethis._core.tool import use_pre_commit
 
 

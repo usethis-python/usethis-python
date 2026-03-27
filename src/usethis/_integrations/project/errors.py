@@ -1,3 +1,5 @@
+"""Error types for project integration operations."""
+
 from usethis.errors import UsethisError
 
 

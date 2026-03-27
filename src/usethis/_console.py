@@ -1,3 +1,5 @@
+"""Console output helpers for styled and structured printing."""
+
 from __future__ import annotations
 
 import codecs

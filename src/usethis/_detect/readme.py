@@ -1,3 +1,5 @@
+"""Detection of README file presence."""
+
 from usethis._integrations.readme.path import get_readme_path
 
 

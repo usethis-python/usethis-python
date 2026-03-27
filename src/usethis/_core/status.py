@@ -1,3 +1,5 @@
+"""Development status classifier management."""
+
 from __future__ import annotations
 
 from pydantic import TypeAdapter, ValidationError

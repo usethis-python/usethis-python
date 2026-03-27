@@ -1,3 +1,5 @@
+"""SonarQube project configuration management."""
+
 from __future__ import annotations
 
 import re

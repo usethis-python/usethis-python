@@ -1,3 +1,5 @@
+"""Docstring style enumeration."""
+
 from enum import Enum
 
 

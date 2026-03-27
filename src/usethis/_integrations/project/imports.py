@@ -1,3 +1,5 @@
+"""Import graph analysis for the project."""
+
 from __future__ import annotations
 
 import sys

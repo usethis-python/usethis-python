@@ -1,3 +1,5 @@
+"""CLI commands for showing project information."""
+
 import typer
 
 from usethis._config import usethis_config

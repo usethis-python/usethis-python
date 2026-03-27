@@ -1,3 +1,5 @@
+"""Type aliases for Pydantic model representations."""
+
 from typing import TypeAlias
 
 from pydantic import BaseModel

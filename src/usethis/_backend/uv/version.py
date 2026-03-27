@@ -1,3 +1,5 @@
+"""Retrieve the installed uv version."""
+
 import json
 
 from usethis._backend.uv.call import call_uv_subprocess

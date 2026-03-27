@@ -109,6 +109,13 @@ badges_opt = typer.Option(False, "--badges", help="Add relevant badges")
 # status command options
 status_arg = typer.Argument(default=..., help="Docstring style to enforce.")
 
+# show command options
+output_file_opt = typer.Option(
+    None,
+    "--output-file",
+    help="Write output to this file instead of stdout.",
+)
+
 # ruff command options
 linter_opt = typer.Option(
     True,

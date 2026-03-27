@@ -4,7 +4,7 @@ description: Add an external (community) skill to the project from a third-party
 compatibility: usethis, agent skills, npx, markdown
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Adding External Skills
@@ -14,10 +14,10 @@ External skills are sourced from third-party repositories rather than written lo
 ## Procedure
 
 1. Set the line-ending environment variables (see "Line endings and reproducible hashes" below).
-2. Install the skills using `npx skills add <source> --skill '*' --agent github-copilot --yes` (e.g. `npx skills add CodSpeedHQ/codspeed --skill '*' --agent github-copilot --yes`).
+2. Install the skill(s) — see "Installing the skill" below for the correct `--skill` flag.
 3. Note the skill name(s) added to `skills-lock.json`.
 4. Add each new skill to the external skills registry in `AGENTS.md`.
-5. Verify the hook passes: `python hooks/check-skills-documented.py`.
+5. Verify the hook passes: `uv run prek check-skills-documented`.
 
 ## Line endings and reproducible hashes
 
@@ -29,13 +29,19 @@ Due to a [bug in the skills CLI](https://github.com/vercel-labs/skills/issues/78
 
 ## Installing the skill
 
-To **add a new** external skill, run from the repository root (with the line-ending environment variables set as described above):
+To **add a specific skill** from a source, run from the repository root (with the line-ending environment variables set as described above):
+
+```commandline
+npx skills add <github-org>/<repo> --skill '<skill-name>' --agent github-copilot --yes
+```
+
+To **add all skills** from a source (only when you want every skill the source offers):
 
 ```commandline
 npx skills add <github-org>/<repo> --skill '*' --agent github-copilot --yes
 ```
 
-This adds the skill entry to `skills-lock.json`. Multiple skills may be added from a single source.
+**Warning:** `--skill '*'` installs _every_ skill from the source repository, which can be hundreds of unwanted skills. Always prefer `--skill '<skill-name>'` unless you genuinely want all of them.
 
 ## Documenting in AGENTS.md
 

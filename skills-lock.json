@@ -10,6 +10,11 @@
       "source": "CodSpeedHQ/codspeed",
       "sourceType": "github",
       "computedHash": "587a58bc7498635347ee7a7eba66ac17c75430db7543be4af7eaab74533a6714"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "d31e234f0c90694a670222cdd1dafa853e051d7066beda389f1097c22dadd461"
     }
   }
 }

@@ -175,8 +175,12 @@ class Tool(ToolSpec, Protocol):
     def remove_pre_commit_repo_configs(self) -> None:
         """Remove the tool's pre-commit configuration.
 
-        If the .pre-commit-config.yaml file does not exist, this method has no effect.
+        If pre-commit is disabled or if the .pre-commit-config.yaml file does not
+        exist, this method has no effect.
         """
+        if usethis_config.disable_pre_commit:
+            return
+
         repo_configs = self.get_pre_commit_repos()
 
         if not repo_configs:

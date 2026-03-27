@@ -19,7 +19,7 @@ from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.rule import RuleConfig
 
 if TYPE_CHECKING:
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
 
 
 class PytestToolSpec(ToolSpec):
@@ -45,7 +45,7 @@ class PytestToolSpec(ToolSpec):
 
     @override
     @final
-    def preferred_file_manager(self) -> KeyValueFileManager[object]:
+    def preferred_file_manager(self) -> KeyValueFileManager[Document]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return PytestINIManager()

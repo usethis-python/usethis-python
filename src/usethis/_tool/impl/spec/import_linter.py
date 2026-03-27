@@ -33,7 +33,7 @@ from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
     from usethis._tool.config import ResolutionT
 
 IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
@@ -65,7 +65,7 @@ class ImportLinterToolSpec(ToolSpec):
 
     @override
     @final
-    def preferred_file_manager(self) -> KeyValueFileManager[object]:
+    def preferred_file_manager(self) -> KeyValueFileManager[Document]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotImportLinterManager()
@@ -304,7 +304,7 @@ class ImportLinterToolSpec(ToolSpec):
     @final
     def _get_file_manager_by_relative_path(
         self,
-    ) -> dict[Path, KeyValueFileManager[object]]:
+    ) -> dict[Path, KeyValueFileManager[Document]]:
         return {
             Path("setup.cfg"): SetupCFGManager(),
             Path(".importlinter"): DotImportLinterManager(),

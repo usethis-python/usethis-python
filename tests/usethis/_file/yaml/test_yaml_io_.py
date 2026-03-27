@@ -1518,7 +1518,9 @@ repos:
         ):
             pass
 
-    def test_incorrect_indentation(self, tmp_path: Path, capfd: pytest.CaptureFixture):
+    def test_incorrect_indentation(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
         # Arrange
         (tmp_path / "x.yml").write_text("""\
 - path: / 

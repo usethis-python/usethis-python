@@ -31,7 +31,7 @@ from usethis._types.backend import BackendEnum
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
     from usethis._tool.rule import RuleConfig
 
 
@@ -300,7 +300,9 @@ class RuffTool(RuffToolSpec, Tool):
         return [d for d in rule if d.isalpha()] == ["D"]
 
     @override
-    def _get_select_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
+    def _get_select_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         """Get the keys for the selected rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "select"]
@@ -310,7 +312,9 @@ class RuffTool(RuffToolSpec, Tool):
             return super()._get_select_keys(file_manager)
 
     @override
-    def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
+    def _get_ignore_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "ignore"]
@@ -320,7 +324,7 @@ class RuffTool(RuffToolSpec, Tool):
             return super()._get_ignore_keys(file_manager)
 
     def _get_per_file_ignore_keys(
-        self, file_manager: KeyValueFileManager[object], *, glob: str
+        self, file_manager: KeyValueFileManager[Document], *, glob: str
     ) -> list[str]:
         """Get the keys for the per-file ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
@@ -335,7 +339,7 @@ class RuffTool(RuffToolSpec, Tool):
             raise NotImplementedError(msg)
 
     def _get_docstyle_keys(
-        self, file_manager: KeyValueFileManager[object]
+        self, file_manager: KeyValueFileManager[Document]
     ) -> list[str]:
         """Get the keys for the docstyle rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):

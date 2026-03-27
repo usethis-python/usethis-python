@@ -29,7 +29,11 @@ from usethis._core.tool import (
     use_ty,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
-from usethis._fallback import FALLBACK_RUFF_VERSION, FALLBACK_SYNC_WITH_UV_VERSION
+from usethis._fallback import (
+    FALLBACK_RUFF_VERSION,
+    FALLBACK_SYNC_WITH_UV_VERSION,
+    FALLBACK_UV_VERSION,
+)
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
@@ -2966,21 +2970,18 @@ repos:
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
-  - repo: local
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: {FALLBACK_UV_VERSION}
     hooks:
       - id: uv-export
-        name: uv-export
-        files: ^uv\\.lock$
-        entry: uv export --frozen --offline --quiet -o=requirements.txt
-        language: system
-        pass_filenames: false
-        require_serial: true
 """
             )
             out, err = capfd.readouterr()
             assert not err
             assert out == (
                 "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding requirements.txt config to 'pyproject.toml'.\n"
+                "✔ Adding dependency 'uv' to the 'uv' group in 'pyproject.toml'.\n"
                 "✔ Writing 'requirements.txt'.\n"
                 "☐ Run 'uv run pre-commit run -a uv-export' to write 'requirements.txt'.\n"
             )

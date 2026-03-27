@@ -11,6 +11,7 @@ from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.lockfile import ensure_uv_lock
 from usethis._config import usethis_config
 from usethis._console import info_print, instruct_print, tick_print
+from usethis._deps import add_deps_to_group, remove_deps_from_group
 from usethis._file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._init import ensure_dep_declaration_file, write_simple_requirements_txt
 from usethis._integrations.mkdocs.core import add_docs_dir
@@ -37,6 +38,7 @@ from usethis._tool.impl.base.ruff import RuffTool
 from usethis._tool.impl.base.ty import TyTool
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._tool.all_ import SupportedToolType
@@ -317,7 +319,13 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         backend = get_backend()
 
         if PreCommitTool().is_used():
+            ensure_dep_declaration_file()
             tool.add_pre_commit_config()
+            tool.add_configs()
+            if backend is BackendEnum.uv:
+                add_deps_to_group(
+                    [Dependency(name="uv")], "uv", default=False
+                )
 
         if path.exists():
             # requirements file already exists - short circuit; only need to explain how
@@ -356,6 +364,8 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
     else:
         tool.remove_pre_commit_repo_configs()
+        tool.remove_configs()
+        remove_deps_from_group([Dependency(name="uv")], "uv")
         tool.remove_managed_files()
 
 

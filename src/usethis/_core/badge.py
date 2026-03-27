@@ -76,6 +76,12 @@ def get_uv_badge() -> Badge:
     )
 
 
+def get_bitbucket_badge() -> Badge:
+    return Badge(
+        markdown="[![Bitbucket](https://img.shields.io/badge/Bitbucket-0747a6?logo=bitbucket&logoColor=white)](https://bitbucket.org)"
+    )
+
+
 def get_usethis_badge() -> Badge:
     return Badge(
         markdown="[![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/usethis-python/usethis-python/main/assets/badge/v1.json)](https://github.com/usethis-python/usethis-python)"
@@ -94,6 +100,7 @@ def get_badge_order() -> list[Badge]:
         get_ty_badge(),
         get_pre_commit_badge(),
         get_usethis_badge(),
+        get_bitbucket_badge(),
         get_socket_badge(),
     ]
 

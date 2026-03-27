@@ -319,6 +319,7 @@ Add badges to the README file.
 
 Currently supported badges:
 
+- `usethis badge bitbucket` - [![Bitbucket](https://img.shields.io/badge/Bitbucket-0747a6?logo=bitbucket&logoColor=white)](https://bitbucket.org)
 - `usethis badge pre-commit` - [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 - `usethis badge pypi` - [![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
 - `usethis badge ruff` - [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)

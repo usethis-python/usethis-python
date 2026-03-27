@@ -55,7 +55,7 @@ class TestFromSystemHook:
         assert repo.hooks is not None
         assert repo.hooks[0].id == "test-hook"
 
-    def test_name_defaults_to_hook_id(self, tmp_path: Path):
+    def test_name_equals_hook_id(self, tmp_path: Path):
         with change_cwd(tmp_path), files_manager():
             config = PreCommitConfig.from_system_hook(
                 hook_id="test-hook",
@@ -67,19 +67,6 @@ class TestFromSystemHook:
         assert repo.hooks is not None
         assert repo.hooks[0].name == "test-hook"
 
-    def test_custom_name(self, tmp_path: Path):
-        with change_cwd(tmp_path), files_manager():
-            config = PreCommitConfig.from_system_hook(
-                hook_id="test-hook",
-                entry="test-cmd",
-                name="Custom Name",
-            )
-
-        repo = config.repo_configs[0].repo
-        assert isinstance(repo, schema.LocalRepo)
-        assert repo.hooks is not None
-        assert repo.hooks[0].name == "Custom Name"
-
     def test_requires_venv_is_true(self, tmp_path: Path):
         with change_cwd(tmp_path), files_manager():
             config = PreCommitConfig.from_system_hook(
@@ -89,7 +76,7 @@ class TestFromSystemHook:
 
         assert config.repo_configs[0].requires_venv is True
 
-    def test_inform_how_to_use_on_migrate_defaults_false(self, tmp_path: Path):
+    def test_inform_how_to_use_on_migrate_is_false(self, tmp_path: Path):
         with change_cwd(tmp_path), files_manager():
             config = PreCommitConfig.from_system_hook(
                 hook_id="test-hook",
@@ -97,16 +84,6 @@ class TestFromSystemHook:
             )
 
         assert config.inform_how_to_use_on_migrate is False
-
-    def test_inform_how_to_use_on_migrate_override(self, tmp_path: Path):
-        with change_cwd(tmp_path), files_manager():
-            config = PreCommitConfig.from_system_hook(
-                hook_id="test-hook",
-                entry="test-cmd",
-                inform_how_to_use_on_migrate=True,
-            )
-
-        assert config.inform_how_to_use_on_migrate is True
 
     def test_pass_filenames(self, tmp_path: Path):
         with change_cwd(tmp_path), files_manager():

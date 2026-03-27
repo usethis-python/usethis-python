@@ -70,11 +70,9 @@ class PreCommitConfig(BaseModel):
         *,
         hook_id: str,
         entry: str,
-        name: str | None = None,
         pass_filenames: bool | None = None,
         always_run: bool | None = None,
         require_serial: bool | None = None,
-        inform_how_to_use_on_migrate: bool = False,
     ) -> Self:
         """Create a PreCommitConfig for a local system hook.
 
@@ -82,13 +80,11 @@ class PreCommitConfig(BaseModel):
         prefixed with ``uv run --frozen --offline``.
 
         Args:
-            hook_id: The hook identifier.
+            hook_id: The hook identifier; also used as the hook display name.
             entry: The base command to run (without uv prefix).
-            name: The hook display name. Defaults to *hook_id*.
             pass_filenames: Whether to pass filenames to the hook.
             always_run: Whether to always run the hook.
             require_serial: Whether to require serial execution.
-            inform_how_to_use_on_migrate: Whether to inform on migrate.
         """
         backend: Literal[BackendEnum.uv, BackendEnum.none] = get_backend()
         if backend is BackendEnum.uv:
@@ -104,7 +100,7 @@ class PreCommitConfig(BaseModel):
                 hooks=[
                     schema.HookDefinition(
                         id=hook_id,
-                        name=name if name is not None else hook_id,
+                        name=hook_id,
                         entry=full_entry,
                         language=get_system_language(),
                         pass_filenames=pass_filenames,
@@ -114,7 +110,7 @@ class PreCommitConfig(BaseModel):
                 ],
             ),
             requires_venv=True,
-            inform_how_to_use_on_migrate=inform_how_to_use_on_migrate,
+            inform_how_to_use_on_migrate=False,
         )
 
     @property

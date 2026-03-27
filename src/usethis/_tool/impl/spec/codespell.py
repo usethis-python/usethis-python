@@ -25,7 +25,7 @@ from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
 
 
 class CodespellToolSpec(ToolSpec):
@@ -41,7 +41,7 @@ class CodespellToolSpec(ToolSpec):
 
     @override
     @final
-    def preferred_file_manager(self) -> KeyValueFileManager[object]:
+    def preferred_file_manager(self) -> KeyValueFileManager[Document]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotCodespellRCManager()

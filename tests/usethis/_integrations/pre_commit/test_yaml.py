@@ -44,7 +44,7 @@ repos:
             mgr = PreCommitConfigYAMLManager()
             doc = mgr.get()
             mgr.model_validate()
-            content = cast("dict", doc.content)
+            content = cast("dict[str, list[dict[str, str]]]", doc.content)
             content["repos"] = []
             mgr.commit(doc)
 
@@ -129,7 +129,7 @@ extra:
         ):
             doc = mgr.get()
             mgr.model_validate()
-            content = cast("dict", doc.content)
+            content = cast("dict[str, list[str]]", doc.content)
             content["repos"] = ["something"]
 
 

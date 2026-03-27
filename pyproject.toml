@@ -212,7 +212,6 @@ ignore = [ "src/usethis/_version.py" ]
 reportAny = false
 reportExplicitAny = false
 reportImplicitStringConcatenation = false
-reportMissingTypeArgument = false
 reportUnknownArgumentType = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
@@ -232,6 +231,7 @@ reportUnusedParameter = false
 [[tool.basedpyright.executionEnvironments]]
 # Particularly interested in avoiding the auto-generated schema script
 root = "src/usethis/_integrations/pre_commit"
+reportMissingTypeArgument = false
 reportUnannotatedClassAttribute = false
 
 [tool.sync-with-uv.repo-to-package]

@@ -47,7 +47,19 @@ if TYPE_CHECKING:
     from usethis._file.yaml.typing_ import YAMLLiteral
 
 
-class YAMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
+@dataclass
+class YAMLDocument:
+    """A dataclass to represent a YAML document in memory.
+
+    Attributes:
+        content: The content of the YAML document as a ruamel.yaml object.
+    """
+
+    content: YAMLLiteral
+    roundtripper: ruamel.yaml.YAML
+
+
+class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
     """An abstract class for managing YAML files."""
 
     _content_by_path: ClassVar[dict[Path, YAMLDocument | None]] = {}
@@ -429,18 +441,6 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
             assert_never(key)
 
     return so_far_keys
-
-
-@dataclass
-class YAMLDocument:
-    """A dataclass to represent a YAML document in memory.
-
-    Attributes:
-        content: The content of the YAML document as a ruamel.yaml object.
-    """
-
-    content: YAMLLiteral
-    roundtripper: ruamel.yaml.YAML
 
 
 @contextmanager

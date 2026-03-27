@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Literal, TypeAlias
 from pydantic import BaseModel, InstanceOf
 
 from usethis._config import usethis_config
-from usethis._file.manager import KeyValueFileManager
+from usethis._file.manager import Document, KeyValueFileManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.types_ import Key
 from usethis._init import ensure_pyproject_toml
@@ -43,14 +43,14 @@ class ConfigSpec(BaseModel):
         config_items: A list of configuration items that can be managed by the tool.
     """
 
-    file_manager_by_relative_path: dict[Path, InstanceOf[KeyValueFileManager]]
+    file_manager_by_relative_path: dict[Path, InstanceOf[KeyValueFileManager[Document]]]
     resolution: ResolutionT
     config_items: list[ConfigItem]
 
     @classmethod
     def from_flat(
         cls,
-        file_managers: list[KeyValueFileManager[object]],
+        file_managers: list[KeyValueFileManager[Document]],
         resolution: ResolutionT,
         config_items: list[ConfigItem],
     ) -> Self:
@@ -149,7 +149,7 @@ class ConfigItem(BaseModel):
         return {(usethis_config.cpd() / path).resolve() for path in self.root}
 
 
-def ensure_managed_file_exists(file_manager: FileManager[object]) -> None:
+def ensure_managed_file_exists(file_manager: FileManager[Document]) -> None:
     """Ensure a file manager's managed file exists."""
     if isinstance(file_manager, PyprojectTOMLManager):
         ensure_pyproject_toml()

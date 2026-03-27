@@ -8,7 +8,7 @@ from typing_extensions import override
 from usethis._config_file import files_manager
 from usethis._console import how_print
 from usethis._deps import add_deps_to_group
-from usethis._file.manager import KeyValueFileManager
+from usethis._file.manager import Document, KeyValueFileManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit import schema
@@ -131,14 +131,16 @@ class MockToolForRuleTests(Tool):
         self,
         *,
         name: str = "mocktool",
-        file_manager: KeyValueFileManager | None = None,
+        file_manager: KeyValueFileManager[Document] | None = None,
         ignored_rules: list[Rule] | None = None,
         selected_rules: list[Rule] | None = None,
         ignore_keys: list[str] | None = None,
         select_keys: list[str] | None = None,
     ):
         self._name = name
-        self._file_manager = file_manager or MagicMock()
+        self._file_manager = file_manager or MagicMock(
+            spec=KeyValueFileManager[Document]
+        )
         self._ignored_rules = ignored_rules or []
         self._selected_rules = selected_rules or []
         self._ignore_keys = ignore_keys or ["tool", "mocktool", "ignore"]
@@ -150,15 +152,19 @@ class MockToolForRuleTests(Tool):
         return ToolMeta(name=self._name)
 
     @override
-    def get_active_config_file_managers(self) -> set[KeyValueFileManager]:
+    def get_active_config_file_managers(self) -> set[KeyValueFileManager[Document]]:
         return {self._file_manager}
 
     @override
-    def _get_ignore_keys(self, file_manager: KeyValueFileManager) -> list[str]:
+    def _get_ignore_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         return self._ignore_keys
 
     @override
-    def _get_select_keys(self, file_manager: KeyValueFileManager) -> list[str]:
+    def _get_select_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         return self._select_keys
 
     @override
@@ -447,7 +453,7 @@ class TestTool:
                     )
 
                 @override
-                def preferred_file_manager(self) -> KeyValueFileManager:
+                def preferred_file_manager(self) -> KeyValueFileManager[Document]:
                     return SetupCFGManager()
 
             tool = ThisTool()
@@ -1122,7 +1128,7 @@ root_packages = ["example"]
                     )
 
                 @override
-                def preferred_file_manager(self) -> KeyValueFileManager:
+                def preferred_file_manager(self) -> KeyValueFileManager[Document]:
                     return SetupCFGManager()
 
             (tmp_path / "setup.cfg").touch()
@@ -1166,7 +1172,7 @@ root_packages = ["example"]
                     )
 
                 @override
-                def preferred_file_manager(self) -> KeyValueFileManager:
+                def preferred_file_manager(self) -> KeyValueFileManager[Document]:
                     return SetupCFGManager()
 
             (tmp_path / "setup.cfg").write_text("""\
@@ -1538,7 +1544,7 @@ key3 = value3
             class MyMock(MockToolForRuleTests):
                 @override
                 def _get_select_keys(
-                    self, file_manager: KeyValueFileManager
+                    self, file_manager: KeyValueFileManager[Document]
                 ) -> list[str]:
                     return super(MockToolForRuleTests, self)._get_select_keys(
                         file_manager

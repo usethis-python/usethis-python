@@ -4,7 +4,7 @@ description: Modify the usethis CLI layer (commands, options, help text) and kee
 compatibility: usethis, Python, typer, markdown
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Modifying the CLI
@@ -33,6 +33,20 @@ After making CLI changes, review and update each of the following as needed:
 ### Command reference
 
 The command reference page documents every command with its full description, supported options, and behavior. Update it to match any changes you made to commands, options, defaults, or descriptions.
+
+Keep descriptions **factual and concise**. The reference is not the place for extended rationale, usage tips, or explanations of why an option exists. If important context is needed, put it in a separate documentation page and link to it from the reference.
+
+Good — factual, concise:
+
+```markdown
+- `--output-file` to write the output to a file instead of stdout.
+```
+
+Bad — excessive rationale embedded in the reference:
+
+```markdown
+- `--output-file` to write the output to a file instead of stdout. This is useful to avoid issues when shell redirects (e.g. `> file.txt`) create the file before the command runs, which can influence the behaviour of `usethis show`.
+```
 
 ### Command overview
 

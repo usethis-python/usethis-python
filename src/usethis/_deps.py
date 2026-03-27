@@ -248,12 +248,8 @@ def add_deps_to_group(
         else:
             assert_never(backend)
 
-    # Register the group - don't do this before adding the deps in case that step fails
-    if default:
-        if backend is BackendEnum.uv:
-            register_default_group(group)
-        elif backend is BackendEnum.none:
-            # This is not really a meaningful concept without a package manager
-            pass
-        else:
-            assert_never(backend)
+    # Register the group - don't do this before adding the deps in case that step fails.
+    # Only uv backend supports default group registration; other backends (e.g. none)
+    # don't have this concept, so they are handled by the earlier assert_never checks.
+    if default and backend is BackendEnum.uv:
+        register_default_group(group)

@@ -319,13 +319,12 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         backend = get_backend()
 
         if PreCommitTool().is_used():
+            # pyproject.toml is needed for config items and dependency groups
             ensure_dep_declaration_file()
             tool.add_pre_commit_config()
             tool.add_configs()
             if backend is BackendEnum.uv:
-                add_deps_to_group(
-                    [Dependency(name="uv")], "uv", default=False
-                )
+                add_deps_to_group([Dependency(name="uv")], "uv", default=False)
 
         if path.exists():
             # requirements file already exists - short circuit; only need to explain how

@@ -475,6 +475,10 @@ Additional configuration in `pyproject.toml`:
 - `tool.usethis.sonarqube.exclusions` (list of strings, default `[]`) — sets `sonar.exclusions`.
 - `tool.coverage.xml.output` (string, required) — sets `sonar.python.coverage.reportPaths`.
 
+Supported options:
+
+- `--output-file` to write the output to a file instead of stdout.
+
 ## `usethis browse pypi <package>`
 
 Display or open the PyPI landing page associated with another project.

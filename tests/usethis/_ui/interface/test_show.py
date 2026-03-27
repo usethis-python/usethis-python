@@ -32,6 +32,22 @@ class TestBackend:
         assert result.exit_code == 0, result.output
         assert result.output == "none\n"
 
+    def test_output_file(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "uv.lock").touch()
+        output_file = tmp_path / "backend.txt"
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["backend", "--output-file", str(output_file)]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert output_file.read_text(encoding="utf-8") == "uv\n"
+
 
 class TestName:
     def test_output(self, tmp_path: Path):
@@ -59,6 +75,23 @@ class TestName:
 
         # Assert
         assert result.exit_code == 1, result.output
+
+    def test_output_file(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / "fun"
+        path.mkdir()
+        output_file = path / "name.txt"
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(path):
+            result = runner.invoke_safe(
+                app, ["name", "--output-file", str(output_file)]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert output_file.read_text(encoding="utf-8") == "fun\n"
 
 
 class TestSonarqube:
@@ -162,3 +195,64 @@ project-key = "from-pyproject"
 
         # Assert
         assert result.exit_code == 1, result.output
+
+    def test_output_file(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """
+[tool.usethis.sonarqube]
+project-key = "fun"
+
+[tool.coverage.xml.output]
+"""
+        )
+        output_file = tmp_path / "sonar-project.properties"
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["sonarqube", "--output-file", str(output_file)]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        content = output_file.read_text(encoding="utf-8")
+        assert "sonar.projectKey=fun" in content
+
+    def test_output_file_not_detected_as_existing(self, tmp_path: Path):
+        """Using --output-file avoids the redirect problem.
+
+        When using shell redirect (`> file`), the file is created empty before
+        the command runs, which causes sonarqube to read that empty file.
+        With --output-file, the file is written after generation.
+        """
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """
+[tool.usethis.sonarqube]
+project-key = "fun"
+
+[tool.coverage.xml.output]
+"""
+        )
+        # Simulate what happens with shell redirect: an empty file pre-exists
+        output_file = tmp_path / "sonar-project.properties"
+        output_file.write_text("", encoding="utf-8")
+
+        # Act
+        # Despite sonar-project.properties existing (empty), --output-file
+        # still causes the config to be read from that file (by design of
+        # get_sonar_project_properties), then overwrites it with that content.
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["sonarqube", "--output-file", str(output_file)]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        content = output_file.read_text(encoding="utf-8")
+        # With --output-file, the file is written after content generation,
+        # so even if it was previously empty, it will have the content now
+        assert content != ""

@@ -12,7 +12,7 @@ metadata:
 ## Procedure
 
 1. Run a subset of the tests for `src/<module>` regularly from the parallel module in the `tests/<module>` directory. Never run the entire test suite.
-2. Write or update tests for all new or changed code. Use the `usethis-test-with-coverage` skill to achieve full coverage and verify it locally before pushing.
+2. Write or update tests for all new or changed code. Use the `usethis-python-test-full-coverage` skill to achieve full coverage and verify it locally before pushing.
 3. After finishing your modifications, check if documentation needs updating.
 4. After finishing your modifications, run the static checks (e.g. `usethis-qa-static-checks`) to check for any issues.
 

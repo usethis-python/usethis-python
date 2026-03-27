@@ -229,7 +229,7 @@ The `.agents/skills` directory contains agent skills.
 | `usethis-skills-external-add`         | Add an external (community) skill and document it in AGENTS.md                                                          |
 | `usethis-skills-external-install`     | Install/reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)                      |
 | `usethis-skills-modify`               | Modify agent skills (SKILL.md files)                                                                                    |
-| `usethis-test-with-coverage`          | Write tests that achieve full code coverage and verify coverage locally before pushing                                  |
+| `usethis-python-test-full-coverage`   | Write tests that achieve full code coverage and verify coverage locally before pushing                                  |
 
 #### External skills
 
@@ -245,7 +245,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 - ALWAYS use possibly relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
 - ALWAYS use `find-skills` to research new skill capabilities if there are difficult tasks, tasks in an unfamiliar domain, if you believe there is a lack of clarity or direction around precisely how to proceed, or if you get stuck or find something surprisingly challenging. When using this skill, please be sure to use the `usethis-skills-external-install` skill when deciding to install a new external skill.
-- ALWAYS consider the `usethis-test-with-coverage` to be relevant: if your task involves
+- ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves
   writing or modifying code, always use this skill to write tests and verify full coverage
   before finishing. Aim for 100% coverage on new or changed code.
 - ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task

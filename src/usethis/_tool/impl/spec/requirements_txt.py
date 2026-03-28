@@ -81,7 +81,7 @@ class RequirementsTxtToolSpec(ToolSpec):
                     ),
                 ],
             )
-        elif backend is BackendEnum.none:
+        elif backend in (BackendEnum.poetry, BackendEnum.none):
             return ConfigSpec.empty()
         else:
             assert_never(backend)

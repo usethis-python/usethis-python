@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import pydantic
-from packaging.requirements import Requirement
-from pydantic import TypeAdapter
+from typing import TYPE_CHECKING
+
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
@@ -17,10 +16,19 @@ from usethis._backend.uv.deps import (
 from usethis._backend.uv.errors import UVDepGroupError
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
+from usethis._file.pyproject_toml.deps import (
+    get_dep_groups as _get_dep_groups,
+)
+from usethis._file.pyproject_toml.deps import (
+    get_project_deps as _get_project_deps,
+)
+from usethis._file.pyproject_toml.errors import PyprojectTOMLDepsError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._types.backend import BackendEnum
-from usethis._types.deps import Dependency
 from usethis.errors import DepGroupError
+
+if TYPE_CHECKING:
+    from usethis._types.deps import Dependency
 
 
 def get_project_deps() -> list[Dependency]:
@@ -33,71 +41,16 @@ def get_project_deps() -> list[Dependency]:
     of the `pyproject.toml` file.
     """
     try:
-        pyproject = PyprojectTOMLManager().get()
-    except FileNotFoundError:
-        return []
-
-    try:
-        project_section = pyproject["project"]
-    except KeyError:
-        return []
-
-    if not isinstance(project_section, dict):
-        return []
-
-    try:
-        dep_section = project_section["dependencies"]
-    except KeyError:
-        return []
-
-    try:
-        req_strs = TypeAdapter(list[str]).validate_python(dep_section)
-    except pydantic.ValidationError as err:
-        msg = (
-            "Failed to parse the 'project.dependencies' section in 'pyproject.toml':\n"
-            f"{err}\n\n"
-            "Please check the section and try again."
-        )
-        raise UVDepGroupError(msg) from None
-
-    reqs = [Requirement(req_str) for req_str in req_strs]
-    deps = [Dependency(name=req.name, extras=frozenset(req.extras)) for req in reqs]
-    return deps
+        return _get_project_deps()
+    except PyprojectTOMLDepsError as err:
+        raise UVDepGroupError(str(err)) from None
 
 
 def get_dep_groups() -> dict[str, list[Dependency]]:
     try:
-        pyproject = PyprojectTOMLManager().get()
-    except FileNotFoundError:
-        return {}
-
-    try:
-        dep_groups_section = pyproject["dependency-groups"]
-    except KeyError:
-        # In the past might have been in [tool.uv.dev-dependencies] section when using
-        # uv but this will be deprecated, so we don't support it in usethis.
-        return {}
-
-    try:
-        req_strs_by_group = TypeAdapter(dict[str, list[str]]).validate_python(
-            dep_groups_section
-        )
-    except pydantic.ValidationError as err:
-        msg = (
-            "Failed to parse the 'dependency-groups' section in 'pyproject.toml':\n"
-            f"{err}\n\n"
-            "Please check the section and try again."
-        )
-        raise DepGroupError(msg) from None
-    reqs_by_group = {
-        group: [Requirement(req_str) for req_str in req_strs]
-        for group, req_strs in req_strs_by_group.items()
-    }
-    deps_by_group = {
-        group: [Dependency(name=req.name, extras=frozenset(req.extras)) for req in reqs]
-        for group, reqs in reqs_by_group.items()
-    }
-    return deps_by_group
+        return _get_dep_groups()
+    except PyprojectTOMLDepsError as err:
+        raise DepGroupError(str(err)) from None
 
 
 def get_deps_from_group(group: str) -> list[Dependency]:

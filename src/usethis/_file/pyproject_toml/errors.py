@@ -70,3 +70,7 @@ class PyprojectTOMLValueAlreadySetError(PyprojectTOMLError, TOMLValueAlreadySetE
 
 class PyprojectTOMLValueMissingError(PyprojectTOMLError, TOMLValueMissingError):
     """Raised when a value is unexpectedly missing from the 'pyproject.toml' file."""
+
+
+class PyprojectTOMLDepsError(PyprojectTOMLError):
+    """Raised when dependency sections in 'pyproject.toml' cannot be parsed."""

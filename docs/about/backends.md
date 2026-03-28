@@ -28,11 +28,11 @@ By default, usethis auto-detects the appropriate backend using the following log
 You can override this auto-detection by passing the `--backend` option to any usethis command:
 
 ```console
-$ uvx usethis tool ruff --backend=none
+uvx usethis tool ruff --backend=none
 ```
 
 To check which backend usethis would use for your project, run:
 
 ```console
-$ uvx usethis show backend
+uvx usethis show backend
 ```

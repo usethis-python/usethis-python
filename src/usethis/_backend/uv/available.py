@@ -1,8 +1,11 @@
 """Check whether the uv CLI is available."""
 
+from packaging.requirements import InvalidRequirement
+
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._file.pyproject_toml.deps import get_dep_groups, get_project_deps
+from usethis._file.pyproject_toml.errors import PyprojectTOMLError
 from usethis._types.deps import Dependency
 
 
@@ -22,12 +25,12 @@ def _is_uv_a_dep() -> bool:
 
     try:
         project_deps = get_project_deps()
-    except Exception:
+    except (PyprojectTOMLError, InvalidRequirement):
         project_deps = []
 
     try:
         dep_groups = get_dep_groups()
-    except Exception:
+    except (PyprojectTOMLError, InvalidRequirement):
         dep_groups = {}
 
     all_group_deps = [dep for group in dep_groups.values() for dep in group]

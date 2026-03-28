@@ -663,6 +663,35 @@ lint.pydocstyle.convention = "pep257"
                 ):
                     manager.extend_list(keys=["key"], values=["new_value"])
 
+        def test_preserves_comments(self, tmp_path: Path) -> None:
+            # https://github.com/usethis-python/usethis-python/issues/884
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text(
+                """\
+key = [
+  "A",  # Comment for A.
+  "B",  # Comment for B.
+]
+"""
+            )
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(keys=["key"], values=["C"])
+
+            # Assert
+            contents = (tmp_path / "myfile.toml").read_text()
+            assert "# Comment for A." in contents
+            assert "# Comment for B." in contents
+
     class TestRemoveFromList:
         def test_inplace_modifications(self, tmp_path: Path) -> None:
             # Arrange
@@ -777,3 +806,33 @@ lint.pydocstyle.convention = "pep257"
 
                 # Assert
                 assert manager._content == {"key": "value"}
+
+        def test_preserves_comments(self, tmp_path: Path) -> None:
+            # https://github.com/usethis-python/usethis-python/issues/884
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("myfile.toml")
+
+            (tmp_path / "myfile.toml").write_text(
+                """\
+key = [
+  "A",  # Comment for A.
+  "B",  # Comment for B.
+  "C",  # Comment for C.
+]
+"""
+            )
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.remove_from_list(keys=["key"], values=["B"])
+
+            # Assert
+            contents = (tmp_path / "myfile.toml").read_text()
+            assert "# Comment for A." in contents
+            assert "# Comment for C." in contents

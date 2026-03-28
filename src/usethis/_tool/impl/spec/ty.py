@@ -5,20 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
-from usethis._backend.dispatch import get_backend
 from usethis._config import usethis_config
 from usethis._config_file import DotTyTOMLManager, TyTOMLManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit import schema as pre_commit_schema
-from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._integrations.project.packages import get_importable_packages
 from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
-from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
@@ -56,46 +52,10 @@ class TyToolSpec(ToolSpec):
     @override
     @final
     def pre_commit_config(self) -> PreCommitConfig:
-        backend = get_backend()
-
-        if backend is BackendEnum.uv:
-            return PreCommitConfig.from_single_repo(
-                pre_commit_schema.LocalRepo(
-                    repo="local",
-                    hooks=[
-                        pre_commit_schema.HookDefinition(
-                            id="ty",
-                            name="ty",
-                            entry="uv run --frozen --offline ty check",
-                            language=get_system_language(),
-                            always_run=True,
-                            pass_filenames=False,
-                        )
-                    ],
-                ),
-                requires_venv=True,
-                inform_how_to_use_on_migrate=False,
-            )
-        elif backend is BackendEnum.none:
-            return PreCommitConfig.from_single_repo(
-                pre_commit_schema.LocalRepo(
-                    repo="local",
-                    hooks=[
-                        pre_commit_schema.HookDefinition(
-                            id="ty",
-                            name="ty",
-                            entry="ty check",
-                            language=get_system_language(),
-                            always_run=True,
-                            pass_filenames=False,
-                        )
-                    ],
-                ),
-                requires_venv=True,
-                inform_how_to_use_on_migrate=False,
-            )
-        else:
-            assert_never(backend)
+        return PreCommitConfig.from_system_hook(
+            hook_id="ty",
+            entry="ty check",
+        )
 
     @override
     @final

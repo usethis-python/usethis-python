@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel
+from typing_extensions import assert_never
 
+from usethis._backend.dispatch import get_backend
 from usethis._integrations.pre_commit import schema
+from usethis._integrations.pre_commit.language import get_system_language
+from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -58,6 +62,48 @@ class PreCommitConfig(BaseModel):
                 )
             ],
             inform_how_to_use_on_migrate=inform_how_to_use_on_migrate,
+        )
+
+    @classmethod
+    def from_system_hook(
+        cls,
+        *,
+        hook_id: str,
+        entry: str,
+    ) -> Self:
+        """Create a PreCommitConfig for a local system hook.
+
+        Handles backend dispatch internally: for the uv backend, the entry is
+        prefixed with ``uv run --frozen --offline``.
+
+        Args:
+            hook_id: The hook identifier; also used as the hook display name.
+            entry: The base command to run (without uv prefix).
+        """
+        backend: Literal[BackendEnum.uv, BackendEnum.none] = get_backend()
+        if backend is BackendEnum.uv:
+            full_entry = f"uv run --frozen --offline {entry}"
+        elif backend is BackendEnum.none:
+            full_entry = entry
+        else:
+            assert_never(backend)
+
+        return cls.from_single_repo(
+            schema.LocalRepo(
+                repo="local",
+                hooks=[
+                    schema.HookDefinition(
+                        id=hook_id,
+                        name=hook_id,
+                        entry=full_entry,
+                        language=get_system_language(),
+                        pass_filenames=False,
+                        always_run=True,
+                    )
+                ],
+            ),
+            requires_venv=True,
+            inform_how_to_use_on_migrate=False,
         )
 
     @property

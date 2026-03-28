@@ -12,11 +12,13 @@ from usethis._integrations.pre_commit.init import (
 )
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
-from usethis._pipeweld.containers import DepGroup, Parallel, Series, series
+from usethis._pipeweld.containers import Parallel, Series, series
 from usethis._pipeweld.func import Adder
 
 if TYPE_CHECKING:
     from collections.abc import Collection
+
+    from usethis._pipeweld.containers import DepGroup
 
 _HOOK_ORDER = [
     "sync-with-uv",

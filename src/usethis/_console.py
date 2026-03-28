@@ -47,6 +47,7 @@ def table_print(table: Table) -> None:
 
 
 def tick_print(msg: str | Exception) -> None:
+    """Print a ✔ success/completion message (green)."""
     msg = str(msg)
 
     if not (
@@ -59,6 +60,7 @@ def tick_print(msg: str | Exception) -> None:
 
 
 def instruct_print(msg: str | Exception) -> None:
+    """Print a ☐ instruction the user must perform manually (red)."""
     msg = str(msg)
 
     if not (usethis_config.quiet or usethis_config.alert_only):
@@ -67,6 +69,7 @@ def instruct_print(msg: str | Exception) -> None:
 
 
 def how_print(msg: str | Exception) -> None:
+    """Print a ☐ guidance message explaining how to do something (red)."""
     msg = str(msg)
 
     if not (
@@ -79,6 +82,7 @@ def how_print(msg: str | Exception) -> None:
 
 
 def info_print(msg: str | Exception, temporary: bool = False) -> None:
+    """Print an informational message (blue)."""
     msg = str(msg)
 
     if not (
@@ -95,6 +99,7 @@ def info_print(msg: str | Exception, temporary: bool = False) -> None:
 
 
 def err_print(msg: str | Exception) -> None:
+    """Print a ✗ error message to stderr (red)."""
     msg = str(msg)
 
     if not usethis_config.quiet:
@@ -103,6 +108,7 @@ def err_print(msg: str | Exception) -> None:
 
 
 def warn_print(msg: str | Exception) -> None:
+    """Print a ⚠ warning message (yellow; deduplicated)."""
     msg = str(msg)
 
     _cached_warn_print(msg)

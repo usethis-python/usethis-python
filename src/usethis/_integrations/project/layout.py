@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 
 def get_source_dir_str() -> Literal["src", "."]:
+    """Get the source directory as a string ('src' or '.')."""
     src_dir = usethis_config.cpd() / "src"
 
     if src_dir.exists() and src_dir.is_dir():

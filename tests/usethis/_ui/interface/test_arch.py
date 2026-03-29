@@ -14,6 +14,7 @@ class TestArch:
         # Assert
         assert result.exit_code == 0, result.output
         assert "lint-imports" in result.output
+        assert "tach check" in result.output
 
     def test_none_backend_pyproject_toml(self, tmp_path: Path):
         # Arrange
@@ -36,6 +37,8 @@ class TestArch:
         assert "☐ Add the dev dependency 'import-linter'." in result.output
         assert "Adding Import Linter config to 'pyproject.toml'." in result.output
         assert "lint-imports" in result.output
+        assert "☐ Add the dev dependency 'tach'." in result.output
+        assert "tach check" in result.output
 
     def test_add_then_remove(self, tmp_path: Path):
         # Arrange

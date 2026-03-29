@@ -1,10 +1,10 @@
-"""Export important utility functions with docstrings to a markdown reference file.
+"""Export all functions with docstrings from a package to a markdown reference file.
 
-Scans specified Python source files for public functions with docstrings and
-writes a flat markdown reference to an output file.  Only functions with a
-docstring are included; undocumented functions are skipped.  Functions are
-listed in the order they appear in each module, and modules are listed in the
-order they appear in MODULES.
+Recursively scans a Python package directory for all functions (including
+private ones) and writes a flat markdown bullet list to an output file.
+Functions are listed in the order they appear in each module; modules are
+visited in sorted order.  Pass ``--strict`` to fail when any function is
+missing a docstring.
 """
 
 from __future__ import annotations
@@ -12,65 +12,30 @@ from __future__ import annotations
 import argparse
 import ast
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 
 
-@dataclass
-class _Entry:
-    module: str
-    file: str
+def _path_to_module(path: Path, source_root: Path) -> str:
+    """Convert a .py file path to a dotted module name.
 
-
-# The modules to scan for public functions with docstrings.
-# Add entries here to include additional modules in the reference.
-MODULES: list[_Entry] = [
-    _Entry(module="usethis._deps", file="src/usethis/_deps.py"),
-    _Entry(module="usethis._console", file="src/usethis/_console.py"),
-    _Entry(
-        module="usethis._detect.pre_commit",
-        file="src/usethis/_detect/pre_commit.py",
-    ),
-    _Entry(
-        module="usethis._detect.readme",
-        file="src/usethis/_detect/readme.py",
-    ),
-    _Entry(
-        module="usethis._integrations.project.build",
-        file="src/usethis/_integrations/project/build.py",
-    ),
-    _Entry(
-        module="usethis._integrations.project.name",
-        file="src/usethis/_integrations/project/name.py",
-    ),
-    _Entry(
-        module="usethis._integrations.project.packages",
-        file="src/usethis/_integrations/project/packages.py",
-    ),
-    _Entry(
-        module="usethis._integrations.project.layout",
-        file="src/usethis/_integrations/project/layout.py",
-    ),
-    _Entry(
-        module="usethis._file.pyproject_toml.requires_python",
-        file="src/usethis/_file/pyproject_toml/requires_python.py",
-    ),
-    _Entry(
-        module="usethis._file.pyproject_toml.name",
-        file="src/usethis/_file/pyproject_toml/name.py",
-    ),
-    _Entry(
-        module="usethis._backend.dispatch",
-        file="src/usethis/_backend/dispatch.py",
-    ),
-]
-
-
-def _get_public_functions(path: Path) -> list[tuple[str, str]]:
-    """Return (name, first_docstring_line) for each public function in the file.
-
-    Functions without a docstring are excluded.
+    The module name is derived relative to the parent of source_root, so that
+    the package name itself is included (e.g. ``src/pkg/sub/mod.py`` with
+    ``source_root=src/pkg`` gives ``pkg.sub.mod``).
     """
+    rel = path.relative_to(source_root.parent)
+    parts = list(rel.with_suffix("").parts)
+    if parts and parts[-1] == "__init__":
+        parts = parts[:-1]
+    return ".".join(parts)
+
+
+def _collect_py_files(source_root: Path) -> list[Path]:
+    """Return all .py files under source_root in sorted order."""
+    return sorted(source_root.rglob("*.py"))
+
+
+def _get_functions(path: Path) -> list[tuple[str, str | None]]:
+    """Return (name, docstring_first_line_or_None) for every function in path."""
     try:
         source = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
@@ -83,50 +48,67 @@ def _get_public_functions(path: Path) -> list[tuple[str, str]]:
         print(f"ERROR: Cannot parse {path}: {exc}", file=sys.stderr)
         return []
 
-    results: list[tuple[str, str]] = []
+    results: list[tuple[str, str | None]] = []
     for node in ast.walk(tree):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
-        if node.name.startswith("_"):
-            continue
         docstring = ast.get_docstring(node)
-        if docstring is None:
-            continue
-        first_line = docstring.split("\n")[0].strip()
-        if first_line:
-            results.append((node.name, first_line))
+        if docstring is not None:
+            first_line = docstring.split("\n")[0].strip()
+            results.append((node.name, first_line if first_line else None))
+        else:
+            results.append((node.name, None))
 
     return results
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Export utility function reference to a markdown file.",
+        description="Export a function reference from a Python package to a markdown file.",
+    )
+    parser.add_argument(
+        "--source-root",
+        required=True,
+        help="Path to the root package directory to scan.",
     )
     parser.add_argument(
         "--output-file",
         required=True,
         help="Path to the output markdown file to write.",
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        default=False,
+        help="Fail if any function is missing a docstring.",
+    )
     args = parser.parse_args()
 
+    source_root = Path(args.source_root)
     output_file = Path(args.output_file)
 
+    if not source_root.is_dir():
+        print(f"ERROR: Source root {source_root} is not a directory.", file=sys.stderr)
+        return 1
+
+    if not (source_root / "__init__.py").is_file():
+        print(
+            f"ERROR: {source_root} is not a Python package (no __init__.py).",
+            file=sys.stderr,
+        )
+        return 1
+
     bullets: list[str] = []
-    failed = False
+    missing: list[tuple[Path, str]] = []
 
-    for entry in MODULES:
-        source_path = Path(entry.file)
-        if not source_path.is_file():
-            print(
-                f"ERROR: Source file {source_path} not found.",
-                file=sys.stderr,
-            )
-            failed = True
-            continue
-
-        for func_name, first_line in _get_public_functions(source_path):
-            bullets.append(f"- `{func_name}()` (`{entry.module}`) — {first_line}")
+    for py_file in _collect_py_files(source_root):
+        module = _path_to_module(py_file, source_root)
+        for func_name, first_line in _get_functions(py_file):
+            if first_line is not None:
+                bullets.append(f"- `{func_name}()` (`{module}`) — {first_line}")
+            else:
+                missing.append((py_file, func_name))
+                bullets.append(f"- `{func_name}()` (`{module}`)")
 
     content = "\n".join(bullets) + "\n"
 
@@ -135,7 +117,13 @@ def main() -> int:
 
     print(f"Function reference written to {output_file}.")
 
-    if failed:
+    if args.strict and missing:
+        print(
+            f"ERROR: {len(missing)} function(s) missing a docstring:",
+            file=sys.stderr,
+        )
+        for path, name in missing:
+            print(f"  - {name} in {path}", file=sys.stderr)
         return 1
 
     return 0

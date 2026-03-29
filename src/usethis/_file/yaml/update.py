@@ -120,7 +120,7 @@ def lcs_list_update(original: list[_T], new: list[_T]) -> None:
 
 
 def _shared_id_sequences(*seqs: Sequence[object]) -> Sequence[list[int]]:
-    """Map list elements to integers which are equal iff the objects are with __eq__."""
+    """Map list elements to integers which are equal iff the objects are equal by value."""
     # Don't use "in" because that would mean the elements must be hashable,
     # which we don't want to require. This means we have to loop over every element,
     # every time.

@@ -24,7 +24,7 @@ def fancy_model_dump(
     reference: ModelRepresentation | None = None,
     order_by_cls: dict[type[BaseModel], list[str]] | None = None,
 ) -> ModelRepresentation:
-    """Like ``pydantic.model_dump`` but with bespoke formatting options.
+    """Like `pydantic.model_dump` but with bespoke formatting options.
 
     Args:
         model: The model to dump. This can be a pydantic model or a representation of

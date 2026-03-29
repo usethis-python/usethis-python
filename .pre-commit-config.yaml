@@ -88,7 +88,7 @@ repos:
       - id: check-doc-sync
         name: check-doc-sync
         entry: uv run --frozen --offline hooks/check-doc-sync.py
-        args: ["AGENTS.md", ".agents/skills/usethis-agents/SKILL.md"]
+        args: ["AGENTS.md"]
         language: system
         always_run: true
         pass_filenames: false

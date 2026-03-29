@@ -1162,9 +1162,11 @@ class TestAddDefaultGroupsPoetry:
 [dependency-groups]
 test = ["pytest"]
 """)
-        with usethis_config.set(backend=BackendEnum.poetry), change_cwd(
-            tmp_path
-        ), files_manager():
+        with (
+            usethis_config.set(backend=BackendEnum.poetry),
+            change_cwd(tmp_path),
+            files_manager(),
+        ):
             add_default_groups(["test"])
 
         # No uv.toml should be created
@@ -1183,9 +1185,11 @@ test = ["pytest"]
 [tool.poetry.group.test]
 optional = true
 """)
-        with usethis_config.set(backend=BackendEnum.poetry), change_cwd(
-            tmp_path
-        ), files_manager():
+        with (
+            usethis_config.set(backend=BackendEnum.poetry),
+            change_cwd(tmp_path),
+            files_manager(),
+        ):
             add_default_groups(["test"])
 
         content = (tmp_path / "pyproject.toml").read_text()

@@ -15,10 +15,8 @@ from usethis._backend.uv.detect import is_uv_used
 from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._config import usethis_config
 from usethis._console import info_print, instruct_print, tick_print
-from usethis._deps import is_dep_in_any_group
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._types.backend import BackendEnum
-from usethis._types.deps import Dependency
 from usethis.errors import BackendSubprocessFailedError
 
 
@@ -140,11 +138,13 @@ def _instruct_pre_commit_uninstall() -> None:
 
 
 def _run_poetry_pre_commit_uninstall() -> None:
-    pre_commit_dep = Dependency(name="pre-commit")
-    already_installed = is_dep_in_any_group(pre_commit_dep)
-
-    if not already_installed:
-        # Temporarily add pre-commit so we can run it
+    try:
+        call_poetry_subprocess(
+            ["run", "pre-commit", "uninstall"],
+            change_toml=False,
+        )
+    except PoetrySubprocessFailedError:
+        # pre-commit likely not installed; temporarily add it, run uninstall, then remove
         try:
             call_poetry_subprocess(
                 ["add", "--group", "dev", "pre-commit"],
@@ -153,18 +153,15 @@ def _run_poetry_pre_commit_uninstall() -> None:
         except PoetrySubprocessFailedError as err:
             msg = f"Failed to temporarily add pre-commit:\n{err}"
             raise PreCommitInstallationError(msg) from None
-
-    try:
-        call_poetry_subprocess(
-            ["run", "pre-commit", "uninstall"],
-            change_toml=False,
-        )
-    except PoetrySubprocessFailedError as err:
-        msg = f"Failed to uninstall pre-commit hooks:\n{err}"
-        raise PreCommitInstallationError(msg) from None
-    finally:
-        if not already_installed:
-            # Remove the temporary pre-commit dependency
+        try:
+            call_poetry_subprocess(
+                ["run", "pre-commit", "uninstall"],
+                change_toml=False,
+            )
+        except PoetrySubprocessFailedError as err:
+            msg = f"Failed to uninstall pre-commit hooks:\n{err}"
+            raise PreCommitInstallationError(msg) from None
+        finally:
             with contextlib.suppress(PoetrySubprocessFailedError):
                 call_poetry_subprocess(
                     ["remove", "--group", "dev", "pre-commit"],

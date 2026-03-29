@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 def add_dep_to_group_via_poetry(dep: Dependency, group: str) -> None:
+    """Add a dependency to the named group using Poetry."""
     try:
         call_poetry_subprocess(
             ["add", "--group", group, str(dep)],
@@ -26,6 +27,7 @@ def add_dep_to_group_via_poetry(dep: Dependency, group: str) -> None:
 
 
 def remove_dep_from_group_via_poetry(dep: Dependency, group: str) -> None:
+    """Remove a dependency from the named group using Poetry."""
     try:
         call_poetry_subprocess(
             ["remove", "--group", group, str(dep)],

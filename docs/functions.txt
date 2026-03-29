@@ -1,5 +1,12 @@
 - `get_backend()` (`usethis._backend.dispatch`) — Get the current package manager backend.
+- `call_backend_subprocess()` (`usethis._backend.dispatch`) — Dispatch a subprocess call to the appropriate backend.
+- `is_poetry_available()` (`usethis._backend.poetry.available`) — Check if the `poetry` command is available in the current environment.
+- `call_poetry_subprocess()` (`usethis._backend.poetry.call`) — Run a subprocess using the Poetry command-line tool.
+- `add_dep_to_group_via_poetry()` (`usethis._backend.poetry.deps`) — Add a dependency to the named group using Poetry.
+- `remove_dep_from_group_via_poetry()` (`usethis._backend.poetry.deps`) — Remove a dependency from the named group using Poetry.
 - `is_poetry_used()` (`usethis._backend.poetry.detect`) — Check if Poetry is being used in the project.
+- `ensure_pyproject_toml_via_poetry()` (`usethis._backend.poetry.init`) — Create a pyproject.toml file using `poetry init`.
+- `opinionated_poetry_init()` (`usethis._backend.poetry.init`) — Subprocess `poetry init` with opinionated arguments.
 - `is_uv_available()` (`usethis._backend.uv.available`) — Check if the `uv` command is available in the current environment.
 - `call_uv_subprocess()` (`usethis._backend.uv.call`) — Run a subprocess using the uv command-line tool.
 - `add_default_groups_via_uv()` (`usethis._backend.uv.call`) — Add default groups using the uv command-line tool.
@@ -92,6 +99,7 @@
 - `get_requires_python()` (`usethis._file.pyproject_toml.requires_python`) — Get the requires-python constraint from pyproject.toml.
 - `get_required_minor_python_versions()` (`usethis._file.pyproject_toml.requires_python`) — Get Python minor versions that match the project's requires-python constraint.
 - `ensure_pyproject_validity()` (`usethis._file.pyproject_toml.valid`) — Ensure pyproject.toml has a valid structure, adding missing required fields.
+- `prepare_pyproject_write()` (`usethis._file.pyproject_toml.write`) — Prepare the pyproject.toml file for a subprocess that will modify it.
 - `edit_yaml()` (`usethis._file.yaml.io_`) — A context manager to modify a YAML file in-place, with managed read and write.
 - `read_yaml()` (`usethis._file.yaml.io_`) — A context manager to read a YAML file.
 - `update_ruamel_yaml_map()` (`usethis._file.yaml.update`) — Update the values of a ruamel.yaml map in-place using a diff-like algorithm.

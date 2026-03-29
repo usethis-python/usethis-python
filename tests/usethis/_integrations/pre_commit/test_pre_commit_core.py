@@ -272,11 +272,6 @@ class TestUninstallPreCommitHooks:
             mock_call_poetry_subprocess,
         )
 
-        # Pre-commit is already a dep, so no temporary add needed
-        (tmp_path / "pyproject.toml").write_text(
-            '[dependency-groups]\ndev = ["pre-commit"]\n'
-        )
-
         with (
             change_cwd(tmp_path),
             files_manager(),
@@ -284,6 +279,7 @@ class TestUninstallPreCommitHooks:
         ):
             uninstall_pre_commit_hooks()
 
+        # pre-commit uninstall succeeds on first try
         assert len(calls) == 1
         assert calls[0] == ["run", "pre-commit", "uninstall"]
 
@@ -292,11 +288,18 @@ class TestUninstallPreCommitHooks:
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ):
-        """When pre-commit is not a dependency, it should be temporarily added."""
+        """When pre-commit is not installed, it should be temporarily added."""
         calls: list[list[str]] = []
+        first_attempt = True
 
         def mock_call_poetry_subprocess(args: list[str], **__: object) -> str:
+            nonlocal first_attempt
             calls.append(args)
+            # First "run pre-commit uninstall" fails (pre-commit not installed)
+            if args == ["run", "pre-commit", "uninstall"] and first_attempt:
+                first_attempt = False
+                _msg = "pre-commit not found"
+                raise PoetrySubprocessFailedError(_msg)
             return ""
 
         monkeypatch.setattr(
@@ -311,11 +314,12 @@ class TestUninstallPreCommitHooks:
         ):
             uninstall_pre_commit_hooks()
 
-        # Should have: add pre-commit, run pre-commit uninstall, remove pre-commit
-        assert len(calls) == 3
-        assert calls[0] == ["add", "--group", "dev", "pre-commit"]
-        assert calls[1] == ["run", "pre-commit", "uninstall"]
-        assert calls[2] == ["remove", "--group", "dev", "pre-commit"]
+        # First attempt fails, then: add pre-commit, run uninstall, remove pre-commit
+        assert len(calls) == 4
+        assert calls[0] == ["run", "pre-commit", "uninstall"]
+        assert calls[1] == ["add", "--group", "dev", "pre-commit"]
+        assert calls[2] == ["run", "pre-commit", "uninstall"]
+        assert calls[3] == ["remove", "--group", "dev", "pre-commit"]
 
     def test_poetry_backend_uninstall_error(
         self,
@@ -331,11 +335,6 @@ class TestUninstallPreCommitHooks:
         monkeypatch.setattr(
             "usethis._integrations.pre_commit.core.call_poetry_subprocess",
             mock_call_poetry_subprocess,
-        )
-
-        # Pre-commit is already a dep
-        (tmp_path / "pyproject.toml").write_text(
-            '[dependency-groups]\ndev = ["pre-commit"]\n'
         )
 
         with (

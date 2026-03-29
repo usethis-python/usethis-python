@@ -1162,9 +1162,10 @@ class TestAddDefaultGroupsPoetry:
 [dependency-groups]
 test = ["pytest"]
 """)
-        with usethis_config.set(backend=BackendEnum.poetry):
-            with change_cwd(tmp_path), files_manager():
-                add_default_groups(["test"])
+        with usethis_config.set(backend=BackendEnum.poetry), change_cwd(
+            tmp_path
+        ), files_manager():
+            add_default_groups(["test"])
 
         # No uv.toml should be created
         assert not (tmp_path / "uv.toml").exists()
@@ -1182,9 +1183,10 @@ test = ["pytest"]
 [tool.poetry.group.test]
 optional = true
 """)
-        with usethis_config.set(backend=BackendEnum.poetry):
-            with change_cwd(tmp_path), files_manager():
-                add_default_groups(["test"])
+        with usethis_config.set(backend=BackendEnum.poetry), change_cwd(
+            tmp_path
+        ), files_manager():
+            add_default_groups(["test"])
 
         content = (tmp_path / "pyproject.toml").read_text()
         assert "optional = false" in content

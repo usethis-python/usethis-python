@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from usethis._backend.poetry.errors import PoetrySubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._deps import add_deps_to_group
@@ -321,11 +322,11 @@ class TestUninstallPreCommitHooks:
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ):
-        from usethis._backend.poetry.errors import PoetrySubprocessFailedError
+        _msg = "test error"
 
         def mock_call_poetry_subprocess(args: list[str], **__: object) -> str:
             _ = args
-            raise PoetrySubprocessFailedError("test error")
+            raise PoetrySubprocessFailedError(_msg)
 
         monkeypatch.setattr(
             "usethis._integrations.pre_commit.core.call_poetry_subprocess",

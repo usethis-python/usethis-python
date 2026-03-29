@@ -71,7 +71,8 @@ usethis                           # usethis: Automate Python project setup and d
 │   │   ├── project               # Access the [project] section of pyproject.toml.
 │   │   ├── remove                # Removal of the pyproject.toml file.
 │   │   ├── requires_python       # Python version requirement queries from pyproject.toml.
-│   │   └── valid                 # Validation and repair of pyproject.toml structure.
+│   │   ├── valid                 # Validation and repair of pyproject.toml structure.
+│   │   └── write                 # Preparation helpers for writing pyproject.toml via subprocesses.
 │   ├── setup_cfg                 # setup.cfg file reading and writing.
 │   │   ├── errors                # Error types for setup.cfg operations.
 │   │   └── io_                   # setup.cfg file I/O manager.

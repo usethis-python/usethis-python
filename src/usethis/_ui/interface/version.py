@@ -6,6 +6,7 @@ import typer
 
 
 def version() -> None:
+    """Show the installed usethis version."""
     from usethis._console import plain_print
 
     try:

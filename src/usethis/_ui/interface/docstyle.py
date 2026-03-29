@@ -23,6 +23,7 @@ def docstyle(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
+    """Set the project docstring style convention."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.docstyle import use_docstyle

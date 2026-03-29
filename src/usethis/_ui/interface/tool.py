@@ -40,6 +40,7 @@ def codespell(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the codespell tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_codespell
 
@@ -77,6 +78,7 @@ def coverage_py(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the Coverage.py tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_coverage_py
 
@@ -107,6 +109,7 @@ def deptry(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the deptry tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_deptry
 
@@ -137,6 +140,7 @@ def import_linter(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the Import Linter tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_import_linter
 
@@ -167,6 +171,7 @@ def mkdocs(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the MkDocs tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_mkdocs
 
@@ -197,6 +202,7 @@ def pre_commit(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the pre-commit tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pre_commit
 
@@ -227,6 +233,7 @@ def pyproject_fmt(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the pyproject-fmt tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_fmt
 
@@ -257,6 +264,7 @@ def pyproject_toml(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the pyproject.toml configuration file."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_toml
 
@@ -285,6 +293,7 @@ def pytest(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the pytest tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pytest
 
@@ -315,6 +324,7 @@ def requirements_txt(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the requirements.txt configuration file."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_requirements_txt
 
@@ -347,6 +357,7 @@ def ruff(
     formatter: bool = formatter_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the Ruff tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ruff
 
@@ -377,6 +388,7 @@ def ty(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Add or remove the ty tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ty
 

@@ -14,6 +14,7 @@ def readme(
     backend: BackendEnum = backend_opt,
     badges: bool = badges_opt,
 ) -> None:
+    """Create a README.md file for the project."""
     from usethis._backend.uv.detect import is_uv_used
     from usethis._config_file import files_manager
     from usethis._console import err_print

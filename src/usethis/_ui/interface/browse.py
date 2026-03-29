@@ -18,6 +18,7 @@ def pypi(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
+    """Open the PyPI page for a package in the browser."""
     from usethis._console import err_print
     from usethis._core.browse import browse_pypi
     from usethis.errors import UsethisError

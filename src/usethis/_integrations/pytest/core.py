@@ -9,6 +9,7 @@ from usethis._console import instruct_print, tick_print
 
 
 def add_pytest_dir() -> None:
+    """Create the tests directory and conftest.py if they do not already exist."""
     tests_dir = usethis_config.cpd() / "tests"
 
     if not tests_dir.exists():
@@ -26,6 +27,7 @@ def add_pytest_dir() -> None:
 
 
 def remove_pytest_dir() -> None:
+    """Remove the tests directory if it contains only the managed conftest.py."""
     tests_dir = usethis_config.cpd() / "tests"
 
     if not tests_dir.exists():

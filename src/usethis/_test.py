@@ -35,6 +35,7 @@ def change_cwd(new_dir: Path) -> Generator[None, None, None]:
 
 
 def is_offline() -> bool:
+    """Return True if the current environment has no internet connectivity."""
     try:
         # Connect to Google's DNS server
         s = socket.create_connection(("8.8.8.8", 53), timeout=3)

@@ -27,6 +27,7 @@ err_console = Console(stderr=True)
 
 
 def plain_print(msg: str | Exception) -> None:
+    """Print a plain message to the console, respecting quiet and alert-only settings."""
     msg = str(msg)
 
     if not (
@@ -38,6 +39,7 @@ def plain_print(msg: str | Exception) -> None:
 
 
 def table_print(table: Table) -> None:
+    """Print a Rich table to the console, respecting quiet and alert-only settings."""
     if not (
         usethis_config.quiet
         or usethis_config.alert_only

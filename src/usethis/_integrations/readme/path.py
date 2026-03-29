@@ -17,6 +17,7 @@ class NonMarkdownREADMEError(UsethisError):
 
 
 def get_readme_path():
+    """Return the path to the README file, searching for common README filenames."""
     path_readme_md = usethis_config.cpd() / "README.md"
     path_readme = usethis_config.cpd() / "README"
 
@@ -34,6 +35,7 @@ def get_readme_path():
 
 
 def get_markdown_readme_path() -> Path:
+    """Return the path to the Markdown README file, raising an error if it is not Markdown."""
     path = get_readme_path()
 
     if path.name == "README.md":

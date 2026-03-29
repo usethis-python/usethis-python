@@ -8,6 +8,7 @@ from usethis._fallback import FALLBACK_UV_VERSION, next_breaking_version
 
 
 def get_uv_version() -> str:
+    """Get the version string of the installed uv tool."""
     try:
         json_str = call_uv_subprocess(
             ["self", "version", "--output-format=json"],

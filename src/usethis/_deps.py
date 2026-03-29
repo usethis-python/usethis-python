@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
 import pydantic
 from packaging.requirements import Requirement
 from pydantic import TypeAdapter
@@ -252,12 +250,11 @@ def add_deps_to_group(
 
     # Register the group - don't do this before adding the deps in case that step fails
     if default:
-        _register_default_group(group, backend=backend)
+        _register_default_group(group)
 
 
-def _register_default_group(
-    group: str, *, backend: Literal[BackendEnum.uv, BackendEnum.none]
-) -> None:
+def _register_default_group(group: str) -> None:
+    backend = get_backend()
     if backend is BackendEnum.uv:
         register_default_group(group)
     elif backend is BackendEnum.none:

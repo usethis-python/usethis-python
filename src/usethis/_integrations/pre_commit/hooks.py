@@ -111,10 +111,10 @@ def insert_repo(
     existing_repos: Collection[schema.LocalRepo | schema.UriRepo | schema.MetaRepo],
     predecessor: str | None,
 ) -> list[schema.LocalRepo | schema.UriRepo | schema.MetaRepo]:
+    """Insert a repo into the list of repos after the named predecessor hook."""
     # Insert the new hook after the last precedent repo
     # Do this by iterating over the repos and hooks, and inserting the new hook
     # after the last precedent
-    """Insert a repo into the list of repos after the named predecessor hook."""
     inserted = False
     repos: list[schema.LocalRepo | schema.UriRepo | schema.MetaRepo] = []
 

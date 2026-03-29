@@ -22,6 +22,7 @@ def author(
     quiet: bool = quiet_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
+    """Add an author to the project metadata in pyproject.toml."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.author import add_author

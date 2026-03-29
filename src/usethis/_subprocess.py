@@ -14,6 +14,7 @@ class SubprocessFailedError(Exception):
 
 
 def call_subprocess(args: list[str], *, cwd: Path | None = None) -> str:
+    """Run a subprocess and return its stdout, raising SubprocessFailedError on failure."""
     try:
         process = subprocess.run(  # noqa: S603
             args, check=True, capture_output=True, cwd=cwd.as_posix() if cwd else None

@@ -205,6 +205,206 @@ usethis                           # usethis: Automate Python project setup and d
 
 <!-- /sync:docs/module-tree.txt -->
 
+## Function Reference
+
+ALWAYS check whether an existing function already covers your use case before implementing new logic. The functions below are important utilities that agents commonly reinvent by mistake.
+
+<!-- sync:docs/functions.txt -->
+
+- `get_backend()` (`usethis._backend.dispatch`) — Get the current package manager backend.
+- `is_poetry_used()` (`usethis._backend.poetry.detect`) — Check if Poetry is being used in the project.
+- `is_uv_available()` (`usethis._backend.uv.available`) — Check if the `uv` command is available in the current environment.
+- `call_uv_subprocess()` (`usethis._backend.uv.call`) — Run a subprocess using the uv command-line tool.
+- `add_default_groups_via_uv()` (`usethis._backend.uv.call`) — Add default groups using the uv command-line tool.
+- `add_dep_to_group_via_uv()` (`usethis._backend.uv.deps`) — Add a dependency to the named group using uv.
+- `remove_dep_from_group_via_uv()` (`usethis._backend.uv.deps`) — Remove a dependency from the named group using uv.
+- `get_default_groups_via_uv()` (`usethis._backend.uv.deps`) — Get the default dependency groups from the uv configuration.
+- `is_uv_used()` (`usethis._backend.uv.detect`) — Check if uv is being used in the project.
+- `opinionated_uv_init()` (`usethis._backend.uv.init`) — Subprocess `uv init` with opinionated arguments.
+- `ensure_pyproject_toml_via_uv()` (`usethis._backend.uv.init`) — Create a pyproject.toml file using `uv init --bare`.
+- `ensure_symlink_mode()` (`usethis._backend.uv.link_mode`) — Ensure that the symlink link mode is enabled.
+- `ensure_uv_lock()` (`usethis._backend.uv.lockfile`) — Ensure a uv.lock file exists, creating it if necessary.
+- `get_available_uv_python_versions()` (`usethis._backend.uv.python`) — Get the set of Python versions available via uv.
+- `get_supported_uv_minor_python_versions()` (`usethis._backend.uv.python`) — Get the minor Python versions supported by the project and available via uv.
+- `uv_python_pin()` (`usethis._backend.uv.python`) — Pin the Python version for the project using uv.
+- `get_uv_version()` (`usethis._backend.uv.version`) — Get the version string of the installed uv tool.
+- `next_breaking_uv_version()` (`usethis._backend.uv.version`) — Get the next breaking version for a uv version string, following semver.
+- `files_manager()` (`usethis._config_file`) — Context manager that opens all configuration file managers for coordinated I/O.
+- `plain_print()` (`usethis._console`) — Print a plain message to the console, respecting quiet and alert-only settings.
+- `table_print()` (`usethis._console`) — Print a Rich table to the console, respecting quiet and alert-only settings.
+- `tick_print()` (`usethis._console`) — Print a ✔ success/completion message (green).
+- `instruct_print()` (`usethis._console`) — Print a ☐ instruction the user must perform manually (red).
+- `how_print()` (`usethis._console`) — Print a ☐ guidance message explaining how to do something (red).
+- `info_print()` (`usethis._console`) — Print an informational message (blue).
+- `err_print()` (`usethis._console`) — Print a ✗ error message to stderr (red).
+- `warn_print()` (`usethis._console`) — Print a ⚠ warning message (yellow; deduplicated).
+- `get_icon_mode()` (`usethis._console`) — Detect terminal's icon support level.
+- `add_author()` (`usethis._core.author`) — Add an author entry to the project metadata in pyproject.toml.
+- `get_pre_commit_badge()` (`usethis._core.badge`) — Return the pre-commit badge.
+- `get_pypi_badge()` (`usethis._core.badge`) — Return the PyPI version badge for the project.
+- `get_ruff_badge()` (`usethis._core.badge`) — Return the Ruff badge.
+- `get_socket_badge()` (`usethis._core.badge`) — Return the Socket supply chain security badge for the project.
+- `get_ty_badge()` (`usethis._core.badge`) — Return the ty type checker badge.
+- `get_uv_badge()` (`usethis._core.badge`) — Return the uv package manager badge.
+- `get_bitbucket_badge()` (`usethis._core.badge`) — Return the Bitbucket badge.
+- `get_usethis_badge()` (`usethis._core.badge`) — Return the usethis badge.
+- `get_badge_order()` (`usethis._core.badge`) — Return the canonical ordered list of all supported badges.
+- `add_badge()` (`usethis._core.badge`) — Add a badge to the README.md file in the correct position.
+- `is_blank()` (`usethis._core.badge`) — Return True if the line is empty or contains only whitespace.
+- `is_header()` (`usethis._core.badge`) — Return True if the line is a Markdown header.
+- `is_badge()` (`usethis._core.badge`) — Return True if the line looks like a Markdown badge.
+- `remove_badge()` (`usethis._core.badge`) — Remove a badge from the README.md file.
+- `browse_pypi()` (`usethis._core.browse`) — Open or display the PyPI project page URL for a package.
+- `use_docstyle()` (`usethis._core.docstyle`) — Configure the docstring style convention for the project using Ruff.
+- `show_usage_table()` (`usethis._core.list`) — Show the usage table.
+- `get_usage_table()` (`usethis._core.list`) — Get the usage table.
+- `add_readme()` (`usethis._core.readme`) — Add a README.md file to the project.
+- `select_rules()` (`usethis._core.rule`) — Select the given linter rules, enabling the appropriate tools as needed.
+- `deselect_rules()` (`usethis._core.rule`) — Deselect the given linter rules from the relevant tools.
+- `ignore_rules()` (`usethis._core.rule`) — Add the given linter rules to the ignore list of the relevant tools.
+- `unignore_rules()` (`usethis._core.rule`) — Remove the given linter rules from the ignore list of the relevant tools.
+- `get_rules_mapping()` (`usethis._core.rule`) — Partition a list of rule codes into deptry and Ruff rule groups.
+- `show_backend()` (`usethis._core.show`) — Display the inferred package manager backend for the current project.
+- `show_name()` (`usethis._core.show`) — Display the name of the current project.
+- `show_sonarqube_config()` (`usethis._core.show`) — Display the sonar-project.properties configuration for the current project.
+- `use_development_status()` (`usethis._core.status`) — Set the development status classifier in pyproject.toml.
+- `use_codespell()` (`usethis._core.tool`) — Add and configure the codespell spellchecker tool.
+- `use_coverage_py()` (`usethis._core.tool`) — Add and configure the Coverage.py code coverage tool.
+- `use_deptry()` (`usethis._core.tool`) — Add and configure the deptry dependency linter tool.
+- `use_import_linter()` (`usethis._core.tool`) — Add and configure the Import Linter architecture enforcement tool.
+- `use_mkdocs()` (`usethis._core.tool`) — Add and configure the MkDocs documentation site generator tool.
+- `use_pre_commit()` (`usethis._core.tool`) — Add and configure the pre-commit hook framework.
+- `use_pyproject_fmt()` (`usethis._core.tool`) — Add and configure the pyproject-fmt pyproject.toml formatter tool.
+- `use_pyproject_toml()` (`usethis._core.tool`) — Add and configure the pyproject.toml file as a project configuration tool.
+- `use_pytest()` (`usethis._core.tool`) — Add and configure the pytest testing framework.
+- `use_requirements_txt()` (`usethis._core.tool`) — Add and configure a requirements.txt file exported from the uv lockfile.
+- `use_ruff()` (`usethis._core.tool`) — Add Ruff to the project.
+- `use_ty()` (`usethis._core.tool`) — Add and configure the ty type checker tool.
+- `use_tool()` (`usethis._core.tool`) — General dispatch function to add or remove a tool to/from the project.
+- `get_project_deps()` (`usethis._deps`) — Get all project dependencies.
+- `get_dep_groups()` (`usethis._deps`) — Get all dependency groups from the dependency-groups section of pyproject.toml.
+- `get_deps_from_group()` (`usethis._deps`) — Get the list of dependencies in a named dependency group.
+- `register_default_group()` (`usethis._deps`) — Register a group in the default-groups configuration if it's not already there.
+- `add_default_groups()` (`usethis._deps`) — Register the given dependency groups as default groups in the package manager configuration.
+- `get_default_groups()` (`usethis._deps`) — Get the list of default dependency groups installed automatically by the package manager.
+- `ensure_dev_group_is_defined()` (`usethis._deps`) — Ensure the 'dev' dependency group exists in pyproject.toml.
+- `is_dep_satisfied_in()` (`usethis._deps`) — Check if a dependency is satisfied by any dependency in the given list.
+- `remove_deps_from_group()` (`usethis._deps`) — Remove dependencies from the named group if present.
+- `is_dep_in_any_group()` (`usethis._deps`) — Check if a dependency exists in any dependency group.
+- `add_deps_to_group()` (`usethis._deps`) — Add dependencies to a named group using PEP 735 dependency groups.
+- `is_pre_commit_used()` (`usethis._detect.pre_commit`) — Check if pre-commit is being used in the project.
+- `is_readme_used()` (`usethis._detect.readme`) — Check if the README.md file is used.
+- `next_breaking_version()` (`usethis._fallback`) — Get the next breaking version for a version string, following semver.
+- `get_project_name_from_dir()` (`usethis._file.dir`) — Derive a valid project name from the current directory name.
+- `deep_merge()` (`usethis._file.merge`) — Recursively merge source into target in place, returning target.
+- `print_keys()` (`usethis._file.print_`) — Convert a list of keys to a string.
+- `get_name()` (`usethis._file.pyproject_toml.name`) — Get the project name from pyproject.toml.
+- `get_description()` (`usethis._file.pyproject_toml.name`) — Get the project description from pyproject.toml.
+- `get_project_dict()` (`usethis._file.pyproject_toml.project`) — Get the contents of the [project] section from pyproject.toml.
+- `remove_pyproject_toml()` (`usethis._file.pyproject_toml.remove`) — Remove the pyproject.toml file from the project.
+- `get_requires_python()` (`usethis._file.pyproject_toml.requires_python`) — Get the requires-python constraint from pyproject.toml.
+- `get_required_minor_python_versions()` (`usethis._file.pyproject_toml.requires_python`) — Get Python minor versions that match the project's requires-python constraint.
+- `ensure_pyproject_validity()` (`usethis._file.pyproject_toml.valid`) — Ensure pyproject.toml has a valid structure, adding missing required fields.
+- `edit_yaml()` (`usethis._file.yaml.io_`) — A context manager to modify a YAML file in-place, with managed read and write.
+- `read_yaml()` (`usethis._file.yaml.io_`) — A context manager to read a YAML file.
+- `update_ruamel_yaml_map()` (`usethis._file.yaml.update`) — Update the values of a ruamel.yaml map in-place using a diff-like algorithm.
+- `lcs_list_update()` (`usethis._file.yaml.update`) — Update in-place using a longest common subsequence solver.
+- `project_init()` (`usethis._init`) — Initialize the project by creating the pyproject.toml and project structure.
+- `write_simple_requirements_txt()` (`usethis._init`) — Write a simple requirements.txt file with -e . and any project dependencies.
+- `ensure_dep_declaration_file()` (`usethis._init`) — Ensure that the file where dependencies are declared exists, if necessary.
+- `ensure_pyproject_toml()` (`usethis._init`) — Ensure that a pyproject.toml file exists, creating it if necessary.
+- `get_github_latest_tag()` (`usethis._integrations.ci.github.tags`) — Get the name of the most recent tag on the default branch of a GitHub repository.
+- `get_supported_minor_python_versions()` (`usethis._integrations.environ.python`) — Get supported Python versions for the current backend.
+- `add_docs_dir()` (`usethis._integrations.mkdocs.core`) — Create the `docs` directory and an `docs/index.md` file if they do not exist.
+- `remove_pre_commit_config()` (`usethis._integrations.pre_commit.core`) — Remove the .pre-commit-config.yaml file from the project.
+- `install_pre_commit_hooks()` (`usethis._integrations.pre_commit.core`) — Install pre-commit hooks.
+- `uninstall_pre_commit_hooks()` (`usethis._integrations.pre_commit.core`) — Uninstall pre-commit hooks.
+- `add_repo()` (`usethis._integrations.pre_commit.hooks`) — Add a pre-commit repo configuration to the pre-commit configuration file.
+- `insert_repo()` (`usethis._integrations.pre_commit.hooks`) — Insert a repo into the list of repos after the named predecessor hook.
+- `add_placeholder_hook()` (`usethis._integrations.pre_commit.hooks`) — Add a placeholder hook to the pre-commit configuration with instructions for the user.
+- `remove_hook()` (`usethis._integrations.pre_commit.hooks`) — Remove pre-commit hook configuration.
+- `get_hook_ids()` (`usethis._integrations.pre_commit.hooks`) — Get the list of hook IDs currently configured in the pre-commit configuration file.
+- `extract_hook_ids()` (`usethis._integrations.pre_commit.hooks`) — Extract all hook IDs from a pre-commit configuration model.
+- `hooks_are_equivalent()` (`usethis._integrations.pre_commit.hooks`) — Check if two hooks are equivalent.
+- `hook_ids_are_equivalent()` (`usethis._integrations.pre_commit.hooks`) — Check if two hook IDs are equivalent.
+- `ensure_pre_commit_config_exists()` (`usethis._integrations.pre_commit.init`) — Ensure '.pre-commit-config.yaml' exists with minimal valid content.
+- `get_system_language()` (`usethis._integrations.pre_commit.language`) — Get the appropriate 'system' language keyword based on pre-commit version.
+- `get_pre_commit_version()` (`usethis._integrations.pre_commit.version`) — Get an inferred pre-commit version for usethis to target.
+- `get_minimum_pre_commit_version()` (`usethis._integrations.pre_commit.version`) — Get the declared minimum supported pre-commit version from the configuration.
+- `has_pyproject_toml_declared_build_system()` (`usethis._integrations.project.build`) — Check if a build system is declared in the project.
+- `get_layered_architectures()` (`usethis._integrations.project.imports`) — Get the suggested layers for a package.
+- `augment_pythonpath()` (`usethis._integrations.project.imports`) — Temporarily add a directory to the Python path.
+- `get_source_dir_str()` (`usethis._integrations.project.layout`) — Get the source directory as a string ('src' or '.').
+- `get_project_name()` (`usethis._integrations.project.name`) — The project name, from pyproject.toml if available or fallback to heuristics.
+- `get_importable_packages()` (`usethis._integrations.project.packages`) — Get the names of packages in the source directory that can be imported.
+- `fancy_model_dump()` (`usethis._integrations.pydantic.dump`) — Like `pydantic.model_dump` but with bespoke formatting options.
+- `add_pytest_dir()` (`usethis._integrations.pytest.core`) — Create the tests directory and conftest.py if they do not already exist.
+- `remove_pytest_dir()` (`usethis._integrations.pytest.core`) — Remove the tests directory if it contains only the managed conftest.py.
+- `get_readme_path()` (`usethis._integrations.readme.path`) — Return the path to the README file, searching for common README filenames.
+- `get_markdown_readme_path()` (`usethis._integrations.readme.path`) — Return the path to the Markdown README file, raising an error if it is not Markdown.
+- `get_sonar_project_properties()` (`usethis._integrations.sonarqube.config`) — Get contents for (or from) the sonar-project.properties file.
+- `parallel()` (`usethis._pipeweld.containers`) — Create a Parallel pipeline composition from the given components.
+- `series()` (`usethis._pipeweld.containers`) — Create a Series pipeline composition from the given components.
+- `depgroup()` (`usethis._pipeweld.containers`) — Create a DepGroup pipeline composition tied to a named configuration group.
+- `get_endpoint()` (`usethis._pipeweld.func`) — Get the last step name (endpoint) from a pipeline component.
+- `call_subprocess()` (`usethis._subprocess`) — Run a subprocess and return its stdout, raising SubprocessFailedError on failure.
+- `change_cwd()` (`usethis._test`) — Change the working directory temporarily.
+- `is_offline()` (`usethis._test`) — Return True if the current environment has no internet connectivity.
+- `ensure_managed_file_exists()` (`usethis._tool.config`) — Ensure a file manager's managed file exists.
+- `is_likely_used()` (`usethis._tool.heuristics`) — Determine whether a tool is likely used in the current project.
+- `is_rule_covered_by()` (`usethis._tool.rule`) — Check if a rule is covered (subsumed) by a more general rule.
+- `reconcile_rules()` (`usethis._tool.rule`) — Determine which rules to add and which existing rules to remove.
+- `use_arch_tools()` (`usethis._toolset.arch`) — Add and configure architecture enforcement tools for the project.
+- `use_doc_frameworks()` (`usethis._toolset.doc`) — Add and configure documentation framework tools for the project.
+- `use_formatters()` (`usethis._toolset.format_`) — Add and configure code formatting tools for the project.
+- `use_hook_framework()` (`usethis._toolset.hook`) — Add and configure git hook framework tools for the project.
+- `use_linters()` (`usethis._toolset.lint`) — Add and configure linting tools for the project.
+- `use_spellcheckers()` (`usethis._toolset.spellcheck`) — Add and configure spellchecking tools for the project.
+- `use_test_frameworks()` (`usethis._toolset.test`) — Add and configure testing framework tools for the project.
+- `use_typecheckers()` (`usethis._toolset.typecheck`) — Add and configure type checking tools for the project.
+- `arch()` (`usethis._ui.interface.arch`) — Add recommended architecture analysis tools to the project.
+- `author()` (`usethis._ui.interface.author`) — Add an author to the project metadata in pyproject.toml.
+- `pypi()` (`usethis._ui.interface.badge`) — Add a badge with the version of your package on PyPI.
+- `ruff()` (`usethis._ui.interface.badge`) — Add a badge for the Ruff linter.
+- `ty()` (`usethis._ui.interface.badge`) — Add a badge for the ty type checker.
+- `pre_commit()` (`usethis._ui.interface.badge`) — Add a badge for the pre-commit framework.
+- `socket()` (`usethis._ui.interface.badge`) — Add a badge with your PyPI package's supply chain security rating from Socket.
+- `usethis()` (`usethis._ui.interface.badge`) — Add a badge for usethis.
+- `bitbucket()` (`usethis._ui.interface.badge`) — Add a badge for Bitbucket.
+- `uv()` (`usethis._ui.interface.badge`) — Add a badge for the uv package manager.
+- `pypi()` (`usethis._ui.interface.browse`) — Visit the PyPI project page for a package.
+- `doc()` (`usethis._ui.interface.doc`) — Add a recommended documentation framework to the project.
+- `docstyle()` (`usethis._ui.interface.docstyle`) — Configure the docstring style for the project.
+- `format_()` (`usethis._ui.interface.format_`) — Add recommended formatters to the project.
+- `hook()` (`usethis._ui.interface.hook`) — Add a recommended git hook framework to the project.
+- `init()` (`usethis._ui.interface.init`) — Initialize a new project with recommended tooling.
+- `lint()` (`usethis._ui.interface.lint`) — Add recommended linters to the project.
+- `list()` (`usethis._ui.interface.list`) — Show the usage table of all available tools and their current status.
+- `readme()` (`usethis._ui.interface.readme`) — Create or update the README.md file, optionally adding badges.
+- `rule()` (`usethis._ui.interface.rule`) — Select, deselect, ignore, or unignore linter rules.
+- `backend()` (`usethis._ui.interface.show`) — Show the inferred project manager backend, e.g. 'uv' or 'none'.
+- `name()` (`usethis._ui.interface.show`) — Show the name of the project.
+- `sonarqube()` (`usethis._ui.interface.show`) — Show the sonar-project.properties file for SonarQube.
+- `spellcheck()` (`usethis._ui.interface.spellcheck`) — Add a recommended spellchecker to the project.
+- `status()` (`usethis._ui.interface.status`) — Set the development status classifier for the project.
+- `test()` (`usethis._ui.interface.test`) — Add a recommended testing framework to the project.
+- `codespell()` (`usethis._ui.interface.tool`) — Use the codespell spellchecker: detect common spelling mistakes.
+- `coverage_py()` (`usethis._ui.interface.tool`) — Use Coverage.py: a code coverage measurement tool.
+- `deptry()` (`usethis._ui.interface.tool`) — Use the deptry linter: avoid missing or superfluous dependency declarations.
+- `import_linter()` (`usethis._ui.interface.tool`) — Use Import Linter: enforce a self-imposed architecture on imports.
+- `mkdocs()` (`usethis._ui.interface.tool`) — Use MkDocs: Generate project documentation sites with Markdown.
+- `pre_commit()` (`usethis._ui.interface.tool`) — Use the pre-commit framework to manage and maintain pre-commit hooks.
+- `pyproject_fmt()` (`usethis._ui.interface.tool`) — Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files.
+- `pyproject_toml()` (`usethis._ui.interface.tool`) — Use a pyproject.toml file to configure the project.
+- `pytest()` (`usethis._ui.interface.tool`) — Use the pytest testing framework.
+- `requirements_txt()` (`usethis._ui.interface.tool`) — Use a requirements.txt file exported from the uv lockfile.
+- `ruff()` (`usethis._ui.interface.tool`) — Use Ruff: an extremely fast Python linter and code formatter.
+- `ty()` (`usethis._ui.interface.tool`) — Use the ty type checker: an extremely fast Python type checker.
+- `typecheck()` (`usethis._ui.interface.typecheck`) — Add a recommended type checker to the project.
+- `version()` (`usethis._ui.interface.version`) — Print the installed version of usethis.
+
+<!-- /sync:docs/functions.txt -->
+
 ## Agent Skills
 
 The `.agents/skills` directory contains agent skills.
@@ -213,29 +413,32 @@ The `.agents/skills` directory contains agent skills.
 
 #### usethis-specific skills
 
-| Skill                                 | Description                                                                                                             |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `usethis-cli-modify`                  | Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync                              |
-| `usethis-file-remove`                 | Remove files from the project (e.g. obsolete configs or generated artifacts) in a safe, consistent way                  |
-| `usethis-github-actions-update`       | Update GitHub Actions workflows                                                                                         |
-| `usethis-github-issue-create`         | Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development |
-| `usethis-pre-commit`                  | Guidance on pre-commit hooks — this project uses prek, not pre-commit directly                                          |
-| `usethis-prek-add-hook`               | Add a prek hook for dev                                                                                                 |
-| `usethis-prek-hook-bespoke-create`    | Write bespoke prek hooks as Python scripts for custom project-specific checks                                           |
-| `usethis-python-code`                 | Guidelines for Python code design decisions such as when to share vs. duplicate code                                    |
-| `usethis-python-code-modify`          | Modify Python code (e.g. refactor, add new code, or delete code)                                                        |
-| `usethis-python-enum`                 | Style and testing conventions for working with Python enums                                                             |
-| `usethis-python-functions`            | Guidelines for Python function design, including return types and signature simplicity                                  |
-| `usethis-python-module-layout-modify` | Modify the Python module layout (create, move, rename, or delete modules)                                               |
-| `usethis-python-ruff`                 | Guidelines for complying with Ruff linter rules instead of suppressing them                                             |
-| `usethis-python-test-affected-find`   | Identify tests that are potentially affected by code changes, to catch regressions before CI                            |
-| `usethis-qa-import-linter`            | Use the Import Linter software on the usethis project                                                                   |
-| `usethis-qa-static-checks`            | Perform static code checks                                                                                              |
-| `usethis-skills-create`               | Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability   |
-| `usethis-skills-external-add`         | Add an external (community) skill and document it in AGENTS.md                                                          |
-| `usethis-skills-external-install`     | Install/reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)                      |
-| `usethis-skills-modify`               | Modify agent skills (SKILL.md files)                                                                                    |
-| `usethis-python-test-full-coverage`   | Write tests that achieve full code coverage and verify coverage locally before pushing                                  |
+<!-- sync:docs/skills-directory.txt -->
+
+- `usethis-agents`: Maintain AGENTS.md and agent skill configuration
+- `usethis-cli-modify`: Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync
+- `usethis-file-remove`: Remove files from the project
+- `usethis-github-actions-update`: Update GitHub Actions workflows
+- `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
+- `usethis-pre-commit`: Guidance on pre-commit hooks — this project uses prek, not pre-commit directly
+- `usethis-prek-add-hook`: Add a prek hook for dev
+- `usethis-prek-hook-bespoke-create`: Write bespoke prek hooks as Python scripts for custom project-specific checks
+- `usethis-python-code`: Guidelines for Python code design decisions such as when to share vs. duplicate code
+- `usethis-python-code-modify`: Modify Python code (e.g. refactor, add new code, or delete code)
+- `usethis-python-enum`: Style and testing conventions for working with Python enums
+- `usethis-python-functions`: Guidelines for Python function design, including return types and signature simplicity
+- `usethis-python-module-layout-modify`: Modify the Python module layout (create, move, rename, or delete modules)
+- `usethis-python-ruff`: Guidelines for complying with Ruff linter rules instead of suppressing them
+- `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
+- `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
+- `usethis-qa-import-linter`: Use the Import Linter software on the usethis project
+- `usethis-qa-static-checks`: Perform static code checks
+- `usethis-skills-create`: Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability
+- `usethis-skills-external-add`: Add an external (community) skill to the project from a third-party source, including installing it and documenting it in AGENTS.md
+- `usethis-skills-external-install`: Reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)
+- `usethis-skills-modify`: Modify agent skills (SKILL.md files)
+
+<!-- /sync:docs/skills-directory.txt -->
 
 #### External skills
 
@@ -249,6 +452,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 ## Generally Important Instructions
 
+- ALWAYS check the [Function Reference](#function-reference) section above before implementing any utility logic — mature, tested functions already exist for common operations such as reading dependencies, detecting tools, and printing console output.
 - ALWAYS use possibly relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
 - ALWAYS use `find-skills` to research new skill capabilities if there are difficult tasks, tasks in an unfamiliar domain, if you believe there is a lack of clarity or direction around precisely how to proceed, or if you get stuck or find something surprisingly challenging. When using this skill, please be sure to use the `usethis-skills-external-install` skill when deciding to install a new external skill.
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves

@@ -14,6 +14,7 @@ class MissingRequiresPythonError(Exception):
 
 
 def get_requires_python() -> SpecifierSet:
+    """Get the requires-python constraint from pyproject.toml."""
     pyproject = PyprojectTOMLManager().get()
 
     try:

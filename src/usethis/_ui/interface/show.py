@@ -25,6 +25,7 @@ def backend(
     quiet: bool = quiet_opt,
     output_file: Path | None = output_file_opt,
 ) -> None:
+    """Show the inferred project manager backend, e.g. 'uv' or 'none'."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.show import show_backend
@@ -44,6 +45,7 @@ def name(
     quiet: bool = quiet_opt,
     output_file: Path | None = output_file_opt,
 ) -> None:
+    """Show the name of the project."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.show import show_name
@@ -67,6 +69,7 @@ def sonarqube(
     project_key: str | None = project_key_opt,
     output_file: Path | None = output_file_opt,
 ) -> None:
+    """Show the sonar-project.properties file for SonarQube."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.show import show_sonarqube_config

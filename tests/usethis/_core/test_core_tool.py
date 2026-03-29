@@ -2902,6 +2902,25 @@ class TestRequirementsTxt:
             content = (tmp_path / "requirements.txt").read_text()
             assert content == "-e .\n"
 
+        def test_start_from_nothing_poetry_backend(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.poetry),
+            ):
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            out, err = capfd.readouterr()
+            assert not err
+            assert "Writing 'requirements.txt'." in out
+            content = (tmp_path / "requirements.txt").read_text()
+            assert content == "-e .\n"
+
         def test_start_from_uv_init(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):

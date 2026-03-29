@@ -41,3 +41,21 @@ repos:
             assert out == (
                 "☐ Run 'usethis tool requirements.txt' to write 'requirements.txt'.\n"
             )
+
+        def test_poetry_backend_no_pre_commit(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.poetry),
+            ):
+                RequirementsTxtTool().print_how_to_use()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Run 'usethis tool requirements.txt' to write 'requirements.txt'.\n"
+            )

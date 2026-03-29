@@ -2,10 +2,12 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 from usethis._tool.impl.base.ruff import RuffTool
+from usethis._types.backend import BackendEnum
 
 
 class TestRuffTool:
@@ -568,3 +570,87 @@ lint.select = [ "RUF" ]
             assert not (tmp_path / ".ruff.toml").exists()
             assert (tmp_path / "pyproject.toml").exists()
             assert not (tmp_path / "ruff.toml").exists()
+
+    class TestPrintHowToUseLinter:
+        def test_poetry_backend_with_pre_commit(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange - poetry backend detected, install method = pre-commit
+            (tmp_path / "poetry.lock").touch()
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.1
+    hooks:
+      - id: ruff-check
+""")
+
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.poetry),
+            ):
+                RuffTool(linter_detection="always").print_how_to_use_linter()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert "poetry run pre-commit run -a ruff-check" in out
+
+        def test_poetry_backend_devdep(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange - poetry backend detected, install method = devdep (no pre-commit)
+            (tmp_path / "poetry.lock").touch()
+
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.poetry),
+            ):
+                RuffTool(linter_detection="always").print_how_to_use_linter()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert "poetry run ruff check --fix" in out
+
+    class TestPrintHowToUseFormatter:
+        def test_poetry_backend_with_pre_commit(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange - poetry backend detected, install method = pre-commit
+            (tmp_path / "poetry.lock").touch()
+            (tmp_path / ".pre-commit-config.yaml").write_text("""\
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.1
+    hooks:
+      - id: ruff-format
+""")
+
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.poetry),
+            ):
+                RuffTool(formatter_detection="always").print_how_to_use_formatter()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert "poetry run pre-commit run -a ruff-format" in out
+
+        def test_poetry_backend_devdep(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange - poetry backend detected, install method = devdep (no pre-commit)
+            (tmp_path / "poetry.lock").touch()
+
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.poetry),
+            ):
+                RuffTool(formatter_detection="always").print_how_to_use_formatter()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert "poetry run ruff format" in out

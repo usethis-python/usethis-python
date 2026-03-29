@@ -1,9 +1,13 @@
 from pathlib import Path
 
+import pytest
+
+from usethis._config import usethis_config
 from usethis._config_file import DotCoverageRCTOMLManager, files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 from usethis._tool.impl.base.coverage_py import CoveragePyTool
+from usethis._types.backend import BackendEnum
 
 
 class TestCoveragePyTool:
@@ -123,3 +127,40 @@ version = "0.1.0"
             # Assert
             content = (tmp_path / "pyproject.toml").read_text()
             assert "relative_files = true" in content
+
+    class TestPrintHowToUse:
+        def test_poetry_backend_with_pytest(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange - poetry backend detected, pytest managed file present
+            (tmp_path / "poetry.lock").touch()
+            (tmp_path / "tests").mkdir()
+            (tmp_path / "tests" / "conftest.py").touch()
+
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.poetry),
+            ):
+                CoveragePyTool().print_how_to_use()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert "poetry run pytest --cov" in out
+
+        def test_poetry_backend_without_pytest(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange - poetry backend detected, no pytest indicators
+            (tmp_path / "poetry.lock").touch()
+
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.poetry),
+            ):
+                CoveragePyTool().print_how_to_use()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert "poetry run coverage help" in out

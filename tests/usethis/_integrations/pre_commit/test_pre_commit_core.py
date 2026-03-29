@@ -15,6 +15,7 @@ from usethis._integrations.pre_commit.hooks import add_placeholder_hook
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
+from usethis.errors import BackendSubprocessFailedError
 
 
 class TestRemovePreCommitConfig:
@@ -103,6 +104,94 @@ class TestInstallPreCommitHooks:
                 "☐ Run 'uv run pre-commit install' to register pre-commit.\n"
             )
 
+    def test_frozen_message_using_poetry(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # Arrange
+        (tmp_path / "poetry.lock").touch()
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry, frozen=True),
+        ):
+            # Act
+            install_pre_commit_hooks()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "☐ Run 'poetry run pre-commit install' to register pre-commit.\n"
+            )
+
+    def test_frozen_message_poetry_not_detected(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # When poetry backend is set but no poetry.lock exists
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry, frozen=True),
+        ):
+            # Act
+            install_pre_commit_hooks()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ("☐ Run 'pre-commit install' to register pre-commit.\n")
+
+    def test_poetry_backend_install(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        # Arrange - mock call_backend_subprocess to avoid needing real poetry/pre-commit
+        calls: list[list[str]] = []
+
+        def mock_call_backend_subprocess(args: list[str], **__: object) -> None:
+            calls.append(args)
+
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core.call_backend_subprocess",
+            mock_call_backend_subprocess,
+        )
+
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry, frozen=False),
+        ):
+            # Act
+            install_pre_commit_hooks()
+
+        # Assert - should have called install and install-hooks
+        assert len(calls) == 2
+        assert calls[0] == ["run", "pre-commit", "install"]
+        assert calls[1] == ["run", "pre-commit", "install-hooks"]
+
+    def test_poetry_backend_install_error(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        def mock_call_backend_subprocess(args: list[str], **__: object) -> None:
+            _ = args
+            raise BackendSubprocessFailedError
+
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core.call_backend_subprocess",
+            mock_call_backend_subprocess,
+        )
+
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry, frozen=False),
+            pytest.raises(PreCommitInstallationError),
+        ):
+            install_pre_commit_hooks()
+
     def test_err(self, tmp_path: Path):
         # Act, Assert
         with (
@@ -164,4 +253,51 @@ class TestUninstallPreCommitHooks:
 
         # Act, Assert there is no error
         with change_cwd(tmp_path), usethis_config.set(backend=BackendEnum.none):
+            uninstall_pre_commit_hooks()
+
+    def test_poetry_backend_uninstall(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        calls: list[list[str]] = []
+
+        def mock_call_backend_subprocess(args: list[str], **__: object) -> None:
+            calls.append(args)
+
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core.call_backend_subprocess",
+            mock_call_backend_subprocess,
+        )
+
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry, frozen=False),
+        ):
+            uninstall_pre_commit_hooks()
+
+        assert len(calls) == 1
+        assert calls[0] == ["run", "pre-commit", "uninstall"]
+
+    def test_poetry_backend_uninstall_error(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        def mock_call_backend_subprocess(args: list[str], **__: object) -> None:
+            _ = args
+            raise BackendSubprocessFailedError
+
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core.call_backend_subprocess",
+            mock_call_backend_subprocess,
+        )
+
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry, frozen=False),
+            pytest.raises(PreCommitInstallationError),
+        ):
             uninstall_pre_commit_hooks()

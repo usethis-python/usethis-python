@@ -1115,3 +1115,130 @@ default-groups = ["test"]
 
             # Assert
             assert result == []
+
+    def test_poetry_backend(self, tmp_path: Path):
+        with usethis_config.set(backend=BackendEnum.poetry):
+            with change_cwd(tmp_path), files_manager():
+                result = get_default_groups()
+
+            assert result == []
+
+
+class TestAddDefaultGroupsPoetry:
+    def test_poetry_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # Poetry installs all dependency groups by default; should be a no-op
+        with usethis_config.set(backend=BackendEnum.poetry):
+            with change_cwd(tmp_path), files_manager():
+                add_default_groups(["test"])
+
+            assert not (tmp_path / "uv.toml").exists()
+            assert not (tmp_path / "pyproject.toml").exists()
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert not out
+
+
+class TestAddDepsToGroupPoetry:
+    def test_poetry_backend_add(
+        self,
+        tmp_path: Path,
+        capfd: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = []
+""")
+
+        calls: list[tuple[str, str]] = []
+
+        def mock_add_dep(dep: object, group: str) -> None:
+            calls.append((str(dep), group))
+
+        monkeypatch.setattr(
+            "usethis._deps.add_dep_to_group_via_poetry",
+            mock_add_dep,
+        )
+
+        with (
+            usethis_config.set(backend=BackendEnum.poetry),
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+        ):
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
+        out, err = capfd.readouterr()
+        assert not err
+        assert (
+            "Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'" in out
+        )
+        assert len(calls) == 1
+
+    def test_poetry_backend_no_default_group_registration(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Poetry doesn't need to register default groups
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = []
+""")
+
+        def mock_add_dep(dep: object, group: str) -> None:
+            _ = dep
+            _ = group
+
+        monkeypatch.setattr(
+            "usethis._deps.add_dep_to_group_via_poetry",
+            mock_add_dep,
+        )
+
+        with (
+            usethis_config.set(backend=BackendEnum.poetry),
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+        ):
+            add_deps_to_group([Dependency(name="pytest")], "test")
+
+        # No uv.toml default-groups should be created
+        assert not (tmp_path / "uv.toml").exists()
+
+
+class TestRemoveDepsFromGroupPoetry:
+    def test_poetry_backend_remove(
+        self,
+        tmp_path: Path,
+        capfd: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = ["pytest"]
+""")
+
+        calls: list[tuple[str, str]] = []
+
+        def mock_remove_dep(dep: object, group: str) -> None:
+            calls.append((str(dep), group))
+
+        monkeypatch.setattr(
+            "usethis._deps.remove_dep_from_group_via_poetry",
+            mock_remove_dep,
+        )
+
+        with (
+            usethis_config.set(backend=BackendEnum.poetry),
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+        ):
+            remove_deps_from_group([Dependency(name="pytest")], "test")
+
+        out, err = capfd.readouterr()
+        assert not err
+        assert (
+            "Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'"
+            in out
+        )
+        assert len(calls) == 1

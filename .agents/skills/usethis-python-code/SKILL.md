@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Python Code Guidelines
@@ -45,7 +45,7 @@ Before adding a new function to a module, consider at least two candidate locati
 1. Identify the function's level of abstraction: is it a low-level utility, a mid-level integration helper, or a high-level orchestration step?
 2. Consider at least two candidate modules at different abstraction levels before committing to a location.
 3. Prefer the module whose abstraction level most closely matches the function's own level, even if that module is lower in the call stack than where the function will be used.
-4. Verify that placing the function in the chosen module does not violate any Import Linter contracts (run the `usethis-qa-import-linter` skill). If it would, choose the next-best candidate.
+4. Verify that placing the function in the chosen module does not violate any Import Linter contracts (run the `usethis-qa-import-linter` skill). If it would, introduce a new shared lower-level module that both the chosen module and its callers can depend on, and declare it in the relevant contract.
 
 ### Key principle
 

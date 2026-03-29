@@ -109,6 +109,17 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
+      - id: export-functions
+        name: export-functions
+        entry: uv run --frozen --offline hooks/export-functions.py
+        args:
+          - "--output-file=docs/functions.txt"
+          - "--source-root=src/usethis"
+          - "--strict"
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 0
   - repo: local
     hooks:
       - id: deptry

@@ -15,6 +15,7 @@ from usethis._types.backend import BackendEnum
 
 
 def remove_pre_commit_config() -> None:
+    """Remove the .pre-commit-config.yaml file from the project."""
     name = ".pre-commit-config.yaml"
     if not (usethis_config.cpd() / name).exists():
         # Early exit; the file already doesn't exist

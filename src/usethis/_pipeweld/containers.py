@@ -60,12 +60,15 @@ class DepGroup(BaseModel):
 
 
 def parallel(*args: Series | Parallel | DepGroup | str) -> Parallel:
+    """Create a Parallel pipeline composition from the given components."""
     return Parallel(frozenset(args))
 
 
 def series(*args: Series | Parallel | DepGroup | str) -> Series:
+    """Create a Series pipeline composition from the given components."""
     return Series(list(args))
 
 
 def depgroup(*args: Series | Parallel | DepGroup | str, config_group: str) -> DepGroup:
+    """Create a DepGroup pipeline composition tied to a named configuration group."""
     return DepGroup(series=series(*args), config_group=config_group)

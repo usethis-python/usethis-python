@@ -142,6 +142,7 @@ usethis                           # usethis: Automate Python project setup and d
 │       │   ├── pytest            # pytest tool implementation.
 │       │   ├── requirements_txt  # requirements.txt tool implementation.
 │       │   ├── ruff              # Ruff tool implementation.
+│       │   ├── tach              # Tach tool implementation.
 │       │   └── ty                # ty tool implementation.
 │       └── spec                  # Tool specification implementations.
 │           ├── codespell         # Codespell tool specification.
@@ -155,6 +156,7 @@ usethis                           # usethis: Automate Python project setup and d
 │           ├── pytest            # pytest tool specification.
 │           ├── requirements_txt  # requirements.txt tool specification.
 │           ├── ruff              # Ruff tool specification.
+│           ├── tach              # Tach tool specification.
 │           └── ty                # ty tool specification.
 ├── _toolset                      # Predefined groups of related tools.
 │   ├── arch                      # Architecture enforcement toolset.

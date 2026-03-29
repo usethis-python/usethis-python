@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, final
 
 from typing_extensions import override
 
-from usethis._config import usethis_config
 from usethis._config_file import TachTOMLManager
 from usethis._console import warn_print
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
@@ -110,8 +109,12 @@ class TachToolSpec(ToolSpec):
                         full_path = f"{module}.{mod_name}"
                         # Determine dependencies: modules in lower layers (higher idx)
                         dep_paths: list[str] = []
-                        for dep_layer_idx in range(layer_idx + 1, len(layered_architecture.layers)):
-                            for dep_mod in sorted(layered_architecture.layers[dep_layer_idx]):
+                        for dep_layer_idx in range(
+                            layer_idx + 1, len(layered_architecture.layers)
+                        ):
+                            for dep_mod in sorted(
+                                layered_architecture.layers[dep_layer_idx]
+                            ):
                                 dep_paths.append(f"{module}.{dep_mod}")
 
                         mod_entry: dict[str, object] = {

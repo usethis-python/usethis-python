@@ -4,7 +4,7 @@ description: Guidelines for Python function design, including return types and s
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Function Design Guidelines
@@ -40,6 +40,41 @@ def make_hook(hook_id: str, entry: str) -> Hook:
     always_run = True
     pass_filenames = False
     ...
+```
+
+## Don't pass global config attributes as function parameters
+
+Non-CLI functions must not accept attributes of the `usethis_config` global state object (such as `backend`, `offline`, `frozen`, `quiet`, etc.) as parameters. Instead, access `usethis_config` directly inside the function body. This avoids pass-through variable patterns where config values are threaded through multiple layers of function calls.
+
+Only CLI interface functions (in `_ui/interface/`) should accept these as parameters, because they need to receive values from the CLI framework and apply them to the global config via `usethis_config.set()`.
+
+### What to do instead
+
+1. **Import and access `usethis_config` directly** in the function body.
+2. **Use helper functions** like `get_backend()` that read from `usethis_config` internally.
+3. **Use `usethis_config.set()` as a context manager** when you need to temporarily override a config value within a scope, rather than passing the override as a parameter.
+
+### Example
+
+```python
+# Bad: accepting a config attribute as a parameter and passing it through.
+def register_group(name: str, *, backend: BackendEnum) -> None:
+    if backend is BackendEnum.uv:
+        ...
+
+def use_tool(*, backend: BackendEnum) -> None:
+    register_group("dev", backend=backend)
+
+# Good: access usethis_config directly.
+from usethis._config import usethis_config
+from usethis._backend.dispatch import get_backend
+
+def register_group(name: str) -> None:
+    if get_backend() is BackendEnum.uv:
+        ...
+
+def use_tool() -> None:
+    register_group("dev")
 ```
 
 ## Avoid returning tuples

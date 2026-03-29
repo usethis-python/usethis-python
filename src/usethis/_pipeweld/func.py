@@ -654,6 +654,7 @@ def _linearize_component(
         def sort_key(item: str) -> tuple[int, int]:
             # Existing steps sort by their original position (priority 0);
             # the new step sorts last (priority 1).
+            # Steps not found in original_order are placed after all known steps.
             if item == new_step:
                 return (1, 0)
             try:

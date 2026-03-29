@@ -1,6 +1,6 @@
 ---
 name: usethis-agents
-description: Maintain AGENTS.md and agent skill configuration following the one-source-of-truth principle
+description: Maintain AGENTS.md and agent skill configuration
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:

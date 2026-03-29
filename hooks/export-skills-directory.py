@@ -2,7 +2,7 @@
 
 Scans agent skill directories for SKILL.md files, extracts the name and
 description from each file's YAML frontmatter, and writes a formatted
-Markdown table to an output file.
+Markdown bullet list to an output file.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ def _parse_frontmatter(path: Path) -> dict[str, str]:
 
 
 def main() -> int:
-    """Export a skills directory table from SKILL.md frontmatter."""
+    """Export a skills directory bullet list from SKILL.md frontmatter."""
     parser = argparse.ArgumentParser(
         description="Export a skills directory from SKILL.md frontmatter.",
     )
@@ -43,7 +43,7 @@ def main() -> int:
     parser.add_argument(
         "--output-file",
         required=True,
-        help="Path to the output file to write the directory table to.",
+        help="Path to the output file to write the directory to.",
     )
     parser.add_argument(
         "--prefix",
@@ -84,17 +84,9 @@ def main() -> int:
         print("ERROR: No skills found.", file=sys.stderr)
         return 1
 
-    name_width = max(len(f"`{name}`") for name, _ in rows)
-    desc_width = max(len(desc) for _, desc in rows)
-    name_width = max(name_width, len("Skill"))
-    desc_width = max(desc_width, len("Description"))
-
     lines: list[str] = []
-    lines.append(f"| {'Skill':<{name_width}} | {'Description':<{desc_width}} |")
-    lines.append(f"| {'-' * name_width} | {'-' * desc_width} |")
     for name, desc in rows:
-        formatted_name = f"`{name}`"
-        lines.append(f"| {formatted_name:<{name_width}} | {desc:<{desc_width}} |")
+        lines.append(f"- `{name}`: {desc}")
 
     content = "\n".join(lines) + "\n"
 

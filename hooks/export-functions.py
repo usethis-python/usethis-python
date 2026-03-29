@@ -17,8 +17,9 @@ from pathlib import Path
 
 
 def _module_name(source_file: Path, source_root: Path) -> str:
-    """Derive a dotted module name from a file path relative to the source root."""
-    rel = source_file.relative_to(source_root)
+    """Derive a dotted module name from a file path, including the package name."""
+    # Use source_root.parent so the package directory name itself is part of the path.
+    rel = source_file.relative_to(source_root.parent)
     parts = rel.with_suffix("").parts
     # Drop __init__ from the tail so the module name matches the package path.
     if parts and parts[-1] == "__init__":

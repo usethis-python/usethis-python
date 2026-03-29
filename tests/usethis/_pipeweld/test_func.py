@@ -4,7 +4,9 @@ from usethis._pipeweld.containers import depgroup, parallel, series
 from usethis._pipeweld.func import (
     Adder,
     Partition,
+    _extract_ordered_steps,
     _flatten_partition,
+    _linearize_component,
     _op_series_merge_partitions,
     _parallel_merge_partitions,
 )
@@ -650,3 +652,113 @@ class TestOpSeriesMergePartitions:
             postrequisite_component="B",
             top_ranked_endpoint="B",
         )
+
+
+class TestExtractOrderedSteps:
+    def test_single_string(self):
+        assert _extract_ordered_steps("A") == ["A"]
+
+    def test_flat_series(self):
+        assert _extract_ordered_steps(series("A", "B", "C")) == ["A", "B", "C"]
+
+    def test_parallel(self):
+        result = _extract_ordered_steps(parallel("A", "B"))
+        assert sorted(result) == ["A", "B"]
+
+    def test_nested_series(self):
+        assert _extract_ordered_steps(series("A", series("B", "C"))) == ["A", "B", "C"]
+
+    def test_depgroup(self):
+        assert _extract_ordered_steps(depgroup("A", "B", config_group="x")) == [
+            "A",
+            "B",
+        ]
+
+
+class TestLinearizeComponent:
+    def test_single_string(self):
+        assert _linearize_component("A", new_step="A", original_order=[]) == ["A"]
+
+    def test_series_of_strings(self):
+        assert _linearize_component(
+            series("A", "B", "C"), new_step="D", original_order=["A", "B", "C"]
+        ) == ["A", "B", "C"]
+
+    def test_parallel_new_step_last(self):
+        result = _linearize_component(
+            parallel("A", "B"), new_step="B", original_order=["A"]
+        )
+        assert result == ["A", "B"]
+
+    def test_parallel_preserves_existing_order(self):
+        result = _linearize_component(
+            parallel("B", "A"), new_step="C", original_order=["A", "B"]
+        )
+        assert result == ["A", "B"]
+
+    def test_series_with_parallel(self):
+        result = _linearize_component(
+            series(parallel("foo", "new"), "codespell"),
+            new_step="new",
+            original_order=["foo", "codespell"],
+        )
+        assert result == ["foo", "new", "codespell"]
+
+    def test_depgroup(self):
+        result = _linearize_component(
+            depgroup("A", "B", config_group="x"),
+            new_step="C",
+            original_order=["A", "B"],
+        )
+        assert result == ["A", "B"]
+
+
+class TestAdderForceLinear:
+    def test_parallel_resolved_to_linear(self):
+        adder = Adder(
+            pipeline=series("A"),
+            step="B",
+            force_linear=True,
+        )
+        result = adder.add()
+        # A comes first (existing), B last (new)
+        assert result.solution == series("A", "B")
+
+    def test_new_step_before_postrequisite(self):
+        adder = Adder(
+            pipeline=series("codespell"),
+            step="ruff",
+            postrequisites={"codespell"},
+            force_linear=True,
+        )
+        result = adder.add()
+        assert result.solution == series("ruff", "codespell")
+
+    def test_new_step_after_prerequisite(self):
+        adder = Adder(
+            pipeline=series("pyproject-fmt"),
+            step="ruff",
+            prerequisites={"pyproject-fmt"},
+            force_linear=True,
+        )
+        result = adder.add()
+        assert result.solution == series("pyproject-fmt", "ruff")
+
+    def test_empty_pipeline(self):
+        adder = Adder(
+            pipeline=series(),
+            step="A",
+            force_linear=True,
+        )
+        result = adder.add()
+        assert result.solution == series("A")
+
+    def test_mixed_nondependent_and_postrequisite(self):
+        adder = Adder(
+            pipeline=series("foo", "codespell"),
+            step="ruff-format",
+            postrequisites={"codespell"},
+            force_linear=True,
+        )
+        result = adder.add()
+        assert result.solution == series("foo", "ruff-format", "codespell")

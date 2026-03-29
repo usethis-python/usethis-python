@@ -12,13 +12,11 @@ from usethis._integrations.pre_commit.init import (
 )
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
-from usethis._pipeweld.containers import Parallel, Series, series
+from usethis._pipeweld.containers import series
 from usethis._pipeweld.func import Adder
 
 if TYPE_CHECKING:
     from collections.abc import Collection
-
-    from usethis._pipeweld.containers import DepGroup
 
 _HOOK_ORDER = [
     "sync-with-uv",
@@ -88,12 +86,18 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
             step=hook_config.id,
             prerequisites=prerequisites,
             postrequisites=postrequisites,
+            force_linear=True,
         )
         result = adder.add()
 
-        predecessor = _get_predecessor_from_solution(
-            result.solution, hook_config.id, existing_hooks
-        )
+        # With force_linear=True, solution is a flat Series of strings.
+        flat = result.solution.root
+        idx = flat.index(hook_config.id)
+        predecessor: str | None = None
+        if idx > 0:
+            prev_item = flat[idx - 1]
+            assert isinstance(prev_item, str)
+            predecessor = prev_item
 
         model.repos = insert_repo(
             repo_to_insert=repo,
@@ -152,58 +156,6 @@ def insert_repo(
                 inserted = True
 
     return repos
-
-
-def _get_predecessor_from_solution(
-    solution: Series, new_step: str, existing_hooks: list[str]
-) -> str | None:
-    """Find the hook that should immediately precede the new step.
-
-    Returns the hook ID that should come before ``new_step`` in the linearized
-    solution, or ``None`` if the new step should be inserted first.
-    """
-    flat = _linearize(solution, new_step, existing_hooks)
-    idx = flat.index(new_step)
-    if idx == 0:
-        return None
-    return flat[idx - 1]
-
-
-def _linearize(
-    component: Series | Parallel | DepGroup | str,
-    new_step: str,
-    existing_hooks: list[str],
-) -> list[str]:
-    """Flatten a pipeweld solution component to a linear list of hook IDs.
-
-    Within parallel groups, existing hooks maintain their relative order from
-    ``existing_hooks`` and the new hook is placed after all existing hooks.
-    """
-    if isinstance(component, str):
-        return [component]
-    elif isinstance(component, Series):
-        result: list[str] = []
-        for sub in component.root:
-            result.extend(_linearize(sub, new_step, existing_hooks))
-        return result
-    elif isinstance(component, Parallel):
-        sublists = [_linearize(sub, new_step, existing_hooks) for sub in component.root]
-        all_items = [item for sublist in sublists for item in sublist]
-
-        def sort_key(item: str) -> tuple[int, int]:
-            # Existing hooks sort by their original position (priority 0);
-            # the new hook sorts last (priority 1).
-            if item == new_step:
-                return (1, 0)
-            try:
-                return (0, existing_hooks.index(item))
-            except ValueError:
-                return (0, len(existing_hooks))
-
-        all_items.sort(key=sort_key)
-        return all_items
-    else:
-        return _linearize(component.series, new_step, existing_hooks)
 
 
 def _report_adding_repo(

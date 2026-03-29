@@ -37,6 +37,7 @@ class Adder(BaseModel):
     prerequisites: set[str] = set()
     postrequisites: set[str] = set()
     compatible_config_groups: set[str] = set()
+    force_linear: bool = False
 
     def add(self) -> WeldResult:
         if len(self.pipeline) == 0:
@@ -59,6 +60,11 @@ class Adder(BaseModel):
             )
 
         instructions += new_instructions
+
+        if self.force_linear:
+            original_order = _extract_ordered_steps(self.pipeline)
+            flat = _linearize_component(rearranged_pipeline, self.step, original_order)
+            rearranged_pipeline = series(*flat)
 
         return WeldResult(
             solution=rearranged_pipeline,
@@ -603,5 +609,61 @@ def get_endpoint(component: str | Series | DepGroup | Parallel) -> str:
         return sorted(endpoints)[0]
     elif isinstance(component, DepGroup):
         return get_endpoint(component.series)
+    else:
+        assert_never(component)
+
+
+def _extract_ordered_steps(
+    component: str | Series | Parallel | DepGroup,
+) -> list[str]:
+    """Extract all step names from a component in depth-first order."""
+    if isinstance(component, str):
+        return [component]
+    elif isinstance(component, Series | Parallel):
+        return [s for sub in component.root for s in _extract_ordered_steps(sub)]
+    elif isinstance(component, DepGroup):
+        return _extract_ordered_steps(component.series)
+    else:
+        assert_never(component)
+
+
+def _linearize_component(
+    component: str | Series | Parallel | DepGroup,
+    new_step: str,
+    original_order: list[str],
+) -> list[str]:
+    """Flatten a pipeline component to a linear list of step names.
+
+    Within parallel groups, existing steps maintain their relative order from
+    ``original_order`` and the new step is placed after all existing steps.
+    """
+    if isinstance(component, str):
+        return [component]
+    elif isinstance(component, Series):
+        result: list[str] = []
+        for sub in component.root:
+            result.extend(_linearize_component(sub, new_step, original_order))
+        return result
+    elif isinstance(component, Parallel):
+        sublists = [
+            _linearize_component(sub, new_step, original_order)
+            for sub in component.root
+        ]
+        all_items = [item for sublist in sublists for item in sublist]
+
+        def sort_key(item: str) -> tuple[int, int]:
+            # Existing steps sort by their original position (priority 0);
+            # the new step sorts last (priority 1).
+            if item == new_step:
+                return (1, 0)
+            try:
+                return (0, original_order.index(item))
+            except ValueError:
+                return (0, len(original_order))
+
+        all_items.sort(key=sort_key)
+        return all_items
+    elif isinstance(component, DepGroup):
+        return _linearize_component(component.series, new_step, original_order)
     else:
         assert_never(component)

@@ -8,6 +8,7 @@ from usethis._fallback import FALLBACK_UV_VERSION, next_breaking_version
 
 
 def get_uv_version() -> str:
+    """Get the installed uv version, falling back to a default if unavailable."""
     try:
         json_str = call_uv_subprocess(
             ["self", "version", "--output-format=json"],

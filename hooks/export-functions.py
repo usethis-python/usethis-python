@@ -1,8 +1,10 @@
 """Export important utility functions with docstrings to a markdown reference file.
 
 Scans specified Python source files for public functions with docstrings and
-writes a categorized markdown reference to an output file.  Only functions
-with a module-level docstring are included; undocumented functions are skipped.
+writes a flat markdown reference to an output file.  Only functions with a
+docstring are included; undocumented functions are skipped.  Functions are
+listed in the order they appear in each module, and modules are listed in the
+order they appear in MODULES.
 """
 
 from __future__ import annotations
@@ -10,7 +12,7 @@ from __future__ import annotations
 import argparse
 import ast
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -20,78 +22,46 @@ class _Entry:
     file: str
 
 
-@dataclass
-class _Section:
-    heading: str
-    entries: list[_Entry] = field(default_factory=list)
-
-
-# The categories of utility functions to include in the reference.
-# Each section maps a heading to a list of (module, file) entries.
-# Only public functions with a docstring in these files are included.
-SECTIONS: list[_Section] = [
-    _Section(
-        heading="### Dependency Management",
-        entries=[
-            _Entry(module="usethis._deps", file="src/usethis/_deps.py"),
-        ],
+# The modules to scan for public functions with docstrings.
+# Add entries here to include additional modules in the reference.
+MODULES: list[_Entry] = [
+    _Entry(module="usethis._deps", file="src/usethis/_deps.py"),
+    _Entry(module="usethis._console", file="src/usethis/_console.py"),
+    _Entry(
+        module="usethis._detect.pre_commit",
+        file="src/usethis/_detect/pre_commit.py",
     ),
-    _Section(
-        heading="### Console Output",
-        entries=[
-            _Entry(module="usethis._console", file="src/usethis/_console.py"),
-        ],
+    _Entry(
+        module="usethis._detect.readme",
+        file="src/usethis/_detect/readme.py",
     ),
-    _Section(
-        heading="### Tool and Feature Detection",
-        entries=[
-            _Entry(
-                module="usethis._detect.pre_commit",
-                file="src/usethis/_detect/pre_commit.py",
-            ),
-            _Entry(
-                module="usethis._detect.readme",
-                file="src/usethis/_detect/readme.py",
-            ),
-            _Entry(
-                module="usethis._integrations.project.build",
-                file="src/usethis/_integrations/project/build.py",
-            ),
-        ],
+    _Entry(
+        module="usethis._integrations.project.build",
+        file="src/usethis/_integrations/project/build.py",
     ),
-    _Section(
-        heading="### Project Metadata",
-        entries=[
-            _Entry(
-                module="usethis._integrations.project.name",
-                file="src/usethis/_integrations/project/name.py",
-            ),
-            _Entry(
-                module="usethis._integrations.project.packages",
-                file="src/usethis/_integrations/project/packages.py",
-            ),
-            _Entry(
-                module="usethis._integrations.project.layout",
-                file="src/usethis/_integrations/project/layout.py",
-            ),
-            _Entry(
-                module="usethis._file.pyproject_toml.requires_python",
-                file="src/usethis/_file/pyproject_toml/requires_python.py",
-            ),
-            _Entry(
-                module="usethis._file.pyproject_toml.name",
-                file="src/usethis/_file/pyproject_toml/name.py",
-            ),
-        ],
+    _Entry(
+        module="usethis._integrations.project.name",
+        file="src/usethis/_integrations/project/name.py",
     ),
-    _Section(
-        heading="### Backend Dispatch",
-        entries=[
-            _Entry(
-                module="usethis._backend.dispatch",
-                file="src/usethis/_backend/dispatch.py",
-            ),
-        ],
+    _Entry(
+        module="usethis._integrations.project.packages",
+        file="src/usethis/_integrations/project/packages.py",
+    ),
+    _Entry(
+        module="usethis._integrations.project.layout",
+        file="src/usethis/_integrations/project/layout.py",
+    ),
+    _Entry(
+        module="usethis._file.pyproject_toml.requires_python",
+        file="src/usethis/_file/pyproject_toml/requires_python.py",
+    ),
+    _Entry(
+        module="usethis._file.pyproject_toml.name",
+        file="src/usethis/_file/pyproject_toml/name.py",
+    ),
+    _Entry(
+        module="usethis._backend.dispatch",
+        file="src/usethis/_backend/dispatch.py",
     ),
 ]
 
@@ -142,33 +112,23 @@ def main() -> int:
 
     output_file = Path(args.output_file)
 
-    sections_output: list[str] = []
+    bullets: list[str] = []
     failed = False
 
-    for section in SECTIONS:
-        bullets: list[str] = []
+    for entry in MODULES:
+        source_path = Path(entry.file)
+        if not source_path.is_file():
+            print(
+                f"ERROR: Source file {source_path} not found.",
+                file=sys.stderr,
+            )
+            failed = True
+            continue
 
-        for entry in section.entries:
-            source_path = Path(entry.file)
-            if not source_path.is_file():
-                print(
-                    f"ERROR: Source file {source_path} not found.",
-                    file=sys.stderr,
-                )
-                failed = True
-                continue
+        for func_name, first_line in _get_public_functions(source_path):
+            bullets.append(f"- `{func_name}()` (`{entry.module}`) — {first_line}")
 
-            for func_name, first_line in _get_public_functions(source_path):
-                bullets.append(f"- `{func_name}()` (`{entry.module}`) — {first_line}")
-
-        if bullets:
-            if sections_output:
-                sections_output.append("")
-            sections_output.append(section.heading)
-            sections_output.append("")
-            sections_output.extend(bullets)
-
-    content = "\n".join(sections_output) + "\n"
+    content = "\n".join(bullets) + "\n"
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(content, encoding="utf-8")

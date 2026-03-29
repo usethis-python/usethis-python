@@ -1,8 +1,9 @@
-"""Export important utility functions with docstrings to a markdown reference file.
+"""Export public functions with docstrings from Python source files to a reference file.
 
-Scans specified Python source files for public functions with docstrings and
-writes a categorized markdown reference to an output file.  Only functions
-with a module-level docstring are included; undocumented functions are skipped.
+Scans the specified Python source files for public functions with a docstring and
+writes a flat markdown bullet list to an output file. Functions are listed in the
+order they appear in the source files, which are processed in the order given on
+the command line. Functions without a docstring are skipped.
 """
 
 from __future__ import annotations
@@ -10,96 +11,20 @@ from __future__ import annotations
 import argparse
 import ast
 import sys
-from dataclasses import dataclass, field
 from pathlib import Path
 
 
-@dataclass
-class _Entry:
-    module: str
-    file: str
-
-
-@dataclass
-class _Section:
-    heading: str
-    entries: list[_Entry] = field(default_factory=list)
-
-
-# The categories of utility functions to include in the reference.
-# Each section maps a heading to a list of (module, file) entries.
-# Only public functions with a docstring in these files are included.
-SECTIONS: list[_Section] = [
-    _Section(
-        heading="### Dependency Management",
-        entries=[
-            _Entry(module="usethis._deps", file="src/usethis/_deps.py"),
-        ],
-    ),
-    _Section(
-        heading="### Console Output",
-        entries=[
-            _Entry(module="usethis._console", file="src/usethis/_console.py"),
-        ],
-    ),
-    _Section(
-        heading="### Tool and Feature Detection",
-        entries=[
-            _Entry(
-                module="usethis._detect.pre_commit",
-                file="src/usethis/_detect/pre_commit.py",
-            ),
-            _Entry(
-                module="usethis._detect.readme",
-                file="src/usethis/_detect/readme.py",
-            ),
-            _Entry(
-                module="usethis._integrations.project.build",
-                file="src/usethis/_integrations/project/build.py",
-            ),
-        ],
-    ),
-    _Section(
-        heading="### Project Metadata",
-        entries=[
-            _Entry(
-                module="usethis._integrations.project.name",
-                file="src/usethis/_integrations/project/name.py",
-            ),
-            _Entry(
-                module="usethis._integrations.project.packages",
-                file="src/usethis/_integrations/project/packages.py",
-            ),
-            _Entry(
-                module="usethis._integrations.project.layout",
-                file="src/usethis/_integrations/project/layout.py",
-            ),
-            _Entry(
-                module="usethis._file.pyproject_toml.requires_python",
-                file="src/usethis/_file/pyproject_toml/requires_python.py",
-            ),
-            _Entry(
-                module="usethis._file.pyproject_toml.name",
-                file="src/usethis/_file/pyproject_toml/name.py",
-            ),
-        ],
-    ),
-    _Section(
-        heading="### Backend Dispatch",
-        entries=[
-            _Entry(
-                module="usethis._backend.dispatch",
-                file="src/usethis/_backend/dispatch.py",
-            ),
-        ],
-    ),
-]
+def _module_name(source_file: Path, source_root: Path) -> str:
+    """Derive a dotted module name from a file path relative to the source root."""
+    rel = source_file.relative_to(source_root)
+    parts = rel.with_suffix("").parts
+    return ".".join(parts)
 
 
 def _get_public_functions(path: Path) -> list[tuple[str, str]]:
     """Return (name, first_docstring_line) for each public function in the file.
 
-    Functions without a docstring are excluded.
+    Functions without a docstring are excluded. Functions are returned in source order.
     """
     try:
         source = path.read_text(encoding="utf-8")
@@ -131,44 +56,51 @@ def _get_public_functions(path: Path) -> list[tuple[str, str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Export utility function reference to a markdown file.",
+        description="Export public function reference to a markdown file.",
     )
     parser.add_argument(
         "--output-file",
         required=True,
-        help="Path to the output markdown file to write.",
+        help="Path to the output file to write.",
+    )
+    parser.add_argument(
+        "--source-root",
+        required=True,
+        help="Root directory used to derive dotted module names from file paths.",
+    )
+    parser.add_argument(
+        "source_files",
+        nargs="+",
+        help="Python source files to scan for public functions.",
     )
     args = parser.parse_args()
 
     output_file = Path(args.output_file)
-
-    sections_output: list[str] = []
+    source_root = Path(args.source_root)
     failed = False
+    bullets: list[str] = []
 
-    for section in SECTIONS:
-        bullets: list[str] = []
+    for source_file_str in args.source_files:
+        source_path = Path(source_file_str)
+        if not source_path.is_file():
+            print(f"ERROR: Source file {source_path} not found.", file=sys.stderr)
+            failed = True
+            continue
 
-        for entry in section.entries:
-            source_path = Path(entry.file)
-            if not source_path.is_file():
-                print(
-                    f"ERROR: Source file {source_path} not found.",
-                    file=sys.stderr,
-                )
-                failed = True
-                continue
+        try:
+            module = _module_name(source_path, source_root)
+        except ValueError:
+            print(
+                f"ERROR: {source_path} is not relative to source root {source_root}.",
+                file=sys.stderr,
+            )
+            failed = True
+            continue
 
-            for func_name, first_line in _get_public_functions(source_path):
-                bullets.append(f"- `{func_name}()` (`{entry.module}`) — {first_line}")
+        for func_name, first_line in _get_public_functions(source_path):
+            bullets.append(f"- `{func_name}()` (`{module}`) — {first_line}")
 
-        if bullets:
-            if sections_output:
-                sections_output.append("")
-            sections_output.append(section.heading)
-            sections_output.append("")
-            sections_output.extend(bullets)
-
-    content = "\n".join(sections_output) + "\n"
+    content = "\n".join(bullets) + "\n"
 
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(content, encoding="utf-8")

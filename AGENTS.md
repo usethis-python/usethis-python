@@ -205,8 +205,6 @@ ALWAYS check whether an existing function already covers your use case before im
 
 <!-- sync:docs/functions.txt -->
 
-### Dependency Management
-
 - `get_project_deps()` (`usethis._deps`) — Get all project dependencies.
 - `get_dep_groups()` (`usethis._deps`) — Get all dependency groups from the dependency-groups section of pyproject.toml.
 - `get_deps_from_group()` (`usethis._deps`) — Get the list of dependencies in a named dependency group.
@@ -216,9 +214,6 @@ ALWAYS check whether an existing function already covers your use case before im
 - `remove_deps_from_group()` (`usethis._deps`) — Remove dependencies from the named group if present.
 - `is_dep_in_any_group()` (`usethis._deps`) — Check if a dependency exists in any dependency group.
 - `add_deps_to_group()` (`usethis._deps`) — Add dependencies to a named group using PEP 735 dependency groups.
-
-### Console Output
-
 - `tick_print()` (`usethis._console`) — Print a ✔ success/completion message (green).
 - `instruct_print()` (`usethis._console`) — Print a ☐ instruction the user must perform manually (red).
 - `how_print()` (`usethis._console`) — Print a ☐ guidance message explaining how to do something (red).
@@ -226,24 +221,15 @@ ALWAYS check whether an existing function already covers your use case before im
 - `err_print()` (`usethis._console`) — Print a ✗ error message to stderr (red).
 - `warn_print()` (`usethis._console`) — Print a ⚠ warning message (yellow; deduplicated).
 - `get_icon_mode()` (`usethis._console`) — Detect terminal's icon support level.
-
-### Tool and Feature Detection
-
 - `is_pre_commit_used()` (`usethis._detect.pre_commit`) — Check if pre-commit is being used in the project.
 - `is_readme_used()` (`usethis._detect.readme`) — Check if the README.md file is used.
 - `has_pyproject_toml_declared_build_system()` (`usethis._integrations.project.build`) — Check if a build system is declared in the project.
-
-### Project Metadata
-
 - `get_project_name()` (`usethis._integrations.project.name`) — The project name, from pyproject.toml if available or fallback to heuristics.
 - `get_importable_packages()` (`usethis._integrations.project.packages`) — Get the names of packages in the source directory that can be imported.
 - `get_source_dir_str()` (`usethis._integrations.project.layout`) — Get the source directory as a string ('src' or '.').
 - `get_requires_python()` (`usethis._file.pyproject_toml.requires_python`) — Get the requires-python constraint from pyproject.toml.
 - `get_required_minor_python_versions()` (`usethis._file.pyproject_toml.requires_python`) — Get Python minor versions that match the project's requires-python constraint.
 - `get_name()` (`usethis._file.pyproject_toml.name`) — Get the project name from pyproject.toml.
-
-### Backend Dispatch
-
 - `get_backend()` (`usethis._backend.dispatch`) — Get the current package manager backend.
 
 <!-- /sync:docs/functions.txt -->

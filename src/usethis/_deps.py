@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
 import pydantic
 from packaging.requirements import Requirement
 from pydantic import TypeAdapter
@@ -145,8 +143,8 @@ def add_default_groups(groups: list[str]) -> None:
     if backend is BackendEnum.uv:
         add_default_groups_via_uv(groups)
     elif backend is BackendEnum.poetry:
-        # Poetry installs all dependency groups by default
-        pass
+        for group in groups:
+            _register_poetry_default_group(group)
     elif backend is BackendEnum.none:
         # This is not really a meaningful concept without a package manager
         pass
@@ -159,8 +157,7 @@ def get_default_groups() -> list[str]:
     if backend is BackendEnum.uv:
         return get_default_groups_via_uv()
     elif backend is BackendEnum.poetry:
-        # Poetry installs all dependency groups by default
-        return []
+        return _get_poetry_default_groups()
     elif backend is BackendEnum.none:
         # This is not really a meaningful concept without a package manager
         return []
@@ -257,32 +254,32 @@ def add_deps_to_group(
     # a combined workflow.
     if usethis_config.frozen:
         instruct_print(f"Install the dependenc{ies} {deps_str}.")
-    _install_deps_to_group(backend, to_add_deps, group)
+    _install_deps_to_group(to_add_deps, group)
 
     # Register the group - don't do this before adding the deps in case that step fails
     if default:
-        _register_default_group(group, backend=backend)
+        _register_default_group(group)
 
 
 def _register_default_group(
     group: str,
-    *,
-    backend: Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none],
 ) -> None:
+    backend = get_backend()
     if backend is BackendEnum.uv:
         register_default_group(group)
-    elif backend in (BackendEnum.poetry, BackendEnum.none):
-        # Poetry installs all dependency groups by default; no-op for none backend
+    elif backend is BackendEnum.poetry:
+        _register_poetry_default_group(group)
+    elif backend is BackendEnum.none:
         pass
     else:
         assert_never(backend)
 
 
 def _install_deps_to_group(
-    backend: Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none],
     deps: list[Dependency],
     group: str,
 ) -> None:
+    backend = get_backend()
     if backend is BackendEnum.uv:
         for dep in deps:
             add_dep_to_group_via_uv(dep, group)
@@ -293,3 +290,46 @@ def _install_deps_to_group(
         pass
     else:
         assert_never(backend)
+
+
+def _register_poetry_default_group(group: str) -> None:
+    """Ensure a poetry dependency group is installed by default (non-optional)."""
+    try:
+        pyproject = PyprojectTOMLManager().get()
+    except FileNotFoundError:
+        return
+
+    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})  # type: ignore[union-attr]
+    group_config = poetry_groups.get(group, {})  # type: ignore[union-attr]
+
+    if isinstance(group_config, dict) and group_config.get("optional") is True:
+        # Remove the optional flag to make this group installed by default
+        PyprojectTOMLManager().set_value(
+            keys=["tool", "poetry", "group", group, "optional"],
+            value=False,
+            exists_ok=True,
+        )
+
+
+def _get_poetry_default_groups() -> list[str]:
+    """Get the list of poetry dependency groups that are installed by default.
+
+    In Poetry, all groups are installed by default unless they have
+    ``optional = true`` set in ``[tool.poetry.group.GROUPNAME]``.
+    """
+    dep_groups = get_dep_groups()
+
+    try:
+        pyproject = PyprojectTOMLManager().get()
+    except FileNotFoundError:
+        return list(dep_groups.keys())
+
+    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})  # type: ignore[union-attr]
+
+    default_groups = []
+    for group_name in dep_groups:
+        group_config = poetry_groups.get(group_name, {})  # type: ignore[union-attr]
+        if isinstance(group_config, dict) and group_config.get("optional") is True:
+            continue
+        default_groups.append(group_name)
+    return default_groups

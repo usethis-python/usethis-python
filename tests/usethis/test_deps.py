@@ -1117,6 +1117,35 @@ default-groups = ["test"]
             assert result == []
 
     def test_poetry_backend(self, tmp_path: Path):
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = ["pytest"]
+dev = ["ruff"]
+""")
+        with usethis_config.set(backend=BackendEnum.poetry):
+            with change_cwd(tmp_path), files_manager():
+                result = get_default_groups()
+
+            # All groups are default by default in poetry
+            assert sorted(result) == ["dev", "test"]
+
+    def test_poetry_backend_optional_group(self, tmp_path: Path):
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = ["pytest"]
+docs = ["mkdocs"]
+
+[tool.poetry.group.docs]
+optional = true
+""")
+        with usethis_config.set(backend=BackendEnum.poetry):
+            with change_cwd(tmp_path), files_manager():
+                result = get_default_groups()
+
+            # docs is optional, so only test is default
+            assert result == ["test"]
+
+    def test_poetry_backend_no_pyproject(self, tmp_path: Path):
         with usethis_config.set(backend=BackendEnum.poetry):
             with change_cwd(tmp_path), files_manager():
                 result = get_default_groups()
@@ -1125,18 +1154,40 @@ default-groups = ["test"]
 
 
 class TestAddDefaultGroupsPoetry:
-    def test_poetry_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
-        # Poetry installs all dependency groups by default; should be a no-op
+    def test_poetry_backend_no_optional(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # When the group doesn't have optional=true, nothing changes
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = ["pytest"]
+""")
         with usethis_config.set(backend=BackendEnum.poetry):
             with change_cwd(tmp_path), files_manager():
                 add_default_groups(["test"])
 
-            assert not (tmp_path / "uv.toml").exists()
-            assert not (tmp_path / "pyproject.toml").exists()
+        # No uv.toml should be created
+        assert not (tmp_path / "uv.toml").exists()
 
-            out, err = capfd.readouterr()
-            assert not err
-            assert not out
+        out, err = capfd.readouterr()
+        assert not err
+        assert not out
+
+    def test_poetry_backend_optional_to_default(self, tmp_path: Path):
+        # When the group has optional=true, it should be set to false
+        (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = ["pytest"]
+
+[tool.poetry.group.test]
+optional = true
+""")
+        with usethis_config.set(backend=BackendEnum.poetry):
+            with change_cwd(tmp_path), files_manager():
+                add_default_groups(["test"])
+
+        content = (tmp_path / "pyproject.toml").read_text()
+        assert "optional = false" in content
 
 
 class TestAddDepsToGroupPoetry:

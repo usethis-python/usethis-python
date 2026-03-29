@@ -262,12 +262,18 @@ class TestUninstallPreCommitHooks:
     ):
         calls: list[list[str]] = []
 
-        def mock_call_backend_subprocess(args: list[str], **__: object) -> None:
+        def mock_call_poetry_subprocess(args: list[str], **__: object) -> str:
             calls.append(args)
+            return ""
 
         monkeypatch.setattr(
-            "usethis._integrations.pre_commit.core.call_backend_subprocess",
-            mock_call_backend_subprocess,
+            "usethis._integrations.pre_commit.core.call_poetry_subprocess",
+            mock_call_poetry_subprocess,
+        )
+
+        # Pre-commit is already a dep, so no temporary add needed
+        (tmp_path / "pyproject.toml").write_text(
+            '[dependency-groups]\ndev = ["pre-commit"]\n'
         )
 
         with (
@@ -280,18 +286,55 @@ class TestUninstallPreCommitHooks:
         assert len(calls) == 1
         assert calls[0] == ["run", "pre-commit", "uninstall"]
 
+    def test_poetry_backend_uninstall_pre_commit_not_installed(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        """When pre-commit is not a dependency, it should be temporarily added."""
+        calls: list[list[str]] = []
+
+        def mock_call_poetry_subprocess(args: list[str], **__: object) -> str:
+            calls.append(args)
+            return ""
+
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core.call_poetry_subprocess",
+            mock_call_poetry_subprocess,
+        )
+
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry, frozen=False),
+        ):
+            uninstall_pre_commit_hooks()
+
+        # Should have: add pre-commit, run pre-commit uninstall, remove pre-commit
+        assert len(calls) == 3
+        assert calls[0] == ["add", "--group", "dev", "pre-commit"]
+        assert calls[1] == ["run", "pre-commit", "uninstall"]
+        assert calls[2] == ["remove", "--group", "dev", "pre-commit"]
+
     def test_poetry_backend_uninstall_error(
         self,
         tmp_path: Path,
         monkeypatch: pytest.MonkeyPatch,
     ):
-        def mock_call_backend_subprocess(args: list[str], **__: object) -> None:
+        from usethis._backend.poetry.errors import PoetrySubprocessFailedError
+
+        def mock_call_poetry_subprocess(args: list[str], **__: object) -> str:
             _ = args
-            raise BackendSubprocessFailedError
+            raise PoetrySubprocessFailedError("test error")
 
         monkeypatch.setattr(
-            "usethis._integrations.pre_commit.core.call_backend_subprocess",
-            mock_call_backend_subprocess,
+            "usethis._integrations.pre_commit.core.call_poetry_subprocess",
+            mock_call_poetry_subprocess,
+        )
+
+        # Pre-commit is already a dep
+        (tmp_path / "pyproject.toml").write_text(
+            '[dependency-groups]\ndev = ["pre-commit"]\n'
         )
 
         with (
@@ -301,3 +344,34 @@ class TestUninstallPreCommitHooks:
             pytest.raises(PreCommitInstallationError),
         ):
             uninstall_pre_commit_hooks()
+
+    def test_frozen_poetry_instruction(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        (tmp_path / "poetry.lock").touch()
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry, frozen=True),
+        ):
+            uninstall_pre_commit_hooks()
+
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == (
+            "☐ Run 'poetry run pre-commit uninstall' to deregister pre-commit.\n"
+        )
+
+    def test_frozen_none_instruction(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.none, frozen=True),
+        ):
+            uninstall_pre_commit_hooks()
+
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == "☐ Run 'pre-commit uninstall' to deregister pre-commit.\n"

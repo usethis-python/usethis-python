@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
 
@@ -333,7 +333,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
             tool.print_how_to_use()
             return
 
-        _generate_requirements_txt(backend)
+        _generate_requirements_txt()
 
         tool.print_how_to_use()
     else:
@@ -344,9 +344,8 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def _generate_requirements_txt(
-    backend: Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.none],
-) -> None:
+def _generate_requirements_txt() -> None:
+    backend = get_backend()
     if backend is BackendEnum.uv:
         if not (usethis_config.cpd() / "pyproject.toml").exists():
             write_simple_requirements_txt()

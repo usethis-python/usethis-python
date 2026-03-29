@@ -153,10 +153,10 @@ class TestCallPoetrySubprocess:
             call_poetry_subprocess(["add", "pytest"], change_toml=True)
 
     def test_change_toml_false_no_prepare(self, monkeypatch: pytest.MonkeyPatch):
-        """When change_toml=False, _prepare_pyproject_write should not be called."""
+        """When change_toml=False, prepare_pyproject_write should not be called."""
         called = False
 
-        original_prepare = usethis._backend.poetry.call._prepare_pyproject_write
+        original_prepare = usethis._backend.poetry.call.prepare_pyproject_write
 
         def mock_prepare():
             nonlocal called
@@ -165,7 +165,7 @@ class TestCallPoetrySubprocess:
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
-            "_prepare_pyproject_write",
+            "prepare_pyproject_write",
             mock_prepare,
         )
 
@@ -194,14 +194,14 @@ class TestPreparePyprojectWrite:
             change_cwd(tmp_path),
             files_manager(),
         ):
-            usethis._backend.poetry.call._prepare_pyproject_write()
+            usethis._backend.poetry.call.prepare_pyproject_write()
 
     def test_no_pyproject_and_locked(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
             files_manager(),
         ):
-            usethis._backend.poetry.call._prepare_pyproject_write()
+            usethis._backend.poetry.call.prepare_pyproject_write()
 
     def test_pyproject_exists_not_locked(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text(
@@ -209,8 +209,8 @@ class TestPreparePyprojectWrite:
         )
 
         with change_cwd(tmp_path):
-            usethis._backend.poetry.call._prepare_pyproject_write()
+            usethis._backend.poetry.call.prepare_pyproject_write()
 
     def test_no_pyproject_not_locked(self, tmp_path: Path):
         with change_cwd(tmp_path):
-            usethis._backend.poetry.call._prepare_pyproject_write()
+            usethis._backend.poetry.call.prepare_pyproject_write()

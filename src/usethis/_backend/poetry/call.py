@@ -5,7 +5,7 @@ from __future__ import annotations
 from usethis._backend.poetry.errors import PoetrySubprocessFailedError
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._file.pyproject_toml.valid import ensure_pyproject_validity
+from usethis._file.pyproject_toml.write import prepare_pyproject_write
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 from usethis._types.backend import BackendEnum
 from usethis.errors import ForbiddenBackendError
@@ -26,7 +26,7 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
         raise ForbiddenBackendError(msg)
 
     if change_toml:
-        _prepare_pyproject_write()
+        prepare_pyproject_write()
 
     new_args = ["poetry", *args]
 
@@ -49,18 +49,3 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
         PyprojectTOMLManager().read_file()
 
     return output
-
-
-def _prepare_pyproject_write() -> None:
-    is_pyproject_toml = (usethis_config.cpd() / "pyproject.toml").exists()
-    is_locked = PyprojectTOMLManager().is_locked()
-
-    if is_pyproject_toml and is_locked:
-        ensure_pyproject_validity()
-        PyprojectTOMLManager().write_file()
-        PyprojectTOMLManager().revert()
-    elif not is_pyproject_toml and is_locked:
-        PyprojectTOMLManager().revert()
-    elif is_pyproject_toml:
-        with PyprojectTOMLManager():
-            ensure_pyproject_validity()

@@ -199,6 +199,41 @@ usethis                           # usethis: Automate Python project setup and d
 
 <!-- /sync:docs/module-tree.txt -->
 
+## Function Reference
+
+ALWAYS check whether an existing function already covers your use case before implementing new logic. The functions below are important utilities that agents commonly reinvent by mistake.
+
+<!-- sync:docs/functions.txt -->
+
+- `get_project_deps()` (`usethis._deps`) — Get all project dependencies.
+- `get_dep_groups()` (`usethis._deps`) — Get all dependency groups from the dependency-groups section of pyproject.toml.
+- `get_deps_from_group()` (`usethis._deps`) — Get the list of dependencies in a named dependency group.
+- `register_default_group()` (`usethis._deps`) — Register a group in the default-groups configuration if it's not already there.
+- `get_default_groups()` (`usethis._deps`) — Get the list of default dependency groups installed automatically by the package manager.
+- `is_dep_satisfied_in()` (`usethis._deps`) — Check if a dependency is satisfied by any dependency in the given list.
+- `remove_deps_from_group()` (`usethis._deps`) — Remove dependencies from the named group if present.
+- `is_dep_in_any_group()` (`usethis._deps`) — Check if a dependency exists in any dependency group.
+- `add_deps_to_group()` (`usethis._deps`) — Add dependencies to a named group using PEP 735 dependency groups.
+- `tick_print()` (`usethis._console`) — Print a ✔ success/completion message (green).
+- `instruct_print()` (`usethis._console`) — Print a ☐ instruction the user must perform manually (red).
+- `how_print()` (`usethis._console`) — Print a ☐ guidance message explaining how to do something (red).
+- `info_print()` (`usethis._console`) — Print an informational message (blue).
+- `err_print()` (`usethis._console`) — Print a ✗ error message to stderr (red).
+- `warn_print()` (`usethis._console`) — Print a ⚠ warning message (yellow; deduplicated).
+- `get_icon_mode()` (`usethis._console`) — Detect terminal's icon support level.
+- `is_pre_commit_used()` (`usethis._detect.pre_commit`) — Check if pre-commit is being used in the project.
+- `is_readme_used()` (`usethis._detect.readme`) — Check if the README.md file is used.
+- `has_pyproject_toml_declared_build_system()` (`usethis._integrations.project.build`) — Check if a build system is declared in the project.
+- `get_project_name()` (`usethis._integrations.project.name`) — The project name, from pyproject.toml if available or fallback to heuristics.
+- `get_importable_packages()` (`usethis._integrations.project.packages`) — Get the names of packages in the source directory that can be imported.
+- `get_source_dir_str()` (`usethis._integrations.project.layout`) — Get the source directory as a string ('src' or '.').
+- `get_requires_python()` (`usethis._file.pyproject_toml.requires_python`) — Get the requires-python constraint from pyproject.toml.
+- `get_required_minor_python_versions()` (`usethis._file.pyproject_toml.requires_python`) — Get Python minor versions that match the project's requires-python constraint.
+- `get_name()` (`usethis._file.pyproject_toml.name`) — Get the project name from pyproject.toml.
+- `get_backend()` (`usethis._backend.dispatch`) — Get the current package manager backend.
+
+<!-- /sync:docs/functions.txt -->
+
 ## Agent Skills
 
 The `.agents/skills` directory contains agent skills.
@@ -243,6 +278,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 ## Generally Important Instructions
 
+- ALWAYS check the [Function Reference](#function-reference) section above before implementing any utility logic — mature, tested functions already exist for common operations such as reading dependencies, detecting tools, and printing console output.
 - ALWAYS use possibly relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
 - ALWAYS use `find-skills` to research new skill capabilities if there are difficult tasks, tasks in an unfamiliar domain, if you believe there is a lack of clarity or direction around precisely how to proceed, or if you get stuck or find something surprisingly challenging. When using this skill, please be sure to use the `usethis-skills-external-install` skill when deciding to install a new external skill.
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves

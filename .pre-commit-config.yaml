@@ -101,6 +101,27 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
+      - id: export-functions
+        name: export-functions
+        entry: uv run --frozen --offline hooks/export-functions.py
+        args:
+          - "--output-file=docs/functions.txt"
+          - "--source-root=src"
+          - "src/usethis/_deps.py"
+          - "src/usethis/_console.py"
+          - "src/usethis/_detect/pre_commit.py"
+          - "src/usethis/_detect/readme.py"
+          - "src/usethis/_integrations/project/build.py"
+          - "src/usethis/_integrations/project/name.py"
+          - "src/usethis/_integrations/project/packages.py"
+          - "src/usethis/_integrations/project/layout.py"
+          - "src/usethis/_file/pyproject_toml/requires_python.py"
+          - "src/usethis/_file/pyproject_toml/name.py"
+          - "src/usethis/_backend/dispatch.py"
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 0
   - repo: local
     hooks:
       - id: deptry

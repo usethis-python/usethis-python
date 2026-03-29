@@ -579,6 +579,7 @@ def _union(*components: str | Series | DepGroup | Parallel | None) -> Parallel |
 
 
 def get_endpoint(component: str | Series | DepGroup | Parallel) -> str:
+    """Get the last endpoint string from a pipeline component."""
     if isinstance(component, str):
         return component
     elif isinstance(component, Series):

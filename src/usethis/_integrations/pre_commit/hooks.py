@@ -111,6 +111,7 @@ def insert_repo(
     existing_repos: Collection[schema.LocalRepo | schema.UriRepo | schema.MetaRepo],
     predecessor: str | None,
 ) -> list[schema.LocalRepo | schema.UriRepo | schema.MetaRepo]:
+    """Insert a repo into the list of existing repos after the given predecessor hook."""
     # Insert the new hook after the last precedent repo
     # Do this by iterating over the repos and hooks, and inserting the new hook
     # after the last precedent
@@ -167,6 +168,7 @@ def _report_adding_repo(
 
 
 def add_placeholder_hook() -> None:
+    """Add a placeholder hook to the pre-commit configuration."""
     add_repo(_get_placeholder_repo_config())
     instruct_print("Remove the placeholder hook in '.pre-commit-config.yaml'.")
     instruct_print("Replace it with your own hooks.")
@@ -222,6 +224,7 @@ def remove_hook(hook_id: str) -> None:
 
 
 def get_hook_ids() -> list[str]:
+    """Get the list of hook IDs from the pre-commit configuration file."""
     path = usethis_config.cpd() / ".pre-commit-config.yaml"
 
     if not path.exists():
@@ -235,6 +238,7 @@ def get_hook_ids() -> list[str]:
 def extract_hook_ids(
     model: schema.JsonSchemaForPreCommitConfigYaml,
 ) -> list[str]:
+    """Extract all hook IDs from a pre-commit configuration model."""
     hook_ids = []
     for repo in model.repos:
         if repo.hooks is None:

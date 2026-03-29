@@ -17,6 +17,7 @@ class NonMarkdownREADMEError(UsethisError):
 
 
 def get_readme_path():
+    """Get the path to the project's README file."""
     path_readme_md = usethis_config.cpd() / "README.md"
     path_readme = usethis_config.cpd() / "README"
 
@@ -34,6 +35,7 @@ def get_readme_path():
 
 
 def get_markdown_readme_path() -> Path:
+    """Get the path to the project's README file, ensuring it is Markdown."""
     path = get_readme_path()
 
     if path.name == "README.md":

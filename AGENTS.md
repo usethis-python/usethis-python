@@ -209,6 +209,7 @@ The `.agents/skills` directory contains agent skills.
 
 | Skill                                 | Description                                                                                                             |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `usethis-agents`                      | Maintain AGENTS.md and agent skill configuration following the one-source-of-truth principle                            |
 | `usethis-cli-modify`                  | Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync                              |
 | `usethis-file-remove`                 | Remove files from the project (e.g. obsolete configs or generated artifacts) in a safe, consistent way                  |
 | `usethis-github-actions-update`       | Update GitHub Actions workflows                                                                                         |

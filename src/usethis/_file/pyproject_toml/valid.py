@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 
 def ensure_pyproject_validity():
+    """Ensure pyproject.toml has the required project name and version fields."""
     if not (usethis_config.cpd() / "pyproject.toml").exists():
         return
 

@@ -39,6 +39,7 @@ _BUILD_SYSTEM_CONFIG: dict[BuildBackendEnum, tuple[list[str], str]] = {
 
 
 def project_init():
+    """Initialize a new project with pyproject.toml and standard directory structure."""
     if (usethis_config.cpd() / "pyproject.toml").exists():
         return
 
@@ -121,6 +122,7 @@ def ensure_dep_declaration_file() -> None:
 
 
 def ensure_pyproject_toml(*, author: bool = True) -> None:
+    """Ensure a pyproject.toml file exists, creating one if necessary."""
     if (usethis_config.cpd() / "pyproject.toml").exists():
         return
 

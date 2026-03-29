@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
 @contextlib.contextmanager
 def files_manager() -> Iterator[None]:
+    """Provide a context manager that activates all configuration file managers."""
     with (
         PyprojectTOMLManager(),
         SetupCFGManager(),

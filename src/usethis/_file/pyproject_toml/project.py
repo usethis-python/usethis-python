@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 
 def get_project_dict() -> dict[str, Any]:
+    """Get the [project] section from pyproject.toml as a dictionary."""
     pyproject = PyprojectTOMLManager().get().value
 
     try:

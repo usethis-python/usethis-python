@@ -4,7 +4,7 @@ from usethis._config import usethis_config
 
 
 def get_project_name_from_dir() -> str:
-    # Use the name of the parent directory
+    """Derive a project name from the current project directory name."""
     # Names must start and end with a letter or digit and may only contain -, _, ., and
     # alphanumeric characters. Any other characters will be dropped. If there are no
     # valid characters, the name will be "hello_world".

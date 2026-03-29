@@ -139,6 +139,7 @@ def register_default_group(group: str) -> None:
 
 
 def add_default_groups(groups: list[str]) -> None:
+    """Add dependency groups to the default-groups configuration."""
     backend = get_backend()
     if backend is BackendEnum.uv:
         add_default_groups_via_uv(groups)
@@ -162,7 +163,7 @@ def get_default_groups() -> list[str]:
 
 
 def ensure_dev_group_is_defined() -> None:
-    # Ensure dev group exists in dependency-groups
+    """Ensure the dev dependency group is defined in pyproject.toml."""
     PyprojectTOMLManager().extend_list(keys=["dependency-groups", "dev"], values=[])
 
 

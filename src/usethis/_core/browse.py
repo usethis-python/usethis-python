@@ -8,6 +8,7 @@ from usethis._console import how_print
 
 
 def browse_pypi(*, package: str, browser: bool = False) -> None:
+    """Open the PyPI page for a package."""
     url = f"https://pypi.org/project/{package}/"
     if browser:
         typer.launch(url)

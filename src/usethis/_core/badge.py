@@ -39,12 +39,14 @@ class Badge(BaseModel):
 
 
 def get_pre_commit_badge() -> Badge:
+    """Get the pre-commit badge."""
     return Badge(
         markdown="[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)"
     )
 
 
 def get_pypi_badge() -> Badge:
+    """Get the PyPI version badge."""
     name = get_project_name()
     return Badge(
         markdown=f"[![PyPI Version](https://img.shields.io/pypi/v/{name}.svg)](https://pypi.python.org/pypi/{name})"
@@ -52,12 +54,14 @@ def get_pypi_badge() -> Badge:
 
 
 def get_ruff_badge() -> Badge:
+    """Get the Ruff badge."""
     return Badge(
         markdown="[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)"
     )
 
 
 def get_socket_badge() -> Badge:
+    """Get the Socket security badge."""
     name = get_project_name()
     return Badge(
         markdown=f"[![Socket Badge](https://badge.socket.dev/pypi/package/{name})](https://socket.dev/pypi/package/{name}/overview)"
@@ -65,30 +69,35 @@ def get_socket_badge() -> Badge:
 
 
 def get_ty_badge() -> Badge:
+    """Get the ty badge."""
     return Badge(
         markdown="[![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)"
     )
 
 
 def get_uv_badge() -> Badge:
+    """Get the uv badge."""
     return Badge(
         markdown="[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)"
     )
 
 
 def get_bitbucket_badge() -> Badge:
+    """Get the Bitbucket badge."""
     return Badge(
         markdown="[![Bitbucket](https://img.shields.io/badge/Bitbucket-0747a6?logo=bitbucket&logoColor=white)](https://bitbucket.org)"
     )
 
 
 def get_usethis_badge() -> Badge:
+    """Get the usethis badge."""
     return Badge(
         markdown="[![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/usethis-python/usethis-python/main/assets/badge/v1.json)](https://github.com/usethis-python/usethis-python)"
     )
 
 
 def get_badge_order() -> list[Badge]:
+    """Get the canonical display order for badges."""
     # Some general principles here:
     # 1. Dynamic badges giving factual information about the package should go first
     # 2. Static badges which list affiliation should go next e.g. uv, Ruff, etc.
@@ -133,6 +142,7 @@ class MarkdownH1Status:
 
 
 def add_badge(badge: Badge) -> None:
+    """Add a badge to the README file."""
     add_readme()
 
     try:
@@ -235,14 +245,17 @@ def _ensure_final_newline(content: str) -> str:
 
 
 def is_blank(line: str) -> bool:
+    """Check if a line is blank or contains only whitespace."""
     return line.isspace() or not line
 
 
 def is_header(line: str) -> bool:
+    """Check if a line is a Markdown header."""
     return line.strip().startswith("#")
 
 
 def is_badge(line: str) -> bool:
+    """Check if a line is a Markdown badge."""
     # A heuristic
     return (
         re.match(r"^\[!\[.*\]\(.*\)\]\(.*\)$", line) is not None
@@ -251,6 +264,7 @@ def is_badge(line: str) -> bool:
 
 
 def remove_badge(badge: Badge) -> None:
+    """Remove a badge from the README file."""
     path = usethis_config.cpd() / "README.md"
 
     try:

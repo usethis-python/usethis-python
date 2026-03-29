@@ -13,6 +13,7 @@ class RulesMapping(BaseModel):
 
 
 def select_rules(rules: list[str]) -> None:
+    """Select linter rules for enforcement."""
     rules_mapping = get_rules_mapping(rules)
 
     if rules_mapping.deptry_rules and not DeptryTool().is_used():
@@ -25,6 +26,7 @@ def select_rules(rules: list[str]) -> None:
 
 
 def deselect_rules(rules: list[str]) -> None:
+    """Deselect linter rules from enforcement."""
     rules_mapping = get_rules_mapping(rules)
 
     DeptryTool().deselect_rules(rules_mapping.deptry_rules)
@@ -32,6 +34,7 @@ def deselect_rules(rules: list[str]) -> None:
 
 
 def ignore_rules(rules: list[str]) -> None:
+    """Add linter rules to the ignore list."""
     rules_mapping = get_rules_mapping(rules)
 
     DeptryTool().ignore_rules(rules_mapping.deptry_rules)
@@ -39,6 +42,7 @@ def ignore_rules(rules: list[str]) -> None:
 
 
 def unignore_rules(rules: list[str]) -> None:
+    """Remove linter rules from the ignore list."""
     rules_mapping = get_rules_mapping(rules)
 
     DeptryTool().unignore_rules(rules_mapping.deptry_rules)
@@ -46,6 +50,7 @@ def unignore_rules(rules: list[str]) -> None:
 
 
 def get_rules_mapping(rules: list[str]) -> RulesMapping:
+    """Partition rules into Ruff and deptry categories."""
     deptry_rules = [rule for rule in rules if rule.startswith("DEP")]
     ruff_rules = [rule for rule in rules if rule not in deptry_rules]
 

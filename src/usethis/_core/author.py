@@ -14,6 +14,7 @@ def add_author(
     email: str | None = None,
     overwrite: bool = False,
 ):
+    """Add an author to the project's pyproject.toml."""
     ensure_pyproject_toml(author=False)
 
     tick_print(f"Setting '{name}' as an author.")

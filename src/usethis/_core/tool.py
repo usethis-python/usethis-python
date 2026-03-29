@@ -58,6 +58,7 @@ class UseToolFunc(Protocol):
 
 
 def use_codespell(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove codespell from the project."""
     tool = CodespellTool()
 
     if how:
@@ -80,6 +81,7 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove coverage.py from the project."""
     tool = CoveragePyTool()
 
     if how:
@@ -99,6 +101,7 @@ def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_deptry(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove deptry from the project."""
     tool = DeptryTool()
 
     if how:
@@ -121,6 +124,7 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove import-linter from the project."""
     tool = ImportLinterTool()
 
     if how:
@@ -147,6 +151,7 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove MkDocs from the project."""
     tool = MkDocsTool()
 
     if how:
@@ -171,6 +176,7 @@ def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove pre-commit from the project."""
     tool = PreCommitTool()
 
     if how:
@@ -224,6 +230,7 @@ def _add_all_tools_pre_commit_configs():
 
 
 def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove pyproject-fmt from the project."""
     tool = PyprojectFmtTool()
 
     if how:
@@ -246,6 +253,7 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove pyproject.toml management from the project."""
     tool = PyprojectTOMLTool()
 
     if how:
@@ -262,6 +270,7 @@ def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_pytest(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove pytest from the project."""
     tool = PytestTool()
 
     if how:
@@ -307,6 +316,7 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove requirements.txt management from the project."""
     tool = RequirementsTxtTool()
 
     if how:
@@ -487,6 +497,7 @@ def _get_basic_rule_config() -> RuleConfig:
 
 
 def use_ty(*, remove: bool = False, how: bool = False) -> None:
+    """Add or remove ty from the project."""
     tool = TyTool()
 
     if how:

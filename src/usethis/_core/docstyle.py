@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 
 def use_docstyle(style: DocStyleEnum) -> None:
+    """Configure the project's docstring style."""
     if not RuffTool().is_used():
         use_ruff(minimal=True)
 

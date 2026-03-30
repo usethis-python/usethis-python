@@ -4,7 +4,7 @@ description: Write tests that achieve full code coverage and verify coverage loc
 compatibility: usethis, Python, pytest, coverage
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Writing Tests with Full Coverage
@@ -12,10 +12,25 @@ metadata:
 ## Procedure
 
 1. Identify the source modules affected by your changes.
-2. Write or update tests for each affected module.
-3. Run tests with coverage measurement, scoped to the affected modules.
+2. For each affected module, write or update tests **in that module's own test file**. Do not rely on higher-layer tests to cover lower-layer modules.
+3. Run tests with coverage measurement, scoped to the affected modules — **one module at a time**.
 4. Inspect the coverage report for uncovered lines and write additional tests to cover them.
-5. Repeat steps 3–4 until coverage meets the target.
+5. Repeat steps 3–4 until coverage meets the target for every affected module independently.
+
+## Testing at multiple layers of abstraction
+
+Each source module should have its own complete tests, independent of tests in other modules. Do not rely on end-to-end or integration tests in higher layers to cover code in lower layers.
+
+### Why this matters
+
+When a module is only covered by tests in a higher layer, bugs can go undetected if the higher-layer test doesn't exercise the specific code path. For example, a registration list in a low-level module might be incomplete, but a higher-layer test that iterates over a different registry might never notice the gap.
+
+### How to apply this principle
+
+- **Test each module in its corresponding test file.** If you change `usethis._integrations.foo.bar`, write tests in `tests/usethis/_integrations/foo/test_bar.py`, not only in a higher-layer test like `tests/usethis/_core/test_core_foo.py`.
+- **Verify invariants at the module level.** If a module maintains a list, mapping, or registry that must be consistent with other data structures, write a test in that module's test file to verify the invariant.
+- **Measure coverage per module independently.** Run coverage scoped to each affected module separately to confirm it is fully tested by its own tests, not just by transitive coverage from higher-layer tests.
+- **Higher-layer tests are complementary, not a substitute.** Integration and end-to-end tests are valuable for testing interactions between modules, but they should not be the only tests covering a module's logic.
 
 ## Running tests with coverage
 

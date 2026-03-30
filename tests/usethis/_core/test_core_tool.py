@@ -25,6 +25,7 @@ from usethis._core.tool import (
     use_pytest,
     use_requirements_txt,
     use_ruff,
+    use_tach,
     use_tool,
     use_ty,
 )
@@ -3912,3 +3913,81 @@ possibly-unresolved-reference = "warn"
             out, err = capfd.readouterr()
             assert not err
             assert out == "☐ Run 'ty check' to run the ty type checker.\n"
+
+
+class TestTach:
+    class TestAdd:
+        def test_dependency_added(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_tach()
+
+                # Assert
+                (dev_dep,) = [d for d in get_deps_from_group("dev") if d.name == "tach"]
+            assert dev_dep == Dependency(name="tach")
+
+        def test_config_created(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_tach()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert "Writing 'tach.toml'." in out
+            assert (uv_init_dir / "tach.toml").exists()
+
+        def test_pre_commit_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_tach()
+
+                # Assert
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "tach" for dep in dev_deps)
+
+                hook_names = get_hook_ids()
+                assert "tach" in hook_names
+
+    class TestRemove:
+        def test_removes_config(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_tach()
+
+                # Act
+                use_tach(remove=True)
+
+            # Assert
+            assert not (uv_init_dir / "tach.toml").exists()
+
+        def test_removes_dependency(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_tach()
+
+                # Act
+                use_tach(remove=True)
+
+                # Assert
+                deps = get_deps_from_group("dev")
+            assert not any(dep.name == "tach" for dep in deps)
+
+    class TestHow:
+        def test_how(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_tach(how=True)
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "☐ Run 'tach check' to run Tach.\n"

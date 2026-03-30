@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
-import pydantic
-from packaging.requirements import Requirement
-from pydantic import TypeAdapter
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend

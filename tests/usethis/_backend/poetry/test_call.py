@@ -7,6 +7,7 @@ from usethis._backend.poetry.call import call_poetry_subprocess
 from usethis._backend.poetry.errors import PoetrySubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
+from usethis._file.pyproject_toml.write import prepare_pyproject_write
 from usethis._subprocess import SubprocessFailedError
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
@@ -156,7 +157,7 @@ class TestCallPoetrySubprocess:
         """When change_toml=False, prepare_pyproject_write should not be called."""
         called = False
 
-        original_prepare = usethis._backend.poetry.call.prepare_pyproject_write
+        original_prepare = prepare_pyproject_write
 
         def mock_prepare():
             nonlocal called
@@ -194,14 +195,14 @@ class TestPreparePyprojectWrite:
             change_cwd(tmp_path),
             files_manager(),
         ):
-            usethis._backend.poetry.call.prepare_pyproject_write()
+            prepare_pyproject_write()
 
     def test_no_pyproject_and_locked(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
             files_manager(),
         ):
-            usethis._backend.poetry.call.prepare_pyproject_write()
+            prepare_pyproject_write()
 
     def test_pyproject_exists_not_locked(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text(
@@ -209,8 +210,8 @@ class TestPreparePyprojectWrite:
         )
 
         with change_cwd(tmp_path):
-            usethis._backend.poetry.call.prepare_pyproject_write()
+            prepare_pyproject_write()
 
     def test_no_pyproject_not_locked(self, tmp_path: Path):
         with change_cwd(tmp_path):
-            usethis._backend.poetry.call.prepare_pyproject_write()
+            prepare_pyproject_write()

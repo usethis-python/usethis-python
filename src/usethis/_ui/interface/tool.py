@@ -388,6 +388,7 @@ def tach(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use Tach: enforce a self-imposed architecture on imports."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_tach
 

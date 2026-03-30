@@ -498,6 +498,7 @@ def _get_basic_rule_config() -> RuleConfig:
 
 
 def use_tach(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the Tach architecture enforcement tool."""
     tool = TachTool()
 
     if how:

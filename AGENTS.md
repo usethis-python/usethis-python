@@ -60,6 +60,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   │   ├── errors                # Error types for INI file operations.
 │   │   └── io_                   # INI file I/O manager.
 │   ├── pyproject_toml            # pyproject.toml file reading and writing.
+│   │   ├── deps                  # Dependency extraction from pyproject.toml.
 │   │   ├── errors                # Error types for pyproject.toml operations.
 │   │   ├── io_                   # pyproject.toml file I/O manager.
 │   │   ├── name                  # Project name and description extraction from pyproject.toml.

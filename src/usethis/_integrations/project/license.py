@@ -6,6 +6,7 @@ import os
 
 from identify.identify import license_id
 
+from usethis._file.pyproject_toml.errors import PyprojectTOMLError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.errors import LicenseDetectionError
 
@@ -98,7 +99,7 @@ def _get_license_from_pyproject_field() -> str | None:
     """Try to detect the license from pyproject.toml ``project.license`` field."""
     try:
         pyproject = PyprojectTOMLManager().get().value
-    except Exception:
+    except PyprojectTOMLError:
         return None
 
     project = pyproject.get("project")
@@ -139,7 +140,7 @@ def _get_license_from_classifiers() -> str | None:
     """Try to detect the license from pyproject.toml ``project.classifiers``."""
     try:
         pyproject = PyprojectTOMLManager().get().value
-    except Exception:
+    except PyprojectTOMLError:
         return None
 
     project = pyproject.get("project")

@@ -8,9 +8,22 @@ requires = [
 
 [project]
 name = "usethis"
-description = "Automate Python project setup and development tasks that are otherwise performed manually."
+description = "Automatically manage Python tooling and configuration: linters, formatters, and more. A CLI for declaratively configuring your Python projects following best practices."
 readme = "README.md"
-keywords = [ "init", "project", "setup", "start", "usethis" ]
+keywords = [
+  "config",
+  "configuration",
+  "init",
+  "linting",
+  "project",
+  "setup",
+  "start",
+  "templating",
+  "tool",
+  "tooling",
+  "tools",
+  "usethis",
+]
 license = { file = "LICENSE" }
 authors = [
   { name = "Nathan McDougall", email = "nathan.j.mcdougall@gmail.com" },

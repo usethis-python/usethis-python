@@ -9,7 +9,7 @@
 <!-- sync:docs/module-tree.txt -->
 
 ```text
-usethis                           # usethis: Automate Python project setup and development tasks that are otherwise performed manually.
+usethis                           # usethis: Automatically manage Python tooling and configuration: linters, formatters, and more.
 ├── __main__                      # The CLI application for usethis.
 ├── _config                       # Global configuration state for usethis.
 ├── _config_file                  # Context managers for coordinated configuration file I/O.
@@ -65,6 +65,7 @@ usethis                           # usethis: Automate Python project setup and d
 │   │   ├── errors                # Error types for INI file operations.
 │   │   └── io_                   # INI file I/O manager.
 │   ├── pyproject_toml            # pyproject.toml file reading and writing.
+│   │   ├── deps                  # Dependency extraction from pyproject.toml.
 │   │   ├── errors                # Error types for pyproject.toml operations.
 │   │   ├── io_                   # pyproject.toml file I/O manager.
 │   │   ├── name                  # Project name and description extraction from pyproject.toml.

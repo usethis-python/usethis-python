@@ -464,7 +464,7 @@ Some text
 
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff)
 
-Automate Python project setup and development tasks that are otherwise performed manually.
+Automatically manage Python tooling and configuration: linters, formatters, and more.
 """)
 
         # Act
@@ -485,7 +485,7 @@ Automate Python project setup and development tasks that are otherwise performed
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit)
 
-Automate Python project setup and development tasks that are otherwise performed manually.
+Automatically manage Python tooling and configuration: linters, formatters, and more.
 """
         )
 

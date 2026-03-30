@@ -6,11 +6,13 @@ on:
     branches: ["main"]
     paths-ignore:
       - "mkdocs.yml"
+      - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
   pull_request:
     paths-ignore:
       - "mkdocs.yml"
+      - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
   schedule:

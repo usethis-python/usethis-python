@@ -359,7 +359,9 @@ class TestUninstallPreCommitHooks:
         out, err = capfd.readouterr()
         assert not err
         assert out == (
+            "☐ Run 'poetry add --group dev pre-commit' to temporarily add pre-commit.\n"
             "☐ Run 'poetry run pre-commit uninstall' to deregister pre-commit.\n"
+            "☐ Run 'poetry remove --group dev pre-commit' to remove pre-commit.\n"
         )
 
     def test_frozen_none_instruction(

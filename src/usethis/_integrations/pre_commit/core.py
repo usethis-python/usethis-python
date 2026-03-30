@@ -129,7 +129,13 @@ def _instruct_pre_commit_uninstall() -> None:
         )
     elif backend is BackendEnum.poetry and is_poetry_used():
         instruct_print(
+            "Run 'poetry add --group dev pre-commit' to temporarily add pre-commit."
+        )
+        instruct_print(
             "Run 'poetry run pre-commit uninstall' to deregister pre-commit."
+        )
+        instruct_print(
+            "Run 'poetry remove --group dev pre-commit' to remove pre-commit."
         )
     elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
         instruct_print("Run 'pre-commit uninstall' to deregister pre-commit.")

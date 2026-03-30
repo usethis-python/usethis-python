@@ -28,14 +28,12 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
     if change_toml:
         prepare_pyproject_write()
 
-    new_args = ["poetry", *args]
+    new_args = ["poetry", "--no-interaction", *args]
 
     if usethis_config.subprocess_verbose:
         new_args = [*new_args[:1], "-vvv", *new_args[1:]]
     elif args[:1] != ["--version"]:
         new_args = [*new_args[:1], "--quiet", *new_args[1:]]
-
-    new_args = [*new_args, "--no-interaction"]
 
     try:
         output = call_subprocess(new_args, cwd=usethis_config.cpd())

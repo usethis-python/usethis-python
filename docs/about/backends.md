@@ -12,6 +12,14 @@ The [`uv`](https://docs.astral.sh/uv) backend is recommended for new projects. W
 - Generate and update lockfiles.
 - Give instructions using `uv run` to run tools like `ruff`, `pytest`, etc.
 
+### `poetry`
+
+The [`poetry`](https://python-poetry.org/) backend supports Poetry-managed projects. When the `poetry` backend is active, usethis will:
+
+- Install and uninstall dependencies automatically using `poetry add` and `poetry remove`.
+- Configure default dependency groups via `[tool.poetry.group.GROUPNAME]` with the `optional` flag.
+- Give instructions using `poetry run` to run tools like `ruff`, `pytest`, etc.
+
 ### `none`
 
 The `none` backend means no package manager is being used by usethis. When this backend is active, usethis will still configure tools and update configuration files, but it will not install or uninstall any dependencies for you. Instead, the console output will display instructions for you to follow up on manually.
@@ -20,7 +28,7 @@ The `none` backend means no package manager is being used by usethis. When this 
 
 By default, usethis auto-detects the appropriate backend using the following logic:
 
-1. If [Poetry](https://python-poetry.org/) usage is detected, usethis warns that Poetry is not fully supported, and falls back to `none`.
+1. If [Poetry](https://python-poetry.org/) usage is detected (e.g. via the presence of a `poetry.lock` file), the `poetry` backend is selected.
 2. If `uv` usage is detected (e.g. via the presence of a `uv.lock` file), the `uv` backend is selected.
 3. If no `pyproject.toml` exists yet and `uv` is available on your system, the `uv` backend is selected.
 4. Otherwise, the `none` backend is used.

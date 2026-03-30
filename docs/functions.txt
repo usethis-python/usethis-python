@@ -85,6 +85,8 @@
 - `get_project_name_from_dir()` (`usethis._file.dir`) — Derive a valid project name from the current directory name.
 - `deep_merge()` (`usethis._file.merge`) — Recursively merge source into target in place, returning target.
 - `print_keys()` (`usethis._file.print_`) — Convert a list of keys to a string.
+- `get_project_deps()` (`usethis._file.pyproject_toml.deps`) — Get all project dependencies from [project.dependencies].
+- `get_dep_groups()` (`usethis._file.pyproject_toml.deps`) — Get all dependency groups from [dependency-groups].
 - `get_name()` (`usethis._file.pyproject_toml.name`) — Get the project name from pyproject.toml.
 - `get_description()` (`usethis._file.pyproject_toml.name`) — Get the project description from pyproject.toml.
 - `get_project_dict()` (`usethis._file.pyproject_toml.project`) — Get the contents of the [project] section from pyproject.toml.

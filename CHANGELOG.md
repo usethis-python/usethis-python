@@ -5,21 +5,15 @@
 ### 💥 Changes
 
 - The `usethis ci` command (and `usethis ci bitbucket` subcommand) has been removed, including all related code and documentation. The rationale is documented at [this page of the documentation site](https://usethis.readthedocs.io/en/stable/about/philosophy/); also see #1313.
-
 - The `--pre-commit` option for `usethis init` has been renamed to `--hook` to be more general and to align with the new `usethis hook` command. This is partly in view of providing support for other Git hook tools in the future (specifically; [prek](https://prek.j178.dev/)).
 
 ### 🚀 New Features
 
 - There is now a `usethis tool ty` command to manage the `ty` type checker from Astral. There is also a higher-level `usethis typecheck` command which has the same effect, and an opt-in `--typecheck` option for `usethis init`. There is also an associated `usethis badge ty` command to add a badge for `ty` to the README.
-
 - There is now a `usethis arch` command to manage architecture analysis tools such as Import Linter; currently this wraps `usethis tool import-linter`. There is also an opt-in `--arch` option for `usethis init`.
-
 - There is now a `usethis hook` command to manage Git hook tools; currently this wraps `usethis tool pre-commit`. There is also an opt-in `--hook` option for `usethis init`.
-
 - `usethis init` now accepts a `--build-backend` option to specify the build backend to use in the generated `pyproject.toml` file. By default, the build backend is `hatch` (equivalent to `--build-backend=hatch`), but `uv_build` is also supported via `--build-backend=uv`.
-
 - The `usethis show sonarqube` command is now considered ready for use. It now supports a `--project-key` option to specify the SonarQube project key, in addition to the previous method of using a dedicated `tool.usethis.sonarqube.project-key` configuration in `pyproject.toml`.
-
 - Ruff rule hierarchies are now respected. For example, when `"ALL"` is selected, then other rules won't be explicitly added to the select list. Similarly, if `"F"` is ignored, then `"F401"` won't be explicitly ignored.
 
 ### 🐞 Bug Fixes
@@ -29,7 +23,6 @@
 ### 🦾 Robustness
 
 - Submodules named `_version.py` in project packages will now be automatically excluded from the inferred Import Linter contracts, since these are often dynamically generated via tools such as `setuptools_scm` and `hatch-vcs`, and are not typical modules.
-
 - The [`RUF059`](https://docs.astral.sh/ruff/rules/unused-unpacked-variable/) Ruff rule (`unused-unpacked-variable`) is now ignored by default for the `tests` directory, since tests often include intentionally unused variables and the rule is overly strict in that context.
 
 ### 📚 Documentation
@@ -43,25 +36,15 @@
 ### 🔧 Internal Changes
 
 - Import cycles have now been broken through the `is_likely_used` heuristic function which provides the canonical heuristic for determining whether a tool is used based on its `ToolSpec`. A lack of import cycles is now enforced by both Import Linter and basedpyright.
-
 - The `config_spec` method has been moved into `ToolSpec` to align more with the intention that `ToolSpec` corresponds to aspects of the tool specification which are unopinionated and are based on the inherent design of the tool (whereas the `Tool` subclass may involve various heuristics and opinionated decisions).
-
 - The `Tool` class is now marked as `@final` to discourage subclassing. Likewise, `ToolSpec` methods are protected with `@final` to avoid inadvertently overriding its methods in the `Tool` subclass. Similarly, the `@override` decorator is explicitly used for methods which are providing an override implementation of an abstract method from the base class in `Tool` implementation subclasses.
-
 - There is improved type compliance through the reduced use of `typing.Any`, especially for the `KeyValueFileManager` implementation. Some of this has been achieved through increased runtime validation with `pydantic`, which should improve the intelligibility of error messages when invalid data is encountered in configuration files such as `pyproject.toml`.
-
 - `UsethisFileManager` has been renamed to `FileManager` with view to pull the file manager logic into a separate dependency in the future (see #1256). To the same end, the `usethis._io` module containing the `FileManager` and `KeyValueFileManager` definitions has been consolidated into the `usethis._file` module, as well as the `print_keys` function and the `Key` type alias.
-
 - There is now a `FileManager.revert()` method to reduce the need to access private attributes. Various other internal methods have been renamed to promote them from private usage to better reflect their usage.
-
 - `FileManager` and `KeyValueFileManager` are now explicitly marked as abstract base classes.
-
 - All `typer.Option` objects now reside in a central module at `usethis._ui.options`. This helps bring consistency within modules and helps bring attention to potential duplication of options across modules to improve the overall consistency of the CLI.
-
 - There is now a central `usethis._fallback` module for fallback versions of various packages. These provide the hard-coded values which are used when dynamic inference is not possible, such as when a backend such as `uv` is unavailable, or when populating pre-commit configuration.
-
 - `codecov` and `codspeed` workflows no longer run for doc-only changes.
-
 - There are now linters and formatters for markdown (enforced via `prek`). This is mostly to help facilitate the development and maintenance of agent skills.
 
 ## 0.19.0
@@ -81,35 +64,22 @@
 ### 📚 Documentation
 
 - There is now documentation on how to add a new tool to usethis in `CONTRIBUTING.md`.
-
 - There is now clearer guidance in `CONTRIBUTING.md` regarding the use of docstrings in the test suite.
-
 - The [Scientific Python Library Development Guide](https://learn.scientific-python.org/development/) is now mentioned in the README.
 
 ### 🔧 Internal Changes
 
 - A bug in the pipeweld utility has been fixed. The bug did not functionally affect usethis, but involved incorrect insertion behaviour of Parallel components in the presence of empty Series branches.
-
 - As of uv version 0.9.9, uv supports the [`UV_NO_DEFAULT_GROUPS`](https://docs.astral.sh/uv/reference/environment/#uv_no_default_groups) environment variable, which is now being used for CI configuration. This causes changes to tested behaviour of usethis, and so the lowest tested version of uv is now v0.9.9. Going forward, it is not recommended to use older versions of uv with usethis.
-
 - There are now various agent skills configured for agentic development.
-
 - There is now explicit environment configuration for the GitHub Copilot agent.
-
 - There are now separate GitHub Actions workflows for static checks, pytest, codspeed, and codecov analysis. This helps reduce the scope of permissions to repo secrets and generally simplifies things.
-
 - There is now a GitHub Actions workflow for manually triggering a version bump to a specific package (for development). This is mostly to improve the maintenance experience for addressing CVEs.
-
 - The `Tool` class now inherits from `ToolSpec` for the methods which do not involve dynamic inference.
-
 - Many methods on the `Tool` and `ToolSpec` classes have been renamed and reorganized for convenience, including the introduction of a `ToolMeta` abstraction for grouping basic tool metadata (name, documentation URL, etc.).
-
 - There is now a dedicated module for heuristics for detecting tool usage.
-
 - The logic for selecting CI vs. pre-commit is now abstracted into the `Tool` class instead of being repeated for individual tool implementations.
-
 - Various submodules of `usethis._integrations` have been promoted into their own higher level modules to accommodate these changes while preserving a layered architecture.
-
 - There are various improvements in type compliance via the enabling of various `basedpyright` rules which were previously disabled.
 
 ## 0.18.1
@@ -121,11 +91,8 @@
 ### 🦾 Robustness
 
 - Fallback icons (e.g. `√`, `□`, `i`, `×`, `!`) for message icons (`✔`, `☐`, `ℹ`, `✗`, `⚠`) are now used for terminals which don't support unicode.
-
 - Identical warnings will now never display twice for the same command.
-
 - When a backend is not being used, the inferred version of Python based on the current interpreter is now compared with the `requires-python` bounds from `pyproject.toml`. If there is a mismatch, a warning is now emitted.
-
 - The `tomli` dependency on `codespell` is only declared as a dependency for Python versions 3.10 and below, since for versions 3.11 onwards, `codespell` uses `tomllib` from the standard library. This is based on the `requires-python` bounds from `pyproject.toml` if available, otherwise by the current interpreter.
 
 ### 📦 Packaging
@@ -135,7 +102,6 @@
 ### 🔧 Internal Changes
 
 - Rule management logic is now abstracted into the `Tool` class, reducing duplication between the logic used for deptry and Ruff.
-
 - Import Linter contracts for development have been moved from `pyproject.toml` to `.importlinter` for tidiness.
 
 ## 0.18.0
@@ -143,41 +109,29 @@
 ### 💥 Changes
 
 - Previously, when available, uv would be used as a package manager backend when `pyproject.toml` existed, even if there was no lockfile. This was considered to have too many false positives for projects using different systems (e.g. `setup.py` with linter configuration in `pyproject.toml`). Now, in lieu of any other evidence such as `[tool.uv]` sections in `pyproject.toml`, the default is to use the `--backend=none` behaviour.
-
 - Previously, tools configured via `pre-commit` would not be declared as dev dependencies unless necessary, namely the tools codespell and pyproject-fmt. Now, they are always declared as dev dependencies (when using the uv package manager backend).
 
 ### 🚀 New Features
 
 - Import Linter contract inference via `usethis tool import-linter` now supports namespace packages.
-
 - The new `.coveragerc.toml` file introduced by Coverage.py in v7.13.0 is now supported by usethis.
-
 - The new `pre-commit` language alias of `unsupported` instead of `system` introduced in `v4.4.0` is now used when the minimum version of pre-commit is declared via `minimum_pre_commit_version` at 4.4.0 or greater.
-
 - The default Coverage.py configuration now sets `relative_files = true` to use relative paths e.g. in XML coverage reports. This helps improve robustness when parsing coverage reports as artifacts between CI jobs.
-
 - By default, usethis will now explicitly include dev dependencies in `requirements.txt` export configuration when using `usethis tool requirements.txt`. Previously this was implicit via the editable install `-e .` declaration.
-
 - There is now a `usethis show backend` command which emits the inferred backend (currently; one of `uv` or `none`).
 
 ### 🐞 Bug Fixes
 
 - There are no longer fatal crashes while running `usethis tool import-linter` in the presence of empty directories in the source directory.
-
 - Root-level `.py` files (e.g. `setup.py`) are no longer considered packages for Import Linter contract inference when using `usethis tool import-linter`.
 
 ### 🦾 Robustness
 
 - A speedup of up to 30% has been achieved in some situations by using atomic writes (and reducing duplicated reads) for YAML files.
-
 - When using the uv backend, if `pyproject.toml` does not yet exist, it will not be created unnecessarily when running `usethis tool requirements.txt`.
-
 - Test directory-related ignores for Ruff config (i.e. referencing `tests/**`) are now only generated when the `tests` directory actually exists.
-
 - `PT`-code Ruff rules (relating to pytest) are explicitly ignored for non-tests directories.
-
 - Error messages for subprocess failures now emit the failing command for better diagnosability.
-
 - Subprocess failures for uv no longer emit the full `pyproject.toml` contents.
 
 ### 🧹 Maintenance
@@ -187,17 +141,11 @@
 ### 📚 Documentation
 
 - There is now dedicated guidance [on the docs site](https://usethis.readthedocs.io/en/latest/frameworks/) for using usethis together with popular frameworks like Django, FastAPI, and Dagster.
-
 - A detailed example of `usethis init` has been pulled out the README into a [dedicated docs page](https://usethis.readthedocs.io/en/latest/start/detailed-example/).
-
 - The license is now documented [on the docs site](https://usethis.readthedocs.io/en/latest/about-license/) (in addition to the `LICENSE` file).
-
 - Branding (colours, project naming) etc. is now documented in `CONTRIBUTING.md`.
-
 - There is now a favicon on the docs site.
-
 - There are now dedicated 404 pages for the docs site.
-
 - The correct URL is now used for the pyproject-fmt homepage.
 
 ### 📦 Packaging
@@ -207,15 +155,10 @@
 ### 🔧 Internal Changes
 
 - As of uv version 0.8.18, uv now allows `pyproject.toml` to be missing `[project]` sections. This causes changes to tested behaviour of usethis, and so the lowest tested version of uv is now v0.8.18. Going forward, it is not recommended to use older versions of uv with usethis.
-
 - The GitHub Actions for publishing to PyPI now use separate build and publish steps [to reduce the scope of publish token permissions](https://docs.pyx.dev/publishing#publishing-with-a-trusted-publisher).
-
 - CI pipelines are now triggered for all changes, including documentation-only changes, since documentation includes tested codeblocks.
-
 - Codspeed runners in CI now run on Python 3.13 to reduce duplication between Python 3.14 runners.
-
 - The config for prek now uses the [`priority`](https://prek.j178.dev/configuration/#priority) option to enable concurrency between hooks.
-
 - The pyright-style type checker has been migrated from pyright to a similar alternative, basedpyright.
 
 ## 0.17.0
@@ -223,55 +166,36 @@
 ### 🚀 New Features
 
 - The `usethis ci bitbucket` command will now automatically use parallelism between pipeline steps where possible.
-
 - The `usethis ci bitbucket` command now has a `--no-matrix-python` option to opt-out of generating a Python version matrix for CI pipelines, i.e. to only test against a single Python version.
-
 - The behaviour of `--backend=none` is now the default when Poetry is detected, and a warning is displayed. This would change in a future release when a Poetry backend is implemented.
-
 - The command `usethis badge socket` has been added, which adds a Socket badge to the README for your PyPI package, giving a security scan rating.
 
 ### 🐞 Bug Fixes
 
 - `usethis tool import-linter` will no longer add `INP` rules multiple times when run repeatedly.
-
 - The (undocumented) `usethis show sonarqube` command previously gave invalid config for flat directory structures; this has been fixed. Also, the command no longer creates a `pyproject.toml` file if it does not already exist.
-
 - When running `usethis tool requirements.txt` with `--backend=none`, the how-to-use message misleadingly implies that a pre-existing `requirements.txt` file would be modified; this message no longer displays in this case.
-
 - Read-only operations on YAML files will no longer modify the file with cosmetic changes in some cases. A full fix will be included in a future release.
 
 ### 🦾 Robustness
 
 - Unrecognized entries (i.e. not found in the [JSON Schema Store](https://www.schemastore.org/)) in `.pre-commit-config.yaml` and `bitbucket-pipelines.yml` files will no longer cause validation errors or be dropped. Other minor improvements to the schema validation logic have also been made to improve robustness when roundtripping files.
-
 - The `usethis ci bitbucket` command will add the `pre-commit` cache to `pre-commit` steps when using the `--backend=none` behaviour.
-
 - Running `usethis init` with `--backend=none` will now explicitly instruct the user about any dependencies that need to be managed manually.
-
 - References to Bitbucket Pipelines are now consistently capitalized and pluralized throughout the codebase.
 
 ### 📚 Documentation
 
 - The [FAQ](https://usethis.readthedocs.io/en/stable/faq/) now explicitly explains whether uv is necessary to use `usethis`, and gives some guidance for Poetry users.
-
 - Instructions for implementing a new `usethis badge` command in usethis have been added to the CONTRIBUTING.md file.
-
 - Some instructions for how to diagnose slow `pytest` collection speeds are now in `CONTRIBUTING.md`.
-
 - There is now an acknowledgements section in the README.
-
 - The `CONTRIBUTING.md` file now explains how to run the CLI from within a temporary project directory.
-
 - The `CONTRIBUTING.md` file explicitly mentions that type annotations should not be included in docstrings.
-
 - The `CONTRIBUTING.md` file now explains the details of the `usethis._config.usethis_config` global state object.
-
 - All `usethis tool` commands are now explicitly enumerated in the README.
-
 - The README now explicitly links to the [ReadTheDocs site](https://usethis.readthedocs.io/en/stable/).
-
 - The CLI Reference had issues with indentation of sub-bullet points; this has been resolved.
-
 - A few badges have been moved and added to the Development section of the README.
 
 ### 📦 Packaging
@@ -281,13 +205,9 @@
 ### 🔧 Internal Changes
 
 - There is now a method `Tool.default_command()` to specify any CLI command associated with a tool, to reduce duplication across the codebase.
-
 - The `ty` type checker from Astral has been added, and now runs via pre-commit hooks. Pyright continues to be used in the CI, but not via pre-commit.
-
 - The `zizmor` CI runner no longer triggers for documentation-only changes.
-
 - There is now a `copilot-instructions.md` file to configure GitHub Copilot.
-
 - The test to ensure the docs stay synchronized with the README has been weakened and no longer hard-codes any content from the README. This should reduce the flakiness of this test for README-only changes.
 
 ## 0.16.0
@@ -295,51 +215,40 @@
 ### 🚀 New Features
 
 - Most commands now accept a `--backend` option to specify the package manager backend to use. Up to this point, uv was the only supported backend. Now, a `--backend=none` option is available to use usethis without uv. This is a step toward supporting other backends such as Poetry in the future. When unspecified, heuristics will be used to determine the backend.
-
 - The use of `pyproject.toml` in a project is no longer assumed or imposed on a project when not using the uv backend.
-
 - `pre-commit` configurations are now more conventional, preferring URL-based repo configuration instead of local repos with `language: system`. The previous behaviour was designed to ensure synchronization of versions between the uv lockfile and the `pre-commit` configuration, but this is now provided by the `sync-with-uv` pre-commit hook, which is added automatically when using `pre-commit` with uv.
-
 - When using `usethis author`, a message with the author's name is now outputted in the console.
 
 ### 🦾 Robustness
 
 - Pydantic warnings relating to deprecated access to the `model_fields` attribute on an instance should no longer occur.
-
 - The `tool.deptry.ignore_notebooks` configuration for deptry is set explicitly to the default value of `false` to hint that deptry is being used, and to hint on how to configure it.
 
 ### 🐞 Bug Fixes
 
 - Previously, the `usethis ci bitbucket` command would fail to add Import Linter configuration to the CI pipeline when `import-linter` was detected. This has been fixed.
-
 - The `usethis badge pypi` command would generate markdown with invalid syntax due to a stray `<` character. This has been fixed.
 
 ### 🧹 Maintenance
 
 - The default version of `pyproject-fmt` when used as a pre-commit has been bumped from v2.6.0 to v2.11.0.
-
 - The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically inline and custom pipeline step types; the `input_variables` configuration for steps, and the new name `scoped` for the artifacts upload type option `unshared`.
 
 ### 📚 Documentation
 
 - Hyperlinks in the README and CONTRIBUTING.md files now point to the stable documentation site (rather than the latest site).
-
 - The [configurator](https://github.com/jamesbraza/configurator) project is now documented as a similar project in the README.
 
 ### 📦 Packaging
 
 - Python 3.14 is now formally supported.
-
 - `click` is no longer a direct dependency.
-
 - Version 0.18.13 of `ruamel.yaml` introduced a regression relating to indentation. This version, along with 0.18.14 and 0.18.15, are now excluded as dependency versions to avoid this issue until it is addressed in a future release.
 
 ### 🔧 Internal Changes
 
 - The CI configuration has been overhauled. uv is used in more conventional ways. A runner has been added for bleeding edge dependency versions. The CI now runs on a cron schedule. `zizmor` has been added for security scanning. Permissions are more tightly scoped and explained. All actions have been bumped to their latest versions.
-
 - The pre-commit hooks have been migrated to use `prek` rather than `pre-commit` for development.
-
 - `pytest-sugar` has been added for a more user-friendly test suite output, and `pytest-emoji` has been removed.
 
 ## 0.15.2
@@ -351,13 +260,11 @@
 ### 🐞 Bug Fixes
 
 - When subprocessing uv, the `usethis init` command will no longer use the default for `--build-backend`, and instead will always explicitly use `hatch`. This may change in the future if the default supported build backend for `usethis` becomes `uv_build`, which is the new default for uv v0.8.0. This change avoids creating broken config which mixes `uv_build` with `hatch` config.
-
 - When adding Import Linter while using Ruff, the `INP` rules are selected, but ignored for the tests directory. However, no message would be displayed in cases where those rules were already selected but not already ignored. Now, a message will be displayed in this case.
 
 ### 📚 Documentation
 
 - A documentation site is now available at <https://usethis.readthedocs.io/en/stable/>. The CLI Reference section has been moved there from the README. Other minor wording and clarity improvements have been made.
-
 - The CLI reference now mentions that `usethis tool pre-commit` will install hooks to Git.
 
 ### 🔧 Internal Changes
@@ -369,13 +276,11 @@
 ### 🐞 Bug Fixes
 
 - Previously, when using Import Linter with Ruff, the `INP` rule would be ignored in the `tests` directory via an incorrect glob pattern of `"*/tests/**"`; this has been fixed to `"tests/**"`.
-
 - A TOML integration problem could cause broken configuration in some cases. This could occur on deeply nested keys, such as the per-file-ignores for Ruff directories in `pyproject.toml` when using Import Linter. This has now been fixed.
 
 ### 📚 Documentation
 
 - Some issues with mismatched bullet points in the CLI docs section of the README have been addressed.
-
 - The opening paragraph of the README has been reworded for clarity, and various other minor changes have been made.
 
 ### 🔧 Internal Changes
@@ -387,13 +292,9 @@
 ### 🚀 New Features
 
 - The `usethis tool mkdocs` command has been implemented to manage MkDocs documentation sites. Also, the higher-level `usethis doc` command has been added, which has the same effect.
-
 - The `--doc` option for `usethis init` has been implemented to initialize MkDocs documentation sites by default. The old behaviour can be restored by passing `--no-doc`.
-
 - Coverage.py for measuring test coverage is now included by default when using `usethis test` or `usethis init` with the default `--test` option. This provides out-of-the-box test coverage reporting.
-
 - The `--frozen` option is now supported in the `usethis ci` and `usethis docstyle` commands. Similar to other commands, this will leave the virtual environment and lockfile unchanged.
-
 - The `--offline` option is now supported in the `usethis docstyle` command. This will run the command without network access.
 
 ### 🦾 Robustness
@@ -407,7 +308,6 @@
 ### 🔧 Internal Changes
 
 - A `YAMLFileManager` has been implemented to manage YAML files, which is used for the MkDocs configuration file `mkdocs.yml`.
-
 - A new `get_project_deps` method has been added to retrieve core project dependencies from the `pyproject.toml` file, specifically from the `project.dependencies` section. This will be used in a future release to support non-uv based backends, such as Poetry.
 
 ## 0.14.2
@@ -415,37 +315,29 @@
 ### 🦾 Robustness
 
 - The heuristics to determine whether a tool is used will now check the `pre-commit` configuration to see whether there is a `pre-commit` hook for the tool.
-
 - When removing an entry of TOML configuration, usethis makes some effort to remove empty tables and sections. This was previously only done to one level of nesting, but it should now occur at multiple levels of nesting.
 
 ### 🐞 Bug Fixes
 
 - The Codespell configuration for `pyproject.toml` was giving invalid configuration for the `ignore-words-list` option, which was set to an empty list. Codespell requires this option to be non-empty. It is now set to `["..."]`, which is consistent with the handling for other INI-based configuration files.
-
 - Previously, using the `--how` option for `usethis tool` commands would not properly infer the way a tool was installed. For example, it would assume that a tool is installed as a pre-commit hook, simply because `pre-commit` was used for the project, without checking whether there actually are any hooks. This has been fixed, and more sophisticated heuristics are now used to determine how a tool is installed.
-
 - The message to suggest using `__init__.py` files when using Import Linter now checks explicitly whether you have the `INP` rules enabled in Ruff, rather than simply assuming that these rules would be enabled when Ruff is used. The message is only displayed if these `INP` rules are not enabled.
-
 - Error messages now use more consistent punctuation and formatting.
 
 ### 🧹 Maintenance
 
 - The default version of `pyproject-fmt` when used as a pre-commit has been bumped from v2.5.0 to v2.6.0.
-
 - The latest version of the Bitbucket Pipelines configuration file schema is now supported, specifically support for new options available regarding concurrency groups.
 
 ### 📚 Documentation
 
 - The FAQ is now included in the MkDocs build, and information about roundtripping is now included in the FAQ.
-
 - Social Icon buttons for GitHub and PyPI have been added to the bottom of the MkDocs site.
 
 ### 🔧 Internal Changes
 
 - Minor improvements to the CI configuration have been made; the CI will no longer trigger for changes to the MkDocs configuration files.
-
 - There is now global state to turn off pre-commit detection for pre-commit integrations, which is a step toward providing an interface to forbid adding a tool as a pre-commit.
-
 - In the previous release, the project moved to using the codspeed Walltime runner for CI benchmarks. This has been reverted back to using the GitHub-based codspeed runners, since the Walltime runner reports were not as detailed and there were usage limits.
 
 ## 0.14.1
@@ -461,9 +353,7 @@
 ### 🔧 Internal Changes
 
 - The `urllib3` package version for development was bumped from 2.3.0 to 2.5.0 to address CVE-2025-50181 and CVE-2025-50182.
-
 - `pydantic` is no longer imported for initializing the Typer application, which should provide a small performance improvement in some situations, like when using the `--help` flag.
-
 - Pyright for development now uses the `nodejs` extra, which is recommended in the Pyright docs.
 
 ## 0.14.0
@@ -471,17 +361,11 @@
 ### 🚀 New Features
 
 - A new `usethis status` command is provided to set the Development Status classifiers for the project.
-
 - The uv link mode is now set to `symlink` by default, which can avoid issues for Windows developers relating to access permissions. [See here](https://github.com/astral-sh/uv/issues/11134#issuecomment-2940507840) for more information.
-
 - The `usethis tool ruff` command now accepts `--no-formatter` and `--no-linter` flags to opt-out of adding the formatter or linter, respectively. Previously, this behaviour was implicit in the use of the use or non-use of the `--formatter` and `--linter` flags, but now it is explicit.
-
 - Google-style docstrings are now the default in `usethis docstyle`. It remains opt-in to `usethis init`.
-
 - `usethis readme`, `usethis init` and `usethis badge` now treat empty `README.md` files as suitable for populating with sensible default content, similar to as if the file did not exist.
-
 - When using Import Linter, a message explaining that `__init__.py` files are required is now printed to the console if the user attempts to use Import Linter without Ruff. The message isn't necessary when using Ruff, since the INP rules are selected to enforce the presence of `__init__.py` files.
-
 - Codespell configuration now includes the `ignore-words-list` option (set to empty) by default for whitelisted words. This should make it easier to get started with Codespell, since there are often a few false positives in a codebase.
 
 ### 🦾 Robustness
@@ -491,19 +375,14 @@
 ### 🐞 Bug Fixes
 
 - Previously, the INP Ruff rules were enabled when using Import Linter, but this is incorrect behaviour for the `tests` directory, since `pytest` does not require `__init__.py` files in the `tests` directory, and Import Linter does not need to analyze it. The INP rules are now ignored for the `tests` directory when being added for Import Linter.
-
 - The `uv export` command was configured to use `--no-dev`, whereas it should exclude all dependency groups using the `--no-default-groups` option, which is the new behaviour.
-
 - The `usethis readme` command would create a `pyproject.toml` file, if it did not already exist. This is not necessary and this behaviour has been removed.
-
 - The `usethis tool pre-commit` command would not adapt its message explaining how to manually install pre-commit hooks based on whether the user was using uv or not. This has been fixed.
 
 ### 🔧 Internal Changes
 
 - usethis has been moved from the `nathanjmcdougall` GitHub user to the `usethis-python` organization.
-
 - The codspeed Walltime runner is now used for CI benchmarks.
-
 - Configuration is now available internally to turn off the possibility of subprocessing uv. This is work towards support for non-uv based workflows, e.g. for users who use Poetry.
 
 ## 0.13.0
@@ -511,27 +390,20 @@
 ### 🚀 New Features
 
 - New high-level interfaces have been added: `usethis init` to initialize projects including recommended tools, and `usethis lint`, `usethis format`, `usethis spellcheck`, and `usethis test` to add sets of recommended tools for different purposes. For example, `usethis lint` will add both Ruff and deptry. As recommended tooling changes in the long-term, these commands will remain the same but potentially change the specific tools they include.
-
 - Error messages are now directed to stderr instead of stdout.
-
 - The [`INP`](https://docs.astral.sh/ruff/rules/#flake8-no-pep420-inp) code Ruff rules are now enabled when adding Import Linter, since Import Linter requires `__init__.py` files to exist in the packages it analyzes.
-
 - The `usethis docstyle` possible arguments (`numpy`, `google`, and `pep257`) are now handled in a way that should lead to more readable error messages and `--help` explanations.
 
 ### 🦾 Robustness
 
 - If `pre-commit install` does not run successfully (e.g. if there is not Git Repository for the project) then usethis will display a message for the user to ask them to run this command themselves, rather than the previous behaviour which was to stop with an error.
-
 - Syntax errors in TOML and INI configuration files will be handled when trying to determine whether a given tool is being used. A warning is displayed but usethis will continue under the assumption that the invalid file does not contain relevant configuration for the tool.
 
 ### 🐞 Bug Fixes
 
 - Previously, when calling `usethis tool ruff --how`, any passed `--linter` or `--formatter` arguments would be ignored and instructions would be displayed for both the linter and the formatter regardless. This is no longer the case - now if either the `--linter` or `--formatter` argument is passed, just the specified arguments will be considered in terms of the messages displayed.
-
 - Previously, when adding pre-commit hook definitions, it was possible to duplicate the added definition if there was a duplicate hook ID existing in the file. This has been fixed. Similarly, when adding pre-commit hooks definitions, the intended order of hooks was violated in some circumstances. The ordering logic has been reworked to ensure consistent hook ordering (based on the hook ID).
-
 - Previously, when adding `pre-commit`, if `pyproject-fmt` or `codespell` were present, the default configuration would be added for those tools too. This is no longer the case - adding `pre-commit` will not touch the existing configuration for other tools except for the way in which they are installed and declared as dependencies.
-
 - Previously, the `usethis rule` command did not handle some error messages properly, and would dump the full stack trace. This has been resolved.
 
 ### 📦 Packaging
@@ -541,19 +413,14 @@
 ### 📚 Documentation
 
 - More information has been added to the README in the Command Line Interface Table of Contents, giving a one-line summary of each command.
-
 - The GitHub Issue templates have been simplified down to make them more accessible.
 
 ### 🔧 Internal Changes
 
 - The test suite on CI now runs on the lowest supported version of uv (0.5.29), rather than just the latest version.
-
 - The `ARG` Ruff rules are now enabled for development of usethis.
-
 - New `alert_only` global state has been added to allow the suppression of non-warning and non-error printing to the console.
-
 - New global state has been added to set the project directory (versus the previous default of using the current working directory in all cases).
-
 - The `requests` package version for development was bumped from 2.23.3 to 2.23.4 to address CVE-2024-47081.
 
 ## 0.12.0
@@ -568,9 +435,7 @@
 ### 🐞 Bug Fixes
 
 - The `usethis tool` command no longer creates a `pyproject.toml` file when using the `--remove` option.
-
 - The Coverage.py tool was previously referred to as simply "coverage" in the codebase and documentation. This has been corrected to Coverage.py, [which is the official name of the tool](https://coverage.readthedocs.io/en/latest/index.html).
-
 - The RegEx used to parse the Python versions outputted by `uv python list` has been tightened to avoid matching invalid versions containing non-alphanumeric leading characters.
 
 ### 📦 Packaging
@@ -580,19 +445,14 @@
 ### 📚 Documentation
 
 - The README now explains that `usethis tool` commands will create a `pyproject.toml` file if it does not already exist (to be able to declare dependencies).
-
 - A security policy has been added in `SECURITY.md`.
 
 ### 🔧 Internal Changes
 
 - A `requirements.txt` file is now included in the repository (generated using the uv lockfile and automatically updated via pre-commit). This allows for Dependabot scanning. Accordingly, the version of `h11` in the lockfile was bumped to address a security issue (CVE-2025-43859).
-
 - CodeQL is now configured for security scanning.
-
 - Previously, all pre-commit hooks ran post-checkout, post-merge, and post-rewrite. Now, only `uv-sync` will run for those stages, the rest will run only on pre-commit. This is to avoid unnecessary overhead when checking out branches or merging, etc.
-
 - Some stricter linting configuration has been added for Ruff.
-
 - Permissions are now set explicitly for the GitHub Actions workflows used for development.
 
 ## 0.11.0
@@ -604,7 +464,6 @@
 ### 🐞 Bug Fixes
 
 - The `--quiet` option did not properly suppress output when displaying warnings associated with failed README parsing in `usethis badge`. This has been fixed.
-
 - Due to a breaking change in Click v8.2.0, Click is now declared as a direct dependency temporarily until the ramifications can be addressed in Typer. The lower bound is declared as `>=8.0.0` and the constraint `!=8.2.0` to avoid the breaking change. For more information, see [this discussion on the Typer GitHub repository](https://github.com/fastapi/typer/discussions/1215).
 
 ### 🧹 Maintenance

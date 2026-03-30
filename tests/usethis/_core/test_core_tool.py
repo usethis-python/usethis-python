@@ -40,7 +40,7 @@ from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
-from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.all_ import ALL_TOOLS, SupportedToolType
 from usethis._tool.impl.base.pytest import PytestTool
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
@@ -3789,7 +3789,7 @@ class TestUseTool:
 
     @pytest.mark.parametrize("tool", ALL_TOOLS, ids=lambda t: t.name)
     @pytest.mark.usefixtures("_vary_network_conn")
-    def test_runs(self, tool, uv_env_dir: Path):
+    def test_runs(self, tool: SupportedToolType, uv_env_dir: Path):
         with change_cwd(uv_env_dir), files_manager():
             use_tool(tool)
 

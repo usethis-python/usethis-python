@@ -454,7 +454,9 @@ External skills can be installed if they are not present — see the `usethis-sk
   writing or modifying code, always use this skill to write tests and verify full coverage
   before finishing. Aim for 100% coverage on new or changed code.
 - ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task
-  is complete, always run this skill to check for any issues before finishing.
+  is complete, always run this skill to check for any issues before finishing. You must fix
+  **all** static check failures, including pre-existing ones unrelated to your changes —
+  CI enforces checks on the entire codebase, so unfixed failures will block your PR.
 - ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.
 - ALWAYS reference the relevant issue ID in PR descriptions using a closing keyword, e.g. `Resolves #123`. This ensures traceability between PRs and the issues they address.
 

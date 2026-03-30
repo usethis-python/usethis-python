@@ -9,7 +9,7 @@
 <!-- sync:docs/module-tree.txt -->
 
 ```text
-usethis                           # usethis: Automate Python project setup and development tasks that are otherwise performed manually.
+usethis                           # usethis: Automatically manage Python tooling and configuration: linters, formatters, and more.
 ├── __main__                      # The CLI application for usethis.
 ├── _config                       # Global configuration state for usethis.
 ├── _config_file                  # Context managers for coordinated configuration file I/O.

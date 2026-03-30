@@ -53,6 +53,7 @@ dynamic = [
 dependencies = [
   "configupdater>=3.2",
   "grimp>=3.14",
+  "identify[license]>=2.6",
   "packaging>=20.9",
   "pydantic>=2.5.0",
   "requests>=2.26.0",

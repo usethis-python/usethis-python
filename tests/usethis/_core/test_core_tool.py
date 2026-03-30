@@ -1,3 +1,4 @@
+import shlex
 import subprocess
 import unittest
 import unittest.mock
@@ -40,9 +41,11 @@ from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.impl.base.pytest import PytestTool
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
+from usethis.errors import NoDefaultToolCommand
 
 
 class TestAllHooksList:
@@ -127,17 +130,6 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 "✔ Adding Codespell config to 'pyproject.toml'."
                 "☐ Run 'uv run codespell' to run the Codespell spellchecker."
             )
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_runs(self, uv_env_dir: Path):
-            # An env is needed in which to run codespell
-
-            with change_cwd(uv_env_dir), PyprojectTOMLManager():
-                # Arrange
-                use_codespell()
-
-                # Act, Assert (no errors)
-                call_uv_subprocess(["run", "codespell"], change_toml=False)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_codespell_rc_file(self, uv_init_dir: Path):
@@ -3794,6 +3786,28 @@ class TestUseTool:
         with change_cwd(uv_init_dir), files_manager():
             for tool in ALL_TOOLS:
                 use_tool(tool)
+
+    @pytest.mark.parametrize("tool", ALL_TOOLS, ids=lambda t: t.name)
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_runs(self, tool, uv_env_dir: Path):
+        with change_cwd(uv_env_dir), files_manager():
+            use_tool(tool)
+
+            try:
+                cmd = tool.raw_cmd()
+            except NoDefaultToolCommand:
+                pytest.skip(f"{tool.name} has no default command")
+
+            # pytest needs at least one test to avoid exit code 5 (no tests collected)
+            if isinstance(tool, PytestTool):
+                (uv_env_dir / "tests" / "test_placeholder.py").write_text(
+                    "def test_placeholder(): pass\n"
+                )
+
+            call_uv_subprocess(
+                ["run", *shlex.split(cmd)],
+                change_toml=False,
+            )
 
 
 class TestTy:

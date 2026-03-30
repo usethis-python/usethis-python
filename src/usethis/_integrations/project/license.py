@@ -114,18 +114,23 @@ def _get_license_from_pyproject_field() -> str | None:
         return license_value
 
     # PEP 621: license is a table with 'text' or 'file' key
-    if isinstance(license_value, dict):
-        # If it has a 'text' key, the text itself might be an SPDX identifier
-        text = license_value.get("text")
-        if isinstance(text, str) and text.strip():
-            return text.strip()
+    if not isinstance(license_value, dict):
+        return None
 
-        # If it has a 'file' key, try to scan that file
-        file_path = license_value.get("file")
-        if isinstance(file_path, str) and os.path.isfile(file_path):
-            spdx_id = license_id(file_path)
-            if spdx_id is not None:
-                return spdx_id
+    return _resolve_license_table(license_value)
+
+
+def _resolve_license_table(license_value: dict[str, object]) -> str | None:
+    """Resolve a PEP 621 license table to an SPDX identifier."""
+    # If it has a 'text' key, the text itself might be an SPDX identifier
+    text = license_value.get("text")
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+
+    # If it has a 'file' key, try to scan that file
+    file_path = license_value.get("file")
+    if isinstance(file_path, str) and os.path.isfile(file_path):
+        return license_id(file_path)
 
     return None
 

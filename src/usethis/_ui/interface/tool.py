@@ -376,7 +376,7 @@ def ruff(
 
 @app.command(
     name="tach",
-    help="Use Tach: enforce a self-imposed architecture on imports.",
+    help="Use Tach: enforce self-imposed dependency and interface rules.",
     rich_help_panel="Code Quality Tools",
 )
 def tach(
@@ -388,7 +388,7 @@ def tach(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
-    """Use Tach: enforce a self-imposed architecture on imports."""
+    """Use Tach: enforce self-imposed dependency and interface rules."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_tach
 

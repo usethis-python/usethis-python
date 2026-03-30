@@ -7,6 +7,7 @@ import typer
 
 def list(  # noqa: A001
 ) -> None:
+    """Show the usage table of all available tools and their current status."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.list import show_usage_table

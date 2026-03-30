@@ -14,16 +14,19 @@ if TYPE_CHECKING:
 
 
 def show_backend(*, output_file: Path | None = None) -> None:
+    """Display the inferred package manager backend for the current project."""
     _output(get_backend().value, output_file=output_file)
 
 
 def show_name(*, output_file: Path | None = None) -> None:
+    """Display the name of the current project."""
     _output(get_project_name(), output_file=output_file)
 
 
 def show_sonarqube_config(
     *, project_key: str | None = None, output_file: Path | None = None
 ) -> None:
+    """Display the sonar-project.properties configuration for the current project."""
     _output(
         get_sonar_project_properties(project_key=project_key), output_file=output_file
     )

@@ -40,6 +40,7 @@ def codespell(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the codespell spellchecker: detect common spelling mistakes."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_codespell
 
@@ -77,6 +78,7 @@ def coverage_py(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use Coverage.py: a code coverage measurement tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_coverage_py
 
@@ -107,6 +109,7 @@ def deptry(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the deptry linter: avoid missing or superfluous dependency declarations."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_deptry
 
@@ -137,6 +140,7 @@ def import_linter(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use Import Linter: enforce a self-imposed architecture on imports."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_import_linter
 
@@ -167,6 +171,7 @@ def mkdocs(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use MkDocs: Generate project documentation sites with Markdown."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_mkdocs
 
@@ -197,6 +202,7 @@ def pre_commit(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the pre-commit framework to manage and maintain pre-commit hooks."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pre_commit
 
@@ -227,6 +233,7 @@ def pyproject_fmt(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_fmt
 
@@ -257,6 +264,7 @@ def pyproject_toml(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use a pyproject.toml file to configure the project."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_toml
 
@@ -285,6 +293,7 @@ def pytest(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the pytest testing framework."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pytest
 
@@ -315,6 +324,7 @@ def requirements_txt(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use a requirements.txt file exported from the uv lockfile."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_requirements_txt
 
@@ -347,6 +357,7 @@ def ruff(
     formatter: bool = formatter_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use Ruff: an extremely fast Python linter and code formatter."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ruff
 
@@ -407,6 +418,7 @@ def ty(
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the ty type checker: an extremely fast Python type checker."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ty
 

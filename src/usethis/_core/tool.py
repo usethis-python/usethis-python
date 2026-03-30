@@ -59,6 +59,7 @@ class UseToolFunc(Protocol):
 
 
 def use_codespell(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the codespell spellchecker tool."""
     tool = CodespellTool()
 
     if how:
@@ -81,6 +82,7 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the Coverage.py code coverage tool."""
     tool = CoveragePyTool()
 
     if how:
@@ -100,6 +102,7 @@ def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_deptry(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the deptry dependency linter tool."""
     tool = DeptryTool()
 
     if how:
@@ -122,6 +125,7 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the Import Linter architecture enforcement tool."""
     tool = ImportLinterTool()
 
     if how:
@@ -148,6 +152,7 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the MkDocs documentation site generator tool."""
     tool = MkDocsTool()
 
     if how:
@@ -172,6 +177,7 @@ def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the pre-commit hook framework."""
     tool = PreCommitTool()
 
     if how:
@@ -225,6 +231,7 @@ def _add_all_tools_pre_commit_configs():
 
 
 def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the pyproject-fmt pyproject.toml formatter tool."""
     tool = PyprojectFmtTool()
 
     if how:
@@ -247,6 +254,7 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the pyproject.toml file as a project configuration tool."""
     tool = PyprojectTOMLTool()
 
     if how:
@@ -263,6 +271,7 @@ def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_pytest(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the pytest testing framework."""
     tool = PytestTool()
 
     if how:
@@ -308,6 +317,7 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure a requirements.txt file exported from the uv lockfile."""
     tool = RequirementsTxtTool()
 
     if how:
@@ -510,6 +520,7 @@ def use_tach(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_ty(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the ty type checker tool."""
     tool = TyTool()
 
     if how:

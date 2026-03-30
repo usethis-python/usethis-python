@@ -58,7 +58,7 @@ def tick_print(msg: str | Exception) -> None:
         or usethis_config.instruct_only
     ):
         icon = _get_icon("tick")
-        console.print(f"{icon} {msg}", style="green")
+        console.print(f"{icon} {msg}", style="green", soft_wrap=True)
 
 
 def instruct_print(msg: str | Exception) -> None:
@@ -67,7 +67,7 @@ def instruct_print(msg: str | Exception) -> None:
 
     if not (usethis_config.quiet or usethis_config.alert_only):
         icon = _get_icon("instruct")
-        console.print(f"{icon} {msg}", style="red")
+        console.print(f"{icon} {msg}", style="red", soft_wrap=True)
 
 
 def how_print(msg: str | Exception) -> None:
@@ -80,7 +80,7 @@ def how_print(msg: str | Exception) -> None:
         or usethis_config.instruct_only
     ):
         icon = _get_icon("how")
-        console.print(f"{icon} {msg}", style="red")
+        console.print(f"{icon} {msg}", style="red", soft_wrap=True)
 
 
 def info_print(msg: str | Exception, temporary: bool = False) -> None:
@@ -97,7 +97,7 @@ def info_print(msg: str | Exception, temporary: bool = False) -> None:
             end = "\r"
         else:
             end = "\n"
-        console.print(f"{icon} {msg}", style="blue", end=end)
+        console.print(f"{icon} {msg}", style="blue", end=end, soft_wrap=True)
 
 
 def err_print(msg: str | Exception) -> None:
@@ -106,7 +106,7 @@ def err_print(msg: str | Exception) -> None:
 
     if not usethis_config.quiet:
         icon = _get_icon("error")
-        err_console.print(f"{icon} {msg}", style="red")
+        err_console.print(f"{icon} {msg}", style="red", soft_wrap=True)
 
 
 def warn_print(msg: str | Exception) -> None:
@@ -120,7 +120,7 @@ def warn_print(msg: str | Exception) -> None:
 def _cached_warn_print(msg: str) -> None:
     if not usethis_config.quiet:
         icon = _get_icon("warning")
-        console.print(f"{icon} {msg}", style="yellow")
+        console.print(f"{icon} {msg}", style="yellow", soft_wrap=True)
 
 
 # Icon fallback system for terminals with varying Unicode support

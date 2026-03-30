@@ -120,12 +120,12 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             assert not err
             # Note: Since deps are now added (issue #1020), the message is "uv run codespell"
             # not "pre-commit run -acodespell" because get_install_method() returns "devdep"
-            assert out.replace("\n", "") == (
-                "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'."
-                "☐ Install the dependency 'codespell'."
-                "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'."
-                "✔ Adding Codespell config to 'pyproject.toml'."
-                "☐ Run 'uv run codespell' to run the Codespell spellchecker."
+            assert out == (
+                "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'codespell'.\n"
+                "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2058,11 +2058,11 @@ repos:
 
                 # Assert
                 out, _ = capfd.readouterr()
-                assert out.replace("\n", "") == (
-                    "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit."
-                    "✔ Removing '.pre-commit-config.yaml'."
-                    "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'."
-                    "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
+                assert out == (
+                    "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
+                    "✔ Removing '.pre-commit-config.yaml'.\n"
+                    "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2319,12 +2319,12 @@ keep_full_version = true
             # Check output
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'."
-                "☐ Install the dependency 'pyproject-fmt'."
-                "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'."
-                "✔ Adding pyproject-fmt config to 'pyproject.toml'."
-                "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt."
+            assert out == (
+                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'pyproject-fmt'.\n"
+                "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
             )
 
     class TestRemove:
@@ -2875,9 +2875,9 @@ class TestRequirementsTxt:
             assert not (tmp_path / "uv.lock").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "✔ Writing 'requirements.txt'."
-                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
+            assert out == (
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'.\n"
             )
             content = (tmp_path / "requirements.txt").read_text()
             assert content == "-e .\n"
@@ -2917,10 +2917,10 @@ class TestRequirementsTxt:
             assert (uv_init_dir / "requirements.txt").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "✔ Writing 'uv.lock'."
-                "✔ Writing 'requirements.txt'."
-                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
+            assert out == (
+                "✔ Writing 'uv.lock'.\n"
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         def test_start_from_uv_locked(
@@ -2941,9 +2941,9 @@ class TestRequirementsTxt:
             assert (uv_init_dir / "requirements.txt").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "✔ Writing 'requirements.txt'."
-                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
+            assert out == (
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -3024,10 +3024,10 @@ typer-slim[standard]
 
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies."  # noqa: RUF001
-                "ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files."  # noqa: RUF001
-                "✔ Writing 'requirements.txt'."
+            assert out == (
+                "ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies.\n"  # noqa: RUF001
+                "ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files.\n"  # noqa: RUF001
+                "✔ Writing 'requirements.txt'.\n"
             )
 
     class TestRemove:

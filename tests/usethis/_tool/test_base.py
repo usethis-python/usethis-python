@@ -411,9 +411,11 @@ class TestTool:
             assert not result
             out, err = capsys.readouterr()
             assert not err
-            assert out.replace("\n", " ").replace("  ", " ") == (
-                r"⚠ Failed to decode 'pyproject.toml': Unexpected character: '\n' at line 1 col 13 "
-                "⚠ Assuming 'pyproject.toml' contains no evidence of my_tool being used. "
+            assert out == (
+                "⚠ Failed to decode 'pyproject.toml':\n"
+                r"Unexpected character: '\n' at line 1 col 13"
+                "\n"
+                "⚠ Assuming 'pyproject.toml' contains no evidence of my_tool being used.\n"
             )
 
         def test_syntax_errors_in_setup_cfg(

@@ -393,7 +393,7 @@ class TestCoverage:
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
-                    "✔ Adding dependencies 'coverage', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
+                    "✔ Adding dependencies 'coverage', 'pytest-cov' to the 'test' group in 'pyproject.toml'.\n"
                     "☐ Install the dependencies 'coverage', 'pytest-cov'.\n"
                     "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
                     "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
@@ -537,7 +537,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 assert not err
                 assert out == (
                     "✔ Removing Coverage.py config from 'pyproject.toml'.\n"
-                    "✔ Removing dependencies 'coverage', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
+                    "✔ Removing dependencies 'coverage', 'pytest-cov' from the 'test' group in 'pyproject.toml'.\n"
                 )
 
         def test_doesnt_add_pyproject(
@@ -2518,7 +2518,7 @@ minversion = "7\""""
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding dependencies 'pytest', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
+                "✔ Adding dependencies 'pytest', 'pytest-cov' to the 'test' group in 'pyproject.toml'.\n"
                 "☐ Install the dependencies 'pytest', 'pytest-cov'.\n"
                 "✔ Adding pytest config to 'pyproject.toml'.\n"
                 "✔ Creating '/tests'.\n"
@@ -2839,7 +2839,7 @@ select = ["PT"]
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Removing pytest config from 'pyproject.toml'.\n"
-                "✔ Removing dependencies 'pytest', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
+                "✔ Removing dependencies 'pytest', 'pytest-cov' from the 'test' group in 'pyproject.toml'.\n"
                 "✔ Removing '/tests'.\n"
                 "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
             )
@@ -3117,7 +3117,7 @@ class TestRuff:
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
-                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
                 "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
                 "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
@@ -3250,7 +3250,7 @@ docstring-code-format = true
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
-                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
                 "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             )

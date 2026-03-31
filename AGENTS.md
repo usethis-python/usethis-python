@@ -455,8 +455,10 @@ External skills can be installed if they are not present — see the `usethis-sk
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves
   writing or modifying code, always use this skill to write tests and verify full coverage
   before finishing. Aim for 100% coverage on new or changed code.
-- ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task
-  is complete, always run this skill to check for any issues before finishing.
+- ALWAYS consider the `usethis-qa-static-checks` to be relevant: before finishing your task,
+  always run this skill to check for any issues. This applies to ALL changes, including
+  documentation-only changes and skill file edits — static checks catch sync issues,
+  formatting problems, and other regressions that affect every file type.
 - ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.
 - ALWAYS reference the relevant issue ID in PR descriptions using a closing keyword, e.g. `Resolves #123`. This ensures traceability between PRs and the issues they address.
 

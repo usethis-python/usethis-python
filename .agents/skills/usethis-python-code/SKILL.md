@@ -13,7 +13,7 @@ Use the `usethis-python-code-modify` skill when making code changes. This skill 
 
 ## Docstring code references
 
-When referencing code names (functions, classes, modules, parameters, etc.) in docstrings, always use single backticks (`` ` ``), not double backticks (``` `` ```). This applies to all identifiers mentioned in docstring text.
+When referencing code names (functions, classes, modules, parameters, etc.) in docstrings, always use single backticks (`` ` ``), not double backticks (` `` `). This applies to all identifiers mentioned in docstring text.
 
 ### Example
 

@@ -95,7 +95,7 @@ ignore = ["RUF001"]
         # Assert
         assert result.exit_code == 0, result.output
         assert not (tmp_path / "pyproject.toml").exists()
-        assert result.output.replace("\n", "") == (
+        assert result.output == (
             "☐ Add the dev dependency 'ruff'.\n"
             "✔ Writing 'ruff.toml'.\n"
             "✔ Adding Ruff config to 'ruff.toml'.\n"
@@ -104,7 +104,7 @@ ignore = ["RUF001"]
             "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'ruff format' to run the Ruff formatter.\n"
             "✔ Selecting Ruff rule 'FAKE' in 'ruff.toml'.\n"
-        ).replace("\n", "")
+        )
 
     def test_none_backend_pyproject_toml(self, tmp_path: Path):
         # Arrange
@@ -117,7 +117,7 @@ ignore = ["RUF001"]
 
         # Assert
         assert result.exit_code == 0, result.output
-        assert result.output.replace("\n", "") == (
+        assert result.output == (
             "☐ Add the dev dependency 'ruff'.\n"
             "✔ Adding Ruff config to 'pyproject.toml'.\n"
             "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
@@ -125,4 +125,4 @@ ignore = ["RUF001"]
             "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
             "☐ Run 'ruff format' to run the Ruff formatter.\n"
             "✔ Selecting Ruff rule 'FAKE' in 'pyproject.toml'.\n"
-        ).replace("\n", "")
+        )

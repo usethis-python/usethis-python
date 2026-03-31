@@ -68,6 +68,17 @@ class TestTickPrint:
         out, _ = capfd.readouterr()
         assert out == "✔ Hello\n"
 
+    def test_no_line_wrapping(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Arrange
+        long_msg = "A" * 200
+
+        # Act
+        tick_print(long_msg)
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == f"✔ {long_msg}\n"
+
     def test_alert_only_suppresses(self, capfd: pytest.CaptureFixture[str]) -> None:
         # Act
         with usethis_config.set(alert_only=True):
@@ -97,6 +108,17 @@ class TestInstructPrint:
         # Assert
         out, _ = capfd.readouterr()
         assert out == "☐ Hello\n"
+
+    def test_no_line_wrapping(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Arrange
+        long_msg = "A" * 200
+
+        # Act
+        instruct_print(long_msg)
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == f"☐ {long_msg}\n"
 
     def test_instruct_only_does_not_suppress(
         self, capfd: pytest.CaptureFixture[str]
@@ -138,6 +160,17 @@ class TestInfoPrint:
         out, _ = capfd.readouterr()
         assert out == "ℹ Hello\n"  # noqa: RUF001
 
+    def test_no_line_wrapping(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Arrange
+        long_msg = "A" * 200
+
+        # Act
+        info_print(long_msg)
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == f"ℹ {long_msg}\n"  # noqa: RUF001
+
 
 class TestErrPrint:
     def test_out(self, capfd: pytest.CaptureFixture[str]) -> None:
@@ -148,6 +181,18 @@ class TestErrPrint:
         out, err = capfd.readouterr()
         assert not out
         assert err == "✗ Hello\n"
+
+    def test_no_line_wrapping(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Arrange
+        long_msg = "A" * 200
+
+        # Act
+        err_print(long_msg)
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not out
+        assert err == f"✗ {long_msg}\n"
 
     def test_alert_only_doesnt_suppress(
         self, capfd: pytest.CaptureFixture[str]
@@ -171,6 +216,18 @@ class TestWarnPrint:
         out, err = capfd.readouterr()
         assert not err
         assert out == "⚠ Hello\n"
+
+    def test_no_line_wrapping(self, capfd: pytest.CaptureFixture[str]) -> None:
+        # Arrange
+        long_msg = "A" * 200
+
+        # Act
+        warn_print(long_msg)
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert not err
+        assert out == f"⚠ {long_msg}\n"
 
     def test_alert_only_doesnt_suppress(
         self, capfd: pytest.CaptureFixture[str]

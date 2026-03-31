@@ -41,3 +41,7 @@ Content between `<!-- sync:path/to/file -->` and `<!-- /sync:path/to/file -->` m
 ### Skills registry
 
 The skills table in `AGENTS.md` must include every skill directory under `.agents/skills/`. The `check-skills-documented` hook enforces this. When creating a new skill, add it to the table (see the `usethis-skills-create` skill for the full procedure).
+
+## Run static checks after modifying agent configuration
+
+After finishing your modifications, run the static checks (e.g. `usethis-qa-static-checks`) to check for any issues before merging. This is especially important for agent configuration changes because several QA static checks involve markdown linting and formatting, which directly apply to `AGENTS.md` and skill files.

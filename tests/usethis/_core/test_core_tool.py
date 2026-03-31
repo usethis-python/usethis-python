@@ -1,3 +1,4 @@
+import os
 import subprocess
 import unittest
 import unittest.mock
@@ -1889,6 +1890,9 @@ repos:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_bad_commit(self, uv_env_dir: Path, git_path: Path):
             # This needs a venv so that we can actually run pre-commit via git
+
+            if os.environ.get("CI") and not usethis_config.offline:
+                pytest.skip("Skipping online test on CI to avoid flakiness")
 
             # Arrange
             (uv_env_dir / ".gitignore").write_text(".venv/\n")

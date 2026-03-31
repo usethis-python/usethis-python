@@ -9,5 +9,7 @@ from usethis._pipeweld.ops import Instruction
 
 
 class WeldResult(BaseModel):
+    """The result of a pipeline welding operation."""
+
     solution: Series
     instructions: list[Instruction]

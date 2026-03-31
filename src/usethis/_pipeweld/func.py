@@ -25,6 +25,13 @@ if TYPE_CHECKING:
 
 
 class Partition(BaseModel):
+    """A three-way partition of a pipeline component relative to a new step's dependencies.
+
+    The three parts are: steps that must run before the new step (prerequisite),
+    steps independent of the new step (nondependent), and steps that must run after
+    the new step (postrequisite).
+    """
+
     prerequisite_component: str | Series | DepGroup | Parallel | None = None
     nondependent_component: str | Series | DepGroup | Parallel | None = None
     postrequisite_component: str | Series | DepGroup | Parallel | None = None
@@ -32,6 +39,8 @@ class Partition(BaseModel):
 
 
 class Adder(BaseModel):
+    """Add a new step into an existing pipeline, respecting dependency ordering."""
+
     pipeline: Series
     step: str
     prerequisites: set[str] = set()
@@ -39,6 +48,7 @@ class Adder(BaseModel):
     compatible_config_groups: set[str] = set()
 
     def add(self) -> WeldResult:
+        """Add the step to the pipeline and return the modified pipeline with instructions."""
         if len(self.pipeline) == 0:
             # Empty pipeline
             return WeldResult(
@@ -68,6 +78,10 @@ class Adder(BaseModel):
     def partition_component(
         self, component: str | Series | Parallel | DepGroup, *, predecessor: str | None
     ) -> tuple[Partition, list[Instruction]]:
+        """Partition a component into prerequisite, nondependent, and postrequisite parts.
+
+        Returns the partition and any insertion instructions needed to perform the split.
+        """
         if isinstance(component, str):
             if component in self.prerequisites:
                 return Partition(

@@ -81,7 +81,7 @@ def get_license_id() -> str:
     if result is not None:
         return result
 
-    msg = "Could not detect a project license. Add a LICENSE file, set 'project.license' in 'pyproject.toml', or add a license classifier."
+    msg = "Could not detect a project license. Add a 'LICENSE' file, or set 'project.license' in 'pyproject.toml'."
     raise LicenseDetectionError(msg)
 
 

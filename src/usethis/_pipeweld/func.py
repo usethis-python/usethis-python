@@ -553,15 +553,13 @@ def _get_instructions_for_insertion(
 
 
 def _concat(*components: str | Series | DepGroup | Parallel | None) -> Series | None:
-    s = []
+    s: list[str | Series | DepGroup | Parallel] = []
     for component in components:
-        if isinstance(component, Series):
-            s.extend(component.root)
-        elif isinstance(component, Parallel | str):
-            s.append(component)
-        elif component is None:
+        if component is None:
             pass
-        elif isinstance(component, DepGroup):
+        elif isinstance(component, Series):
+            s.extend(component.root)
+        elif isinstance(component, (Parallel | str, DepGroup)):
             s.append(component)
         else:
             assert_never(component)
@@ -573,16 +571,14 @@ def _concat(*components: str | Series | DepGroup | Parallel | None) -> Series | 
 
 
 def _union(*components: str | Series | DepGroup | Parallel | None) -> Parallel | None:
-    p = []
+    p: set[str | Series | DepGroup | Parallel] = set()
     for component in components:
-        if isinstance(component, Parallel):
-            p.extend(component.root)
-        elif isinstance(component, Series | str):
-            p.append(component)
-        elif component is None:
+        if component is None:
             pass
-        elif isinstance(component, DepGroup):
-            p.append(component)
+        elif isinstance(component, Parallel):
+            p.update(component.root)
+        elif isinstance(component, (Series | str, DepGroup)):
+            p.add(component)
         else:
             assert_never(component)
 

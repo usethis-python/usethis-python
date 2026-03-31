@@ -4,12 +4,32 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Python Code Guidelines
 
 Use the `usethis-python-code-modify` skill when making code changes. This skill covers design decisions that inform those changes.
+
+## Docstring code references
+
+When referencing code names (functions, classes, modules, parameters, etc.) in docstrings, always use single backticks (`` ` ``), not double backticks (` `` `). This applies to all identifiers mentioned in docstring text.
+
+### Example
+
+```python
+# Good: single backticks
+def add_dep(name: str) -> None:
+    """Add a dependency using `uv add`."""
+
+# Bad: double backticks (RST style)
+def add_dep(name: str) -> None:
+    """Add a dependency using ``uv add``."""
+```
+
+### Why
+
+The project uses Markdown-compatible formatting for docstrings. Single backticks are the Markdown standard for inline code, and the project's export hooks normalize double backticks to single backticks. Using single backticks from the start avoids this normalization and keeps docstrings consistent with their rendered output.
 
 ## Avoiding unnecessary duplication
 

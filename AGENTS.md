@@ -293,6 +293,8 @@ ALWAYS check whether an existing function already covers your use case before im
 - `get_project_name_from_dir()` (`usethis._file.dir`) — Derive a valid project name from the current directory name.
 - `deep_merge()` (`usethis._file.merge`) — Recursively merge source into target in place, returning target.
 - `print_keys()` (`usethis._file.print_`) — Convert a list of keys to a string.
+- `get_project_deps()` (`usethis._file.pyproject_toml.deps`) — Get all project dependencies from [project.dependencies].
+- `get_dep_groups()` (`usethis._file.pyproject_toml.deps`) — Get all dependency groups from [dependency-groups].
 - `get_name()` (`usethis._file.pyproject_toml.name`) — Get the project name from pyproject.toml.
 - `get_description()` (`usethis._file.pyproject_toml.name`) — Get the project description from pyproject.toml.
 - `get_project_dict()` (`usethis._file.pyproject_toml.project`) — Get the contents of the [project] section from pyproject.toml.
@@ -453,10 +455,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves
   writing or modifying code, always use this skill to write tests and verify full coverage
   before finishing. Aim for 100% coverage on new or changed code.
-- ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task
-  is complete, always run this skill to check for any issues before finishing. You must fix
-  **all** static check failures, including pre-existing ones unrelated to your changes —
-  CI enforces checks on the entire codebase, so unfixed failures will block your PR.
+- ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task is complete, always run this skill to check for any issues before finishing. You must fix **all** static check failures, including pre-existing ones unrelated to your changes. This applies to ALL changes, including documentation-only changes and skill file edits — static checks catch sync issues, formatting problems, and other regressions that affect every file type. CI enforces checks on the entire codebase, so unfixed failures will block your PR.
 - ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.
 - ALWAYS reference the relevant issue ID in PR descriptions using a closing keyword, e.g. `Resolves #123`. This ensures traceability between PRs and the issues they address.
 

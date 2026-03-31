@@ -62,9 +62,9 @@ def get_license_id() -> str:
     """Get the SPDX license identifier for the current project.
 
     Uses heuristics in the following order:
-    1. Scan common license files at the project root using the ``identify`` package.
-    2. Read the ``project.license`` field from ``pyproject.toml``.
-    3. Check ``project.classifiers`` in ``pyproject.toml`` for license classifiers.
+    1. Scan common license files at the project root using the `identify` package.
+    2. Read the `project.license` field from `pyproject.toml`.
+    3. Check `project.classifiers` in `pyproject.toml` for license classifiers.
 
     Raises:
         LicenseDetectionError: If the license cannot be determined.
@@ -96,7 +96,7 @@ def _get_license_from_file() -> str | None:
 
 
 def _get_license_from_pyproject_field() -> str | None:
-    """Try to detect the license from pyproject.toml ``project.license`` field."""
+    """Try to detect the license from pyproject.toml `project.license` field."""
     try:
         pyproject = PyprojectTOMLManager().get().value
     except PyprojectTOMLError:
@@ -137,7 +137,7 @@ def _resolve_license_table(license_value: dict[str, object]) -> str | None:
 
 
 def _get_license_from_classifiers() -> str | None:
-    """Try to detect the license from pyproject.toml ``project.classifiers``."""
+    """Try to detect the license from pyproject.toml `project.classifiers`."""
     try:
         pyproject = PyprojectTOMLManager().get().value
     except PyprojectTOMLError:

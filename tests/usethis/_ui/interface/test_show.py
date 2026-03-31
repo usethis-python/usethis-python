@@ -5,6 +5,30 @@ from usethis._test import CliRunner, change_cwd
 from usethis._types.backend import BackendEnum
 from usethis._ui.interface.show import app
 
+_MIT_LICENSE_TEXT = """\
+MIT License
+
+Copyright (c) 2024
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 
 class TestBackend:
     def test_uv_backend(self, tmp_path: Path):
@@ -92,6 +116,61 @@ class TestName:
         # Assert
         assert result.exit_code == 0, result.output
         assert output_file.read_text(encoding="utf-8") == "fun\n"
+
+
+class TestLicense:
+    def test_from_license_file(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "LICENSE").write_text(_MIT_LICENSE_TEXT)
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["license"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert result.output == "MIT\n"
+
+    def test_from_pyproject_field(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "test"\nlicense = "Apache-2.0"\n'
+        )
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["license"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert result.output == "Apache-2.0\n"
+
+    def test_no_license(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["license"])
+
+        # Assert
+        assert result.exit_code == 1, result.output
+
+    def test_output_file(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "LICENSE").write_text(_MIT_LICENSE_TEXT)
+        output_file = tmp_path / "license.txt"
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["license", "--output-file", str(output_file)]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert output_file.read_text(encoding="utf-8") == "MIT\n"
 
 
 class TestSonarqube:

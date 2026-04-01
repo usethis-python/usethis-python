@@ -6,6 +6,7 @@ from ruamel.yaml import YAML
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.hooks import (
+    HOOK_GROUPS,
     _get_placeholder_repo_config,
     add_placeholder_hook,
     add_repo,
@@ -16,6 +17,24 @@ from usethis._integrations.pre_commit.hooks import (
 )
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._test import change_cwd
+
+
+class TestHookGroups:
+    def test_is_list_of_lists(self):
+        assert isinstance(HOOK_GROUPS, list)
+        for group in HOOK_GROUPS:
+            assert isinstance(group, list)
+            for hook in group:
+                assert isinstance(hook, str)
+
+    def test_non_empty(self):
+        assert len(HOOK_GROUPS) > 0
+        for group in HOOK_GROUPS:
+            assert len(group) > 0
+
+    def test_no_duplicates(self):
+        all_hooks = [hook for group in HOOK_GROUPS for hook in group]
+        assert len(all_hooks) == len(set(all_hooks))
 
 
 class TestAddRepo:
@@ -115,7 +134,7 @@ repos:
 
     def test_hook_order_constant_is_respected(self, tmp_path: Path):
         with change_cwd(tmp_path), files_manager():
-            # Arrange: Add 'codespell' first (later in _HOOK_ORDER)
+            # Arrange: Add 'codespell' first (later in HOOK_GROUPS)
             add_repo(
                 schema.LocalRepo(
                     repo="local",
@@ -130,7 +149,7 @@ repos:
                 )
             )
 
-            # Now add 'pyproject-fmt' (earlier in _HOOK_ORDER)
+            # Now add 'pyproject-fmt' (earlier in HOOK_GROUPS)
             add_repo(
                 schema.LocalRepo(
                     repo="local",

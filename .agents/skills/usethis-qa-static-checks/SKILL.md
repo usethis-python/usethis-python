@@ -4,7 +4,7 @@ description: Perform static code checks
 compatibility: usethis, Python, prek, basedpyright
 license: MIT
 metadata:
-  version: "1.7"
+  version: "1.9"
 ---
 
 # Static Checks
@@ -18,9 +18,17 @@ uv run basedpyright
 
 Note that we are interested in both errors and warnings from these tools - we should always fix both.
 
+## How to run prek correctly
+
+**Never truncate prek output.** Do not pipe prek through `tail`, `head`, or any other command that discards lines (e.g. `uv run prek -a 2>&1 | tail -30`). This project has many hooks and truncating the output can hide failures, leading you to incorrectly conclude that all checks passed.
+
+**Use the exit code as the source of truth.** The exit code of `uv run prek -a` is the definitive indicator of success or failure — not the visible output. A zero exit code means all hooks passed; a non-zero exit code means at least one hook failed. Always check the exit code rather than scanning the output for pass/fail keywords.
+
 ## When to run these checks
 
-Before submitting changes for review, **always** run these static checks. This applies to **every** change, no matter how small — including documentation-only changes, skill file edits, and configuration updates. Hooks like `check-doc-sync` and `export-functions` validate generated files that can go out of sync even from non-code changes. Skipping static checks is a common cause of avoidable CI failures.
+Before submitting changes for review, **always** run these static checks. This applies to **every** change, no matter how small — including documentation-only changes, skill file edits, and configuration updates. Hooks like `fix-doc-sync` and `export-functions` validate generated files that can go out of sync even from non-code changes. Skipping static checks is a common cause of avoidable CI failures.
+
+**Run static checks repeatedly until they pass.** After fixing any failure — or after making any further change for any reason — you must re-run **all** static checks again from scratch, even if you ran them moments ago. A single passing run is not enough if changes have been made since that run. It is expected and normal to invoke this skill multiple times in a loop until every check passes cleanly with no further modifications.
 
 ## What to do when prek checks fail
 

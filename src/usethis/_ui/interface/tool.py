@@ -10,6 +10,7 @@ from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._ui.options import (
     backend_opt,
+    example_opt,
     formatter_opt,
     frozen_opt,
     how_opt,
@@ -292,6 +293,7 @@ def pytest(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
+    example: bool = example_opt,
 ) -> None:
     """Use the pytest testing framework."""
     from usethis._config_file import files_manager
@@ -307,7 +309,7 @@ def pytest(
         ),
         files_manager(),
     ):
-        _run_tool(use_pytest, remove=remove, how=how)
+        _run_tool(use_pytest, remove=remove, how=how, example=example)
 
 
 @app.command(
@@ -430,3 +432,5 @@ ALL_TOOL_COMMANDS: list[str] = [
     "ruff",
     "ty",
 ]
+
+ALL_TOOL_COMMAND_STRS: list[str] = [f"usethis tool {cmd}" for cmd in ALL_TOOL_COMMANDS]

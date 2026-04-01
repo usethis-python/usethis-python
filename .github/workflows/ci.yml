@@ -9,12 +9,20 @@ on:
       - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
+      - ".github/workflows/copilot-setup-steps.yml"
+      - ".github/workflows/static-checks.yml"
+      - "hooks/**"
+      - "docs/**/*.txt"
   pull_request:
     paths-ignore:
       - "mkdocs.yml"
       - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
+      - ".github/workflows/copilot-setup-steps.yml"
+      - ".github/workflows/static-checks.yml"
+      - "hooks/**"
+      - "docs/**/*.txt"
   schedule:
     - cron: "20 14 * * *"
 concurrency:

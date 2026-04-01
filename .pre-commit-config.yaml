@@ -49,7 +49,7 @@ repos:
         args: [--fix]
         priority: 0
       - id: ruff-format
-        priority: 0
+        priority: 1
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.22.0
     hooks:
@@ -74,6 +74,7 @@ repos:
       - id: check-skills-documented
         name: check-skills-documented
         entry: uv run --frozen --offline hooks/check-skills-documented.py
+        args: ["--prefix=usethis-"]
         language: system
         always_run: true
         pass_filenames: false
@@ -81,14 +82,25 @@ repos:
       - id: check-test-skeleton
         name: check-test-skeleton
         entry: uv run --frozen --offline hooks/check-test-skeleton.py
+        args: ["--source-dir", "src", "--tests-dir", "tests/usethis"]
         language: system
         always_run: true
         pass_filenames: false
         priority: 0
-      - id: check-doc-sync
-        name: check-doc-sync
-        entry: uv run --frozen --offline hooks/check-doc-sync.py
-        args: ["AGENTS.md"]
+      - id: check-banned-words
+        name: check-banned-words
+        entry: uv run --frozen --offline hooks/check-banned-words.py
+        args: ["--hooks-dir=hooks", "usethis"]
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 0
+      - id: check-list-referenced
+        name: check-list-referenced
+        entry: uv run --frozen --offline hooks/check-list-referenced.py
+        args:
+          - "--variable=usethis._ui.interface.tool.ALL_TOOL_COMMAND_STRS"
+          - "--target-file=README.md"
         language: system
         always_run: true
         pass_filenames: false
@@ -96,7 +108,7 @@ repos:
       - id: export-skills-directory
         name: export-skills-directory
         entry: uv run --frozen --offline hooks/export-skills-directory.py
-        args: ["--skills-dir=.agents/skills", "--output-file=docs/skills-directory.txt"]
+        args: ["--skills-dir=.agents/skills", "--output-file=docs/skills-directory.txt", "--prefix=usethis-"]
         language: system
         always_run: true
         pass_filenames: false
@@ -119,13 +131,23 @@ repos:
         priority: 0
   - repo: local
     hooks:
+      - id: fix-doc-sync
+        name: fix-doc-sync
+        entry: uv run --frozen --offline hooks/fix-doc-sync.py
+        args: ["AGENTS.md"]
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 1
+  - repo: local
+    hooks:
       - id: deptry
         name: deptry
         entry: uv run --frozen --offline deptry src
         language: system
         always_run: true
         pass_filenames: false
-        priority: 1
+        priority: 2
   - repo: local
     hooks:
       - id: import-linter
@@ -134,7 +156,7 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
-        priority: 1
+        priority: 2
   - repo: local
     hooks:
       - id: ty
@@ -144,7 +166,7 @@ repos:
         types_or: [python, pyi]
         always_run: true
         require_serial: true
-        priority: 1
+        priority: 2
 default_stages:
   - pre-commit
   - pre-push

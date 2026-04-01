@@ -4,7 +4,7 @@ description: "Enforce version bumping, scope checking, and content quality guide
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Modifying Agent Skills
@@ -65,6 +65,7 @@ Incrementing the version on every change helps ensure that merge conflicts are d
 
 When modifying skill content, maintain these principles:
 
+- **Don't make descriptions prescriptive.** If you update the `description` field in the YAML frontmatter, don't use commanding language like "ALWAYS use when..." — describe what the skill covers in neutral terms. See the `usethis-skills-create` skill for detailed description-writing guidelines.
 - **Describe procedures, not state.** Skills should explain how to approach situations, not describe the current state of the codebase. State descriptions become outdated; procedures remain valid. See the `usethis-skills-create` skill for detailed guidance.
 - **Keep content general.** Write instructions that remain valid as the codebase evolves. Avoid embedding specific file paths, class names, or constants unless strictly necessary.
 - **Be concise.** Only include information the agent doesn't already know. If a paragraph doesn't justify its token cost, remove it.

@@ -82,7 +82,7 @@ class TestAddExampleTest:
         content = (tmp_path / "tests" / "test_example.py").read_text()
         assert "def test_add():" in content
         assert "assert 1 + 1 == 2" in content
-        assert "An example test - add your own tests!" in content
+        assert "An example test - replace with your own tests!" in content
 
     def test_message(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange

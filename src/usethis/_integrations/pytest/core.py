@@ -8,10 +8,8 @@ from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
 
 _EXAMPLE_TEST_CONTENT = '''\
-"""An example test - add your own tests!"""
-
-
 def test_add():
+    """An example test - replace with your own tests!"""
     assert 1 + 1 == 2
 '''
 

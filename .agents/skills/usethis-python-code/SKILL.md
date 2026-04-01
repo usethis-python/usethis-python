@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Python Code Guidelines
@@ -79,3 +79,40 @@ If a function processes the output of a file-reading utility and belongs concept
 
 - **Placing a function where it is first used.** The call site is not the right guide for placement; the function's own abstraction level is.
 - **Ignoring import linter contracts.** Import Linter enforces the layer hierarchy. A placement that satisfies the architecture will naturally satisfy the contracts; if it does not, that is a signal that the chosen location is wrong.
+
+## Avoiding deep attribute nesting across layers
+
+When code accesses deeply nested attributes of an object (e.g. `result.solution.root`), it is reaching through multiple abstraction layers. This is a sign that the logic is at the wrong level — it belongs in a lower layer, closer to the objects being accessed.
+
+### Procedure
+
+1. When you find yourself writing an attribute chain that crosses two or more levels of abstraction (e.g. `obj.inner.deep_attr`), stop and consider which layer owns that information.
+2. Determine whether the logic operating on the deeply nested attribute can be moved into the lower layer that owns the object. This is the preferred approach — move the logic down, not just the access.
+3. If moving the logic is not feasible, add a method or property to the intermediate object that exposes the needed information at the right abstraction level. The caller should only need to access one level of the object's interface.
+4. Never work around deep nesting by extracting low-level details (indexes, type assertions, internal structure) into a higher layer. This couples the higher layer to implementation details it should not know about.
+
+### Key principle
+
+If you are accessing low-level attributes via deep nesting, the logic is in the wrong place. Always move it into a lower layer — either the layer that owns the deeply nested object, or an interface on the intermediate object.
+
+### Example
+
+```python
+# Bad: higher layer reaches through result -> solution -> root and operates on it
+result = adder.add()
+flat = result.solution.root
+idx = flat.index(step_name)
+predecessor = flat[idx - 1] if idx > 0 else None
+
+# Good: lower layer exposes a method that encapsulates the logic
+result = adder.add()
+predecessor = result.get_predecessor(step_name)
+```
+
+In the bad example, the caller knows that `solution` is a `Series`, that `Series` has a `root` list, and how to find a predecessor by index. In the good example, the `result` object owns that logic and the caller only interacts with one level of abstraction.
+
+### Common mistakes
+
+- **Extracting internal structure into variables.** Writing `flat = result.solution.root` does not fix the problem — it only hides the nesting in a local variable while the caller still depends on the internal structure.
+- **Adding type assertions for deeply nested objects.** If you need `assert isinstance(item, str)` after accessing a nested attribute, the logic almost certainly belongs in the layer that produces the object, where the type is already known.
+- **Adding a thin wrapper instead of moving logic.** A wrapper that merely returns `self.solution.root` is not enough. The goal is to move the _logic that uses_ the low-level data into the lower layer, not just to add an accessor.

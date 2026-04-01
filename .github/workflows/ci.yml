@@ -9,12 +9,14 @@ on:
       - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
+      - "hooks/**"
   pull_request:
     paths-ignore:
       - "mkdocs.yml"
       - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
+      - "hooks/**"
   schedule:
     - cron: "20 14 * * *"
 concurrency:

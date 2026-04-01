@@ -17,6 +17,7 @@ from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
+from usethis._tool.impl.base.zensical import ZensicalTool
 
 SupportedToolType: TypeAlias = (
     CodespellTool
@@ -32,6 +33,7 @@ SupportedToolType: TypeAlias = (
     | RuffTool
     | TachTool
     | TyTool
+    | ZensicalTool
 )
 
 # N.B. this list must be kept in-sync with usethis._tool.impl.base.pyproject_toml.OTHER_TOOLS.
@@ -50,4 +52,5 @@ ALL_TOOLS: list[SupportedToolType] = [
     RuffTool(),
     TachTool(),
     TyTool(),
+    ZensicalTool(),
 ]

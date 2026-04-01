@@ -41,6 +41,7 @@ from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
+from usethis._tool.impl.base.zensical import ZensicalTool
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -567,6 +568,31 @@ def use_ty(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_managed_files()
 
 
+def use_zensical(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the Zensical documentation site generator tool."""
+    tool = ZensicalTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
+
+    if not remove:
+        ensure_dep_declaration_file()
+        (usethis_config.cpd() / "zensical.toml").touch()
+
+        add_docs_dir()
+
+        tool.add_doc_deps()
+        tool.add_configs()
+
+        tool.print_how_to_use()
+    else:
+        # N.B. no need to remove configs because they all lie in managed files.
+
+        tool.remove_doc_deps()
+        tool.remove_managed_files()
+
+
 def use_tool(  # noqa: PLR0912
     tool: SupportedToolType,
     *,
@@ -611,6 +637,8 @@ def use_tool(  # noqa: PLR0912
         use_tach(remove=remove, how=how)
     elif isinstance(tool, TyTool):
         use_ty(remove=remove, how=how)
+    elif isinstance(tool, ZensicalTool):
+        use_zensical(remove=remove, how=how)
     else:
         # Having the assert_never here is effectively a way of testing cases are
         # exhaustively handled, which ensures it is kept up to date with ALL_TOOLS,

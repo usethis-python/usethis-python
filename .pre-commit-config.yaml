@@ -87,14 +87,6 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
-      - id: check-doc-sync
-        name: check-doc-sync
-        entry: uv run --frozen --offline hooks/check-doc-sync.py
-        args: ["AGENTS.md"]
-        language: system
-        always_run: true
-        pass_filenames: false
-        priority: 0
       - id: check-banned-words
         name: check-banned-words
         entry: uv run --frozen --offline hooks/check-banned-words.py
@@ -137,6 +129,16 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
+  - repo: local
+    hooks:
+      - id: fix-doc-sync
+        name: fix-doc-sync
+        entry: uv run --frozen --offline hooks/fix-doc-sync.py
+        args: ["AGENTS.md"]
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 1
   - repo: local
     hooks:
       - id: deptry

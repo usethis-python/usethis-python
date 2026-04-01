@@ -4,7 +4,7 @@ description: Maintain AGENTS.md and agent skill configuration
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Agent Configuration

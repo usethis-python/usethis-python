@@ -140,6 +140,7 @@
 - `series()` (`usethis._pipeweld.containers`) — Create a Series pipeline composition from the given components.
 - `depgroup()` (`usethis._pipeweld.containers`) — Create a DepGroup pipeline composition tied to a named configuration group.
 - `get_endpoint()` (`usethis._pipeweld.func`) — Get the last step name (endpoint) from a pipeline component.
+- `get_predecessor()` (`usethis._pipeweld.func`) — Find the step that immediately precedes `step` in a pipeline component.
 - `call_subprocess()` (`usethis._subprocess`) — Run a subprocess and return its stdout, raising SubprocessFailedError on failure.
 - `change_cwd()` (`usethis._test`) — Change the working directory temporarily.
 - `is_offline()` (`usethis._test`) — Return True if the current environment has no internet connectivity.

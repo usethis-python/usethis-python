@@ -743,3 +743,122 @@ class TestHooksAreEquivalent:
             schema.HookDefinition(id="ruff-check"),
             schema.HookDefinition(id="ruff"),
         )
+
+
+class TestAddRepoPipeweld:
+    """Integration tests for pipeweld-based hook insertion."""
+
+    def test_insert_between_nondependent_and_postrequisite(self, tmp_path: Path):
+        """Insert a recognized hook between an unrecognized hook and a postrequisite."""
+        with change_cwd(tmp_path), files_manager():
+            # Set up: foo (unrecognized) then codespell (recognized, late in order)
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="foo",
+                            name="foo",
+                            entry="foo .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                ),
+            )
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Act: add ruff-format (comes before codespell, after foo)
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="ruff-format",
+                            name="ruff-format",
+                            entry="ruff format .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            # Assert: ruff-format should be between foo and codespell
+            assert get_hook_ids() == ["foo", "ruff-format", "codespell"]
+
+    def test_insert_with_prerequisite_present(self, tmp_path: Path):
+        """Insert a hook after an existing prerequisite."""
+        with change_cwd(tmp_path), files_manager():
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="ruff-check",
+                            name="ruff-check",
+                            entry="ruff check .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="ruff-format",
+                            name="ruff-format",
+                            entry="ruff format .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            assert get_hook_ids() == ["ruff-check", "ruff-format"]
+
+    def test_insert_before_postrequisite_only(self, tmp_path: Path):
+        """Insert a hook before an existing postrequisite when no predecessor exists."""
+        with change_cwd(tmp_path), files_manager():
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="ruff-check",
+                            name="ruff-check",
+                            entry="ruff check .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+            assert get_hook_ids() == ["ruff-check", "codespell"]

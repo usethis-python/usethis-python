@@ -12,6 +12,8 @@ from usethis._integrations.pre_commit.init import (
 )
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
+from usethis._pipeweld.containers import series
+from usethis._pipeweld.func import Adder, get_predecessor
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -68,39 +70,33 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
         mgr.commit_model(model)
     else:
         # There are existing hooks so we need to know where to insert the new hook.
-
-        # Get the precendents, i.e. hooks occurring before the new hook
-        # Also the successors, i.e. hooks occurring after the new hook
+        # Use pipeweld to determine the correct insertion position based on the
+        # canonical hook ordering.
         try:
             hook_idx = _HOOK_ORDER.index(hook_config.id)
         except ValueError:
             msg = f"Hook '{hook_config.id}' not recognized."
             raise NotImplementedError(msg) from None
-        precedents = _HOOK_ORDER[:hook_idx]
-        successors = _HOOK_ORDER[hook_idx + 1 :]
 
-        existing_precedents = [hook for hook in existing_hooks if hook in precedents]
-        existing_successors = [hook for hook in existing_hooks if hook in successors]
+        prerequisites = set(_HOOK_ORDER[:hook_idx])
+        postrequisites = set(_HOOK_ORDER[hook_idx + 1 :])
 
-        # Add immediately after the last precedecessor.
-        # If there isn't one, we want to add as late as possible without violating
-        # order, i.e. before the first successor, if there is one.
-        if existing_precedents:
-            last_precedent = existing_precedents[-1]
-        elif not existing_successors:
-            last_precedent = existing_hooks[-1]
-        else:
-            first_successor = existing_successors[0]
-            first_successor_idx = existing_hooks.index(first_successor)
-            if first_successor_idx == 0:
-                last_precedent = None
-            else:
-                last_precedent = existing_hooks[first_successor_idx - 1]
+        pipeline = series(*existing_hooks)
+        adder = Adder(
+            pipeline=pipeline,
+            step=hook_config.id,
+            prerequisites=prerequisites,
+            postrequisites=postrequisites,
+            force_linear=True,
+        )
+        result = adder.add()
+
+        predecessor = get_predecessor(result.solution, hook_config.id)
 
         model.repos = insert_repo(
             repo_to_insert=repo,
             existing_repos=model.repos,
-            predecessor=last_precedent,
+            predecessor=predecessor,
         )
 
         mgr.commit_model(model)

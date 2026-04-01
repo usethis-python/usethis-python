@@ -46,6 +46,7 @@ class Adder(BaseModel):
     prerequisites: set[str] = set()
     postrequisites: set[str] = set()
     compatible_config_groups: set[str] = set()
+    force_linear: bool = False
 
     def add(self) -> WeldResult:
         """Add the step to the pipeline and return the modified pipeline with instructions."""
@@ -69,6 +70,11 @@ class Adder(BaseModel):
             )
 
         instructions += new_instructions
+
+        if self.force_linear:
+            original_order = _extract_ordered_steps(self.pipeline)
+            flat = _linearize_component(rearranged_pipeline, self.step, original_order)
+            rearranged_pipeline = series(*flat)
 
         return WeldResult(
             solution=rearranged_pipeline,
@@ -614,5 +620,99 @@ def get_endpoint(component: str | Series | DepGroup | Parallel) -> str:
         return sorted(endpoints)[0]
     elif isinstance(component, DepGroup):
         return get_endpoint(component.series)
+    else:
+        assert_never(component)
+
+
+def get_predecessor(
+    component: str | Series | Parallel | DepGroup, step: str
+) -> str | None:
+    """Find the step that immediately precedes `step` in a pipeline component.
+
+    Returns `None` if `step` is the first step in the component.
+    Raises `ValueError` if `step` is not found in the component.
+    """
+    if isinstance(component, str):
+        if component == step:
+            return None
+        msg = f"Step '{step}' not found in component."
+        raise ValueError(msg)
+    elif isinstance(component, Series):
+        for i, sub in enumerate(component.root):
+            if _has_any_steps(sub, steps={step}):
+                inner = get_predecessor(sub, step)
+                if inner is not None:
+                    return inner
+                # step is first within this sub-component; look to previous sub
+                if i > 0:
+                    return get_endpoint(component.root[i - 1])
+                return None
+        msg = f"Step '{step}' not found in component."
+        raise ValueError(msg)
+    elif isinstance(component, Parallel):
+        for sub in component.root:
+            if _has_any_steps(sub, steps={step}):
+                return get_predecessor(sub, step)
+        msg = f"Step '{step}' not found in component."
+        raise ValueError(msg)
+    elif isinstance(component, DepGroup):
+        return get_predecessor(component.series, step)
+    else:
+        assert_never(component)
+
+
+def _extract_ordered_steps(
+    component: str | Series | Parallel | DepGroup,
+) -> list[str]:
+    """Extract all step names from a component in depth-first order."""
+    if isinstance(component, str):
+        return [component]
+    elif isinstance(component, Series | Parallel):
+        return [s for sub in component.root for s in _extract_ordered_steps(sub)]
+    elif isinstance(component, DepGroup):
+        return _extract_ordered_steps(component.series)
+    else:
+        assert_never(component)
+
+
+def _linearize_component(
+    component: str | Series | Parallel | DepGroup,
+    new_step: str,
+    original_order: list[str],
+) -> list[str]:
+    """Flatten a pipeline component to a linear list of step names.
+
+    Within parallel groups, existing steps maintain their relative order from
+    ``original_order`` and the new step is placed after all existing steps.
+    """
+    if isinstance(component, str):
+        return [component]
+    elif isinstance(component, Series):
+        result: list[str] = []
+        for sub in component.root:
+            result.extend(_linearize_component(sub, new_step, original_order))
+        return result
+    elif isinstance(component, Parallel):
+        sublists = [
+            _linearize_component(sub, new_step, original_order)
+            for sub in component.root
+        ]
+        all_items = [item for sublist in sublists for item in sublist]
+
+        def sort_key(item: str) -> tuple[int, int]:
+            # Existing steps sort by their original position (priority 0);
+            # the new step sorts last (priority 1).
+            # Steps not found in original_order are placed after all known steps.
+            if item == new_step:
+                return (1, 0)
+            try:
+                return (0, original_order.index(item))
+            except ValueError:
+                return (0, len(original_order))
+
+        all_items.sort(key=sort_key)
+        return all_items
+    elif isinstance(component, DepGroup):
+        return _linearize_component(component.series, new_step, original_order)
     else:
         assert_never(component)

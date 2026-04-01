@@ -4,10 +4,25 @@ description: Create new agent skills (SKILL.md files) following best practices f
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.5"
+  version: "1.6"
 ---
 
 # Creating Agent Skills
+
+## When to create a new skill vs. modify an existing one
+
+Prefer creating a new skill when:
+
+- You have guidance that doesn't fit the scope of any existing skill (see the `usethis-skills-modify` skill for how to judge scope).
+- An existing skill is "somewhat" related but the new content serves a different core purpose.
+- Adding the content to an existing skill would make its name or description misleading.
+
+Prefer modifying an existing skill when:
+
+- The new content directly serves the same purpose described in the skill's name and description.
+- The existing skill is the natural home for the information.
+
+When in doubt, create a new skill — a focused skill with a clear scope is more discoverable and maintainable than an overloaded one.
 
 ## Procedure
 

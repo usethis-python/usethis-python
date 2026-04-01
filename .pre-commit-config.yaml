@@ -81,6 +81,7 @@ repos:
       - id: check-test-skeleton
         name: check-test-skeleton
         entry: uv run --frozen --offline hooks/check-test-skeleton.py
+        args: ["--source-dir", "src", "--tests-dir", "tests/usethis"]
         language: system
         always_run: true
         pass_filenames: false

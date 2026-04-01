@@ -441,7 +441,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-skills-create`: Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability
 - `usethis-skills-external-add`: Add an external (community) skill to the project from a third-party source, including installing it and documenting it in AGENTS.md
 - `usethis-skills-external-install`: Reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)
-- `usethis-skills-modify`: ALWAYS use when modifying any SKILL.md file — enforces version bumping, scope checking, and content quality guidelines
+- `usethis-skills-modify`: Enforce version bumping, scope checking, and content quality guidelines when modifying SKILL.md files
 
 <!-- /sync:docs/skills-directory.txt -->
 

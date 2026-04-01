@@ -1,10 +1,10 @@
 ---
 name: usethis-skills-modify
-description: "ALWAYS use when modifying any SKILL.md file — enforces version bumping, scope checking, and content quality guidelines"
+description: "Enforce version bumping, scope checking, and content quality guidelines when modifying SKILL.md files"
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Modifying Agent Skills

@@ -682,7 +682,7 @@ class TestRemoveDepsFromGroup:
             assert not err
             assert (
                 out
-                == "✔ Removing dependencies 'flake8', 'black' from the 'qa' group in \n'pyproject.toml'.\n"
+                == "✔ Removing dependencies 'flake8', 'black' from the 'qa' group in 'pyproject.toml'.\n"
             )
 
     @pytest.mark.usefixtures("_vary_network_conn")

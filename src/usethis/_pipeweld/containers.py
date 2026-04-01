@@ -9,6 +9,8 @@ _HASH_SALT = "e6fdde87-adc6-42f6-8e66-4aabe4ba05f2"
 
 
 class Series(RootModel[list["Series | Parallel | DepGroup | str"]]):
+    """An ordered sequence of pipeline components executed one after another."""
+
     @override
     def __hash__(self):
         return hash((_HASH_SALT, tuple(self.root)))
@@ -30,6 +32,8 @@ class Series(RootModel[list["Series | Parallel | DepGroup | str"]]):
 
 
 class Parallel(RootModel[frozenset["Series | Parallel | DepGroup | str"]]):
+    """An unordered set of pipeline components executed in parallel."""
+
     @override
     def __hash__(self):
         return hash((_HASH_SALT, frozenset(self)))
@@ -51,6 +55,8 @@ class Parallel(RootModel[frozenset["Series | Parallel | DepGroup | str"]]):
 
 
 class DepGroup(BaseModel):
+    """A pipeline component tied to a named dependency configuration group."""
+
     series: Series
     config_group: str
 

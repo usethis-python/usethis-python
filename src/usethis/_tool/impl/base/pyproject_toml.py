@@ -23,6 +23,7 @@ from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
 from usethis._tool.impl.spec.pyproject_toml import PyprojectTOMLToolSpec
 
+# N.B. this list must be kept in-sync with usethis._tool.all_.ALL_TOOLS.
 OTHER_TOOLS: list[Tool] = [
     CodespellTool(),
     CoveragePyTool(),

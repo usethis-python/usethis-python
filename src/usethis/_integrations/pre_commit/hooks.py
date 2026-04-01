@@ -239,13 +239,14 @@ def extract_hook_ids(
     model: schema.JsonSchemaForPreCommitConfigYaml,
 ) -> list[str]:
     """Extract all hook IDs from a pre-commit configuration model."""
-    hook_ids = []
+    hook_ids: list[str] = []
     for repo in model.repos:
         if repo.hooks is None:
             continue
 
         for hook in repo.hooks:
-            hook_ids.append(hook.id)
+            if hook.id is not None:
+                hook_ids.append(hook.id)
 
     return hook_ids
 

@@ -25,8 +25,7 @@ import usethis._ui.interface.version
 
 app = typer.Typer(
     help=(
-        "Automate Python package and project setup tasks that are otherwise "
-        "performed manually."
+        "Automatically manage Python tooling and configuration: linters, formatters, and more."
     ),
     add_completion=False,
 )

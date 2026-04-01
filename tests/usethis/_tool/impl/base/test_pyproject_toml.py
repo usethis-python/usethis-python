@@ -50,8 +50,7 @@ select = ["E", "PT"]
                 assert not err
                 assert out == (
                     "☐ Check that important config in 'pyproject.toml' is not lost.\n"
-                    "☐ The Ruff tool was using 'pyproject.toml' for config, but that file is being \n"
-                    "removed. You will need to re-configure it.\n"
+                    "☐ The Ruff tool was using 'pyproject.toml' for config, but that file is being removed. You will need to re-configure it.\n"
                     "✔ Removing 'pyproject.toml'.\n"
                 )
 

@@ -49,7 +49,7 @@ repos:
         args: [--fix]
         priority: 0
       - id: ruff-format
-        priority: 0
+        priority: 1
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.22.0
     hooks:
@@ -74,6 +74,7 @@ repos:
       - id: check-skills-documented
         name: check-skills-documented
         entry: uv run --frozen --offline hooks/check-skills-documented.py
+        args: ["--prefix=usethis-"]
         language: system
         always_run: true
         pass_filenames: false
@@ -81,6 +82,7 @@ repos:
       - id: check-test-skeleton
         name: check-test-skeleton
         entry: uv run --frozen --offline hooks/check-test-skeleton.py
+        args: ["--source-dir", "src", "--tests-dir", "tests/usethis"]
         language: system
         always_run: true
         pass_filenames: false
@@ -112,10 +114,7 @@ repos:
       - id: export-functions
         name: export-functions
         entry: uv run --frozen --offline hooks/export-functions.py
-        args:
-          - "--output-file=docs/functions.txt"
-          - "--source-root=src/usethis"
-          - "--strict"
+        args: ["--source-root=src/usethis", "--output-file=docs/functions.txt", "--strict"]
         language: system
         always_run: true
         pass_filenames: false
@@ -128,7 +127,7 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
-        priority: 1
+        priority: 2
   - repo: local
     hooks:
       - id: import-linter
@@ -137,7 +136,7 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
-        priority: 1
+        priority: 2
   - repo: local
     hooks:
       - id: ty
@@ -147,7 +146,7 @@ repos:
         types_or: [python, pyi]
         always_run: true
         require_serial: true
-        priority: 1
+        priority: 2
 default_stages:
   - pre-commit
   - pre-push

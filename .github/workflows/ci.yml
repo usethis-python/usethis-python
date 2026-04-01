@@ -6,13 +6,19 @@ on:
     branches: ["main"]
     paths-ignore:
       - "mkdocs.yml"
+      - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
+      - "hooks/**"
+      - "docs/**/*.txt"
   pull_request:
     paths-ignore:
       - "mkdocs.yml"
+      - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
+      - "hooks/**"
+      - "docs/**/*.txt"
   schedule:
     - cron: "20 14 * * *"
 concurrency:

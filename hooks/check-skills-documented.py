@@ -1,13 +1,15 @@
 """Check that all skills are documented in AGENTS.md.
 
 Two checks are performed:
-1. Skills in .agents/skills/ that start with 'usethis-' must appear in AGENTS.md.
-2. External skills in skills-lock.json (those not starting with 'usethis-') must
+1. Skills in .agents/skills/ that start with the given prefix must appear in
+   AGENTS.md.
+2. External skills in skills-lock.json (those not starting with the prefix) must
    appear in AGENTS.md.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -15,10 +17,21 @@ from pathlib import Path
 AGENTS_MD = Path("AGENTS.md")
 SKILLS_DIR = Path(".agents/skills")
 SKILLS_LOCK = Path("skills-lock.json")
-USETHIS_PREFIX = "usethis-"
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Check that all skills are documented in AGENTS.md.",
+    )
+    parser.add_argument(
+        "--prefix",
+        default="usethis-",
+        help="Skills matching this prefix are local; others are external (default: 'usethis-').",
+    )
+    args = parser.parse_args()
+
+    prefix: str = args.prefix
+
     if not AGENTS_MD.is_file():
         print(f"ERROR: {AGENTS_MD} not found.", file=sys.stderr)
         return 1
@@ -34,14 +47,14 @@ def main() -> int:
     agents_md_content = AGENTS_MD.read_text(encoding="utf-8")
     failed = False
 
-    # Check 1: usethis- skills in the skills directory must be documented.
-    usethis_skills = [
+    # Check 1: local skills in the skills directory must be documented.
+    local_skills = [
         d.name
         for d in sorted(SKILLS_DIR.iterdir())
-        if d.is_dir() and d.name.startswith(USETHIS_PREFIX)
+        if d.is_dir() and d.name.startswith(prefix)
     ]
     undocumented_local = [
-        name for name in usethis_skills if name not in agents_md_content
+        name for name in local_skills if name not in agents_md_content
     ]
     if undocumented_local:
         print(
@@ -59,7 +72,7 @@ def main() -> int:
     external_skills = [
         name
         for name in sorted(data.get("skills", {}).keys())
-        if not name.startswith(USETHIS_PREFIX)
+        if not name.startswith(prefix)
     ]
     undocumented_external = [
         name for name in external_skills if name not in agents_md_content

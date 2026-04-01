@@ -13,7 +13,7 @@ from usethis._integrations.pre_commit.init import (
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._pipeweld.containers import series
-from usethis._pipeweld.func import Adder
+from usethis._pipeweld.func import Adder, get_predecessor
 
 if TYPE_CHECKING:
     from collections.abc import Collection
@@ -90,14 +90,7 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
         )
         result = adder.add()
 
-        # With force_linear=True, solution is a flat Series of strings.
-        flat = result.solution.root
-        idx = flat.index(hook_config.id)
-        predecessor: str | None = None
-        if idx > 0:
-            prev_item = flat[idx - 1]
-            assert isinstance(prev_item, str)
-            predecessor = prev_item
+        predecessor = get_predecessor(result.solution, hook_config.id)
 
         model.repos = insert_repo(
             repo_to_insert=repo,

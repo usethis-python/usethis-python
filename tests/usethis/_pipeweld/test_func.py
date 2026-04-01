@@ -9,6 +9,7 @@ from usethis._pipeweld.func import (
     _linearize_component,
     _op_series_merge_partitions,
     _parallel_merge_partitions,
+    get_predecessor,
 )
 from usethis._pipeweld.ops import InsertParallel, InsertSuccessor
 from usethis._pipeweld.result import WeldResult
@@ -762,3 +763,68 @@ class TestAdderForceLinear:
         )
         result = adder.add()
         assert result.solution == series("foo", "ruff-format", "codespell")
+
+
+class TestGetPredecessor:
+    def test_single_string_found(self):
+        assert get_predecessor("A", "A") is None
+
+    def test_single_string_not_found(self):
+        with pytest.raises(ValueError, match="not found"):
+            get_predecessor("A", "B")
+
+    def test_flat_series_first(self):
+        assert get_predecessor(series("A", "B", "C"), "A") is None
+
+    def test_flat_series_middle(self):
+        assert get_predecessor(series("A", "B", "C"), "B") == "A"
+
+    def test_flat_series_last(self):
+        assert get_predecessor(series("A", "B", "C"), "C") == "B"
+
+    def test_flat_series_not_found(self):
+        with pytest.raises(ValueError, match="not found"):
+            get_predecessor(series("A", "B"), "Z")
+
+    def test_nested_series(self):
+        component = series("A", series("B", "C"))
+        assert get_predecessor(component, "B") == "A"
+
+    def test_nested_series_inner_predecessor(self):
+        component = series("A", series("B", "C"))
+        assert get_predecessor(component, "C") == "B"
+
+    def test_parallel_first_in_branch(self):
+        component = series("A", parallel("B", "C"))
+        assert get_predecessor(component, "B") == "A"
+
+    def test_parallel_other_branch(self):
+        component = series("A", parallel("B", "C"))
+        assert get_predecessor(component, "C") == "A"
+
+    def test_parallel_not_found(self):
+        with pytest.raises(ValueError, match="not found"):
+            get_predecessor(parallel("A", "B"), "Z")
+
+    def test_parallel_at_start(self):
+        component = parallel("A", "B")
+        assert get_predecessor(component, "A") is None
+
+    def test_depgroup(self):
+        component = depgroup("A", "B", config_group="x")
+        assert get_predecessor(component, "B") == "A"
+
+    def test_depgroup_first(self):
+        component = depgroup("A", "B", config_group="x")
+        assert get_predecessor(component, "A") is None
+
+    def test_series_with_depgroup(self):
+        component = series("X", depgroup("A", "B", config_group="x"))
+        assert get_predecessor(component, "A") == "X"
+
+    def test_deep_nesting(self):
+        component = series("A", series("B", series("C", "D")))
+        assert get_predecessor(component, "D") == "C"
+        assert get_predecessor(component, "C") == "B"
+        assert get_predecessor(component, "B") == "A"
+        assert get_predecessor(component, "A") is None

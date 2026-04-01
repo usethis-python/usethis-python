@@ -613,6 +613,43 @@ def get_endpoint(component: str | Series | DepGroup | Parallel) -> str:
         assert_never(component)
 
 
+def get_predecessor(
+    component: str | Series | Parallel | DepGroup, step: str
+) -> str | None:
+    """Find the step that immediately precedes `step` in a pipeline component.
+
+    Returns `None` if `step` is the first step in the component.
+    Raises `ValueError` if `step` is not found in the component.
+    """
+    if isinstance(component, str):
+        if component == step:
+            return None
+        msg = f"Step '{step}' not found in component."
+        raise ValueError(msg)
+    elif isinstance(component, Series):
+        for i, sub in enumerate(component.root):
+            if _has_any_steps(sub, steps={step}):
+                inner = get_predecessor(sub, step)
+                if inner is not None:
+                    return inner
+                # step is first within this sub-component; look to previous sub
+                if i > 0:
+                    return get_endpoint(component.root[i - 1])
+                return None
+        msg = f"Step '{step}' not found in component."
+        raise ValueError(msg)
+    elif isinstance(component, Parallel):
+        for sub in component.root:
+            if _has_any_steps(sub, steps={step}):
+                return get_predecessor(sub, step)
+        msg = f"Step '{step}' not found in component."
+        raise ValueError(msg)
+    elif isinstance(component, DepGroup):
+        return get_predecessor(component.series, step)
+    else:
+        assert_never(component)
+
+
 def _extract_ordered_steps(
     component: str | Series | Parallel | DepGroup,
 ) -> list[str]:

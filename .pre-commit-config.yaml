@@ -137,6 +137,14 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
+      - id: fix-readme
+        name: fix-readme
+        entry: uv run --frozen --offline hooks/fix-readme.py
+        args: ["--template=README.md.jinja", "--output-file=README.md"]
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 1
   - repo: local
     hooks:
       - id: deptry

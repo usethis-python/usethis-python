@@ -4,12 +4,18 @@ description: Create new agent skills (SKILL.md files) following best practices f
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.6"
+  version: "1.7"
 ---
 
 # Creating Agent Skills
 
 ## When to create a new skill vs. modify an existing one
+
+Prefer modifying an existing skill when:
+
+- The new content directly serves the same purpose described in the skill's name and description.
+- The existing skill is the natural home for the information.
+- A more general skill already exists that covers the broader topic — add to it rather than creating a narrow sub-skill.
 
 Prefer creating a new skill when:
 
@@ -17,23 +23,54 @@ Prefer creating a new skill when:
 - An existing skill is "somewhat" related but the new content serves a different core purpose.
 - Adding the content to an existing skill would make its name or description misleading.
 
-Prefer modifying an existing skill when:
-
-- The new content directly serves the same purpose described in the skill's name and description.
-- The existing skill is the natural home for the information.
-
-When in doubt, create a new skill — a focused skill with a clear scope is more discoverable and maintainable than an overloaded one.
+When in doubt, add to an existing general skill rather than creating a new narrow one. See "Choosing the right scope" below for how to decide.
 
 ## Procedure
 
 When creating a new skill:
 
-1. Choose a descriptive name and create the directory `.agents/skills/<skill-name>/`.
-2. Create a `SKILL.md` file with the required YAML frontmatter.
-3. Write the skill content following the content guidelines below.
-4. Add a row for the new skill to the usethis-specific skills table in `AGENTS.md` (under `### Skills registry` → `#### usethis-specific skills`).
-5. Add cross-references to the new skill in related skills (see "Cross-referencing related skills" below).
-6. Review the skill against the quality checklist at the end.
+1. **Choose the right scope** — use the hierarchy brainstorming technique (see "Choosing the right scope" below) to confirm a new skill is warranted and pitched at the right level of generality.
+2. Choose a descriptive name and create the directory `.agents/skills/<skill-name>/`.
+3. Create a `SKILL.md` file with the required YAML frontmatter.
+4. Write the skill content following the content guidelines below.
+5. Add a row for the new skill to the usethis-specific skills table in `AGENTS.md` (under `### Skills registry` → `#### usethis-specific skills`).
+6. Add cross-references to the new skill in related skills (see "Cross-referencing related skills" below).
+7. Review the skill against the quality checklist at the end.
+
+## Choosing the right scope
+
+When you identify a need for new guidance that doesn't fit an existing skill, resist the temptation to jump straight to a narrowly focused skill. Instead, prefer creating a **more general** skill that the narrow topic would naturally fall under.
+
+### The hierarchy brainstorming technique
+
+Before creating a skill, brainstorm the ideal skill hierarchy by working from ultra-specific to fully general. For example, if you want to add guidance about where to place newly created files:
+
+```text
+usethis-file-create-placement → usethis-file-create → usethis-file → usethis
+```
+
+This hierarchy reveals **skill gaps** — intermediate levels that don't yet exist. In this example, both `usethis-file-create` and `usethis-file` are gaps. The principle is:
+
+- **If a more general skill already exists** at any level in the hierarchy, add the guidance to it. Don't create a narrower sub-skill unless the general skill is already very large (>500 lines).
+- **If no general skill exists**, create one at the most general level that makes sense — not the most specific. The most general level that makes sense is the broadest scope where the guidance remains cohesive. In the example above, creating `usethis-file-create` (or even `usethis-file`) is better than jumping straight to `usethis-file-create-placement`.
+
+### Why general skills are preferred
+
+- A general skill has **room to grow** — future guidance on related topics has a natural home.
+- Narrow "stub skills" with limited scope often stay small and add clutter without much value.
+- Agents discover skills by name and description. A general name like `usethis-file-create` is more discoverable than `usethis-file-create-placement` because agents searching for file creation guidance will find it.
+
+### When to split into sub-skills
+
+Only split a general skill into narrower sub-skills when the skill is getting large (>500 lines) and the content naturally separates into distinct concerns. This should be a deliberate decision, not the default — and it's usually only needed when explicitly instructed.
+
+### Example
+
+An agent needs to document guidance about where to place newly created files. No `usethis-file-create` or `usethis-file` skill exists.
+
+- **Bad:** Create `usethis-file-placement` — this is too narrow, has limited room to grow, and the name doesn't clearly indicate it's specifically about file creation guidance.
+- **Good:** Create `usethis-file-create` — this is the most general level that doesn't already exist and naturally encompasses placement guidance along with other file creation concerns.
+- **Also good:** Create `usethis-file` — even more general, covering file operations broadly, with a cross-reference to the existing `usethis-file-remove` skill.
 
 ## Naming the skill
 
@@ -175,6 +212,8 @@ Keep cross-references lightweight: a short mention with the skill name is enough
 
 Before finalizing a new skill, verify:
 
+- [ ] Scope validated using the hierarchy brainstorming technique — no intermediate skill gap was skipped
+- [ ] Skill is not too narrow — a more general skill doesn't already exist that this could be added to
 - [ ] Name is descriptive and uses kebab-case
 - [ ] Name follows general-to-specific hierarchical order
 - [ ] YAML frontmatter has all required fields (`name`, `description`, `compatibility`, `license`, `metadata.version`)

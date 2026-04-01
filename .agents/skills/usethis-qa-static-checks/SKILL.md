@@ -4,7 +4,7 @@ description: Perform static code checks
 compatibility: usethis, Python, prek, basedpyright
 license: MIT
 metadata:
-  version: "1.8"
+  version: "1.9"
 ---
 
 # Static Checks
@@ -17,6 +17,12 @@ uv run basedpyright
 ```
 
 Note that we are interested in both errors and warnings from these tools - we should always fix both.
+
+## How to run prek correctly
+
+**Never truncate prek output.** Do not pipe prek through `tail`, `head`, or any other command that discards lines (e.g. `uv run prek -a 2>&1 | tail -30`). This project has many hooks and truncating the output can hide failures, leading you to incorrectly conclude that all checks passed.
+
+**Use the exit code as the source of truth.** The exit code of `uv run prek -a` is the definitive indicator of success or failure — not the visible output. A zero exit code means all hooks passed; a non-zero exit code means at least one hook failed. Always check the exit code rather than scanning the output for pass/fail keywords.
 
 ## When to run these checks
 

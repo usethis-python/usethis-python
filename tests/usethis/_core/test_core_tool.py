@@ -37,7 +37,7 @@ from usethis._fallback import (
     FALLBACK_UV_VERSION,
 )
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
+from usethis._integrations.pre_commit.hooks import HOOK_GROUPS, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
@@ -49,6 +49,7 @@ from usethis._types.deps import Dependency
 
 class TestAllHooksList:
     def test_subset_hook_names(self, tmp_path: Path):
+        all_hooks = [hook for group in HOOK_GROUPS for hook in group]
         with change_cwd(tmp_path):
             for tool in ALL_TOOLS:
                 try:
@@ -60,7 +61,7 @@ class TestAllHooksList:
                 except NotImplementedError:
                     continue
                 for hook_name in hook_names:
-                    assert hook_name in _HOOK_ORDER
+                    assert hook_name in all_hooks
 
 
 class TestCodespell:

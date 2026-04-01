@@ -18,20 +18,26 @@ from usethis._pipeweld.func import Adder, get_predecessor
 if TYPE_CHECKING:
     from collections.abc import Collection
 
-_HOOK_ORDER = [
-    "sync-with-uv",
-    "validate-pyproject",
-    "uv-export",
-    "pyproject-fmt",
-    "ruff",  # Alias used for ruff-check
-    "ruff-check",  # ruff-check followed by ruff-format seems to be the recommended way by Astral
-    "ruff-format",
-    "ty",
-    "deptry",
-    "lint_imports",  # Alias used for import-linter used in the Import Linter docs, see https://github.com/usethis-python/usethis-python/issues/1022
-    "import-linter",
-    "tach",
-    "codespell",
+HOOK_GROUPS: list[list[str]] = [
+    [
+        "sync-with-uv",
+        "validate-pyproject",
+        "uv-export",
+        "pyproject-fmt",
+        "ruff",  # Alias used for ruff-check
+        "ruff-check",  # ruff-check followed by ruff-format seems to be the recommended way by Astral
+    ],
+    [
+        "ruff-format",
+    ],
+    [
+        "ty",
+        "deptry",
+        "lint_imports",  # Alias used for import-linter used in the Import Linter docs, see https://github.com/usethis-python/usethis-python/issues/1022
+        "import-linter",
+        "tach",
+        "codespell",
+    ],
 ]
 
 _PLACEHOLDER_ID = "placeholder"
@@ -72,14 +78,15 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
         # There are existing hooks so we need to know where to insert the new hook.
         # Use pipeweld to determine the correct insertion position based on the
         # canonical hook ordering.
+        hook_order = [hook for group in HOOK_GROUPS for hook in group]
         try:
-            hook_idx = _HOOK_ORDER.index(hook_config.id)
+            hook_idx = hook_order.index(hook_config.id)
         except ValueError:
             msg = f"Hook '{hook_config.id}' not recognized."
             raise NotImplementedError(msg) from None
 
-        prerequisites = set(_HOOK_ORDER[:hook_idx])
-        postrequisites = set(_HOOK_ORDER[hook_idx + 1 :])
+        prerequisites = set(hook_order[:hook_idx])
+        postrequisites = set(hook_order[hook_idx + 1 :])
 
         pipeline = series(*existing_hooks)
         adder = Adder(

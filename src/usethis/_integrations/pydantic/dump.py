@@ -126,29 +126,35 @@ def _fancy_model_dump_base_model(
 
     d: dict[str, ModelRepresentation] = {}
     for key, value in model:
-        default_value = model.__class__.model_fields[key].default
-
         # The value for the reference (for recursion)
         value_ref = _get_value_ref(reference, key=key)
 
-        # If the model has default value, we usually won't dump it.
-        # There is an exception though: if we have a reference which we are trying
-        # to minimize the diff against, then if the diff includes the default
-        # explicitly, we should include it too.
-        # This is technically a limitation in what kind of diffs we can express in
-        # the dump but it's a relatively minor one.
+        field_info = model.__class__.model_fields.get(key)
+        if field_info is not None:
+            default_value = field_info.default
 
-        if value_ref is not None:
-            ref_has_default = value_ref == default_value
+            # If the model has default value, we usually won't dump it.
+            # There is an exception though: if we have a reference which we are trying
+            # to minimize the diff against, then if the diff includes the default
+            # explicitly, we should include it too.
+            # This is technically a limitation in what kind of diffs we can express in
+            # the dump but it's a relatively minor one.
+
+            if value_ref is not None:
+                ref_has_default = value_ref == default_value
+            else:
+                ref_has_default = False
+
+            if (value == default_value) and not ref_has_default:
+                continue
+
+            # Find the key for display - there might be an alias
+            display_key = field_info.alias
+            if display_key is None:
+                display_key = key
         else:
-            ref_has_default = False
-
-        if (value == default_value) and not ref_has_default:
-            continue
-
-        # Find the key for display - there might be an alias
-        display_key = model.__class__.model_fields[key].alias
-        if display_key is None:
+            # Extra field not defined in the model schema (e.g. from prek syntax).
+            # Always include it using the raw key.
             display_key = key
 
         d[display_key] = fancy_model_dump(

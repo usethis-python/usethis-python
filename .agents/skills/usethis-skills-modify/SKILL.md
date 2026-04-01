@@ -4,7 +4,7 @@ description: Modify agent skills (SKILL.md files)
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Modifying Agent Skills
@@ -13,9 +13,33 @@ metadata:
 
 When modifying any `SKILL.md` file in `.agents/skills/`:
 
-1. Make the necessary content changes to the skill.
-2. Increment the version number in the YAML frontmatter `metadata.version` field.
-3. Verify the YAML frontmatter is valid (all required fields present, version is quoted).
+1. **Check scope** — verify the new content belongs in this skill (see "Before modifying: check scope" below).
+2. Make the necessary content changes to the skill.
+3. Increment the version number in the YAML frontmatter `metadata.version` field.
+4. Verify the YAML frontmatter is valid (all required fields present, version is quoted).
+
+## Before modifying: check scope
+
+Before adding content to an existing skill, verify that the new content truly belongs in that skill's scope. A skill's scope is defined by its name and description — content should fit naturally within that scope.
+
+**Do not shoe-horn content into a "somewhat" related skill.** If the content doesn't fit the skill's core purpose, either:
+
+- Find a different existing skill that is a better fit.
+- Create a new skill with a more appropriate scope (see the `usethis-skills-create` skill).
+
+### How to judge scope
+
+Ask these questions before adding content to a skill:
+
+- Does this content serve the same core purpose described in the skill's name and description?
+- Would someone looking for this information naturally look in this skill?
+- If I removed all the existing content, would the new content still belong under this skill's name?
+
+If the answer to any of these is "no", the content belongs elsewhere.
+
+### Example
+
+A skill named `usethis-python-test-full-coverage` is specifically about achieving full test coverage. Adding general test suite layout or structure guidance does not fit — that is a different concern, even though both relate to testing. Instead, create a separate skill (e.g. `usethis-python-test` for general testing guidance) or find a more appropriate existing skill.
 
 ## Incrementing the version
 

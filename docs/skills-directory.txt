@@ -1,5 +1,7 @@
 - `usethis-agents`: Maintain AGENTS.md and agent skill configuration
+- `usethis-cli-dogfood`: Dogfood new or modified CLI commands by running them against the usethis repo itself to catch edge cases
 - `usethis-cli-modify`: Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync
+- `usethis-cli-user-test`: Simulate user testing for CLI commands by running them in a fresh temporary project to verify the happy path
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows
 - `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
@@ -12,6 +14,7 @@
 - `usethis-python-functions`: Guidelines for Python function design, including return types and signature simplicity
 - `usethis-python-module-layout-modify`: Modify the Python module layout (create, move, rename, or delete modules)
 - `usethis-python-ruff`: Guidelines for complying with Ruff linter rules instead of suppressing them
+- `usethis-python-test`: General guidelines for writing tests in the usethis project, including test class organization
 - `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
 - `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
 - `usethis-qa-import-linter`: Use the Import Linter software on the usethis project

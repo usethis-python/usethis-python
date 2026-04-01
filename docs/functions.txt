@@ -59,6 +59,7 @@
 - `unignore_rules()` (`usethis._core.rule`) — Remove the given linter rules from the ignore list of the relevant tools.
 - `get_rules_mapping()` (`usethis._core.rule`) — Partition a list of rule codes into deptry and Ruff rule groups.
 - `show_backend()` (`usethis._core.show`) — Display the inferred package manager backend for the current project.
+- `show_license()` (`usethis._core.show`) — Display the detected license of the current project in SPDX format.
 - `show_name()` (`usethis._core.show`) — Display the name of the current project.
 - `show_sonarqube_config()` (`usethis._core.show`) — Display the sonar-project.properties configuration for the current project.
 - `use_development_status()` (`usethis._core.status`) — Set the development status classifier in pyproject.toml.
@@ -132,6 +133,7 @@
 - `get_layered_architectures()` (`usethis._integrations.project.imports`) — Get the suggested layers for a package.
 - `augment_pythonpath()` (`usethis._integrations.project.imports`) — Temporarily add a directory to the Python path.
 - `get_source_dir_str()` (`usethis._integrations.project.layout`) — Get the source directory as a string ('src' or '.').
+- `get_license_id()` (`usethis._integrations.project.license`) — Get the SPDX license identifier for the current project.
 - `get_project_name()` (`usethis._integrations.project.name`) — The project name, from pyproject.toml if available or fallback to heuristics.
 - `get_importable_packages()` (`usethis._integrations.project.packages`) — Get the names of packages in the source directory that can be imported.
 - `fancy_model_dump()` (`usethis._integrations.pydantic.dump`) — Like `pydantic.model_dump` but with bespoke formatting options.
@@ -180,6 +182,7 @@
 - `readme()` (`usethis._ui.interface.readme`) — Create or update the README.md file, optionally adding badges.
 - `rule()` (`usethis._ui.interface.rule`) — Select, deselect, ignore, or unignore linter rules.
 - `backend()` (`usethis._ui.interface.show`) — Show the inferred project manager backend, e.g. 'uv' or 'none'.
+- `license()` (`usethis._ui.interface.show`) — Show the project license in SPDX format.
 - `name()` (`usethis._ui.interface.show`) — Show the name of the project.
 - `sonarqube()` (`usethis._ui.interface.show`) — Show the sonar-project.properties file for SonarQube.
 - `spellcheck()` (`usethis._ui.interface.spellcheck`) — Add a recommended spellchecker to the project.

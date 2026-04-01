@@ -34,7 +34,7 @@ class TestLint:
         # Assert
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()  # from deptry config
-        assert result.output.replace("\n", "") == (
+        assert result.output == (
             "☐ Add the dev dependency 'deptry'.\n"
             "✔ Writing 'pyproject.toml'.\n"
             "✔ Adding deptry config to 'pyproject.toml'.\n"
@@ -44,7 +44,7 @@ class TestLint:
             "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
             "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
             "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
-        ).replace("\n", "")
+        )
 
     def test_none_backend_pyproject_toml(self, tmp_path: Path):
         # Arrange
@@ -58,7 +58,7 @@ class TestLint:
         # Assert
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()
-        assert result.output.replace("\n", "") == (
+        assert result.output == (
             "☐ Add the dev dependency 'deptry'.\n"
             "✔ Adding deptry config to 'pyproject.toml'.\n"
             "☐ Run 'deptry .' to run deptry.\n"
@@ -67,4 +67,4 @@ class TestLint:
             "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
             "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
             "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
-        ).replace("\n", "")
+        )

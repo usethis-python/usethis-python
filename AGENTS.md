@@ -109,6 +109,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   │   ├── errors                # Error types for project integration operations.
 │   │   ├── imports               # Import graph analysis for the project.
 │   │   ├── layout                # Project source directory layout detection.
+│   │   ├── license               # License detection for the project.
 │   │   ├── name                  # Project name resolution with fallback heuristics.
 │   │   └── packages              # Importable package discovery.
 │   ├── pydantic                  # Pydantic model utilities.
@@ -273,6 +274,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `unignore_rules()` (`usethis._core.rule`) — Remove the given linter rules from the ignore list of the relevant tools.
 - `get_rules_mapping()` (`usethis._core.rule`) — Partition a list of rule codes into deptry and Ruff rule groups.
 - `show_backend()` (`usethis._core.show`) — Display the inferred package manager backend for the current project.
+- `show_license()` (`usethis._core.show`) — Display the detected license of the current project in SPDX format.
 - `show_name()` (`usethis._core.show`) — Display the name of the current project.
 - `show_sonarqube_config()` (`usethis._core.show`) — Display the sonar-project.properties configuration for the current project.
 - `use_development_status()` (`usethis._core.status`) — Set the development status classifier in pyproject.toml.
@@ -346,6 +348,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `get_layered_architectures()` (`usethis._integrations.project.imports`) — Get the suggested layers for a package.
 - `augment_pythonpath()` (`usethis._integrations.project.imports`) — Temporarily add a directory to the Python path.
 - `get_source_dir_str()` (`usethis._integrations.project.layout`) — Get the source directory as a string ('src' or '.').
+- `get_license_id()` (`usethis._integrations.project.license`) — Get the SPDX license identifier for the current project.
 - `get_project_name()` (`usethis._integrations.project.name`) — The project name, from pyproject.toml if available or fallback to heuristics.
 - `get_importable_packages()` (`usethis._integrations.project.packages`) — Get the names of packages in the source directory that can be imported.
 - `fancy_model_dump()` (`usethis._integrations.pydantic.dump`) — Like `pydantic.model_dump` but with bespoke formatting options.
@@ -394,6 +397,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `readme()` (`usethis._ui.interface.readme`) — Create or update the README.md file, optionally adding badges.
 - `rule()` (`usethis._ui.interface.rule`) — Select, deselect, ignore, or unignore linter rules.
 - `backend()` (`usethis._ui.interface.show`) — Show the inferred project manager backend, e.g. 'uv' or 'none'.
+- `license()` (`usethis._ui.interface.show`) — Show the project license in SPDX format.
 - `name()` (`usethis._ui.interface.show`) — Show the name of the project.
 - `sonarqube()` (`usethis._ui.interface.show`) — Show the sonar-project.properties file for SonarQube.
 - `spellcheck()` (`usethis._ui.interface.spellcheck`) — Add a recommended spellchecker to the project.
@@ -427,7 +431,9 @@ The `.agents/skills` directory contains agent skills.
 <!-- sync:docs/skills-directory.txt -->
 
 - `usethis-agents`: Maintain AGENTS.md and agent skill configuration
+- `usethis-cli-dogfood`: Dogfood new or modified CLI commands by running them against the usethis repo itself to catch edge cases
 - `usethis-cli-modify`: Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync
+- `usethis-cli-user-test`: Simulate user testing for CLI commands by running them in a fresh temporary project to verify the happy path
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows
 - `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
@@ -440,6 +446,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-python-functions`: Guidelines for Python function design, including return types and signature simplicity
 - `usethis-python-module-layout-modify`: Modify the Python module layout (create, move, rename, or delete modules)
 - `usethis-python-ruff`: Guidelines for complying with Ruff linter rules instead of suppressing them
+- `usethis-python-test`: General guidelines for writing tests in the usethis project, including test class organization
 - `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
 - `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
 - `usethis-qa-import-linter`: Use the Import Linter software on the usethis project
@@ -469,8 +476,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves
   writing or modifying code, always use this skill to write tests and verify full coverage
   before finishing. Aim for 100% coverage on new or changed code.
-- ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task
-  is complete, always run this skill to check for any issues before finishing.
+- ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task is complete, always run this skill to check for any issues before finishing. You must fix **all** static check failures, including pre-existing ones unrelated to your changes. This applies to ALL changes, including documentation-only changes and skill file edits — static checks catch sync issues, formatting problems, and other regressions that affect every file type. CI enforces checks on the entire codebase, so unfixed failures will block your PR. **After fixing any failure or making any further change, re-run ALL static checks again from scratch — even if you ran them moments ago.** It is expected and normal to run this skill repeatedly in a loop until every check passes cleanly.
 - ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.
 - ALWAYS reference the relevant issue ID in PR descriptions using a closing keyword, e.g. `Resolves #123`. This ensures traceability between PRs and the issues they address.
 

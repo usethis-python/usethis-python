@@ -16,6 +16,55 @@ from pathlib import Path
 import jinja2
 
 
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Render README.md from a Jinja2 template.",
+    )
+    parser.add_argument(
+        "--template",
+        required=True,
+        help="Path to the Jinja2 template file.",
+    )
+    parser.add_argument(
+        "--output-file",
+        required=True,
+        help="Path to the output file to write.",
+    )
+    args = parser.parse_args()
+
+    template_path = Path(args.template)
+    output_file = Path(args.output_file)
+
+    if not template_path.is_file():
+        print(f"ERROR: Template {template_path} not found.", file=sys.stderr)
+        return 1
+
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader("."),
+        keep_trailing_newline=True,
+        undefined=jinja2.StrictUndefined,
+        autoescape=jinja2.select_autoescape(),
+    )
+    env.globals["include_doc"] = _include_doc  # pyright: ignore[reportArgumentType]
+
+    template = env.get_template(str(template_path))
+    content = template.render()
+
+    try:
+        existing = output_file.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        existing = None
+
+    modified = content != existing
+    if modified:
+        output_file.write_text(content, encoding="utf-8")
+        print(f"README updated from template {template_path}.")
+    else:
+        print("README is already up to date.")
+
+    return 1 if modified else 0
+
+
 def _demote_headers(content: str) -> str:
     """Demote all markdown headers by one level, respecting fenced code blocks."""
     lines = content.splitlines()
@@ -67,55 +116,6 @@ def _include_doc(
                 new_lines.append(line)
         content = "\n".join(new_lines)
     return content
-
-
-def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Render README.md from a Jinja2 template.",
-    )
-    parser.add_argument(
-        "--template",
-        required=True,
-        help="Path to the Jinja2 template file.",
-    )
-    parser.add_argument(
-        "--output-file",
-        required=True,
-        help="Path to the output file to write.",
-    )
-    args = parser.parse_args()
-
-    template_path = Path(args.template)
-    output_file = Path(args.output_file)
-
-    if not template_path.is_file():
-        print(f"ERROR: Template {template_path} not found.", file=sys.stderr)
-        return 1
-
-    env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader("."),
-        keep_trailing_newline=True,
-        undefined=jinja2.StrictUndefined,
-        autoescape=jinja2.select_autoescape(),
-    )
-    env.globals["include_doc"] = _include_doc  # pyright: ignore[reportArgumentType]
-
-    template = env.get_template(str(template_path))
-    content = template.render()
-
-    try:
-        existing = output_file.read_text(encoding="utf-8")
-    except FileNotFoundError:
-        existing = None
-
-    modified = content != existing
-    if modified:
-        output_file.write_text(content, encoding="utf-8")
-        print(f"README updated from template {template_path}.")
-    else:
-        print("README is already up to date.")
-
-    return 1 if modified else 0
 
 
 if __name__ == "__main__":

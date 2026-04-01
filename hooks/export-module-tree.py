@@ -24,81 +24,6 @@ AUTO_EXCLUDED = {
 }
 
 
-def _get_first_docstring_line(path: Path) -> str | None:
-    """Return the first line of the module docstring, or None if absent."""
-    try:
-        source = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return None
-    try:
-        tree = ast.parse(source)
-    except SyntaxError:
-        return None
-    docstring = ast.get_docstring(tree)
-    if docstring is None:
-        return None
-    return docstring.split("\n")[0].strip()
-
-
-def _build_tree(
-    root: Path,
-    prefix: str,
-    missing: list[Path],
-    source_root: Path,
-) -> list[tuple[str, str]]:
-    """Recursively build tree lines for a package directory.
-
-    Returns a list of (line_text, comment) pairs so the caller can align
-    comments vertically.
-    """
-    lines: list[tuple[str, str]] = []
-
-    # Collect .py files (excluding __init__.py) and subpackages.
-    py_files: list[Path] = []
-    subpackages: list[Path] = []
-
-    for entry in sorted(root.iterdir()):
-        if entry.name in ("__pycache__", "py.typed"):
-            continue
-        if entry.relative_to(source_root).as_posix() in AUTO_EXCLUDED:
-            continue
-        if entry.is_file() and entry.suffix == ".py" and entry.name != "__init__.py":
-            py_files.append(entry)
-        elif entry.is_dir() and (entry / "__init__.py").is_file():
-            subpackages.append(entry)
-
-    entries: list[Path] = [*py_files, *subpackages]
-    if not entries:
-        return lines
-
-    for i, entry in enumerate(entries):
-        is_last = i == len(entries) - 1
-        connector = LAST_BRANCH if is_last else BRANCH
-        child_prefix = prefix + (SPACE if is_last else PIPE)
-
-        if entry.is_file():
-            name = entry.stem
-            docstring = _get_first_docstring_line(entry)
-            if docstring is None:
-                missing.append(entry)
-            line_text = f"{prefix}{connector}{name}"
-            comment = f"# {docstring}" if docstring else ""
-            lines.append((line_text, comment))
-        else:
-            # Subpackage directory — attribute __init__.py docstring to the dir.
-            name = entry.name
-            init_path = entry / "__init__.py"
-            docstring = _get_first_docstring_line(init_path)
-            if docstring is None:
-                missing.append(init_path)
-            line_text = f"{prefix}{connector}{name}"
-            comment = f"# {docstring}" if docstring else ""
-            lines.append((line_text, comment))
-            lines.extend(_build_tree(entry, child_prefix, missing, source_root))
-
-    return lines
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Export module structure with docstrings to a tree diagram.",
@@ -181,6 +106,81 @@ def main() -> int:
         return 1
 
     return 1 if modified else 0
+
+
+def _get_first_docstring_line(path: Path) -> str | None:
+    """Return the first line of the module docstring, or None if absent."""
+    try:
+        source = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return None
+    docstring = ast.get_docstring(tree)
+    if docstring is None:
+        return None
+    return docstring.split("\n")[0].strip()
+
+
+def _build_tree(
+    root: Path,
+    prefix: str,
+    missing: list[Path],
+    source_root: Path,
+) -> list[tuple[str, str]]:
+    """Recursively build tree lines for a package directory.
+
+    Returns a list of (line_text, comment) pairs so the caller can align
+    comments vertically.
+    """
+    lines: list[tuple[str, str]] = []
+
+    # Collect .py files (excluding __init__.py) and subpackages.
+    py_files: list[Path] = []
+    subpackages: list[Path] = []
+
+    for entry in sorted(root.iterdir()):
+        if entry.name in ("__pycache__", "py.typed"):
+            continue
+        if entry.relative_to(source_root).as_posix() in AUTO_EXCLUDED:
+            continue
+        if entry.is_file() and entry.suffix == ".py" and entry.name != "__init__.py":
+            py_files.append(entry)
+        elif entry.is_dir() and (entry / "__init__.py").is_file():
+            subpackages.append(entry)
+
+    entries: list[Path] = [*py_files, *subpackages]
+    if not entries:
+        return lines
+
+    for i, entry in enumerate(entries):
+        is_last = i == len(entries) - 1
+        connector = LAST_BRANCH if is_last else BRANCH
+        child_prefix = prefix + (SPACE if is_last else PIPE)
+
+        if entry.is_file():
+            name = entry.stem
+            docstring = _get_first_docstring_line(entry)
+            if docstring is None:
+                missing.append(entry)
+            line_text = f"{prefix}{connector}{name}"
+            comment = f"# {docstring}" if docstring else ""
+            lines.append((line_text, comment))
+        else:
+            # Subpackage directory — attribute __init__.py docstring to the dir.
+            name = entry.name
+            init_path = entry / "__init__.py"
+            docstring = _get_first_docstring_line(init_path)
+            if docstring is None:
+                missing.append(init_path)
+            line_text = f"{prefix}{connector}{name}"
+            comment = f"# {docstring}" if docstring else ""
+            lines.append((line_text, comment))
+            lines.extend(_build_tree(entry, child_prefix, missing, source_root))
+
+    return lines
 
 
 if __name__ == "__main__":

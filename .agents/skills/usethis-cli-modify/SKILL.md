@@ -4,7 +4,7 @@ description: Modify the usethis CLI layer (commands, options, help text) and kee
 compatibility: usethis, Python, typer, markdown
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Modifying the CLI
@@ -15,6 +15,7 @@ metadata:
 2. Update the CLI documentation to reflect every user-facing change.
 3. Run the affected interface-level tests.
 4. Use the `usethis-cli-dogfood` skill to validate the command against the real repo.
+5. Use the `usethis-cli-user-test` skill to verify the happy path in a fresh temporary project.
 
 ## When this skill applies
 

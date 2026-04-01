@@ -4,7 +4,7 @@ description: Maintain AGENTS.md and agent skill configuration
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Agent Configuration
@@ -30,6 +30,21 @@ When you need to add reference material about code to agent configuration:
 
 `AGENTS.md` is the top-level agent configuration file. It uses sync blocks to embed auto-generated content and is validated by prek hooks.
 
+### What belongs in AGENTS.md vs. agent skills
+
+`AGENTS.md` is reserved for general-purpose reference material and high-level instructions about how to use agent skills. It is **not** the place for technical guidance on specific topics. If you want to add guidance about a particular practice, convention, or technique (e.g. how to create files, how to structure code, how to write tests), create or update an agent skill instead.
+
+Appropriate content for `AGENTS.md`:
+
+- Auto-generated reference material (module tree, function reference, skills registry) via sync blocks.
+- High-level instructions about when and how to use agent skills (the "Generally Important Instructions" section).
+
+Content that should go in an agent skill instead:
+
+- Technical guidance or conventions about specific topics (e.g. file placement, code style, testing patterns).
+- How-to instructions for specific tasks or workflows.
+- Domain-specific best practices or project-specific rules.
+
 ### Sync blocks
 
 Content between `<!-- sync:path/to/file -->` and `<!-- /sync:path/to/file -->` markers is auto-fixed by the `fix-doc-sync` hook. To update synced content:
@@ -41,6 +56,12 @@ Content between `<!-- sync:path/to/file -->` and `<!-- /sync:path/to/file -->` m
 ### Skills registry
 
 The skills table in `AGENTS.md` must include every skill directory under `.agents/skills/`. The `check-skills-documented` hook enforces this. When creating a new skill, add it to the table (see the `usethis-skills-create` skill for the full procedure).
+
+## Modifying agent skills
+
+When modifying any `SKILL.md` file, ALWAYS use the `usethis-skills-modify` skill. Do not edit skill files without it — the skill enforces version bumping, scope checking, and content quality guidelines that are essential for maintaining skill integrity. Skipping it leads to missing version bumps and scope drift.
+
+Similarly, when creating a new skill, ALWAYS use the `usethis-skills-create` skill.
 
 ## Run static checks after modifying agent configuration
 

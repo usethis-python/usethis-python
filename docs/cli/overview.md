@@ -21,6 +21,7 @@
   - [`usethis tool pre-commit`](reference.md#code-quality-tools) - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
   - [`usethis tool pyproject-fmt`](reference.md#code-quality-tools) - Use the [pyproject-fmt formatter](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
   - [`usethis tool ruff`](reference.md#code-quality-tools) - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+  - [`usethis tool tach`](reference.md#code-quality-tools) - Use [Tach](https://github.com/gauge-sh/tach): enforce self-imposed dependency and interface rules.
   - [`usethis tool ty`](reference.md#code-quality-tools) - Use [ty](https://docs.astral.sh/ty/): an extremely fast Python type checker.
   - [`usethis tool coverage.py`](reference.md#testing) - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
   - [`usethis tool pytest`](reference.md#testing) - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.

@@ -1,4 +1,5 @@
 import os
+import shlex
 import subprocess
 import unittest
 import unittest.mock
@@ -26,6 +27,7 @@ from usethis._core.tool import (
     use_pytest,
     use_requirements_txt,
     use_ruff,
+    use_tach,
     use_tool,
     use_ty,
 )
@@ -36,18 +38,20 @@ from usethis._fallback import (
     FALLBACK_UV_VERSION,
 )
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
+from usethis._integrations.pre_commit.hooks import HOOK_GROUPS, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
-from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.all_ import ALL_TOOLS, SupportedToolType
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
+from usethis.errors import NoDefaultToolCommand
 
 
 class TestAllHooksList:
     def test_subset_hook_names(self, tmp_path: Path):
+        all_hooks = [hook for group in HOOK_GROUPS for hook in group]
         with change_cwd(tmp_path):
             for tool in ALL_TOOLS:
                 try:
@@ -59,7 +63,7 @@ class TestAllHooksList:
                 except NotImplementedError:
                     continue
                 for hook_name in hook_names:
-                    assert hook_name in _HOOK_ORDER
+                    assert hook_name in all_hooks
 
 
 class TestCodespell:
@@ -128,17 +132,6 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 "✔ Adding Codespell config to 'pyproject.toml'.\n"
                 "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
             )
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_runs(self, uv_env_dir: Path):
-            # An env is needed in which to run codespell
-
-            with change_cwd(uv_env_dir), PyprojectTOMLManager():
-                # Arrange
-                use_codespell()
-
-                # Act, Assert (no errors)
-                call_uv_subprocess(["run", "codespell"], change_toml=False)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_codespell_rc_file(self, uv_init_dir: Path):
@@ -3847,6 +3840,31 @@ class TestUseTool:
             for tool in ALL_TOOLS:
                 use_tool(tool)
 
+    @pytest.mark.parametrize("tool", ALL_TOOLS, ids=lambda t: t.name)
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_runs(self, tool: SupportedToolType, uv_env_dir: Path):
+        with change_cwd(uv_env_dir):
+            with files_manager():
+                use_tool(tool)
+
+            # Re-apply after files_manager flushes: apply() inside use_tool()
+            # runs before files are written to disk, so formatters' on-disk
+            # changes are overwritten by the deferred write. A fresh
+            # files_manager() context is needed because some apply() methods
+            # (e.g. RuffTool) read config via file managers.
+            with files_manager():
+                tool.apply()
+
+            try:
+                cmd = tool.raw_cmd()
+            except NoDefaultToolCommand:
+                pytest.skip(f"{tool.name} has no default command")
+
+            call_uv_subprocess(
+                ["run", *shlex.split(cmd)],
+                change_toml=False,
+            )
+
 
 class TestTy:
     class TestAdd:
@@ -3964,3 +3982,81 @@ possibly-unresolved-reference = "warn"
             out, err = capfd.readouterr()
             assert not err
             assert out == "☐ Run 'ty check' to run the ty type checker.\n"
+
+
+class TestTach:
+    class TestAdd:
+        def test_dependency_added(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_tach()
+
+                # Assert
+                (dev_dep,) = [d for d in get_deps_from_group("dev") if d.name == "tach"]
+            assert dev_dep == Dependency(name="tach")
+
+        def test_config_created(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_tach()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert "Writing 'tach.toml'." in out
+            assert (uv_init_dir / "tach.toml").exists()
+
+        def test_pre_commit_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_tach()
+
+                # Assert
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "tach" for dep in dev_deps)
+
+                hook_names = get_hook_ids()
+                assert "tach" in hook_names
+
+    class TestRemove:
+        def test_removes_config(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_tach()
+
+                # Act
+                use_tach(remove=True)
+
+            # Assert
+            assert not (uv_init_dir / "tach.toml").exists()
+
+        def test_removes_dependency(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_tach()
+
+                # Act
+                use_tach(remove=True)
+
+                # Assert
+                deps = get_deps_from_group("dev")
+            assert not any(dep.name == "tach" for dep in deps)
+
+    class TestHow:
+        def test_how(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_tach(how=True)
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "☐ Run 'tach check' to run Tach.\n"

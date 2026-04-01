@@ -74,6 +74,7 @@
 - `use_pytest()` (`usethis._core.tool`) — Add and configure the pytest testing framework.
 - `use_requirements_txt()` (`usethis._core.tool`) — Add and configure a requirements.txt file exported from the uv lockfile.
 - `use_ruff()` (`usethis._core.tool`) — Add Ruff to the project.
+- `use_tach()` (`usethis._core.tool`) — Add and configure the Tach architecture enforcement tool.
 - `use_ty()` (`usethis._core.tool`) — Add and configure the ty type checker tool.
 - `use_tool()` (`usethis._core.tool`) — General dispatch function to add or remove a tool to/from the project.
 - `get_project_deps()` (`usethis._deps`) — Get all project dependencies.
@@ -149,6 +150,7 @@
 - `series()` (`usethis._pipeweld.containers`) — Create a Series pipeline composition from the given components.
 - `depgroup()` (`usethis._pipeweld.containers`) — Create a DepGroup pipeline composition tied to a named configuration group.
 - `get_endpoint()` (`usethis._pipeweld.func`) — Get the last step name (endpoint) from a pipeline component.
+- `get_predecessor()` (`usethis._pipeweld.func`) — Find the step that immediately precedes `step` in a pipeline component.
 - `call_subprocess()` (`usethis._subprocess`) — Run a subprocess and return its stdout, raising SubprocessFailedError on failure.
 - `change_cwd()` (`usethis._test`) — Change the working directory temporarily.
 - `is_offline()` (`usethis._test`) — Return True if the current environment has no internet connectivity.
@@ -202,6 +204,7 @@
 - `pytest()` (`usethis._ui.interface.tool`) — Use the pytest testing framework.
 - `requirements_txt()` (`usethis._ui.interface.tool`) — Use a requirements.txt file exported from the uv lockfile.
 - `ruff()` (`usethis._ui.interface.tool`) — Use Ruff: an extremely fast Python linter and code formatter.
+- `tach()` (`usethis._ui.interface.tool`) — Use Tach: enforce self-imposed dependency and interface rules.
 - `ty()` (`usethis._ui.interface.tool`) — Use the ty type checker: an extremely fast Python type checker.
 - `typecheck()` (`usethis._ui.interface.typecheck`) — Add a recommended type checker to the project.
 - `version()` (`usethis._ui.interface.version`) — Print the installed version of usethis.

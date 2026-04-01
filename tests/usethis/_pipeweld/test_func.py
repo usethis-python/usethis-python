@@ -4,9 +4,12 @@ from usethis._pipeweld.containers import depgroup, parallel, series
 from usethis._pipeweld.func import (
     Adder,
     Partition,
+    _extract_ordered_steps,
     _flatten_partition,
+    _linearize_component,
     _op_series_merge_partitions,
     _parallel_merge_partitions,
+    get_predecessor,
 )
 from usethis._pipeweld.ops import InsertParallel, InsertSuccessor
 from usethis._pipeweld.result import WeldResult
@@ -650,3 +653,178 @@ class TestOpSeriesMergePartitions:
             postrequisite_component="B",
             top_ranked_endpoint="B",
         )
+
+
+class TestExtractOrderedSteps:
+    def test_single_string(self):
+        assert _extract_ordered_steps("A") == ["A"]
+
+    def test_flat_series(self):
+        assert _extract_ordered_steps(series("A", "B", "C")) == ["A", "B", "C"]
+
+    def test_parallel(self):
+        result = _extract_ordered_steps(parallel("A", "B"))
+        assert sorted(result) == ["A", "B"]
+
+    def test_nested_series(self):
+        assert _extract_ordered_steps(series("A", series("B", "C"))) == ["A", "B", "C"]
+
+    def test_depgroup(self):
+        assert _extract_ordered_steps(depgroup("A", "B", config_group="x")) == [
+            "A",
+            "B",
+        ]
+
+
+class TestLinearizeComponent:
+    def test_single_string(self):
+        assert _linearize_component("A", new_step="A", original_order=[]) == ["A"]
+
+    def test_series_of_strings(self):
+        assert _linearize_component(
+            series("A", "B", "C"), new_step="D", original_order=["A", "B", "C"]
+        ) == ["A", "B", "C"]
+
+    def test_parallel_new_step_last(self):
+        result = _linearize_component(
+            parallel("A", "B"), new_step="B", original_order=["A"]
+        )
+        assert result == ["A", "B"]
+
+    def test_parallel_preserves_existing_order(self):
+        result = _linearize_component(
+            parallel("B", "A"), new_step="C", original_order=["A", "B"]
+        )
+        assert result == ["A", "B"]
+
+    def test_series_with_parallel(self):
+        result = _linearize_component(
+            series(parallel("foo", "new"), "codespell"),
+            new_step="new",
+            original_order=["foo", "codespell"],
+        )
+        assert result == ["foo", "new", "codespell"]
+
+    def test_depgroup(self):
+        result = _linearize_component(
+            depgroup("A", "B", config_group="x"),
+            new_step="C",
+            original_order=["A", "B"],
+        )
+        assert result == ["A", "B"]
+
+
+class TestAdderForceLinear:
+    def test_parallel_resolved_to_linear(self):
+        adder = Adder(
+            pipeline=series("A"),
+            step="B",
+            force_linear=True,
+        )
+        result = adder.add()
+        # A comes first (existing), B last (new)
+        assert result.solution == series("A", "B")
+
+    def test_new_step_before_postrequisite(self):
+        adder = Adder(
+            pipeline=series("codespell"),
+            step="ruff",
+            postrequisites={"codespell"},
+            force_linear=True,
+        )
+        result = adder.add()
+        assert result.solution == series("ruff", "codespell")
+
+    def test_new_step_after_prerequisite(self):
+        adder = Adder(
+            pipeline=series("pyproject-fmt"),
+            step="ruff",
+            prerequisites={"pyproject-fmt"},
+            force_linear=True,
+        )
+        result = adder.add()
+        assert result.solution == series("pyproject-fmt", "ruff")
+
+    def test_empty_pipeline(self):
+        adder = Adder(
+            pipeline=series(),
+            step="A",
+            force_linear=True,
+        )
+        result = adder.add()
+        assert result.solution == series("A")
+
+    def test_mixed_nondependent_and_postrequisite(self):
+        adder = Adder(
+            pipeline=series("foo", "codespell"),
+            step="ruff-format",
+            postrequisites={"codespell"},
+            force_linear=True,
+        )
+        result = adder.add()
+        assert result.solution == series("foo", "ruff-format", "codespell")
+
+
+class TestGetPredecessor:
+    def test_single_string_found(self):
+        assert get_predecessor("A", "A") is None
+
+    def test_single_string_not_found(self):
+        with pytest.raises(ValueError, match="not found"):
+            get_predecessor("A", "B")
+
+    def test_flat_series_first(self):
+        assert get_predecessor(series("A", "B", "C"), "A") is None
+
+    def test_flat_series_middle(self):
+        assert get_predecessor(series("A", "B", "C"), "B") == "A"
+
+    def test_flat_series_last(self):
+        assert get_predecessor(series("A", "B", "C"), "C") == "B"
+
+    def test_flat_series_not_found(self):
+        with pytest.raises(ValueError, match="not found"):
+            get_predecessor(series("A", "B"), "Z")
+
+    def test_nested_series(self):
+        component = series("A", series("B", "C"))
+        assert get_predecessor(component, "B") == "A"
+
+    def test_nested_series_inner_predecessor(self):
+        component = series("A", series("B", "C"))
+        assert get_predecessor(component, "C") == "B"
+
+    def test_parallel_first_in_branch(self):
+        component = series("A", parallel("B", "C"))
+        assert get_predecessor(component, "B") == "A"
+
+    def test_parallel_other_branch(self):
+        component = series("A", parallel("B", "C"))
+        assert get_predecessor(component, "C") == "A"
+
+    def test_parallel_not_found(self):
+        with pytest.raises(ValueError, match="not found"):
+            get_predecessor(parallel("A", "B"), "Z")
+
+    def test_parallel_at_start(self):
+        component = parallel("A", "B")
+        assert get_predecessor(component, "A") is None
+
+    def test_depgroup(self):
+        component = depgroup("A", "B", config_group="x")
+        assert get_predecessor(component, "B") == "A"
+
+    def test_depgroup_first(self):
+        component = depgroup("A", "B", config_group="x")
+        assert get_predecessor(component, "A") is None
+
+    def test_series_with_depgroup(self):
+        component = series("X", depgroup("A", "B", config_group="x"))
+        assert get_predecessor(component, "A") == "X"
+
+    def test_deep_nesting(self):
+        component = series("A", series("B", series("C", "D")))
+        assert get_predecessor(component, "D") == "C"
+        assert get_predecessor(component, "C") == "B"
+        assert get_predecessor(component, "B") == "A"
+        assert get_predecessor(component, "A") is None

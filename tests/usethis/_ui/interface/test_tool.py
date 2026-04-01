@@ -226,20 +226,6 @@ class TestDeptry:
                 call_subprocess(["usethis", "tool", "deptry", "--offline"])
             assert (uv_init_dir / ".venv").exists()
 
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_runs(self, tmp_path: Path):
-        # Act
-        runner = CliRunner()
-        with change_cwd(tmp_path):
-            if not usethis_config.offline:
-                result = runner.invoke_safe(app, ["deptry"])
-            else:
-                result = runner.invoke_safe(app, ["deptry", "--offline"])
-
-            # Assert
-            assert result.exit_code == 0, result.output
-            call_subprocess(["deptry", "."])
-
     def test_how(self, tmp_path: Path):
         # Act
         runner = CliRunner()
@@ -660,6 +646,52 @@ line-length = 88
         assert result.exit_code == 0, result.output
         assert not (tmp_path / "tests" / "test_example.py").exists()
         assert (tmp_path / "tests" / "conftest.py").exists()
+
+
+class TestTach:
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            if not usethis_config.offline:
+                result = runner.invoke_safe(app, ["tach"])
+            else:
+                result = runner.invoke_safe(app, ["tach", "--offline"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["tach", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'tach check' to run Tach.
+"""
+        )
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_remove(self, tmp_path: Path):
+        # Arrange
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            if not usethis_config.offline:
+                runner.invoke_safe(app, ["tach"])
+            else:
+                runner.invoke_safe(app, ["tach", "--offline"])
+
+            # Act
+            result = runner.invoke_safe(app, ["tach", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
 
 
 class TestTy:

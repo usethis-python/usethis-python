@@ -1,0 +1,53 @@
+<h1 align="center">
+  <img src="https://raw.githubusercontent.com/usethis-python/usethis-python/refs/heads/main/docs/logo.svg" alt="usethis logo" ><br>
+</h1>
+
+# usethis
+
+[![usethis](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/usethis-python/usethis-python/main/assets/badge/v1.json)](https://github.com/usethis-python/usethis-python)
+[![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
+[![PyPI License](https://img.shields.io/pypi/l/usethis.svg)](https://github.com/usethis-python/usethis-python?tab=MIT-1-ov-file)
+[![PyPI Supported Versions](https://img.shields.io/pypi/pyversions/usethis.svg)](https://pypi.python.org/pypi/usethis)
+[![Docs](https://app.readthedocs.org/projects/usethis/badge/?version=stable)](https://usethis.readthedocs.io/en/stable/)
+
+{{ include_doc("docs/index.md", skip_lines=2, demote_headers=false) }}
+
+{{ include_doc("docs/start/installation.md") }}
+
+## 📜 Documentation
+
+The usethis documentation is available at [usethis.readthedocs.io](https://usethis.readthedocs.io/en/stable/).
+
+Additionally, the command line reference documentation can be viewed with `usethis --help`.
+
+{{ include_doc("docs/cli/overview.md", replacements={"](reference.md#": "](https://usethis.readthedocs.io/en/stable/cli/reference#"}) }}
+
+{{ include_doc("docs/start/example-usage.md", replacements={"](detailed-example.md)": "](https://usethis.readthedocs.io/en/stable/start/detailed-example)", "](../cli/reference.md)": "](https://usethis.readthedocs.io/en/stable/cli/reference)"}) }}
+
+{{ include_doc("docs/about/similar-projects.md", replacements={"](frameworks.md)": "](https://usethis.readthedocs.io/en/stable/frameworks)"}, tip_text="You can still use usethis") }}
+
+## 🚀 Development
+
+[![Commits since latest release](https://img.shields.io/github/commits-since/usethis-python/usethis-python/latest.svg)](https://github.com/usethis-python/usethis-python/releases)
+[![GitHub Actions Status](https://github.com/usethis-python/usethis-python/workflows/CI/badge.svg)](https://github.com/usethis-python/usethis-python/actions)
+[![codecov](https://codecov.io/gh/usethis-python/usethis-python/graph/badge.svg?token=0QW539GSP9)](https://codecov.io/gh/usethis-python/usethis-python)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://codspeed.io/usethis-python/usethis-python)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Socket](https://badge.socket.dev/pypi/package/usethis)](https://socket.dev/pypi/package/usethis/overview)
+
+Feature requests are tracked in the [GitHub Issues](https://github.com/usethis-python/usethis-python/issues) page.
+
+### Contributing
+
+See the
+[CONTRIBUTING.md](https://github.com/usethis-python/usethis-python/blob/main/CONTRIBUTING.md)
+file.
+
+## Acknowledgements
+
+Special thanks to the [Posit](https://posit.co/) team for creating the original [usethis package for **R**](https://usethis.r-lib.org/index.html) , which inspired this project.
+
+Additional thanks are due to the maintainers of the various tools which usethis integrates with, especially the people with [Astral](https://astral.sh/) who created [uv](https://github.com/astral-sh/uv).
+
+{{ include_doc("docs/about/about-license.md") }}

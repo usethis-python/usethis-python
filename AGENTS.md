@@ -150,6 +150,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │       │   ├── pytest            # pytest tool implementation.
 │       │   ├── requirements_txt  # requirements.txt tool implementation.
 │       │   ├── ruff              # Ruff tool implementation.
+│       │   ├── tach              # Tach tool implementation.
 │       │   └── ty                # ty tool implementation.
 │       └── spec                  # Tool specification implementations.
 │           ├── codespell         # Codespell tool specification.
@@ -163,6 +164,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │           ├── pytest            # pytest tool specification.
 │           ├── requirements_txt  # requirements.txt tool specification.
 │           ├── ruff              # Ruff tool specification.
+│           ├── tach              # Tach tool specification.
 │           └── ty                # ty tool specification.
 ├── _toolset                      # Predefined groups of related tools.
 │   ├── arch                      # Architecture enforcement toolset.
@@ -289,6 +291,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `use_pytest()` (`usethis._core.tool`) — Add and configure the pytest testing framework.
 - `use_requirements_txt()` (`usethis._core.tool`) — Add and configure a requirements.txt file exported from the uv lockfile.
 - `use_ruff()` (`usethis._core.tool`) — Add Ruff to the project.
+- `use_tach()` (`usethis._core.tool`) — Add and configure the Tach architecture enforcement tool.
 - `use_ty()` (`usethis._core.tool`) — Add and configure the ty type checker tool.
 - `use_tool()` (`usethis._core.tool`) — General dispatch function to add or remove a tool to/from the project.
 - `get_project_deps()` (`usethis._deps`) — Get all project dependencies.
@@ -364,6 +367,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `series()` (`usethis._pipeweld.containers`) — Create a Series pipeline composition from the given components.
 - `depgroup()` (`usethis._pipeweld.containers`) — Create a DepGroup pipeline composition tied to a named configuration group.
 - `get_endpoint()` (`usethis._pipeweld.func`) — Get the last step name (endpoint) from a pipeline component.
+- `get_predecessor()` (`usethis._pipeweld.func`) — Find the step that immediately precedes `step` in a pipeline component.
 - `call_subprocess()` (`usethis._subprocess`) — Run a subprocess and return its stdout, raising SubprocessFailedError on failure.
 - `change_cwd()` (`usethis._test`) — Change the working directory temporarily.
 - `is_offline()` (`usethis._test`) — Return True if the current environment has no internet connectivity.
@@ -417,6 +421,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `pytest()` (`usethis._ui.interface.tool`) — Use the pytest testing framework.
 - `requirements_txt()` (`usethis._ui.interface.tool`) — Use a requirements.txt file exported from the uv lockfile.
 - `ruff()` (`usethis._ui.interface.tool`) — Use Ruff: an extremely fast Python linter and code formatter.
+- `tach()` (`usethis._ui.interface.tool`) — Use Tach: enforce self-imposed dependency and interface rules.
 - `ty()` (`usethis._ui.interface.tool`) — Use the ty type checker: an extremely fast Python type checker.
 - `typecheck()` (`usethis._ui.interface.typecheck`) — Add a recommended type checker to the project.
 - `version()` (`usethis._ui.interface.version`) — Print the installed version of usethis.
@@ -437,6 +442,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-cli-dogfood`: Dogfood new or modified CLI commands by running them against the usethis repo itself to catch edge cases
 - `usethis-cli-modify`: Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync
 - `usethis-cli-user-test`: Simulate user testing for CLI commands by running them in a fresh temporary project to verify the happy path
+- `usethis-file-create`: Guidance on where to place new files in the repository
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows
 - `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
@@ -457,7 +463,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-skills-create`: Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability
 - `usethis-skills-external-add`: Add an external (community) skill to the project from a third-party source, including installing it and documenting it in AGENTS.md
 - `usethis-skills-external-install`: Reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)
-- `usethis-skills-modify`: Modify agent skills (SKILL.md files)
+- `usethis-skills-modify`: Enforce version bumping, scope checking, and content quality guidelines when modifying SKILL.md files
 
 <!-- /sync:docs/skills-directory.txt -->
 
@@ -475,6 +481,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 - ALWAYS check the [Function Reference](#function-reference) section above before implementing any utility logic — mature, tested functions already exist for common operations such as reading dependencies, detecting tools, and printing console output.
 - ALWAYS use possibly relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
+- ALWAYS use the `usethis-skills-modify` skill when modifying any agent skill (`SKILL.md` file). Do not edit skill files without it — it enforces version bumping, scope checking, and content quality guidelines. Similarly, ALWAYS use `usethis-skills-create` when creating a new skill.
 - ALWAYS use `find-skills` to research new skill capabilities if there are difficult tasks, tasks in an unfamiliar domain, if you believe there is a lack of clarity or direction around precisely how to proceed, or if you get stuck or find something surprisingly challenging. When using this skill, please be sure to use the `usethis-skills-external-install` skill when deciding to install a new external skill.
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves
   writing or modifying code, always use this skill to write tests and verify full coverage

@@ -28,7 +28,7 @@ The `none` backend means no package manager is being used by usethis. When this 
 
 By default, usethis auto-detects the appropriate backend using the following logic:
 
-1. If [Poetry](https://python-poetry.org/) usage is detected (e.g. via the presence of a `poetry.lock` file), the `poetry` backend is selected.
+1. If [Poetry](https://python-poetry.org/) usage is detected (via the presence of a `poetry.lock` file, a `poetry.toml` file, or a `[tool.poetry]` section in `pyproject.toml`), the `poetry` backend is selected.
 2. If `uv` usage is detected (e.g. via the presence of a `uv.lock` file), the `uv` backend is selected.
 3. If no `pyproject.toml` exists yet and `uv` is available on your system, the `uv` backend is selected.
 4. Otherwise, the `none` backend is used.

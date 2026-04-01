@@ -119,6 +119,13 @@ class TestProjectInit:
 
         assert len(calls) == 1
         assert (tmp_path / "pyproject.toml").exists()
+        assert (tmp_path / "README.md").exists()
+        assert (tmp_path / "src" / "test" / "__init__.py").exists()
+        assert (
+            "Hello from test!"
+            in (tmp_path / "src" / "test" / "__init__.py").read_text()
+        )
+        assert (tmp_path / "src" / "test" / "py.typed").exists()
 
 
 class TestBuildSystemConfig:

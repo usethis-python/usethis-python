@@ -54,32 +54,42 @@ def project_init():
         opinionated_uv_init()
     elif backend is BackendEnum.poetry:
         opinionated_poetry_init()
+        _create_project_structure()
     elif backend is BackendEnum.none:
         # pyproject.toml
         with usethis_config.set(instruct_only=True):
             ensure_pyproject_toml()
 
-        # README.md
-        (usethis_config.cpd() / "README.md").touch(exist_ok=True)
+        _create_project_structure()
+    else:
+        assert_never(backend)
 
-        # src/
-        src_dir = usethis_config.cpd() / "src"
-        src_dir.mkdir(exist_ok=True)
-        project_name = get_project_name()
-        pkg_name = _regularize_package_name(project_name)
-        (src_dir / pkg_name).mkdir(exist_ok=True)
-        init_path = src_dir / pkg_name / "__init__.py"
-        if not init_path.exists():
-            init_path.write_text(
-                f"""\
+
+def _create_project_structure() -> None:
+    """Create the standard project structure files.
+
+    Creates README.md, src/<package_name>/__init__.py, and
+    src/<package_name>/py.typed if they don't already exist.
+    """
+    # README.md
+    (usethis_config.cpd() / "README.md").touch(exist_ok=True)
+
+    # src/
+    src_dir = usethis_config.cpd() / "src"
+    src_dir.mkdir(exist_ok=True)
+    project_name = get_project_name()
+    pkg_name = _regularize_package_name(project_name)
+    (src_dir / pkg_name).mkdir(exist_ok=True)
+    init_path = src_dir / pkg_name / "__init__.py"
+    if not init_path.exists():
+        init_path.write_text(
+            f"""\
 def hello() -> str:
     return "Hello from {project_name}!"
 """,
-                encoding="utf-8",
-            )
-        (src_dir / pkg_name / "py.typed").touch(exist_ok=True)
-    else:
-        assert_never(backend)
+            encoding="utf-8",
+        )
+    (src_dir / pkg_name / "py.typed").touch(exist_ok=True)
 
 
 def _regularize_package_name(project_name: str) -> str:

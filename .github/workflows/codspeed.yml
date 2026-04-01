@@ -20,7 +20,6 @@ jobs:
     analyze:
         name: Analyze
         permissions:
-            contents: read # required for actions/checkout
             pull-requests: write # Required for bot comments
             id-token: write # Required for OIDC authentication with CodSpeed
         runs-on: "ubuntu-latest"
@@ -42,7 +41,11 @@ jobs:
               with:
                   version: "latest"
                   enable-cache: true
-                  python-version: "3.13"
+
+            # N.B. codspeed specifically requires the Python builds from actions/setup-python
+            # https://codspeed.io/docs/benchmarks/python#usage-with-uv
+            - name: Set up Python
+              uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
 
             - name: Run benchmarks
               uses: CodSpeedHQ/action@281164b0f014a4e7badd2c02cecad9b595b70537 # v4.11.1

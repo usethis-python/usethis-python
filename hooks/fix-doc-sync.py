@@ -150,7 +150,7 @@ def main() -> int:
     if any_modified:
         return 1
 
-    print("All sync blocks are up to date.")
+    print("No sync blocks needed updating.")
     return 0
 
 

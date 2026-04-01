@@ -39,7 +39,9 @@ def main() -> int:
         return 1
 
     violations: list[str] = []
-    patterns = [re.compile(r"\b" + re.escape(word) + r"\b", re.IGNORECASE) for word in banned]
+    patterns = [
+        re.compile(r"\b" + re.escape(word) + r"\b", re.IGNORECASE) for word in banned
+    ]
     for py_file in sorted(hooks_dir.glob("*.py")):
         if py_file.name == own_name:
             continue

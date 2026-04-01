@@ -28,7 +28,7 @@ def main() -> int:
     parser.add_argument(
         "--tests-dir",
         required=True,
-        help="Tests directory to scan for test files (e.g. 'tests/usethis').",
+        help="Tests directory to scan for test files (e.g. 'tests/mypackage').",
     )
     args = parser.parse_args()
 

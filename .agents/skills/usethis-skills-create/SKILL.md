@@ -4,7 +4,7 @@ description: Create new agent skills (SKILL.md files) following best practices f
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Creating Agent Skills
@@ -17,7 +17,8 @@ When creating a new skill:
 2. Create a `SKILL.md` file with the required YAML frontmatter.
 3. Write the skill content following the content guidelines below.
 4. Add a row for the new skill to the usethis-specific skills table in `AGENTS.md` (under `### Skills registry` → `#### usethis-specific skills`).
-5. Review the skill against the quality checklist at the end.
+5. Add cross-references to the new skill in related skills (see "Cross-referencing related skills" below).
+6. Review the skill against the quality checklist at the end.
 
 ## Naming the skill
 
@@ -142,6 +143,19 @@ Match the level of specificity to how fragile the task is:
 
 If content grows beyond this, split details into separate reference files in the same skill directory and reference them from `SKILL.md`. Keep references one level deep — all reference files should link directly from `SKILL.md`, not from other reference files.
 
+## Cross-referencing related skills
+
+When a new skill is closely related to existing skills, add a cross-reference so agents discover the new skill at the right time. This is especially important when the new skill is a "subskill" — a more specific skill that agents should reach for from within a broader workflow.
+
+After creating the skill, review existing skills and ask:
+
+- **Would an agent using skill X benefit from knowing about this new skill?** If so, add a reference in skill X's procedure or content pointing to the new skill.
+- **Is this new skill a specialization of a broader skill?** If a general skill covers a workflow that now has a dedicated sub-skill for one of its steps, update the general skill to mention the new one at the relevant step.
+
+For example, if you create `usethis-cli-dogfood` (a skill for testing CLI commands against the real repo), you should update `usethis-cli-modify` to reference it — because agents modifying CLI commands should know about the dogfooding workflow.
+
+Keep cross-references lightweight: a short mention with the skill name is enough. Don't duplicate content across skills.
+
 ## Quality checklist
 
 Before finalizing a new skill, verify:
@@ -158,4 +172,5 @@ Before finalizing a new skill, verify:
 - [ ] Terminology is consistent throughout
 - [ ] Content is concise — no unnecessary explanations
 - [ ] SKILL.md body is under 500 lines
+- [ ] Cross-references added in related skills where appropriate
 - [ ] Skill is added to the usethis-specific skills table in `AGENTS.md`

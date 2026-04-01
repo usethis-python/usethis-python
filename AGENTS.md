@@ -448,7 +448,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
 - `usethis-pre-commit`: Guidance on pre-commit hooks — this project uses prek, not pre-commit directly
 - `usethis-prek-add-hook`: Add a prek hook for dev
-- `usethis-prek-hook-bespoke-create`: Write bespoke prek hooks as Python scripts for custom project-specific checks
+- `usethis-prek-hook-bespoke-create`: Write bespoke prek hooks as reusable Python scripts for custom checks
 - `usethis-python-code`: Guidelines for Python code design decisions such as when to share vs. duplicate code
 - `usethis-python-code-modify`: Modify Python code (e.g. refactor, add new code, or delete code)
 - `usethis-python-enum`: Style and testing conventions for working with Python enums

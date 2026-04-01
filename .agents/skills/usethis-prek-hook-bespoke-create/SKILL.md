@@ -1,23 +1,45 @@
 ---
 name: usethis-prek-hook-bespoke-create
-description: Write bespoke prek hooks as Python scripts for custom project-specific checks
+description: Write bespoke prek hooks as reusable Python scripts for custom checks
 compatibility: usethis, prek, git, Python
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Bespoke Prek Hooks
 
-Use this skill when creating custom, project-specific prek hooks that aren't
-provided by an existing third-party tool.
+Use this skill when creating custom prek hooks that aren't provided by an
+existing third-party tool.
 
 ## Procedure
 
 1. Create a `.py` script in the `hooks/` directory at the project root.
 2. Write the hook logic in pure Python — no subprocessing.
-3. Wire the hook into `.pre-commit-config.yaml` using `uv run`.
-4. Assign a priority following the `usethis-prek-add-hook` skill's guidance.
+3. Keep the hook generalized and reusable (see "Generalization" below).
+4. Wire the hook into `.pre-commit-config.yaml` using `uv run`.
+5. Assign a priority following the `usethis-prek-add-hook` skill's guidance.
+
+## Generalization
+
+Hooks must be written as general-purpose tools that could work in any project.
+Do not hard-code project-specific names, paths, section headers, or other logic
+into the hook script itself. Instead, accept all project-specific configuration
+via command-line arguments.
+
+For example:
+
+- **Don't** hard-code a project name or package name in the script. Instead,
+  accept it as a `--name` or `--prefix` argument.
+- **Don't** hard-code file paths or directory names. Instead, accept
+  `--source-root`, `--output-file`, or similar arguments.
+- **Don't** hard-code custom section headers, categories, or groupings that are
+  specific to one project's structure. Prefer flat, order-of-appearance output
+  unless the user provides grouping configuration via arguments.
+
+The `.pre-commit-config.yaml` entry is where project-specific values belong —
+passed as `args` to the hook. The hook script itself should be reusable as-is in
+a different project.
 
 ## Writing the hook script
 

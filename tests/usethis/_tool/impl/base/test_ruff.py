@@ -654,6 +654,7 @@ repos:
             out, err = capfd.readouterr()
             assert not err
             assert "poetry run ruff format" in out
+
     class TestApply:
         def test_uv_backend_formatter_used(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]

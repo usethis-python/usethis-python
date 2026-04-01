@@ -10,6 +10,7 @@ on:
       - "mkdocs.yml"
       - ".github/workflows/copilot-setup-steps.yml"
       - ".github/workflows/static-checks.yml"
+      - ".pre-commit-config.yaml"
       - "hooks/**"
   pull_request:
     paths-ignore:
@@ -18,6 +19,7 @@ on:
       - "mkdocs.yml"
       - ".github/workflows/copilot-setup-steps.yml"
       - ".github/workflows/static-checks.yml"
+      - ".pre-commit-config.yaml"
       - "hooks/**"
   schedule:
     - cron: "20 14 * * *"

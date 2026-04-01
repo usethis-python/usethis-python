@@ -452,6 +452,6 @@ class RuffTool(RuffToolSpec, Tool):
         if not self.is_formatter_used():
             return
 
-        tick_print("Running Ruff formatter.")
+        tick_print("Running the Ruff formatter.")
         with contextlib.suppress(UVSubprocessFailedError):
             call_uv_subprocess(["run", "ruff", "format"], change_toml=False)

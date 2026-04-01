@@ -582,7 +582,7 @@ lint.select = [ "RUF" ]
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert out == "✔ Running Ruff formatter.\n"
+            assert out == "✔ Running the Ruff formatter.\n"
 
         def test_uv_backend_formatter_not_used(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]

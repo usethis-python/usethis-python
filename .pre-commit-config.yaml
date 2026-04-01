@@ -95,10 +95,18 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
+      - id: check-banned-words
+        name: check-banned-words
+        entry: uv run --frozen --offline hooks/check-banned-words.py
+        args: ["--hooks-dir=hooks", "usethis"]
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 0
       - id: export-skills-directory
         name: export-skills-directory
         entry: uv run --frozen --offline hooks/export-skills-directory.py
-        args: ["--skills-dir=.agents/skills", "--output-file=docs/skills-directory.txt"]
+        args: ["--skills-dir=.agents/skills", "--output-file=docs/skills-directory.txt", "--prefix=usethis-"]
         language: system
         always_run: true
         pass_filenames: false

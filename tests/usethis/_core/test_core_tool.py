@@ -3828,8 +3828,11 @@ class TestUseTool:
 
             # Re-apply after files_manager flushes: apply() inside use_tool()
             # runs before files are written to disk, so formatters' on-disk
-            # changes are overwritten by the deferred write.
-            tool.apply()
+            # changes are overwritten by the deferred write. A fresh
+            # files_manager() context is needed because some apply() methods
+            # (e.g. RuffTool) read config via file managers.
+            with files_manager():
+                tool.apply()
 
             try:
                 cmd = tool.raw_cmd()

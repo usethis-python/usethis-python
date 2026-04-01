@@ -442,7 +442,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-skills-create`: Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability
 - `usethis-skills-external-add`: Add an external (community) skill to the project from a third-party source, including installing it and documenting it in AGENTS.md
 - `usethis-skills-external-install`: Reinstall already-tracked external skills from skills-lock.json (e.g. after a fresh clone)
-- `usethis-skills-modify`: Modify agent skills (SKILL.md files)
+- `usethis-skills-modify`: Enforce version bumping, scope checking, and content quality guidelines when modifying SKILL.md files
 
 <!-- /sync:docs/skills-directory.txt -->
 
@@ -460,6 +460,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 - ALWAYS check the [Function Reference](#function-reference) section above before implementing any utility logic — mature, tested functions already exist for common operations such as reading dependencies, detecting tools, and printing console output.
 - ALWAYS use possibly relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
+- ALWAYS use the `usethis-skills-modify` skill when modifying any agent skill (`SKILL.md` file). Do not edit skill files without it — it enforces version bumping, scope checking, and content quality guidelines. Similarly, ALWAYS use `usethis-skills-create` when creating a new skill.
 - ALWAYS use `find-skills` to research new skill capabilities if there are difficult tasks, tasks in an unfamiliar domain, if you believe there is a lack of clarity or direction around precisely how to proceed, or if you get stuck or find something surprisingly challenging. When using this skill, please be sure to use the `usethis-skills-external-install` skill when deciding to install a new external skill.
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves
   writing or modifying code, always use this skill to write tests and verify full coverage

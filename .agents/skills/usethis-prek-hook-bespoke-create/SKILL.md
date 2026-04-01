@@ -31,6 +31,11 @@ the filename with a `.py` extension (e.g., `hooks/check-skills-documented.py`).
 Scripts should:
 
 - Use `sys.exit(0)` for success and `sys.exit(1)` for failure.
+- **Hooks that modify files must return exit code 1 when they change a file.**
+  This is a pre-commit convention: exit code 1 signals that files were modified,
+  so pre-commit will re-stage the changes and re-run checks. Compare the new
+  content with the existing file content before writing, and only write if they
+  differ. Return 1 if the file was changed, 0 if it was already up to date.
 - Print error details to stderr.
 - Print a success summary to stdout.
 - Accept `--fix` as an optional flag when the hook can auto-correct issues. When

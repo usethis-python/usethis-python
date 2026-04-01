@@ -432,3 +432,5 @@ ALL_TOOL_COMMANDS: list[str] = [
     "ruff",
     "ty",
 ]
+
+ALL_TOOL_COMMAND_STRS: list[str] = [f"usethis tool {cmd}" for cmd in ALL_TOOL_COMMANDS]

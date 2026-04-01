@@ -114,6 +114,13 @@ class Tool(ToolSpec, Protocol):
 
         return hook_id
 
+    def apply(self) -> None:
+        """Apply the tool's side effects to the project.
+
+        By default, this is a no-op. Tools that have side effects (e.g. formatters)
+        should override this method to invoke their command via subprocess.
+        """
+
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project.
 

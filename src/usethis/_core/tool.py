@@ -248,6 +248,7 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
         tool.add_pre_commit_config()
 
         tool.add_configs()
+        tool.apply()
         tool.print_how_to_use()
     else:
         tool.remove_configs()
@@ -463,6 +464,7 @@ def use_ruff(
             tool.apply_rule_config(rule_config)
         tool.add_pre_commit_config()
 
+        tool.apply()
         tool.print_how_to_use()
     else:
         tool = RuffTool(

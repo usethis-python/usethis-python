@@ -168,3 +168,48 @@ repos:
                 m["path"] for m in modules_data if m.get("utility") is True
             ]
             assert "mypkg._version" in utility_paths
+
+        def test_nested_modules_excluded(self, tmp_path: Path):
+            """Test that nested sub-module architectures are not included."""
+            # Arrange: Create a package with sub-packages that have their own
+            # layered architecture (enough modules to be considered).
+            (tmp_path / "pyproject.toml").write_text('[project]\nname = "mypkg"')
+            pkg_dir = tmp_path / "src" / "mypkg"
+            pkg_dir.mkdir(parents=True)
+            (pkg_dir / "__init__.py").touch()
+
+            # Top-level modules: high imports mid, mid imports low
+            (pkg_dir / "low.py").write_text("")
+            (pkg_dir / "mid.py").write_text("from mypkg import low\n")
+            (pkg_dir / "high.py").write_text("from mypkg import mid\n")
+
+            # Sub-package with its own internal layers
+            sub_dir = pkg_dir / "mid"
+            sub_dir.mkdir()
+            (sub_dir / "__init__.py").write_text("from mypkg import low\n")
+            (sub_dir / "x.py").write_text("")
+            (sub_dir / "y.py").write_text("from mypkg.mid import x\n")
+            (sub_dir / "z.py").write_text("from mypkg.mid import y\n")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                config_spec = TachTool().config_spec()
+
+            # Assert: Only root-level module paths should be generated
+            modules_item = next(
+                item
+                for item in config_spec.config_items
+                if item.description == "Modules"
+            )
+            modules_entry = modules_item.root[Path("tach.toml")]
+            modules_data = modules_entry.get_value()
+            assert isinstance(modules_data, list)
+            module_paths = [m["path"] for m in modules_data]
+            # Root-level modules should be present
+            assert "mypkg.high" in module_paths
+            assert "mypkg.mid" in module_paths
+            assert "mypkg.low" in module_paths
+            # Nested sub-modules should NOT be present
+            assert "mypkg.mid.x" not in module_paths
+            assert "mypkg.mid.y" not in module_paths
+            assert "mypkg.mid.z" not in module_paths

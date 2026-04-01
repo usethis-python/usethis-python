@@ -4,7 +4,7 @@ description: Maintain AGENTS.md and agent skill configuration
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Agent Configuration
@@ -41,6 +41,12 @@ Content between `<!-- sync:path/to/file -->` and `<!-- /sync:path/to/file -->` m
 ### Skills registry
 
 The skills table in `AGENTS.md` must include every skill directory under `.agents/skills/`. The `check-skills-documented` hook enforces this. When creating a new skill, add it to the table (see the `usethis-skills-create` skill for the full procedure).
+
+## Modifying agent skills
+
+When modifying any `SKILL.md` file, ALWAYS use the `usethis-skills-modify` skill. Do not edit skill files without it — the skill enforces version bumping, scope checking, and content quality guidelines that are essential for maintaining skill integrity. Skipping it leads to missing version bumps and scope drift.
+
+Similarly, when creating a new skill, ALWAYS use the `usethis-skills-create` skill.
 
 ## Run static checks after modifying agent configuration
 

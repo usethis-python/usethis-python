@@ -48,13 +48,13 @@ def _uv_init_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
         # Append empty [tool.uv] section to pyproject.toml
         # This helps usethis to correctly infer that uv is being used in subsequent ops.
-        # We can set a default value (tool.uv.environment = []) which usethis doesn't
+        # We can set a default value (tool.uv.environments = []) which usethis doesn't
         # care about (only for this testing purpose).
         # Without this, uv is used for initializing the project directory, but there's
         # no real indication that it's being used anywhere! So tests would suggest
         # --how behaviour based on --backend=none logic.
         with PyprojectTOMLManager() as mgr:
-            mgr[["tool", "uv", "environment"]] = []
+            mgr[["tool", "uv", "environments"]] = []
 
     return tmp_path
 

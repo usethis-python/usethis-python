@@ -1,5 +1,5 @@
 ---
-name: usethis-file-placement
+name: usethis-file-create
 description: Guidance on where to place new files in the repository
 compatibility: usethis, git
 license: MIT
@@ -7,7 +7,7 @@ metadata:
   version: "1.0"
 ---
 
-# File Placement
+# Creating New Files
 
 ## Repository root
 

@@ -107,10 +107,8 @@ repos:
         name: check-list-referenced
         entry: uv run --frozen --offline hooks/check-list-referenced.py
         args:
-          - "--source-file=src/usethis/_ui/interface/tool.py"
-          - "--variable=ALL_TOOL_COMMANDS"
+          - "--variable=usethis._ui.interface.tool.ALL_TOOL_COMMAND_STRS"
           - "--target-file=README.md"
-          - "--pattern=usethis tool {}"
         language: system
         always_run: true
         pass_filenames: false

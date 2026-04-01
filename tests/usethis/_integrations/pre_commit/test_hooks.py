@@ -237,6 +237,86 @@ repos:
                 "codespell",
             ]
 
+    def test_prek_extra_fields_preserved(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        """Extra keys like `priority` (from prek syntax) are preserved."""
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").write_text("""\
+minimum_prek_version: 0.2.23
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        priority: 0
+      - id: ruff-format
+        priority: 0
+""")
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="deptry",
+                            name="deptry",
+                            entry="uv run --frozen deptry src",
+                            language=schema.Language("system"),
+                            always_run=True,
+                        )
+                    ],
+                )
+            )
+
+        # Assert
+        content = (tmp_path / ".pre-commit-config.yaml").read_text()
+        assert "minimum_prek_version" in content
+        assert "priority: 0" in content
+        assert "deptry" in content
+
+    def test_prek_arbitrary_extra_keys(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        """Arbitrary extra keys on hooks, repos, and top-level are preserved."""
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").write_text("""\
+custom_top_level_key: some_value
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    custom_repo_key: 42
+    hooks:
+      - id: ruff-format
+        custom_hook_key: true
+""")
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+        # Assert
+        content = (tmp_path / ".pre-commit-config.yaml").read_text()
+        assert "custom_top_level_key: some_value" in content
+        assert "custom_repo_key: 42" in content
+        assert "custom_hook_key: true" in content
+        assert "codespell" in content
+
 
 class TestInsertRepo:
     def test_predecessor_is_none(

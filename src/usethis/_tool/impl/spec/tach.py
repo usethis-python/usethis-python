@@ -78,7 +78,12 @@ class TachToolSpec(ToolSpec):
             default=0,
         )
 
-        # Collect layers and modules from the architecture analysis
+        # Collect layers and modules from the architecture analysis.
+        # Unlike import-linter (which uses scoped containers per contract), tach
+        # uses a flat, global module list. Nested sub-module architectures cannot
+        # be expressed correctly because their depends_on lists would miss
+        # cross-package dependencies that the parent module permits. Therefore we
+        # only generate entries at the root depth level.
         all_layer_names: list[str] = []
         modules: list[dict[str, object]] = []
         seen_layer_names: set[str] = set()
@@ -87,13 +92,7 @@ class TachToolSpec(ToolSpec):
             layered_architecture_by_module
         ) in layered_architecture_by_module_by_root_package.values():
             for module, layered_architecture in layered_architecture_by_module.items():
-                if len(modules) > 0 and (
-                    (
-                        layered_architecture.module_count()
-                        < TACH_CONTRACT_MIN_MODULE_COUNT
-                    )
-                    and module.count(".") > min_depth
-                ):
+                if module.count(".") > min_depth:
                     continue
 
                 # Tach layers are ordered from highest to lowest.

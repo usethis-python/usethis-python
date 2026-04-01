@@ -86,7 +86,6 @@ class TachToolSpec(ToolSpec):
         # only generate entries at the root depth level.
         all_layer_names: list[str] = []
         modules: list[dict[str, object]] = []
-        seen_layer_names: set[str] = set()
 
         for (
             layered_architecture_by_module
@@ -97,29 +96,14 @@ class TachToolSpec(ToolSpec):
 
                 # Tach layers are ordered from highest to lowest.
                 # Each layer in layered_architecture.layers is a set of module names
-                # at the same level. We assign numeric layer names.
-                for layer_idx, layer in enumerate(layered_architecture.layers):
-                    layer_name = f"layer{layer_idx}"
-                    if layer_name not in seen_layer_names:
-                        all_layer_names.append(layer_name)
-                        seen_layer_names.add(layer_name)
-
+                # at the same level. We name each layer using the module path.
+                for layer in layered_architecture.layers:
                     for mod_name in sorted(layer):
                         full_path = f"{module}.{mod_name}"
-                        # Determine dependencies: modules in lower layers (higher idx)
-                        dep_paths: list[str] = []
-                        for dep_layer_idx in range(
-                            layer_idx + 1, len(layered_architecture.layers)
-                        ):
-                            for dep_mod in sorted(
-                                layered_architecture.layers[dep_layer_idx]
-                            ):
-                                dep_paths.append(f"{module}.{dep_mod}")
-
+                        all_layer_names.append(full_path)
                         mod_entry: dict[str, object] = {
                             "path": full_path,
-                            "depends_on": dep_paths,
-                            "layer": layer_name,
+                            "layer": full_path,
                         }
                         modules.append(mod_entry)
 
@@ -127,7 +111,6 @@ class TachToolSpec(ToolSpec):
                     full_path = f"{module}.{excluded_mod}"
                     mod_entry = {
                         "path": full_path,
-                        "depends_on": [],
                         "utility": True,
                     }
                     modules.append(mod_entry)

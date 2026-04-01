@@ -131,6 +131,7 @@ $ uvx usethis tool ruff
 ✔ Adding Ruff config to 'pyproject.toml'.
 ✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
 ✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
+✔ Running the Ruff formatter.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run ruff format' to run the Ruff formatter.
 ```
@@ -145,6 +146,7 @@ $ uvx usethis tool pytest
 ✔ Adding pytest config to 'pyproject.toml'.
 ✔ Creating '/tests'.
 ✔ Writing '/tests/conftest.py'.
+✔ Writing '/tests/test_example.py'.
 ✔ Selecting Ruff rule 'PT' in 'pyproject.toml'.
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.

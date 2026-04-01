@@ -50,6 +50,7 @@ def files_manager() -> Iterator[None]:
         DotTyTOMLManager(),
         DotPytestINIManager(),
         DotImportLinterManager(),
+        TachTOMLManager(),
         MkDocsYMLManager(),
         PreCommitConfigYAMLManager(),
         PytestINIManager(),
@@ -140,6 +141,15 @@ class RuffTOMLManager(TOMLFileManager):
     @override
     def relative_path(self) -> Path:
         return Path("ruff.toml")
+
+
+class TachTOMLManager(TOMLFileManager):
+    """Class to manage the tach.toml file."""
+
+    @property
+    @override
+    def relative_path(self) -> Path:
+        return Path("tach.toml")
 
 
 class ToxINIManager(INIFileManager):

@@ -377,6 +377,37 @@ def ruff(
 
 
 @app.command(
+    name="tach",
+    help="Use Tach: enforce self-imposed dependency and interface rules.",
+    rich_help_panel="Code Quality Tools",
+)
+def tach(
+    remove: bool = remove_opt,
+    how: bool = how_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    frozen: bool = frozen_opt,
+    backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
+) -> None:
+    """Use Tach: enforce self-imposed dependency and interface rules."""
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_tach
+
+    with (
+        usethis_config.set(
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
+        ),
+        files_manager(),
+    ):
+        _run_tool(use_tach, remove=remove, how=how)
+
+
+@app.command(
     name="ty",
     help="Use the ty type checker: an extremely fast Python type checker.",
     rich_help_panel="Code Quality Tools",
@@ -430,6 +461,7 @@ ALL_TOOL_COMMANDS: list[str] = [
     "pytest",
     "requirements.txt",
     "ruff",
+    "tach",
     "ty",
 ]
 

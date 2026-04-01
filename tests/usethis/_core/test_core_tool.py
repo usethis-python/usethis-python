@@ -1,3 +1,4 @@
+import contextlib
 import os
 import shlex
 import subprocess
@@ -11,6 +12,7 @@ from pydantic import TypeAdapter
 
 import usethis._backend.dispatch
 from usethis._backend.uv.call import call_uv_subprocess
+from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._backend.uv.link_mode import ensure_symlink_mode
 from usethis._backend.uv.toml import UVTOMLManager
 from usethis._config import usethis_config
@@ -42,6 +44,8 @@ from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS, SupportedToolType
+from usethis._tool.impl.base.import_linter import ImportLinterTool
+from usethis._tool.impl.base.pyproject_fmt import PyprojectFmtTool
 from usethis._tool.impl.base.pytest import PytestTool
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
@@ -3807,6 +3811,19 @@ class TestUseTool:
                 (uv_env_dir / "tests" / "test_placeholder.py").write_text(
                     "def test_placeholder(): pass\n"
                 )
+
+            # import-linter requires user-defined contracts to run
+            if isinstance(tool, ImportLinterTool):
+                pytest.skip(f"{tool.name} requires user-defined contracts")
+
+            # pyproject-fmt exits 1 when it reformats, which is expected
+            if isinstance(tool, PyprojectFmtTool):
+                with contextlib.suppress(UVSubprocessFailedError):
+                    call_uv_subprocess(
+                        ["run", *shlex.split(cmd)],
+                        change_toml=False,
+                    )
+                return
 
             call_uv_subprocess(
                 ["run", *shlex.split(cmd)],

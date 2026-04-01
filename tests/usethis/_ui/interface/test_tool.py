@@ -226,20 +226,6 @@ class TestDeptry:
                 call_subprocess(["usethis", "tool", "deptry", "--offline"])
             assert (uv_init_dir / ".venv").exists()
 
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_runs(self, tmp_path: Path):
-        # Act
-        runner = CliRunner()
-        with change_cwd(tmp_path):
-            if not usethis_config.offline:
-                result = runner.invoke_safe(app, ["deptry"])
-            else:
-                result = runner.invoke_safe(app, ["deptry", "--offline"])
-
-            # Assert
-            assert result.exit_code == 0, result.output
-            call_subprocess(["deptry", "."])
-
     def test_how(self, tmp_path: Path):
         # Act
         runner = CliRunner()

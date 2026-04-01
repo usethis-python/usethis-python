@@ -41,6 +41,22 @@ class TestAddPytestDir:
         out, _ = capfd.readouterr()
         assert out == "✔ Writing '/tests/conftest.py'.\n"
 
+    def test_conftest_already_exists(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        # Arrange
+        (tmp_path / "tests").mkdir()
+        (tmp_path / "tests" / "conftest.py").write_text("existing")
+
+        # Act
+        with change_cwd(tmp_path):
+            add_pytest_dir()
+
+        # Assert
+        out, _ = capfd.readouterr()
+        assert out == ""
+        assert (tmp_path / "tests" / "conftest.py").read_text() == "existing"
+
 
 class TestAddExampleTest:
     def test_exists(self, tmp_path: Path):

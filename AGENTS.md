@@ -353,7 +353,8 @@ ALWAYS check whether an existing function already covers your use case before im
 - `get_importable_packages()` (`usethis._integrations.project.packages`) — Get the names of packages in the source directory that can be imported.
 - `fancy_model_dump()` (`usethis._integrations.pydantic.dump`) — Like `pydantic.model_dump` but with bespoke formatting options.
 - `add_pytest_dir()` (`usethis._integrations.pytest.core`) — Create the tests directory and conftest.py if they do not already exist.
-- `remove_pytest_dir()` (`usethis._integrations.pytest.core`) — Remove the tests directory if it contains only the managed conftest.py.
+- `add_example_test()` (`usethis._integrations.pytest.core`) — Create an example test file in the tests directory if it does not already exist.
+- `remove_pytest_dir()` (`usethis._integrations.pytest.core`) — Remove the tests directory if it contains only managed files.
 - `get_readme_path()` (`usethis._integrations.readme.path`) — Return the path to the README file, searching for common README filenames.
 - `get_markdown_readme_path()` (`usethis._integrations.readme.path`) — Return the path to the Markdown README file, raising an error if it is not Markdown.
 - `get_sonar_project_properties()` (`usethis._integrations.sonarqube.config`) — Get contents for (or from) the sonar-project.properties file.

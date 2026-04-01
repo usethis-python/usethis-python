@@ -6,6 +6,7 @@ from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._ui.options import (
     backend_opt,
+    example_opt,
     frozen_opt,
     how_opt,
     offline_opt,
@@ -21,6 +22,7 @@ def test(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    example: bool = example_opt,
 ) -> None:
     """Add a recommended testing framework to the project."""
     from usethis._config_file import files_manager
@@ -35,7 +37,7 @@ def test(
         files_manager(),
     ):
         try:
-            use_test_frameworks(remove=remove, how=how)
+            use_test_frameworks(remove=remove, how=how, example=example)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

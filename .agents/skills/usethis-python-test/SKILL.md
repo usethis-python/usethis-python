@@ -4,7 +4,7 @@ description: General guidelines for writing tests in the usethis project, includ
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Python Test Guidelines
@@ -52,3 +52,44 @@ Use the minimum depth needed to clearly communicate the test's context. Avoid ne
 ### No docstrings on test classes or functions
 
 Test classes and test functions should not have docstrings. The class and function names should be descriptive enough to communicate what is being tested.
+
+## Using `files_manager` in tests
+
+The `files_manager()` context manager defers all configuration file writes until the context exits. This has important implications for how tests are structured, especially when subprocess calls are involved.
+
+### When to exit `files_manager` before a subprocess
+
+Any subprocess that reads configuration files from the filesystem (e.g. `ruff`, `pytest`, `pre-commit`, `deptry`, `codespell`) will **not** see in-memory changes made inside a `files_manager()` context. You must exit the context (flush writes to disk) before running the subprocess.
+
+```python
+# Correct: exit files_manager before the subprocess reads config from disk
+with change_cwd(tmp_path), files_manager():
+    use_ruff()
+
+call_uv_subprocess(["run", "ruff", "check", "."], change_toml=False)
+```
+
+```python
+# Wrong: subprocess runs inside the context, but config hasn't been flushed yet
+with change_cwd(tmp_path), files_manager():
+    use_ruff()
+    call_uv_subprocess(["run", "ruff", "check", "."], change_toml=False)
+    # ruff may not see the configuration written by use_ruff()
+```
+
+### When it is safe to stay inside the same context
+
+Multiple usethis function calls that operate through `FileManager`-based access (not subprocesses) can safely share a single `files_manager()` context. They see each other's uncommitted in-memory changes via `get()` and `commit()`.
+
+```python
+# Safe: both functions use FileManager access, no subprocess involved
+with change_cwd(tmp_path), files_manager():
+    use_ruff()
+    use_deptry()
+    # Both tools' config changes are visible to each other in memory
+```
+
+### Rule of thumb
+
+- **FileManager-only operations** (e.g. `use_*` functions, `get_deps_from_group`, assertions on config state): safe to combine in one context.
+- **Subprocess calls** (e.g. `call_uv_subprocess`, `subprocess.run`, `call_subprocess`): require an atomic write first, so exit the `files_manager` context before running them.

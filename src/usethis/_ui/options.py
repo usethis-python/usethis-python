@@ -129,3 +129,10 @@ formatter_opt = typer.Option(
     "--formatter/--no-formatter",
     help="Add or remove specifically the Ruff formatter.",
 )
+
+# pytest command options
+example_opt = typer.Option(
+    True,
+    "--example/--no-example",
+    help="Create an example test file in the tests directory.",
+)

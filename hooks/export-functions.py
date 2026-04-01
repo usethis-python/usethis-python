@@ -119,10 +119,18 @@ def main() -> int:
 
     content = "\n".join(bullets) + "\n"
 
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(content, encoding="utf-8")
+    try:
+        existing = output_file.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        existing = None
 
-    print(f"Function reference written to {output_file}.")
+    modified = content != existing
+    if modified:
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        output_file.write_text(content, encoding="utf-8")
+        print(f"Function reference written to {output_file}.")
+    else:
+        print("Function reference is already up to date.")
 
     if args.strict and missing:
         print(
@@ -133,7 +141,7 @@ def main() -> int:
             print(f"  - {path}:{name}", file=sys.stderr)
         return 1
 
-    return 0
+    return 1 if modified else 0
 
 
 if __name__ == "__main__":

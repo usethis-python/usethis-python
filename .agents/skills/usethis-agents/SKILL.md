@@ -32,11 +32,11 @@ When you need to add reference material about code to agent configuration:
 
 ### Sync blocks
 
-Content between `<!-- sync:path/to/file -->` and `<!-- /sync:path/to/file -->` markers is verified by the `check-doc-sync` hook. To update synced content:
+Content between `<!-- sync:path/to/file -->` and `<!-- /sync:path/to/file -->` markers is auto-fixed by the `fix-doc-sync` hook. To update synced content:
 
 1. Modify the source (e.g. add a docstring to a module, or update a skill's description).
 2. Run the relevant export hook to regenerate the docs file.
-3. Copy the updated content into the sync block, or let prek handle it during commit.
+3. Let prek handle the sync block update during commit (the `fix-doc-sync` hook runs automatically).
 
 ### Skills registry
 

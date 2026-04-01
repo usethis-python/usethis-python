@@ -64,6 +64,15 @@ class TachToolSpec(ToolSpec):
             self._get_layered_architecture_by_module_by_root_package()
         )
 
+        # Find the shallowest module depth that has a meaningful architecture
+        # (i.e. at least TACH_CONTRACT_MIN_MODULE_COUNT modules). We only
+        # generate tach entries at this depth. Unlike import-linter (which uses
+        # scoped containers per contract), tach uses a flat, global module list,
+        # so nested sub-module architectures cannot be expressed correctly —
+        # their dependency constraints would miss cross-package imports that
+        # the parent module permits. Restricting to the shallowest meaningful
+        # depth avoids this problem while still enforcing the most useful
+        # layered architecture.
         min_depth = min(
             (
                 module.count(".")
@@ -77,13 +86,6 @@ class TachToolSpec(ToolSpec):
             ),
             default=0,
         )
-
-        # Collect layers and modules from the architecture analysis.
-        # Unlike import-linter (which uses scoped containers per contract), tach
-        # uses a flat, global module list. Nested sub-module architectures cannot
-        # be expressed correctly because their depends_on lists would miss
-        # cross-package dependencies that the parent module permits. Therefore we
-        # only generate entries at the root depth level.
         all_layer_names: list[str] = []
         modules: list[dict[str, object]] = []
 

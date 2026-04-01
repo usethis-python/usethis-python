@@ -2276,6 +2276,7 @@ keep_full_version = true
                 out, _ = capfd.readouterr()
                 assert out == (
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                    "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
                     "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
@@ -2295,6 +2296,7 @@ keep_full_version = true
                     "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
                     "☐ Install the dependency 'pyproject-fmt'.\n"
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                    "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
                     "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
@@ -2328,6 +2330,7 @@ keep_full_version = true
                 "☐ Install the dependency 'pyproject-fmt'.\n"
                 "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'.\n"
                 "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
                 "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
             )
 
@@ -3142,6 +3145,7 @@ class TestRuff:
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
                 "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
+                "✔ Running the Ruff formatter.\n"
                 "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
                 "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
@@ -3201,6 +3205,7 @@ ignore = [ "EM", "T20", "TRY003", "S603" ]
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'ruff.toml'.\n"
+                "✔ Running the Ruff formatter.\n"
                 "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
                 "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
@@ -3293,10 +3298,10 @@ docstring-code-format = true
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
+                "✔ Running the Ruff formatter.\n"
                 "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
 
-    class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_dir: Path):
             # Arrange

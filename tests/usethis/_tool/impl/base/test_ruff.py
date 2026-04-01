@@ -654,3 +654,41 @@ repos:
             out, err = capfd.readouterr()
             assert not err
             assert "poetry run ruff format" in out
+    class TestApply:
+        def test_uv_backend_formatter_used(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                RuffTool(formatter_detection="always").apply()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Running the Ruff formatter.\n"
+
+        def test_uv_backend_formatter_not_used(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                RuffTool(formatter_detection="never").apply()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ""
+
+        def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                usethis_config.set(backend=BackendEnum.none),
+                files_manager(),
+            ):
+                RuffTool(formatter_detection="always").apply()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ""

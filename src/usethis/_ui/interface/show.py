@@ -25,6 +25,7 @@ def backend(
     quiet: bool = quiet_opt,
     output_file: Path | None = output_file_opt,
 ) -> None:
+    """Show the inferred project manager backend, e.g. 'uv' or 'none'."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.show import show_backend
@@ -38,12 +39,33 @@ def backend(
             raise typer.Exit(code=1) from None
 
 
+@app.command(help="Show the project license in SPDX format.")
+def license(
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    output_file: Path | None = output_file_opt,
+) -> None:
+    """Show the project license in SPDX format."""
+    from usethis._config_file import files_manager
+    from usethis._console import err_print
+    from usethis._core.show import show_license
+    from usethis.errors import UsethisError
+
+    with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+        try:
+            show_license(output_file=output_file)
+        except UsethisError as err:
+            err_print(err)
+            raise typer.Exit(code=1) from None
+
+
 @app.command(help="Show the name of the project")
 def name(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     output_file: Path | None = output_file_opt,
 ) -> None:
+    """Show the name of the project."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.show import show_name
@@ -67,6 +89,7 @@ def sonarqube(
     project_key: str | None = project_key_opt,
     output_file: Path | None = output_file_opt,
 ) -> None:
+    """Show the sonar-project.properties file for SonarQube."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.show import show_sonarqube_config

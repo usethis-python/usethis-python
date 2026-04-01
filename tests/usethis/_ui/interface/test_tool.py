@@ -345,8 +345,7 @@ class TestPyprojectTOML:
             result.output
             == """\
 ☐ Populate 'pyproject.toml' with the project configuration.
-ℹ Learn more at 
-https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+ℹ Learn more at https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
 """  # noqa: RUF001
         )
 
@@ -511,8 +510,7 @@ class TestRuff:
             == """\
 ✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.
 ✔ Adding Ruff config to 'pyproject.toml'.
-✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 
-'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
+✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
 ✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run ruff format' to run the Ruff formatter.

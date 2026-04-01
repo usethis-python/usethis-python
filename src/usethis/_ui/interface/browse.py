@@ -18,6 +18,7 @@ def pypi(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
 ) -> None:
+    """Visit the PyPI project page for a package."""
     from usethis._console import err_print
     from usethis._core.browse import browse_pypi
     from usethis.errors import UsethisError

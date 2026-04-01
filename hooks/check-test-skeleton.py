@@ -1,7 +1,7 @@
 """Check that every test file has a matching source module.
 
-For each tests/usethis/**/test_*.py file, at least one of the following source
-paths must exist under src/usethis/:
+For each test file matching ``test_*.py`` under the tests directory, at least
+one of the following source paths must exist under the source directory:
 
 - Direct name match (test_foo.py -> foo.py)
 - Underscore-prefixed match (test_foo.py -> _foo.py)
@@ -11,22 +11,38 @@ paths must exist under src/usethis/:
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
-TESTS_DIR = Path("tests/usethis")
-SRC_DIR = Path("src")
-
 
 def main() -> int:
-    if not TESTS_DIR.is_dir():
-        print(f"ERROR: {TESTS_DIR} directory not found.", file=sys.stderr)
+    parser = argparse.ArgumentParser(
+        description="Check that every test file has a matching source module.",
+    )
+    parser.add_argument(
+        "--source-dir",
+        required=True,
+        help="Root source directory (e.g. 'src').",
+    )
+    parser.add_argument(
+        "--tests-dir",
+        required=True,
+        help="Tests directory to scan for test files (e.g. 'tests/mypackage').",
+    )
+    args = parser.parse_args()
+
+    tests_dir = Path(args.tests_dir)
+    source_dir = Path(args.source_dir)
+
+    if not tests_dir.is_dir():
+        print(f"ERROR: {tests_dir} directory not found.", file=sys.stderr)
         return 1
 
     errors: list[str] = []
 
-    for test_py in sorted(TESTS_DIR.rglob("test_*.py")):
-        path = SRC_DIR / test_py.relative_to("tests")
+    for test_py in sorted(tests_dir.rglob("test_*.py")):
+        path = source_dir / test_py.relative_to(tests_dir.parent)
         std_path = path.parent / path.name.removeprefix("test_")
         underscore_path = path.parent / ("_" + path.name.removeprefix("test_"))
         parent_prefix = "test_" + path.parent.name.strip("_") + "_"

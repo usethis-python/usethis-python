@@ -12,6 +12,7 @@ nav:
   - Usage With Other Frameworks: frameworks.md
   - About:
     - Philosophy: about/philosophy.md
+    - Backends: about/backends.md
     - Similar Projects: about/similar-projects.md
     - FAQ: about/faq.md
     - License: about/about-license.md

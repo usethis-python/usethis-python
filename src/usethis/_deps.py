@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
-import pydantic
-from packaging.requirements import Requirement
-from pydantic import TypeAdapter
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
@@ -19,10 +16,19 @@ from usethis._backend.uv.deps import (
 from usethis._backend.uv.errors import UVDepGroupError
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
+from usethis._file.pyproject_toml.deps import (
+    get_dep_groups as _get_dep_groups,
+)
+from usethis._file.pyproject_toml.deps import (
+    get_project_deps as _get_project_deps,
+)
+from usethis._file.pyproject_toml.errors import PyprojectTOMLDepsError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._types.backend import BackendEnum
-from usethis._types.deps import Dependency
 from usethis.errors import DepGroupError
+
+if TYPE_CHECKING:
+    from usethis._types.deps import Dependency
 
 
 def get_project_deps() -> list[Dependency]:
@@ -35,74 +41,21 @@ def get_project_deps() -> list[Dependency]:
     of the `pyproject.toml` file.
     """
     try:
-        pyproject = PyprojectTOMLManager().get()
-    except FileNotFoundError:
-        return []
-
-    try:
-        project_section = pyproject["project"]
-    except KeyError:
-        return []
-
-    if not isinstance(project_section, dict):
-        return []
-
-    try:
-        dep_section = project_section["dependencies"]
-    except KeyError:
-        return []
-
-    try:
-        req_strs = TypeAdapter(list[str]).validate_python(dep_section)
-    except pydantic.ValidationError as err:
-        msg = (
-            "Failed to parse the 'project.dependencies' section in 'pyproject.toml':\n"
-            f"{err}\n\n"
-            "Please check the section and try again."
-        )
-        raise UVDepGroupError(msg) from None
-
-    reqs = [Requirement(req_str) for req_str in req_strs]
-    deps = [Dependency(name=req.name, extras=frozenset(req.extras)) for req in reqs]
-    return deps
+        return _get_project_deps()
+    except PyprojectTOMLDepsError as err:
+        raise UVDepGroupError(str(err)) from None
 
 
 def get_dep_groups() -> dict[str, list[Dependency]]:
+    """Get all dependency groups from the dependency-groups section of pyproject.toml."""
     try:
-        pyproject = PyprojectTOMLManager().get()
-    except FileNotFoundError:
-        return {}
-
-    try:
-        dep_groups_section = pyproject["dependency-groups"]
-    except KeyError:
-        # In the past might have been in [tool.uv.dev-dependencies] section when using
-        # uv but this will be deprecated, so we don't support it in usethis.
-        return {}
-
-    try:
-        req_strs_by_group = TypeAdapter(dict[str, list[str]]).validate_python(
-            dep_groups_section
-        )
-    except pydantic.ValidationError as err:
-        msg = (
-            "Failed to parse the 'dependency-groups' section in 'pyproject.toml':\n"
-            f"{err}\n\n"
-            "Please check the section and try again."
-        )
-        raise DepGroupError(msg) from None
-    reqs_by_group = {
-        group: [Requirement(req_str) for req_str in req_strs]
-        for group, req_strs in req_strs_by_group.items()
-    }
-    deps_by_group = {
-        group: [Dependency(name=req.name, extras=frozenset(req.extras)) for req in reqs]
-        for group, reqs in reqs_by_group.items()
-    }
-    return deps_by_group
+        return _get_dep_groups()
+    except PyprojectTOMLDepsError as err:
+        raise DepGroupError(str(err)) from None
 
 
 def get_deps_from_group(group: str) -> list[Dependency]:
+    """Get the list of dependencies in a named dependency group."""
     dep_groups = get_dep_groups()
     try:
         return dep_groups[group]
@@ -137,6 +90,7 @@ def register_default_group(group: str) -> None:
 
 
 def add_default_groups(groups: list[str]) -> None:
+    """Register the given dependency groups as default groups in the package manager configuration."""
     backend = get_backend()
     if backend is BackendEnum.uv:
         add_default_groups_via_uv(groups)
@@ -148,6 +102,7 @@ def add_default_groups(groups: list[str]) -> None:
 
 
 def get_default_groups() -> list[str]:
+    """Get the list of default dependency groups installed automatically by the package manager."""
     backend = get_backend()
     if backend is BackendEnum.uv:
         return get_default_groups_via_uv()
@@ -160,10 +115,12 @@ def get_default_groups() -> list[str]:
 
 def ensure_dev_group_is_defined() -> None:
     # Ensure dev group exists in dependency-groups
+    """Ensure the 'dev' dependency group exists in pyproject.toml."""
     PyprojectTOMLManager().extend_list(keys=["dependency-groups", "dev"], values=[])
 
 
 def is_dep_satisfied_in(dep: Dependency, *, in_: list[Dependency]) -> bool:
+    """Check if a dependency is satisfied by any dependency in the given list."""
     return any(_is_dep_satisfied_by(dep, by=by) for by in in_)
 
 
@@ -173,7 +130,7 @@ def _is_dep_satisfied_by(dep: Dependency, *, by: Dependency) -> bool:
 
 
 def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
-    """Remove the tool's development dependencies, if present."""
+    """Remove dependencies from the named group if present."""
     existing_group = get_deps_from_group(group)
 
     _deps = [dep for dep in deps if is_dep_satisfied_in(dep, in_=existing_group)]
@@ -198,6 +155,7 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
 
 
 def is_dep_in_any_group(dep: Dependency) -> bool:
+    """Check if a dependency exists in any dependency group."""
     return is_dep_satisfied_in(
         dep, in_=[dep for group in get_dep_groups().values() for dep in group]
     )
@@ -206,7 +164,7 @@ def is_dep_in_any_group(dep: Dependency) -> bool:
 def add_deps_to_group(
     deps: list[Dependency], group: str, *, default: bool = True
 ) -> None:
-    """Add a package as a non-build dependency using PEP 735 dependency groups.
+    """Add dependencies to a named group using PEP 735 dependency groups.
 
     Args:
         deps: The dependencies to add to the group.

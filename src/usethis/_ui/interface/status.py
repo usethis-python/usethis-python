@@ -15,6 +15,7 @@ def status(
     quiet: bool = quiet_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
+    """Set the development status classifier for the project."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.status import use_development_status

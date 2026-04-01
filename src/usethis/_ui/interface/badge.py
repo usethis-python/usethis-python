@@ -30,6 +30,7 @@ def pypi(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge with the version of your package on PyPI."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_pypi_badge
 
@@ -44,6 +45,7 @@ def ruff(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for the Ruff linter."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_ruff_badge
 
@@ -58,6 +60,7 @@ def ty(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for the ty type checker."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_ty_badge
 
@@ -72,6 +75,7 @@ def pre_commit(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for the pre-commit framework."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_pre_commit_badge
 
@@ -88,6 +92,7 @@ def socket(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge with your PyPI package's supply chain security rating from Socket."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_socket_badge
 
@@ -102,6 +107,7 @@ def usethis(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for usethis."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_usethis_badge
 
@@ -116,6 +122,7 @@ def bitbucket(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for Bitbucket."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_bitbucket_badge
 
@@ -130,6 +137,7 @@ def uv(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for the uv package manager."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_uv_badge
 

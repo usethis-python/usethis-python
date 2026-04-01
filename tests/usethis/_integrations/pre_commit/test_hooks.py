@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from ruamel.yaml import YAML
 
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit import schema
@@ -236,6 +237,93 @@ repos:
                 "pyproject-fmt",
                 "codespell",
             ]
+
+    def test_prek_extra_fields_preserved(self, tmp_path: Path):
+        """Extra keys like `priority` (from prek syntax) are preserved."""
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").write_text("""\
+minimum_prek_version: 0.2.23
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+        priority: 0
+      - id: ruff-format
+        priority: 0
+""")
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="deptry",
+                            name="deptry",
+                            entry="uv run --frozen deptry src",
+                            language=schema.Language("system"),
+                            always_run=True,
+                        )
+                    ],
+                )
+            )
+
+        # Assert - parse YAML to verify structure
+        yaml = YAML()
+        parsed = yaml.load((tmp_path / ".pre-commit-config.yaml").read_text())
+        assert parsed["minimum_prek_version"] == "0.2.23"
+        ruff_repo = parsed["repos"][0]
+        assert ruff_repo["hooks"][0]["priority"] == 0
+        assert ruff_repo["hooks"][1]["priority"] == 0
+        assert any(
+            hook["id"] == "deptry" for repo in parsed["repos"] for hook in repo["hooks"]
+        )
+
+    def test_prek_arbitrary_extra_keys(self, tmp_path: Path):
+        """Arbitrary extra keys on hooks, repos, and top-level are preserved."""
+        # Arrange
+        (tmp_path / ".pre-commit-config.yaml").write_text("""\
+custom_top_level_key: some_value
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    custom_repo_key: 42
+    hooks:
+      - id: ruff-format
+        custom_hook_key: true
+""")
+
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            add_repo(
+                schema.LocalRepo(
+                    repo="local",
+                    hooks=[
+                        schema.HookDefinition(
+                            id="codespell",
+                            name="codespell",
+                            entry="codespell .",
+                            language=schema.Language("system"),
+                        )
+                    ],
+                )
+            )
+
+        # Assert - parse YAML to verify extra keys are at correct levels
+        yaml = YAML()
+        parsed = yaml.load((tmp_path / ".pre-commit-config.yaml").read_text())
+        assert parsed["custom_top_level_key"] == "some_value"
+        ruff_repo = parsed["repos"][0]
+        assert ruff_repo["custom_repo_key"] == 42
+        assert ruff_repo["hooks"][0]["custom_hook_key"] is True
+        assert any(
+            hook["id"] == "codespell"
+            for repo in parsed["repos"]
+            for hook in repo["hooks"]
+        )
 
 
 class TestInsertRepo:

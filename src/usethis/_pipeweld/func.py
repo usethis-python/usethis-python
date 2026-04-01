@@ -25,6 +25,13 @@ if TYPE_CHECKING:
 
 
 class Partition(BaseModel):
+    """A three-way partition of a pipeline component relative to a new step's dependencies.
+
+    The three parts are: steps that must run before the new step (prerequisite),
+    steps independent of the new step (nondependent), and steps that must run after
+    the new step (postrequisite).
+    """
+
     prerequisite_component: str | Series | DepGroup | Parallel | None = None
     nondependent_component: str | Series | DepGroup | Parallel | None = None
     postrequisite_component: str | Series | DepGroup | Parallel | None = None
@@ -32,6 +39,8 @@ class Partition(BaseModel):
 
 
 class Adder(BaseModel):
+    """Add a new step into an existing pipeline, respecting dependency ordering."""
+
     pipeline: Series
     step: str
     prerequisites: set[str] = set()
@@ -40,6 +49,7 @@ class Adder(BaseModel):
     force_linear: bool = False
 
     def add(self) -> WeldResult:
+        """Add the step to the pipeline and return the modified pipeline with instructions."""
         if len(self.pipeline) == 0:
             # Empty pipeline
             return WeldResult(
@@ -74,6 +84,10 @@ class Adder(BaseModel):
     def partition_component(
         self, component: str | Series | Parallel | DepGroup, *, predecessor: str | None
     ) -> tuple[Partition, list[Instruction]]:
+        """Partition a component into prerequisite, nondependent, and postrequisite parts.
+
+        Returns the partition and any insertion instructions needed to perform the split.
+        """
         if isinstance(component, str):
             if component in self.prerequisites:
                 return Partition(
@@ -545,15 +559,13 @@ def _get_instructions_for_insertion(
 
 
 def _concat(*components: str | Series | DepGroup | Parallel | None) -> Series | None:
-    s = []
+    s: list[str | Series | DepGroup | Parallel] = []
     for component in components:
-        if isinstance(component, Series):
-            s.extend(component.root)
-        elif isinstance(component, Parallel | str):
-            s.append(component)
-        elif component is None:
+        if component is None:
             pass
-        elif isinstance(component, DepGroup):
+        elif isinstance(component, Series):
+            s.extend(component.root)
+        elif isinstance(component, (Parallel | str, DepGroup)):
             s.append(component)
         else:
             assert_never(component)
@@ -565,16 +577,14 @@ def _concat(*components: str | Series | DepGroup | Parallel | None) -> Series | 
 
 
 def _union(*components: str | Series | DepGroup | Parallel | None) -> Parallel | None:
-    p = []
+    p: set[str | Series | DepGroup | Parallel] = set()
     for component in components:
-        if isinstance(component, Parallel):
-            p.extend(component.root)
-        elif isinstance(component, Series | str):
-            p.append(component)
-        elif component is None:
+        if component is None:
             pass
-        elif isinstance(component, DepGroup):
-            p.append(component)
+        elif isinstance(component, Parallel):
+            p.update(component.root)
+        elif isinstance(component, (Series | str, DepGroup)):
+            p.add(component)
         else:
             assert_never(component)
 
@@ -585,6 +595,7 @@ def _union(*components: str | Series | DepGroup | Parallel | None) -> Parallel |
 
 
 def get_endpoint(component: str | Series | DepGroup | Parallel) -> str:
+    """Get the last step name (endpoint) from a pipeline component."""
     if isinstance(component, str):
         return component
     elif isinstance(component, Series):

@@ -112,10 +112,7 @@ repos:
       - id: export-functions
         name: export-functions
         entry: uv run --frozen --offline hooks/export-functions.py
-        args:
-          - "--output-file=docs/functions.txt"
-          - "--source-root=src/usethis"
-          - "--strict"
+        args: ["--source-root=src/usethis", "--output-file=docs/functions.txt", "--strict"]
         language: system
         always_run: true
         pass_filenames: false

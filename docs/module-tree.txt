@@ -92,6 +92,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   │   ├── errors                # Error types for project integration operations.
 │   │   ├── imports               # Import graph analysis for the project.
 │   │   ├── layout                # Project source directory layout detection.
+│   │   ├── license               # License detection for the project.
 │   │   ├── name                  # Project name resolution with fallback heuristics.
 │   │   └── packages              # Importable package discovery.
 │   ├── pydantic                  # Pydantic model utilities.

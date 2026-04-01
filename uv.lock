@@ -616,6 +616,20 @@ wheels = [
 ]
 
 [[package]]
+name = "identify"
+version = "2.6.18"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/c4/7fb4db12296cdb11893d61c92048fe617ee853f8523b9b296ac03b43757e/identify-2.6.18.tar.gz", hash = "sha256:873ac56a5e3fd63e7438a7ecbc4d91aca692eb3fefa4534db2b7913f3fc352fd", size = 99580, upload-time = "2026-03-15T18:39:50.319Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/46/33/92ef41c6fad0233e41d3d84ba8e8ad18d1780f1e5d99b3c683e6d7f98b63/identify-2.6.18-py2.py3-none-any.whl", hash = "sha256:8db9d3c8ea9079db92cafb0ebf97abdc09d52e97f4dcf773a2e694048b7cd737", size = 99394, upload-time = "2026-03-15T18:39:48.915Z" },
+]
+
+[package.optional-dependencies]
+license = [
+    { name = "ukkonen" },
+]
+
+[[package]]
 name = "idna"
 version = "3.10"
 source = { registry = "https://pypi.org/simple" }
@@ -1667,6 +1681,22 @@ wheels = [
 ]
 
 [[package]]
+name = "ukkonen"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cffi" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1b/94/80c733c4b72efb93250dfadf03cc110a4310cd4e2077280af637f0882801/ukkonen-1.1.0.tar.gz", hash = "sha256:fc62ce0a5b5d57198d4dc0c6ebca406b41afca2b6681af5159a6709b47286377", size = 4070, upload-time = "2026-01-25T23:01:30.984Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/60/2c/57cd06dd63fdf9511b2675d76b53136f4ad12c5e1927a4d7db7cfe47e107/ukkonen-1.1.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:801246f054be80be296dad60fda8f23ef335c079d2d72195a84513c6c61519bc", size = 7785, upload-time = "2026-01-25T23:07:26.693Z" },
+    { url = "https://files.pythonhosted.org/packages/9e/e9/c613cf780a7bdc2fb0d11496c8a2e526c7c4bfa40a956753e4a86f5b7518/ukkonen-1.1.0-cp310-abi3-macosx_13_0_x86_64.whl", hash = "sha256:0b08daece3d2e7d7323a84e683619ff3409e50a53e5f606ebda3c12e93c81f7c", size = 7386, upload-time = "2026-01-25T23:07:27.828Z" },
+    { url = "https://files.pythonhosted.org/packages/57/da/6b58da9d3fdc49e61132d23b7848ce96fe8db001635bfed54566a6856257/ukkonen-1.1.0-cp310-abi3-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:43f755181149a085ffd934422017be6f8159fde47501fc396fbc0558536a1fcc", size = 29844, upload-time = "2026-01-25T23:07:28.97Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/3e/9fd463ac96d6269b4e3d465f31863df56f400fb35a50ca5cf62f8516967c/ukkonen-1.1.0-cp310-abi3-win32.whl", hash = "sha256:b6401f6a96fbf7c4ff9bdd95e3f2aad94a245231af9608796f23f5bbe00fa125", size = 11286, upload-time = "2026-01-25T23:07:31.537Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/f6/3a31457b731c750accbdf15177ab09d7cca312b88c6a2dedc979445a0d1d/ukkonen-1.1.0-cp310-abi3-win_amd64.whl", hash = "sha256:e1b1e65f43a5fdbc1e073e58a0fe666f931b9cf199ee18425975aeedb35c760b", size = 11559, upload-time = "2026-01-25T23:07:32.568Z" },
+]
+
+[[package]]
 name = "urllib3"
 version = "2.6.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1681,6 +1711,7 @@ source = { editable = "." }
 dependencies = [
     { name = "configupdater" },
     { name = "grimp" },
+    { name = "identify", extra = ["license"] },
     { name = "packaging" },
     { name = "pydantic" },
     { name = "requests" },
@@ -1728,6 +1759,7 @@ uv = [
 requires-dist = [
     { name = "configupdater", specifier = ">=3.2" },
     { name = "grimp", specifier = ">=3.14" },
+    { name = "identify", extras = ["license"], specifier = ">=2.6" },
     { name = "packaging", specifier = ">=20.9" },
     { name = "pydantic", specifier = ">=2.5.0" },
     { name = "requests", specifier = ">=2.26.0" },

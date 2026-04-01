@@ -52,7 +52,7 @@ usethis-file-create-placement → usethis-file-create → usethis-file → useth
 This hierarchy reveals **skill gaps** — intermediate levels that don't yet exist. In this example, both `usethis-file-create` and `usethis-file` are gaps. The principle is:
 
 - **If a more general skill already exists** at any level in the hierarchy, add the guidance to it. Don't create a narrower sub-skill unless the general skill is already very large (>500 lines).
-- **If no general skill exists**, create one at the most general level that makes sense — not the most specific. In the example above, creating `usethis-file-create` (or even `usethis-file`) is better than jumping straight to `usethis-file-create-placement`.
+- **If no general skill exists**, create one at the most general level that makes sense — not the most specific. The most general level that makes sense is the broadest scope where the guidance remains cohesive. In the example above, creating `usethis-file-create` (or even `usethis-file`) is better than jumping straight to `usethis-file-create-placement`.
 
 ### Why general skills are preferred
 
@@ -68,7 +68,7 @@ Only split a general skill into narrower sub-skills when the skill is getting la
 
 An agent needs to document guidance about where to place newly created files. No `usethis-file-create` or `usethis-file` skill exists.
 
-- **Bad:** Create `usethis-file-placement` — this is too narrow, has limited room to grow, and the name suggests it only covers placement of any file operation rather than specifically file creation.
+- **Bad:** Create `usethis-file-placement` — this is too narrow, has limited room to grow, and the name doesn't clearly indicate it's specifically about file creation guidance.
 - **Good:** Create `usethis-file-create` — this is the most general level that doesn't already exist and naturally encompasses placement guidance along with other file creation concerns.
 - **Also good:** Create `usethis-file` — even more general, covering file operations broadly, with a cross-reference to the existing `usethis-file-remove` skill.
 

@@ -4,7 +4,7 @@ description: Create new agent skills (SKILL.md files) following best practices f
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.7"
+  version: "1.8"
 ---
 
 # Creating Agent Skills
@@ -125,6 +125,11 @@ The `description` field is critical for skill discovery. Include both **what** t
 - **Good:** `"Modify agent skills (SKILL.md files)"`
 - **Bad:** `"I help you modify skills"` or `"Use this to modify skills"`
 
+**Don't be prescriptive.** The description should say what the skill covers, not command the agent to use it. Avoid "ALWAYS use when..." or "Use this skill to..." phrasing — prefer neutral descriptions like "How to..." or a plain statement of the topic.
+
+- **Good:** `"How to modify any SKILL.md file — enforces version bumping, scope checking, and content quality guidelines"`
+- **Bad:** `"ALWAYS use when modifying any SKILL.md file — enforces version bumping, scope checking, and content quality guidelines"`
+
 Keep the description general. Ask: "What might be added to this skill in the future?" Don't focus on one specific section or aspect of the skill — instead, describe the general topic.
 
 - **Good:** `"Maintain AGENTS.md and agent skill configuration"` — covers the broad topic
@@ -219,6 +224,7 @@ Before finalizing a new skill, verify:
 - [ ] YAML frontmatter has all required fields (`name`, `description`, `compatibility`, `license`, `metadata.version`)
 - [ ] Version is a quoted string in `"MAJOR.MINOR"` format (e.g. `"1.0"`)
 - [ ] Description includes what the skill does and when to use it
+- [ ] Description is not prescriptive — says what the skill covers, not "ALWAYS use when..."
 - [ ] Description is general — covers the broad topic, not just one specific aspect
 - [ ] Content describes procedures, not codebase state
 - [ ] Content is general enough to remain valid as the codebase evolves

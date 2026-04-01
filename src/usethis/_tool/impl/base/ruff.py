@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, final
 
@@ -9,7 +10,9 @@ from pydantic import TypeAdapter, ValidationError
 from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.detect import is_uv_used
+from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import how_print, tick_print
@@ -439,3 +442,16 @@ class RuffTool(RuffToolSpec, Tool):
             not self.is_linter_config_present()
             and not self.is_formatter_config_present()
         )
+
+    @override
+    def apply(self) -> None:
+        """Run Ruff formatter on the project."""
+        if get_backend() is not BackendEnum.uv:
+            return
+
+        if not self.is_formatter_used():
+            return
+
+        tick_print("Running Ruff formatter.")
+        with contextlib.suppress(UVSubprocessFailedError):
+            call_uv_subprocess(["run", "ruff", "format"], change_toml=False)

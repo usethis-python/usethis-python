@@ -14,7 +14,7 @@ metadata:
 After implementing or modifying a CLI command:
 
 1. Ensure all code changes are committed (clean worktree).
-2. Run the command against the usethis repo itself using `uv run usethis <command>`.
+2. Run the command against the usethis repo itself using `uvx --from . usethis <command>`.
 3. Observe the output for errors, unexpected behavior, or edge cases.
 4. Revert any side-effects the command caused in the worktree.
 5. If the dogfood run revealed bugs or edge cases, write failing tests that reproduce them, then fix the code.
@@ -35,22 +35,22 @@ git add . && git commit -m "WIP: pre-dogfood checkpoint"
 
 ### 2. Run the command
 
-Run the command from the repository root so it operates on the project's own configuration:
+Run the command from the repository root so it operates on the project's own configuration. Use `uvx --from .` instead of `uv run` to avoid clashing with the `usethis` executable in the project virtual environment:
 
 ```bash
-uv run usethis <command> [options]
+uvx --from . usethis <command> [options]
 ```
 
 For example, if you added a new tool command:
 
 ```bash
-uv run usethis tool <newtool>
+uvx --from . usethis tool <newtool>
 ```
 
 Or if you modified a show command:
 
 ```bash
-uv run usethis show <subcommand>
+uvx --from . usethis show <subcommand>
 ```
 
 ### 3. Analyze the output

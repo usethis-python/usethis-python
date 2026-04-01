@@ -4164,6 +4164,7 @@ name = "my-project"
             with change_cwd(tmp_path), files_manager():
                 use_zensical()
 
-            # Assert - should not create zensical.toml if mkdocs.yml already has config
-            # The config should be written to mkdocs.yml since it already has content
+            # Assert - config should stay in mkdocs.yml since it already has content
             assert (tmp_path / "mkdocs.yml").exists()
+            contents = (tmp_path / "mkdocs.yml").read_text()
+            assert "site_name: existing-site" in contents

@@ -13,6 +13,7 @@
 - `usethis-python-functions`: Guidelines for Python function design, including return types and signature simplicity
 - `usethis-python-module-layout-modify`: Modify the Python module layout (create, move, rename, or delete modules)
 - `usethis-python-ruff`: Guidelines for complying with Ruff linter rules instead of suppressing them
+- `usethis-python-test`: General guidelines for writing tests in the usethis project, including test class organization
 - `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
 - `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
 - `usethis-qa-import-linter`: Use the Import Linter software on the usethis project

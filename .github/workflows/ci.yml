@@ -9,6 +9,8 @@ on:
       - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
+      - ".github/workflows/copilot-setup-steps.yml"
+      - ".github/workflows/static-checks.yml"
       - "hooks/**"
       - "docs/**/*.txt"
   pull_request:
@@ -17,6 +19,8 @@ on:
       - "CHANGELOG.md"
       - "AGENTS.md"
       - ".agents/**/*.md"
+      - ".github/workflows/copilot-setup-steps.yml"
+      - ".github/workflows/static-checks.yml"
       - "hooks/**"
       - "docs/**/*.txt"
   schedule:

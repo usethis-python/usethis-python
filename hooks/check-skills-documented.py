@@ -25,8 +25,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--prefix",
-        default="usethis-",
-        help="Skills matching this prefix are local; others are external (default: 'usethis-').",
+        required=True,
+        help="Skills matching this prefix are local; others are external.",
     )
     args = parser.parse_args()
 

@@ -47,7 +47,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--prefix",
-        default="usethis-",
+        required=True,
         help="Only include skills whose directory name starts with this prefix.",
     )
     args = parser.parse_args()

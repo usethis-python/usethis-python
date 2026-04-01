@@ -417,6 +417,7 @@ The `.agents/skills` directory contains agent skills.
 <!-- sync:docs/skills-directory.txt -->
 
 - `usethis-agents`: Maintain AGENTS.md and agent skill configuration
+- `usethis-cli-dogfood`: Dogfood new or modified CLI commands by running them against the usethis repo itself to catch edge cases
 - `usethis-cli-modify`: Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows
@@ -430,6 +431,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-python-functions`: Guidelines for Python function design, including return types and signature simplicity
 - `usethis-python-module-layout-modify`: Modify the Python module layout (create, move, rename, or delete modules)
 - `usethis-python-ruff`: Guidelines for complying with Ruff linter rules instead of suppressing them
+- `usethis-python-test`: General guidelines for writing tests in the usethis project, including test class organization
 - `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
 - `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
 - `usethis-qa-import-linter`: Use the Import Linter software on the usethis project
@@ -459,7 +461,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves
   writing or modifying code, always use this skill to write tests and verify full coverage
   before finishing. Aim for 100% coverage on new or changed code.
-- ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task is complete, always run this skill to check for any issues before finishing. You must fix **all** static check failures, including pre-existing ones unrelated to your changes. This applies to ALL changes, including documentation-only changes and skill file edits — static checks catch sync issues, formatting problems, and other regressions that affect every file type. CI enforces checks on the entire codebase, so unfixed failures will block your PR.
+- ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task is complete, always run this skill to check for any issues before finishing. You must fix **all** static check failures, including pre-existing ones unrelated to your changes. This applies to ALL changes, including documentation-only changes and skill file edits — static checks catch sync issues, formatting problems, and other regressions that affect every file type. CI enforces checks on the entire codebase, so unfixed failures will block your PR. **After fixing any failure or making any further change, re-run ALL static checks again from scratch — even if you ran them moments ago.** It is expected and normal to run this skill repeatedly in a loop until every check passes cleanly.
 - ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.
 - ALWAYS reference the relevant issue ID in PR descriptions using a closing keyword, e.g. `Resolves #123`. This ensures traceability between PRs and the issues they address.
 

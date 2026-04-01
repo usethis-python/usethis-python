@@ -49,7 +49,7 @@ repos:
         args: [--fix]
         priority: 0
       - id: ruff-format
-        priority: 0
+        priority: 1
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.22.0
     hooks:
@@ -135,7 +135,7 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
-        priority: 1
+        priority: 2
   - repo: local
     hooks:
       - id: import-linter
@@ -144,7 +144,7 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
-        priority: 1
+        priority: 2
   - repo: local
     hooks:
       - id: ty
@@ -154,7 +154,7 @@ repos:
         types_or: [python, pyi]
         always_run: true
         require_serial: true
-        priority: 1
+        priority: 2
 default_stages:
   - pre-commit
   - pre-push

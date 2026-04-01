@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import os
 import sys
 from pathlib import Path
 
@@ -81,17 +82,18 @@ def main() -> int:
             formatted.append(f"{text:<{max_width}}  {comment}")
         else:
             formatted.append(text)
-    content = "\n".join(formatted) + "\n"
+    content = os.linesep.join(formatted) + os.linesep
 
     try:
-        existing = output_file.read_text(encoding="utf-8")
+        with open(output_file, encoding="utf-8", newline="") as f:
+            existing = f.read()
     except FileNotFoundError:
         existing = None
 
     modified = content != existing
     if modified:
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(content, encoding="utf-8")
+        output_file.write_text(content, encoding="utf-8", newline="")
         print(f"Module tree written to {output_file}.")
     else:
         print("Module tree is already up to date.")

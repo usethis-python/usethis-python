@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import os
 import sys
 from pathlib import Path
 
@@ -64,17 +65,18 @@ def main() -> int:
             else:
                 missing.append((py_file, func_name))
 
-    content = "\n".join(bullets) + "\n"
+    content = os.linesep.join(bullets) + os.linesep
 
     try:
-        existing = output_file.read_text(encoding="utf-8")
+        with open(output_file, encoding="utf-8", newline="") as f:
+            existing = f.read()
     except FileNotFoundError:
         existing = None
 
     modified = content != existing
     if modified:
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(content, encoding="utf-8")
+        output_file.write_text(content, encoding="utf-8", newline="")
         print(f"Function reference written to {output_file}.")
     else:
         print("Function reference is already up to date.")

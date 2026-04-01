@@ -292,7 +292,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `use_ty()` (`usethis._core.tool`) — Add and configure the ty type checker tool.
 - `use_tool()` (`usethis._core.tool`) — General dispatch function to add or remove a tool to/from the project.
 - `get_project_deps()` (`usethis._deps`) — Get all project dependencies.
-- `get_dep_groups()` (`usethis._deps`) — Get all dependency groups from the dependency-groups section of pyproject.toml.
+- `get_dep_groups()` (`usethis._deps`) — Get all dependency groups from pyproject.toml.
 - `get_deps_from_group()` (`usethis._deps`) — Get the list of dependencies in a named dependency group.
 - `register_default_group()` (`usethis._deps`) — Register a group in the default-groups configuration if it's not already there.
 - `add_default_groups()` (`usethis._deps`) — Register the given dependency groups as default groups in the package manager configuration.
@@ -310,6 +310,8 @@ ALWAYS check whether an existing function already covers your use case before im
 - `print_keys()` (`usethis._file.print_`) — Convert a list of keys to a string.
 - `get_project_deps()` (`usethis._file.pyproject_toml.deps`) — Get all project dependencies from [project.dependencies].
 - `get_dep_groups()` (`usethis._file.pyproject_toml.deps`) — Get all dependency groups from [dependency-groups].
+- `get_poetry_project_deps()` (`usethis._file.pyproject_toml.deps`) — Get project dependencies from [tool.poetry.dependencies].
+- `get_poetry_dep_groups()` (`usethis._file.pyproject_toml.deps`) — Get dependency groups from [tool.poetry.group.*.dependencies].
 - `get_name()` (`usethis._file.pyproject_toml.name`) — Get the project name from pyproject.toml.
 - `get_description()` (`usethis._file.pyproject_toml.name`) — Get the project description from pyproject.toml.
 - `get_project_dict()` (`usethis._file.pyproject_toml.project`) — Get the contents of the [project] section from pyproject.toml.

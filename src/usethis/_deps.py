@@ -24,6 +24,12 @@ from usethis._file.pyproject_toml.deps import (
     get_dep_groups as _get_dep_groups,
 )
 from usethis._file.pyproject_toml.deps import (
+    get_poetry_dep_groups as _get_poetry_dep_groups,
+)
+from usethis._file.pyproject_toml.deps import (
+    get_poetry_project_deps as _get_poetry_project_deps,
+)
+from usethis._file.pyproject_toml.deps import (
     get_project_deps as _get_project_deps,
 )
 from usethis._file.pyproject_toml.errors import PyprojectTOMLDepsError
@@ -41,21 +47,47 @@ def get_project_deps() -> list[Dependency]:
     This does not include development dependencies, e.g. not those in the
     dependency-groups section, not extras/optional dependencies, not build dependencies.
 
-    Usually this is just the dependencies in the `project.dependencies` section
-    of the `pyproject.toml` file.
+    Usually this is just the dependencies in the ``project.dependencies`` section
+    of the ``pyproject.toml`` file. When the poetry backend is active, also
+    reads from ``[tool.poetry.dependencies]``.
     """
     try:
-        return _get_project_deps()
+        deps = _get_project_deps()
     except PyprojectTOMLDepsError as err:
         raise UVDepGroupError(str(err)) from None
 
+    backend = get_backend()
+    if backend is BackendEnum.poetry:
+        deps = _merge_deps(deps, _get_poetry_project_deps())
+
+    return deps
+
 
 def get_dep_groups() -> dict[str, list[Dependency]]:
-    """Get all dependency groups from the dependency-groups section of pyproject.toml."""
+    """Get all dependency groups from pyproject.toml.
+
+    Reads from ``[dependency-groups]`` (PEP 735). When the poetry backend
+    is active, also reads from ``[tool.poetry.group.*.dependencies]``.
+    """
     try:
-        return _get_dep_groups()
+        groups = _get_dep_groups()
     except PyprojectTOMLDepsError as err:
         raise DepGroupError(str(err)) from None
+
+    backend = get_backend()
+    if backend is BackendEnum.poetry:
+        poetry_groups = _get_poetry_dep_groups()
+        for group_name, poetry_deps in poetry_groups.items():
+            existing = groups.get(group_name, [])
+            groups[group_name] = _merge_deps(existing, poetry_deps)
+
+    return groups
+
+
+def _merge_deps(base: list[Dependency], extra: list[Dependency]) -> list[Dependency]:
+    """Merge two dependency lists, avoiding duplicates by name."""
+    existing_names = {dep.name for dep in base}
+    return base + [dep for dep in extra if dep.name not in existing_names]
 
 
 def get_deps_from_group(group: str) -> list[Dependency]:

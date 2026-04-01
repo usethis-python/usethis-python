@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pydantic
 from packaging.requirements import Requirement
 from pydantic import TypeAdapter
@@ -81,3 +83,80 @@ def get_dep_groups() -> dict[str, list[Dependency]]:
         group: [Dependency(name=req.name, extras=frozenset(req.extras)) for req in reqs]
         for group, reqs in reqs_by_group.items()
     }
+
+
+def get_poetry_project_deps() -> list[Dependency]:
+    """Get project dependencies from [tool.poetry.dependencies].
+
+    This reads Poetry's custom dependency specification format where
+    dependencies are key-value pairs rather than PEP 508 strings.
+    The ``python`` key is excluded since it represents a Python version
+    constraint, not a package dependency.
+    """
+    try:
+        pyproject = PyprojectTOMLManager().get()
+    except FileNotFoundError:
+        return []
+
+    poetry_deps = (
+        pyproject.get("tool", {}).get("poetry", {}).get("dependencies", {})  # type: ignore[union-attr]
+    )
+
+    if not isinstance(poetry_deps, dict):
+        return []
+
+    return _parse_poetry_deps(poetry_deps)
+
+
+def get_poetry_dep_groups() -> dict[str, list[Dependency]]:
+    """Get dependency groups from [tool.poetry.group.*.dependencies].
+
+    This reads Poetry's custom group dependency specification format where
+    each group has its own ``[tool.poetry.group.GROUPNAME.dependencies]``
+    section containing key-value pairs.
+    """
+    try:
+        pyproject = PyprojectTOMLManager().get()
+    except FileNotFoundError:
+        return {}
+
+    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})  # type: ignore[union-attr]
+
+    if not isinstance(poetry_groups, dict):
+        return {}
+
+    result: dict[str, list[Dependency]] = {}
+    for group_name, group_config in poetry_groups.items():
+        if not isinstance(group_config, dict):
+            continue
+        group_deps = group_config.get("dependencies", {})
+        if not isinstance(group_deps, dict):
+            continue
+        deps = _parse_poetry_deps(group_deps)
+        if deps:
+            result[group_name] = deps
+
+    return result
+
+
+def _parse_poetry_deps(deps_table: dict[str, Any]) -> list[Dependency]:
+    """Parse a Poetry dependencies table into a list of Dependency objects.
+
+    Poetry dependencies are key-value pairs where:
+    - The key is the package name
+    - The value is either a version string (e.g. ``"^2.28"``) or a dict
+      (e.g. ``{version = "^2.28", extras = ["security"]}``)
+
+    The ``python`` key is excluded.
+    """
+    result: list[Dependency] = []
+    for name, spec in deps_table.items():
+        if name.lower() == "python":
+            continue
+        extras: frozenset[str] = frozenset()
+        if isinstance(spec, dict):
+            extras_list = spec.get("extras", [])
+            if isinstance(extras_list, list):
+                extras = frozenset(str(e) for e in extras_list)
+        result.append(Dependency(name=name, extras=extras))
+    return result

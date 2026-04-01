@@ -298,6 +298,85 @@ dev-dependencies = ["old-style-dev-dep"]
             Dependency(name="click"),
         ]
 
+    class TestPoetry:
+        def test_legacy_poetry_deps(self, tmp_path: Path):
+            """Read from [tool.poetry.dependencies] when poetry backend is active."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.28"
+click = {version = "^8.0", extras = ["testing"]}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                result = get_project_deps()
+
+            assert Dependency(name="requests") in result
+            assert Dependency(name="click", extras=frozenset(["testing"])) in result
+            # python should be excluded
+            assert all(d.name != "python" for d in result)
+
+        def test_merged_with_pep621(self, tmp_path: Path):
+            """Poetry deps merge with standard [project.dependencies]."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test"
+version = "0.1.0"
+dependencies = ["numpy"]
+
+[tool.poetry.dependencies]
+requests = "^2.28"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                result = get_project_deps()
+
+            names = [d.name for d in result]
+            assert "numpy" in names
+            assert "requests" in names
+
+        def test_no_duplicates_on_merge(self, tmp_path: Path):
+            """Deps in both sections should not be duplicated."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "test"
+version = "0.1.0"
+dependencies = ["requests>=2.0"]
+
+[tool.poetry.dependencies]
+requests = "^2.28"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                result = get_project_deps()
+
+            names = [d.name for d in result]
+            assert names.count("requests") == 1
+
 
 class TestGetDepGroups:
     def test_no_dev_section(self, tmp_path: Path):
@@ -389,6 +468,149 @@ test="not a list"
             pytest.raises(DepGroupError),
         ):
             get_dep_groups()
+
+    class TestPoetry:
+        def test_legacy_poetry_groups(self, tmp_path: Path):
+            """Read from [tool.poetry.group.*.dependencies]."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+ruff = "^0.1"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                result = get_dep_groups()
+
+            assert "dev" in result
+            assert Dependency(name="pytest") in result["dev"]
+            assert Dependency(name="ruff") in result["dev"]
+            assert "docs" in result
+            assert Dependency(name="mkdocs") in result["docs"]
+
+        def test_merged_with_pep735(self, tmp_path: Path):
+            """Poetry groups merge with standard [dependency-groups]."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+dev = ["pytest>=7.0"]
+
+[tool.poetry.group.lint.dependencies]
+ruff = "^0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                result = get_dep_groups()
+
+            assert Dependency(name="pytest") in result["dev"]
+            assert Dependency(name="ruff") in result["lint"]
+
+        def test_same_group_merges(self, tmp_path: Path):
+            """Deps from both sections for the same group are merged."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+dev = ["pytest>=7.0"]
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                result = get_dep_groups()
+
+            assert Dependency(name="pytest") in result["dev"]
+            assert Dependency(name="ruff") in result["dev"]
+
+        def test_no_duplicate_on_overlap(self, tmp_path: Path):
+            """Same dep in both sections should not be duplicated."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+dev = ["pytest>=7.0"]
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                result = get_dep_groups()
+
+            names = [d.name for d in result["dev"]]
+            assert names.count("pytest") == 1
+
+        def test_extras_in_poetry_format(self, tmp_path: Path):
+            """Poetry dict format with extras is parsed correctly."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.poetry.group.dev.dependencies]
+requests = {version = "^2.28", extras = ["security", "socks"]}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                result = get_dep_groups()
+
+            dep = result["dev"][0]
+            assert dep.name == "requests"
+            assert dep.extras == frozenset(["security", "socks"])
+
+        def test_not_read_without_poetry_backend(self, tmp_path: Path):
+            """Poetry sections are not read when backend is not poetry."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.none
+                result = get_dep_groups()
+
+            assert result == {}
 
 
 class TestAddDepsToGroup:
@@ -931,6 +1153,43 @@ class TestIsDepInAnyGroup:
 
         # Assert
         assert not result
+
+    class TestPoetry:
+        def test_in_poetry_group(self, tmp_path: Path):
+            """Detect dep in [tool.poetry.group.*.dependencies]."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                assert is_dep_in_any_group(Dependency(name="pytest"))
+
+        def test_not_in_poetry_group(self, tmp_path: Path):
+            """Dep not present should return False."""
+            (tmp_path / "pyproject.toml").write_text("""\
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+""")
+
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                usethis_config.backend = BackendEnum.poetry
+                assert not is_dep_in_any_group(Dependency(name="ruff"))
 
 
 class TestIsDepSatisfiedIn:

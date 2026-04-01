@@ -158,10 +158,18 @@ def main() -> int:
             formatted.append(text)
     content = "\n".join(formatted) + "\n"
 
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(content, encoding="utf-8")
+    try:
+        existing = output_file.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        existing = None
 
-    print(f"Module tree written to {output_file}.")
+    modified = content != existing
+    if modified:
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        output_file.write_text(content, encoding="utf-8")
+        print(f"Module tree written to {output_file}.")
+    else:
+        print("Module tree is already up to date.")
 
     if args.strict and missing:
         print(
@@ -172,7 +180,7 @@ def main() -> int:
             print(f"  - {path}", file=sys.stderr)
         return 1
 
-    return 0
+    return 1 if modified else 0
 
 
 if __name__ == "__main__":

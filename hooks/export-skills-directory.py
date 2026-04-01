@@ -30,6 +30,33 @@ def _parse_frontmatter(path: Path) -> dict[str, str]:
     return fields
 
 
+def _collect_skills(
+    skills_dir: Path, prefix: str
+) -> tuple[list[tuple[str, str]], list[str]]:
+    """Scan skill directories and return (rows, missing) lists."""
+    rows: list[tuple[str, str]] = []
+    missing: list[str] = []
+
+    for skill_dir in sorted(skills_dir.iterdir()):
+        if not skill_dir.is_dir():
+            continue
+        if not skill_dir.name.startswith(prefix):
+            continue
+        skill_md = skill_dir / "SKILL.md"
+        if not skill_md.is_file():
+            missing.append(skill_dir.name)
+            continue
+        fields = _parse_frontmatter(skill_md)
+        name = fields.get("name", skill_dir.name)
+        description = fields.get("description", "")
+        if not description:
+            missing.append(skill_dir.name)
+            continue
+        rows.append((name, description))
+
+    return rows, missing
+
+
 def main() -> int:
     """Export a skills directory bullet list from SKILL.md frontmatter."""
     parser = argparse.ArgumentParser(
@@ -60,25 +87,7 @@ def main() -> int:
         print(f"ERROR: {skills_dir} is not a directory.", file=sys.stderr)
         return 1
 
-    rows: list[tuple[str, str]] = []
-    missing: list[str] = []
-
-    for skill_dir in sorted(skills_dir.iterdir()):
-        if not skill_dir.is_dir():
-            continue
-        if not skill_dir.name.startswith(prefix):
-            continue
-        skill_md = skill_dir / "SKILL.md"
-        if not skill_md.is_file():
-            missing.append(skill_dir.name)
-            continue
-        fields = _parse_frontmatter(skill_md)
-        name = fields.get("name", skill_dir.name)
-        description = fields.get("description", "")
-        if not description:
-            missing.append(skill_dir.name)
-            continue
-        rows.append((name, description))
+    rows, missing = _collect_skills(skills_dir, prefix)
 
     if not rows:
         print("ERROR: No skills found.", file=sys.stderr)
@@ -90,10 +99,18 @@ def main() -> int:
 
     content = "\n".join(lines) + "\n"
 
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(content, encoding="utf-8")
+    try:
+        existing = output_file.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        existing = None
 
-    print(f"Skills directory written to {output_file}.")
+    modified = content != existing
+    if modified:
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        output_file.write_text(content, encoding="utf-8")
+        print(f"Skills directory written to {output_file}.")
+    else:
+        print("Skills directory is already up to date.")
 
     if missing:
         print(
@@ -103,7 +120,7 @@ def main() -> int:
         for name in missing:
             print(f"  - {name}", file=sys.stderr)
 
-    return 0
+    return 1 if modified else 0
 
 
 if __name__ == "__main__":

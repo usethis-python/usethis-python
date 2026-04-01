@@ -9,6 +9,7 @@ positional command-line arguments.
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -38,14 +39,14 @@ def main() -> int:
         return 1
 
     violations: list[str] = []
+    patterns = [re.compile(r"\b" + re.escape(word) + r"\b", re.IGNORECASE) for word in banned]
     for py_file in sorted(hooks_dir.glob("*.py")):
         if py_file.name == own_name:
             continue
         lines = py_file.read_text(encoding="utf-8").splitlines()
         for lineno, line in enumerate(lines, start=1):
-            line_lower = line.lower()
-            for word in banned:
-                if word.lower() in line_lower:
+            for pattern in patterns:
+                if pattern.search(line):
                     violations.append(f"  {py_file}:{lineno}: {line.strip()}")
 
     if violations:

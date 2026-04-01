@@ -39,3 +39,6 @@ jobs:
 
             - name: Setup dependencies
               run: uv sync
+
+            - name: Install prek hooks
+              run: uv run prek install

@@ -420,6 +420,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-cli-dogfood`: Dogfood new or modified CLI commands by running them against the usethis repo itself to catch edge cases
 - `usethis-cli-modify`: Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync
 - `usethis-cli-user-test`: Simulate user testing for CLI commands by running them in a fresh temporary project to verify the happy path
+- `usethis-file-placement`: Guidance on where to place new files in the repository
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows
 - `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
@@ -465,7 +466,6 @@ External skills can be installed if they are not present — see the `usethis-sk
 - ALWAYS consider the `usethis-qa-static-checks` to be relevant: if you think your task is complete, always run this skill to check for any issues before finishing. You must fix **all** static check failures, including pre-existing ones unrelated to your changes. This applies to ALL changes, including documentation-only changes and skill file edits — static checks catch sync issues, formatting problems, and other regressions that affect every file type. CI enforces checks on the entire codebase, so unfixed failures will block your PR. **After fixing any failure or making any further change, re-run ALL static checks again from scratch — even if you ran them moments ago.** It is expected and normal to run this skill repeatedly in a loop until every check passes cleanly.
 - ALWAYS mention which skills you've used after completing any task, in PR descriptions, and comments.
 - ALWAYS reference the relevant issue ID in PR descriptions using a closing keyword, e.g. `Resolves #123`. This ensures traceability between PRs and the issues they address.
-- AVOID adding new files to the repository root directory. The root is publicly facing and should be kept clean — only standard community files (e.g. `README.md`, `LICENSE`, `pyproject.toml`, `CONTRIBUTING.md`) belong there. Before creating a new file at the root level, consider a more appropriate subdirectory: for example, documentation templates belong in `docs/`, hook scripts in `hooks/`, and agent skills in `.agents/skills/`.
 
 ## Lessons
 

@@ -14,6 +14,7 @@ metadata:
 1. Make your changes to the CLI layer (command functions, options, help text, or app registration).
 2. Update the CLI documentation to reflect every user-facing change.
 3. Run the affected interface-level tests.
+4. Use the `usethis-cli-dogfood` skill to validate the command against the real repo.
 
 ## When this skill applies
 

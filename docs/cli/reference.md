@@ -277,6 +277,7 @@ declaring dependencies with `uv add`.
 - `usethis tool pre-commit` - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
 - `usethis tool pyproject-fmt` - Use the [pyproject-fmt formatter](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
 - `usethis tool ruff` - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+- `usethis tool tach` - Use [Tach](https://github.com/gauge-sh/tach): enforce self-imposed dependency and interface rules.
 - `usethis tool ty` - Use [ty](https://docs.astral.sh/ty/): an extremely fast Python type checker.
 
 ### Testing

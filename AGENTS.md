@@ -144,6 +144,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │       │   ├── pytest            # pytest tool implementation.
 │       │   ├── requirements_txt  # requirements.txt tool implementation.
 │       │   ├── ruff              # Ruff tool implementation.
+│       │   ├── tach              # Tach tool implementation.
 │       │   └── ty                # ty tool implementation.
 │       └── spec                  # Tool specification implementations.
 │           ├── codespell         # Codespell tool specification.
@@ -157,6 +158,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │           ├── pytest            # pytest tool specification.
 │           ├── requirements_txt  # requirements.txt tool specification.
 │           ├── ruff              # Ruff tool specification.
+│           ├── tach              # Tach tool specification.
 │           └── ty                # ty tool specification.
 ├── _toolset                      # Predefined groups of related tools.
 │   ├── arch                      # Architecture enforcement toolset.
@@ -276,6 +278,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `use_pytest()` (`usethis._core.tool`) — Add and configure the pytest testing framework.
 - `use_requirements_txt()` (`usethis._core.tool`) — Add and configure a requirements.txt file exported from the uv lockfile.
 - `use_ruff()` (`usethis._core.tool`) — Add Ruff to the project.
+- `use_tach()` (`usethis._core.tool`) — Add and configure the Tach architecture enforcement tool.
 - `use_ty()` (`usethis._core.tool`) — Add and configure the ty type checker tool.
 - `use_tool()` (`usethis._core.tool`) — General dispatch function to add or remove a tool to/from the project.
 - `get_project_deps()` (`usethis._deps`) — Get all project dependencies.
@@ -401,6 +404,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `pytest()` (`usethis._ui.interface.tool`) — Use the pytest testing framework.
 - `requirements_txt()` (`usethis._ui.interface.tool`) — Use a requirements.txt file exported from the uv lockfile.
 - `ruff()` (`usethis._ui.interface.tool`) — Use Ruff: an extremely fast Python linter and code formatter.
+- `tach()` (`usethis._ui.interface.tool`) — Use Tach: enforce self-imposed dependency and interface rules.
 - `ty()` (`usethis._ui.interface.tool`) — Use the ty type checker: an extremely fast Python type checker.
 - `typecheck()` (`usethis._ui.interface.typecheck`) — Add a recommended type checker to the project.
 - `version()` (`usethis._ui.interface.version`) — Print the installed version of usethis.

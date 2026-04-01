@@ -28,6 +28,7 @@ _HOOK_ORDER = [
     "deptry",
     "lint_imports",  # Alias used for import-linter used in the Import Linter docs, see https://github.com/usethis-python/usethis-python/issues/1022
     "import-linter",
+    "tach",
     "codespell",
 ]
 

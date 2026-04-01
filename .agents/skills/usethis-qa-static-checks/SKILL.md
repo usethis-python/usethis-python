@@ -4,7 +4,7 @@ description: Perform static code checks
 compatibility: usethis, Python, prek, basedpyright
 license: MIT
 metadata:
-  version: "1.7"
+  version: "1.8"
 ---
 
 # Static Checks
@@ -21,6 +21,8 @@ Note that we are interested in both errors and warnings from these tools - we sh
 ## When to run these checks
 
 Before submitting changes for review, **always** run these static checks. This applies to **every** change, no matter how small — including documentation-only changes, skill file edits, and configuration updates. Hooks like `check-doc-sync` and `export-functions` validate generated files that can go out of sync even from non-code changes. Skipping static checks is a common cause of avoidable CI failures.
+
+**Run static checks repeatedly until they pass.** After fixing any failure — or after making any further change for any reason — you must re-run **all** static checks again from scratch, even if you ran them moments ago. A single passing run is not enough if changes have been made since that run. It is expected and normal to invoke this skill multiple times in a loop until every check passes cleanly with no further modifications.
 
 ## What to do when prek checks fail
 

@@ -12,6 +12,7 @@ files were modified (following the pre-commit autofix convention).
 
 from __future__ import annotations
 
+import os
 import re
 import sys
 from pathlib import Path
@@ -69,10 +70,11 @@ def _detect_codeblock_fence(text: str) -> str:
 
 def _build_replacement(actual_content: str, expected: str) -> str:
     """Build the replacement content for a sync block, preserving code fences."""
+    nl = os.linesep
     fence = _detect_codeblock_fence(actual_content)
     if fence:
-        return f"\n{fence}\n{expected}\n```\n\n"
-    return f"\n{expected}\n\n"
+        return f"{nl}{fence}{nl}{expected}{nl}```{nl}{nl}"
+    return f"{nl}{expected}{nl}{nl}"
 
 
 def _collect_block(
@@ -95,7 +97,8 @@ def _collect_block(
 
 def _fix_file(path: Path) -> bool:
     """Fix sync blocks in a single file. Returns True if modifications were made."""
-    text = path.read_text(encoding="utf-8")
+    with open(path, encoding="utf-8", newline="") as f:
+        text = f.read()
     lines = text.splitlines(keepends=True)
     new_lines: list[str] = []
     modified = False
@@ -135,7 +138,8 @@ def _fix_file(path: Path) -> bool:
             )
             continue
 
-        expected = source.read_text(encoding="utf-8").strip()
+        with open(source, encoding="utf-8", newline="") as f:
+            expected = f.read().strip()
         actual_content = "".join(content_lines)
         replacement = _build_replacement(actual_content, expected)
 
@@ -149,7 +153,7 @@ def _fix_file(path: Path) -> bool:
         i = end_idx + 1
 
     if modified:
-        path.write_text("".join(new_lines), encoding="utf-8")
+        path.write_text("".join(new_lines), encoding="utf-8", newline="")
 
     return modified
 

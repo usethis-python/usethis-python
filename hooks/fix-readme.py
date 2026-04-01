@@ -10,6 +10,7 @@ to be committed), 0 otherwise.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -49,15 +50,18 @@ def main() -> int:
 
     template = env.get_template(str(template_path))
     content = template.render()
+    if os.linesep != "\n":
+        content = content.replace("\n", os.linesep)
 
     try:
-        existing = output_file.read_text(encoding="utf-8")
+        with open(output_file, encoding="utf-8", newline="") as f:
+            existing = f.read()
     except FileNotFoundError:
         existing = None
 
     modified = content != existing
     if modified:
-        output_file.write_text(content, encoding="utf-8")
+        output_file.write_text(content, encoding="utf-8", newline="")
         print(f"README updated from template {template_path}.")
     else:
         print("README is already up to date.")

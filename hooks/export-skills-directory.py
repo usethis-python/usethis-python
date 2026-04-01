@@ -8,6 +8,7 @@ Markdown bullet list to an output file.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
@@ -53,17 +54,18 @@ def main() -> int:
     for name, desc in rows:
         lines.append(f"- `{name}`: {desc}")
 
-    content = "\n".join(lines) + "\n"
+    content = os.linesep.join(lines) + os.linesep
 
     try:
-        existing = output_file.read_text(encoding="utf-8")
+        with open(output_file, encoding="utf-8", newline="") as f:
+            existing = f.read()
     except FileNotFoundError:
         existing = None
 
     modified = content != existing
     if modified:
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        output_file.write_text(content, encoding="utf-8")
+        output_file.write_text(content, encoding="utf-8", newline="")
         print(f"Skills directory written to {output_file}.")
     else:
         print("Skills directory is already up to date.")

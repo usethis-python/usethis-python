@@ -4,7 +4,7 @@ description: Write bespoke prek hooks as reusable Python scripts for custom chec
 compatibility: usethis, prek, git, Python
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Bespoke Prek Hooks
@@ -73,6 +73,23 @@ Scripts should:
 Hooks must use only the Python standard library. Do not subprocess external
 tools — if a check requires an external tool, it should be a separate
 third-party hook instead of a bespoke one.
+
+### Newline endings
+
+Hooks that write files must respect the operating system's newline convention.
+Use `os.linesep` to join lines in generated content, and pass `newline=""` to
+I/O calls so Python does not double-translate line endings:
+
+- **Building content:** use `os.linesep.join(lines) + os.linesep` instead of
+  `"\n".join(lines) + "\n"`.
+- **Writing files:** use `path.write_text(content, encoding="utf-8", newline="")`.
+- **Reading files for comparison:** use `open(path, encoding="utf-8", newline="")`
+  so the raw bytes are returned and can be compared accurately against the
+  generated content.
+- **Intermediate string manipulation** (e.g. `splitlines()` / `"\n".join()` in
+  helper functions whose output feeds into a larger render step) may keep using
+  `"\n"` internally. Convert to `os.linesep` once, at the point where the final
+  content is assembled for writing.
 
 ### Performance
 

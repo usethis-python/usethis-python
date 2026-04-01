@@ -279,9 +279,7 @@ repos:
         assert ruff_repo["hooks"][0]["priority"] == 0
         assert ruff_repo["hooks"][1]["priority"] == 0
         assert any(
-            hook["id"] == "deptry"
-            for repo in parsed["repos"]
-            for hook in repo["hooks"]
+            hook["id"] == "deptry" for repo in parsed["repos"] for hook in repo["hooks"]
         )
 
     def test_prek_arbitrary_extra_keys(self, tmp_path: Path):

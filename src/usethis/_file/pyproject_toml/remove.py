@@ -1,3 +1,5 @@
+"""Removal of the pyproject.toml file."""
+
 from __future__ import annotations
 
 from usethis._config import usethis_config
@@ -6,6 +8,7 @@ from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 
 
 def remove_pyproject_toml() -> None:
+    """Remove the pyproject.toml file from the project."""
     path = usethis_config.cpd() / "pyproject.toml"
     if path.exists() and path.is_file():
         tick_print("Removing 'pyproject.toml' file")

@@ -1,18 +1,47 @@
+"""Display project information."""
+
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from usethis._backend.dispatch import get_backend
 from usethis._console import plain_print
+from usethis._integrations.project.license import get_license_id
 from usethis._integrations.project.name import get_project_name
 from usethis._integrations.sonarqube.config import get_sonar_project_properties
 
-
-def show_backend() -> None:
-    plain_print(get_backend().value)
-
-
-def show_name() -> None:
-    plain_print(get_project_name())
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
-def show_sonarqube_config(*, project_key: str | None = None) -> None:
-    plain_print(get_sonar_project_properties(project_key=project_key))
+def show_backend(*, output_file: Path | None = None) -> None:
+    """Display the inferred package manager backend for the current project."""
+    _output(get_backend().value, output_file=output_file)
+
+
+def show_license(*, output_file: Path | None = None) -> None:
+    """Display the detected license of the current project in SPDX format."""
+    _output(get_license_id(), output_file=output_file)
+
+
+def show_name(*, output_file: Path | None = None) -> None:
+    """Display the name of the current project."""
+    _output(get_project_name(), output_file=output_file)
+
+
+def show_sonarqube_config(
+    *, project_key: str | None = None, output_file: Path | None = None
+) -> None:
+    """Display the sonar-project.properties configuration for the current project."""
+    _output(
+        get_sonar_project_properties(project_key=project_key), output_file=output_file
+    )
+
+
+def _output(content: str, *, output_file: Path | None = None) -> None:
+    if output_file is not None:
+        if not content.endswith("\n"):
+            content += "\n"
+        output_file.write_text(content, encoding="utf-8")
+    else:
+        plain_print(content)

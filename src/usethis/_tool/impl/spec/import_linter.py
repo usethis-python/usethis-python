@@ -1,3 +1,5 @@
+"""Import Linter tool specification."""
+
 from __future__ import annotations
 
 import functools
@@ -5,17 +7,14 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, final
 
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
-from usethis._backend.dispatch import get_backend
 from usethis._config import usethis_config
 from usethis._config_file import DotImportLinterManager
 from usethis._console import warn_print
 from usethis._file.ini.io_ import INIFileManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
-from usethis._integrations.pre_commit import schema as pre_commit_schema
-from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.imports import (
     LayeredArchitecture,
@@ -27,11 +26,10 @@ from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec, NoConfigValue
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._tool.rule import RuleConfig
-from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
     from usethis._tool.config import ResolutionT
 
 IMPORT_LINTER_CONTRACT_MIN_MODULE_COUNT = 3
@@ -63,7 +61,7 @@ class ImportLinterToolSpec(ToolSpec):
 
     @override
     @final
-    def preferred_file_manager(self) -> KeyValueFileManager[object]:
+    def preferred_file_manager(self) -> KeyValueFileManager[Document]:
         if (usethis_config.cpd() / "pyproject.toml").exists():
             return PyprojectTOMLManager()
         return DotImportLinterManager()
@@ -302,7 +300,7 @@ class ImportLinterToolSpec(ToolSpec):
     @final
     def _get_file_manager_by_relative_path(
         self,
-    ) -> dict[Path, KeyValueFileManager[object]]:
+    ) -> dict[Path, KeyValueFileManager[Document]]:
         return {
             Path("setup.cfg"): SetupCFGManager(),
             Path(".importlinter"): DotImportLinterManager(),
@@ -312,46 +310,10 @@ class ImportLinterToolSpec(ToolSpec):
     @override
     @final
     def pre_commit_config(self) -> PreCommitConfig:
-        backend = get_backend()
-
-        if backend is BackendEnum.uv:
-            return PreCommitConfig.from_single_repo(
-                pre_commit_schema.LocalRepo(
-                    repo="local",
-                    hooks=[
-                        pre_commit_schema.HookDefinition(
-                            id="import-linter",
-                            name="import-linter",
-                            pass_filenames=False,
-                            entry="uv run --frozen --offline lint-imports",
-                            language=get_system_language(),
-                            require_serial=True,
-                            always_run=True,
-                        )
-                    ],
-                ),
-                requires_venv=True,
-                inform_how_to_use_on_migrate=False,
-            )
-        elif backend is BackendEnum.none:
-            return PreCommitConfig.from_single_repo(
-                pre_commit_schema.LocalRepo(
-                    repo="local",
-                    hooks=[
-                        pre_commit_schema.HookDefinition(
-                            id="import-linter",
-                            name="import-linter",
-                            pass_filenames=False,
-                            entry="lint-imports",
-                            language=get_system_language(),
-                        )
-                    ],
-                ),
-                requires_venv=True,
-                inform_how_to_use_on_migrate=False,
-            )
-        else:
-            assert_never(backend)
+        return PreCommitConfig.from_system_hook(
+            hook_id="import-linter",
+            entry="lint-imports",
+        )
 
 
 @functools.cache

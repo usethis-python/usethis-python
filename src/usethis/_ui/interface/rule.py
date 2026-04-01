@@ -1,3 +1,5 @@
+"""CLI commands for linter rule management."""
+
 import typer
 
 from usethis._config import usethis_config
@@ -20,6 +22,7 @@ def rule(
     quiet: bool = quiet_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
+    """Select, deselect, ignore, or unignore linter rules."""
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.rule import (

@@ -7,6 +7,7 @@ from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.pre_commit.hooks import get_hook_ids
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 from usethis._test import CliRunner, change_cwd
 from usethis._tool.all_ import ALL_TOOLS
@@ -41,6 +42,49 @@ class TestCodespell:
 ☐ Run 'codespell' to run the Codespell spellchecker.
 """
         )
+
+    def test_no_hook_skips_pre_commit(self, uv_init_dir: Path):
+        """Test that --no-hook skips adding hooks when adding codespell."""
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            # Arrange: set up pre-commit first
+            result = runner.invoke_safe(app, ["pre-commit", "--frozen"])
+            assert result.exit_code == 0, result.output
+
+            # Act: add codespell with --no-hook
+            result = runner.invoke_safe(app, ["codespell", "--frozen", "--no-hook"])
+            assert result.exit_code == 0, result.output
+
+            # Assert: codespell hook should NOT be added to pre-commit config
+            with files_manager():
+                hook_ids = get_hook_ids()
+                assert "codespell" not in hook_ids
+
+    def test_no_hook_remove_preserves_hook(self, uv_init_dir: Path):
+        """Test that --no-hook with --remove does not remove hooks."""
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            # Arrange: add pre-commit and codespell (with hooks)
+            result = runner.invoke_safe(app, ["pre-commit", "--frozen"])
+            assert result.exit_code == 0, result.output
+            result = runner.invoke_safe(app, ["codespell", "--frozen"])
+            assert result.exit_code == 0, result.output
+
+            # Verify codespell hook was added
+            with files_manager():
+                hook_ids = get_hook_ids()
+                assert "codespell" in hook_ids
+
+            # Act: remove codespell with --no-hook
+            result = runner.invoke_safe(
+                app, ["codespell", "--remove", "--frozen", "--no-hook"]
+            )
+            assert result.exit_code == 0, result.output
+
+            # Assert: codespell hook should still be in pre-commit config
+            with files_manager():
+                hook_ids = get_hook_ids()
+                assert "codespell" in hook_ids
 
 
 class TestCoverage:
@@ -182,20 +226,6 @@ class TestDeptry:
                 call_subprocess(["usethis", "tool", "deptry", "--offline"])
             assert (uv_init_dir / ".venv").exists()
 
-    @pytest.mark.usefixtures("_vary_network_conn")
-    def test_runs(self, tmp_path: Path):
-        # Act
-        runner = CliRunner()
-        with change_cwd(tmp_path):
-            if not usethis_config.offline:
-                result = runner.invoke_safe(app, ["deptry"])
-            else:
-                result = runner.invoke_safe(app, ["deptry", "--offline"])
-
-            # Assert
-            assert result.exit_code == 0, result.output
-            call_subprocess(["deptry", "."])
-
     def test_how(self, tmp_path: Path):
         # Act
         runner = CliRunner()
@@ -301,8 +331,7 @@ class TestPyprojectTOML:
             result.output
             == """\
 ☐ Populate 'pyproject.toml' with the project configuration.
-ℹ Learn more at 
-https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
+ℹ Learn more at https://packaging.python.org/en/latest/guides/writing-pyproject-toml/
 """  # noqa: RUF001
         )
 
@@ -467,9 +496,9 @@ class TestRuff:
             == """\
 ✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.
 ✔ Adding Ruff config to 'pyproject.toml'.
-✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 
-'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
+✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
 ✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
+✔ Running the Ruff formatter.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run ruff format' to run the Ruff formatter.
 """
@@ -504,6 +533,29 @@ class TestRuff:
 
             # Act, Assert
             call_uv_subprocess(["run", "ruff", "check", "."], change_toml=False)
+
+    def test_no_hook_skips_pre_commit(self, uv_init_dir: Path):
+        """Test that --no-hook works for ruff too."""
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            # Arrange: set up pre-commit first
+            result = runner.invoke_safe(app, ["pre-commit", "--frozen"])
+            assert result.exit_code == 0, result.output
+
+            # Act: add ruff with --no-hook
+            result = runner.invoke_safe(app, ["ruff", "--frozen", "--no-hook"])
+            assert result.exit_code == 0, result.output
+
+            # Assert: ruff was configured but hooks were NOT added
+            with files_manager():
+                assert (
+                    (uv_init_dir / "pyproject.toml")
+                    .read_text()
+                    .__contains__("[tool.ruff")
+                )
+                hook_ids = get_hook_ids()
+                assert "ruff-check" not in hook_ids
+                assert "ruff-format" not in hook_ids
 
 
 class TestPytest:
@@ -557,6 +609,7 @@ line-length = 88
 ✔ Adding pytest config to 'pyproject.toml'.
 ✔ Creating '/tests'.
 ✔ Writing '/tests/conftest.py'.
+✔ Writing '/tests/test_example.py'.
 ✔ Selecting Ruff rule 'PT' in 'pyproject.toml'.
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.
@@ -580,6 +633,65 @@ line-length = 88
 ☐ Run 'pytest' to run the tests.
 """
         )
+
+    def test_no_example(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["pytest", "--no-example", "--backend", "none"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert not (tmp_path / "tests" / "test_example.py").exists()
+        assert (tmp_path / "tests" / "conftest.py").exists()
+
+
+class TestTach:
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            if not usethis_config.offline:
+                result = runner.invoke_safe(app, ["tach"])
+            else:
+                result = runner.invoke_safe(app, ["tach", "--offline"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["tach", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'tach check' to run Tach.
+"""
+        )
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_remove(self, tmp_path: Path):
+        # Arrange
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            if not usethis_config.offline:
+                runner.invoke_safe(app, ["tach"])
+            else:
+                runner.invoke_safe(app, ["tach", "--offline"])
+
+            # Act
+            result = runner.invoke_safe(app, ["tach", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
 
 
 class TestTy:

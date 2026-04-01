@@ -1,3 +1,5 @@
+"""Smart update strategies for YAML sequences and mappings."""
+
 from __future__ import annotations
 
 from difflib import SequenceMatcher

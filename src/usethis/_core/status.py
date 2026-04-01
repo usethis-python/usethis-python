@@ -1,3 +1,5 @@
+"""Development status classifier management."""
+
 from __future__ import annotations
 
 from pydantic import TypeAdapter, ValidationError
@@ -11,6 +13,7 @@ from usethis._types.status import DevelopmentStatusEnum
 def use_development_status(
     status: DevelopmentStatusEnum,
 ) -> None:
+    """Set the development status classifier in pyproject.toml."""
     ensure_pyproject_toml()
 
     new_classifier = _STATUS_TO_CLASSIFIER_MAP[status]

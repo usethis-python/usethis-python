@@ -1,3 +1,7 @@
+"""Author metadata management for pyproject.toml."""
+
+from collections.abc import Mapping
+
 from usethis._console import tick_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import ensure_pyproject_toml
@@ -10,6 +14,7 @@ def add_author(
     email: str | None = None,
     overwrite: bool = False,
 ):
+    """Add an author entry to the project metadata in pyproject.toml."""
     ensure_pyproject_toml(author=False)
 
     tick_print(f"Setting '{name}' as an author.")
@@ -27,7 +32,12 @@ def add_author(
 
         # Moving the authors list to the end of the project table to avoid a bug in tomlkit
         # Suspected to be similar to this https://github.com/python-poetry/tomlkit/issues/381
-        full = PyprojectTOMLManager()[["project", "authors"]]
+        full_raw = PyprojectTOMLManager()[["project", "authors"]]
+        assert isinstance(full_raw, list)
+        full = []
+        for item in full_raw:
+            assert isinstance(item, Mapping)
+            full.append(dict(item))
         del PyprojectTOMLManager()[["project", "authors"]]
         PyprojectTOMLManager()[["project", "authors"]] = full
     else:

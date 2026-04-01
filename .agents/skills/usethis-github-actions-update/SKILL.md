@@ -1,10 +1,10 @@
 ---
-name: github-actions-update
+name: usethis-github-actions-update
 description: Update GitHub Actions workflows
 compatibility: GitHub Actions, YAML
 license: MIT
 metadata:
-  version: "1.0"
+  version: "2.0"
 ---
 
 # GitHub Actions Workflows

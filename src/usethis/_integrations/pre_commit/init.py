@@ -1,3 +1,5 @@
+"""Initialization of the pre-commit configuration file."""
+
 from __future__ import annotations
 
 from usethis._config import usethis_config

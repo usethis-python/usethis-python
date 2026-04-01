@@ -1,3 +1,5 @@
+"""Error types for INI file operations."""
+
 from __future__ import annotations
 
 from usethis.errors import FileDecodeError, UsethisError

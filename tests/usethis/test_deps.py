@@ -576,7 +576,7 @@ class TestAddDepsToGroup:
     def test_uv_subprocess_error(
         self, uv_init_dir: Path, monkeypatch: pytest.MonkeyPatch
     ):
-        def mock_call_uv_subprocess(*_, **__):
+        def mock_call_uv_subprocess(*_: object, **__: object):
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(
@@ -682,7 +682,7 @@ class TestRemoveDepsFromGroup:
             assert not err
             assert (
                 out
-                == "✔ Removing dependencies 'flake8', 'black' from the 'qa' group in \n'pyproject.toml'.\n"
+                == "✔ Removing dependencies 'flake8', 'black' from the 'qa' group in 'pyproject.toml'.\n"
             )
 
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -762,7 +762,7 @@ class TestRemoveDepsFromGroup:
             # Arrange
             add_deps_to_group([Dependency(name="pytest")], "test")
 
-            def mock_call_uv_subprocess(*_, **__):
+            def mock_call_uv_subprocess(*_: object, **__: object):
                 raise UVSubprocessFailedError
 
             monkeypatch.setattr(

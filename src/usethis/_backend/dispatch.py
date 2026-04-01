@@ -1,3 +1,5 @@
+"""Backend selection and dispatch logic."""
+
 from __future__ import annotations
 
 from typing import Literal
@@ -11,6 +13,7 @@ from usethis._types.backend import BackendEnum
 
 
 def get_backend() -> Literal[BackendEnum.uv, BackendEnum.none]:
+    """Get the current package manager backend."""
     # Effectively we cache the inference, storing it in usethis_config.
     if usethis_config.inferred_backend is not None:
         return usethis_config.inferred_backend

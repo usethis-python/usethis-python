@@ -1,3 +1,5 @@
+"""Context managers for coordinated configuration file I/O."""
+
 from __future__ import annotations
 
 import contextlib
@@ -20,6 +22,24 @@ if TYPE_CHECKING:
 
 @contextlib.contextmanager
 def files_manager() -> Iterator[None]:
+    """Context manager that opens all configuration file managers for coordinated I/O.
+
+    On entry, this context manager locks every known configuration file manager. Each
+    manager uses deferred (lazy) reads: a file is only read from disk the first time it
+    is accessed via `get()`. In-memory changes made with `commit()` are immediately
+    visible to other operations within the same context, even before they are written to
+    disk.
+
+    On exit, all modified files are written (flushed) to disk atomically. Files that were
+    only read but never modified are not rewritten.
+
+    Because writes are deferred until context exit, any operation that reads configuration
+    files via the filesystem (e.g. a subprocess such as `ruff`, `pytest`, or
+    `pre-commit`) will not see in-memory changes until the context manager has exited and
+    the files have been flushed. If you need to run a subprocess that depends on
+    configuration written by functions inside this context, exit the context first and
+    then run the subprocess.
+    """
     with (
         PyprojectTOMLManager(),
         SetupCFGManager(),
@@ -30,6 +50,7 @@ def files_manager() -> Iterator[None]:
         DotTyTOMLManager(),
         DotPytestINIManager(),
         DotImportLinterManager(),
+        TachTOMLManager(),
         MkDocsYMLManager(),
         PreCommitConfigYAMLManager(),
         PytestINIManager(),
@@ -120,6 +141,15 @@ class RuffTOMLManager(TOMLFileManager):
     @override
     def relative_path(self) -> Path:
         return Path("ruff.toml")
+
+
+class TachTOMLManager(TOMLFileManager):
+    """Class to manage the tach.toml file."""
+
+    @property
+    @override
+    def relative_path(self) -> Path:
+        return Path("tach.toml")
 
 
 class ToxINIManager(INIFileManager):

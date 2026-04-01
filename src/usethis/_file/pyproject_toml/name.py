@@ -1,3 +1,5 @@
+"""Project name and description extraction from pyproject.toml."""
+
 from __future__ import annotations
 
 from pydantic import TypeAdapter, ValidationError
@@ -26,6 +28,7 @@ def get_name() -> str:
 
 
 def get_description() -> str:
+    """Get the project description from pyproject.toml."""
     project_dict = get_project_dict()
 
     try:

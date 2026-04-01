@@ -46,7 +46,7 @@ class TestGetBackend:
     ):
         # Arrange
 
-        def mock_call_uv_subprocess(*_, **__):
+        def mock_call_uv_subprocess(*_: object, **__: object):
             raise UVSubprocessFailedError
 
         monkeypatch.setattr(
@@ -66,7 +66,7 @@ class TestGetBackend:
         # Assert
         assert result == BackendEnum.none
 
-    def test_poetry_used(self, tmp_path: Path, capfd: pytest.CaptureFixture):
+    def test_poetry_used(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         (tmp_path / "poetry.lock").touch()
 

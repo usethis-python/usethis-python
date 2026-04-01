@@ -1,3 +1,5 @@
+"""Manager for the uv.toml configuration file."""
+
 from pathlib import Path
 
 from typing_extensions import override

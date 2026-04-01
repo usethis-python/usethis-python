@@ -1,3 +1,5 @@
+"""Abstract tool specification base classes."""
+
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
@@ -18,7 +20,7 @@ from usethis.errors import NoDefaultToolCommand
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
     from usethis._integrations.pre_commit import schema as pre_commit_schema
     from usethis._tool.config import ResolutionT
     from usethis._tool.rule import Rule
@@ -76,7 +78,7 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """
         return self.meta.rule_config
 
-    def preferred_file_manager(self) -> KeyValueFileManager[object]:
+    def preferred_file_manager(self) -> KeyValueFileManager[Document]:
         """If there is no currently active config file, this is the preferred one.
 
         This can vary dynamically, since often we will prefer to respect an existing
@@ -94,7 +96,9 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """
         return ConfigSpec.empty()
 
-    def get_active_config_file_managers(self) -> set[KeyValueFileManager[object]]:
+    def get_active_config_file_managers(
+        self,
+    ) -> set[KeyValueFileManager[Document]]:
         """Get file managers for all active configuration files.
 
         Active configuration files are just those that we expect to use based on our
@@ -116,8 +120,8 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         self,
         resolution: ResolutionT,
         *,
-        file_manager_by_relative_path: dict[Path, KeyValueFileManager[object]],
-    ) -> set[KeyValueFileManager[object]]:
+        file_manager_by_relative_path: dict[Path, KeyValueFileManager[Document]],
+    ) -> set[KeyValueFileManager[Document]]:
         if resolution == "first":
             # N.B. keep this roughly in sync with the bespoke logic for pytest
             # since that logic is based on this logic.

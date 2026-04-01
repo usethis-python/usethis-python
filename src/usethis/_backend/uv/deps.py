@@ -1,3 +1,5 @@
+"""Dependency group operations via the uv backend."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -17,6 +19,7 @@ if TYPE_CHECKING:
 
 
 def add_dep_to_group_via_uv(dep: Dependency, group: str):
+    """Add a dependency to the named group using uv."""
     try:
         call_uv_subprocess(
             ["add", "--group", group, str(dep)],
@@ -28,6 +31,7 @@ def add_dep_to_group_via_uv(dep: Dependency, group: str):
 
 
 def remove_dep_from_group_via_uv(dep: Dependency, group: str):
+    """Remove a dependency from the named group using uv."""
     try:
         call_uv_subprocess(["remove", "--group", group, str(dep)], change_toml=True)
     except UVSubprocessFailedError as err:

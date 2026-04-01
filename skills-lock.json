@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "codspeed-optimize": {
+      "source": "CodSpeedHQ/codspeed",
+      "sourceType": "github",
+      "computedHash": "8521003ae5faf606e129f18139fa6eb401821c41f8948dd8e45f0db8d40e46b3"
+    },
+    "codspeed-setup-harness": {
+      "source": "CodSpeedHQ/codspeed",
+      "sourceType": "github",
+      "computedHash": "587a58bc7498635347ee7a7eba66ac17c75430db7543be4af7eaab74533a6714"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "d31e234f0c90694a670222cdd1dafa853e051d7066beda389f1097c22dadd461"
+    }
+  }
+}

@@ -1,3 +1,5 @@
+"""INI file I/O manager."""
+
 from __future__ import annotations
 
 import configparser
@@ -37,7 +39,7 @@ if TYPE_CHECKING:
     from usethis._file.types_ import Key
 
 
-class INIFileManager(KeyValueFileManager, metaclass=ABCMeta):
+class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
     _content_by_path: ClassVar[dict[Path, INIDocument | None]] = {}
 
     @override

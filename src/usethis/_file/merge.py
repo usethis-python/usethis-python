@@ -1,3 +1,5 @@
+"""Deep merge utilities for nested mappings."""
+
 from __future__ import annotations
 
 from collections.abc import MutableMapping

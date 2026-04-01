@@ -1,3 +1,5 @@
+"""Lint rule specification types for tools."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

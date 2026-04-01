@@ -277,6 +277,7 @@ declaring dependencies with `uv add`.
 - `usethis tool pre-commit` - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
 - `usethis tool pyproject-fmt` - Use the [pyproject-fmt formatter](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
 - `usethis tool ruff` - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+- `usethis tool tach` - Use [Tach](https://github.com/gauge-sh/tach): enforce self-imposed dependency and interface rules.
 - `usethis tool ty` - Use [ty](https://docs.astral.sh/ty/): an extremely fast Python type checker.
 
 ### Testing
@@ -297,6 +298,7 @@ Supported options:
 
 - `--remove` to remove the tool instead of adding it
 - `--how` to only print how to use the tool, with no other side effects
+- `--no-hook` to skip adding or modifying git hook configuration (e.g. pre-commit)
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
@@ -318,6 +320,7 @@ Add badges to the README file.
 
 Currently supported badges:
 
+- `usethis badge bitbucket` - [![Bitbucket](https://img.shields.io/badge/Bitbucket-0747a6?logo=bitbucket&logoColor=white)](https://bitbucket.org)
 - `usethis badge pre-commit` - [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 - `usethis badge pypi` - [![PyPI Version](https://img.shields.io/pypi/v/usethis.svg)](https://pypi.python.org/pypi/usethis)
 - `usethis badge ruff` - [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -456,7 +459,28 @@ Currently supported subcommands:
 
 - `usethis show backend` to show the inferred project manager backend, e.g. 'uv' or 'none'. This is the default backend used, i.e. when `--backend=auto` is specified.
 - `usethis show name` to show the name of the project.
-- `usethis show sonarqube` to show appropriate contents of a `sonar-projects.properties` file for SonarQube analysis.
+- `usethis show sonarqube` to show appropriate contents of a `sonar-project.properties` file for SonarQube analysis.
+
+### `usethis show sonarqube`
+
+Show the contents of a `sonar-project.properties` file for SonarQube analysis.
+
+If a `sonar-project.properties` file already exists in the project root, its contents are returned as-is. In this case, the `--project-key` option and `tool.usethis.sonarqube.project-key` in `pyproject.toml` are both ignored.
+
+If no `sonar-project.properties` file exists, the contents are constructed from `pyproject.toml` configuration. In this case, a project key is required:
+
+- If `--project-key` is provided, it is used.
+- Otherwise, `tool.usethis.sonarqube.project-key` from `pyproject.toml` is used.
+
+Additional configuration in `pyproject.toml`:
+
+- `tool.usethis.sonarqube.verbose` (bool, default `false`) — sets `sonar.verbose`.
+- `tool.usethis.sonarqube.exclusions` (list of strings, default `[]`) — sets `sonar.exclusions`.
+- `tool.coverage.xml.output` (string, required) — sets `sonar.python.coverage.reportPaths`.
+
+Supported options:
+
+- `--output-file` to write the output to a file instead of stdout.
 
 ## `usethis browse pypi <package>`
 

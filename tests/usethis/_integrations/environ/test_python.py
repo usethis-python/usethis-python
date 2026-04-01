@@ -12,7 +12,10 @@ from usethis._types.backend import BackendEnum
 class TestGetSupportedMinorPythonVersions:
     class TestNoneBackend:
         def test_with_requires_python_range(
-            self, tmp_path: Path, capfd: pytest.CaptureFixture[str], monkeypatch
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+            monkeypatch: pytest.MonkeyPatch,
         ):
             # Arrange
 
@@ -81,7 +84,9 @@ requires-python = ">=3.13"
             assert "Current Python interpreter" in out
             assert "outside requires-python bounds" in out
 
-        def test_no_pyproject_toml(self, tmp_path: Path, monkeypatch):
+        def test_no_pyproject_toml(
+            self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        ):
             # Arrange
 
             monkeypatch.setattr(
@@ -97,7 +102,9 @@ requires-python = ">=3.13"
             current = PythonVersion.from_interpreter()
             assert versions == [current]
 
-        def test_no_requires_python(self, tmp_path: Path, monkeypatch):
+        def test_no_requires_python(
+            self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        ):
             # Arrange
 
             monkeypatch.setattr(

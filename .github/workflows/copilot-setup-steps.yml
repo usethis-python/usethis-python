@@ -26,5 +26,19 @@ jobs:
                   enable-cache: true
                   activate-environment: true
 
+            - name: Set up Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+              with:
+                  cache: "npm"
+                  cache-dependency-path: ".github/workflows/copilot-setup-steps.yml"
+
+            - name: Install external agent skills
+              run: |
+                  npx skills experimental_install
+                  git diff --exit-code skills-lock.json
+
             - name: Setup dependencies
               run: uv sync
+
+            - name: Install prek hooks
+              run: uv run prek install

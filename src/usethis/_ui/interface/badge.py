@@ -1,3 +1,5 @@
+"""CLI commands for managing README badges."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -28,6 +30,7 @@ def pypi(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge with the version of your package on PyPI."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_pypi_badge
 
@@ -42,6 +45,7 @@ def ruff(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for the Ruff linter."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_ruff_badge
 
@@ -56,6 +60,7 @@ def ty(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for the ty type checker."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_ty_badge
 
@@ -70,6 +75,7 @@ def pre_commit(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for the pre-commit framework."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_pre_commit_badge
 
@@ -86,6 +92,7 @@ def socket(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge with your PyPI package's supply chain security rating from Socket."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_socket_badge
 
@@ -100,11 +107,27 @@ def usethis(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for usethis."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_usethis_badge
 
     with usethis_config.set(offline=offline, quiet=quiet), files_manager():
         _badge_effect(get_usethis_badge(), remove=remove, show=show)
+
+
+@app.command(help="Add a badge for Bitbucket.")
+def bitbucket(
+    remove: bool = remove_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    show: bool = show_opt,
+) -> None:
+    """Add a badge for Bitbucket."""
+    from usethis._config_file import files_manager
+    from usethis._core.badge import get_bitbucket_badge
+
+    with usethis_config.set(offline=offline, quiet=quiet), files_manager():
+        _badge_effect(get_bitbucket_badge(), remove=remove, show=show)
 
 
 @app.command(help="Add a badge for the uv package manager.")
@@ -114,6 +137,7 @@ def uv(
     quiet: bool = quiet_opt,
     show: bool = show_opt,
 ) -> None:
+    """Add a badge for the uv package manager."""
     from usethis._config_file import files_manager
     from usethis._core.badge import get_uv_badge
 

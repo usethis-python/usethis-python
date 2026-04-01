@@ -11,6 +11,7 @@ from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.lockfile import ensure_uv_lock
 from usethis._config import usethis_config
 from usethis._console import info_print, instruct_print, tick_print
+from usethis._deps import add_deps_to_group, remove_deps_from_group
 from usethis._file.pyproject_toml.valid import ensure_pyproject_validity
 from usethis._init import ensure_dep_declaration_file, write_simple_requirements_txt
 from usethis._integrations.mkdocs.core import add_docs_dir
@@ -21,7 +22,11 @@ from usethis._integrations.pre_commit.core import (
 )
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_ids
-from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
+from usethis._integrations.pytest.core import (
+    add_example_test,
+    add_pytest_dir,
+    remove_pytest_dir,
+)
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.base.codespell import CodespellTool
 from usethis._tool.impl.base.coverage_py import CoveragePyTool
@@ -34,9 +39,11 @@ from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
 from usethis._tool.impl.base.pytest import PytestTool
 from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
+from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
+from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
     from usethis._tool.all_ import SupportedToolType
@@ -56,6 +63,7 @@ class UseToolFunc(Protocol):
 
 
 def use_codespell(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the codespell spellchecker tool."""
     tool = CodespellTool()
 
     if how:
@@ -78,6 +86,7 @@ def use_codespell(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the Coverage.py code coverage tool."""
     tool = CoveragePyTool()
 
     if how:
@@ -97,6 +106,7 @@ def use_coverage_py(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_deptry(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the deptry dependency linter tool."""
     tool = DeptryTool()
 
     if how:
@@ -119,6 +129,7 @@ def use_deptry(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the Import Linter architecture enforcement tool."""
     tool = ImportLinterTool()
 
     if how:
@@ -145,6 +156,7 @@ def use_import_linter(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the MkDocs documentation site generator tool."""
     tool = MkDocsTool()
 
     if how:
@@ -169,6 +181,7 @@ def use_mkdocs(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_pre_commit(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the pre-commit hook framework."""
     tool = PreCommitTool()
 
     if how:
@@ -222,6 +235,7 @@ def _add_all_tools_pre_commit_configs():
 
 
 def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the pyproject-fmt pyproject.toml formatter tool."""
     tool = PyprojectFmtTool()
 
     if how:
@@ -235,6 +249,7 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
         tool.add_pre_commit_config()
 
         tool.add_configs()
+        tool.apply()
         tool.print_how_to_use()
     else:
         tool.remove_configs()
@@ -244,6 +259,7 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the pyproject.toml file as a project configuration tool."""
     tool = PyprojectTOMLTool()
 
     if how:
@@ -259,7 +275,16 @@ def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pytest(*, remove: bool = False, how: bool = False) -> None:
+def use_pytest(
+    *, remove: bool = False, how: bool = False, example: bool = True
+) -> None:
+    """Add and configure the pytest testing framework.
+
+    Args:
+        remove: If True, remove pytest instead of adding it.
+        how: If True, print how to use pytest instead of adding/removing it.
+        example: If True, create an example test file in the tests directory.
+    """
     tool = PytestTool()
 
     if how:
@@ -275,6 +300,8 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         # deptry currently can't scan the tests folder for dev deps
         # https://github.com/fpgmaas/deptry/issues/302
         add_pytest_dir()
+        if example:
+            add_example_test()
 
         rule_config = tool.rule_config
 
@@ -305,6 +332,7 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
 
 
 def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure a requirements.txt file exported from the uv lockfile."""
     tool = RequirementsTxtTool()
 
     if how:
@@ -317,7 +345,13 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         backend = get_backend()
 
         if PreCommitTool().is_used():
+            # pyproject.toml is needed for config items and dependency groups
+            ensure_dep_declaration_file()
             tool.add_pre_commit_config()
+            tool.add_configs()
+            if backend is BackendEnum.uv:
+                with usethis_config.set(quiet=True):
+                    add_deps_to_group([Dependency(name="uv")], "uv", default=False)
 
         if path.exists():
             # requirements file already exists - short circuit; only need to explain how
@@ -356,6 +390,9 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         tool.print_how_to_use()
     else:
         tool.remove_pre_commit_repo_configs()
+        tool.remove_configs()
+        with usethis_config.set(quiet=True):
+            remove_deps_from_group([Dependency(name="uv")], "uv")
         tool.remove_managed_files()
 
 
@@ -428,6 +465,7 @@ def use_ruff(
             tool.apply_rule_config(rule_config)
         tool.add_pre_commit_config()
 
+        tool.apply()
         tool.print_how_to_use()
     else:
         tool = RuffTool(
@@ -475,7 +513,31 @@ def _get_basic_rule_config() -> RuleConfig:
     return rule_config
 
 
+def use_tach(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the Tach architecture enforcement tool."""
+    tool = TachTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
+
+    if not remove:
+        ensure_dep_declaration_file()
+
+        tool.add_dev_deps()
+        tool.add_configs()
+        tool.add_pre_commit_config()
+
+        tool.print_how_to_use()
+    else:
+        tool.remove_pre_commit_repo_configs()
+        tool.remove_configs()
+        tool.remove_dev_deps()
+        tool.remove_managed_files()
+
+
 def use_ty(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the ty type checker tool."""
     tool = TyTool()
 
     if how:
@@ -537,6 +599,8 @@ def use_tool(  # noqa: PLR0912
         use_requirements_txt(remove=remove, how=how)
     elif isinstance(tool, RuffTool):
         use_ruff(remove=remove, how=how)
+    elif isinstance(tool, TachTool):
+        use_tach(remove=remove, how=how)
     elif isinstance(tool, TyTool):
         use_ty(remove=remove, how=how)
     else:

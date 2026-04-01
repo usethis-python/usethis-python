@@ -1,3 +1,5 @@
+"""Base classes for tool implementations."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, Protocol
@@ -29,7 +31,7 @@ from usethis.errors import (
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
     from usethis._file.types_ import Key
     from usethis._tool.config import ConfigItem
     from usethis._tool.rule import Rule
@@ -112,6 +114,13 @@ class Tool(ToolSpec, Protocol):
 
         return hook_id
 
+    def apply(self) -> None:
+        """Apply the tool's side effects to the project.
+
+        By default, this is a no-op. Tools that have side effects (e.g. formatters)
+        should override this method to invoke their command via subprocess.
+        """
+
     def is_used(self) -> bool:
         """Whether the tool is being used in the current project.
 
@@ -175,8 +184,12 @@ class Tool(ToolSpec, Protocol):
     def remove_pre_commit_repo_configs(self) -> None:
         """Remove the tool's pre-commit configuration.
 
-        If the .pre-commit-config.yaml file does not exist, this method has no effect.
+        If pre-commit is disabled or if the .pre-commit-config.yaml file does not
+        exist, this method has no effect.
         """
+        if usethis_config.disable_pre_commit:
+            return
+
         repo_configs = self.get_pre_commit_repos()
 
         if not repo_configs:
@@ -250,7 +263,7 @@ class Tool(ToolSpec, Protocol):
         self,
         config_item: ConfigItem,
         *,
-        file_managers: set[KeyValueFileManager[object]],
+        file_managers: set[KeyValueFileManager[Document]],
     ) -> bool:
         """Add a specific configuration item using specified file managers.
 
@@ -410,7 +423,9 @@ class Tool(ToolSpec, Protocol):
             return "pre-commit"
         return None
 
-    def _get_select_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
+    def _get_select_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         """Get the configuration keys for selected rules.
 
         This is optional - tools that don't support rule selection can leave this
@@ -476,7 +491,9 @@ class Tool(ToolSpec, Protocol):
 
         return True
 
-    def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
+    def _get_ignore_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         """Get the configuration keys for ignored rules.
 
         Args:

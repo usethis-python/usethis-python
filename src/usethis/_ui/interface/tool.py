@@ -1,3 +1,5 @@
+"""CLI commands for individual tool management."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -8,10 +10,12 @@ from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
 from usethis._ui.options import (
     backend_opt,
+    example_opt,
     formatter_opt,
     frozen_opt,
     how_opt,
     linter_opt,
+    no_hook_opt,
     offline_opt,
     quiet_opt,
     remove_opt,
@@ -35,13 +39,19 @@ def codespell(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the codespell spellchecker: detect common spelling mistakes."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_codespell
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -67,13 +77,19 @@ def coverage_py(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use Coverage.py: a code coverage measurement tool."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_coverage_py
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -92,13 +108,19 @@ def deptry(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the deptry linter: avoid missing or superfluous dependency declarations."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_deptry
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -117,13 +139,19 @@ def import_linter(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use Import Linter: enforce a self-imposed architecture on imports."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_import_linter
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -142,13 +170,19 @@ def mkdocs(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use MkDocs: Generate project documentation sites with Markdown."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_mkdocs
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -167,13 +201,19 @@ def pre_commit(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the pre-commit framework to manage and maintain pre-commit hooks."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pre_commit
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -192,13 +232,19 @@ def pyproject_fmt(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_fmt
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -217,13 +263,19 @@ def pyproject_toml(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use a pyproject.toml file to configure the project."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pyproject_toml
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -240,17 +292,24 @@ def pytest(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
+    example: bool = example_opt,
 ) -> None:
+    """Use the pytest testing framework."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_pytest
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
-        _run_tool(use_pytest, remove=remove, how=how)
+        _run_tool(use_pytest, remove=remove, how=how, example=example)
 
 
 @app.command(
@@ -265,13 +324,19 @@ def requirements_txt(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use a requirements.txt file exported from the uv lockfile."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_requirements_txt
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -292,17 +357,54 @@ def ruff(
     backend: BackendEnum = backend_opt,
     linter: bool = linter_opt,
     formatter: bool = formatter_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use Ruff: an extremely fast Python linter and code formatter."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ruff
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
         _run_tool(use_ruff, remove=remove, how=how, linter=linter, formatter=formatter)
+
+
+@app.command(
+    name="tach",
+    help="Use Tach: enforce self-imposed dependency and interface rules.",
+    rich_help_panel="Code Quality Tools",
+)
+def tach(
+    remove: bool = remove_opt,
+    how: bool = how_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    frozen: bool = frozen_opt,
+    backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
+) -> None:
+    """Use Tach: enforce self-imposed dependency and interface rules."""
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_tach
+
+    with (
+        usethis_config.set(
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
+        ),
+        files_manager(),
+    ):
+        _run_tool(use_tach, remove=remove, how=how)
 
 
 @app.command(
@@ -317,13 +419,19 @@ def ty(
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
 ) -> None:
+    """Use the ty type checker: an extremely fast Python type checker."""
     from usethis._config_file import files_manager
     from usethis._core.tool import use_ty
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
         ),
         files_manager(),
     ):
@@ -353,5 +461,8 @@ ALL_TOOL_COMMANDS: list[str] = [
     "pytest",
     "requirements.txt",
     "ruff",
+    "tach",
     "ty",
 ]
+
+ALL_TOOL_COMMAND_STRS: list[str] = [f"usethis tool {cmd}" for cmd in ALL_TOOL_COMMANDS]

@@ -1,3 +1,5 @@
+"""Access the [project] section of pyproject.toml."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -14,6 +16,7 @@ if TYPE_CHECKING:
 
 
 def get_project_dict() -> dict[str, Any]:
+    """Get the contents of the [project] section from pyproject.toml."""
     pyproject = PyprojectTOMLManager().get().value
 
     try:

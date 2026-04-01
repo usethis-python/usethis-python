@@ -1,3 +1,5 @@
+"""Pretty-printing helpers for configuration file keys."""
+
 from __future__ import annotations
 
 import re

@@ -4,12 +4,32 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.4"
 ---
 
 # Python Code Guidelines
 
 Use the `usethis-python-code-modify` skill when making code changes. This skill covers design decisions that inform those changes.
+
+## Docstring code references
+
+When referencing code names (functions, classes, modules, parameters, etc.) in docstrings, always use single backticks (`` ` ``), not double backticks (` `` `). This applies to all identifiers mentioned in docstring text.
+
+### Example
+
+```python
+# Good: single backticks
+def add_dep(name: str) -> None:
+    """Add a dependency using `uv add`."""
+
+# Bad: double backticks (RST style)
+def add_dep(name: str) -> None:
+    """Add a dependency using ``uv add``."""
+```
+
+### Why
+
+The project uses Markdown-compatible formatting for docstrings. Single backticks are the Markdown standard for inline code, and the project's export hooks normalize double backticks to single backticks. Using single backticks from the start avoids this normalization and keeps docstrings consistent with their rendered output.
 
 ## Avoiding unnecessary duplication
 
@@ -35,3 +55,64 @@ If the answer to any of these is yes, duplication may be the right choice. If th
 
 - **Duplicating when replacing a dependency.** If a single dependency provided shared functionality to multiple callers, the replacement should also be shared. The dependency was already proof that a unified implementation works.
 - **Speculative divergence.** Do not duplicate code because the implementations "might need to diverge someday." Refactoring to split a shared implementation later is straightforward; discovering and reconciling divergent copies is not.
+
+## Choosing where to place a function
+
+Before adding a new function to a module, consider at least two candidate locations. Placement should be driven by the level of abstraction the function belongs to, not by proximity to the call site.
+
+### Procedure
+
+1. Identify the function's level of abstraction: is it a low-level utility, a mid-level integration helper, or a high-level orchestration step?
+2. Consider at least two candidate modules at different abstraction levels before committing to a location.
+3. Prefer the module whose abstraction level most closely matches the function's own level, even if that module is lower in the call stack than where the function will be used.
+4. Verify that placing the function in the chosen module does not violate any Import Linter contracts (run the `usethis-qa-import-linter` skill). If it would, introduce a new shared lower-level module that both the chosen module and its callers can depend on, and declare it in the relevant contract.
+
+### Key principle
+
+A function that extends a lower-level utility module with follow-up logic belongs in that utility module, not in the higher-level module that happens to call it. Placing logic too high in the stack couples the lower-level module's behavior to the higher-level module's concerns.
+
+### Example
+
+If a function processes the output of a file-reading utility and belongs conceptually to the file layer, place it in the file module — even if the only current caller is an integration module. The integration module imports from the file module, so the direction of dependency is already correct.
+
+### Common mistakes
+
+- **Placing a function where it is first used.** The call site is not the right guide for placement; the function's own abstraction level is.
+- **Ignoring import linter contracts.** Import Linter enforces the layer hierarchy. A placement that satisfies the architecture will naturally satisfy the contracts; if it does not, that is a signal that the chosen location is wrong.
+
+## Avoiding deep attribute nesting across layers
+
+When code accesses deeply nested attributes of an object (e.g. `result.solution.root`), it is reaching through multiple abstraction layers. This is a sign that the logic is at the wrong level — it belongs in a lower layer, closer to the objects being accessed.
+
+### Procedure
+
+1. When you find yourself writing an attribute chain that crosses two or more levels of abstraction (e.g. `obj.inner.deep_attr`), stop and consider which layer owns that information.
+2. Determine whether the logic operating on the deeply nested attribute can be moved into the lower layer that owns the object. This is the preferred approach — move the logic down, not just the access.
+3. If moving the logic is not feasible, add a method or property to the intermediate object that exposes the needed information at the right abstraction level. The caller should only need to access one level of the object's interface.
+4. Never work around deep nesting by extracting low-level details (indexes, type assertions, internal structure) into a higher layer. This couples the higher layer to implementation details it should not know about.
+
+### Key principle
+
+If you are accessing low-level attributes via deep nesting, the logic is in the wrong place. Always move it into a lower layer — either the layer that owns the deeply nested object, or an interface on the intermediate object.
+
+### Example
+
+```python
+# Bad: higher layer reaches through result -> solution -> root and operates on it
+result = adder.add()
+flat = result.solution.root
+idx = flat.index(step_name)
+predecessor = flat[idx - 1] if idx > 0 else None
+
+# Good: lower layer exposes a method that encapsulates the logic
+result = adder.add()
+predecessor = result.get_predecessor(step_name)
+```
+
+In the bad example, the caller knows that `solution` is a `Series`, that `Series` has a `root` list, and how to find a predecessor by index. In the good example, the `result` object owns that logic and the caller only interacts with one level of abstraction.
+
+### Common mistakes
+
+- **Extracting internal structure into variables.** Writing `flat = result.solution.root` does not fix the problem — it only hides the nesting in a local variable while the caller still depends on the internal structure.
+- **Adding type assertions for deeply nested objects.** If you need `assert isinstance(item, str)` after accessing a nested attribute, the logic almost certainly belongs in the layer that produces the object, where the type is already known.
+- **Adding a thin wrapper instead of moving logic.** A wrapper that merely returns `self.solution.root` is not enough. The goal is to move the _logic that uses_ the low-level data into the lower layer, not just to add an accessor.

@@ -1,3 +1,5 @@
+"""Docstring style configuration."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -10,6 +12,7 @@ if TYPE_CHECKING:
 
 
 def use_docstyle(style: DocStyleEnum) -> None:
+    """Configure the docstring style convention for the project using Ruff."""
     if not RuffTool().is_used():
         use_ruff(minimal=True)
 

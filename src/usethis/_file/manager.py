@@ -1,7 +1,9 @@
+"""Base file manager classes for configuration file I/O."""
+
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, cast
 
 from typing_extensions import override
 
@@ -19,7 +21,13 @@ if TYPE_CHECKING:
     from usethis._file.types_ import Key
 
 
-DocumentT = TypeVar("DocumentT")
+class Document(Protocol):
+    """Protocol for the document type managed by FileManager."""
+
+    pass
+
+
+DocumentT = TypeVar("DocumentT", covariant=True)
 
 
 class UnexpectedFileOpenError(UsethisError):
@@ -36,6 +44,20 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
     This class implements the Command Pattern, encapsulating file operations. It defers
     writing changes to the file until the context is exited, ensuring that file I/O
     operations are performed efficiently and only when necessary.
+
+    Lifecycle:
+        1. **Enter** (`__enter__`): The file is locked. No disk I/O occurs yet.
+        2. **Read** (`get`): The file is lazily read from disk on first access. Subsequent
+           calls return the in-memory copy.
+        3. **Write** (`commit`): Changes are stored in memory and the file is marked dirty.
+           The changes are immediately visible to other code that calls `get()` on the
+           same manager within the same context, but they are *not* yet on disk.
+        4. **Exit** (`__exit__`): All dirty files are flushed (written) to disk atomically.
+
+    Because writes are deferred, subprocesses that read the managed file from the
+    filesystem will not see uncommitted in-memory changes. Exit the context manager (or
+    call `write_file()` explicitly) before invoking a subprocess that depends on the
+    file's on-disk content.
     """
 
     # https://github.com/python/mypy/issues/5144
@@ -105,7 +127,7 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
         else:
             return self._content
 
-    def commit(self, document: DocumentT) -> None:
+    def commit(self, document: DocumentT) -> None:  # pyright: ignore[reportGeneralTypeIssues] not modifying DocumentT so safe to use covariant type variable here
         """Store the given document in memory for deferred writing."""
         self._validate_lock()
         self._content = document
@@ -169,7 +191,7 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
 
     @property
     def _content(self) -> DocumentT | None:
-        return self._content_by_path.get(self.path)
+        return cast("DocumentT | None", self._content_by_path.get(self.path))
 
     @_content.setter
     def _content(self, value: DocumentT | None) -> None:
@@ -195,7 +217,9 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
         self._dirty_by_path.pop(self.path, None)
 
 
-class KeyValueFileManager(FileManager, Generic[DocumentT], metaclass=ABCMeta):
+class KeyValueFileManager(
+    FileManager[DocumentT], Generic[DocumentT], metaclass=ABCMeta
+):
     """A manager for files which store (at least some) values in key-value mappings."""
 
     @abstractmethod

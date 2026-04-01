@@ -1,3 +1,5 @@
+"""Python version queries via uv."""
+
 from __future__ import annotations
 
 import re
@@ -13,6 +15,7 @@ from usethis._python.version import PythonVersion
 
 
 def get_available_uv_python_versions() -> set[str]:
+    """Get the set of Python versions available via uv."""
     output = call_uv_subprocess(["python", "list", "--all-versions"], change_toml=False)
 
     return {
@@ -21,6 +24,7 @@ def get_available_uv_python_versions() -> set[str]:
 
 
 def get_supported_uv_minor_python_versions() -> list[PythonVersion]:
+    """Get the minor Python versions supported by the project and available via uv."""
     try:
         requires_python = get_requires_python()
     except (MissingRequiresPythonError, PyprojectTOMLNotFoundError):
@@ -58,4 +62,5 @@ def _parse_python_version_from_uv_output(version: str) -> str:
 
 
 def uv_python_pin(version: str) -> None:
+    """Pin the Python version for the project using uv."""
     call_uv_subprocess(["python", "pin", version], change_toml=False)

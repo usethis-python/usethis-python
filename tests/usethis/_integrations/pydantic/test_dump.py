@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from usethis._integrations.pydantic.dump import fancy_model_dump
 from usethis._integrations.pydantic.typing_ import ModelRepresentation
@@ -23,7 +23,7 @@ class TestFancyModelDump:
 
     def test_list_remove_element(self):
         # Arrange
-        class MyRootModel(RootModel):
+        class MyRootModel(RootModel[list[int]]):
             root: list[int]
 
         mrm = MyRootModel([1, 3])
@@ -51,7 +51,7 @@ class TestFancyModelDump:
     class TestRootModel:
         def test_singleton_list(self):
             # Arrange
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[list[int]]):
                 root: list[int]
 
             mrm = MyRootModel([2])
@@ -68,7 +68,7 @@ class TestFancyModelDump:
                 x: Literal[0, 1] = 1
                 y: Literal[0, 1] = 0
 
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[list[MySubModel]]):
                 root: list[MySubModel]
 
             mrm = MyRootModel(
@@ -93,7 +93,7 @@ class TestFancyModelDump:
 
         def test_mismatch_list_ref(self):
             # Arrange
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[list[int]]):
                 root: list[int]
 
             mrm = MyRootModel([2])
@@ -106,7 +106,7 @@ class TestFancyModelDump:
 
         def test_constant(self):
             # Arrange
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[str]):
                 root: str
 
             mrm = MyRootModel("yo")
@@ -126,7 +126,7 @@ class TestFancyModelDump:
                 z: int = 1
                 w: int
 
-            class MyRootModel(RootModel):
+            class MyRootModel(RootModel[MySubModel]):
                 root: MySubModel
 
             mrm = MyRootModel(MySubModel(x=-1, y=1, z=1, w=2))
@@ -139,7 +139,7 @@ class TestFancyModelDump:
 
     def test_bool_type(self):
         # Arrange
-        class MyRootModel(RootModel):
+        class MyRootModel(RootModel[list[bool]]):
             root: list[bool]
 
         mrm = MyRootModel([False, True])
@@ -169,10 +169,10 @@ class TestFancyModelDump:
 
         def test_rootmodel(self):
             # Arrange
-            class MyInnerModel(RootModel):
+            class MyInnerModel(RootModel[list[str]]):
                 root: list[str]
 
-            class MyOuterModel(RootModel):
+            class MyOuterModel(RootModel[list[MyInnerModel]]):
                 root: list[MyInnerModel]
 
             mom = MyOuterModel([MyInnerModel(["hello"])])
@@ -294,3 +294,71 @@ class TestFancyModelDump:
 
             # Assert
             assert output == {}
+
+    class TestExtraFields:
+        def test_extra_field_included(self):
+            # Arrange
+            class MyModel(BaseModel):
+                model_config = ConfigDict(extra="allow")
+                x: int
+
+            mm = MyModel(x=1, **{"priority": 0})
+
+            # Act
+            output = fancy_model_dump(mm)
+
+            # Assert
+            assert output == {"x": 1, "priority": 0}
+
+        def test_extra_field_with_default_fields(self):
+            # Arrange
+            class MyModel(BaseModel):
+                model_config = ConfigDict(extra="allow")
+                x: int
+                y: float = 2.0
+
+            mm = MyModel(x=1, **{"priority": 0})
+
+            # Act
+            output = fancy_model_dump(mm)
+
+            # Assert
+            assert output == {"x": 1, "priority": 0}
+
+        def test_extra_field_with_reference(self):
+            # Arrange
+            class MyModel(BaseModel):
+                model_config = ConfigDict(extra="allow")
+                x: int
+                y: float = 2.0
+
+            mm = MyModel(x=1, **{"priority": 0})
+            ref = {"x": 0, "y": 2.0, "priority": 0}
+
+            # Act
+            output = fancy_model_dump(mm, reference=ref)
+
+            # Assert
+            assert output == {"x": 1, "y": 2.0, "priority": 0}
+
+        def test_nested_extra_field(self):
+            # Arrange
+            class MyInner(BaseModel):
+                model_config = ConfigDict(extra="allow")
+                id: str | None = None
+
+            class MyOuter(BaseModel):
+                model_config = ConfigDict(extra="allow")
+                items: list[MyInner]
+
+            inner = MyInner(id="test", **{"priority": 0})
+            outer = MyOuter(items=[inner], **{"minimum_prek_version": "0.2.23"})
+
+            # Act
+            output = fancy_model_dump(outer)
+
+            # Assert
+            assert output == {
+                "items": [{"id": "test", "priority": 0}],
+                "minimum_prek_version": "0.2.23",
+            }

@@ -1,3 +1,5 @@
+"""pytest tool implementation."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, final
@@ -14,7 +16,7 @@ from usethis._tool.impl.spec.pytest import PytestToolSpec
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
 
 
 @final
@@ -35,7 +37,9 @@ class PytestTool(PytestToolSpec, Tool):
         how_print(f"Run '{self.how_to_use_cmd()}' to run the tests.")
 
     @override
-    def get_active_config_file_managers(self) -> set[KeyValueFileManager[object]]:
+    def get_active_config_file_managers(
+        self,
+    ) -> set[KeyValueFileManager[Document]]:
         # This is a variant of the "first" method
         config_spec = self.config_spec()
         if config_spec.resolution != "bespoke":

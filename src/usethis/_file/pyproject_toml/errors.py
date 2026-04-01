@@ -1,3 +1,5 @@
+"""Error types for pyproject.toml operations."""
+
 from __future__ import annotations
 
 from typing_extensions import override
@@ -68,3 +70,7 @@ class PyprojectTOMLValueAlreadySetError(PyprojectTOMLError, TOMLValueAlreadySetE
 
 class PyprojectTOMLValueMissingError(PyprojectTOMLError, TOMLValueMissingError):
     """Raised when a value is unexpectedly missing from the 'pyproject.toml' file."""
+
+
+class PyprojectTOMLDepsError(PyprojectTOMLError):
+    """Raised when dependency sections in 'pyproject.toml' cannot be parsed."""

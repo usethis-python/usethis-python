@@ -2,10 +2,12 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
 from usethis._tool.impl.base.ruff import RuffTool
+from usethis._types.backend import BackendEnum
 
 
 class TestRuffTool:
@@ -329,6 +331,37 @@ ignore = ["TC001"]
                 assert RuffTool().ignored_rules() == ["TC"]
             assert result
 
+        def test_preserves_comments(self, tmp_path: Path):
+            # https://github.com/usethis-python/usethis-python/issues/884
+            # Arrange
+            (tmp_path / "ruff.toml").write_text(
+                """\
+lint.ignore = [
+  "ANN401",  # This is too strict for dunder methods.
+  "B023",    # Prevents using df.loc[lambda _: ...]; too many false positives.
+  "B024",    # This is controversial, ABC's don't always need methods.
+  "C408",    # This is controversial, calls to `dict` can be more idiomatic than {}.
+]
+"""
+            )
+
+            # Act
+            with change_cwd(tmp_path), RuffTOMLManager():
+                RuffTool().ignore_rules(["ERA001"])
+
+            # Assert
+            contents = (tmp_path / "ruff.toml").read_text()
+            assert "# This is too strict for dunder methods." in contents
+            assert "# Prevents using df.loc[lambda _: ..." in contents
+            assert (
+                "# This is controversial, ABC's don't always need methods." in contents
+            )
+            assert (
+                "# This is controversial, calls to `dict` can be more idiomatic than {}."
+                in contents
+            )
+            assert '"ERA001"' in contents
+
     class TestIsLinterUsed:
         def test_neither_subtool_has_config_assume_both_used(self, tmp_path: Path):
             # Act
@@ -537,3 +570,42 @@ lint.select = [ "RUF" ]
             assert not (tmp_path / ".ruff.toml").exists()
             assert (tmp_path / "pyproject.toml").exists()
             assert not (tmp_path / "ruff.toml").exists()
+
+    class TestApply:
+        def test_uv_backend_formatter_used(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                RuffTool(formatter_detection="always").apply()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "✔ Running the Ruff formatter.\n"
+
+        def test_uv_backend_formatter_not_used(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                RuffTool(formatter_detection="never").apply()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ""
+
+        def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                usethis_config.set(backend=BackendEnum.none),
+                files_manager(),
+            ):
+                RuffTool(formatter_detection="always").apply()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == ""

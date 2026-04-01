@@ -4,7 +4,7 @@ description: Modify Python code (e.g. refactor, add new code, or delete code)
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.2"
+  version: "1.5"
 ---
 
 # Modifying Python code
@@ -12,8 +12,9 @@ metadata:
 ## Procedure
 
 1. Run a subset of the tests for `src/<module>` regularly from the parallel module in the `tests/<module>` directory. Never run the entire test suite.
-2. After finishing your modifications, check if documentation needs updating.
-3. After finishing your modifications, run the static checks (e.g. `usethis-qa-static-checks`) to check for any issues.
+2. Write or update tests for all new or changed code. Use the `usethis-python-test-full-coverage` skill to achieve full coverage and verify it locally before pushing.
+3. After finishing your modifications, check if documentation needs updating.
+4. After finishing your modifications, run the static checks (e.g. `usethis-qa-static-checks`) to check for any issues.
 
 ## Run a subset of tests regularly
 
@@ -55,4 +56,4 @@ Without a comment, reviewers lack the context to understand why a seemingly unre
 
 ## Run static checks after finishing modifications
 
-After finishing your modifications, run the static checks (e.g. `usethis-qa-static-checks`) to check for any issues before merging.
+After finishing your modifications, run the static checks (e.g. `usethis-qa-static-checks`) to check for any issues before merging. You must fix **all** failures reported by the static checks, even pre-existing ones that are unrelated to your changes. CI enforces these checks on the entire codebase, so leaving any failure unfixed will block your PR. **After fixing any failure or making any further change, re-run ALL static checks again from scratch — even if you ran them moments ago.** It is expected and normal to run this skill repeatedly in a loop until every check passes cleanly.

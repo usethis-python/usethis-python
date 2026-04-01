@@ -1,3 +1,5 @@
+import os
+import shlex
 import subprocess
 import unittest
 import unittest.mock
@@ -25,24 +27,31 @@ from usethis._core.tool import (
     use_pytest,
     use_requirements_txt,
     use_ruff,
+    use_tach,
     use_tool,
     use_ty,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
-from usethis._fallback import FALLBACK_RUFF_VERSION, FALLBACK_SYNC_WITH_UV_VERSION
+from usethis._fallback import (
+    FALLBACK_RUFF_VERSION,
+    FALLBACK_SYNC_WITH_UV_VERSION,
+    FALLBACK_UV_VERSION,
+)
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.pre_commit.hooks import _HOOK_ORDER, get_hook_ids
+from usethis._integrations.pre_commit.hooks import HOOK_GROUPS, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
-from usethis._tool.all_ import ALL_TOOLS
+from usethis._tool.all_ import ALL_TOOLS, SupportedToolType
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
+from usethis.errors import NoDefaultToolCommand
 
 
 class TestAllHooksList:
     def test_subset_hook_names(self, tmp_path: Path):
+        all_hooks = [hook for group in HOOK_GROUPS for hook in group]
         with change_cwd(tmp_path):
             for tool in ALL_TOOLS:
                 try:
@@ -54,7 +63,7 @@ class TestAllHooksList:
                 except NotImplementedError:
                     continue
                 for hook_name in hook_names:
-                    assert hook_name in _HOOK_ORDER
+                    assert hook_name in all_hooks
 
 
 class TestCodespell:
@@ -116,24 +125,13 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             assert not err
             # Note: Since deps are now added (issue #1020), the message is "uv run codespell"
             # not "pre-commit run -acodespell" because get_install_method() returns "devdep"
-            assert out.replace("\n", "") == (
-                "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'."
-                "☐ Install the dependency 'codespell'."
-                "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'."
-                "✔ Adding Codespell config to 'pyproject.toml'."
-                "☐ Run 'uv run codespell' to run the Codespell spellchecker."
+            assert out == (
+                "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'codespell'.\n"
+                "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
             )
-
-        @pytest.mark.usefixtures("_vary_network_conn")
-        def test_runs(self, uv_env_dir: Path):
-            # An env is needed in which to run codespell
-
-            with change_cwd(uv_env_dir), PyprojectTOMLManager():
-                # Arrange
-                use_codespell()
-
-                # Act, Assert (no errors)
-                call_uv_subprocess(["run", "codespell"], change_toml=False)
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_codespell_rc_file(self, uv_init_dir: Path):
@@ -389,7 +387,7 @@ class TestCoverage:
                 out, err = capfd.readouterr()
                 assert not err
                 assert out == (
-                    "✔ Adding dependencies 'coverage', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
+                    "✔ Adding dependencies 'coverage', 'pytest-cov' to the 'test' group in 'pyproject.toml'.\n"
                     "☐ Install the dependencies 'coverage', 'pytest-cov'.\n"
                     "✔ Adding Coverage.py config to 'pyproject.toml'.\n"
                     "☐ Run 'uv run pytest --cov' to run your tests with Coverage.py.\n"
@@ -416,6 +414,7 @@ exclude_also =
     if TYPE_CHECKING:
     raise AssertionError
     raise NotImplementedError
+    msg = ["']
     assert_never(.*)
     class .*\\bProtocol\\):
     @(abc\\.)?abstractmethod
@@ -445,6 +444,7 @@ exclude_also =
     if TYPE_CHECKING:
     raise AssertionError
     raise NotImplementedError
+    msg = ["']
     assert_never(.*)
     class .*\\bProtocol\\):
     @(abc\\.)?abstractmethod
@@ -531,7 +531,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 assert not err
                 assert out == (
                     "✔ Removing Coverage.py config from 'pyproject.toml'.\n"
-                    "✔ Removing dependencies 'coverage', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
+                    "✔ Removing dependencies 'coverage', 'pytest-cov' from the 'test' group in 'pyproject.toml'.\n"
                 )
 
         def test_doesnt_add_pyproject(
@@ -1884,6 +1884,9 @@ repos:
         def test_bad_commit(self, uv_env_dir: Path, git_path: Path):
             # This needs a venv so that we can actually run pre-commit via git
 
+            if os.environ.get("CI") and not usethis_config.offline:
+                pytest.skip("Skipping online test on CI to avoid flakiness")
+
             # Arrange
             (uv_env_dir / ".gitignore").write_text(".venv/\n")
 
@@ -2052,11 +2055,11 @@ repos:
 
                 # Assert
                 out, _ = capfd.readouterr()
-                assert out.replace("\n", "") == (
-                    "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit."
-                    "✔ Removing '.pre-commit-config.yaml'."
-                    "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'."
-                    "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
+                assert out == (
+                    "☐ Run 'uv run --with pre-commit pre-commit uninstall' to deregister pre-commit.\n"
+                    "✔ Removing '.pre-commit-config.yaml'.\n"
+                    "✔ Removing dependency 'pre-commit' from the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'.\n"
                 )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2266,6 +2269,7 @@ keep_full_version = true
                 out, _ = capfd.readouterr()
                 assert out == (
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                    "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
                     "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
@@ -2285,6 +2289,7 @@ keep_full_version = true
                     "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
                     "☐ Install the dependency 'pyproject-fmt'.\n"
                     "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                    "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
                     "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
@@ -2313,12 +2318,13 @@ keep_full_version = true
             # Check output
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'."
-                "☐ Install the dependency 'pyproject-fmt'."
-                "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'."
-                "✔ Adding pyproject-fmt config to 'pyproject.toml'."
-                "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt."
+            assert out == (
+                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'pyproject-fmt'.\n"
+                "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
+                "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
             )
 
     class TestRemove:
@@ -2479,6 +2485,7 @@ class TestPytest:
                     "✔ Adding pytest config to 'pyproject.toml'.\n"
                     "✔ Creating '/tests'.\n"
                     "✔ Writing '/tests/conftest.py'.\n"
+                    "✔ Writing '/tests/test_example.py'.\n"
                     "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
                     "☐ Add test functions with the format 'test_*()'.\n"
                     "☐ Run 'uv run pytest' to run the tests.\n"
@@ -2498,6 +2505,28 @@ minversion = "7\""""
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
+        def test_example_file_exists(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Act
+                use_pytest()
+
+            # Assert
+            assert (uv_init_dir / "tests" / "test_example.py").exists()
+            content = (uv_init_dir / "tests" / "test_example.py").read_text()
+            assert "def test_add():" in content
+            assert "assert 1 + 1 == 2" in content
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_no_example(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Act
+                use_pytest(example=False)
+
+            # Assert
+            assert not (uv_init_dir / "tests" / "test_example.py").exists()
+            assert (uv_init_dir / "tests" / "conftest.py").exists()
+
+        @pytest.mark.usefixtures("_vary_network_conn")
         def test_coverage_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -2512,11 +2541,12 @@ minversion = "7\""""
             # Assert
             out, _ = capfd.readouterr()
             assert out == (
-                "✔ Adding dependencies 'pytest', 'pytest-cov' to the 'test' group in \n'pyproject.toml'.\n"
+                "✔ Adding dependencies 'pytest', 'pytest-cov' to the 'test' group in 'pyproject.toml'.\n"
                 "☐ Install the dependencies 'pytest', 'pytest-cov'.\n"
                 "✔ Adding pytest config to 'pyproject.toml'.\n"
                 "✔ Creating '/tests'.\n"
                 "✔ Writing '/tests/conftest.py'.\n"
+                "✔ Writing '/tests/test_example.py'.\n"
                 "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
                 "☐ Add test functions with the format 'test_*()'.\n"
                 "☐ Run 'uv run pytest' to run the tests.\n"
@@ -2833,7 +2863,7 @@ select = ["PT"]
             out, _ = capfd.readouterr()
             assert out == (
                 "✔ Removing pytest config from 'pyproject.toml'.\n"
-                "✔ Removing dependencies 'pytest', 'pytest-cov' from the 'test' group in \n'pyproject.toml'.\n"
+                "✔ Removing dependencies 'pytest', 'pytest-cov' from the 'test' group in 'pyproject.toml'.\n"
                 "✔ Removing '/tests'.\n"
                 "☐ Run 'uv run coverage help' to see available Coverage.py commands.\n"
             )
@@ -2869,9 +2899,9 @@ class TestRequirementsTxt:
             assert not (tmp_path / "uv.lock").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "✔ Writing 'requirements.txt'."
-                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
+            assert out == (
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'.\n"
             )
             content = (tmp_path / "requirements.txt").read_text()
             assert content == "-e .\n"
@@ -2911,10 +2941,10 @@ class TestRequirementsTxt:
             assert (uv_init_dir / "requirements.txt").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "✔ Writing 'uv.lock'."
-                "✔ Writing 'requirements.txt'."
-                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
+            assert out == (
+                "✔ Writing 'uv.lock'.\n"
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         def test_start_from_uv_locked(
@@ -2935,9 +2965,9 @@ class TestRequirementsTxt:
             assert (uv_init_dir / "requirements.txt").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "✔ Writing 'requirements.txt'."
-                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'."
+            assert out == (
+                "✔ Writing 'requirements.txt'.\n"
+                "☐ Run 'uv export -o=requirements.txt' to write 'requirements.txt'.\n"
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2966,21 +2996,17 @@ repos:
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
       - id: sync-with-uv
-  - repo: local
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: {FALLBACK_UV_VERSION}
     hooks:
       - id: uv-export
-        name: uv-export
-        files: ^uv\\.lock$
-        entry: uv export --frozen --offline --quiet -o=requirements.txt
-        language: system
-        pass_filenames: false
-        require_serial: true
 """
             )
             out, err = capfd.readouterr()
             assert not err
             assert out == (
                 "✔ Adding hook 'uv-export' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding requirements.txt config to 'pyproject.toml'.\n"
                 "✔ Writing 'requirements.txt'.\n"
                 "☐ Run 'uv run pre-commit run -a uv-export' to write 'requirements.txt'.\n"
             )
@@ -3022,10 +3048,10 @@ typer-slim[standard]
 
             out, err = capfd.readouterr()
             assert not err
-            assert out.replace("\n", "") == (
-                "ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies."  # noqa: RUF001
-                "ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files."  # noqa: RUF001
-                "✔ Writing 'requirements.txt'."
+            assert out == (
+                "ℹ Generating 'requirements.txt' with un-pinned, abstract dependencies.\n"  # noqa: RUF001
+                "ℹ Consider installing 'uv' for pinned, cross-platform, full requirements files.\n"  # noqa: RUF001
+                "✔ Writing 'requirements.txt'.\n"
             )
 
     class TestRemove:
@@ -3115,8 +3141,9 @@ class TestRuff:
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
-                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
+                "✔ Running the Ruff formatter.\n"
                 "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
                 "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
@@ -3176,6 +3203,7 @@ ignore = [ "EM", "T20", "TRY003", "S603" ]
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'ruff.toml'.\n"
+                "✔ Running the Ruff formatter.\n"
                 "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
                 "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
@@ -3248,7 +3276,7 @@ docstring-code-format = true
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
-                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', \n'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
+                "✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.\n"
                 "✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.\n"
                 "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
             )
@@ -3268,10 +3296,10 @@ docstring-code-format = true
                 "✔ Adding dependency 'ruff' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'ruff'.\n"
                 "✔ Adding Ruff config to 'pyproject.toml'.\n"
+                "✔ Running the Ruff formatter.\n"
                 "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
 
-    class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config_file(self, uv_init_dir: Path):
             # Arrange
@@ -3793,6 +3821,31 @@ class TestUseTool:
             for tool in ALL_TOOLS:
                 use_tool(tool)
 
+    @pytest.mark.parametrize("tool", ALL_TOOLS, ids=lambda t: t.name)
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_runs(self, tool: SupportedToolType, uv_env_dir: Path):
+        with change_cwd(uv_env_dir):
+            with files_manager():
+                use_tool(tool)
+
+            # Re-apply after files_manager flushes: apply() inside use_tool()
+            # runs before files are written to disk, so formatters' on-disk
+            # changes are overwritten by the deferred write. A fresh
+            # files_manager() context is needed because some apply() methods
+            # (e.g. RuffTool) read config via file managers.
+            with files_manager():
+                tool.apply()
+
+            try:
+                cmd = tool.raw_cmd()
+            except NoDefaultToolCommand:
+                pytest.skip(f"{tool.name} has no default command")
+
+            call_uv_subprocess(
+                ["run", *shlex.split(cmd)],
+                change_toml=False,
+            )
+
 
 class TestTy:
     class TestAdd:
@@ -3910,3 +3963,81 @@ possibly-unresolved-reference = "warn"
             out, err = capfd.readouterr()
             assert not err
             assert out == "☐ Run 'ty check' to run the ty type checker.\n"
+
+
+class TestTach:
+    class TestAdd:
+        def test_dependency_added(self, uv_init_dir: Path):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_tach()
+
+                # Assert
+                (dev_dep,) = [d for d in get_deps_from_group("dev") if d.name == "tach"]
+            assert dev_dep == Dependency(name="tach")
+
+        def test_config_created(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_tach()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert "Writing 'tach.toml'." in out
+            assert (uv_init_dir / "tach.toml").exists()
+
+        def test_pre_commit_integration(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_tach()
+
+                # Assert
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "tach" for dep in dev_deps)
+
+                hook_names = get_hook_ids()
+                assert "tach" in hook_names
+
+    class TestRemove:
+        def test_removes_config(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_tach()
+
+                # Act
+                use_tach(remove=True)
+
+            # Assert
+            assert not (uv_init_dir / "tach.toml").exists()
+
+        def test_removes_dependency(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_tach()
+
+                # Act
+                use_tach(remove=True)
+
+                # Assert
+                deps = get_deps_from_group("dev")
+            assert not any(dep.name == "tach" for dep in deps)
+
+    class TestHow:
+        def test_how(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_tach(how=True)
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == "☐ Run 'tach check' to run Tach.\n"

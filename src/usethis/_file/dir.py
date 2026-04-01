@@ -1,3 +1,5 @@
+"""Project directory name utilities."""
+
 from usethis._config import usethis_config
 
 
@@ -8,6 +10,7 @@ def get_project_name_from_dir() -> str:
     # valid characters, the name will be "hello_world".
     # https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#name
     # https://packaging.python.org/en/latest/specifications/name-normalization/#name-format
+    """Derive a valid project name from the current directory name."""
     dir_name = usethis_config.cpd().name
     name = "".join(c for c in dir_name if c.isalnum() or c in {"-", "_", "."})
     if not name:

@@ -1,3 +1,5 @@
+"""Detection of pre-commit usage in a project."""
+
 from __future__ import annotations
 
 from usethis._config import usethis_config

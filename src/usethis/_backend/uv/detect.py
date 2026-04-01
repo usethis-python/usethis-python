@@ -1,8 +1,11 @@
+"""Detection of uv usage in a project."""
+
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 
 
 def is_uv_used() -> bool:
+    """Check if uv is being used in the project."""
     pyproject_toml_manager = PyprojectTOMLManager()
 
     return (

@@ -1,3 +1,5 @@
+"""MkDocs tool specification."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -12,7 +14,7 @@ from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._types.deps import Dependency
 
 if TYPE_CHECKING:
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
 
 
 class MkDocsToolSpec(ToolSpec):
@@ -38,7 +40,7 @@ class MkDocsToolSpec(ToolSpec):
 
     @override
     @final
-    def preferred_file_manager(self) -> KeyValueFileManager[object]:
+    def preferred_file_manager(self) -> KeyValueFileManager[Document]:
         """If there is no currently active config file, this is the preferred one."""
         # Should set the mkdocs.yml file manager as the preferred one
         return MkDocsYMLManager()

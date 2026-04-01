@@ -1,3 +1,5 @@
+"""Registry of all available tools."""
+
 from __future__ import annotations
 
 from typing import TypeAlias
@@ -13,6 +15,7 @@ from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
 from usethis._tool.impl.base.pytest import PytestTool
 from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
+from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
 
 SupportedToolType: TypeAlias = (
@@ -27,9 +30,11 @@ SupportedToolType: TypeAlias = (
     | PytestTool
     | RequirementsTxtTool
     | RuffTool
+    | TachTool
     | TyTool
 )
 
+# N.B. this list must be kept in-sync with usethis._tool.impl.base.pyproject_toml.OTHER_TOOLS.
 ALL_TOOLS: list[SupportedToolType] = [
     # Alphabetical order
     CodespellTool(),
@@ -43,5 +48,6 @@ ALL_TOOLS: list[SupportedToolType] = [
     PytestTool(),
     RequirementsTxtTool(),
     RuffTool(),
+    TachTool(),
     TyTool(),
 ]

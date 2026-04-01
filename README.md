@@ -10,7 +10,7 @@
 [![PyPI Supported Versions](https://img.shields.io/pypi/pyversions/usethis.svg)](https://pypi.python.org/pypi/usethis)
 [![Docs](https://app.readthedocs.org/projects/usethis/badge/?version=stable)](https://usethis.readthedocs.io/en/stable/)
 
-Automate Python project setup and development tasks that are otherwise performed manually.
+Automatically manage Python tooling and configuration: linters, formatters, and more. A CLI for declaratively configuring your Python projects following best practices.
 
 usethis is a command-line interface to automate the configuration of popular Python tools, workflows, and frameworks. You can use it to declaratively add, remove, and configure tools in an existing project, as well as set up a new project from scratch. It won't break your existing configuration, and ensures all tools work together smoothly.
 
@@ -85,6 +85,7 @@ Additionally, the command line reference documentation can be viewed with `useth
   - [`usethis tool pre-commit`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
   - [`usethis tool pyproject-fmt`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use the [pyproject-fmt formatter](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.
   - [`usethis tool ruff`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use [Ruff](https://github.com/astral-sh/ruff): an extremely fast Python linter and code formatter.
+  - [`usethis tool tach`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use [Tach](https://github.com/gauge-sh/tach): enforce self-imposed dependency and interface rules.
   - [`usethis tool ty`](https://usethis.readthedocs.io/en/stable/cli/reference#code-quality-tools) - Use [ty](https://docs.astral.sh/ty/): an extremely fast Python type checker.
   - [`usethis tool coverage.py`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
   - [`usethis tool pytest`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
@@ -131,6 +132,7 @@ $ uvx usethis tool ruff
 ✔ Adding Ruff config to 'pyproject.toml'.
 ✔ Selecting Ruff rules 'A', 'C4', 'E4', 'E7', 'E9', 'F', 'FLY', 'FURB', 'I', 'PLE', 'PLR', 'RUF', 'SIM', 'UP' in 'pyproject.toml'.
 ✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.
+✔ Running the Ruff formatter.
 ☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.
 ☐ Run 'uv run ruff format' to run the Ruff formatter.
 ```
@@ -145,6 +147,7 @@ $ uvx usethis tool pytest
 ✔ Adding pytest config to 'pyproject.toml'.
 ✔ Creating '/tests'.
 ✔ Writing '/tests/conftest.py'.
+✔ Writing '/tests/test_example.py'.
 ✔ Selecting Ruff rule 'PT' in 'pyproject.toml'.
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.

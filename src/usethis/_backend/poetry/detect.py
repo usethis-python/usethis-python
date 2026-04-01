@@ -1,8 +1,11 @@
+"""Detection of Poetry usage in a project."""
+
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 
 
 def is_poetry_used() -> bool:
+    """Check if Poetry is being used in the project."""
     pyproject_toml_manager = PyprojectTOMLManager()
 
     return (

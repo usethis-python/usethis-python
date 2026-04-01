@@ -1,3 +1,5 @@
+"""Importable package discovery."""
+
 import pkgutil
 from pathlib import Path
 

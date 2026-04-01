@@ -1,3 +1,5 @@
+"""MkDocs project setup and configuration."""
+
 from usethis._config import usethis_config
 from usethis._console import tick_print
 from usethis._integrations.project.name import get_project_name

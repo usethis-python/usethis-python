@@ -1,5 +1,8 @@
+"""Ruff tool implementation."""
+
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, final
 
@@ -7,7 +10,9 @@ from pydantic import TypeAdapter, ValidationError
 from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
+from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.detect import is_uv_used
+from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager
 from usethis._console import how_print, tick_print
@@ -29,7 +34,7 @@ from usethis._types.backend import BackendEnum
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from usethis._file.manager import KeyValueFileManager
+    from usethis._file.manager import Document, KeyValueFileManager
     from usethis._tool.rule import RuleConfig
 
 
@@ -298,7 +303,9 @@ class RuffTool(RuffToolSpec, Tool):
         return [d for d in rule if d.isalpha()] == ["D"]
 
     @override
-    def _get_select_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
+    def _get_select_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         """Get the keys for the selected rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "select"]
@@ -308,7 +315,9 @@ class RuffTool(RuffToolSpec, Tool):
             return super()._get_select_keys(file_manager)
 
     @override
-    def _get_ignore_keys(self, file_manager: KeyValueFileManager[object]) -> list[str]:
+    def _get_ignore_keys(
+        self, file_manager: KeyValueFileManager[Document]
+    ) -> list[str]:
         """Get the keys for the ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
             return ["tool", "ruff", "lint", "ignore"]
@@ -318,7 +327,7 @@ class RuffTool(RuffToolSpec, Tool):
             return super()._get_ignore_keys(file_manager)
 
     def _get_per_file_ignore_keys(
-        self, file_manager: KeyValueFileManager[object], *, glob: str
+        self, file_manager: KeyValueFileManager[Document], *, glob: str
     ) -> list[str]:
         """Get the keys for the per-file ignored rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
@@ -333,7 +342,7 @@ class RuffTool(RuffToolSpec, Tool):
             raise NotImplementedError(msg)
 
     def _get_docstyle_keys(
-        self, file_manager: KeyValueFileManager[object]
+        self, file_manager: KeyValueFileManager[Document]
     ) -> list[str]:
         """Get the keys for the docstyle rules in the given file manager."""
         if isinstance(file_manager, PyprojectTOMLManager):
@@ -433,3 +442,16 @@ class RuffTool(RuffToolSpec, Tool):
             not self.is_linter_config_present()
             and not self.is_formatter_config_present()
         )
+
+    @override
+    def apply(self) -> None:
+        """Run Ruff formatter on the project."""
+        if get_backend() is not BackendEnum.uv:
+            return
+
+        if not self.is_formatter_used():
+            return
+
+        tick_print("Running the Ruff formatter.")
+        with contextlib.suppress(UVSubprocessFailedError):
+            call_uv_subprocess(["run", "ruff", "format"], change_toml=False)

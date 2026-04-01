@@ -1,3 +1,5 @@
+"""Project initialization and build system setup."""
+
 import re
 
 from typing_extensions import assert_never
@@ -37,6 +39,7 @@ _BUILD_SYSTEM_CONFIG: dict[BuildBackendEnum, tuple[list[str], str]] = {
 
 
 def project_init():
+    """Initialize the project by creating the pyproject.toml and project structure."""
     if (usethis_config.cpd() / "pyproject.toml").exists():
         return
 
@@ -119,6 +122,7 @@ def ensure_dep_declaration_file() -> None:
 
 
 def ensure_pyproject_toml(*, author: bool = True) -> None:
+    """Ensure that a pyproject.toml file exists, creating it if necessary."""
     if (usethis_config.cpd() / "pyproject.toml").exists():
         return
 

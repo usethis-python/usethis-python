@@ -1,3 +1,5 @@
+"""Retrieve the installed uv version."""
+
 import json
 
 from usethis._backend.uv.call import call_uv_subprocess
@@ -6,6 +8,7 @@ from usethis._fallback import FALLBACK_UV_VERSION, next_breaking_version
 
 
 def get_uv_version() -> str:
+    """Get the version string of the installed uv tool."""
     try:
         json_str = call_uv_subprocess(
             ["self", "version", "--output-format=json"],
@@ -14,7 +17,7 @@ def get_uv_version() -> str:
     except UVSubprocessFailedError:
         return FALLBACK_UV_VERSION
 
-    json_dict: dict = json.loads(json_str)
+    json_dict: dict[str, str] = json.loads(json_str)
     return json_dict.get("version", FALLBACK_UV_VERSION)
 
 

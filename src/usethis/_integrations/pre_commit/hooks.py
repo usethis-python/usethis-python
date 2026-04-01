@@ -1,3 +1,5 @@
+"""Pre-commit hook addition and removal."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -10,23 +12,32 @@ from usethis._integrations.pre_commit.init import (
 )
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
+from usethis._pipeweld.containers import series
+from usethis._pipeweld.func import Adder, get_predecessor
 
 if TYPE_CHECKING:
     from collections.abc import Collection
 
-_HOOK_ORDER = [
-    "sync-with-uv",
-    "validate-pyproject",
-    "uv-export",
-    "pyproject-fmt",
-    "ruff",  # Alias used for ruff-check
-    "ruff-check",  # ruff-check followed by ruff-format seems to be the recommended way by Astral
-    "ruff-format",
-    "ty",
-    "deptry",
-    "lint_imports",  # Alias used for import-linter used in the Import Linter docs, see https://github.com/usethis-python/usethis-python/issues/1022
-    "import-linter",
-    "codespell",
+HOOK_GROUPS: list[list[str]] = [
+    [
+        "sync-with-uv",
+        "validate-pyproject",
+        "uv-export",
+        "pyproject-fmt",
+        "ruff",  # Alias used for ruff-check
+        "ruff-check",  # ruff-check followed by ruff-format seems to be the recommended way by Astral
+    ],
+    [
+        "ruff-format",
+    ],
+    [
+        "ty",
+        "deptry",
+        "lint_imports",  # Alias used for import-linter used in the Import Linter docs, see https://github.com/usethis-python/usethis-python/issues/1022
+        "import-linter",
+        "tach",
+        "codespell",
+    ],
 ]
 
 _PLACEHOLDER_ID = "placeholder"
@@ -65,39 +76,34 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
         mgr.commit_model(model)
     else:
         # There are existing hooks so we need to know where to insert the new hook.
-
-        # Get the precendents, i.e. hooks occurring before the new hook
-        # Also the successors, i.e. hooks occurring after the new hook
+        # Use pipeweld to determine the correct insertion position based on the
+        # canonical hook ordering.
+        hook_order = [hook for group in HOOK_GROUPS for hook in group]
         try:
-            hook_idx = _HOOK_ORDER.index(hook_config.id)
+            hook_idx = hook_order.index(hook_config.id)
         except ValueError:
             msg = f"Hook '{hook_config.id}' not recognized."
             raise NotImplementedError(msg) from None
-        precedents = _HOOK_ORDER[:hook_idx]
-        successors = _HOOK_ORDER[hook_idx + 1 :]
 
-        existing_precedents = [hook for hook in existing_hooks if hook in precedents]
-        existing_successors = [hook for hook in existing_hooks if hook in successors]
+        prerequisites = set(hook_order[:hook_idx])
+        postrequisites = set(hook_order[hook_idx + 1 :])
 
-        # Add immediately after the last precedecessor.
-        # If there isn't one, we want to add as late as possible without violating
-        # order, i.e. before the first successor, if there is one.
-        if existing_precedents:
-            last_precedent = existing_precedents[-1]
-        elif not existing_successors:
-            last_precedent = existing_hooks[-1]
-        else:
-            first_successor = existing_successors[0]
-            first_successor_idx = existing_hooks.index(first_successor)
-            if first_successor_idx == 0:
-                last_precedent = None
-            else:
-                last_precedent = existing_hooks[first_successor_idx - 1]
+        pipeline = series(*existing_hooks)
+        adder = Adder(
+            pipeline=pipeline,
+            step=hook_config.id,
+            prerequisites=prerequisites,
+            postrequisites=postrequisites,
+            force_linear=True,
+        )
+        result = adder.add()
+
+        predecessor = get_predecessor(result.solution, hook_config.id)
 
         model.repos = insert_repo(
             repo_to_insert=repo,
             existing_repos=model.repos,
-            predecessor=last_precedent,
+            predecessor=predecessor,
         )
 
         mgr.commit_model(model)
@@ -109,10 +115,10 @@ def insert_repo(
     existing_repos: Collection[schema.LocalRepo | schema.UriRepo | schema.MetaRepo],
     predecessor: str | None,
 ) -> list[schema.LocalRepo | schema.UriRepo | schema.MetaRepo]:
+    """Insert a repo into the list of repos after the named predecessor hook."""
     # Insert the new hook after the last precedent repo
     # Do this by iterating over the repos and hooks, and inserting the new hook
     # after the last precedent
-
     inserted = False
     repos: list[schema.LocalRepo | schema.UriRepo | schema.MetaRepo] = []
 
@@ -165,6 +171,7 @@ def _report_adding_repo(
 
 
 def add_placeholder_hook() -> None:
+    """Add a placeholder hook to the pre-commit configuration with instructions for the user."""
     add_repo(_get_placeholder_repo_config())
     instruct_print("Remove the placeholder hook in '.pre-commit-config.yaml'.")
     instruct_print("Replace it with your own hooks.")
@@ -220,6 +227,7 @@ def remove_hook(hook_id: str) -> None:
 
 
 def get_hook_ids() -> list[str]:
+    """Get the list of hook IDs currently configured in the pre-commit configuration file."""
     path = usethis_config.cpd() / ".pre-commit-config.yaml"
 
     if not path.exists():
@@ -233,13 +241,15 @@ def get_hook_ids() -> list[str]:
 def extract_hook_ids(
     model: schema.JsonSchemaForPreCommitConfigYaml,
 ) -> list[str]:
-    hook_ids = []
+    """Extract all hook IDs from a pre-commit configuration model."""
+    hook_ids: list[str] = []
     for repo in model.repos:
         if repo.hooks is None:
             continue
 
         for hook in repo.hooks:
-            hook_ids.append(hook.id)
+            if hook.id is not None:
+                hook_ids.append(hook.id)
 
     return hook_ids
 

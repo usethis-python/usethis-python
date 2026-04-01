@@ -2,7 +2,7 @@ from pathlib import Path
 
 from typing_extensions import override
 
-from usethis._file.manager import FileManager
+from usethis._file.manager import Document, FileManager
 from usethis._test import change_cwd
 
 
@@ -10,7 +10,7 @@ class TestUsethisFileManager:
     class TestContent:
         def test_setter(self, tmp_path: Path) -> None:
             # Arrange
-            class MyUsethisFileManager(FileManager):
+            class MyUsethisFileManager(FileManager[Document]):
                 @property
                 @override
                 def relative_path(self) -> Path:
@@ -36,7 +36,7 @@ class TestUsethisFileManager:
     class TestEq:
         def test_example(self) -> None:
             # Arrange
-            class MyUsethisFileManager(FileManager):
+            class MyUsethisFileManager(FileManager[Document]):
                 @property
                 @override
                 def relative_path(self) -> Path:
@@ -61,7 +61,7 @@ class TestUsethisFileManager:
 
         def test_different_type(self) -> None:
             # Arrange
-            class MyUsethisFileManager(FileManager):
+            class MyUsethisFileManager(FileManager[Document]):
                 @property
                 @override
                 def relative_path(self) -> Path:
@@ -87,7 +87,7 @@ class TestUsethisFileManager:
     class TestRepr:
         def test_example(self, tmp_path: Path) -> None:
             # Arrange
-            class MyUsethisFileManager(FileManager):
+            class MyUsethisFileManager(FileManager[Document]):
                 @property
                 @override
                 def relative_path(self) -> Path:

@@ -1,3 +1,5 @@
+"""TOML file I/O manager."""
+
 from __future__ import annotations
 
 import copy
@@ -43,7 +45,7 @@ if TYPE_CHECKING:
     from usethis._file.types_ import Key
 
 
-class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
+class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
     """An abstract class for managing TOML files."""
 
     _content_by_path: ClassVar[dict[Path, TOMLDocument | None]] = {}
@@ -324,7 +326,8 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
                 )
                 raise TOMLValueInvalidError(msg) from None
             assert isinstance(d, list)
-            p_parent[keys[-1]] = d + list(values)
+            for value in values:
+                d.insert(len(d), value)
 
         self.commit(toml_document)
 
@@ -363,8 +366,9 @@ class TOMLFileManager(KeyValueFileManager, metaclass=ABCMeta):
             return
         assert isinstance(p, list)
 
-        new_values = [value for value in p if value not in values]
-        p_parent[keys[-1]] = new_values
+        for value in list(values):
+            while value in p:
+                p.remove(value)
 
         self.commit(toml_document)
 

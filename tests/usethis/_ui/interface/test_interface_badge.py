@@ -210,6 +210,45 @@ class TestUsethis:
         )
 
 
+class TestBitbucket:
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["bitbucket"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_remove(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["bitbucket", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_show(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "README.md").write_text("")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["bitbucket", "--show"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == "[![Bitbucket](https://img.shields.io/badge/Bitbucket-0747a6?logo=bitbucket&logoColor=white)](https://bitbucket.org)\n"
+        )
+
+
 class TestUV:
     def test_add(self, tmp_path: Path):
         # Act

@@ -3826,6 +3826,11 @@ class TestUseTool:
             with files_manager():
                 use_tool(tool)
 
+            # Re-apply after files_manager flushes: apply() inside use_tool()
+            # runs before files are written to disk, so formatters' on-disk
+            # changes are overwritten by the deferred write.
+            tool.apply()
+
             try:
                 cmd = tool.raw_cmd()
             except NoDefaultToolCommand:

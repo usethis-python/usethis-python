@@ -23,7 +23,12 @@ usethis                           # usethis: Automatically manage Python tooling
 ├── _backend                      # Backend dispatch and tool-specific backend implementations.
 │   ├── dispatch                  # Backend selection and dispatch logic.
 │   ├── poetry                    # Poetry backend implementation.
-│   │   └── detect                # Detection of Poetry usage in a project.
+│   │   ├── available             # Check whether the Poetry CLI is available.
+│   │   ├── call                  # Subprocess wrappers for invoking Poetry commands.
+│   │   ├── deps                  # Dependency group operations via the Poetry backend.
+│   │   ├── detect                # Detection of Poetry usage in a project.
+│   │   ├── errors                # Error types for the Poetry backend.
+│   │   └── init                  # Project initialization via Poetry.
 │   └── uv                        # uv backend implementation.
 │       ├── available             # Check whether the uv CLI is available.
 │       ├── call                  # Subprocess wrappers for invoking uv commands.
@@ -67,7 +72,8 @@ usethis                           # usethis: Automatically manage Python tooling
 │   │   ├── project               # Access the [project] section of pyproject.toml.
 │   │   ├── remove                # Removal of the pyproject.toml file.
 │   │   ├── requires_python       # Python version requirement queries from pyproject.toml.
-│   │   └── valid                 # Validation and repair of pyproject.toml structure.
+│   │   ├── valid                 # Validation and repair of pyproject.toml structure.
+│   │   └── write                 # Preparation helpers for writing pyproject.toml via subprocesses.
 │   ├── setup_cfg                 # setup.cfg file reading and writing.
 │   │   ├── errors                # Error types for setup.cfg operations.
 │   │   └── io_                   # setup.cfg file I/O manager.
@@ -210,7 +216,14 @@ ALWAYS check whether an existing function already covers your use case before im
 <!-- sync:docs/functions.txt -->
 
 - `get_backend()` (`usethis._backend.dispatch`) — Get the current package manager backend.
+- `call_backend_subprocess()` (`usethis._backend.dispatch`) — Dispatch a subprocess call to the appropriate backend.
+- `is_poetry_available()` (`usethis._backend.poetry.available`) — Check if the `poetry` command is available in the current environment.
+- `call_poetry_subprocess()` (`usethis._backend.poetry.call`) — Run a subprocess using the Poetry command-line tool.
+- `add_dep_to_group_via_poetry()` (`usethis._backend.poetry.deps`) — Add a dependency to the named group using Poetry.
+- `remove_dep_from_group_via_poetry()` (`usethis._backend.poetry.deps`) — Remove a dependency from the named group using Poetry.
 - `is_poetry_used()` (`usethis._backend.poetry.detect`) — Check if Poetry is being used in the project.
+- `ensure_pyproject_toml_via_poetry()` (`usethis._backend.poetry.init`) — Create a pyproject.toml file using `poetry init`.
+- `opinionated_poetry_init()` (`usethis._backend.poetry.init`) — Subprocess `poetry init` with opinionated arguments.
 - `is_uv_available()` (`usethis._backend.uv.available`) — Check if the `uv` command is available in the current environment.
 - `call_uv_subprocess()` (`usethis._backend.uv.call`) — Run a subprocess using the uv command-line tool.
 - `add_default_groups_via_uv()` (`usethis._backend.uv.call`) — Add default groups using the uv command-line tool.
@@ -282,7 +295,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `use_ty()` (`usethis._core.tool`) — Add and configure the ty type checker tool.
 - `use_tool()` (`usethis._core.tool`) — General dispatch function to add or remove a tool to/from the project.
 - `get_project_deps()` (`usethis._deps`) — Get all project dependencies.
-- `get_dep_groups()` (`usethis._deps`) — Get all dependency groups from the dependency-groups section of pyproject.toml.
+- `get_dep_groups()` (`usethis._deps`) — Get all dependency groups from pyproject.toml.
 - `get_deps_from_group()` (`usethis._deps`) — Get the list of dependencies in a named dependency group.
 - `register_default_group()` (`usethis._deps`) — Register a group in the default-groups configuration if it's not already there.
 - `add_default_groups()` (`usethis._deps`) — Register the given dependency groups as default groups in the package manager configuration.
@@ -300,6 +313,8 @@ ALWAYS check whether an existing function already covers your use case before im
 - `print_keys()` (`usethis._file.print_`) — Convert a list of keys to a string.
 - `get_project_deps()` (`usethis._file.pyproject_toml.deps`) — Get all project dependencies from [project.dependencies].
 - `get_dep_groups()` (`usethis._file.pyproject_toml.deps`) — Get all dependency groups from [dependency-groups].
+- `get_poetry_project_deps()` (`usethis._file.pyproject_toml.deps`) — Get project dependencies from [tool.poetry.dependencies].
+- `get_poetry_dep_groups()` (`usethis._file.pyproject_toml.deps`) — Get dependency groups from [tool.poetry.group.*.dependencies].
 - `get_name()` (`usethis._file.pyproject_toml.name`) — Get the project name from pyproject.toml.
 - `get_description()` (`usethis._file.pyproject_toml.name`) — Get the project description from pyproject.toml.
 - `get_project_dict()` (`usethis._file.pyproject_toml.project`) — Get the contents of the [project] section from pyproject.toml.
@@ -307,6 +322,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `get_requires_python()` (`usethis._file.pyproject_toml.requires_python`) — Get the requires-python constraint from pyproject.toml.
 - `get_required_minor_python_versions()` (`usethis._file.pyproject_toml.requires_python`) — Get Python minor versions that match the project's requires-python constraint.
 - `ensure_pyproject_validity()` (`usethis._file.pyproject_toml.valid`) — Ensure pyproject.toml has a valid structure, adding missing required fields.
+- `prepare_pyproject_write()` (`usethis._file.pyproject_toml.write`) — Prepare the pyproject.toml file for a subprocess that will modify it.
 - `edit_yaml()` (`usethis._file.yaml.io_`) — A context manager to modify a YAML file in-place, with managed read and write.
 - `read_yaml()` (`usethis._file.yaml.io_`) — A context manager to read a YAML file.
 - `update_ruamel_yaml_map()` (`usethis._file.yaml.update`) — Update the values of a ruamel.yaml map in-place using a diff-like algorithm.

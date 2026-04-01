@@ -54,7 +54,7 @@ class PreCommitToolSpec(ToolSpec):
                 requires_venv=False,
                 inform_how_to_use_on_migrate=False,
             )
-        elif backend is BackendEnum.none:
+        elif backend in (BackendEnum.poetry, BackendEnum.none):
             return super().pre_commit_config()
         else:
             assert_never(backend)

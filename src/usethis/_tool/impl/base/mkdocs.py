@@ -7,6 +7,7 @@ from typing import final
 from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
+from usethis._backend.poetry.detect import is_poetry_used
 from usethis._backend.uv.detect import is_uv_used
 from usethis._console import how_print
 from usethis._tool.base import Tool
@@ -22,7 +23,12 @@ class MkDocsTool(MkDocsToolSpec, Tool):
         if backend is BackendEnum.uv and is_uv_used():
             how_print("Run 'uv run mkdocs build' to build the documentation.")
             how_print("Run 'uv run mkdocs serve' to serve the documentation locally.")
-        elif backend in (BackendEnum.none, BackendEnum.uv):
+        elif backend is BackendEnum.poetry and is_poetry_used():
+            how_print("Run 'poetry run mkdocs build' to build the documentation.")
+            how_print(
+                "Run 'poetry run mkdocs serve' to serve the documentation locally."
+            )
+        elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
             how_print("Run 'mkdocs build' to build the documentation.")
             how_print("Run 'mkdocs serve' to serve the documentation locally.")
         else:

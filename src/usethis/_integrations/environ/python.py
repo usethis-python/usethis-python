@@ -34,8 +34,8 @@ def get_supported_minor_python_versions() -> list[PythonVersion]:
 
     if backend is BackendEnum.uv:
         versions = get_supported_uv_minor_python_versions()
-    elif backend is BackendEnum.none:
-        # When no build backend is available, we can't query for available Python versions.
+    elif backend in (BackendEnum.poetry, BackendEnum.none):
+        # When the backend doesn't manage python versions, we can't query for them via subprocess.
         # Instead, we use requires-python if available.
         try:
             versions = get_required_minor_python_versions()

@@ -10,6 +10,7 @@ from pydantic import TypeAdapter, ValidationError
 from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
+from usethis._backend.poetry.detect import is_poetry_used
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.detect import is_uv_used
 from usethis._backend.uv.errors import UVSubprocessFailedError
@@ -57,7 +58,11 @@ class RuffTool(RuffToolSpec, Tool):
                 how_print(
                     "Run 'uv run pre-commit run -a ruff-check' to run the Ruff linter."
                 )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
+            elif backend is BackendEnum.poetry and is_poetry_used():
+                how_print(
+                    "Run 'poetry run pre-commit run -a ruff-check' to run the Ruff linter."
+                )
+            elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
                 how_print("Run 'pre-commit run -a ruff-check' to run the Ruff linter.")
             else:
                 assert_never(backend)
@@ -66,7 +71,11 @@ class RuffTool(RuffToolSpec, Tool):
                 how_print(
                     "Run 'uv run ruff check --fix' to run the Ruff linter with autofixes."
                 )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
+            elif backend is BackendEnum.poetry and is_poetry_used():
+                how_print(
+                    "Run 'poetry run ruff check --fix' to run the Ruff linter with autofixes."
+                )
+            elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
                 how_print(
                     "Run 'ruff check --fix' to run the Ruff linter with autofixes."
                 )
@@ -86,7 +95,11 @@ class RuffTool(RuffToolSpec, Tool):
                 how_print(
                     "Run 'uv run pre-commit run -a ruff-format' to run the Ruff formatter."
                 )
-            elif backend in (BackendEnum.none, BackendEnum.uv):
+            elif backend is BackendEnum.poetry and is_poetry_used():
+                how_print(
+                    "Run 'poetry run pre-commit run -a ruff-format' to run the Ruff formatter."
+                )
+            elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
                 how_print(
                     "Run 'pre-commit run -a ruff-format' to run the Ruff formatter."
                 )
@@ -95,7 +108,9 @@ class RuffTool(RuffToolSpec, Tool):
         elif install_method == "devdep" or install_method is None:
             if backend is BackendEnum.uv and is_uv_used():
                 how_print("Run 'uv run ruff format' to run the Ruff formatter.")
-            elif backend in (BackendEnum.none, BackendEnum.uv):
+            elif backend is BackendEnum.poetry and is_poetry_used():
+                how_print("Run 'poetry run ruff format' to run the Ruff formatter.")
+            elif backend in (BackendEnum.none, BackendEnum.uv, BackendEnum.poetry):
                 how_print("Run 'ruff format' to run the Ruff formatter.")
             else:
                 assert_never(backend)

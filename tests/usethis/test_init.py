@@ -98,6 +98,35 @@ class TestProjectInit:
             # Assert
             assert manager[["build-system", "build-backend"]] == "uv_build"
 
+    def test_poetry_backend(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        calls: list[str] = []
+
+        def mock_opinionated_poetry_init() -> None:
+            calls.append("init")
+            (tmp_path / "pyproject.toml").write_text("[project]\nname = 'test'\n")
+
+        monkeypatch.setattr(
+            "usethis._init.opinionated_poetry_init",
+            mock_opinionated_poetry_init,
+        )
+
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry),
+        ):
+            project_init()
+
+        assert len(calls) == 1
+        assert (tmp_path / "pyproject.toml").exists()
+        assert (tmp_path / "README.md").exists()
+        assert (tmp_path / "src" / "test" / "__init__.py").exists()
+        assert (
+            "Hello from test!"
+            in (tmp_path / "src" / "test" / "__init__.py").read_text()
+        )
+        assert (tmp_path / "src" / "test" / "py.typed").exists()
+
 
 class TestBuildSystemConfig:
     def test_keys_match_enum(self):
@@ -222,6 +251,29 @@ class TestEnsurePyprojectTOML:
 
             # Assert
             assert ["build-system"] in PyprojectTOMLManager()
+
+    def test_poetry_backend(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        calls: list[str] = []
+
+        def mock_ensure_pyproject_toml_via_poetry(*, author: bool = True) -> None:
+            _ = author
+            calls.append("ensure")
+            (tmp_path / "pyproject.toml").write_text("[project]\nname = 'test'\n")
+
+        monkeypatch.setattr(
+            "usethis._init.ensure_pyproject_toml_via_poetry",
+            mock_ensure_pyproject_toml_via_poetry,
+        )
+
+        with (
+            change_cwd(tmp_path),
+            PyprojectTOMLManager(),
+            usethis_config.set(backend=BackendEnum.poetry),
+        ):
+            ensure_pyproject_toml()
+
+        assert len(calls) == 1
+        assert (tmp_path / "pyproject.toml").exists()
 
 
 class TestWriteSimpleRequirementsTxt:

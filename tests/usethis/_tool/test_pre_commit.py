@@ -131,3 +131,20 @@ class TestFromSystemHook:
         repo = config.repo_configs[0].repo
         assert isinstance(repo, schema.LocalRepo)
         assert repo.repo == "local"
+
+    def test_poetry_backend_entry_prefix(self, tmp_path: Path):
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.poetry),
+        ):
+            config = PreCommitConfig.from_system_hook(
+                hook_id="my-hook",
+                entry="my-cmd",
+            )
+
+        repo = config.repo_configs[0].repo
+        assert isinstance(repo, schema.LocalRepo)
+        assert repo.hooks is not None
+        assert len(repo.hooks) == 1
+        assert repo.hooks[0].entry == "poetry run my-cmd"

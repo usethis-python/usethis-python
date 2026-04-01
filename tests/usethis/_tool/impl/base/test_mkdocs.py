@@ -2,9 +2,11 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._test import change_cwd
 from usethis._tool.impl.base.mkdocs import MkDocsTool
+from usethis._types.backend import BackendEnum
 
 
 class TestMkDocsTool:
@@ -56,5 +58,31 @@ class TestMkDocsTool:
                 == """\
 ☐ Run 'mkdocs build' to build the documentation.
 ☐ Run 'mkdocs serve' to serve the documentation locally.
+"""
+            )
+
+        def test_print_how_to_use_poetry(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.poetry),
+            ):
+                # Arrange
+                tool = MkDocsTool()
+                (tmp_path / "poetry.lock").touch()
+
+                # Act
+                tool.print_how_to_use()
+
+            # Assert
+            out, err = capfd.readouterr()
+            assert not err
+            assert (
+                out
+                == """\
+☐ Run 'poetry run mkdocs build' to build the documentation.
+☐ Run 'poetry run mkdocs serve' to serve the documentation locally.
 """
             )

@@ -16,59 +16,6 @@ import sys
 from pathlib import Path
 
 
-def _module_name(source_file: Path, source_root: Path) -> str:
-    """Derive a dotted module name from a file path, including the package name."""
-    # Use source_root.parent so the package directory name itself is part of the path.
-    rel = source_file.relative_to(source_root.parent)
-    parts = rel.with_suffix("").parts
-    # Drop __init__ from the tail so the module name matches the package path.
-    if parts and parts[-1] == "__init__":
-        parts = parts[:-1]
-    return ".".join(parts)
-
-
-def _get_module_public_functions(path: Path) -> list[tuple[str, str | None]]:
-    """Return (name, docstring_first_line_or_None) for each top-level public function.
-
-    Only direct children of the module node are included (no class methods or
-    nested functions). Functions are returned in source order.
-    """
-    try:
-        source = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError) as exc:
-        print(f"ERROR: Cannot read {path}: {exc}", file=sys.stderr)
-        return []
-
-    try:
-        tree = ast.parse(source)
-    except SyntaxError as exc:
-        print(f"ERROR: Cannot parse {path}: {exc}", file=sys.stderr)
-        return []
-
-    results: list[tuple[str, str | None]] = []
-    for node in ast.iter_child_nodes(tree):
-        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            continue
-        if node.name.startswith("_"):
-            continue
-        docstring = ast.get_docstring(node)
-        if docstring is not None:
-            first_line = docstring.split("\n")[0].strip()
-            # Normalize RST-style double backticks to markdown single backticks
-            # so the output is compatible with prettier's markdown formatting.
-            first_line = first_line.replace("``", "`")
-            results.append((node.name, first_line if first_line else None))
-        else:
-            results.append((node.name, None))
-
-    return results
-
-
-def _collect_py_files(source_root: Path) -> list[Path]:
-    """Return all .py files under source_root in sorted order."""
-    return sorted(source_root.rglob("*.py"))
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Export public function reference from a Python package.",
@@ -142,6 +89,59 @@ def main() -> int:
         return 1
 
     return 1 if modified else 0
+
+
+def _module_name(source_file: Path, source_root: Path) -> str:
+    """Derive a dotted module name from a file path, including the package name."""
+    # Use source_root.parent so the package directory name itself is part of the path.
+    rel = source_file.relative_to(source_root.parent)
+    parts = rel.with_suffix("").parts
+    # Drop __init__ from the tail so the module name matches the package path.
+    if parts and parts[-1] == "__init__":
+        parts = parts[:-1]
+    return ".".join(parts)
+
+
+def _get_module_public_functions(path: Path) -> list[tuple[str, str | None]]:
+    """Return (name, docstring_first_line_or_None) for each top-level public function.
+
+    Only direct children of the module node are included (no class methods or
+    nested functions). Functions are returned in source order.
+    """
+    try:
+        source = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"ERROR: Cannot read {path}: {exc}", file=sys.stderr)
+        return []
+
+    try:
+        tree = ast.parse(source)
+    except SyntaxError as exc:
+        print(f"ERROR: Cannot parse {path}: {exc}", file=sys.stderr)
+        return []
+
+    results: list[tuple[str, str | None]] = []
+    for node in ast.iter_child_nodes(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if node.name.startswith("_"):
+            continue
+        docstring = ast.get_docstring(node)
+        if docstring is not None:
+            first_line = docstring.split("\n")[0].strip()
+            # Normalize RST-style double backticks to markdown single backticks
+            # so the output is compatible with prettier's markdown formatting.
+            first_line = first_line.replace("``", "`")
+            results.append((node.name, first_line if first_line else None))
+        else:
+            results.append((node.name, None))
+
+    return results
+
+
+def _collect_py_files(source_root: Path) -> list[Path]:
+    """Return all .py files under source_root in sorted order."""
+    return sorted(source_root.rglob("*.py"))
 
 
 if __name__ == "__main__":

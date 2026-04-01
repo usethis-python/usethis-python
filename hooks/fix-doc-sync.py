@@ -24,6 +24,36 @@ _SYNC_END = re.compile(r"^<!--\s*/sync:(\S+)\s*-->$")
 _CODEBLOCK_FENCE = re.compile(r"^```\w*$")
 
 
+def main() -> int:
+    if len(sys.argv) < 2:
+        print("Usage: fix-doc-sync.py <file> [<file> ...]", file=sys.stderr)
+        return 1
+
+    any_modified = False
+    failed = False
+
+    for filepath in sys.argv[1:]:
+        path = Path(filepath)
+        if not path.is_file():
+            print(f"ERROR: {path} not found.", file=sys.stderr)
+            failed = True
+            continue
+
+        was_modified = _fix_file(path)
+        if was_modified:
+            print(f"Fixed sync blocks in {path}.")
+            any_modified = True
+
+    if failed:
+        return 1
+
+    if any_modified:
+        return 1
+
+    print("No sync blocks needed updating.")
+    return 0
+
+
 def _detect_codeblock_fence(text: str) -> str:
     """Return the opening fence line if text is wrapped in a code block, else ''."""
     stripped = text.strip()
@@ -122,36 +152,6 @@ def _fix_file(path: Path) -> bool:
         path.write_text("".join(new_lines), encoding="utf-8")
 
     return modified
-
-
-def main() -> int:
-    if len(sys.argv) < 2:
-        print("Usage: fix-doc-sync.py <file> [<file> ...]", file=sys.stderr)
-        return 1
-
-    any_modified = False
-    failed = False
-
-    for filepath in sys.argv[1:]:
-        path = Path(filepath)
-        if not path.is_file():
-            print(f"ERROR: {path} not found.", file=sys.stderr)
-            failed = True
-            continue
-
-        was_modified = _fix_file(path)
-        if was_modified:
-            print(f"Fixed sync blocks in {path}.")
-            any_modified = True
-
-    if failed:
-        return 1
-
-    if any_modified:
-        return 1
-
-    print("No sync blocks needed updating.")
-    return 0
 
 
 if __name__ == "__main__":

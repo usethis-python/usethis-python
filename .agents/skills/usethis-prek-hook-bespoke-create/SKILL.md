@@ -4,7 +4,7 @@ description: Write bespoke prek hooks as Python scripts for custom project-speci
 compatibility: usethis, prek, git, Python
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Bespoke Prek Hooks
@@ -30,6 +30,9 @@ the filename with a `.py` extension (e.g., `hooks/check-skills-documented.py`).
 
 Scripts should:
 
+- **Follow the step-down rule:** define `main()` first, then helper functions
+  below it. Readers should encounter the high-level logic before the
+  implementation details.
 - Use `sys.exit(0)` for success and `sys.exit(1)` for failure.
 - **Hooks that modify files must return exit code 1 when they change a file.**
   This is a pre-commit convention: exit code 1 signals that files were modified,

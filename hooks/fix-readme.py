@@ -98,7 +98,7 @@ def main() -> int:
         undefined=jinja2.StrictUndefined,
         autoescape=jinja2.select_autoescape(),
     )
-    env.globals["include_doc"] = _include_doc
+    env.globals["include_doc"] = _include_doc  # pyright: ignore[reportArgumentType]
 
     template = env.get_template(str(template_path))
     content = template.render()

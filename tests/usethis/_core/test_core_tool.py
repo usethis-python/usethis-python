@@ -44,7 +44,6 @@ from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS, SupportedToolType
-from usethis._tool.impl.base.import_linter import ImportLinterTool
 from usethis._tool.impl.base.pyproject_fmt import PyprojectFmtTool
 from usethis._tool.impl.base.pytest import PytestTool
 from usethis._tool.impl.base.ruff import RuffTool
@@ -3798,8 +3797,9 @@ class TestUseTool:
     @pytest.mark.parametrize("tool", ALL_TOOLS, ids=lambda t: t.name)
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_runs(self, tool: SupportedToolType, uv_env_dir: Path):
-        with change_cwd(uv_env_dir), files_manager():
-            use_tool(tool)
+        with change_cwd(uv_env_dir):
+            with files_manager():
+                use_tool(tool)
 
             try:
                 cmd = tool.raw_cmd()
@@ -3811,10 +3811,6 @@ class TestUseTool:
                 (uv_env_dir / "tests" / "test_placeholder.py").write_text(
                     "def test_placeholder(): pass\n"
                 )
-
-            # import-linter requires user-defined contracts to run
-            if isinstance(tool, ImportLinterTool):
-                pytest.skip(f"{tool.name} requires user-defined contracts")
 
             # pyproject-fmt exits 1 when it reformats, which is expected
             if isinstance(tool, PyprojectFmtTool):

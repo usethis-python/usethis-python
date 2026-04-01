@@ -2489,6 +2489,7 @@ class TestPytest:
                     "✔ Adding pytest config to 'pyproject.toml'.\n"
                     "✔ Creating '/tests'.\n"
                     "✔ Writing '/tests/conftest.py'.\n"
+                    "✔ Writing '/tests/test_example.py'.\n"
                     "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
                     "☐ Add test functions with the format 'test_*()'.\n"
                     "☐ Run 'uv run pytest' to run the tests.\n"
@@ -2506,6 +2507,28 @@ xfail_strict = true
 log_cli_level = "INFO"
 minversion = "7\""""
             )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_example_file_exists(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Act
+                use_pytest()
+
+            # Assert
+            assert (uv_init_dir / "tests" / "test_example.py").exists()
+            content = (uv_init_dir / "tests" / "test_example.py").read_text()
+            assert "def test_add():" in content
+            assert "assert 1 + 1 == 2" in content
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_no_example(self, uv_init_dir: Path):
+            with change_cwd(uv_init_dir), files_manager():
+                # Act
+                use_pytest(example=False)
+
+            # Assert
+            assert not (uv_init_dir / "tests" / "test_example.py").exists()
+            assert (uv_init_dir / "tests" / "conftest.py").exists()
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_coverage_integration(
@@ -2527,6 +2550,7 @@ minversion = "7\""""
                 "✔ Adding pytest config to 'pyproject.toml'.\n"
                 "✔ Creating '/tests'.\n"
                 "✔ Writing '/tests/conftest.py'.\n"
+                "✔ Writing '/tests/test_example.py'.\n"
                 "☐ Add test files to the '/tests' directory with the format 'test_*.py'.\n"
                 "☐ Add test functions with the format 'test_*()'.\n"
                 "☐ Run 'uv run pytest' to run the tests.\n"

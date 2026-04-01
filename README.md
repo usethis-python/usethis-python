@@ -145,6 +145,7 @@ $ uvx usethis tool pytest
 ✔ Adding pytest config to 'pyproject.toml'.
 ✔ Creating '/tests'.
 ✔ Writing '/tests/conftest.py'.
+✔ Writing '/tests/test_example.py'.
 ✔ Selecting Ruff rule 'PT' in 'pyproject.toml'.
 ☐ Add test files to the '/tests' directory with the format 'test_*.py'.
 ☐ Add test functions with the format 'test_*()'.

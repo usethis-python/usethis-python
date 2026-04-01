@@ -22,7 +22,11 @@ from usethis._integrations.pre_commit.core import (
 )
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_ids
-from usethis._integrations.pytest.core import add_pytest_dir, remove_pytest_dir
+from usethis._integrations.pytest.core import (
+    add_example_test,
+    add_pytest_dir,
+    remove_pytest_dir,
+)
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.base.codespell import CodespellTool
 from usethis._tool.impl.base.coverage_py import CoveragePyTool
@@ -269,8 +273,16 @@ def use_pyproject_toml(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def use_pytest(*, remove: bool = False, how: bool = False) -> None:
-    """Add and configure the pytest testing framework."""
+def use_pytest(
+    *, remove: bool = False, how: bool = False, example: bool = True
+) -> None:
+    """Add and configure the pytest testing framework.
+
+    Args:
+        remove: If True, remove pytest instead of adding it.
+        how: If True, print how to use pytest instead of adding/removing it.
+        example: If True, create an example test file in the tests directory.
+    """
     tool = PytestTool()
 
     if how:
@@ -286,6 +298,8 @@ def use_pytest(*, remove: bool = False, how: bool = False) -> None:
         # deptry currently can't scan the tests folder for dev deps
         # https://github.com/fpgmaas/deptry/issues/302
         add_pytest_dir()
+        if example:
+            add_example_test()
 
         rule_config = tool.rule_config
 

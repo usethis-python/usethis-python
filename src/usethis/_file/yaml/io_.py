@@ -11,7 +11,6 @@ from io import StringIO
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import ruamel.yaml
-from pydantic import TypeAdapter, ValidationError
 from ruamel.yaml.comments import CommentedMap
 from ruamel.yaml.error import YAMLError
 from ruamel.yaml.util import load_yaml_guess_indent
@@ -35,6 +34,7 @@ from usethis._file.yaml.errors import (
     YAMLValueMissingError,
 )
 from usethis._file.yaml.update import update_ruamel_yaml_map
+from usethis._validate import validate_or_raise
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Sequence
@@ -156,11 +156,12 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
 
         d = self.get().content
         for key in keys:
-            try:
-                TypeAdapter(dict).validate_python(d)
-            except ValidationError:
-                msg = f"Configuration value '{print_keys(keys)}' is missing."
-                raise YAMLValueMissingError(msg) from None
+            validate_or_raise(
+                dict,
+                d,
+                error_cls=YAMLValueMissingError,
+                error_msg=f"Configuration value '{print_keys(keys)}' is missing.",
+            )
             assert isinstance(d, dict)
             try:
                 d = d[key]
@@ -181,16 +182,22 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
         keys = _validate_keys(keys)
 
         # Root level config - value must be a mapping.
-        try:
-            TypeAdapter(dict).validate_python(content)
-        except ValidationError:
-            msg = "Root level configuration must be a mapping."
-            raise UnexpectedYAMLValueError(msg) from None
+        validate_or_raise(
+            dict,
+            content,
+            error_cls=UnexpectedYAMLValueError,
+            error_msg="Root level configuration must be a mapping.",
+        )
         if not isinstance(content, CommentedMap):
             raise AssertionError
 
         if not keys:
-            TypeAdapter(dict).validate_python(value)
+            validate_or_raise(
+                dict,
+                value,
+                error_cls=UnexpectedYAMLValueError,
+                error_msg="Expected a mapping value.",
+            )
             assert isinstance(value, dict)
             if not content or exists_ok:
                 content.update(value)
@@ -209,13 +216,18 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
             for key in keys:
-                TypeAdapter(dict).validate_python(d)
+                validate_or_raise(
+                    dict,
+                    d,
+                    error_cls=UnexpectedYAMLValueError,
+                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                )
                 assert isinstance(d, dict)
                 d, parent = d[key], d
                 shared_keys.append(key)
         except KeyError:
             _set_value_in_existing(content=content, keys=keys, value=value)
-        except ValidationError:
+        except UnexpectedYAMLValueError:
             if not exists_ok:
                 msg = f"Configuration value '{print_keys(shared_keys)}' is already set."
                 raise YAMLValueAlreadySetError(msg) from None
@@ -247,12 +259,12 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             content = copy.deepcopy(self.get().content)
         except FileNotFoundError:
             return
-        try:
-            TypeAdapter(dict).validate_python(content)
-        except ValidationError:
-            # N.B. by convention a del call should raise an error if the key is not found.
-            msg = f"Configuration value '{print_keys(keys)}' is missing."
-            raise YAMLValueMissingError(msg) from None
+        validate_or_raise(
+            dict,
+            content,
+            error_cls=YAMLValueMissingError,
+            error_msg=f"Configuration value '{print_keys(keys)}' is missing.",
+        )
         assert isinstance(content, dict)
         keys = _validate_keys(keys)
 
@@ -260,10 +272,15 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
         try:
             d = content
             for key in keys:
-                TypeAdapter(dict).validate_python(d)
+                validate_or_raise(
+                    dict,
+                    d,
+                    error_cls=UnexpectedYAMLValueError,
+                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                )
                 assert isinstance(d, dict)
                 d = d[key]
-        except (KeyError, ValidationError):
+        except (KeyError, UnexpectedYAMLValueError):
             # N.B. by convention a del call should raise an error if the key is not found.
             msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise YAMLValueMissingError(msg) from None
@@ -271,7 +288,12 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
         # Remove the configuration.
         d = content
         for key in keys[:-1]:
-            TypeAdapter(dict).validate_python(d)
+            validate_or_raise(
+                dict,
+                d,
+                error_cls=UnexpectedYAMLValueError,
+                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+            )
             assert isinstance(d, dict)
             d = d[key]
         assert isinstance(d, dict)
@@ -287,12 +309,22 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
                 # Navigate to the parent of the section we want to check
                 parent = content
                 for key in keys[: idx - 1]:
-                    TypeAdapter(dict).validate_python(parent)
+                    validate_or_raise(
+                        dict,
+                        parent,
+                        error_cls=UnexpectedYAMLValueError,
+                        error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    )
                     assert isinstance(parent, dict)
                     parent = parent[key]
 
                 # If the section is empty, remove it
-                TypeAdapter(dict).validate_python(parent)
+                validate_or_raise(
+                    dict,
+                    parent,
+                    error_cls=UnexpectedYAMLValueError,
+                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                )
                 assert isinstance(parent, dict)
                 if not parent[keys[idx - 1]]:
                     del parent[keys[idx - 1]]
@@ -315,21 +347,32 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
 
         content = copy.deepcopy(self.get().content)
         # Root level config - value must be a mapping.
-        try:
-            TypeAdapter(dict).validate_python(content)
-        except ValidationError:
-            msg = "Root level configuration must be a mapping."
-            raise UnexpectedYAMLValueError(msg) from None
+        validate_or_raise(
+            dict,
+            content,
+            error_cls=UnexpectedYAMLValueError,
+            error_msg="Root level configuration must be a mapping.",
+        )
         assert isinstance(content, dict)
 
         try:
             d = content
             for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(d)
+                validate_or_raise(
+                    dict,
+                    d,
+                    error_cls=UnexpectedYAMLValueError,
+                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                )
                 assert isinstance(d, dict)
                 d = d[key]
             p_parent = d
-            TypeAdapter(dict).validate_python(p_parent)
+            validate_or_raise(
+                dict,
+                p_parent,
+                error_cls=UnexpectedYAMLValueError,
+                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+            )
             assert isinstance(p_parent, dict)
             d = p_parent[keys[-1]]
         except KeyError:
@@ -340,8 +383,18 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             content = deep_merge(content, new_content)
             assert isinstance(content, dict)
         else:
-            TypeAdapter(dict).validate_python(p_parent)
-            TypeAdapter(list).validate_python(d)
+            validate_or_raise(
+                dict,
+                p_parent,
+                error_cls=UnexpectedYAMLValueError,
+                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+            )
+            validate_or_raise(
+                list,
+                d,
+                error_cls=UnexpectedYAMLValueError,
+                error_msg=f"Expected a list at '{print_keys(keys)}' in '{self.name}'.",
+            )
             assert isinstance(p_parent, dict)
             assert isinstance(d, list)
             p_parent[keys[-1]] = d + list(values)
@@ -364,31 +417,47 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
 
         content = copy.deepcopy(self.get()).content
         # Root level config - value must be a mapping.
-        try:
-            TypeAdapter(dict).validate_python(content)
-        except ValidationError:
-            msg = "Root level configuration must be a mapping."
-            raise UnexpectedYAMLValueError(msg) from None
+        validate_or_raise(
+            dict,
+            content,
+            error_cls=UnexpectedYAMLValueError,
+            error_msg="Root level configuration must be a mapping.",
+        )
         assert isinstance(content, dict)
 
         try:
             p = content
             for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(p)
+                validate_or_raise(
+                    dict,
+                    p,
+                    error_cls=UnexpectedYAMLValueError,
+                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                )
                 assert isinstance(p, dict)
                 p = p[key]
 
             p_parent = p
-            TypeAdapter(dict).validate_python(p_parent)
+            validate_or_raise(
+                dict,
+                p_parent,
+                error_cls=UnexpectedYAMLValueError,
+                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+            )
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
-        except (KeyError, ValidationError):
+        except (KeyError, UnexpectedYAMLValueError):
             # The configuration is not present - do not modify
             return
 
         try:
-            TypeAdapter(list).validate_python(p)
-        except ValidationError:
+            validate_or_raise(
+                list,
+                p,
+                error_cls=UnexpectedYAMLValueError,
+                error_msg="Expected a list value.",
+            )
+        except UnexpectedYAMLValueError:
             return
         assert isinstance(p, list)
 

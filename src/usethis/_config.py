@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Literal
 
 from usethis._types.backend import BackendEnum
 from usethis._types.build_backend import BuildBackendEnum
+from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -113,6 +114,10 @@ class UsethisConfig:
             subprocess_verbose = old_subprocess_verbose
         if project_dir is None:
             project_dir = old_project_dir
+
+        if frozen and no_sync:
+            msg = "Cannot use both --frozen and --no-sync at the same time."
+            raise UsethisError(msg)
 
         self.offline = offline
         self.quiet = quiet

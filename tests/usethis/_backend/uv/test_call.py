@@ -8,6 +8,7 @@ from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
+from usethis.errors import UsethisError
 
 
 class TestCallUVSubprocess:
@@ -84,9 +85,7 @@ class TestCallUVSubprocess:
                 ["remove", "--group", "test", "pytest"], change_toml=False
             ) == ("uv remove --quiet --no-sync --group test pytest")
 
-    def test_frozen_takes_precedence_over_no_sync(
-        self, monkeypatch: pytest.MonkeyPatch
-    ):
+    def test_frozen_and_no_sync_raises(self, monkeypatch: pytest.MonkeyPatch):
         # Arrange
         def mock_call_subprocess(args: list[str], *, cwd: Path | None = None) -> str:
             _ = cwd
@@ -98,20 +97,11 @@ class TestCallUVSubprocess:
             mock_call_subprocess,
         )
 
-        with usethis_config.set(no_sync=True, frozen=True, offline=False):
-            # Act, Assert
-            # frozen should take precedence, --no-sync should not appear
-            result = call_uv_subprocess(
-                ["add", "--group", "test", "pytest"], change_toml=False
-            )
-            assert "--frozen" in result
-            assert "--no-sync" not in result
-
-            result = call_uv_subprocess(
-                ["remove", "--group", "test", "pytest"], change_toml=False
-            )
-            assert "--frozen" in result
-            assert "--no-sync" not in result
+        with (
+            pytest.raises(UsethisError, match="Cannot use both --frozen and --no-sync"),
+            usethis_config.set(no_sync=True, frozen=True, offline=False),
+        ):
+            call_uv_subprocess(["add", "--group", "test", "pytest"], change_toml=False)
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_handle_missing_version(

@@ -6,7 +6,7 @@ from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import UsethisConfig, usethis_config
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
-from usethis.errors import ForbiddenBackendError
+from usethis.errors import ForbiddenBackendError, UsethisError
 
 
 class TestUsethisConfig:
@@ -55,3 +55,23 @@ class TestUsethisConfig:
                 output = call_uv_subprocess(["python", "list"], change_toml=False)
 
             assert output is not None
+
+    class TestFrozenAndNoSync:
+        def test_raises_error_when_both_set(self):
+            with (
+                pytest.raises(
+                    UsethisError, match="Cannot use both --frozen and --no-sync"
+                ),
+                usethis_config.set(frozen=True, no_sync=True),
+            ):
+                pass
+
+        def test_no_error_when_only_frozen(self):
+            with usethis_config.set(frozen=True, no_sync=False):
+                assert usethis_config.frozen
+                assert not usethis_config.no_sync
+
+        def test_no_error_when_only_no_sync(self):
+            with usethis_config.set(frozen=False, no_sync=True):
+                assert not usethis_config.frozen
+                assert usethis_config.no_sync

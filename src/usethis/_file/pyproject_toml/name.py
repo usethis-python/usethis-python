@@ -7,7 +7,7 @@ from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectNameError,
 )
 from usethis._file.pyproject_toml.project import get_project_dict
-from usethis._validate import validate_or_raise
+from usethis._file.validate import validate_or_raise
 
 
 def get_name() -> str:

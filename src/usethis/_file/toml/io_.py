@@ -31,7 +31,7 @@ from usethis._file.toml.errors import (
     UnexpectedTOMLOpenError,
 )
 from usethis._file.types_ import Key
-from usethis._validate import validate_or_raise
+from usethis._file.validate import validate_or_raise
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Sequence

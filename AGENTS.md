@@ -19,7 +19,6 @@ usethis                           # usethis: Automatically manage Python tooling
 ├── _init                         # Project initialization and build system setup.
 ├── _subprocess                   # Subprocess invocation utilities.
 ├── _test                         # Test utilities and fixtures for the usethis test suite.
-├── _validate                     # Safer abstractions for Pydantic TypeAdapter validation.
 ├── errors                        # Custom errors for the usethis package.
 ├── _backend                      # Backend dispatch and tool-specific backend implementations.
 │   ├── dispatch                  # Backend selection and dispatch logic.
@@ -62,6 +61,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   ├── merge                     # Deep merge utilities for nested mappings.
 │   ├── print_                    # Pretty-printing helpers for configuration file keys.
 │   ├── types_                    # Shared type aliases for file operations.
+│   ├── validate                  # Safer abstractions for Pydantic TypeAdapter validation.
 │   ├── ini                       # INI file reading and writing.
 │   │   ├── errors                # Error types for INI file operations.
 │   │   └── io_                   # INI file I/O manager.
@@ -324,6 +324,8 @@ ALWAYS check whether an existing function already covers your use case before im
 - `get_required_minor_python_versions()` (`usethis._file.pyproject_toml.requires_python`) — Get Python minor versions that match the project's requires-python constraint.
 - `ensure_pyproject_validity()` (`usethis._file.pyproject_toml.valid`) — Ensure pyproject.toml has a valid structure, adding missing required fields.
 - `prepare_pyproject_write()` (`usethis._file.pyproject_toml.write`) — Prepare the pyproject.toml file for a subprocess that will modify it.
+- `validate_or_raise()` (`usethis._file.validate`) — Validate `obj` against `type_`, raising a custom error on failure.
+- `validate_or_default()` (`usethis._file.validate`) — Validate `obj` against `type_`, returning `default` on failure.
 - `edit_yaml()` (`usethis._file.yaml.io_`) — A context manager to modify a YAML file in-place, with managed read and write.
 - `read_yaml()` (`usethis._file.yaml.io_`) — A context manager to read a YAML file.
 - `update_ruamel_yaml_map()` (`usethis._file.yaml.update`) — Update the values of a ruamel.yaml map in-place using a diff-like algorithm.
@@ -426,8 +428,6 @@ ALWAYS check whether an existing function already covers your use case before im
 - `ty()` (`usethis._ui.interface.tool`) — Use the ty type checker: an extremely fast Python type checker.
 - `typecheck()` (`usethis._ui.interface.typecheck`) — Add a recommended type checker to the project.
 - `version()` (`usethis._ui.interface.version`) — Print the installed version of usethis.
-- `validate_or_raise()` (`usethis._validate`) — Validate `obj` against `type_`, raising a custom error on failure.
-- `validate_or_default()` (`usethis._validate`) — Validate `obj` against `type_`, returning `default` on failure.
 
 <!-- /sync:docs/functions.txt -->
 

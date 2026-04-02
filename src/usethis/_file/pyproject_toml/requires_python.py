@@ -5,8 +5,8 @@ from __future__ import annotations
 from packaging.specifiers import SpecifierSet
 
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.validate import validate_or_raise
 from usethis._python.version import PythonVersion
-from usethis._validate import validate_or_raise
 
 
 class MissingRequiresPythonError(Exception):

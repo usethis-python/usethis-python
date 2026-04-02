@@ -11,7 +11,6 @@ from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool.base import Tool
 from usethis._tool.impl.spec.deptry import DeptryToolSpec
 from usethis._tool.rule import Rule
-from usethis._validate import validate_or_default
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -46,12 +45,7 @@ class DeptryTool(DeptryToolSpec, Tool):
     def ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
-        try:
-            rules = validate_or_default(list[Rule], file_manager[keys], default=[])
-        except (KeyError, FileNotFoundError):
-            rules: list[Rule] = []
-
-        return rules
+        return file_manager.get_validated(keys, default=[], validate=list[Rule])
 
     @override
     def _get_ignore_keys(

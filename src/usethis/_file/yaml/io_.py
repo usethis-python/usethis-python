@@ -24,6 +24,7 @@ from usethis._file.manager import (
 )
 from usethis._file.merge import deep_merge
 from usethis._file.print_ import print_keys
+from usethis._file.validate import validate_or_raise
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
@@ -34,7 +35,6 @@ from usethis._file.yaml.errors import (
     YAMLValueMissingError,
 )
 from usethis._file.yaml.update import update_ruamel_yaml_map
-from usethis._validate import validate_or_raise
 
 if TYPE_CHECKING:
     from collections.abc import Generator, Sequence

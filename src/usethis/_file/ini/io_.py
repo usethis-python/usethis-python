@@ -27,7 +27,7 @@ from usethis._file.manager import (
     UnexpectedFileOpenError,
 )
 from usethis._file.print_ import print_keys
-from usethis._validate import validate_or_raise
+from usethis._file.validate import validate_or_raise
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence

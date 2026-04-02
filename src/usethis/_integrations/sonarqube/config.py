@@ -6,6 +6,7 @@ import re
 
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.validate import validate_or_raise
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._integrations.sonarqube.errors import (
     CoverageReportConfigNotFoundError,
@@ -13,7 +14,6 @@ from usethis._integrations.sonarqube.errors import (
     MissingProjectKeyError,
 )
 from usethis._python.version import PythonVersion, PythonVersionParseError
-from usethis._validate import validate_or_default, validate_or_raise
 
 
 def get_sonar_project_properties(*, project_key: str | None = None) -> str:
@@ -93,29 +93,15 @@ def _get_sonarqube_project_key() -> str:
 
 
 def _is_sonarqube_verbose() -> bool:
-    try:
-        verbose = validate_or_default(
-            bool,
-            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]],
-            default=False,
-        )
-    except (FileNotFoundError, KeyError):
-        verbose = False
-
-    return verbose
+    return PyprojectTOMLManager().get_validated(
+        ["tool", "usethis", "sonarqube", "verbose"], default=False, validate=bool
+    )
 
 
 def _get_sonarqube_exclusions() -> list[str]:
-    try:
-        exclusions = validate_or_default(
-            list[str],
-            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "exclusions"]],
-            default=[],
-        )
-    except (FileNotFoundError, KeyError):
-        exclusions: list[str] = []
-
-    return exclusions
+    return PyprojectTOMLManager().get_validated(
+        ["tool", "usethis", "sonarqube", "exclusions"], default=[], validate=list[str]
+    )
 
 
 def _validate_project_key(project_key: str) -> None:

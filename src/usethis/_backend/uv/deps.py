@@ -11,7 +11,6 @@ from usethis._backend.uv.errors import (
 )
 from usethis._backend.uv.toml import UVTOMLManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._validate import validate_or_default
 
 if TYPE_CHECKING:
     from usethis._types.deps import Dependency
@@ -42,14 +41,12 @@ def get_default_groups_via_uv() -> list[str]:
     """Get the default dependency groups from the uv configuration."""
     try:
         if UVTOMLManager().path.exists():
-            default_groups = validate_or_default(
-                list[str], UVTOMLManager()[["default-groups"]], default=[]
+            default_groups = UVTOMLManager().get_validated(
+                ["default-groups"], default=[], validate=list[str]
             )
         else:
-            default_groups = validate_or_default(
-                list[str],
-                PyprojectTOMLManager()[["tool", "uv", "default-groups"]],
-                default=[],
+            default_groups = PyprojectTOMLManager().get_validated(
+                ["tool", "uv", "default-groups"], default=[], validate=list[str]
             )
     except KeyError:
         default_groups: list[str] = []

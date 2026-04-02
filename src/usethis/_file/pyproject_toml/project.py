@@ -8,7 +8,7 @@ from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectSectionError,
 )
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._validate import validate_or_raise
+from usethis._file.validate import validate_or_raise
 
 if TYPE_CHECKING:
     from typing import Any

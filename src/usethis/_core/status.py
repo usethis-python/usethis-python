@@ -6,7 +6,6 @@ from usethis._console import tick_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import ensure_pyproject_toml
 from usethis._types.status import DevelopmentStatusEnum
-from usethis._validate import validate_or_default
 
 
 def use_development_status(
@@ -22,12 +21,9 @@ def use_development_status(
     tick_print(f"Setting the development status to '{dispstatus}'.")
 
     mgr = PyprojectTOMLManager()
-    try:
-        existing_classifiers = validate_or_default(
-            list[str], mgr[["project", "classifiers"]], default=[]
-        )
-    except KeyError:
-        existing_classifiers: list[str] = []
+    existing_classifiers = mgr.get_validated(
+        ["project", "classifiers"], default=[], validate=list[str]
+    )
     existing_status_classifiers = {
         classifier
         for classifier in existing_classifiers

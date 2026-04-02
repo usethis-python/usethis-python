@@ -8,8 +8,8 @@ from packaging.requirements import Requirement
 
 from usethis._file.pyproject_toml.errors import PyprojectTOMLDepsError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.validate import validate_or_raise
 from usethis._types.deps import Dependency
-from usethis._validate import validate_or_raise
 
 
 def get_project_deps() -> list[Dependency]:

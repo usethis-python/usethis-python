@@ -129,6 +129,76 @@ class TestCallPoetrySubprocess:
         ):
             call_poetry_subprocess(["add", "pytest"], change_toml=False)
 
+    def test_frozen_adds_lock_for_add(self, monkeypatch: pytest.MonkeyPatch):
+        """When frozen=True, --lock should be added to 'add' commands."""
+
+        def mock_call_subprocess(args: list[str], **__: object) -> str:
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(backend=BackendEnum.poetry, frozen=True):
+            result = call_poetry_subprocess(["add", "pytest"], change_toml=False)
+
+        assert "--lock" in result
+
+    def test_frozen_adds_lock_for_remove(self, monkeypatch: pytest.MonkeyPatch):
+        """When frozen=True, --lock should be added to 'remove' commands."""
+
+        def mock_call_subprocess(args: list[str], **__: object) -> str:
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(backend=BackendEnum.poetry, frozen=True):
+            result = call_poetry_subprocess(
+                ["remove", "--group", "test", "pytest"], change_toml=False
+            )
+
+        assert "--lock" in result
+
+    def test_frozen_no_lock_for_version(self, monkeypatch: pytest.MonkeyPatch):
+        """When frozen=True, --lock should not be added to non-add/remove commands."""
+
+        def mock_call_subprocess(args: list[str], **__: object) -> str:
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(backend=BackendEnum.poetry, frozen=True):
+            result = call_poetry_subprocess(["--version"], change_toml=False)
+
+        assert "--lock" not in result
+
+    def test_not_frozen_no_lock_for_add(self, monkeypatch: pytest.MonkeyPatch):
+        """When frozen=False, --lock should not be added to 'add' commands."""
+
+        def mock_call_subprocess(args: list[str], **__: object) -> str:
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(backend=BackendEnum.poetry, frozen=False):
+            result = call_poetry_subprocess(["add", "pytest"], change_toml=False)
+
+        assert "--lock" not in result
+
     def test_change_toml_rereads_when_locked(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):

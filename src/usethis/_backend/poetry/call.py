@@ -28,6 +28,14 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
     if change_toml:
         prepare_pyproject_write()
 
+    # Poetry doesn't support a --frozen flag like uv does. The closest equivalent
+    # is --lock, which updates pyproject.toml and the lockfile but skips installation.
+    # Unlike uv's --frozen (which skips both locking and installation), Poetry's --lock
+    # still resolves and updates poetry.lock. This is an acceptable compromise since
+    # Poetry has no way to update pyproject.toml without also resolving dependencies.
+    if usethis_config.frozen and args[:1] in (["add"], ["remove"]):
+        args = [args[0], "--lock", *args[1:]]
+
     new_args = ["poetry", "--no-interaction", *args]
 
     if usethis_config.subprocess_verbose:

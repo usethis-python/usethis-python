@@ -44,7 +44,7 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         prepare_pyproject_write()
 
     if usethis_config.frozen and args[0] in {
-        # Note, not "lock", for which the --frozen flags has quite a different effect
+        # Note, not "lock", for which the --frozen flag has quite a different effect
         "add",
         "remove",
         "sync",

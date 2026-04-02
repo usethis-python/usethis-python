@@ -5,7 +5,7 @@ from __future__ import annotations
 import configparser
 import re
 from abc import ABCMeta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from configupdater import ConfigUpdater as INIDocument
 from configupdater import Option, Section
@@ -177,6 +177,7 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
                 error_cls=InvalidINITypeError,
                 error_msg=f"Expected a mapping of sections for '{self.name}'.",
             )
+            assert isinstance(value, dict)
             self._set_value_in_root(root=root, value=value, exists_ok=exists_ok)
         elif len(keys) == 1:
             (section_key,) = keys
@@ -186,6 +187,7 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
                 error_cls=InvalidINITypeError,
                 error_msg=f"Expected a mapping of options for '{self.name}'.",
             )
+            assert isinstance(value, dict)
             self._set_value_in_section(
                 root=root, section_key=keys[0], value=value, exists_ok=exists_ok
             )
@@ -479,14 +481,20 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
-            values = validate_or_raise(
-                list[str],
-                values,
-                error_cls=InvalidINITypeError,
-                error_msg=f"Expected a list of strings for '{self.name}'.",
+            str_values = cast(
+                "list[str]",
+                validate_or_raise(
+                    list[str],
+                    values,
+                    error_cls=InvalidINITypeError,
+                    error_msg=f"Expected a list of strings for '{self.name}'.",
+                ),
             )
             self._extend_list_in_option(
-                root=root, section_key=section_key, option_key=option_key, values=values
+                root=root,
+                section_key=section_key,
+                option_key=option_key,
+                values=str_values,
             )
         else:
             msg = (
@@ -565,14 +573,20 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
-            values = validate_or_raise(
-                list[str],
-                values,
-                error_cls=InvalidINITypeError,
-                error_msg=f"Expected a list of strings for '{self.name}'.",
+            str_values = cast(
+                "list[str]",
+                validate_or_raise(
+                    list[str],
+                    values,
+                    error_cls=InvalidINITypeError,
+                    error_msg=f"Expected a list of strings for '{self.name}'.",
+                ),
             )
             self._remove_from_list_in_option(
-                root=root, section_key=section_key, option_key=option_key, values=values
+                root=root,
+                section_key=section_key,
+                option_key=option_key,
+                values=str_values,
             )
         else:
             msg = (

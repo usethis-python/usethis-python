@@ -20,12 +20,12 @@ T = TypeVar("T")
 
 
 def validate_or_raise(
-    type_: type[T],
+    type_: Any,
     obj: object,
     *,
     error_cls: type[Exception],
     error_msg: str,
-) -> T:
+) -> Any:
     """Validate ``obj`` against ``type_``, raising a custom error on failure.
 
     Args:

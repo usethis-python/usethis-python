@@ -189,12 +189,16 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
         )
         for dep in _deps:
             remove_dep_from_group_via_uv(dep, group)
+        if usethis_config.no_sync:
+            instruct_print(f"Uninstall the dependenc{ies} {deps_str}.")
     elif backend is BackendEnum.poetry:
         tick_print(
             f"Removing dependenc{ies} {deps_str} from the '{group}' group in 'pyproject.toml'."
         )
         for dep in _deps:
             remove_dep_from_group_via_poetry(dep, group)
+        if usethis_config.no_sync:
+            instruct_print(f"Uninstall the dependenc{ies} {deps_str}.")
     elif backend is BackendEnum.none:
         instruct_print(f"Remove the {group} dependenc{ies} {deps_str}.")
     else:
@@ -244,7 +248,7 @@ def add_deps_to_group(
 
     # Installation of the dependencies, and declaration if the package manager supports
     # a combined workflow.
-    if usethis_config.frozen:
+    if usethis_config.frozen or usethis_config.no_sync:
         instruct_print(f"Install the dependenc{ies} {deps_str}.")
     _install_deps_to_group(to_add_deps, group)
 

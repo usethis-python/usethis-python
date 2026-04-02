@@ -7,6 +7,7 @@ from usethis._config import (
     BUILD_BACKEND_DEFAULT,
     FROZEN_DEFAULT,
     HOW_DEFAULT,
+    NO_SYNC_DEFAULT,
     OFFLINE_DEFAULT,
     QUIET_DEFAULT,
     REMOVE_DEFAULT,
@@ -27,6 +28,11 @@ frozen_opt = typer.Option(
     FROZEN_DEFAULT,
     "--frozen",
     help="Do not install dependencies, nor update lockfiles.",
+)
+no_sync_opt = typer.Option(
+    NO_SYNC_DEFAULT,
+    "--no-sync",
+    help="Do not sync the virtual environment.",
 )
 backend_opt = typer.Option(
     BACKEND_DEFAULT, "--backend", help="Package manager backend to use."

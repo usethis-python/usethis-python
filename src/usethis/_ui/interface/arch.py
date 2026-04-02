@@ -8,6 +8,7 @@ from usethis._ui.options import (
     backend_opt,
     frozen_opt,
     how_opt,
+    no_sync_opt,
     offline_opt,
     quiet_opt,
     remove_opt,
@@ -20,6 +21,7 @@ def arch(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
+    no_sync: bool = no_sync_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
     """Add recommended architecture analysis tools to the project."""
@@ -30,7 +32,11 @@ def arch(
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            no_sync=no_sync,
+            backend=backend,
         ),
         files_manager(),
     ):

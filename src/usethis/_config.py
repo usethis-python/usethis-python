@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 HOW_DEFAULT = False
 REMOVE_DEFAULT = False
 FROZEN_DEFAULT = False
+NO_SYNC_DEFAULT = False
 OFFLINE_DEFAULT = False
 QUIET_DEFAULT = False
 BACKEND_DEFAULT = "auto"
@@ -31,6 +32,7 @@ class UsethisConfig:
         offline: Disable network access.
         quiet: Suppress all output, regardless of any other options.
         frozen: Do not install dependencies, nor update lockfiles.
+        no_sync: Do not sync the virtual environment (declare dependencies only).
         alert_only: Suppress all output except for warnings and errors.
         instruct_only: Suppress all success and info output; do not suppress
                        instructions, warnings, or errors.
@@ -47,6 +49,7 @@ class UsethisConfig:
     offline: bool = OFFLINE_DEFAULT
     quiet: bool = QUIET_DEFAULT
     frozen: bool = FROZEN_DEFAULT
+    no_sync: bool = NO_SYNC_DEFAULT
     alert_only: bool = False
     instruct_only: bool = False
     backend: BackendEnum = BackendEnum(BACKEND_DEFAULT)  # noqa: RUF009
@@ -59,12 +62,13 @@ class UsethisConfig:
     project_dir: Path | None = None
 
     @contextmanager
-    def set(  # noqa: PLR0913, PLR0915
+    def set(  # noqa: PLR0912, PLR0913, PLR0915
         self,
         *,
         offline: bool | None = None,
         quiet: bool | None = None,
         frozen: bool | None = None,
+        no_sync: bool | None = None,
         alert_only: bool | None = None,
         instruct_only: bool | None = None,
         backend: BackendEnum | None = None,
@@ -77,6 +81,7 @@ class UsethisConfig:
         old_offline = self.offline
         old_quiet = self.quiet
         old_frozen = self.frozen
+        old_no_sync = self.no_sync
         old_alert_only = self.alert_only
         old_instruct_only = self.instruct_only
         old_backend = self.backend
@@ -92,6 +97,8 @@ class UsethisConfig:
             quiet = old_quiet
         if frozen is None:
             frozen = old_frozen
+        if no_sync is None:
+            no_sync = old_no_sync
         if alert_only is None:
             alert_only = self.alert_only
         if instruct_only is None:
@@ -110,6 +117,7 @@ class UsethisConfig:
         self.offline = offline
         self.quiet = quiet
         self.frozen = frozen
+        self.no_sync = no_sync
         self.alert_only = alert_only
         self.instruct_only = instruct_only
         self.backend = backend
@@ -125,6 +133,7 @@ class UsethisConfig:
         self.offline = old_offline
         self.quiet = old_quiet
         self.frozen = old_frozen
+        self.no_sync = old_no_sync
         self.alert_only = old_alert_only
         self.instruct_only = old_instruct_only
         self.backend = old_backend

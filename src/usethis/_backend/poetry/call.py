@@ -30,6 +30,9 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
 
     new_args = ["poetry", "--no-interaction", *args]
 
+    if usethis_config.no_sync and args[0] in {"add", "remove"}:
+        new_args = [*new_args, "--lock"]
+
     if usethis_config.subprocess_verbose:
         new_args = [*new_args[:1], "-vvv", *new_args[1:]]
     elif args[:1] != ["--version"]:

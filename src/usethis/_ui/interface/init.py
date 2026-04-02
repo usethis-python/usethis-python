@@ -26,6 +26,7 @@ from usethis._ui.options import (
     init_status_opt,
     init_test_opt,
     init_typecheck_opt,
+    no_sync_opt,
     offline_opt,
     quiet_opt,
 )
@@ -45,6 +46,7 @@ def init(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
+    no_sync: bool = no_sync_opt,
     backend: BackendEnum = backend_opt,
     build_backend: BuildBackendEnum = init_build_backend_opt,
     path: str | None = init_path_arg,
@@ -66,6 +68,7 @@ def init(
             offline=offline,
             quiet=quiet,
             frozen=frozen,
+            no_sync=no_sync,
             backend=backend,
             build_backend=build_backend,
             project_dir=path,

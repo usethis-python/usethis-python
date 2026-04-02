@@ -11,6 +11,7 @@ from usethis._ui.options import (
     backend_opt,
     docstyle_style_arg,
     frozen_opt,
+    no_sync_opt,
     offline_opt,
     quiet_opt,
 )
@@ -21,6 +22,7 @@ def docstyle(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
     frozen: bool = frozen_opt,
+    no_sync: bool = no_sync_opt,
     backend: BackendEnum = backend_opt,
 ) -> None:
     """Configure the docstring style for the project."""
@@ -31,7 +33,11 @@ def docstyle(
 
     with (
         usethis_config.set(
-            offline=offline, quiet=quiet, frozen=frozen, backend=backend
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            no_sync=no_sync,
+            backend=backend,
         ),
         files_manager(),
     ):

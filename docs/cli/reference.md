@@ -44,6 +44,7 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
+- `--no-sync` to leave the virtual environment unchanged (i.e. declare dependencies only, do not sync)
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
 
   Possible values:
@@ -73,6 +74,7 @@ Supported options:
 - `--how` to only print how to use the tool, with no other side effects
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--no-sync` to leave the virtual environment unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
 
@@ -99,6 +101,7 @@ Supported options:
 - `--how` to only print how to use the tool, with no other side effects
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--no-sync` to leave the virtual environment unchanged
 - `--quiet` to suppress output
 
 See [`usethis tool`](#usethis-tool) for more information.
@@ -119,6 +122,7 @@ Supported options:
 - `--how` to only print how to use the tool, with no other side effects
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--no-sync` to leave the virtual environment unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
 
@@ -145,6 +149,7 @@ Supported options:
 - `--how` to only print how to use the tool, with no other side effects
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--no-sync` to leave the virtual environment unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
 
@@ -171,6 +176,7 @@ Supported options:
 - `--how` to only print how to use the tool, with no other side effects
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--no-sync` to leave the virtual environment unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
 
@@ -197,6 +203,7 @@ Supported options:
 - `--how` to only print how to use the tool, with no other side effects
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--no-sync` to leave the virtual environment unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
   Possible values:
@@ -222,6 +229,7 @@ Supported options:
 - `--how` to only print how to use the tool, with no other side effects
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--no-sync` to leave the virtual environment unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
   Possible values:
@@ -247,6 +255,7 @@ Supported options:
 - `--how` to only print how to use the tool, with no other side effects
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--no-sync` to leave the virtual environment unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
 
@@ -301,6 +310,7 @@ Supported options:
 - `--no-hook` to skip adding or modifying git hook configuration (e.g. pre-commit)
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
+- `--no-sync` to leave the virtual environment unchanged
 - `--quiet` to suppress output
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
 
@@ -392,6 +402,7 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--quiet` to suppress output
 - `--frozen` to leave the virtual environment and lockfile unchanged (i.e. do not install dependencies, nor update lockfiles)
+- `--no-sync` to leave the virtual environment unchanged (i.e. declare dependencies only, do not sync)
 - `--backend` to specify a package manager backend to use. The default is to auto-detect.
 
   Possible values:

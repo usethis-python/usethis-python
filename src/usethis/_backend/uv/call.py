@@ -53,10 +53,15 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         "run",
     }:
         new_args = ["uv", args[0], "--frozen", *args[1:]]
-    elif usethis_config.no_sync and args[0] in {
-        "add",
-        "remove",
-    }:
+    elif (
+        not usethis_config.frozen
+        and usethis_config.no_sync
+        and args[0]
+        in {
+            "add",
+            "remove",
+        }
+    ):
         new_args = ["uv", args[0], "--no-sync", *args[1:]]
     else:
         new_args = ["uv", *args]

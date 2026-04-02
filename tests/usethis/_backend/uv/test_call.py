@@ -107,6 +107,12 @@ class TestCallUVSubprocess:
             assert "--frozen" in result
             assert "--no-sync" not in result
 
+            result = call_uv_subprocess(
+                ["remove", "--group", "test", "pytest"], change_toml=False
+            )
+            assert "--frozen" in result
+            assert "--no-sync" not in result
+
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_handle_missing_version(
         self, tmp_path: Path, capfd: pytest.CaptureFixture[str]

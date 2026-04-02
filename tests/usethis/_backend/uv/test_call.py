@@ -48,6 +48,65 @@ class TestCallUVSubprocess:
                 ["run", "pre-commit", "install"], change_toml=False
             ) == ("uv run --quiet --frozen pre-commit install")
 
+    def test_no_sync_added_in_uv_add(self, monkeypatch: pytest.MonkeyPatch):
+        # Arrange
+        def mock_call_subprocess(args: list[str], *, cwd: Path | None = None) -> str:
+            _ = cwd
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.uv.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(no_sync=True, frozen=False, offline=False):
+            # Act, Assert
+            assert call_uv_subprocess(
+                ["add", "--group", "test", "pytest"], change_toml=False
+            ) == ("uv add --quiet --no-sync --group test pytest")
+
+    def test_no_sync_added_in_uv_remove(self, monkeypatch: pytest.MonkeyPatch):
+        # Arrange
+        def mock_call_subprocess(args: list[str], *, cwd: Path | None = None) -> str:
+            _ = cwd
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.uv.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(no_sync=True, frozen=False, offline=False):
+            # Act, Assert
+            assert call_uv_subprocess(
+                ["remove", "--group", "test", "pytest"], change_toml=False
+            ) == ("uv remove --quiet --no-sync --group test pytest")
+
+    def test_frozen_takes_precedence_over_no_sync(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        def mock_call_subprocess(args: list[str], *, cwd: Path | None = None) -> str:
+            _ = cwd
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.uv.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(no_sync=True, frozen=True, offline=False):
+            # Act, Assert
+            # frozen should take precedence, --no-sync should not appear
+            result = call_uv_subprocess(
+                ["add", "--group", "test", "pytest"], change_toml=False
+            )
+            assert "--frozen" in result
+            assert "--no-sync" not in result
+
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_handle_missing_version(
         self, tmp_path: Path, capfd: pytest.CaptureFixture[str]

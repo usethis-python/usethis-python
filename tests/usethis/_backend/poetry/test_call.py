@@ -184,6 +184,53 @@ class TestCallPoetrySubprocess:
 
         assert not called
 
+    def test_no_sync_added_in_poetry_add(self, monkeypatch: pytest.MonkeyPatch):
+        def mock_call_subprocess(args: list[str], **__: object) -> str:
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(backend=BackendEnum.poetry, no_sync=True):
+            result = call_poetry_subprocess(["add", "pytest"], change_toml=False)
+
+        assert "--lock" in result
+
+    def test_no_sync_added_in_poetry_remove(self, monkeypatch: pytest.MonkeyPatch):
+        def mock_call_subprocess(args: list[str], **__: object) -> str:
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(backend=BackendEnum.poetry, no_sync=True):
+            result = call_poetry_subprocess(["remove", "pytest"], change_toml=False)
+
+        assert "--lock" in result
+
+    def test_no_sync_not_added_for_non_add_remove(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        def mock_call_subprocess(args: list[str], **__: object) -> str:
+            return " ".join(args)
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(backend=BackendEnum.poetry, no_sync=True):
+            result = call_poetry_subprocess(["--version"], change_toml=False)
+
+        assert "--lock" not in result
+
 
 class TestPreparePyprojectWrite:
     def test_pyproject_exists_and_locked(self, tmp_path: Path):

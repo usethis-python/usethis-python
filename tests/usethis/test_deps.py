@@ -917,6 +917,50 @@ test = []
             # No uv.toml default-groups should be created
             assert not (tmp_path / "uv.toml").exists()
 
+    class TestNoSync:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_single_dep(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            with (
+                change_cwd(uv_init_dir),
+                usethis_config.set(frozen=False, no_sync=True),
+                PyprojectTOMLManager(),
+            ):
+                # Act
+                add_deps_to_group([Dependency(name="pytest")], "test")
+
+                # Assert
+                assert get_deps_from_group("test") == [Dependency(name="pytest")]
+                out, err = capfd.readouterr()
+                assert not err
+                assert (
+                    out
+                    == "✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.\n"
+                    "☐ Install the dependency 'pytest'.\n"
+                )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_multiple_deps(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with (
+                change_cwd(uv_init_dir),
+                usethis_config.set(frozen=False, no_sync=True),
+                PyprojectTOMLManager(),
+            ):
+                # Act
+                add_deps_to_group(
+                    [Dependency(name="flake8"), Dependency(name="black")], "qa"
+                )
+
+                # Assert
+                out, err = capfd.readouterr()
+                assert not err
+                assert (
+                    out
+                    == "✔ Adding dependencies 'flake8', 'black' to the 'qa' group in 'pyproject.toml'.\n"
+                    "☐ Install the dependencies 'flake8', 'black'.\n"
+                )
+
 
 class TestRemoveDepsFromGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -1123,6 +1167,59 @@ test = ["pytest"]
                 in out
             )
             assert len(calls) == 1
+
+    class TestNoSync:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_single_dep(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            with (
+                change_cwd(uv_init_dir),
+                usethis_config.set(frozen=False, no_sync=True),
+                PyprojectTOMLManager(),
+            ):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    add_deps_to_group([Dependency(name="pytest")], "test")
+
+                # Act
+                remove_deps_from_group([Dependency(name="pytest")], "test")
+
+                # Assert
+                out, err = capfd.readouterr()
+                assert not err
+                assert (
+                    out
+                    == "✔ Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'.\n"
+                    "☐ Uninstall the dependency 'pytest'.\n"
+                )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_multiple_deps(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            with (
+                change_cwd(uv_init_dir),
+                usethis_config.set(frozen=False, no_sync=True),
+                PyprojectTOMLManager(),
+            ):
+                # Arrange
+                with usethis_config.set(quiet=True):
+                    add_deps_to_group(
+                        [Dependency(name="flake8"), Dependency(name="black")], "qa"
+                    )
+
+                # Act
+                remove_deps_from_group(
+                    [Dependency(name="flake8"), Dependency(name="black")], "qa"
+                )
+
+                # Assert
+                out, err = capfd.readouterr()
+                assert not err
+                assert (
+                    out
+                    == "✔ Removing dependencies 'flake8', 'black' from the 'qa' group in 'pyproject.toml'.\n"
+                    "☐ Uninstall the dependencies 'flake8', 'black'.\n"
+                )
 
 
 class TestIsDepInAnyGroup:

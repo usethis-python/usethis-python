@@ -7,7 +7,7 @@
 - There is now support for the [Poetry](https://python-poetry.org/) backend in usethis. Access it via the `--backend=poetry` option for applicable commands.
 - Tools which add formatters (`usethis format`, `usethis tool pyproject-fmt`, and `usethis tool ruff`) will now automatically apply the formatter to the project when added.
 - There is now a `usethis tool tach` command to add the [Tach architecture tool](https://github.com/tach-org/tach) to the project.
-- `usethis tool` commands now support a `--no-hook` flag to opt-out of modifying git hook configuration (e.g. in `.pre-commit-config.yaml`) when managing the tool.
+- `usethis tool` commands now support a `--no-hook` flag to opt out of modifying git hook configuration (e.g. in `.pre-commit-config.yaml`) when managing the tool.
 - `usethis show` commands now support an `--output-file` option to write the output to a file instead of printing it to the console.
 - There is now a `usethis show license` command to show the license of the current project.
 - There is now a `usethis badge bitbucket` command to add a badge for Bitbucket usage to the README.
@@ -22,16 +22,16 @@
 
 - Hard-wrapping is now disabled for CLI outputs.
 - The `usethis tool requirements.txt` command now uses a more standard URI-based pre-commit hook for exporting (using the `astral-sh/uv-pre-commit` repo) instead of a local system hook.
-- Default code coverage configuration now excludes the pattern `msg = ["']` associated with writing error messages outside the error class (See the [`EM101`](https://docs.astral.sh/ruff/rules/raw-string-in-exception/) Ruff rule).
+- Default code coverage configuration now excludes the pattern `msg = ["']` associated with writing error messages outside the error class (see the [`EM101`](https://docs.astral.sh/ruff/rules/raw-string-in-exception/) Ruff rule).
 - The heuristic for detecting uv usage will now check whether uv is declared as a dependency (including as a dev dependency) in `pyproject.toml` when the file exists, in addition to the previous heuristics. This should help reduce false positives for projects which use other tools but have `pyproject.toml` files with no uv configuration.
-- There is an improved handling of pre-commit configuration validation for when the hook ID is null.
+- There is improved handling of pre-commit configuration validation for when the hook ID is null.
 
 ### 📚 Documentation
 
 - The `usethis show sonarqube` command is now documented explicitly in the CLI reference section of the documentation site.
 - The concept of backends is [now expounded on the documentation site](https://usethis.readthedocs.io/en/latest/about/backends/).
 - All modules now have module docstrings.
-- The project description and keywords have been updated to reflect the current state of the project. The license trover classifier has been removed since trover classifiers for licenses are no longer recommended.
+- The project description and keywords have been updated to reflect the current state of the project. The license Trove classifier has been removed since Trove classifiers for licenses are no longer recommended.
 - The FAQ page has been re-structured.
 - The pipeweld utility now has more comprehensive docstrings.
 - The `FileManager` and `files_manager` objects now have more detailed docstrings.

@@ -352,6 +352,17 @@ class TestPyprojectFmt:
 """
         )
 
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_no_apply(self, uv_init_dir: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            result = runner.invoke_safe(app, ["pyproject-fmt", "--no-apply"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "Running pyproject-fmt" not in result.output
+
 
 class TestPreCommit:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -556,6 +567,17 @@ class TestRuff:
                 hook_ids = get_hook_ids()
                 assert "ruff-check" not in hook_ids
                 assert "ruff-format" not in hook_ids
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_no_apply(self, uv_init_dir: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            result = runner.invoke_safe(app, ["ruff", "--no-apply"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "Running the Ruff formatter" not in result.output
 
 
 class TestPytest:

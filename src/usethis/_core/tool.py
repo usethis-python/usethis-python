@@ -234,7 +234,9 @@ def _add_all_tools_pre_commit_configs():
             _tool.add_pre_commit_config()
 
 
-def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
+def use_pyproject_fmt(
+    *, remove: bool = False, how: bool = False, no_apply: bool = False
+) -> None:
     """Add and configure the pyproject-fmt pyproject.toml formatter tool."""
     tool = PyprojectFmtTool()
 
@@ -249,7 +251,8 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
         tool.add_pre_commit_config()
 
         tool.add_configs()
-        tool.apply()
+        if not no_apply:
+            tool.apply()
         tool.print_how_to_use()
     else:
         tool.remove_configs()
@@ -404,13 +407,14 @@ def _generate_requirements_txt() -> None:
         assert_never(backend)
 
 
-def use_ruff(
+def use_ruff(  # noqa: PLR0913
     *,
     remove: bool = False,
     how: bool = False,
     minimal: bool = False,
     linter: bool = True,
     formatter: bool = True,
+    no_apply: bool = False,
 ) -> None:
     """Add Ruff to the project.
 
@@ -427,6 +431,7 @@ def use_ruff(
         minimal: Don't add any default rules.
         linter: Whether to add/remove the Ruff linter.
         formatter: Whether to add/remove the Ruff formatter.
+        no_apply: Don't run the Ruff formatter after adding it.
     """
     if how:
         tool = RuffTool(
@@ -473,7 +478,8 @@ def use_ruff(
             tool.apply_rule_config(rule_config)
         tool.add_pre_commit_config()
 
-        tool.apply()
+        if not no_apply:
+            tool.apply()
         tool.print_how_to_use()
     else:
         tool = RuffTool(

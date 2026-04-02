@@ -2293,6 +2293,19 @@ keep_full_version = true
                     "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
+        class TestNoApply:
+            @pytest.mark.usefixtures("_vary_network_conn")
+            def test_skips_apply(
+                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            ):
+                # Act
+                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                    use_pyproject_fmt(no_apply=True)
+
+                # Assert
+                out, _ = capfd.readouterr()
+                assert "Running pyproject-fmt" not in out
+
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
@@ -3166,6 +3179,16 @@ class TestRuff:
                 "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
                 "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_no_apply(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(no_apply=True)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert "Running the Ruff formatter" not in out
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_first(self, uv_init_repo_dir: Path):

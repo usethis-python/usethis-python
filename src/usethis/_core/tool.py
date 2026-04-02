@@ -6,10 +6,11 @@ from typing import TYPE_CHECKING, Protocol
 
 from typing_extensions import assert_never
 
-from usethis._backend.dispatch import get_backend
+from usethis._backend.dispatch import call_backend_subprocess, get_backend
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.lockfile import ensure_uv_lock
 from usethis._config import usethis_config
+from usethis._config_file import ZensicalTOMLManager
 from usethis._console import info_print, instruct_print, tick_print
 from usethis._deps import add_deps_to_group, remove_deps_from_group
 from usethis._file.pyproject_toml.valid import ensure_pyproject_validity
@@ -22,6 +23,7 @@ from usethis._integrations.pre_commit.core import (
 )
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook, get_hook_ids
+from usethis._integrations.project.name import get_project_name
 from usethis._integrations.pytest.core import (
     add_example_test,
     add_pytest_dir,
@@ -45,6 +47,7 @@ from usethis._tool.impl.base.zensical import ZensicalTool
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
+from usethis.errors import BackendSubprocessFailedError
 
 if TYPE_CHECKING:
     from usethis._tool.all_ import SupportedToolType
@@ -578,12 +581,28 @@ def use_zensical(*, remove: bool = False, how: bool = False) -> None:
 
     if not remove:
         ensure_dep_declaration_file()
-        (usethis_config.cpd() / "zensical.toml").touch()
-
-        add_docs_dir()
-
         tool.add_doc_deps()
-        tool.add_configs()
+
+        cpd = usethis_config.cpd()
+        has_zensical_toml = (cpd / "zensical.toml").exists()
+        has_mkdocs_yml = (cpd / "mkdocs.yml").exists()
+
+        if not has_zensical_toml and not has_mkdocs_yml:
+            if _try_zensical_new():
+                # Scaffold succeeded - update site_name to match the project name.
+                ZensicalTOMLManager().set_value(
+                    keys=["project", "site_name"],
+                    value=get_project_name(),
+                    exists_ok=True,
+                )
+            else:
+                # Fallback: manual setup (e.g. when offline and zensical not cached).
+                (cpd / "zensical.toml").touch()
+                add_docs_dir()
+                tool.add_configs()
+        else:
+            add_docs_dir()
+            tool.add_configs()
 
         tool.print_how_to_use()
     else:
@@ -591,6 +610,28 @@ def use_zensical(*, remove: bool = False, how: bool = False) -> None:
 
         tool.remove_doc_deps()
         tool.remove_managed_files()
+
+
+def _try_zensical_new() -> bool:
+    """Attempt to run ``zensical new .`` to scaffold the documentation project.
+
+    Returns:
+        ``True`` if scaffolding succeeded, ``False`` if it failed or was skipped.
+    """
+    backend = get_backend()
+    if backend not in (BackendEnum.uv, BackendEnum.poetry):
+        return False
+
+    try:
+        call_backend_subprocess(
+            ["run", "zensical", "new", "."],
+            change_toml=False,
+            backend=backend,
+        )
+    except BackendSubprocessFailedError:
+        return False
+
+    return True
 
 
 def use_tool(  # noqa: PLR0912

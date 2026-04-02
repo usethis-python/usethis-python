@@ -208,3 +208,5 @@
 - `ty()` (`usethis._ui.interface.tool`) — Use the ty type checker: an extremely fast Python type checker.
 - `typecheck()` (`usethis._ui.interface.typecheck`) — Add a recommended type checker to the project.
 - `version()` (`usethis._ui.interface.version`) — Print the installed version of usethis.
+- `validate_or_raise()` (`usethis._validate`) — Validate *obj* against *type_*, raising a custom error on failure.
+- `validate_or_default()` (`usethis._validate`) — Validate *obj* against *type_*, returning *default* on failure.

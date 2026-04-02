@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import re
 
-from pydantic import TypeAdapter, ValidationError
-
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.layout import get_source_dir_str
@@ -15,6 +13,7 @@ from usethis._integrations.sonarqube.errors import (
     MissingProjectKeyError,
 )
 from usethis._python.version import PythonVersion, PythonVersionParseError
+from usethis._validate import validate_or_default, validate_or_raise
 
 
 def get_sonar_project_properties(*, project_key: str | None = None) -> str:
@@ -76,28 +75,31 @@ sonar.verbose={"true" if verbose else "false"}
 
 def _get_sonarqube_project_key() -> str:
     try:
-        project_key = TypeAdapter(str).validate_python(
-            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "project-key"]]
-        )
+        raw = PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "project-key"]]
     except KeyError:
         msg = "Could not find SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
         raise MissingProjectKeyError(msg) from None
     except FileNotFoundError:
         msg = "Could not find 'pyproject.toml' for SonarQube project key at 'tool.usethis.sonarqube.project-key'."
         raise MissingProjectKeyError(msg) from None
-    except ValidationError:
-        msg = "SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml' must be a string."
-        raise InvalidSonarQubeProjectKeyError(msg) from None
+    project_key = validate_or_raise(
+        str,
+        raw,
+        error_cls=InvalidSonarQubeProjectKeyError,
+        error_msg="SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml' must be a string.",
+    )
     _validate_project_key(project_key)
     return project_key
 
 
 def _is_sonarqube_verbose() -> bool:
     try:
-        verbose = TypeAdapter(bool).validate_python(
-            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]]
+        verbose = validate_or_default(
+            bool,
+            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "verbose"]],
+            default=False,
         )
-    except (FileNotFoundError, KeyError, ValidationError):
+    except (FileNotFoundError, KeyError):
         verbose = False
 
     return verbose
@@ -105,13 +107,13 @@ def _is_sonarqube_verbose() -> bool:
 
 def _get_sonarqube_exclusions() -> list[str]:
     try:
-        exclusions = TypeAdapter(list).validate_python(
-            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "exclusions"]]
+        exclusions = validate_or_default(
+            list[str],
+            PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "exclusions"]],
+            default=[],
         )
-    except (FileNotFoundError, KeyError, ValidationError):
+    except (FileNotFoundError, KeyError):
         exclusions: list[str] = []
-    for exclusion in exclusions:
-        TypeAdapter(str).validate_python(exclusion)
 
     return exclusions
 

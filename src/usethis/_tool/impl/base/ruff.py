@@ -6,7 +6,6 @@ import contextlib
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, final
 
-from pydantic import TypeAdapter, ValidationError
 from typing_extensions import assert_never, override
 
 from usethis._backend.dispatch import get_backend
@@ -31,6 +30,7 @@ from usethis._tool.impl.spec.ruff import RuffToolSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
 from usethis._tool.rule import Rule, reconcile_rules
 from usethis._types.backend import BackendEnum
+from usethis._validate import validate_or_default
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -154,8 +154,8 @@ class RuffTool(RuffToolSpec, Tool):
 
         keys = self._get_select_keys(file_manager)
         try:
-            rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError, ValidationError):
+            rules = validate_or_default(list[Rule], file_manager[keys], default=[])
+        except (KeyError, FileNotFoundError):
             rules: list[Rule] = []
 
         return rules
@@ -166,8 +166,8 @@ class RuffTool(RuffToolSpec, Tool):
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
         try:
-            rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError, ValidationError):
+            rules = validate_or_default(list[Rule], file_manager[keys], default=[])
+        except (KeyError, FileNotFoundError):
             rules: list[Rule] = []
 
         return rules
@@ -228,8 +228,8 @@ class RuffTool(RuffToolSpec, Tool):
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_per_file_ignore_keys(file_manager, glob=glob)
         try:
-            rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError, ValidationError):
+            rules = validate_or_default(list[Rule], file_manager[keys], default=[])
+        except (KeyError, FileNotFoundError):
             rules: list[Rule] = []
 
         return rules
@@ -292,9 +292,9 @@ class RuffTool(RuffToolSpec, Tool):
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_docstyle_keys(file_manager)
         try:
-            docstyle = TypeAdapter(str).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError, ValidationError):
-            docstyle = None
+            docstyle = validate_or_default(str, file_manager[keys], default="")
+        except (KeyError, FileNotFoundError):
+            docstyle = ""
 
         if docstyle not in ("numpy", "google", "pep257"):
             # Docstyle is not set or is invalid

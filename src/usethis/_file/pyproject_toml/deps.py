@@ -4,13 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
-import pydantic
 from packaging.requirements import Requirement
-from pydantic import TypeAdapter
 
 from usethis._file.pyproject_toml.errors import PyprojectTOMLDepsError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._types.deps import Dependency
+from usethis._validate import validate_or_raise
 
 
 def get_project_deps() -> list[Dependency]:
@@ -37,15 +36,15 @@ def get_project_deps() -> list[Dependency]:
     except KeyError:
         return []
 
-    try:
-        req_strs = TypeAdapter(list[str]).validate_python(dep_section)
-    except pydantic.ValidationError as err:
-        msg = (
-            "Failed to parse the 'project.dependencies' section in 'pyproject.toml':\n"
-            f"{err}\n\n"
+    req_strs = validate_or_raise(
+        list[str],
+        dep_section,
+        error_cls=PyprojectTOMLDepsError,
+        error_msg=(
+            "Failed to parse the 'project.dependencies' section in 'pyproject.toml'.\n\n"
             "Please check the section and try again."
-        )
-        raise PyprojectTOMLDepsError(msg) from None
+        ),
+    )
 
     reqs = [Requirement(req_str) for req_str in req_strs]
     return [Dependency(name=req.name, extras=frozenset(req.extras)) for req in reqs]
@@ -63,17 +62,15 @@ def get_dep_groups() -> dict[str, list[Dependency]]:
     except KeyError:
         return {}
 
-    try:
-        req_strs_by_group = TypeAdapter(dict[str, list[str]]).validate_python(
-            dep_groups_section
-        )
-    except pydantic.ValidationError as err:
-        msg = (
-            "Failed to parse the 'dependency-groups' section in 'pyproject.toml':\n"
-            f"{err}\n\n"
+    req_strs_by_group = validate_or_raise(
+        dict[str, list[str]],
+        dep_groups_section,
+        error_cls=PyprojectTOMLDepsError,
+        error_msg=(
+            "Failed to parse the 'dependency-groups' section in 'pyproject.toml'.\n\n"
             "Please check the section and try again."
-        )
-        raise PyprojectTOMLDepsError(msg) from None
+        ),
+    )
 
     reqs_by_group = {
         group: [Requirement(req_str) for req_str in req_strs]

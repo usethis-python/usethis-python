@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from pydantic import TypeAdapter, ValidationError
-
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectDescriptionError,
     PyprojectTOMLProjectNameError,
 )
 from usethis._file.pyproject_toml.project import get_project_dict
+from usethis._validate import validate_or_raise
 
 
 def get_name() -> str:
@@ -16,15 +15,17 @@ def get_name() -> str:
     project_dict = get_project_dict()
 
     try:
-        name = TypeAdapter(str).validate_python(project_dict["name"])
+        raw_name = project_dict["name"]
     except KeyError:
         msg = "The 'project.name' value is missing from 'pyproject.toml'."
         raise PyprojectTOMLProjectNameError(msg) from None
-    except ValidationError as err:
-        msg = f"The 'project.name' value in 'pyproject.toml' is not a valid string:\n{err}"
-        raise PyprojectTOMLProjectNameError(msg) from None
 
-    return name
+    return validate_or_raise(
+        str,
+        raw_name,
+        error_cls=PyprojectTOMLProjectNameError,
+        error_msg="The 'project.name' value in 'pyproject.toml' is not a valid string.",
+    )
 
 
 def get_description() -> str:
@@ -32,12 +33,14 @@ def get_description() -> str:
     project_dict = get_project_dict()
 
     try:
-        description = TypeAdapter(str).validate_python(project_dict["description"])
+        raw_description = project_dict["description"]
     except KeyError:
         msg = "The 'project.description' value is missing from 'pyproject.toml'."
         raise PyprojectTOMLProjectDescriptionError(msg) from None
-    except ValidationError as err:
-        msg = f"The 'project.description' value in 'pyproject.toml' is not a valid string:\n{err}"
-        raise PyprojectTOMLProjectDescriptionError(msg) from None
 
-    return description
+    return validate_or_raise(
+        str,
+        raw_description,
+        error_cls=PyprojectTOMLProjectDescriptionError,
+        error_msg="The 'project.description' value in 'pyproject.toml' is not a valid string.",
+    )

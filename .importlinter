@@ -25,7 +25,7 @@ layers =
     _integrations
     _backend
     _file
-    _subprocess | _console | _python
+    _subprocess | _console | _python | _validate
     _config
     _types | errors | _fallback
     _pipeweld

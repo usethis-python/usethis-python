@@ -19,6 +19,7 @@ usethis                           # usethis: Automatically manage Python tooling
 ├── _init                         # Project initialization and build system setup.
 ├── _subprocess                   # Subprocess invocation utilities.
 ├── _test                         # Test utilities and fixtures for the usethis test suite.
+├── _validate                     # Safer abstractions for Pydantic TypeAdapter validation.
 ├── errors                        # Custom errors for the usethis package.
 ├── _backend                      # Backend dispatch and tool-specific backend implementations.
 │   ├── dispatch                  # Backend selection and dispatch logic.
@@ -425,6 +426,8 @@ ALWAYS check whether an existing function already covers your use case before im
 - `ty()` (`usethis._ui.interface.tool`) — Use the ty type checker: an extremely fast Python type checker.
 - `typecheck()` (`usethis._ui.interface.typecheck`) — Add a recommended type checker to the project.
 - `version()` (`usethis._ui.interface.version`) — Print the installed version of usethis.
+- `validate_or_raise()` (`usethis._validate`) — Validate *obj* against *type_*, raising a custom error on failure.
+- `validate_or_default()` (`usethis._validate`) — Validate *obj* against *type_*, returning *default* on failure.
 
 <!-- /sync:docs/functions.txt -->
 

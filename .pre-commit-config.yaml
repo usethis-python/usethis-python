@@ -54,12 +54,6 @@ repos:
       - id: markdownlint-cli2
         args: ["--fix"]
         priority: 0
-  - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.8.1
-    hooks:
-      - id: prettier
-        types_or: [markdown]
-        priority: 0
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
@@ -158,6 +152,12 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 1
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.8.1
+    hooks:
+      - id: prettier
+        types_or: [markdown]
+        priority: 2
   - repo: local
     hooks:
       - id: deptry
@@ -166,14 +166,14 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
-        priority: 2
+        priority: 3
       - id: import-linter
         name: import-linter
         entry: uv run --frozen --offline lint-imports
         language: system
         always_run: true
         pass_filenames: false
-        priority: 2
+        priority: 3
       - id: ty
         name: ty
         entry: uv run --frozen --offline ty check
@@ -181,7 +181,7 @@ repos:
         types_or: [python, pyi]
         always_run: true
         require_serial: true
-        priority: 2
+        priority: 3
 default_stages:
   - pre-commit
   - pre-push

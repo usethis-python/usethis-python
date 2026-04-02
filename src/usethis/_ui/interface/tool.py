@@ -15,6 +15,7 @@ from usethis._ui.options import (
     frozen_opt,
     how_opt,
     linter_opt,
+    no_apply_opt,
     no_hook_opt,
     no_sync_opt,
     offline_opt,
@@ -247,6 +248,7 @@ def pyproject_fmt(
     no_sync: bool = no_sync_opt,
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
+    no_apply: bool = no_apply_opt,
 ) -> None:
     """Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files."""
     from usethis._config_file import files_manager
@@ -263,7 +265,7 @@ def pyproject_fmt(
         ),
         files_manager(),
     ):
-        _run_tool(use_pyproject_fmt, remove=remove, how=how)
+        _run_tool(use_pyproject_fmt, remove=remove, how=how, no_apply=no_apply)
 
 
 @app.command(
@@ -380,6 +382,7 @@ def ruff(
     linter: bool = linter_opt,
     formatter: bool = formatter_opt,
     no_hook: bool = no_hook_opt,
+    no_apply: bool = no_apply_opt,
 ) -> None:
     """Use Ruff: an extremely fast Python linter and code formatter."""
     from usethis._config_file import files_manager
@@ -396,7 +399,14 @@ def ruff(
         ),
         files_manager(),
     ):
-        _run_tool(use_ruff, remove=remove, how=how, linter=linter, formatter=formatter)
+        _run_tool(
+            use_ruff,
+            remove=remove,
+            how=how,
+            linter=linter,
+            formatter=formatter,
+            no_apply=no_apply,
+        )
 
 
 @app.command(

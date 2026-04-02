@@ -42,6 +42,11 @@ no_hook_opt = typer.Option(
     "--no-hook",
     help="Don't add or modify git hook configuration, e.g. pre-commit",
 )
+no_apply_opt = typer.Option(
+    False,
+    "--no-apply",
+    help="Don't run formatters after adding them.",
+)
 
 # author command options
 author_name_opt = typer.Option(..., "--name", help="Author name")

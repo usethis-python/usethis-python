@@ -8,6 +8,7 @@ from usethis._ui.options import (
     backend_opt,
     frozen_opt,
     how_opt,
+    no_apply_opt,
     no_sync_opt,
     offline_opt,
     quiet_opt,
@@ -23,6 +24,7 @@ def format_(
     frozen: bool = frozen_opt,
     no_sync: bool = no_sync_opt,
     backend: BackendEnum = backend_opt,
+    no_apply: bool = no_apply_opt,
 ) -> None:
     """Add recommended formatters to the project."""
     from usethis._config_file import files_manager
@@ -41,7 +43,7 @@ def format_(
         files_manager(),
     ):
         try:
-            use_formatters(remove=remove, how=how)
+            use_formatters(remove=remove, how=how, no_apply=no_apply)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

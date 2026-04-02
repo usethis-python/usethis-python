@@ -664,7 +664,7 @@ lint.pydocstyle.convention = "pep257"
                     manager.extend_list(keys=["key"], values=["new_value"])
 
         def test_preserves_comments(self, tmp_path: Path) -> None:
-            # https://github.com/usethis-python/usethis-python/issues/884
+            # https://github.com/usethis-python/usethis-python/issues/1171
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
@@ -808,7 +808,7 @@ key = [
                 assert manager._content == {"key": "value"}
 
         def test_preserves_comments(self, tmp_path: Path) -> None:
-            # https://github.com/usethis-python/usethis-python/issues/884
+            # https://github.com/usethis-python/usethis-python/issues/1171
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property

@@ -12,7 +12,6 @@ files were modified (following the pre-commit autofix convention).
 
 from __future__ import annotations
 
-import os
 import re
 import sys
 from pathlib import Path
@@ -70,7 +69,7 @@ def _detect_codeblock_fence(text: str) -> str:
 
 def _build_replacement(actual_content: str, expected: str) -> str:
     """Build the replacement content for a sync block, preserving code fences."""
-    nl = os.linesep
+    nl = "\n"
     fence = _detect_codeblock_fence(actual_content)
     if fence:
         return f"{nl}{fence}{nl}{expected}{nl}```{nl}{nl}"
@@ -138,7 +137,7 @@ def _fix_file(path: Path) -> bool:
             )
             continue
 
-        with open(source, encoding="utf-8", newline="") as f:
+        with open(source, encoding="utf-8") as f:
             expected = f.read().strip()
         actual_content = "".join(content_lines)
         replacement = _build_replacement(actual_content, expected)

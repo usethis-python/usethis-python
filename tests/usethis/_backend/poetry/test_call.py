@@ -144,7 +144,7 @@ class TestCallPoetrySubprocess:
         with usethis_config.set(backend=BackendEnum.poetry, frozen=True):
             result = call_poetry_subprocess(["add", "pytest"], change_toml=False)
 
-        assert "--lock" in result
+        assert result == "poetry --quiet --no-interaction add --lock pytest"
 
     def test_frozen_adds_lock_for_remove(self, monkeypatch: pytest.MonkeyPatch):
         """When frozen=True, --lock should be added to 'remove' commands."""
@@ -163,7 +163,10 @@ class TestCallPoetrySubprocess:
                 ["remove", "--group", "test", "pytest"], change_toml=False
             )
 
-        assert "--lock" in result
+        assert (
+            result
+            == "poetry --quiet --no-interaction remove --lock --group test pytest"
+        )
 
     def test_frozen_no_lock_for_version(self, monkeypatch: pytest.MonkeyPatch):
         """When frozen=True, --lock should not be added to non-add/remove commands."""

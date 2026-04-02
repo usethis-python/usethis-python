@@ -48,8 +48,6 @@ repos:
       - id: ruff-check
         args: [--fix]
         priority: 0
-      - id: ruff-format
-        priority: 1
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.22.0
     hooks:
@@ -105,6 +103,14 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
+      - id: check-priority-monotone
+        name: check-priority-monotone
+        entry: uv run --frozen --offline hooks/check-priority-monotone.py
+        args: ["--config-file=.pre-commit-config.yaml"]
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 0
       - id: export-skills-directory
         name: export-skills-directory
         entry: uv run --frozen --offline hooks/export-skills-directory.py
@@ -129,6 +135,13 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.3
+    hooks:
+      - id: ruff-format
+        priority: 1
+  - repo: local
+    hooks:
       - id: fix-readme
         name: fix-readme
         entry: uv run --frozen --offline hooks/fix-readme.py
@@ -137,8 +150,6 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 1
-  - repo: local
-    hooks:
       - id: fix-doc-sync
         name: fix-doc-sync
         entry: uv run --frozen --offline hooks/fix-doc-sync.py
@@ -156,8 +167,6 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 2
-  - repo: local
-    hooks:
       - id: import-linter
         name: import-linter
         entry: uv run --frozen --offline lint-imports
@@ -165,8 +174,6 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 2
-  - repo: local
-    hooks:
       - id: ty
         name: ty
         entry: uv run --frozen --offline ty check

@@ -461,7 +461,9 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-python-test`: General guidelines for writing tests in the usethis project, including test class organization
 - `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
 - `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
+- `usethis-qa-grammar`: Review code and documentation for grammar, spelling, and tone issues
 - `usethis-qa-import-linter`: Use the Import Linter software on the usethis project
+- `usethis-qa-llm-review`: Coordinate LLM-assisted quality reviews of the codebase beyond what automated tools catch
 - `usethis-qa-static-checks`: Perform static code checks
 - `usethis-skills-create`: Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability
 - `usethis-skills-external-add`: Add an external (community) skill to the project from a third-party source, including installing it and documenting it in AGENTS.md
@@ -484,6 +486,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 - ALWAYS check the [Function Reference](#function-reference) section above before implementing any utility logic — mature, tested functions already exist for common operations such as reading dependencies, detecting tools, and printing console output.
 - ALWAYS use possibly relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
+- ALWAYS dogfood and user-test CLI changes. After implementing or modifying any CLI command, use the `usethis-cli-dogfood` skill to run the command against this repo and the `usethis-cli-user-test` skill to verify the happy path in a fresh project. Both are mandatory — never skip them, even for seemingly simple changes. Use the `usethis-cli-modify` skill for guidance on the full CLI change workflow.
 - ALWAYS use the `usethis-skills-modify` skill when modifying any agent skill (`SKILL.md` file). Do not edit skill files without it — it enforces version bumping, scope checking, and content quality guidelines. Similarly, ALWAYS use `usethis-skills-create` when creating a new skill.
 - ALWAYS use `find-skills` to research new skill capabilities if there are difficult tasks, tasks in an unfamiliar domain, if you believe there is a lack of clarity or direction around precisely how to proceed, or if you get stuck or find something surprisingly challenging. When using this skill, please be sure to use the `usethis-skills-external-install` skill when deciding to install a new external skill.
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves

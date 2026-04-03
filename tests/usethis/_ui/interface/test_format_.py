@@ -68,3 +68,15 @@ class TestFormat:
             "✔ Adding Ruff config to 'ruff.toml'.\n"
             "☐ Run 'ruff format' to run the Ruff formatter.\n"
         )
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_no_apply(self, uv_init_dir: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(uv_init_dir):
+            result = runner.invoke_safe(app, ["format", "--no-apply"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "Running the Ruff formatter" not in result.output
+        assert "Running pyproject-fmt" not in result.output

@@ -10,7 +10,6 @@ to be committed), 0 otherwise.
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 from pathlib import Path
 
@@ -48,10 +47,8 @@ def main() -> int:
     )
     env.globals["include_doc"] = _include_doc  # pyright: ignore[reportArgumentType]
 
-    template = env.get_template(str(template_path))
+    template = env.get_template(template_path.as_posix())
     content = template.render()
-    if os.linesep != "\n":
-        content = content.replace("\n", os.linesep)
 
     try:
         with open(output_file, encoding="utf-8", newline="") as f:

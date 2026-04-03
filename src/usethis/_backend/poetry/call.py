@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import shutil
+import tempfile
+from pathlib import Path
+
 from usethis._backend.poetry.errors import PoetrySubprocessFailedError
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -28,12 +32,13 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
     if change_toml:
         prepare_pyproject_write()
 
-    # Poetry doesn't support a --frozen flag like uv does. The closest equivalent
-    # is --lock, which updates pyproject.toml and the lockfile but skips installation.
-    # Unlike uv's --frozen (which skips both locking and installation), Poetry's --lock
-    # still resolves and updates poetry.lock. This is an acceptable compromise since
-    # Poetry has no way to update pyproject.toml without also resolving dependencies.
-    if usethis_config.frozen and args[:1] in (["add"], ["remove"]):
+    # Poetry doesn't support a --frozen flag like uv does. To emulate frozen
+    # behaviour we: (1) pass --lock to skip installation, (2) back up
+    # poetry.lock before the subprocess and restore it afterwards so the
+    # lockfile is never modified. This ensures pyproject.toml is updated by
+    # the subprocess while the lockfile remains untouched.
+    frozen_applicable = usethis_config.frozen and args[:1] in (["add"], ["remove"])
+    if frozen_applicable:
         args = [args[0], "--lock", *args[1:]]
 
     new_args = ["poetry", "--no-interaction", *args]
@@ -43,15 +48,46 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
     elif args[:1] != ["--version"]:
         new_args = [*new_args[:1], "--quiet", *new_args[1:]]
 
+    lock_path = usethis_config.cpd() / "poetry.lock"
+    backup_path = _backup_poetry_lock(lock_path) if frozen_applicable else None
+
     try:
-        output = call_subprocess(new_args, cwd=usethis_config.cpd())
+        output = _run_poetry_subprocess(new_args)
+    finally:
+        if frozen_applicable:
+            _restore_poetry_lock(lock_path, backup_path)
+
+    if change_toml and PyprojectTOMLManager().is_locked():
+        PyprojectTOMLManager().read_file()
+
+    return output
+
+
+def _run_poetry_subprocess(new_args: list[str]) -> str:
+    """Execute the poetry subprocess, translating errors."""
+    try:
+        return call_subprocess(new_args, cwd=usethis_config.cpd())
     except SubprocessFailedError as err:
         raise PoetrySubprocessFailedError(err) from None
     except FileNotFoundError:
         msg = "Poetry is not installed or not found on PATH."
         raise PoetrySubprocessFailedError(msg) from None
 
-    if change_toml and PyprojectTOMLManager().is_locked():
-        PyprojectTOMLManager().read_file()
 
-    return output
+def _backup_poetry_lock(lock_path: Path) -> Path | None:
+    """Back up poetry.lock to a temp file. Returns the backup path, or None."""
+    if not lock_path.exists():
+        return None
+    tmp_dir = tempfile.mkdtemp()
+    backup = Path(tmp_dir) / "poetry.lock"
+    shutil.copy2(lock_path, backup)
+    return backup
+
+
+def _restore_poetry_lock(lock_path: Path, backup_path: Path | None) -> None:
+    """Restore poetry.lock from backup, or remove it if there was no backup."""
+    if backup_path is not None:
+        shutil.copy2(backup_path, lock_path)
+        shutil.rmtree(backup_path.parent)
+    elif lock_path.exists():
+        lock_path.unlink()

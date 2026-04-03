@@ -923,7 +923,7 @@ test = []
             capfd: pytest.CaptureFixture[str],
             monkeypatch: pytest.MonkeyPatch,
         ):
-            """When frozen=True, poetry deps are still added (via --lock)."""
+            """When frozen=True, poetry deps are still declared in pyproject.toml."""
             # Arrange
             (tmp_path / "pyproject.toml").write_text("""\
 [dependency-groups]
@@ -1169,7 +1169,7 @@ test = ["pytest"]
             capfd: pytest.CaptureFixture[str],
             monkeypatch: pytest.MonkeyPatch,
         ):
-            """When frozen=True, poetry deps are still removed (via --lock)."""
+            """When frozen=True, poetry deps are still removed from pyproject.toml."""
             # Arrange
             (tmp_path / "pyproject.toml").write_text("""\
 [dependency-groups]

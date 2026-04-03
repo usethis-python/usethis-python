@@ -202,6 +202,110 @@ class TestCallPoetrySubprocess:
 
         assert "--lock" not in result
 
+    def test_frozen_restores_existing_lockfile(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """When frozen=True and poetry.lock exists, it should be restored after the subprocess."""
+        lock_path = tmp_path / "poetry.lock"
+        original_content = "original-lock-content"
+        lock_path.write_text(original_content)
+
+        def mock_call_subprocess(*_: object, **__: object) -> str:
+            # Simulate poetry modifying the lockfile
+            lock_path.write_text("modified-lock-content")
+            return ""
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(
+            backend=BackendEnum.poetry, frozen=True, project_dir=tmp_path
+        ):
+            call_poetry_subprocess(["add", "pytest"], change_toml=False)
+
+        assert lock_path.read_text() == original_content
+
+    def test_frozen_removes_created_lockfile(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """When frozen=True and poetry.lock didn't exist, any new lockfile should be removed."""
+        lock_path = tmp_path / "poetry.lock"
+        assert not lock_path.exists()
+
+        def mock_call_subprocess(*_: object, **__: object) -> str:
+            # Simulate poetry creating a new lockfile
+            lock_path.write_text("new-lock-content")
+            return ""
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(
+            backend=BackendEnum.poetry, frozen=True, project_dir=tmp_path
+        ):
+            call_poetry_subprocess(["add", "pytest"], change_toml=False)
+
+        assert not lock_path.exists()
+
+    def test_frozen_restores_lockfile_on_failure(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """When frozen=True and the subprocess fails, poetry.lock should still be restored."""
+        lock_path = tmp_path / "poetry.lock"
+        original_content = "original-lock-content"
+        lock_path.write_text(original_content)
+
+        def mock_call_subprocess(*_: object, **__: object) -> str:
+            lock_path.write_text("modified-lock-content")
+            msg = "mock failure"
+            raise SubprocessFailedError(msg)
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with (
+            usethis_config.set(
+                backend=BackendEnum.poetry, frozen=True, project_dir=tmp_path
+            ),
+            pytest.raises(PoetrySubprocessFailedError),
+        ):
+            call_poetry_subprocess(["add", "pytest"], change_toml=False)
+
+        assert lock_path.read_text() == original_content
+
+    def test_not_frozen_does_not_restore_lockfile(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        """When frozen=False, poetry.lock changes should be preserved."""
+        lock_path = tmp_path / "poetry.lock"
+        lock_path.write_text("original-lock-content")
+
+        def mock_call_subprocess(*_: object, **__: object) -> str:
+            lock_path.write_text("modified-lock-content")
+            return ""
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(
+            backend=BackendEnum.poetry, frozen=False, project_dir=tmp_path
+        ):
+            call_poetry_subprocess(["add", "pytest"], change_toml=False)
+
+        assert lock_path.read_text() == "modified-lock-content"
+
     def test_change_toml_rereads_when_locked(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ):

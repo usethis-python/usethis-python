@@ -917,6 +917,45 @@ test = []
             # No uv.toml default-groups should be created
             assert not (tmp_path / "uv.toml").exists()
 
+        def test_frozen_still_calls_add(
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+            monkeypatch: pytest.MonkeyPatch,
+        ):
+            """When frozen=True, poetry deps are still declared in pyproject.toml."""
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = []
+""")
+
+            calls: list[tuple[str, str]] = []
+
+            def mock_add_dep(dep: object, group: str) -> None:
+                calls.append((str(dep), group))
+
+            monkeypatch.setattr(
+                "usethis._deps.add_dep_to_group_via_poetry",
+                mock_add_dep,
+            )
+
+            with (
+                usethis_config.set(backend=BackendEnum.poetry, frozen=True),
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                add_deps_to_group([Dependency(name="pytest")], "test")
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert (
+                "Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'"
+                in out
+            )
+            assert "Install the dependency 'pytest'" in out
+            assert len(calls) == 1
+
 
 class TestRemoveDepsFromGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -1111,6 +1150,44 @@ test = ["pytest"]
 
             with (
                 usethis_config.set(backend=BackendEnum.poetry),
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+            ):
+                remove_deps_from_group([Dependency(name="pytest")], "test")
+
+            out, err = capfd.readouterr()
+            assert not err
+            assert (
+                "Removing dependency 'pytest' from the 'test' group in 'pyproject.toml'"
+                in out
+            )
+            assert len(calls) == 1
+
+        def test_frozen_still_calls_remove(
+            self,
+            tmp_path: Path,
+            capfd: pytest.CaptureFixture[str],
+            monkeypatch: pytest.MonkeyPatch,
+        ):
+            """When frozen=True, poetry deps are still removed from pyproject.toml."""
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+test = ["pytest"]
+""")
+
+            calls: list[tuple[str, str]] = []
+
+            def mock_remove_dep(dep: object, group: str) -> None:
+                calls.append((str(dep), group))
+
+            monkeypatch.setattr(
+                "usethis._deps.remove_dep_from_group_via_poetry",
+                mock_remove_dep,
+            )
+
+            with (
+                usethis_config.set(backend=BackendEnum.poetry, frozen=True),
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
             ):

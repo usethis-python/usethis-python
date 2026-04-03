@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import shutil
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from usethis._backend.poetry.errors import PoetrySubprocessFailedError
 from usethis._config import usethis_config
@@ -13,6 +15,9 @@ from usethis._file.pyproject_toml.write import prepare_pyproject_write
 from usethis._subprocess import SubprocessFailedError, call_subprocess
 from usethis._types.backend import BackendEnum
 from usethis.errors import ForbiddenBackendError
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
@@ -49,13 +54,14 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
         new_args = [*new_args[:1], "--quiet", *new_args[1:]]
 
     lock_path = usethis_config.cpd() / "poetry.lock"
-    backup_path = _backup_poetry_lock(lock_path) if frozen_applicable else None
-
-    try:
-        output = _run_poetry_subprocess(new_args)
-    finally:
-        if frozen_applicable:
-            _restore_poetry_lock(lock_path, backup_path)
+    with _frozen_poetry_lock(lock_path) if frozen_applicable else _noop_context():
+        try:
+            output = call_subprocess(new_args, cwd=usethis_config.cpd())
+        except SubprocessFailedError as err:
+            raise PoetrySubprocessFailedError(err) from None
+        except FileNotFoundError:
+            msg = "Poetry is not installed or not found on PATH."
+            raise PoetrySubprocessFailedError(msg) from None
 
     if change_toml and PyprojectTOMLManager().is_locked():
         PyprojectTOMLManager().read_file()
@@ -63,31 +69,29 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
     return output
 
 
-def _run_poetry_subprocess(new_args: list[str]) -> str:
-    """Execute the poetry subprocess, translating errors."""
-    try:
-        return call_subprocess(new_args, cwd=usethis_config.cpd())
-    except SubprocessFailedError as err:
-        raise PoetrySubprocessFailedError(err) from None
-    except FileNotFoundError:
-        msg = "Poetry is not installed or not found on PATH."
-        raise PoetrySubprocessFailedError(msg) from None
+@contextmanager
+def _frozen_poetry_lock(lock_path: Path) -> Generator[None, None, None]:
+    """Preserve the state of poetry.lock across the enclosed block.
 
-
-def _backup_poetry_lock(lock_path: Path) -> Path | None:
-    """Back up poetry.lock to a temp file. Returns the backup path, or None."""
-    if not lock_path.exists():
-        return None
+    If the lockfile exists beforehand it is backed up and restored afterwards;
+    if it did not exist, any lockfile created during the block is removed.
+    """
+    had_lockfile = lock_path.exists()
     tmp_dir = tempfile.mkdtemp()
-    backup = Path(tmp_dir) / "poetry.lock"
-    shutil.copy2(lock_path, backup)
-    return backup
+    try:
+        if had_lockfile:
+            backup = Path(tmp_dir) / "poetry.lock"
+            shutil.copy2(lock_path, backup)
+        yield
+    finally:
+        if had_lockfile:
+            shutil.copy2(Path(tmp_dir) / "poetry.lock", lock_path)
+        elif lock_path.exists():
+            lock_path.unlink()
+        shutil.rmtree(tmp_dir)
 
 
-def _restore_poetry_lock(lock_path: Path, backup_path: Path | None) -> None:
-    """Restore poetry.lock from backup, or remove it if there was no backup."""
-    if backup_path is not None:
-        shutil.copy2(backup_path, lock_path)
-        shutil.rmtree(backup_path.parent)
-    elif lock_path.exists():
-        lock_path.unlink()
+@contextmanager
+def _noop_context() -> Generator[None, None, None]:
+    """A no-op context manager used when frozen mode is not applicable."""
+    yield

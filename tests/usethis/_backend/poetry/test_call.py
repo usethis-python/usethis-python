@@ -1,3 +1,4 @@
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -211,7 +212,7 @@ class TestCallPoetrySubprocess:
         lock_path.write_text(original_content)
 
         created_dirs: list[str] = []
-        original_mkdtemp = usethis._backend.poetry.call.tempfile.mkdtemp
+        original_mkdtemp = tempfile.mkdtemp
 
         def tracking_mkdtemp(
             suffix: str | None = None,
@@ -222,11 +223,7 @@ class TestCallPoetrySubprocess:
             created_dirs.append(result)
             return result
 
-        monkeypatch.setattr(
-            usethis._backend.poetry.call.tempfile,
-            "mkdtemp",
-            tracking_mkdtemp,
-        )
+        monkeypatch.setattr(tempfile, "mkdtemp", tracking_mkdtemp)
 
         def mock_call_subprocess(*_: object, **__: object) -> str:
             # Simulate poetry modifying the lockfile

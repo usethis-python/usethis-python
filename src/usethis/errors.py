@@ -44,7 +44,7 @@ class BackendSubprocessFailedError(UsethisError):
 
 
 class ForbiddenBackendError(UsethisError):
-    """Raised when an unexpected attempt to use a particular backend.
+    """Raised on an unexpected attempt to use a particular backend.
 
     For example, when the uv backend is not enabled but a uv subprocess is invoked.
     """

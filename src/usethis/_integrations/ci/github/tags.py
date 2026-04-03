@@ -19,11 +19,11 @@ def get_github_latest_tag(owner: str, repo: str) -> str:
         repo: GitHub repository name.
 
     Returns:
-        The name of most recent tag of the repository.
+        The name of the most recent tag of the repository.
 
     Raises:
         GitHubTagError: If there's an issue fetching the tags from the GitHub API.
-        NoTagsFoundError: If the repository has no tags.
+        NoGitHubTagsFoundError: If the repository has no tags.
     """
     # GitHub API URL for repository tags
     api_url = f"https://api.github.com/repos/{owner}/{repo}/tags"

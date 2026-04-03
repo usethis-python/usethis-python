@@ -3,7 +3,6 @@ from pathlib import Path
 import pytest
 from packaging.specifiers import SpecifierSet
 
-from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.pyproject_toml.requires_python import (
     MissingRequiresPythonError,
@@ -35,7 +34,7 @@ requires-python = ">=3.7"
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
-            pytest.raises(PyprojectTOMLNotFoundError),
+            pytest.raises(MissingRequiresPythonError),
         ):
             get_requires_python()
 
@@ -164,7 +163,7 @@ requires-python = ">=3.8,<=3.11"
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
-            pytest.raises(PyprojectTOMLNotFoundError),
+            pytest.raises(MissingRequiresPythonError),
         ):
             get_required_minor_python_versions()
 

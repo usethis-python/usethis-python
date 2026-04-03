@@ -6,7 +6,6 @@ import re
 
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._file.validate import validate_or_raise
 from usethis._integrations.project.layout import get_source_dir_str
 from usethis._integrations.sonarqube.errors import (
     CoverageReportConfigNotFoundError,
@@ -74,32 +73,25 @@ sonar.verbose={"true" if verbose else "false"}
 
 
 def _get_sonarqube_project_key() -> str:
-    try:
-        raw = PyprojectTOMLManager()[["tool", "usethis", "sonarqube", "project-key"]]
-    except KeyError:
-        msg = "Could not find SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
-        raise MissingProjectKeyError(msg) from None
-    except FileNotFoundError:
-        msg = "Could not find 'pyproject.toml' for SonarQube project key at 'tool.usethis.sonarqube.project-key'."
-        raise MissingProjectKeyError(msg) from None
-    project_key = validate_or_raise(
-        str,
-        raw,
-        error_cls=InvalidSonarQubeProjectKeyError,
-        error_msg="SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml' must be a string.",
+    project_key = PyprojectTOMLManager().ensure_get(
+        ["tool", "usethis", "sonarqube", "project-key"],
+        err=MissingProjectKeyError(
+            "Could not find a valid SonarQube project key at 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'."
+        ),
+        validate=str,
     )
     _validate_project_key(project_key)
     return project_key
 
 
 def _is_sonarqube_verbose() -> bool:
-    return PyprojectTOMLManager().get_validated(
+    return PyprojectTOMLManager().validated_get(
         ["tool", "usethis", "sonarqube", "verbose"], default=False, validate=bool
     )
 
 
 def _get_sonarqube_exclusions() -> list[str]:
-    return PyprojectTOMLManager().get_validated(
+    return PyprojectTOMLManager().validated_get(
         ["tool", "usethis", "sonarqube", "exclusions"], default=[], validate=list[str]
     )
 

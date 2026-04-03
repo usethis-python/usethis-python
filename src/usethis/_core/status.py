@@ -21,7 +21,7 @@ def use_development_status(
     tick_print(f"Setting the development status to '{dispstatus}'.")
 
     mgr = PyprojectTOMLManager()
-    existing_classifiers = mgr.get_validated(
+    existing_classifiers = mgr.validated_get(
         ["project", "classifiers"], default=[], validate=list[str]
     )
     existing_status_classifiers = {

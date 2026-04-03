@@ -239,7 +239,7 @@ class KeyValueFileManager(
         """Remove a value from the configuration file."""
         raise NotImplementedError
 
-    def get_validated(
+    def validated_get(
         self, keys: Sequence[Key], *, default: Any, validate: Any = None
     ) -> Any:
         """Retrieve a value by keys, returning ``default`` on missing key or failed validation.

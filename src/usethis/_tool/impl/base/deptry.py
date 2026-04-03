@@ -45,7 +45,7 @@ class DeptryTool(DeptryToolSpec, Tool):
     def ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
-        return file_manager.get_validated(keys, default=[], validate=list[Rule])
+        return file_manager.validated_get(keys, default=[], validate=list[Rule])
 
     @override
     def _get_ignore_keys(

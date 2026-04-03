@@ -116,14 +116,14 @@ class TestValidateOrDefault:
 
 
 class TestGetValidated:
-    """Tests for KeyValueFileManager.get_validated."""
+    """Tests for KeyValueFileManager.validated_get."""
 
     def test_returns_validated_value(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").write_text(
             '[project]\nname = "test"\nversion = "0.1.0"\n'
         )
         with change_cwd(tmp_path), files_manager():
-            result = PyprojectTOMLManager().get_validated(
+            result = PyprojectTOMLManager().validated_get(
                 ["project", "name"], default="fallback", validate=str
             )
         assert result == "test"
@@ -133,14 +133,14 @@ class TestGetValidated:
             '[project]\nname = "test"\nversion = "0.1.0"\n'
         )
         with change_cwd(tmp_path), files_manager():
-            result = PyprojectTOMLManager().get_validated(
+            result = PyprojectTOMLManager().validated_get(
                 ["project", "missing"], default="fallback", validate=str
             )
         assert result == "fallback"
 
     def test_returns_default_on_missing_file(self, tmp_path: Path):
         with change_cwd(tmp_path), files_manager():
-            result = PyprojectTOMLManager().get_validated(
+            result = PyprojectTOMLManager().validated_get(
                 ["project", "name"], default="fallback", validate=str
             )
         assert result == "fallback"
@@ -150,7 +150,7 @@ class TestGetValidated:
             '[project]\nname = "test"\nversion = "0.1.0"\nclassifiers = "not-a-list"\n'
         )
         with change_cwd(tmp_path), files_manager():
-            result = PyprojectTOMLManager().get_validated(
+            result = PyprojectTOMLManager().validated_get(
                 ["project", "classifiers"], default=[], validate=list[str]
             )
         assert result == []
@@ -160,7 +160,7 @@ class TestGetValidated:
             '[project]\nname = "test"\nversion = "0.1.0"\n'
         )
         with change_cwd(tmp_path), files_manager():
-            result = PyprojectTOMLManager().get_validated(
+            result = PyprojectTOMLManager().validated_get(
                 ["project", "name"], default="fallback"
             )
         assert result == "test"

@@ -5,7 +5,6 @@ import pytest
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectDescriptionError,
     PyprojectTOMLProjectNameError,
-    PyprojectTOMLProjectSectionError,
 )
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.pyproject_toml.name import get_description, get_name
@@ -35,7 +34,7 @@ class TestGetName:
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
-            pytest.raises(FileNotFoundError),
+            pytest.raises(PyprojectTOMLProjectNameError),
         ):
             get_name()
 
@@ -48,7 +47,7 @@ class TestGetName:
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
-            pytest.raises(PyprojectTOMLProjectSectionError),
+            pytest.raises(PyprojectTOMLProjectNameError),
         ):
             get_name()
 
@@ -107,7 +106,7 @@ class TestGetDescription:
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
-            pytest.raises(FileNotFoundError),
+            pytest.raises(PyprojectTOMLProjectDescriptionError),
         ):
             get_description()
 
@@ -120,7 +119,7 @@ class TestGetDescription:
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
-            pytest.raises(PyprojectTOMLProjectSectionError),
+            pytest.raises(PyprojectTOMLProjectDescriptionError),
         ):
             get_description()
 

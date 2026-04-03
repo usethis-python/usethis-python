@@ -40,10 +40,10 @@ def remove_dep_from_group_via_uv(dep: Dependency, group: str):
 def get_default_groups_via_uv() -> list[str]:
     """Get the default dependency groups from the uv configuration."""
     if UVTOMLManager().path.exists():
-        return UVTOMLManager().get_validated(
+        return UVTOMLManager().validated_get(
             ["default-groups"], default=[], validate=list[str]
         )
     else:
-        return PyprojectTOMLManager().get_validated(
+        return PyprojectTOMLManager().validated_get(
             ["tool", "uv", "default-groups"], default=[], validate=list[str]
         )

@@ -6,9 +6,7 @@ from typing import Any
 
 from packaging.requirements import Requirement
 
-from usethis._file.pyproject_toml.errors import PyprojectTOMLDepsError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._file.validate import validate_or_raise
 from usethis._types.deps import Dependency
 
 
@@ -18,32 +16,8 @@ def get_project_deps() -> list[Dependency]:
     This does not include development dependencies, e.g. not those in the
     dependency-groups section, not extras/optional dependencies, not build dependencies.
     """
-    try:
-        pyproject = PyprojectTOMLManager().get()
-    except FileNotFoundError:
-        return []
-
-    try:
-        project_section = pyproject["project"]
-    except KeyError:
-        return []
-
-    if not isinstance(project_section, dict):
-        return []
-
-    try:
-        dep_section = project_section["dependencies"]
-    except KeyError:
-        return []
-
-    req_strs = validate_or_raise(
-        list[str],
-        dep_section,
-        error_cls=PyprojectTOMLDepsError,
-        error_msg=(
-            "Failed to parse the 'project.dependencies' section in 'pyproject.toml'.\n\n"
-            "Please check the section and try again."
-        ),
+    req_strs = PyprojectTOMLManager().validated_get(
+        ["project", "dependencies"], default=[], validate=list[str]
     )
 
     reqs = [Requirement(req_str) for req_str in req_strs]
@@ -52,24 +26,8 @@ def get_project_deps() -> list[Dependency]:
 
 def get_dep_groups() -> dict[str, list[Dependency]]:
     """Get all dependency groups from [dependency-groups]."""
-    try:
-        pyproject = PyprojectTOMLManager().get()
-    except FileNotFoundError:
-        return {}
-
-    try:
-        dep_groups_section = pyproject["dependency-groups"]
-    except KeyError:
-        return {}
-
-    req_strs_by_group = validate_or_raise(
-        dict[str, list[str]],
-        dep_groups_section,
-        error_cls=PyprojectTOMLDepsError,
-        error_msg=(
-            "Failed to parse the 'dependency-groups' section in 'pyproject.toml'.\n\n"
-            "Please check the section and try again."
-        ),
+    req_strs_by_group = PyprojectTOMLManager().validated_get(
+        ["dependency-groups"], default={}, validate=dict[str, list[str]]
     )
 
     reqs_by_group = {

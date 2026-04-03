@@ -3,7 +3,6 @@ from pathlib import Path
 import pytest
 
 from usethis._file.pyproject_toml.errors import (
-    PyprojectTOMLNotFoundError,
     PyprojectTOMLProjectSectionError,
 )
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
@@ -16,7 +15,7 @@ class TestGetProjectDict:
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
-            pytest.raises(PyprojectTOMLNotFoundError),
+            pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
 

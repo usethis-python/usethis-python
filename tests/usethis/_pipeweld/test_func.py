@@ -174,7 +174,7 @@ class TestAdder:
             assert result.solution == series(series(parallel("A", "B")))
 
         class TestDoubleNesting:
-            """A series of related tests building up to a complex case"""
+            """A series of related tests building up to a complex case."""
 
             def test_no_nesting(self):
                 # Arrange

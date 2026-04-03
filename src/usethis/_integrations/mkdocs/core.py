@@ -6,7 +6,7 @@ from usethis._integrations.project.name import get_project_name
 
 
 def add_docs_dir() -> None:
-    """Create the `docs` directory and an `docs/index.md` file if they do not exist."""
+    """Create the `docs` directory and a `docs/index.md` file if they do not exist."""
     docs_dir = usethis_config.cpd() / "docs"
     if not docs_dir.exists():
         tick_print("Creating '/docs'.")

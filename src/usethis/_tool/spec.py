@@ -172,7 +172,7 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         A non-default implementation should be provided when the tool has a CLI.
 
         This will usually be a static string, but may involve some dynamic inference,
-        e.g. when determining the source directory for to operate on.
+        e.g. when determining the source directory to operate on.
 
         Returns:
             The command string.

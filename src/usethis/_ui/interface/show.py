@@ -59,7 +59,7 @@ def license(
             raise typer.Exit(code=1) from None
 
 
-@app.command(help="Show the name of the project")
+@app.command(help="Show the name of the project.")
 def name(
     offline: bool = offline_opt,
     quiet: bool = quiet_opt,
@@ -81,7 +81,7 @@ def name(
 
 @app.command(
     name="sonarqube",
-    help="Show the sonar-projects.properties file for SonarQube.",
+    help="Show the sonar-project.properties file for SonarQube.",
 )
 def sonarqube(
     offline: bool = offline_opt,

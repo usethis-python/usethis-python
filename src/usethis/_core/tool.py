@@ -48,7 +48,7 @@ from usethis._types.deps import Dependency
 if TYPE_CHECKING:
     from usethis._tool.all_ import SupportedToolType
 
-# Note - all these functions invoke ensure_dep_declaratiom_file() at the start, since
+# Note - all these functions invoke ensure_dep_declaration_file() at the start, since
 # declaring dependencies in pyproject.toml requires that file to exist.
 
 
@@ -419,7 +419,7 @@ def use_ruff(  # noqa: PLR0913
     """Add Ruff to the project.
 
     By default, sensible default rules are selected if there are no rules selected yet,
-    but this behaviour can be controlled by using the `minimal` option.
+    but this behaviour can be controlled using the `minimal` option.
 
     If the existing rules are all pydocstyle rules (managed by the `usethis docstyle`
     interface), then the default rules will still be added, again excepting when the

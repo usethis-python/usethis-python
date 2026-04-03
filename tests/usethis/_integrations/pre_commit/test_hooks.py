@@ -48,7 +48,7 @@ repos:
         with (
             change_cwd(tmp_path),
             files_manager(),
-            pytest.raises(NotImplementedError, match="Hook 'foo' not recognized"),
+            pytest.raises(NotImplementedError, match="Hook 'foo' is not recognized"),
         ):
             add_repo(
                 schema.UriRepo(

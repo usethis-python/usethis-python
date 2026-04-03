@@ -129,7 +129,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
     def __contains__(self, keys: Sequence[Key]) -> bool:
         """Check if the YAML file contains a value.
 
-        An non-existent file will return False.
+        A non-existent file will return False.
         """
         keys = _validate_keys(keys)
 
@@ -482,12 +482,12 @@ def _get_yaml_document(
     _io: StringIO | TextIOWrapper, /, *, guess_indent: bool = True
 ) -> YAMLDocument:
     # Can't preserve quotes so don't keep the content.
-    # Yes, it' not very efficient to load the content twice.
+    # Yes, it's not very efficient to load the content twice.
     try:
         content, sequence_ind, offset_ind = load_yaml_guess_indent(_io)
     except YAMLError as err:
         if "mapping values are not allowed here" in str(err):
-            info_print("Hint: You may have incorrect indentation the YAML file.")
+            info_print("Hint: You may have incorrect indentation in the YAML file.")
         raise err
 
     # Replace content with {} if the file is empty, i.e. the _io stream is empty.

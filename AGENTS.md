@@ -263,7 +263,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `add_badge()` (`usethis._core.badge`) — Add a badge to the README.md file in the correct position.
 - `is_blank()` (`usethis._core.badge`) — Return True if the line is empty or contains only whitespace.
 - `is_header()` (`usethis._core.badge`) — Return True if the line is a Markdown header.
-- `is_badge()` (`usethis._core.badge`) — Return True if the line looks like a Markdown badge.
+- `is_badge()` (`usethis._core.badge`) — Return True if the line looks like a Markdown badge (heuristic).
 - `remove_badge()` (`usethis._core.badge`) — Remove a badge from the README.md file.
 - `browse_pypi()` (`usethis._core.browse`) — Open or display the PyPI project page URL for a package.
 - `use_docstyle()` (`usethis._core.docstyle`) — Configure the docstring style convention for the project using Ruff.
@@ -333,7 +333,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `ensure_pyproject_toml()` (`usethis._init`) — Ensure that a pyproject.toml file exists, creating it if necessary.
 - `get_github_latest_tag()` (`usethis._integrations.ci.github.tags`) — Get the name of the most recent tag on the default branch of a GitHub repository.
 - `get_supported_minor_python_versions()` (`usethis._integrations.environ.python`) — Get supported Python versions for the current backend.
-- `add_docs_dir()` (`usethis._integrations.mkdocs.core`) — Create the `docs` directory and an `docs/index.md` file if they do not exist.
+- `add_docs_dir()` (`usethis._integrations.mkdocs.core`) — Create the `docs` directory and a `docs/index.md` file if they do not exist.
 - `remove_pre_commit_config()` (`usethis._integrations.pre_commit.core`) — Remove the .pre-commit-config.yaml file from the project.
 - `install_pre_commit_hooks()` (`usethis._integrations.pre_commit.core`) — Install pre-commit hooks.
 - `uninstall_pre_commit_hooks()` (`usethis._integrations.pre_commit.core`) — Uninstall pre-commit hooks.

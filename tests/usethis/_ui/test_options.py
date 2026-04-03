@@ -9,7 +9,9 @@ class TestUniqueHelpText:
         help_texts: dict[str, str] = {}
         for name in dir(options_module):
             obj = getattr(options_module, name)
-            if not isinstance(obj, (typer.models.OptionInfo, typer.models.ArgumentInfo)):
+            if not isinstance(
+                obj, (typer.models.OptionInfo, typer.models.ArgumentInfo)
+            ):
                 continue
             help_text = obj.help
             if help_text is None:

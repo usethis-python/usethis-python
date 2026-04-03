@@ -88,7 +88,7 @@ with usethis_config.set(alert_only=True):
 
 ## Python Version Support
 
-This project supports all versions of Python through until end of life. The development environment uses the oldest supported version, which is given in the `.python-version` file. The GitHub Actions pipeline tests all supported versions.
+This project supports all versions of Python until end of life. The development environment uses the oldest supported version, which is given in the `.python-version` file. The GitHub Actions pipeline tests all supported versions.
 
 ## Conventions
 

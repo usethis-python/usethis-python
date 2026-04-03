@@ -1,10 +1,10 @@
 # Pipeweld utility
 
-Pipeweld is a internal utility used by usethis for adding and removing steps from arbitrary pipelines given some expected reference structure.
+Pipeweld is an internal utility used by usethis for adding and removing steps from arbitrary pipelines given some expected reference structure.
 
 ## On the Name "Pipeweld"
 
-The idea is we're "welding" new components in and out of our pipeline. In addition, "pipe weld" sounds a bit like like "pipe well".
+The idea is we're "welding" new components in and out of our pipeline. In addition, "pipe weld" sounds a bit like "pipe well".
 
 ## Concepts
 
@@ -26,7 +26,7 @@ The informal notation above indicates a pipeline of two parallel steps A and B i
 
 ### A more complicated example
 
-We can also consider more a more complicated pipeline in the below diagram:
+We can also consider a more complicated pipeline in the below diagram:
 
 ```Text
 (A | B | (C + D)) + E + (F | G)
@@ -36,7 +36,7 @@ Here, A and B are in parallel with the series of steps C and D; those steps are 
 
 ### Dependency
 
-The next important concept is of dependencies between steps. A step can have pre-requisites, which must be executed before it; as well as post-requisites, which must be execute after it. Note that a dependency of either type must actually exist in the pipeline; it is not pipeweld's responsibility to add missing dependencies.
+The next important concept is of dependencies between steps. A step can have pre-requisites, which must be executed before it; as well as post-requisites, which must be executed after it. Note that a dependency of either type must actually exist in the pipeline; it is not pipeweld's responsibility to add missing dependencies.
 
 ## Solving the problem of dependencies
 
@@ -105,7 +105,7 @@ In Pipeweld, you can specify that sets of steps are compatible to be in the same
 
 If it is mandatory for a step to be in the same configuration group as a set of other steps, then we can apply the same algorithm above to the SP-subgraph associated with the configuration group. If the solution satisfies the dependencies (post-requisites and pre-requisites), then we are done. Otherwise, there is a contradiction, so we need to choose whether it is better to satisfy dependencies or configuration groups. Pipeweld would choose to satisfy dependencies in this case and will backtrack to resolve without the condition that the configuration group is mandatory (basically, it will ignore this constraint).
 
-If it is merely optional for a step to be in the same configuration group as another set of steps, then this is basically a cosmetic decision which can determined after the new step has been inserted; should it form a configuration group with its predecessor, or successor, or both? Pipeweld will choose to form with both if possible, and with any existing group in precedence to creating a new group (including combining the predecessor and successor steps' groups into a single group, if they the two groups are of the same type). Any further tiebreaks will be broken by preferring to form a group with the predecessor rather than the successor.
+If it is merely optional for a step to be in the same configuration group as another set of steps, then this is basically a cosmetic decision which can determined after the new step has been inserted; should it form a configuration group with its predecessor, or successor, or both? Pipeweld will choose to form with both if possible, and with any existing group in precedence to creating a new group (including combining the predecessor and successor steps' groups into a single group, if the two groups are of the same type). Any further tiebreaks will be broken by preferring to form a group with the predecessor rather than the successor.
 
 There is also the possibility that the new step is inserted into the middle of an configuration group but is not compatible with that group's type. In that case, Pipeweld will "break-up" the group into two separate groups (of the same type as the original). Singleton groups will not be collapsed.
 

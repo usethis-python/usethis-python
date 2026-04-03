@@ -240,7 +240,7 @@ class KeyValueFileManager(
         raise NotImplementedError
 
     def validated_get(
-        self, keys: Sequence[Key], *, default: Any, validate: Any = None
+        self, keys: Sequence[Key], *, default: Any, validate: object = None
     ) -> Any:
         """Retrieve a value by keys, returning ``default`` on missing key or failed validation.
 
@@ -267,7 +267,9 @@ class KeyValueFileManager(
 
         return validate_or_default(validate, raw, default=default)
 
-    def ensure_get(self, keys: Sequence[Key], *, err: Exception, validate: Any) -> Any:
+    def ensure_get(
+        self, keys: Sequence[Key], *, err: Exception, validate: object
+    ) -> Any:
         """Retrieve and validate a value by keys, raising ``err`` on failure.
 
         Args:

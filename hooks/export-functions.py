@@ -128,6 +128,8 @@ def _get_module_public_functions(path: Path) -> list[tuple[str, str | None]]:
             continue
         if node.name.startswith("_"):
             continue
+        if _is_overload(node):
+            continue
         docstring = ast.get_docstring(node)
         if docstring is not None:
             first_line = docstring.split("\n")[0].strip()
@@ -139,6 +141,15 @@ def _get_module_public_functions(path: Path) -> list[tuple[str, str | None]]:
             results.append((node.name, None))
 
     return results
+
+
+def _is_overload(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """Return True if the function is decorated with ``@overload``."""
+    return any(
+        (isinstance(d, ast.Name) and d.id == "overload")
+        or (isinstance(d, ast.Attribute) and d.attr == "overload")
+        for d in node.decorator_list
+    )
 
 
 def _collect_py_files(source_root: Path) -> list[Path]:

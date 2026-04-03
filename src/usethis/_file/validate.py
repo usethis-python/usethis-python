@@ -12,20 +12,40 @@ validation errors a lint failure rather than a runtime surprise.
 
 from __future__ import annotations
 
-from typing import Any, TypeVar
+from typing import TypeVar, overload
 
 from pydantic import TypeAdapter, ValidationError  # noqa: TID251
 
 T = TypeVar("T")
 
 
+@overload
 def validate_or_raise(
-    type_: Any,
+    type_: type[T],
     obj: object,
     *,
     error_cls: type[Exception],
     error_msg: str,
-) -> Any:
+) -> T: ...
+
+
+@overload
+def validate_or_raise(
+    type_: object,
+    obj: object,
+    *,
+    error_cls: type[Exception],
+    error_msg: str,
+) -> object: ...
+
+
+def validate_or_raise(
+    type_: object,
+    obj: object,
+    *,
+    error_cls: type[Exception],
+    error_msg: str,
+) -> object:
     """Validate ``obj`` against ``type_``, raising a custom error on failure.
 
     Args:
@@ -48,7 +68,7 @@ def validate_or_raise(
 
 
 def validate_or_default(
-    type_: Any,
+    type_: object,
     obj: object,
     *,
     default: T,

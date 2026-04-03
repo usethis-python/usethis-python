@@ -5,7 +5,7 @@ from __future__ import annotations
 import configparser
 import re
 from abc import ABCMeta
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from configupdater import ConfigUpdater as INIDocument
 from configupdater import Option, Section
@@ -199,6 +199,7 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
                 error_cls=InvalidINITypeError,
                 error_msg=f"Expected a string or list of strings for '{self.name}'.",
             )
+            assert isinstance(cast_value, (str, list))
             self._set_value_in_option(
                 root=root,
                 section_key=section_key,
@@ -481,14 +482,11 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
-            str_values = cast(
-                "list[str]",
-                validate_or_raise(
-                    list[str],
-                    values,
-                    error_cls=InvalidINITypeError,
-                    error_msg=f"Expected a list of strings for '{self.name}'.",
-                ),
+            str_values = validate_or_raise(
+                list[str],
+                values,
+                error_cls=InvalidINITypeError,
+                error_msg=f"Expected a list of strings for '{self.name}'.",
             )
             self._extend_list_in_option(
                 root=root,
@@ -573,14 +571,11 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
-            str_values = cast(
-                "list[str]",
-                validate_or_raise(
-                    list[str],
-                    values,
-                    error_cls=InvalidINITypeError,
-                    error_msg=f"Expected a list of strings for '{self.name}'.",
-                ),
+            str_values = validate_or_raise(
+                list[str],
+                values,
+                error_cls=InvalidINITypeError,
+                error_msg=f"Expected a list of strings for '{self.name}'.",
             )
             self._remove_from_list_in_option(
                 root=root,

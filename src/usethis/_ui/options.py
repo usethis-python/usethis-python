@@ -114,7 +114,7 @@ init_build_backend_opt = typer.Option(
 badges_opt = typer.Option(False, "--badges", help="Add relevant badges")
 
 # status command options
-status_arg = typer.Argument(default=..., help="Docstring style to enforce.")
+status_arg = typer.Argument(default=..., help="Development status to set.")
 
 # show command options
 output_file_opt = typer.Option(

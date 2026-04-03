@@ -234,4 +234,4 @@ class TachToolSpec(ToolSpec):
 @functools.cache
 def _tach_warn_no_packages_found(name: str) -> None:
     warn_print("Could not find any importable packages.")
-    warn_print(f"Assuming the package name is {name}.")
+    warn_print(f"Assuming the package name is '{name}'.")

@@ -1378,7 +1378,7 @@ exhaustive = True
                 "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'import-linter'.\n"
                 "⚠ Could not find any importable packages.\n"
-                "⚠ Assuming the package name is test-stdout-when-cant-find-pac0.\n"
+                "⚠ Assuming the package name is 'test-stdout-when-cant-find-pac0'.\n"
                 "✔ Adding Import Linter config to 'pyproject.toml'.\n"
                 "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
                 "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001

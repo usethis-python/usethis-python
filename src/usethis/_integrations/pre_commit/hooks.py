@@ -82,7 +82,7 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
         try:
             hook_idx = hook_order.index(hook_config.id)
         except ValueError:
-            msg = f"Hook '{hook_config.id}' not recognized."
+            msg = f"Hook '{hook_config.id}' is not recognized."
             raise NotImplementedError(msg) from None
 
         prerequisites = set(hook_order[:hook_idx])

@@ -8,6 +8,7 @@ on:
       - "**/*.md"
       - "mkdocs.yml"
       - ".pre-commit-config.yaml"
+      - "skills-lock.json"
   pull_request:
     branches: ["main"]
     paths-ignore:
@@ -15,6 +16,7 @@ on:
       - "**/*.md"
       - "mkdocs.yml"
       - ".pre-commit-config.yaml"
+      - "skills-lock.json"
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})

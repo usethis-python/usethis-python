@@ -4,7 +4,7 @@ description: Review code and documentation for grammar, spelling, and tone issue
 compatibility: usethis, Python, markdown, documentation
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Grammar, Spelling, and Tone Review
@@ -43,9 +43,14 @@ Focus on human-readable text. In rough priority order:
 - **Inconsistent tone** — the project uses a professional but approachable tone. Flag text that is overly formal, too casual, or inconsistent with surrounding text.
 - **Inconsistent terminology** — the same concept described with different words in different places (e.g. mixing "hook" and "check" for the same thing).
 
+## Spelling conventions
+
+This project uses **British English** spelling (e.g. "behaviour", "colour", "initialise"). Do not change British spellings to American equivalents. When writing new text, prefer British spelling to stay consistent with the existing codebase.
+
 ## What to ignore
 
 - **Identifier names** — variable names, function names, class names, and other code identifiers. These follow naming conventions, not grammar rules.
 - **Third-party content** — text in vendored files, generated files, or lock files.
 - **Technical jargon used correctly** — domain-specific terms (e.g. "pyproject.toml", "pre-commit", "lockfile") are not spelling errors.
 - **Intentional abbreviations** — standard abbreviations like "config", "deps", "args" are fine.
+- **British English spellings** — words like "behaviour", "colour", "favourite", "initialise" are correct in this project. Do not flag or change these.

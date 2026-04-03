@@ -419,7 +419,7 @@ def use_ruff(  # noqa: PLR0913
     """Add Ruff to the project.
 
     By default, sensible default rules are selected if there are no rules selected yet,
-    but this behavior can be controlled using the `minimal` option.
+    but this behaviour can be controlled using the `minimal` option.
 
     If the existing rules are all pydocstyle rules (managed by the `usethis docstyle`
     interface), then the default rules will still be added, again excepting when the

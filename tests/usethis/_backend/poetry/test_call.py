@@ -210,6 +210,24 @@ class TestCallPoetrySubprocess:
         original_content = "original-lock-content"
         lock_path.write_text(original_content)
 
+        created_dirs: list[str] = []
+        original_mkdtemp = usethis._backend.poetry.call.tempfile.mkdtemp
+
+        def tracking_mkdtemp(
+            suffix: str | None = None,
+            prefix: str | None = None,
+            dir: str | None = None,  # noqa: A002
+        ) -> str:
+            result = original_mkdtemp(suffix=suffix, prefix=prefix, dir=dir)
+            created_dirs.append(result)
+            return result
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call.tempfile,
+            "mkdtemp",
+            tracking_mkdtemp,
+        )
+
         def mock_call_subprocess(*_: object, **__: object) -> str:
             # Simulate poetry modifying the lockfile
             lock_path.write_text("modified-lock-content")
@@ -227,6 +245,9 @@ class TestCallPoetrySubprocess:
             call_poetry_subprocess(["add", "pytest"], change_toml=False)
 
         assert lock_path.read_text() == original_content
+        # Verify the temporary backup directory was cleaned up
+        assert len(created_dirs) == 1
+        assert not Path(created_dirs[0]).exists()
 
     def test_frozen_removes_created_lockfile(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

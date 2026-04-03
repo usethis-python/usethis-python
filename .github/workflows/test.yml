@@ -12,6 +12,7 @@ on:
       - ".github/workflows/static-checks.yml"
       - ".pre-commit-config.yaml"
       - "hooks/**"
+      - "skills-lock.json"
   pull_request:
     paths-ignore:
       - "docs/**"
@@ -21,6 +22,7 @@ on:
       - ".github/workflows/static-checks.yml"
       - ".pre-commit-config.yaml"
       - "hooks/**"
+      - "skills-lock.json"
   schedule:
     - cron: "20 14 * * *"
 concurrency:

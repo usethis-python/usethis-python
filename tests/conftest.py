@@ -131,7 +131,7 @@ def _vary_network_conn(_online_status: NetworkConn) -> Generator[None, None, Non
     """Fixture to vary the network connection.
 
     Use `usethis._config.usethis_config` to check whether things are in offline
-    model, since this fixture does not return anything.
+    mode, since this fixture does not return anything.
     """
     offline = _online_status is NetworkConn.OFFLINE
 

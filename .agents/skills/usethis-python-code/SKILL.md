@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Python Code Guidelines
@@ -116,3 +116,52 @@ In the bad example, the caller knows that `solution` is a `Series`, that `Series
 - **Extracting internal structure into variables.** Writing `flat = result.solution.root` does not fix the problem — it only hides the nesting in a local variable while the caller still depends on the internal structure.
 - **Adding type assertions for deeply nested objects.** If you need `assert isinstance(item, str)` after accessing a nested attribute, the logic almost certainly belongs in the layer that produces the object, where the type is already known.
 - **Adding a thin wrapper instead of moving logic.** A wrapper that merely returns `self.solution.root` is not enough. The goal is to move the _logic that uses_ the low-level data into the lower layer, not just to add an accessor.
+
+## Preferring context managers for resource cleanup
+
+When code needs to preserve and restore state around a block of operations (e.g. backing up a file before a subprocess and restoring it afterwards), always use a `@contextmanager` instead of separate setup and teardown helper functions with a `try`/`finally` block.
+
+### Procedure
+
+1. Identify paired operations where one sets up state and the other tears it down (e.g. backup/restore, acquire/release, redirect/revert).
+2. Combine them into a single `@contextmanager` generator function that yields between the setup and teardown.
+3. Use a `try`/`finally` inside the context manager to guarantee cleanup runs even if the body raises.
+
+### Key principle
+
+A context manager encapsulates the setup/teardown lifecycle into a single construct, making the calling code cleaner and eliminating the risk of forgetting the `finally` block or mismatching the paired calls. It also makes the intent clearer at the call site.
+
+### Example
+
+```python
+# Bad: separate helpers require the caller to manage the lifecycle
+def _backup(path: Path) -> Path:
+    ...
+
+def _restore(path: Path, backup: Path) -> None:
+    ...
+
+backup = _backup(lock_path)
+try:
+    run_subprocess()
+finally:
+    _restore(lock_path, backup)
+
+# Good: context manager encapsulates the lifecycle
+@contextmanager
+def _preserved(path: Path) -> Generator[None, None, None]:
+    with tempfile.TemporaryDirectory() as tmp:
+        backup = shutil.copy2(path, tmp)
+        try:
+            yield
+        finally:
+            shutil.copy2(backup, path)
+
+with _preserved(lock_path):
+    run_subprocess()
+```
+
+### Common mistakes
+
+- **Separate backup and restore helpers.** Splitting setup and teardown into two functions forces every caller to remember both calls and wire up `try`/`finally` correctly. A context manager removes this burden.
+- **Forgetting `finally` in the caller.** Without a context manager, it is easy to forget the `finally` block, leaving state unrestored if an exception occurs. A context manager guarantees cleanup.

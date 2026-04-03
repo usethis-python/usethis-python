@@ -4,7 +4,7 @@ description: Modify Python code (e.g. refactor, add new code, or delete code)
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.5"
+  version: "1.6"
 ---
 
 # Modifying Python code
@@ -22,7 +22,7 @@ When modifying Python code, regularly run a relevant subset of the tests. The te
 
 ### Never run the entire test suite
 
-Running the entire test suite is unusually unnecessary and it is slow. The CI will run the entire test suite, so it is unnecessary for you to do so.
+Running the entire test suite is usually unnecessary and it is slow. The CI will run the entire test suite, so it is unnecessary for you to do so.
 
 ### What to do when tests fail
 

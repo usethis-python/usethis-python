@@ -4,12 +4,20 @@ description: General guidelines for writing tests in the usethis project, includ
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Python Test Guidelines
 
 Use the `usethis-python-test-full-coverage` skill when you need to measure and verify test coverage. This skill covers general test organization and conventions.
+
+## Tests vs. agent guidelines
+
+Only use automated tests to enforce **true codebase invariants** — rules that should hold regardless of who wrote the code and that should never be deliberately violated.
+
+**Do not** write tests to enforce agent guidelines (rules documented in skill files about what agents should or should not do). Those rules are guidance for agents, not hard constraints on the codebase. A human developer may legitimately make a choice that differs from an agent guideline — for example, deliberately adding an abbreviated CLI flag (`-o`) even though the agent guideline prefers long forms. Enforcing such guidelines via tests would block legitimate human decisions and cause false failures.
+
+**Rule of thumb:** If the rule could ever have an intentional exception made by a human developer, it belongs in a skill file — not in an automated test.
 
 ## Test class organization
 

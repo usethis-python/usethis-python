@@ -4,7 +4,7 @@ description: Create GitHub issues via the gh CLI to record lessons, track follow
 compatibility: GitHub, gh CLI, issue tracking
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Creating GitHub Issues via `gh` CLI
@@ -22,7 +22,7 @@ Create a GitHub issue when you:
 
 - Discover a pre-existing bug that is out of scope for the current task.
 - Identify a follow-up improvement or refactoring opportunity.
-- Learn a lesson during development that should be triaged and tracked.
+- Learn a lesson during development that should be triaged and tracked (use the `usethis-lesson-create` skill to structure it first).
 - Notice missing documentation, tests, or configuration that warrants separate work.
 
 Do **not** create an issue for work you are currently addressing in your PR.

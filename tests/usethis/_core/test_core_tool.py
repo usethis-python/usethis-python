@@ -3148,6 +3148,70 @@ repos:
             # Assert
             assert not (tmp_path / "pyproject.toml").exists()
 
+    class TestOutputFile:
+        def test_custom_output_file_creates_correct_file(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
+                use_requirements_txt(output_file="constraints.txt")
+
+            # Assert
+            assert (tmp_path / "constraints.txt").exists()
+            assert not (tmp_path / "requirements.txt").exists()
+            out, _ = capfd.readouterr()
+            assert "Writing 'constraints.txt'." in out
+            assert "uv export -o=constraints.txt" in out
+
+        def test_custom_output_file_how(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
+                use_requirements_txt(how=True, output_file="constraints.txt")
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert (
+                out
+                == "☐ Run 'uv export -o=constraints.txt' to write 'constraints.txt'.\n"
+            )
+
+        def test_custom_output_file_remove(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "constraints.txt").touch()
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                use_requirements_txt(remove=True, output_file="constraints.txt")
+
+            # Assert
+            assert not (tmp_path / "constraints.txt").exists()
+
+        def test_default_output_file_is_requirements_txt(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            out, _ = capfd.readouterr()
+            assert "Writing 'requirements.txt'." in out
+
 
 class TestRuff:
     class TestAdd:

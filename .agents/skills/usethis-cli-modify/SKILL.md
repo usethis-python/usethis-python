@@ -4,7 +4,7 @@ description: Modify the usethis CLI layer (commands, options, help text) and kee
 compatibility: usethis, Python, typer, markdown
 license: MIT
 metadata:
-  version: "1.3"
+  version: "1.5"
 ---
 
 # Modifying the CLI
@@ -60,6 +60,10 @@ Bad — excessive rationale embedded in the reference:
 - `--output-file` to write the output to a file instead of stdout. This is useful to avoid issues when shell redirects (e.g. `> file.txt`) create the file before the command runs, which can influence the behaviour of `usethis show`.
 ```
 
+After updating the command reference, verify that **every option** in each modified command's function signature has a corresponding entry in the documentation. Pay particular attention to shared options — options defined once and reused across multiple commands — since these are easy to document for some commands but miss on others. For each new option added, scan all commands that use it and confirm each is documented.
+
+Use the `usethis-qa-doc-integrity` skill to perform a systematic audit of CLI documentation coverage.
+
 ### Command overview
 
 The command overview page lists all commands organized by category with brief descriptions. Update it if you added, removed, renamed, or recategorized a command.
@@ -92,3 +96,7 @@ When adding a new command:
 2. Register it in `_ui/app.py`.
 3. If the command uses shared options, import them from `_ui/options.py`. If it needs new options, add them there.
 4. Create the corresponding core logic function in `_core/`.
+
+### Option flags
+
+When adding a new CLI option, use only the long form (e.g. `--output-file`). Do **not** add an abbreviated short form (e.g. `-o`) unless the user has explicitly requested it.

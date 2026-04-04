@@ -334,15 +334,17 @@ def use_pytest(
         tool.remove_managed_files()
 
 
-def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
+def use_requirements_txt(
+    *, remove: bool = False, how: bool = False, output_file: str = "requirements.txt"
+) -> None:
     """Add and configure a requirements.txt file exported from the uv lockfile."""
-    tool = RequirementsTxtTool()
+    tool = RequirementsTxtTool(output_file=output_file)
 
     if how:
         tool.print_how_to_use()
         return
 
-    path = usethis_config.cpd() / "requirements.txt"
+    path = usethis_config.cpd() / output_file
 
     if not remove:
         backend = get_backend()
@@ -362,7 +364,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
             tool.print_how_to_use()
             return
 
-        _generate_requirements_txt()
+        _generate_requirements_txt(output_file=output_file)
 
         tool.print_how_to_use()
     else:
@@ -373,36 +375,36 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def _generate_requirements_txt() -> None:
+def _generate_requirements_txt(*, output_file: str = "requirements.txt") -> None:
     backend = get_backend()
     if backend is BackendEnum.uv:
         if not (usethis_config.cpd() / "pyproject.toml").exists():
-            write_simple_requirements_txt()
+            write_simple_requirements_txt(output_file=output_file)
         elif not usethis_config.frozen:
             ensure_uv_lock()
-            tick_print("Writing 'requirements.txt'.")
+            tick_print(f"Writing '{output_file}'.")
             call_uv_subprocess(
                 [
                     "export",
                     "--frozen",
-                    "--output-file=requirements.txt",
+                    f"--output-file={output_file}",
                 ],
                 change_toml=False,
             )
     elif backend is BackendEnum.poetry:
         # Poetry uses poetry export for requirements.txt generation
-        write_simple_requirements_txt()
+        write_simple_requirements_txt(output_file=output_file)
     elif backend is BackendEnum.none:
         # Simply dump the dependencies list to requirements.txt
         if usethis_config.backend is BackendEnum.auto:
             info_print(
-                "Generating 'requirements.txt' with un-pinned, abstract dependencies."
+                f"Generating '{output_file}' with un-pinned, abstract dependencies."
             )
             info_print(
                 "Consider installing 'uv' for pinned, cross-platform, full requirements files."
             )
 
-        write_simple_requirements_txt()
+        write_simple_requirements_txt(output_file=output_file)
     else:
         assert_never(backend)
 

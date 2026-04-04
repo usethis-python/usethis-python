@@ -4,7 +4,7 @@ description: General guidelines for writing tests in the usethis project, includ
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Python Test Guidelines
@@ -93,3 +93,18 @@ with change_cwd(tmp_path), files_manager():
 
 - **FileManager-only operations** (e.g. `use_*` functions, `get_deps_from_group`, assertions on config state): safe to combine in one context.
 - **Subprocess calls** (e.g. `call_uv_subprocess`, `subprocess.run`, `call_subprocess`): require an atomic write first, so exit the `files_manager` context before running them.
+
+## Clearing functools caches between tests
+
+When `@functools.cache` is added to a production function (see `usethis-python-code`), its cache must be cleared between tests to prevent one test's cached result from polluting subsequent tests.
+
+### Procedure
+
+When adding `@functools.cache` to a function:
+
+1. Import the function at the top of `tests/conftest.py`.
+2. Add a `<function_name>.cache_clear()` call in the body of the `clear_functools_caches` autouse fixture.
+
+### Why
+
+The `clear_functools_caches` autouse fixture runs before each test, ensuring every test starts with a clean cache. Without this registration, a test that triggers caching will leave stale values in memory that silently affect subsequent tests, causing order-dependent failures that are hard to diagnose.

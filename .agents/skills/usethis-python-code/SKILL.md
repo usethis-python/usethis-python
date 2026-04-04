@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.6"
+  version: "1.7"
 ---
 
 # Python Code Guidelines
@@ -205,3 +205,28 @@ def _format_version(v: str) -> str:
 
 - **Adding helpers at the top of the file.** It is tempting to place a new helper near the top, before any existing function. Always scroll down to find the caller first, then add the helper below it.
 - **Placing a helper above the function that introduces it.** Even if a helper is only a few lines long, it should still follow its caller so the intent is clear before the detail.
+
+## Caching IO-intensive private helpers
+
+When a private helper function performs file I/O or another expensive operation and may be called more than once during a single high-level operation, decorate it with `@functools.cache` to avoid redundant work.
+
+### When to apply
+
+Apply `@functools.cache` to a private helper when all of the following are true:
+
+- It performs file I/O, a subprocess call, or another expensive operation.
+- It can be called more than once within a single invocation of its public caller(s).
+- Its return value is deterministic with respect to the project state — the same inputs always produce the same result within a single process run.
+
+Do **not** cache functions that write files, mutate state, or produce side effects.
+
+### Procedure
+
+1. Add `import functools` to the module if not already present.
+2. Decorate the private helper with `@functools.cache`.
+3. Register the function's cache-clear call in the `clear_functools_caches` autouse fixture in `tests/conftest.py` (see `usethis-python-test` for details).
+
+### Common mistakes
+
+- **Caching functions with side effects.** `@functools.cache` is only appropriate for pure, read-only operations. Functions that write files or change state should never be cached.
+- **Forgetting to register cache clearing.** A cached function whose cache is never cleared between tests will cause test pollution — one test's cached value silently affects the next.

@@ -4,7 +4,7 @@ description: Modify the usethis CLI layer (commands, options, help text) and kee
 compatibility: usethis, Python, typer, markdown
 license: MIT
 metadata:
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Modifying the CLI
@@ -92,3 +92,7 @@ When adding a new command:
 2. Register it in `_ui/app.py`.
 3. If the command uses shared options, import them from `_ui/options.py`. If it needs new options, add them there.
 4. Create the corresponding core logic function in `_core/`.
+
+### Option flags
+
+When adding a new CLI option, use only the long form (e.g. `--output-file`). Do **not** add an abbreviated short form (e.g. `-o`) unless the user has explicitly requested it.

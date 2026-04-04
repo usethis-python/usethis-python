@@ -54,7 +54,8 @@ class TestRequirementsTxtToolSpec:
             assert len(config.repo_configs) == 1
             repo = config.repo_configs[0].repo
             assert isinstance(repo, pre_commit_schema.UriRepo)
-            hook = repo.hooks[0]  # type: ignore[index]
+            assert repo.hooks is not None
+            hook = repo.hooks[0]
             assert hook.id == "uv-export"
             assert hook.args == ["--output-file=constraints.txt"]
 

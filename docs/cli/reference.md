@@ -309,6 +309,10 @@ Supported options:
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
 
+For `usethis tool requirements.txt`, in addition to the above options, you can also specify:
+
+- `--output-file` to specify the output file path (default: `requirements.txt`)
+
 For `usethis tool ruff`, in addition to the above options, you can also specify:
 
 - `--linter` to add or remove specifically the linter component of Ruff (default; or `--no-linter` to opt-out)

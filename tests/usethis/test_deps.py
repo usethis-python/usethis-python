@@ -25,6 +25,7 @@ from usethis._deps import (
     remove_deps_from_group,
 )
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -36,7 +37,7 @@ class TestGetProjectDeps:
         # Arrange - No pyproject.toml file exists
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -47,7 +48,7 @@ class TestGetProjectDeps:
         (tmp_path / "pyproject.toml").touch()
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -61,7 +62,7 @@ requires = ["setuptools"]
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -74,7 +75,7 @@ project = "not a table but a string"
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -89,7 +90,7 @@ version = "0.1.0"
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -105,7 +106,7 @@ dependencies = []
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -121,7 +122,7 @@ dependencies = ["requests"]
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -137,7 +138,7 @@ dependencies = ["requests", "click", "pydantic"]
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -157,7 +158,7 @@ dependencies = ["pydantic[email]"]
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -173,7 +174,7 @@ dependencies = ["pydantic[email,dotenv]"]
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -191,7 +192,7 @@ dependencies = ["requests", "pydantic[email]", "click"]
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -211,7 +212,7 @@ dependencies = ["requests>=2.28.0", "click~=8.0"]
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -233,6 +234,7 @@ dependencies = "not a list"
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
+            SetupCFGManager(),
             pytest.raises(
                 UVDepGroupError,
                 match=r"Failed to parse the 'project.dependencies' section",
@@ -253,6 +255,7 @@ dependencies = ["invalid requirement string !!!"]
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
+            SetupCFGManager(),
             pytest.raises(InvalidRequirement),
         ):
             get_project_deps()
@@ -284,7 +287,7 @@ dev-dependencies = ["old-style-dev-dep"]
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_project_deps()
 
         # Assert
@@ -315,6 +318,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 result = get_project_deps()
@@ -343,6 +347,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 result = get_project_deps()
@@ -370,6 +375,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 result = get_project_deps()
@@ -377,12 +383,70 @@ build-backend = "poetry.core.masonry.api"
             names = [d.name for d in result]
             assert names.count("requests") == 1
 
+    class TestSetupCFG:
+        def test_install_requires(self, tmp_path: Path):
+            """Read from [options] install_requires in setup.cfg."""
+            (tmp_path / "setup.cfg").write_text(
+                "[options]\ninstall_requires =\n    requests>=2.28\n    click\n"
+            )
+
+            with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
+                result = get_project_deps()
+
+            assert Dependency(name="requests") in result
+            assert Dependency(name="click") in result
+
+        def test_merged_with_pyproject(self, tmp_path: Path):
+            """setup.cfg deps merge with standard [project.dependencies]."""
+            (tmp_path / "pyproject.toml").write_text(
+                '[project]\nname = "test"\nversion = "0.1.0"\n'
+                'dependencies = ["numpy"]\n'
+            )
+            (tmp_path / "setup.cfg").write_text(
+                "[options]\ninstall_requires =\n    requests\n"
+            )
+
+            with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
+                result = get_project_deps()
+
+            names = [d.name for d in result]
+            assert "numpy" in names
+            assert "requests" in names
+
+        def test_no_duplicates_on_merge(self, tmp_path: Path):
+            """Deps in both sections should not be duplicated."""
+            (tmp_path / "pyproject.toml").write_text(
+                '[project]\nname = "test"\nversion = "0.1.0"\n'
+                'dependencies = ["requests>=2.0"]\n'
+            )
+            (tmp_path / "setup.cfg").write_text(
+                "[options]\ninstall_requires =\n    requests>=2.28\n"
+            )
+
+            with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
+                result = get_project_deps()
+
+            names = [d.name for d in result]
+            assert names.count("requests") == 1
+
+        def test_no_setup_cfg(self, tmp_path: Path):
+            """If no setup.cfg, setup.cfg deps are empty."""
+            (tmp_path / "pyproject.toml").write_text(
+                '[project]\nname = "test"\nversion = "0.1.0"\n'
+                'dependencies = ["requests"]\n'
+            )
+
+            with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
+                result = get_project_deps()
+
+            assert result == [Dependency(name="requests")]
+
 
 class TestGetDepGroups:
     def test_no_dev_section(self, tmp_path: Path):
         (tmp_path / "pyproject.toml").touch()
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             assert get_dep_groups() == {}
 
     def test_empty_section(self, tmp_path: Path):
@@ -390,7 +454,7 @@ class TestGetDepGroups:
 [dependency-groups]
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             assert get_dep_groups() == {}
 
     def test_empty_group(self, tmp_path: Path):
@@ -399,7 +463,7 @@ class TestGetDepGroups:
 test=[]
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             assert get_dep_groups() == {"test": []}
 
     def test_single_dev_dep(self, tmp_path: Path):
@@ -408,7 +472,7 @@ test=[]
 test=['pytest']
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             assert get_dep_groups() == {"test": [Dependency(name="pytest")]}
 
     def test_multiple_dev_deps(self, tmp_path: Path):
@@ -417,7 +481,7 @@ test=['pytest']
 qa=["flake8", "black", "isort"]
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             assert get_dep_groups() == {
                 "qa": [
                     Dependency(name="flake8"),
@@ -435,7 +499,7 @@ test=['pytest']
 """
         )
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             assert get_dep_groups() == {
                 "qa": [
                     Dependency(name="flake8"),
@@ -449,7 +513,7 @@ test=['pytest']
 
     def test_no_pyproject_toml(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             result = get_dep_groups()
 
         # Assert
@@ -465,6 +529,7 @@ test="not a list"
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
+            SetupCFGManager(),
             pytest.raises(DepGroupError),
         ):
             get_dep_groups()
@@ -488,6 +553,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 result = get_dep_groups()
@@ -515,6 +581,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 result = get_dep_groups()
@@ -539,6 +606,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 result = get_dep_groups()
@@ -563,6 +631,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 result = get_dep_groups()
@@ -584,6 +653,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 result = get_dep_groups()
@@ -606,17 +676,77 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.none
                 result = get_dep_groups()
 
             assert result == {}
 
+    class TestSetupCFG:
+        def test_extras_require(self, tmp_path: Path):
+            """Read from [options.extras_require] in setup.cfg."""
+            (tmp_path / "setup.cfg").write_text(
+                "[options.extras_require]\n"
+                "dev =\n    pytest\n    ruff\n"
+                "docs =\n    mkdocs\n"
+            )
+
+            with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
+                result = get_dep_groups()
+
+            assert "dev" in result
+            assert Dependency(name="pytest") in result["dev"]
+            assert Dependency(name="ruff") in result["dev"]
+            assert "docs" in result
+            assert Dependency(name="mkdocs") in result["docs"]
+
+        def test_merged_with_pyproject(self, tmp_path: Path):
+            """setup.cfg extras_require merges with standard [dependency-groups]."""
+            (tmp_path / "pyproject.toml").write_text(
+                '[dependency-groups]\ndev = ["pytest>=7.0"]\n'
+            )
+            (tmp_path / "setup.cfg").write_text(
+                "[options.extras_require]\nlint =\n    ruff\n"
+            )
+
+            with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
+                result = get_dep_groups()
+
+            assert Dependency(name="pytest") in result["dev"]
+            assert Dependency(name="ruff") in result["lint"]
+
+        def test_no_duplicates_on_merge(self, tmp_path: Path):
+            """Same dep in both sections should not be duplicated."""
+            (tmp_path / "pyproject.toml").write_text(
+                '[dependency-groups]\ndev = ["pytest>=7.0"]\n'
+            )
+            (tmp_path / "setup.cfg").write_text(
+                "[options.extras_require]\ndev =\n    pytest\n"
+            )
+
+            with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
+                result = get_dep_groups()
+
+            names = [d.name for d in result["dev"]]
+            assert names.count("pytest") == 1
+
+        def test_no_setup_cfg(self, tmp_path: Path):
+            """If no setup.cfg, setup.cfg dep groups are empty."""
+            (tmp_path / "pyproject.toml").write_text(
+                '[dependency-groups]\ndev = ["pytest"]\n'
+            )
+
+            with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
+                result = get_dep_groups()
+
+            assert result == {"dev": [Dependency(name="pytest")]}
+
 
 class TestAddDepsToGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_pyproject_changed(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -627,7 +757,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_single_dep(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -643,7 +773,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_multiple_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             add_deps_to_group(
                 [Dependency(name="flake8"), Dependency(name="black")], "qa"
@@ -666,7 +796,7 @@ class TestAddDepsToGroup:
     def test_multi_but_one_already_exists(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group([Dependency(name="pytest")], "test")
@@ -691,7 +821,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_extras(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             add_deps_to_group(
                 [Dependency(name="pytest", extras=frozenset({"extra"}))], "test"
@@ -714,7 +844,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_empty_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             add_deps_to_group([], "test")
 
@@ -727,7 +857,7 @@ class TestAddDepsToGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_extra_when_nonextra_already_present(self, uv_init_dir: Path):
         # https://github.com/usethis-python/usethis-python/issues/227
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             add_deps_to_group([Dependency(name="coverage")], "test")
 
@@ -742,7 +872,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_extras_combining_together(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             add_deps_to_group(
                 [Dependency(name="coverage", extras=frozenset({"toml"}))], "test"
@@ -759,7 +889,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_combine_extras_alphabetical(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             add_deps_to_group(
                 [Dependency(name="coverage", extras=frozenset({"extra"}))], "test"
@@ -776,7 +906,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_registers_default_group(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -788,7 +918,7 @@ class TestAddDepsToGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_dev_group_not_registered(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             add_deps_to_group([Dependency(name="black")], "dev")
 
@@ -808,7 +938,7 @@ class TestAddDepsToGroup:
         )
 
         # Act, Assert
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             with pytest.raises(
                 DepGroupError,
                 match="Failed to add 'pytest' to the 'test' dependency group",
@@ -832,6 +962,7 @@ test = []
             usethis_config.set(backend=BackendEnum.none),
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
+            SetupCFGManager(),
         ):
             add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -842,7 +973,7 @@ test = []
 
     def test_no_pyproject_toml(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Assert
@@ -878,6 +1009,7 @@ test = []
                 usethis_config.set(backend=BackendEnum.poetry),
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -911,6 +1043,7 @@ test = []
                 usethis_config.set(backend=BackendEnum.poetry),
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -944,6 +1077,7 @@ test = []
                 usethis_config.set(backend=BackendEnum.poetry, frozen=True),
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -960,7 +1094,7 @@ test = []
 class TestRemoveDepsFromGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_pyproject_changed(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             add_deps_to_group([Dependency(name="pytest")], "test")
 
@@ -972,7 +1106,7 @@ class TestRemoveDepsFromGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_single_dep(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group([Dependency(name="pytest")], "test")
@@ -991,7 +1125,7 @@ class TestRemoveDepsFromGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_multiple_deps(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group(
@@ -1016,7 +1150,7 @@ class TestRemoveDepsFromGroup:
     def test_multi_but_only_not_exists(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group([Dependency(name="pytest")], "test")
@@ -1037,7 +1171,7 @@ class TestRemoveDepsFromGroup:
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_extras(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group(
@@ -1062,7 +1196,7 @@ class TestRemoveDepsFromGroup:
     def test_group_not_in_dependency_groups(
         self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
     ):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             # Arrange
             with usethis_config.set(quiet=True):
                 add_deps_to_group([Dependency(name="pytest")], "test")
@@ -1085,6 +1219,7 @@ class TestRemoveDepsFromGroup:
         with (
             change_cwd(uv_init_dir),
             PyprojectTOMLManager(),
+            SetupCFGManager(),
         ):
             # Arrange
             add_deps_to_group([Dependency(name="pytest")], "test")
@@ -1117,6 +1252,7 @@ test = ["pytest"]
             usethis_config.set(backend=BackendEnum.none),
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
+            SetupCFGManager(),
         ):
             remove_deps_from_group([Dependency(name="pytest")], "test")
 
@@ -1152,6 +1288,7 @@ test = ["pytest"]
                 usethis_config.set(backend=BackendEnum.poetry),
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 remove_deps_from_group([Dependency(name="pytest")], "test")
 
@@ -1190,6 +1327,7 @@ test = ["pytest"]
                 usethis_config.set(backend=BackendEnum.poetry, frozen=True),
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 remove_deps_from_group([Dependency(name="pytest")], "test")
 
@@ -1204,13 +1342,13 @@ test = ["pytest"]
 
 class TestIsDepInAnyGroup:
     def test_no_group(self, uv_init_dir: Path):
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             assert not is_dep_in_any_group(Dependency(name="pytest"))
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_in_group(self, uv_init_dir: Path):
         # Arrange
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
@@ -1222,7 +1360,7 @@ class TestIsDepInAnyGroup:
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_not_in_group(self, uv_init_dir: Path):
         # Arrange
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
             add_deps_to_group([Dependency(name="pytest")], "test")
 
             # Act
@@ -1246,6 +1384,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 assert is_dep_in_any_group(Dependency(name="pytest"))
@@ -1264,6 +1403,7 @@ build-backend = "poetry.core.masonry.api"
             with (
                 change_cwd(tmp_path),
                 PyprojectTOMLManager(),
+                SetupCFGManager(),
             ):
                 usethis_config.backend = BackendEnum.poetry
                 assert not is_dep_in_any_group(Dependency(name="ruff"))
@@ -1334,6 +1474,7 @@ class TestRegisterDefaultGroup:
         with (
             change_cwd(tmp_path),
             PyprojectTOMLManager(),
+            SetupCFGManager(),
             usethis_config.set(backend=BackendEnum.uv),
         ):
             # Act
@@ -1351,7 +1492,7 @@ class TestRegisterDefaultGroup:
 [tool.uv]
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             register_default_group("test")
 
@@ -1368,7 +1509,7 @@ class TestRegisterDefaultGroup:
 default-groups = []
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             register_default_group("test")
 
@@ -1385,7 +1526,7 @@ default-groups = []
 default-groups = ["test"]
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             register_default_group("test")
 
@@ -1402,7 +1543,7 @@ default-groups = ["test"]
 default-groups = ["test", "dev"]
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             register_default_group("docs")
 
@@ -1419,7 +1560,7 @@ default-groups = ["test", "dev"]
 default-groups = ["test"]
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             register_default_group("docs")
 
@@ -1436,7 +1577,7 @@ default-groups = ["test"]
 default-groups = ["test"]
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             register_default_group("test")
 
@@ -1527,7 +1668,7 @@ class TestGetDefaultGroups:
         # Arrange
         (tmp_path / "pyproject.toml").touch()
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             result = get_default_groups()
 
@@ -1541,7 +1682,7 @@ class TestGetDefaultGroups:
 default-groups = "not a list"
 """)
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             # Act
             result = get_default_groups()
 
@@ -1590,7 +1731,7 @@ default-groups = ["test"]
 
         with usethis_config.set(backend=BackendEnum.none):
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
                 result = get_default_groups()
 
             # Assert

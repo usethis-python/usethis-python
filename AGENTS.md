@@ -75,6 +75,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   │   ├── valid                 # Validation and repair of pyproject.toml structure.
 │   │   └── write                 # Preparation helpers for writing pyproject.toml via subprocesses.
 │   ├── setup_cfg                 # setup.cfg file reading and writing.
+│   │   ├── deps                  # Dependency extraction from setup.cfg.
 │   │   ├── errors                # Error types for setup.cfg operations.
 │   │   └── io_                   # setup.cfg file I/O manager.
 │   ├── toml                      # TOML file reading and writing.
@@ -323,6 +324,8 @@ ALWAYS check whether an existing function already covers your use case before im
 - `get_required_minor_python_versions()` (`usethis._file.pyproject_toml.requires_python`) — Get Python minor versions that match the project's requires-python constraint.
 - `ensure_pyproject_validity()` (`usethis._file.pyproject_toml.valid`) — Ensure pyproject.toml has a valid structure, adding missing required fields.
 - `prepare_pyproject_write()` (`usethis._file.pyproject_toml.write`) — Prepare the pyproject.toml file for a subprocess that will modify it.
+- `get_setup_cfg_project_deps()` (`usethis._file.setup_cfg.deps`) — Get project dependencies from setup.cfg [options] install_requires.
+- `get_setup_cfg_dep_groups()` (`usethis._file.setup_cfg.deps`) — Get dependency groups from setup.cfg [options.extras_require].
 - `edit_yaml()` (`usethis._file.yaml.io_`) — A context manager to modify a YAML file in-place, with managed read and write.
 - `read_yaml()` (`usethis._file.yaml.io_`) — A context manager to read a YAML file.
 - `update_ruamel_yaml_map()` (`usethis._file.yaml.update`) — Update the values of a ruamel.yaml map in-place using a diff-like algorithm.

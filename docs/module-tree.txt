@@ -64,6 +64,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   │   ├── valid                 # Validation and repair of pyproject.toml structure.
 │   │   └── write                 # Preparation helpers for writing pyproject.toml via subprocesses.
 │   ├── setup_cfg                 # setup.cfg file reading and writing.
+│   │   ├── deps                  # Dependency extraction from setup.cfg.
 │   │   ├── errors                # Error types for setup.cfg operations.
 │   │   └── io_                   # setup.cfg file I/O manager.
 │   ├── toml                      # TOML file reading and writing.

@@ -34,6 +34,12 @@ from usethis._file.pyproject_toml.deps import (
 )
 from usethis._file.pyproject_toml.errors import PyprojectTOMLDepsError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.setup_cfg.deps import (
+    get_setup_cfg_dep_groups as _get_setup_cfg_dep_groups,
+)
+from usethis._file.setup_cfg.deps import (
+    get_setup_cfg_project_deps as _get_setup_cfg_project_deps,
+)
 from usethis._types.backend import BackendEnum
 from usethis.errors import DepGroupError
 
@@ -49,7 +55,8 @@ def get_project_deps() -> list[Dependency]:
 
     Usually this is just the dependencies in the ``project.dependencies`` section
     of the ``pyproject.toml`` file. When the poetry backend is active, also
-    reads from ``[tool.poetry.dependencies]``.
+    reads from ``[tool.poetry.dependencies]``. Also reads from ``setup.cfg``
+    ``[options] install_requires`` when that file is present.
     """
     try:
         deps = _get_project_deps()
@@ -60,6 +67,8 @@ def get_project_deps() -> list[Dependency]:
     if backend is BackendEnum.poetry:
         deps = _merge_deps(deps, _get_poetry_project_deps())
 
+    deps = _merge_deps(deps, _get_setup_cfg_project_deps())
+
     return deps
 
 
@@ -67,7 +76,8 @@ def get_dep_groups() -> dict[str, list[Dependency]]:
     """Get all dependency groups from pyproject.toml.
 
     Reads from ``[dependency-groups]`` (PEP 735). When the poetry backend
-    is active, also reads from ``[tool.poetry.group.*.dependencies]``.
+    is active, also reads from ``[tool.poetry.group.*.dependencies]``. Also
+    reads from ``setup.cfg`` ``[options.extras_require]`` when that file is present.
     """
     try:
         groups = _get_dep_groups()
@@ -80,6 +90,11 @@ def get_dep_groups() -> dict[str, list[Dependency]]:
         for group_name, poetry_deps in poetry_groups.items():
             existing = groups.get(group_name, [])
             groups[group_name] = _merge_deps(existing, poetry_deps)
+
+    setup_cfg_groups = _get_setup_cfg_dep_groups()
+    for group_name, setup_cfg_deps in setup_cfg_groups.items():
+        existing = groups.get(group_name, [])
+        groups[group_name] = _merge_deps(existing, setup_cfg_deps)
 
     return groups
 

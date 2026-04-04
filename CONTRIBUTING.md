@@ -38,20 +38,13 @@ uv run pytest
 
 ### Dogfooding
 
-To run usethis against the repository itself, use:
+To run usethis against the development repository itself, use:
 
 ```shell
 uvx --from . usethis <command>
 ```
 
-This creates an isolated virtual environment, avoiding permissions issues on Windows. Prefer this over `uv run usethis`, which uses the project's existing virtual environment.
-
-After dogfooding, revert any changes the command made to the worktree:
-
-```shell
-git checkout -- .
-git clean -fd
-```
+This can be a useful data point for gauging the behaviour of changes or new commands on a moderately complex project repo.
 
 ### Writing Tests
 

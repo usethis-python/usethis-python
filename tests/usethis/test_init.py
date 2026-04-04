@@ -8,6 +8,7 @@ from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import PyprojectTOMLInitError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._init import (
     _BUILD_SYSTEM_CONFIG,
     ensure_pyproject_toml,
@@ -279,7 +280,7 @@ class TestEnsurePyprojectTOML:
 class TestWriteSimpleRequirementsTxt:
     def test_no_pyproject_toml(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             write_simple_requirements_txt()
 
         # Assert
@@ -299,7 +300,7 @@ dependencies = []
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             write_simple_requirements_txt()
 
         # Assert
@@ -322,7 +323,7 @@ dependencies = [
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             write_simple_requirements_txt()
 
         # Assert
@@ -345,7 +346,7 @@ dependencies = [
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             write_simple_requirements_txt()
 
         # Assert
@@ -359,7 +360,7 @@ dependencies = [
         (tmp_path / "requirements.txt").write_text("old content")
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), PyprojectTOMLManager(), SetupCFGManager():
             write_simple_requirements_txt()
 
         # Assert

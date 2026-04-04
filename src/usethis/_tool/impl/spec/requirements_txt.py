@@ -17,9 +17,13 @@ from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 
 _UV_PRE_COMMIT_REPO = "https://github.com/astral-sh/uv-pre-commit"
+_DEFAULT_OUTPUT_FILE = "requirements.txt"
 
 
 class RequirementsTxtToolSpec(ToolSpec):
+    def __init__(self, *, output_file: str = _DEFAULT_OUTPUT_FILE) -> None:
+        self._output_file: str = output_file
+
     @final
     @property
     @override
@@ -27,7 +31,7 @@ class RequirementsTxtToolSpec(ToolSpec):
         return ToolMeta(
             name="requirements.txt",
             url="https://pip.pypa.io/en/stable/reference/requirements-file-format/",
-            managed_files=[Path("requirements.txt")],
+            managed_files=[Path(self._output_file)],
         )
 
     @override
@@ -36,15 +40,18 @@ class RequirementsTxtToolSpec(ToolSpec):
         backend = get_backend()
 
         if backend is BackendEnum.uv:
+            if self._output_file != _DEFAULT_OUTPUT_FILE:
+                hook_def = pre_commit_schema.HookDefinition(
+                    id="uv-export",
+                    args=[f"--output-file={self._output_file}"],
+                )
+            else:
+                hook_def = pre_commit_schema.HookDefinition(id="uv-export")
             return PreCommitConfig.from_single_repo(
                 pre_commit_schema.UriRepo(
                     repo=_UV_PRE_COMMIT_REPO,
                     rev=FALLBACK_UV_VERSION,
-                    hooks=[
-                        pre_commit_schema.HookDefinition(
-                            id="uv-export",
-                        )
-                    ],
+                    hooks=[hook_def],
                 ),
                 requires_venv=False,
             )

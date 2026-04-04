@@ -7,12 +7,13 @@ from pathlib import Path
 import pytest
 
 from usethis._backend.uv.call import call_uv_subprocess
-from usethis._config import usethis_config
+from usethis._config import BACKEND_DEFAULT, usethis_config
 from usethis._console import _cached_warn_print, get_icon_mode
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._subprocess import call_subprocess
 from usethis._test import change_cwd, is_offline
 from usethis._tool.impl.spec.import_linter import _importlinter_warn_no_packages_found
+from usethis._types.backend import BackendEnum
 
 if "UV_PYTHON" in os.environ:
     # To allow test subprocesses to use different versions of Python than the one
@@ -27,6 +28,9 @@ def clear_functools_caches():
     _cached_warn_print.cache_clear()
     get_icon_mode.cache_clear()
     _importlinter_warn_no_packages_found.cache_clear()
+    # Reset backend state to prevent stale inferred_backend from contaminating tests.
+    usethis_config.backend = BackendEnum(BACKEND_DEFAULT)
+    usethis_config.inferred_backend = None
 
 
 @pytest.fixture(scope="session")

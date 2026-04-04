@@ -23,8 +23,10 @@ from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
 from usethis._tool.impl.spec.pyproject_toml import PyprojectTOMLToolSpec
 
-# N.B. this list must be kept in-sync with usethis._tool.all_.ALL_TOOLS.
-OTHER_TOOLS: list[Tool] = [
+# N.B. importing from usethis._tool.all_ here would create a circular import
+# (all_.py imports PyprojectTOMLTool from this module). Instead, this list is
+# an internal implementation detail; the canonical OTHER_TOOLS is in all_.py.
+_OTHER_TOOLS: list[Tool] = [
     CodespellTool(),
     CoveragePyTool(),
     DeptryTool(),
@@ -61,7 +63,7 @@ class PyprojectTOMLTool(PyprojectTOMLToolSpec, Tool):
 
         instruct_print("Check that important config in 'pyproject.toml' is not lost.")
 
-        for tool in OTHER_TOOLS:
+        for tool in _OTHER_TOOLS:
             if (
                 tool.is_used()
                 and PyprojectTOMLManager() in tool.get_active_config_file_managers()

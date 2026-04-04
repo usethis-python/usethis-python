@@ -459,20 +459,12 @@ def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: object)
         raise typer.Exit(code=1) from None
 
 
-ALL_TOOL_COMMANDS: list[str] = [
-    "codespell",
-    "coverage.py",
-    "deptry",
-    "import-linter",
-    "mkdocs",
-    "pre-commit",
-    "pyproject.toml",
-    "pyproject-fmt",
-    "pytest",
-    "requirements.txt",
-    "ruff",
-    "tach",
-    "ty",
-]
+def _get_all_tool_commands() -> list[str]:
+    from usethis._tool.all_ import ALL_TOOLS
+
+    return [tool.name.lower().replace(" ", "-") for tool in ALL_TOOLS]
+
+
+ALL_TOOL_COMMANDS: list[str] = _get_all_tool_commands()
 
 ALL_TOOL_COMMAND_STRS: list[str] = [f"usethis tool {cmd}" for cmd in ALL_TOOL_COMMANDS]

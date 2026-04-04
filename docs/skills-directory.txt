@@ -6,6 +6,7 @@
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows
 - `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
+- `usethis-lesson-create`: Create a lesson from a development difficulty, covering root cause analysis, principle generalisation, and filing as a GitHub issue
 - `usethis-pre-commit`: Guidance on pre-commit hooks — this project uses prek, not pre-commit directly
 - `usethis-prek-add-hook`: Add a prek hook for dev
 - `usethis-prek-hook-bespoke-create`: Write bespoke prek hooks as reusable Python scripts for custom checks

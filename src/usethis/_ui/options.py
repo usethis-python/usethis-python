@@ -127,7 +127,6 @@ output_file_opt = typer.Option(
 requirements_txt_output_file_opt = typer.Option(
     "requirements.txt",
     "--output-file",
-    "-o",
     help="The name of the output requirements file.",
 )
 

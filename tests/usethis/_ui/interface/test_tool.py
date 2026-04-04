@@ -502,18 +502,6 @@ class TestRequirementsTxt:
 """
         )
 
-    def test_output_file_short_flag(self, tmp_path: Path):
-        # Act
-        runner = CliRunner()
-        with change_cwd(tmp_path):
-            result = runner.invoke_safe(
-                app, ["requirements.txt", "--backend", "none", "-o", "constraints.txt"]
-            )
-
-        # Assert
-        assert result.exit_code == 0, result.output
-        assert (tmp_path / "constraints.txt").exists()
-
     def test_how_with_output_file(self, tmp_path: Path):
         # Act
         runner = CliRunner()

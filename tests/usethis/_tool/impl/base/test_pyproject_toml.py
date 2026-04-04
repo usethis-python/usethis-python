@@ -6,20 +6,13 @@ import requests
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._test import change_cwd
-from usethis._tool.all_ import ALL_TOOLS, OTHER_TOOLS
+from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
 from usethis._tool.impl.spec.all_ import ALL_TOOL_SPECS
 
 
-class TestOtherTools:
-    def test_derived_from_all_tools(self):
-        # OTHER_TOOLS must be ALL_TOOLS minus PyprojectTOMLTool, in the same order.
-        expected = [
-            tool for tool in ALL_TOOLS if not isinstance(tool, PyprojectTOMLTool)
-        ]
-        assert [tool.name for tool in OTHER_TOOLS] == [tool.name for tool in expected]
-
-    def test_all_tool_specs_in_sync_with_all_tools(self):
+class TestAllToolSpecs:
+    def test_in_sync_with_all_tools(self):
         # ALL_TOOL_SPECS must have the same names in the same order as ALL_TOOLS.
         assert [spec.name for spec in ALL_TOOL_SPECS] == [
             tool.name for tool in ALL_TOOLS

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TypeAlias
 
 from usethis._tool.impl.base.codespell import CodespellTool
 from usethis._tool.impl.base.coverage_py import CoveragePyTool
@@ -17,9 +17,6 @@ from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
-
-if TYPE_CHECKING:
-    from usethis._tool.base import Tool
 
 SupportedToolType: TypeAlias = (
     CodespellTool
@@ -52,9 +49,4 @@ ALL_TOOLS: list[SupportedToolType] = [
     RuffTool(),
     TachTool(),
     TyTool(),
-]
-
-# All tools except PyprojectTOMLTool, in the same canonical order as ALL_TOOLS.
-OTHER_TOOLS: list[Tool] = [
-    tool for tool in ALL_TOOLS if not isinstance(tool, PyprojectTOMLTool)
 ]

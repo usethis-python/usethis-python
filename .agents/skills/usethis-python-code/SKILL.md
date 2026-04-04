@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.5"
+  version: "1.6"
 ---
 
 # Python Code Guidelines
@@ -165,3 +165,43 @@ with _preserved(lock_path):
 
 - **Separate backup and restore helpers.** Splitting setup and teardown into two functions forces every caller to remember both calls and wire up `try`/`finally` correctly. A context manager removes this burden.
 - **Forgetting `finally` in the caller.** Without a context manager, it is easy to forget the `finally` block, leaving state unrestored if an exception occurs. A context manager guarantees cleanup.
+
+## Ordering functions: the step-down rule
+
+Within a module, place caller functions **above** their callees. The module should read top-to-bottom like a newspaper: the most important, high-level logic appears first, and helper details appear further down.
+
+### Procedure
+
+1. Before adding a new private helper function to a module, locate every function that will call it.
+2. Place the new helper **below** its highest caller in the file, not at the top of the file.
+3. If a helper is called by multiple functions, place it below the last (lowest) caller that precedes it; it must appear after all callers that precede it.
+
+### Key principle
+
+A reader scanning a module should encounter each function before its helpers, never the other way around. If a helper appears above its caller, the reader is confronted with implementation details before knowing what they are for.
+
+### Example
+
+```python
+# Bad: helper placed above its caller
+def _format_version(v: str) -> str:
+    return v.strip()
+
+def get_version() -> str:
+    """Return the formatted version string."""
+    return _format_version(read_version_file())
+
+
+# Good: caller appears first, helper appears below
+def get_version() -> str:
+    """Return the formatted version string."""
+    return _format_version(read_version_file())
+
+def _format_version(v: str) -> str:
+    return v.strip()
+```
+
+### Common mistakes
+
+- **Adding helpers at the top of the file.** It is tempting to place a new helper near the top, before any existing function. Always scroll down to find the caller first, then add the helper below it.
+- **Placing a helper above the function that introduces it.** Even if a helper is only a few lines long, it should still follow its caller so the intent is clear before the detail.

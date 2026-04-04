@@ -123,6 +123,13 @@ output_file_opt = typer.Option(
     help="Write output to this file instead of stdout.",
 )
 
+# requirements.txt command options
+requirements_txt_output_file_opt = typer.Option(
+    "requirements.txt",
+    "--output-file",
+    help="The name of the output requirements file.",
+)
+
 # ruff command options
 linter_opt = typer.Option(
     True,

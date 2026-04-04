@@ -447,6 +447,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows
 - `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
+- `usethis-lesson-create`: Create a lesson from a development difficulty, covering root cause analysis, principle generalisation, and filing as a GitHub issue
 - `usethis-pre-commit`: Guidance on pre-commit hooks — this project uses prek, not pre-commit directly
 - `usethis-prek-add-hook`: Add a prek hook for dev
 - `usethis-prek-hook-bespoke-create`: Write bespoke prek hooks as reusable Python scripts for custom checks
@@ -459,6 +460,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-python-test`: General guidelines for writing tests in the usethis project, including test class organization
 - `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
 - `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
+- `usethis-qa-doc-integrity`: Audit CLI documentation for completeness and sync with source code — checks that every command option visible in the code appears in the reference documentation
 - `usethis-qa-grammar`: Review code and documentation for grammar, spelling, and tone issues
 - `usethis-qa-import-linter`: Use the Import Linter software on the usethis project
 - `usethis-qa-llm-review`: Coordinate LLM-assisted quality reviews of the codebase beyond what automated tools catch
@@ -496,4 +498,4 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 ## Lessons
 
-When you are working on a problem, you are almost always going to encounter a difficulty. This is great - it's an opportunity for learning. ALWAYS make a note explicitly of what lessons you are drawing as you complete a task or when receiving user feedback. Try and keep this structured: consider the root cause of the difficulty, and how you overcame it. After finishing work on a task, report back all your lessons. Finally, ALWAYS use the `usethis-github-issue-create` skill to record each lesson as a GitHub issue so it can be triaged and tracked.
+When you are working on a problem, you are almost always going to encounter a difficulty. This is great — it's an opportunity for learning. ALWAYS make a note explicitly of what lessons you are drawing as you complete a task or when receiving user feedback. After finishing work on a task, report back all your lessons. Use the `usethis-lesson-create` skill to perform root cause analysis, generalise the principle at play, and file each lesson as a GitHub issue so it can be triaged and tracked.

@@ -476,6 +476,49 @@ class TestRequirementsTxt:
 """
         )
 
+    def test_output_file(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app,
+                [
+                    "requirements.txt",
+                    "--backend",
+                    "none",
+                    "--output-file",
+                    "constraints.txt",
+                ],
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (tmp_path / "constraints.txt").exists()
+        assert not (tmp_path / "requirements.txt").exists()
+        assert (
+            result.output
+            == """\
+✔ Writing 'constraints.txt'.
+"""
+        )
+
+    def test_how_with_output_file(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["requirements.txt", "--how", "--output-file", "constraints.txt"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'uv export -o=constraints.txt' to write 'constraints.txt'.
+"""
+        )
+
 
 class TestRuff:
     @pytest.mark.usefixtures("_vary_network_conn")

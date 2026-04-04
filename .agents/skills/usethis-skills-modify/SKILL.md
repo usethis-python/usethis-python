@@ -4,7 +4,7 @@ description: "Enforce version bumping, scope checking, and content quality guide
 compatibility: usethis, agent skills, markdown
 license: MIT
 metadata:
-  version: "1.5"
+  version: "1.6"
 ---
 
 # Modifying Agent Skills
@@ -14,9 +14,35 @@ metadata:
 When modifying any `SKILL.md` file in `.agents/skills/`:
 
 1. **Check scope** — verify the new content belongs in this skill (see "Before modifying: check scope" below).
-2. Make the necessary content changes to the skill.
-3. Increment the version number in the YAML frontmatter `metadata.version` field.
-4. Verify the YAML frontmatter is valid (all required fields present, version is quoted).
+2. **Generalise the instruction** — if the instruction you received is highly specific (names an exact function, file, or code object), lift it to a transferable principle before writing the skill content. See "Generalising incoming instructions" below.
+3. Make the necessary content changes to the skill.
+4. Increment the version number in the YAML frontmatter `metadata.version` field.
+5. Verify the YAML frontmatter is valid (all required fields present, version is quoted).
+
+## Generalising incoming instructions
+
+You will often receive instructions that are phrased in terms of a specific situation:
+"add guidance about function X", "mention that file Y must be updated", or "note that
+class Z behaves this way". Before writing this into a skill, lift the instruction to a
+more abstract principle.
+
+Ask: **What general rule does this specific case illustrate?** A skill should remain
+useful as the codebase evolves. If the specific function, file, or class mentioned in
+the instruction were renamed or removed, would the guidance still be relevant? If not,
+rewrite it so it would be.
+
+| Specific instruction received                                                 | Generalised skill content                                                                                                                                             |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "Add a note that `foo_helper()` must be called before `bar()`."               | "Certain setup steps must be completed before the main operation — check the API contract for ordering requirements."                                                 |
+| "Note that `config.toml` must be updated when adding a new flag."             | "When adding a feature that introduces new configuration, update all files that declare or document available options."                                               |
+| "Warn that `TypeAdapter.validate_python` is banned, use `validate_or_raise`." | "Some standard-library or third-party APIs may be banned by project convention — consult the linter configuration or project documentation before reaching for them." |
+
+Avoid adding guidance that:
+
+- Names specific functions, classes, or files unless the principle is **only** about
+  that specific thing (e.g. a skill about a single tool's CLI interface).
+- Reads like a changelog or incident report ("we discovered that X did Y").
+- Would become incorrect or confusing if the named entity were refactored.
 
 ## Before modifying: check scope
 
@@ -67,7 +93,8 @@ When modifying skill content, maintain these principles:
 
 - **Don't make descriptions prescriptive.** If you update the `description` field in the YAML frontmatter, don't use commanding language like "ALWAYS use when..." — describe what the skill covers in neutral terms. See the `usethis-skills-create` skill for detailed description-writing guidelines.
 - **Describe procedures, not state.** Skills should explain how to approach situations, not describe the current state of the codebase. State descriptions become outdated; procedures remain valid. See the `usethis-skills-create` skill for detailed guidance.
-- **Keep content general.** Write instructions that remain valid as the codebase evolves. Avoid embedding specific file paths, class names, or constants unless strictly necessary.
+- **Keep content general.** Write instructions that remain valid as the codebase evolves. Avoid embedding specific file paths, class names, or constants unless strictly necessary. See "Generalising incoming instructions" above.
+- **Never reference memories.** Skill content is read with no access to agent session history or stored memories. Do not write phrases like "as noted in a previous session" or "per the stored memory about X". Everything the reader needs must be present in the skill itself.
 - **Be concise.** Only include information the agent doesn't already know. If a paragraph doesn't justify its token cost, remove it.
 - **Avoid time-sensitive information.** Don't include current version numbers, file counts, or lists that grow over time.
 - **Use consistent terminology.** Don't introduce synonyms for concepts that already have established terms in the skill.

@@ -20,6 +20,7 @@ from usethis._ui.options import (
     offline_opt,
     quiet_opt,
     remove_opt,
+    requirements_txt_output_file_opt,
 )
 
 if TYPE_CHECKING:
@@ -327,6 +328,7 @@ def requirements_txt(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
+    output_file: str = requirements_txt_output_file_opt,
 ) -> None:
     """Use a requirements.txt file exported from the uv lockfile."""
     from usethis._config_file import files_manager
@@ -342,7 +344,7 @@ def requirements_txt(
         ),
         files_manager(),
     ):
-        _run_tool(use_requirements_txt, remove=remove, how=how)
+        _run_tool(use_requirements_txt, remove=remove, how=how, output_file=output_file)
 
 
 @app.command(

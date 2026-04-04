@@ -35,7 +35,11 @@ class RequirementsTxtTool(RequirementsTxtToolSpec, Tool):
                 how_print(f"Run 'uv export -o={name}' to write '{name}'.")
             elif backend in (BackendEnum.poetry, BackendEnum.none):
                 if not (usethis_config.cpd() / name).exists():
-                    how_print(f"Run 'usethis tool requirements.txt' to write '{name}'.")
+                    if name == "requirements.txt":
+                        cmd = "usethis tool requirements.txt"
+                    else:
+                        cmd = f"usethis tool requirements.txt --output-file={name}"
+                    how_print(f"Run '{cmd}' to write '{name}'.")
             else:
                 assert_never(backend)
         else:

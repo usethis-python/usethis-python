@@ -22,6 +22,7 @@ _DEFAULT_OUTPUT_FILE = "requirements.txt"
 
 class RequirementsTxtToolSpec(ToolSpec):
     def __init__(self, *, output_file: str = _DEFAULT_OUTPUT_FILE) -> None:
+        super().__init__()
         self._output_file: str = output_file
 
     @final

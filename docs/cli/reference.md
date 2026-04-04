@@ -458,8 +458,13 @@ Show a piece of information about the project.
 Currently supported subcommands:
 
 - `usethis show backend` to show the inferred project manager backend, e.g. 'uv' or 'none'. This is the default backend used, i.e. when `--backend=auto` is specified.
+- `usethis show license` to show the project license in SPDX format.
 - `usethis show name` to show the name of the project.
 - `usethis show sonarqube` to show appropriate contents of a `sonar-project.properties` file for SonarQube analysis.
+
+Supported options:
+
+- `--output-file` to write the output to a file instead of stdout.
 
 ### `usethis show sonarqube`
 
@@ -478,9 +483,9 @@ Additional configuration in `pyproject.toml`:
 - `tool.usethis.sonarqube.exclusions` (list of strings, default `[]`) — sets `sonar.exclusions`.
 - `tool.coverage.xml.output` (string, required) — sets `sonar.python.coverage.reportPaths`.
 
-Supported options:
+For `usethis show sonarqube`, in addition to `--output-file`, you can also specify:
 
-- `--output-file` to write the output to a file instead of stdout.
+- `--project-key` to provide the SonarQube project key.
 
 ## `usethis browse pypi <package>`
 

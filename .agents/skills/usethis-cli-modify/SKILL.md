@@ -4,7 +4,7 @@ description: Modify the usethis CLI layer (commands, options, help text) and kee
 compatibility: usethis, Python, typer, markdown
 license: MIT
 metadata:
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Modifying the CLI
@@ -59,6 +59,10 @@ Bad — excessive rationale embedded in the reference:
 ```markdown
 - `--output-file` to write the output to a file instead of stdout. This is useful to avoid issues when shell redirects (e.g. `> file.txt`) create the file before the command runs, which can influence the behaviour of `usethis show`.
 ```
+
+After updating the command reference, verify that **every option** in each modified command's function signature has a corresponding entry in the documentation. Pay particular attention to shared options — options defined once and reused across multiple commands — since these are easy to document for some commands but miss on others. For each new option added, scan all commands that use it and confirm each is documented.
+
+Use the `usethis-qa-doc-integrity` skill to perform a systematic audit of CLI documentation coverage.
 
 ### Command overview
 

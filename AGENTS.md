@@ -459,6 +459,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-python-test`: General guidelines for writing tests in the usethis project, including test class organization
 - `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
 - `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
+- `usethis-qa-doc-integrity`: Audit CLI documentation for completeness and sync with source code — checks that every command option visible in the code appears in the reference documentation
 - `usethis-qa-grammar`: Review code and documentation for grammar, spelling, and tone issues
 - `usethis-qa-import-linter`: Use the Import Linter software on the usethis project
 - `usethis-qa-llm-review`: Coordinate LLM-assisted quality reviews of the codebase beyond what automated tools catch

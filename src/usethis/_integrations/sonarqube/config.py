@@ -25,10 +25,8 @@ def get_sonar_project_properties(*, project_key: str | None = None) -> str:
 
     # Get Python version
     try:
-        python_version = PythonVersion.from_string(
-            (usethis_config.cpd() / ".python-version")
-            .read_text(encoding="utf-8")
-            .strip()
+        python_version = PythonVersion.from_python_version_file(
+            usethis_config.cpd() / ".python-version"
         ).to_short_string()
     except (FileNotFoundError, PythonVersionParseError):
         python_version = PythonVersion.from_interpreter().to_short_string()

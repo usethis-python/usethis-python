@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import functools
+
 from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
@@ -68,6 +70,7 @@ def get_supported_minor_python_versions() -> list[PythonVersion]:
     return versions
 
 
+@functools.cache
 def _get_current_python_version() -> PythonVersion:
     """Get the inferred Python version for the current project.
 

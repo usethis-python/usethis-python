@@ -159,8 +159,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 d,
-                error_cls=YAMLValueMissingError,
-                error_msg=f"Configuration value '{print_keys(keys)}' is missing.",
+                err=YAMLValueMissingError(
+                    f"Configuration value '{print_keys(keys)}' is missing."
+                ),
             )
             assert isinstance(d, dict)
             try:
@@ -185,8 +186,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
         validate_or_raise(
             dict,
             content,
-            error_cls=UnexpectedYAMLValueError,
-            error_msg="Root level configuration must be a mapping.",
+            err=UnexpectedYAMLValueError("Root level configuration must be a mapping."),
         )
         if not isinstance(content, CommentedMap):
             raise AssertionError
@@ -195,8 +195,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 value,
-                error_cls=UnexpectedYAMLValueError,
-                error_msg="Expected a mapping value.",
+                err=UnexpectedYAMLValueError("Expected a mapping value."),
             )
             assert isinstance(value, dict)
             if not content or exists_ok:
@@ -219,8 +218,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     d,
-                    error_cls=UnexpectedYAMLValueError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=UnexpectedYAMLValueError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(d, dict)
                 d, parent = d[key], d
@@ -262,8 +262,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
         validate_or_raise(
             dict,
             content,
-            error_cls=YAMLValueMissingError,
-            error_msg=f"Configuration value '{print_keys(keys)}' is missing.",
+            err=YAMLValueMissingError(
+                f"Configuration value '{print_keys(keys)}' is missing."
+            ),
         )
         assert isinstance(content, dict)
         keys = _validate_keys(keys)
@@ -275,8 +276,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     d,
-                    error_cls=UnexpectedYAMLValueError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=UnexpectedYAMLValueError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(d, dict)
                 d = d[key]
@@ -291,8 +293,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 d,
-                error_cls=UnexpectedYAMLValueError,
-                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                err=UnexpectedYAMLValueError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
             )
             assert isinstance(d, dict)
             d = d[key]
@@ -312,8 +315,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
                     validate_or_raise(
                         dict,
                         parent,
-                        error_cls=UnexpectedYAMLValueError,
-                        error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                        err=UnexpectedYAMLValueError(
+                            f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                        ),
                     )
                     assert isinstance(parent, dict)
                     parent = parent[key]
@@ -322,8 +326,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     parent,
-                    error_cls=UnexpectedYAMLValueError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=UnexpectedYAMLValueError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(parent, dict)
                 if not parent[keys[idx - 1]]:
@@ -350,8 +355,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
         validate_or_raise(
             dict,
             content,
-            error_cls=UnexpectedYAMLValueError,
-            error_msg="Root level configuration must be a mapping.",
+            err=UnexpectedYAMLValueError("Root level configuration must be a mapping."),
         )
         assert isinstance(content, dict)
 
@@ -361,8 +365,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     d,
-                    error_cls=UnexpectedYAMLValueError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=UnexpectedYAMLValueError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(d, dict)
                 d = d[key]
@@ -370,8 +375,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 p_parent,
-                error_cls=UnexpectedYAMLValueError,
-                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                err=UnexpectedYAMLValueError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
             )
             assert isinstance(p_parent, dict)
             d = p_parent[keys[-1]]
@@ -386,14 +392,16 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 p_parent,
-                error_cls=UnexpectedYAMLValueError,
-                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                err=UnexpectedYAMLValueError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
             )
             validate_or_raise(
                 list,
                 d,
-                error_cls=UnexpectedYAMLValueError,
-                error_msg=f"Expected a list at '{print_keys(keys)}' in '{self.name}'.",
+                err=UnexpectedYAMLValueError(
+                    f"Expected a list at '{print_keys(keys)}' in '{self.name}'."
+                ),
             )
             assert isinstance(p_parent, dict)
             assert isinstance(d, list)
@@ -420,8 +428,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
         validate_or_raise(
             dict,
             content,
-            error_cls=UnexpectedYAMLValueError,
-            error_msg="Root level configuration must be a mapping.",
+            err=UnexpectedYAMLValueError("Root level configuration must be a mapping."),
         )
         assert isinstance(content, dict)
 
@@ -431,8 +438,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     p,
-                    error_cls=UnexpectedYAMLValueError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=UnexpectedYAMLValueError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(p, dict)
                 p = p[key]
@@ -441,8 +449,9 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 p_parent,
-                error_cls=UnexpectedYAMLValueError,
-                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                err=UnexpectedYAMLValueError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
             )
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
@@ -454,8 +463,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 list,
                 p,
-                error_cls=UnexpectedYAMLValueError,
-                error_msg="Expected a list value.",
+                err=UnexpectedYAMLValueError("Expected a list value."),
             )
         except UnexpectedYAMLValueError:
             return

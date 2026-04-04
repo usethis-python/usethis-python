@@ -24,8 +24,7 @@ def validate_or_raise(
     type_: type[T],
     obj: object,
     *,
-    error_cls: type[Exception],
-    error_msg: str,
+    err: Exception,
 ) -> T: ...
 
 
@@ -34,8 +33,7 @@ def validate_or_raise(
     type_: object,
     obj: object,
     *,
-    error_cls: type[Exception],
-    error_msg: str,
+    err: Exception,
 ) -> object: ...
 
 
@@ -43,8 +41,7 @@ def validate_or_raise(
     type_: object,
     obj: object,
     *,
-    error_cls: type[Exception],
-    error_msg: str,
+    err: Exception,
 ) -> object:
     """Validate ``obj`` against ``type_``, raising a custom error on failure.
 
@@ -52,19 +49,18 @@ def validate_or_raise(
         type_: The target type to validate against (forwarded to
             ``TypeAdapter``).
         obj: The object to validate.
-        error_cls: The exception class to raise when validation fails.
-        error_msg: The message for the raised exception.
+        err: An instantiated exception to raise when validation fails.
 
     Returns:
         The validated (and possibly coerced) object.
 
     Raises:
-        error_cls: When ``obj`` does not conform to ``type_``.
+        type(err): When ``obj`` does not conform to ``type_``.
     """
     try:
         return TypeAdapter(type_).validate_python(obj)
     except ValidationError:
-        raise error_cls(error_msg) from None
+        raise err from None
 
 
 def validate_or_default(

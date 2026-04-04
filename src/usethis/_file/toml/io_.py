@@ -121,8 +121,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     container,
-                    error_cls=TOMLValueInvalidError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(container, dict)
                 container = container[key]
@@ -141,8 +142,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 d,
-                error_cls=TOMLValueMissingError,
-                error_msg=f"Configuration value '{print_keys(keys)}' is missing.",
+                err=TOMLValueMissingError(
+                    f"Configuration value '{print_keys(keys)}' is missing."
+                ),
             )
             assert isinstance(d, dict)
             try:
@@ -168,15 +170,13 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 toml_document,
-                error_cls=TOMLValueInvalidError,
-                error_msg="Expected a mapping value.",
+                err=TOMLValueInvalidError("Expected a mapping value."),
             )
             assert isinstance(toml_document, dict)
             validate_or_raise(
                 dict,
                 value,
-                error_cls=TOMLValueInvalidError,
-                error_msg="Expected a mapping value.",
+                err=TOMLValueInvalidError("Expected a mapping value."),
             )
             assert isinstance(value, dict)
             if not toml_document or exists_ok:
@@ -193,8 +193,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     d,
-                    error_cls=TOMLValueInvalidError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(d, dict)
                 d, parent = d[key], d
@@ -250,8 +251,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     d,
-                    error_cls=TOMLValueInvalidError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(d, dict)
                 d = d[key]
@@ -266,8 +268,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 d,
-                error_cls=TOMLValueInvalidError,
-                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                err=TOMLValueInvalidError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
             )
             assert isinstance(d, dict)
             d = d[key]
@@ -298,8 +301,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                     validate_or_raise(
                         dict,
                         parent,
-                        error_cls=TOMLValueInvalidError,
-                        error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                        err=TOMLValueInvalidError(
+                            f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                        ),
                     )
                     assert isinstance(parent, dict)
                     parent = parent[key]
@@ -308,8 +312,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     parent,
-                    error_cls=TOMLValueInvalidError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(parent, dict)
                 if not parent[keys[idx - 1]]:
@@ -333,8 +338,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     d,
-                    error_cls=TOMLValueInvalidError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(d, dict)
                 d = d[key]
@@ -343,8 +349,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 p_parent,
-                error_cls=TOMLValueInvalidError,
-                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                err=TOMLValueInvalidError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
             )
             assert isinstance(p_parent, dict)
             d = p_parent[keys[-1]]
@@ -371,8 +378,7 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 list,
                 d,
-                error_cls=TOMLValueInvalidError,
-                error_msg=(
+                err=TOMLValueInvalidError(
                     f"Configuration value '{print_keys(keys)}' is not a valid list in "
                     f"the TOML file '{self.name}'."
                 ),
@@ -403,8 +409,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 validate_or_raise(
                     dict,
                     p,
-                    error_cls=TOMLValueInvalidError,
-                    error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
                 )
                 assert isinstance(p, dict)
                 p = p[key]
@@ -413,8 +420,9 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 p_parent,
-                error_cls=TOMLValueInvalidError,
-                error_msg=f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'.",
+                err=TOMLValueInvalidError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
             )
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
@@ -426,8 +434,7 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             validate_or_raise(
                 list,
                 p,
-                error_cls=TOMLValueInvalidError,
-                error_msg="Expected a list value.",
+                err=TOMLValueInvalidError("Expected a list value."),
             )
         except TOMLValueInvalidError:
             return
@@ -475,8 +482,7 @@ def _set_value_in_existing(
         validate_or_raise(
             dict,
             shared_container,
-            error_cls=TOMLValueInvalidError,
-            error_msg="Expected a mapping value.",
+            err=TOMLValueInvalidError("Expected a mapping value."),
         )
         assert isinstance(shared_container, dict)
 

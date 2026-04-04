@@ -174,8 +174,9 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             value = validate_or_raise(
                 dict[str, dict[str, str | list[str]]],
                 value,
-                error_cls=InvalidINITypeError,
-                error_msg=f"Expected a mapping of sections for '{self.name}'.",
+                err=InvalidINITypeError(
+                    f"Expected a mapping of sections for '{self.name}'."
+                ),
             )
             assert isinstance(value, dict)
             self._set_value_in_root(root=root, value=value, exists_ok=exists_ok)
@@ -184,8 +185,9 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             value = validate_or_raise(
                 dict[str, str | list[str]],
                 value,
-                error_cls=InvalidINITypeError,
-                error_msg=f"Expected a mapping of options for '{self.name}'.",
+                err=InvalidINITypeError(
+                    f"Expected a mapping of options for '{self.name}'."
+                ),
             )
             assert isinstance(value, dict)
             self._set_value_in_section(
@@ -196,8 +198,9 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             cast_value = validate_or_raise(
                 str | list[str],
                 value,
-                error_cls=InvalidINITypeError,
-                error_msg=f"Expected a string or list of strings for '{self.name}'.",
+                err=InvalidINITypeError(
+                    f"Expected a string or list of strings for '{self.name}'."
+                ),
             )
             assert isinstance(cast_value, (str, list))
             self._set_value_in_option(
@@ -235,8 +238,7 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
         validate_or_raise(
             dict,
             root_dict,
-            error_cls=InvalidINITypeError,
-            error_msg="Expected a mapping value.",
+            err=InvalidINITypeError("Expected a mapping value."),
         )
         assert isinstance(root_dict, dict)
 
@@ -244,8 +246,9 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             validate_or_raise(
                 dict,
                 section_dict,
-                error_cls=InvalidINITypeError,
-                error_msg=f"Expected a mapping for section '{section_key}'.",
+                err=InvalidINITypeError(
+                    f"Expected a mapping for section '{section_key}'."
+                ),
             )
             assert isinstance(section_dict, dict)
 
@@ -279,8 +282,7 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
         validate_or_raise(
             dict,
             value,
-            error_cls=InvalidINITypeError,
-            error_msg="Expected a mapping value.",
+            err=InvalidINITypeError("Expected a mapping value."),
         )
         assert isinstance(value, dict)
 
@@ -485,8 +487,9 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             str_values = validate_or_raise(
                 list[str],
                 values,
-                error_cls=InvalidINITypeError,
-                error_msg=f"Expected a list of strings for '{self.name}'.",
+                err=InvalidINITypeError(
+                    f"Expected a list of strings for '{self.name}'."
+                ),
             )
             self._extend_list_in_option(
                 root=root,
@@ -574,8 +577,9 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             str_values = validate_or_raise(
                 list[str],
                 values,
-                error_cls=InvalidINITypeError,
-                error_msg=f"Expected a list of strings for '{self.name}'.",
+                err=InvalidINITypeError(
+                    f"Expected a list of strings for '{self.name}'."
+                ),
             )
             self._remove_from_list_in_option(
                 root=root,

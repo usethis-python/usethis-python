@@ -296,8 +296,7 @@ class KeyValueFileManager(
         return validate_or_raise(
             validate,
             raw,
-            error_cls=type(err),
-            error_msg=str(err),
+            err=err,
         )
 
     @abstractmethod

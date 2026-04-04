@@ -21,37 +21,29 @@ class TestValidateOrRaise:
     """Tests for validate_or_raise."""
 
     def test_valid_str(self):
-        result = validate_or_raise(
-            str, "hello", error_cls=_CustomError, error_msg="fail"
-        )
+        result = validate_or_raise(str, "hello", err=_CustomError("fail"))
         assert result == "hello"
 
     def test_valid_dict(self):
-        result = validate_or_raise(
-            dict, {"a": 1}, error_cls=_CustomError, error_msg="fail"
-        )
+        result = validate_or_raise(dict, {"a": 1}, err=_CustomError("fail"))
         assert result == {"a": 1}
 
     def test_valid_list_str(self):
-        result = validate_or_raise(
-            list[str], ["a", "b"], error_cls=_CustomError, error_msg="fail"
-        )
+        result = validate_or_raise(list[str], ["a", "b"], err=_CustomError("fail"))
         assert result == ["a", "b"]
 
     def test_invalid_raises_custom_error(self):
         with pytest.raises(_CustomError, match="not a string"):
-            validate_or_raise(
-                str, 123, error_cls=_CustomError, error_msg="not a string"
-            )
+            validate_or_raise(str, 123, err=_CustomError("not a string"))
 
     def test_invalid_does_not_raise_validation_error(self):
         """Ensure pydantic.ValidationError does not propagate."""
         with pytest.raises(_CustomError):
-            validate_or_raise(str, [1, 2, 3], error_cls=_CustomError, error_msg="bad")
+            validate_or_raise(str, [1, 2, 3], err=_CustomError("bad"))
 
         # Explicitly verify ValidationError is NOT raised
         try:
-            validate_or_raise(str, [1, 2, 3], error_cls=_CustomError, error_msg="bad")
+            validate_or_raise(str, [1, 2, 3], err=_CustomError("bad"))
         except _CustomError:
             pass
         except ValidationError:
@@ -59,13 +51,11 @@ class TestValidateOrRaise:
 
     def test_custom_error_msg_preserved(self):
         with pytest.raises(_CustomError, match=r"^my custom message$"):
-            validate_or_raise(
-                int, "not-an-int", error_cls=_CustomError, error_msg="my custom message"
-            )
+            validate_or_raise(int, "not-an-int", err=_CustomError("my custom message"))
 
     def test_coercion(self):
         """TypeAdapter may coerce compatible types."""
-        result = validate_or_raise(float, 1, error_cls=_CustomError, error_msg="fail")
+        result = validate_or_raise(float, 1, err=_CustomError("fail"))
         assert result == 1.0
         assert isinstance(result, float)
 

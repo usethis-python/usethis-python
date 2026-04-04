@@ -59,7 +59,7 @@ class UsethisConfig:
     project_dir: Path | None = None
 
     @contextmanager
-    def set(  # noqa: PLR0913, PLR0915
+    def set(  # noqa: PLR0912, PLR0913, PLR0915
         self,
         *,
         offline: bool | None = None,
@@ -121,18 +121,20 @@ class UsethisConfig:
         if isinstance(project_dir, str):
             project_dir = Path(project_dir)
         self.project_dir = project_dir
-        yield
-        self.offline = old_offline
-        self.quiet = old_quiet
-        self.frozen = old_frozen
-        self.alert_only = old_alert_only
-        self.instruct_only = old_instruct_only
-        self.backend = old_backend
-        self.inferred_backend = old_inferred_backend
-        self.build_backend = old_build_backend
-        self.disable_pre_commit = old_disable_pre_commit
-        self.subprocess_verbose = old_subprocess_verbose
-        self.project_dir = old_project_dir
+        try:
+            yield
+        finally:
+            self.offline = old_offline
+            self.quiet = old_quiet
+            self.frozen = old_frozen
+            self.alert_only = old_alert_only
+            self.instruct_only = old_instruct_only
+            self.backend = old_backend
+            self.inferred_backend = old_inferred_backend
+            self.build_backend = old_build_backend
+            self.disable_pre_commit = old_disable_pre_commit
+            self.subprocess_verbose = old_subprocess_verbose
+            self.project_dir = old_project_dir
 
     def cpd(self) -> Path:
         """Return the current project directory."""

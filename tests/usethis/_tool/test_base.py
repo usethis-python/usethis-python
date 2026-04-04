@@ -269,7 +269,7 @@ class TestTool:
         def test_some_deps(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
                 add_deps_to_group(
                     [
                         Dependency(name="black"),
@@ -298,7 +298,7 @@ class TestTool:
         def test_dir(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
                 Path("mytool-config.yaml").mkdir()
 
                 # Act
@@ -310,7 +310,7 @@ class TestTool:
         def test_pyproject(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
                 PyprojectTOMLManager().set_value(
                     keys=["tool", "my_tool", "key"], value="value"
                 )
@@ -326,7 +326,7 @@ class TestTool:
             tool = MyTool()
 
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
                 result = tool.is_used()
 
             # Assert
@@ -336,7 +336,7 @@ class TestTool:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
                 add_deps_to_group(
                     [
                         Dependency(name="black"),
@@ -354,7 +354,7 @@ class TestTool:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
                 add_deps_to_group(
                     [
                         Dependency(name="pytest"),
@@ -372,7 +372,7 @@ class TestTool:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
                 add_deps_to_group(
                     [
                         Dependency(name="isort"),
@@ -504,7 +504,7 @@ repos:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), PyprojectTOMLManager(), SetupCFGManager():
                 add_deps_to_group(
                     [
                         Dependency(name="black"),

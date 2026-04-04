@@ -153,6 +153,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │       │   ├── tach              # Tach tool implementation.
 │       │   └── ty                # ty tool implementation.
 │       └── spec                  # Tool specification implementations.
+│           ├── all_              # Registry of all available tool specifications.
 │           ├── codespell         # Codespell tool specification.
 │           ├── coverage_py       # Coverage.py tool specification.
 │           ├── deptry            # deptry tool specification.

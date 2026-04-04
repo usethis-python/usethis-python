@@ -4,7 +4,7 @@ description: Create a lesson from a development difficulty, covering root cause 
 compatibility: usethis, GitHub, gh CLI
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Creating a Lesson
@@ -26,6 +26,32 @@ A well-formed lesson answers:
 2. **Why** it went wrong (the root cause, not the symptom).
 3. **What principle** this reveals (something actionable for the future).
 
+## Self-containment and abstraction
+
+Lessons must stand alone. A lesson is read in future sessions with no access to prior
+context, stored memories, or conversation history. Therefore:
+
+- **Never reference memories.** Do not write phrases like "as noted in a previous
+  session", "per the stored memory about X", or "see the earlier lesson on Y". A reader
+  with no history must be able to understand and apply the lesson without looking anything
+  up.
+- **Never name specific code objects unless they are the subject.** If the principle is
+  about a pattern, name the pattern — not the exact function, class, or file where you
+  first encountered it. Specific names become stale and narrow the lesson's applicability.
+- **State principles at the right level of abstraction.** A good principle applies to an
+  entire class of situations. Ask yourself: would this guidance still be useful if the
+  specific file or function that triggered it were renamed or removed? If not, generalise
+  further.
+
+### Examples of abstraction
+
+| Too specific                                                            | Better                                                                                          |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Always call `clear_functools_caches()` after adding `@functools.cache`. | Whenever a caching decorator is added, ensure the cache is cleared in tests.                    |
+| `validate_or_raise` accepts `err=`, not `error_cls`.                    | Validation helpers often have specific argument conventions — check the signature before use.   |
+| Update `AGENTS.md` when adding a skill to `.agents/skills/`.            | Keep all registry files in sync whenever a new entry is added to a tracked directory.           |
+| Put new helpers in `src/mypackage/_utils/helpers.py`.                   | Place new helpers near their primary caller, following the project's module layout conventions. |
+
 ## When to create a lesson
 
 Create a lesson whenever you:
@@ -45,7 +71,10 @@ cause is self-evident and offers no transferable principle.
 2. **Perform root cause analysis** — ask "why?" iteratively to move from the
    symptom to an underlying cause. See the section below.
 3. **Generalise the principle** — restate the root cause as a transferable rule or
-   heuristic that applies beyond this specific situation.
+   heuristic that applies beyond this specific situation. Write it so it remains useful
+   even if the exact code, file, or function name changes. Avoid naming specific
+   implementation details unless the principle is truly about that specific thing.
+   See the "Self-containment and abstraction" section above for guidance.
 4. **Fill in the lesson template** — see the template below.
 5. **File as a GitHub issue** using the `usethis-github-issue-create` skill, with
    label `agent` and any other relevant labels (e.g. `bug`, `documentation`).
@@ -94,7 +123,8 @@ cause, not the symptom.>
 
 <A transferable rule or heuristic — written so it applies beyond this specific
 situation. Phrase it as actionable guidance: "Always ...", "Never ...", "When X,
-do Y ...".>
+do Y ...". Avoid naming specific functions, classes, or files unless the principle is
+truly about that specific thing. Do not reference memories or prior sessions.>
 
 ## Resolution
 

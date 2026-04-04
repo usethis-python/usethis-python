@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from usethis._python.version import (
@@ -199,3 +201,43 @@ class TestPythonVersion:
 
             # Act & Assert
             assert v1 != v2
+
+    class TestFromPythonVersionFile:
+        def test_valid_file(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".python-version").write_text("3.11\n")
+
+            # Act
+            version = PythonVersion.from_python_version_file(
+                tmp_path / ".python-version"
+            )
+
+            # Assert
+            assert version == PythonVersion(major="3", minor="11")
+
+        def test_valid_file_with_patch(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".python-version").write_text("3.11.5\n")
+
+            # Act
+            version = PythonVersion.from_python_version_file(
+                tmp_path / ".python-version"
+            )
+
+            # Assert
+            assert version == PythonVersion(major="3", minor="11", patch="5")
+
+        def test_file_not_found(self, tmp_path: Path):
+            # Act & Assert
+            with pytest.raises(FileNotFoundError):
+                PythonVersion.from_python_version_file(tmp_path / ".python-version")
+
+        def test_invalid_content(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / ".python-version").write_text("not-a-version\n")
+
+            # Act & Assert
+            with pytest.raises(
+                PythonVersionParseError, match="Could not parse Python version"
+            ):
+                PythonVersion.from_python_version_file(tmp_path / ".python-version")

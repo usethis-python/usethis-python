@@ -5,8 +5,12 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from sysconfig import get_python_version as _get_python_version
+from typing import TYPE_CHECKING
 
 from typing_extensions import override
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class PythonVersionParseError(ValueError):
@@ -61,3 +65,16 @@ class PythonVersion:
     def from_interpreter(cls) -> PythonVersion:
         """Get the Python version from the current interpreter."""
         return cls.from_string(_get_python_version())
+
+    @classmethod
+    def from_python_version_file(cls, path: Path) -> PythonVersion:
+        """Get the Python version from a .python-version file.
+
+        Args:
+            path: Path to the .python-version file.
+
+        Raises:
+            FileNotFoundError: If the file does not exist.
+            PythonVersionParseError: If the file content cannot be parsed as a version.
+        """
+        return cls.from_string(path.read_text(encoding="utf-8").strip())

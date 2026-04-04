@@ -20,19 +20,6 @@ from usethis._python.version import PythonVersion, PythonVersionParseError
 from usethis._types.backend import BackendEnum
 
 
-def _get_current_python_version() -> PythonVersion:
-    """Get the inferred Python version for the current project.
-
-    Prefers the version from the .python-version file if it exists and is valid,
-    otherwise falls back to the current interpreter.
-    """
-    python_version_file = usethis_config.cpd() / ".python-version"
-    try:
-        return PythonVersion.from_python_version_file(python_version_file)
-    except (FileNotFoundError, PythonVersionParseError):
-        return PythonVersion.from_interpreter()
-
-
 def get_supported_minor_python_versions() -> list[PythonVersion]:
     """Get supported Python versions for the current backend.
 
@@ -79,3 +66,16 @@ def get_supported_minor_python_versions() -> list[PythonVersion]:
         assert_never(backend)
 
     return versions
+
+
+def _get_current_python_version() -> PythonVersion:
+    """Get the inferred Python version for the current project.
+
+    Prefers the version from the .python-version file if it exists and is valid,
+    otherwise falls back to the current interpreter.
+    """
+    python_version_file = usethis_config.cpd() / ".python-version"
+    try:
+        return PythonVersion.from_python_version_file(python_version_file)
+    except (FileNotFoundError, PythonVersionParseError):
+        return PythonVersion.from_interpreter()

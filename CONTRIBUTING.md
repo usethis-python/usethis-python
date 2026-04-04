@@ -36,6 +36,23 @@ To run the tests, simply run:
 uv run pytest
 ```
 
+### Dogfooding
+
+To run usethis against the repository itself, use:
+
+```shell
+uvx --from . usethis <command>
+```
+
+This creates an isolated virtual environment, avoiding permissions issues on Windows. Prefer this over `uv run usethis`, which uses the project's existing virtual environment.
+
+After dogfooding, revert any changes the command made to the worktree:
+
+```shell
+git checkout -- .
+git clean -fd
+```
+
 ### Writing Tests
 
 Tests are written using the `pytest` framework. The test suite is located in the `tests` directory. The tests are organized into subdirectories with a directory structure that mirrors the structure of the code being tested. This makes it easy to find the tests for a specific module or function. For example: `src/x/y/z.py` would be tested at `tests/x/y/test_z.py`.

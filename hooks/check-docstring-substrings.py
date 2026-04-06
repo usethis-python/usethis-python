@@ -49,7 +49,8 @@ def main() -> int:
 
 def _check_file(filepath: str, patterns: list[re.Pattern[str]]) -> list[str]:
     try:
-        source = open(filepath, encoding="utf-8").read()  # noqa: SIM115
+        with open(filepath, encoding="utf-8") as f:
+            source = f.read()
         tree = ast.parse(source, filename=filepath)
     except (SyntaxError, UnicodeDecodeError):
         return []

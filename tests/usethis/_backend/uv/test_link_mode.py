@@ -1,15 +1,14 @@
 from pathlib import Path
 
 from usethis._backend.uv.link_mode import ensure_symlink_mode
-from usethis._backend.uv.toml import UVTOMLManager
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._config_file import files_manager
 from usethis._test import change_cwd
 
 
 class TestEnsureSymlinkMode:
     def test_symlink_mode_set(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_symlink_mode()
 
         # Assert
@@ -28,7 +27,7 @@ link-mode = "symlink"
         (tmp_path / "uv.toml").touch()
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager(), UVTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_symlink_mode()
 
         # Assert

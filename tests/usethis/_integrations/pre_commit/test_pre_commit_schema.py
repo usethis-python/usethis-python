@@ -5,7 +5,7 @@ import pytest
 import requests
 from requests.exceptions import RequestException
 
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.requires_python import (
     get_requires_python,
 )
@@ -48,5 +48,5 @@ class TestSchemaJSON:
 
     def test_target_python_version(self, usethis_dev_dir: Path):
         # If this test fails, we should bump the version in the command in schema.py
-        with change_cwd(usethis_dev_dir), PyprojectTOMLManager():
+        with change_cwd(usethis_dev_dir), files_manager():
             assert get_requires_python() == ">=3.10"

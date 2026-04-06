@@ -2,12 +2,12 @@ from pathlib import Path
 
 import pytest
 
+from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectDescriptionError,
     PyprojectTOMLProjectNameError,
     PyprojectTOMLProjectSectionError,
 )
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.pyproject_toml.name import get_description, get_name
 from usethis._test import change_cwd
 
@@ -24,7 +24,7 @@ class TestGetName:
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             result = get_name()
 
         # Assert
@@ -34,7 +34,7 @@ class TestGetName:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(FileNotFoundError),
         ):
             get_name()
@@ -47,7 +47,7 @@ class TestGetName:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_name()
@@ -60,7 +60,7 @@ class TestGetName:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectNameError),
         ):
             get_name()
@@ -78,7 +78,7 @@ class TestGetName:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectNameError),
         ):
             get_name()
@@ -96,7 +96,7 @@ class TestGetDescription:
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             result = get_description()
 
         # Assert
@@ -106,7 +106,7 @@ class TestGetDescription:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(FileNotFoundError),
         ):
             get_description()
@@ -119,7 +119,7 @@ class TestGetDescription:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_description()
@@ -132,7 +132,7 @@ class TestGetDescription:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectDescriptionError),
         ):
             get_description()
@@ -150,7 +150,7 @@ class TestGetDescription:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectDescriptionError),
         ):
             get_description()

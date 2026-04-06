@@ -5,7 +5,7 @@ from usethis._backend.uv.python import (
     get_available_uv_python_versions,
     get_supported_uv_minor_python_versions,
 )
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._config_file import files_manager
 from usethis._python.version import PythonVersion
 from usethis._test import change_cwd
 
@@ -30,7 +30,7 @@ requires-python = ">=3.10,<3.12"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             supported_python = get_supported_uv_minor_python_versions()
 
         # Assert
@@ -47,7 +47,7 @@ requires-python = ">=3.9,<3.12"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             supported_python = get_supported_uv_minor_python_versions()
 
         # Assert
@@ -55,7 +55,7 @@ requires-python = ">=3.9,<3.12"
         assert all(v.patch is None for v in supported_python)
 
     def test_no_pyproject_toml(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             result = get_supported_uv_minor_python_versions()
             current_version = PythonVersion.from_interpreter()
             assert len(result) == 1
@@ -75,7 +75,7 @@ name = "foo"
         # Act
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
         ):
             versions = get_supported_uv_minor_python_versions()
 

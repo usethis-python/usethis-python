@@ -47,9 +47,9 @@ def get_project_deps() -> list[Dependency]:
     This does not include development dependencies, e.g. not those in the
     dependency-groups section, not extras/optional dependencies, not build dependencies.
 
-    Usually this is just the dependencies in the ``project.dependencies`` section
-    of the ``pyproject.toml`` file. When the poetry backend is active, also
-    reads from ``[tool.poetry.dependencies]``.
+    Usually this is just the dependencies in the `project.dependencies` section
+    of the `pyproject.toml` file. When the poetry backend is active, also
+    reads from `[tool.poetry.dependencies]`.
     """
     try:
         deps = _get_project_deps()
@@ -66,8 +66,8 @@ def get_project_deps() -> list[Dependency]:
 def get_dep_groups() -> dict[str, list[Dependency]]:
     """Get all dependency groups from pyproject.toml.
 
-    Reads from ``[dependency-groups]`` (PEP 735). When the poetry backend
-    is active, also reads from ``[tool.poetry.group.*.dependencies]``.
+    Reads from `[dependency-groups]` (PEP 735). When the poetry backend
+    is active, also reads from `[tool.poetry.group.*.dependencies]`.
     """
     try:
         groups = _get_dep_groups()
@@ -307,7 +307,7 @@ def _get_poetry_default_groups() -> list[str]:
     """Get the list of poetry dependency groups that are installed by default.
 
     In Poetry, all groups are installed by default unless they have
-    ``optional = true`` set in ``[tool.poetry.group.GROUPNAME]``.
+    `optional = true` set in `[tool.poetry.group.GROUPNAME]`.
     """
     dep_groups = get_dep_groups()
 

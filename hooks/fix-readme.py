@@ -96,7 +96,7 @@ def _include_doc(
         demote_headers: Whether to demote markdown headers by one level.
         replacements: Dictionary of string replacements to apply.
         tip_text: If provided, lines starting with this text are wrapped
-            in a GitHub ``> [!TIP]`` callout.
+            in a GitHub `> [!TIP]` callout.
     """
     content = Path(path).read_text(encoding="utf-8")
     lines = content.splitlines()[skip_lines:]

@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 from packaging.specifiers import SpecifierSet
 
+from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.pyproject_toml.requires_python import (
     MissingRequiresPythonError,
     get_required_minor_python_versions,
@@ -25,7 +25,7 @@ requires-python = ">=3.7"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             requires_python = get_requires_python()
 
         # Assert
@@ -34,7 +34,7 @@ requires-python = ">=3.7"
     def test_no_pyproject_toml(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_requires_python()
@@ -51,7 +51,7 @@ requires-python = ">=3.10"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert - unbounded upward should extend to hard-coded limit
@@ -72,7 +72,7 @@ requires-python = ">=3.10,<3.13"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert
@@ -92,7 +92,7 @@ requires-python = "==3.11"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert
@@ -108,7 +108,7 @@ requires-python = ">=3.10.5,<3.12.0"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert - 3.10 represents 3.10.* which includes 3.10.5+
@@ -128,7 +128,7 @@ requires-python = ">=2.7,<4.0"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert - should include Python 2.7, 3.x versions
@@ -148,7 +148,7 @@ requires-python = ">=3.8,<=3.11"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert
@@ -163,7 +163,7 @@ requires-python = ">=3.8,<=3.11"
         # Act & Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_required_minor_python_versions()
@@ -180,7 +180,7 @@ name = "test"
         # Act & Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(MissingRequiresPythonError),
         ):
             get_required_minor_python_versions()
@@ -195,7 +195,7 @@ requires-python = ">=3.9,!=3.10,<3.13"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert - !=3.10 only excludes 3.10.0, but 3.10.5+ are valid
@@ -217,7 +217,7 @@ requires-python = ">3.10,<3.10"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert
@@ -233,7 +233,7 @@ requires-python = "<3.12"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert - unbounded downward should extend to hard-coded limit (3.0)
@@ -252,7 +252,7 @@ requires-python = ">=2.7"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert - should cap at 2.7 for Python 2
@@ -269,7 +269,7 @@ requires-python = ">=3.6,<4.0"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             versions = get_required_minor_python_versions()
 
         # Assert - should include all 3.x up to hard-coded limit

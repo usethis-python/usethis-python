@@ -3,8 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._config import usethis_config
-from usethis._config_file import DotRuffTOMLManager, RuffTOMLManager, files_manager
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._config_file import files_manager
 from usethis._test import change_cwd
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
@@ -35,7 +34,7 @@ class TestRuffTool:
             (tmp_path / "pyproject.toml").write_text("")
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().select_rules(["A", "B", "C"])
 
             # Assert
@@ -48,7 +47,7 @@ class TestRuffTool:
 
             # Act
             new_rules = ["A", "B", "C"]
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().select_rules(new_rules)
 
                 # Assert
@@ -65,7 +64,7 @@ class TestRuffTool:
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().select_rules(["C", "D"])
 
                 # Assert
@@ -82,7 +81,7 @@ select = ["D", "B", "A"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().select_rules(["E", "C", "A"])
 
                 # Assert
@@ -98,7 +97,7 @@ select = ["A", "B"]
             )
 
             # Act
-            with change_cwd(tmp_path), RuffTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().select_rules(["C", "D"])
 
                 # Assert
@@ -116,7 +115,7 @@ select = ["A"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().select_rules([])
 
                 # Assert
@@ -133,7 +132,7 @@ select = ["TC"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = RuffTool().select_rules(["TC001"])
 
                 # Assert
@@ -151,7 +150,7 @@ select = ["ALL"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = RuffTool().select_rules(["TC001"])
 
                 # Assert
@@ -169,7 +168,7 @@ select = ["TC001"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = RuffTool().select_rules(["TC"])
 
                 # Assert
@@ -187,7 +186,7 @@ select = ["A", "TC001", "E501"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = RuffTool().select_rules(["ALL"])
 
                 # Assert
@@ -208,7 +207,7 @@ select = ["A", "TC001", "E501"]
             (tmp_path / "pyproject.toml").write_text("")
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().deselect_rules(["A", "B", "C"])
 
                 # Assert
@@ -224,7 +223,7 @@ select = ["A"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().deselect_rules(["A"])
 
                 # Assert
@@ -240,7 +239,7 @@ select = ["A", "B", "C"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().deselect_rules(["A", "C"])
 
                 # Assert
@@ -256,7 +255,7 @@ select = ["A", "B"]
             )
 
             # Act
-            with change_cwd(tmp_path), DotRuffTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().deselect_rules(["A"])
 
                 # Assert
@@ -273,7 +272,7 @@ ignore = ["A", "B"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().ignore_rules(["C", "D"])
 
                 # Assert
@@ -289,7 +288,7 @@ ignore = ["A"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().ignore_rules([])
 
                 # Assert
@@ -306,7 +305,7 @@ ignore = ["TC"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = RuffTool().ignore_rules(["TC001"])
 
                 # Assert
@@ -324,7 +323,7 @@ ignore = ["TC001"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = RuffTool().ignore_rules(["TC"])
 
                 # Assert
@@ -346,7 +345,7 @@ lint.ignore = [
             )
 
             # Act
-            with change_cwd(tmp_path), RuffTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 RuffTool().ignore_rules(["ERA001"])
 
             # Assert
@@ -377,7 +376,7 @@ select = ["A"]
 """
             )
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 assert not RuffTool().is_linter_used()
 
         def test_pyproject_toml(self, tmp_path: Path):
@@ -390,7 +389,7 @@ select = ["A"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 assert RuffTool().is_linter_used()
 
         def test_ruff_toml(self, tmp_path: Path):
@@ -403,7 +402,7 @@ select = ["A"]
             )
 
             # Act
-            with change_cwd(tmp_path), DotRuffTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 assert RuffTool().is_linter_used()
 
     class TestIsFormatterUsed:
@@ -422,7 +421,7 @@ select = ["A"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 assert not RuffTool().is_formatter_used()
 
         def test_pyproject_toml(self, tmp_path: Path):
@@ -435,7 +434,7 @@ select = ["A"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 assert RuffTool().is_formatter_used()
 
         def test_ruff_toml(self, tmp_path: Path):
@@ -448,7 +447,7 @@ select = ["A"]
             )
 
             # Act
-            with change_cwd(tmp_path), DotRuffTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 assert RuffTool().is_formatter_used()
 
     class TestIgnoreRulesInGlob:
@@ -485,7 +484,7 @@ lint.per-file-ignores."tests/**" = ["INP"]
 "tests/**" = ["TC"]
 """)
 
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 # Act
                 RuffTool().ignore_rules_in_glob(["TC001"], glob="tests/**")
 
@@ -500,7 +499,7 @@ lint.per-file-ignores."tests/**" = ["INP"]
 "tests/**" = ["TC001"]
 """)
 
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 # Act
                 RuffTool().ignore_rules_in_glob(["TC"], glob="tests/**")
 

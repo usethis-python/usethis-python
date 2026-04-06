@@ -8,6 +8,7 @@ import pytest
 
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
+from usethis._config_file import files_manager
 from usethis._console import _cached_warn_print, get_icon_mode
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.environ.python import _get_current_python_version
@@ -55,7 +56,8 @@ def _uv_init_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
         # Without this, uv is used for initializing the project directory, but there's
         # no real indication that it's being used anywhere! So tests would suggest
         # --how behaviour based on --backend=none logic.
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             mgr[["tool", "uv", "environments"]] = []
 
     return tmp_path

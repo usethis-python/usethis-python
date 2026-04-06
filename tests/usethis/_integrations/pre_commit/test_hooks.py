@@ -358,7 +358,8 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
+        with change_cwd(tmp_path), files_manager():
+            mgr = PreCommitConfigYAMLManager()
             existing_repos = mgr.model_validate().repos
             repos = insert_repo(
                 repo_to_insert=schema.LocalRepo(
@@ -430,7 +431,8 @@ repos:
 """)
 
         # Act
-        with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
+        with change_cwd(tmp_path), files_manager():
+            mgr = PreCommitConfigYAMLManager()
             existing_repos = mgr.model_validate().repos
             repos = insert_repo(
                 repo_to_insert=schema.LocalRepo(

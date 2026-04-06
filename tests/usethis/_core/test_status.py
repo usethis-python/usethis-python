@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
+from usethis._config_file import files_manager
 from usethis._core.status import _STATUS_TO_CLASSIFIER_MAP, use_development_status
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._test import change_cwd
@@ -20,7 +21,7 @@ class TestUseDevelopmentStatus:
         status = DevelopmentStatusEnum.planning
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -28,7 +29,8 @@ class TestUseDevelopmentStatus:
             "Development Status :: 1 - Planning"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert "Development Status :: 1 - Planning" in TypeAdapter(
                 list[str]
             ).validate_python(mgr[["project", "classifiers"]])
@@ -41,7 +43,7 @@ class TestUseDevelopmentStatus:
         status = DevelopmentStatusEnum.planning_code
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -49,7 +51,8 @@ class TestUseDevelopmentStatus:
             "Development Status :: 1 - Planning"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert "Development Status :: 1 - Planning" in TypeAdapter(
                 list[str]
             ).validate_python(mgr[["project", "classifiers"]])
@@ -62,7 +65,7 @@ class TestUseDevelopmentStatus:
         status = DevelopmentStatusEnum.prealpha
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -70,7 +73,8 @@ class TestUseDevelopmentStatus:
             "Development Status :: 2 - Pre-Alpha"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert "Development Status :: 2 - Pre-Alpha" in TypeAdapter(
                 list[str]
             ).validate_python(mgr[["project", "classifiers"]])
@@ -83,7 +87,7 @@ class TestUseDevelopmentStatus:
         status = DevelopmentStatusEnum.alpha
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -91,7 +95,8 @@ class TestUseDevelopmentStatus:
             "Development Status :: 3 - Alpha"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert "Development Status :: 3 - Alpha" in TypeAdapter(
                 list[str]
             ).validate_python(mgr[["project", "classifiers"]])
@@ -104,7 +109,7 @@ class TestUseDevelopmentStatus:
         status = DevelopmentStatusEnum.beta
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -112,7 +117,8 @@ class TestUseDevelopmentStatus:
             "Development Status :: 4 - Beta"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert "Development Status :: 4 - Beta" in TypeAdapter(
                 list[str]
             ).validate_python(mgr[["project", "classifiers"]])
@@ -125,7 +131,7 @@ class TestUseDevelopmentStatus:
         status = DevelopmentStatusEnum.production
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -133,7 +139,8 @@ class TestUseDevelopmentStatus:
             "Development Status :: 5 - Production/Stable"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert "Development Status :: 5 - Production/Stable" in TypeAdapter(
                 list[str]
             ).validate_python(mgr[["project", "classifiers"]])
@@ -146,7 +153,7 @@ class TestUseDevelopmentStatus:
         status = DevelopmentStatusEnum.mature
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -154,7 +161,8 @@ class TestUseDevelopmentStatus:
             "Development Status :: 6 - Mature"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert "Development Status :: 6 - Mature" in TypeAdapter(
                 list[str]
             ).validate_python(mgr[["project", "classifiers"]])
@@ -167,7 +175,7 @@ class TestUseDevelopmentStatus:
         status = DevelopmentStatusEnum.inactive
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -175,7 +183,8 @@ class TestUseDevelopmentStatus:
             "Development Status :: 7 - Inactive"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert "Development Status :: 7 - Inactive" in TypeAdapter(
                 list[str]
             ).validate_python(mgr[["project", "classifiers"]])
@@ -188,7 +197,7 @@ class TestUseDevelopmentStatus:
         status = DevelopmentStatusEnum.planning
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             use_development_status(status)
 
         # Assert
@@ -216,7 +225,7 @@ classifiers = [
         )
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -224,7 +233,8 @@ classifiers = [
             "Development Status :: 4 - Beta"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert mgr[["project", "classifiers"]] == ["Development Status :: 4 - Beta"]
             assert "Development Status :: 3 - Alpha" not in TypeAdapter(
                 list[str]
@@ -251,7 +261,7 @@ classifiers = [
         )
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             use_development_status(status)
 
         # Assert
@@ -259,7 +269,8 @@ classifiers = [
             "Development Status :: 5 - Production/Stable"
             in uv_init_dir.joinpath("pyproject.toml").read_text()
         )
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             assert mgr[["project", "classifiers"]] == [
                 "Development Status :: 5 - Production/Stable"
             ]

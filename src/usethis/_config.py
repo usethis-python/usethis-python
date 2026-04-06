@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
@@ -58,8 +58,12 @@ class UsethisConfig:
     subprocess_verbose: bool = False
     project_dir: Path | None = None
 
+    def copy(self) -> UsethisConfig:
+        """Return a shallow copy of this configuration."""
+        return replace(self)
+
     @contextmanager
-    def set(  # noqa: PLR0913, PLR0915
+    def set(  # noqa: PLR0913
         self,
         *,
         offline: bool | None = None,
@@ -74,24 +78,14 @@ class UsethisConfig:
         project_dir: Path | str | None = None,
     ) -> Generator[None, None, None]:
         """Temporarily change command options."""
-        old_offline = self.offline
-        old_quiet = self.quiet
-        old_frozen = self.frozen
-        old_alert_only = self.alert_only
-        old_instruct_only = self.instruct_only
-        old_backend = self.backend
-        old_inferred_backend = self.inferred_backend
-        old_build_backend = self.build_backend
-        old_disable_pre_commit = self.disable_pre_commit
-        old_subprocess_verbose = self.subprocess_verbose
-        old_project_dir = self.project_dir
+        old = self.copy()
 
         if offline is None:
-            offline = old_offline
+            offline = self.offline
         if quiet is None:
-            quiet = old_quiet
+            quiet = self.quiet
         if frozen is None:
-            frozen = old_frozen
+            frozen = self.frozen
         if alert_only is None:
             alert_only = self.alert_only
         if instruct_only is None:
@@ -101,11 +95,11 @@ class UsethisConfig:
         if build_backend is None:
             build_backend = self.build_backend
         if disable_pre_commit is None:
-            disable_pre_commit = old_disable_pre_commit
+            disable_pre_commit = self.disable_pre_commit
         if subprocess_verbose is None:
-            subprocess_verbose = old_subprocess_verbose
+            subprocess_verbose = self.subprocess_verbose
         if project_dir is None:
-            project_dir = old_project_dir
+            project_dir = self.project_dir
 
         self.offline = offline
         self.quiet = quiet
@@ -122,17 +116,12 @@ class UsethisConfig:
             project_dir = Path(project_dir)
         self.project_dir = project_dir
         yield
-        self.offline = old_offline
-        self.quiet = old_quiet
-        self.frozen = old_frozen
-        self.alert_only = old_alert_only
-        self.instruct_only = old_instruct_only
-        self.backend = old_backend
-        self.inferred_backend = old_inferred_backend
-        self.build_backend = old_build_backend
-        self.disable_pre_commit = old_disable_pre_commit
-        self.subprocess_verbose = old_subprocess_verbose
-        self.project_dir = old_project_dir
+        self._restore(old)
+
+    def _restore(self, other: UsethisConfig) -> None:
+        """Restore all attributes from another configuration instance."""
+        for f in fields(self):
+            setattr(self, f.name, getattr(other, f.name))
 
     def cpd(self) -> Path:
         """Return the current project directory."""

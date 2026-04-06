@@ -10,6 +10,56 @@ from usethis.errors import ForbiddenBackendError
 
 
 class TestUsethisConfig:
+    class TestCopy:
+        def test_returns_new_instance(self):
+            # Arrange
+            config = UsethisConfig()
+
+            # Act
+            copied = config.copy()
+
+            # Assert
+            assert copied is not config
+
+        def test_preserves_defaults(self):
+            # Arrange
+            config = UsethisConfig()
+
+            # Act
+            copied = config.copy()
+
+            # Assert
+            assert copied.offline == config.offline
+            assert copied.quiet == config.quiet
+            assert copied.frozen == config.frozen
+            assert copied.backend == config.backend
+
+        def test_preserves_modified_values(self):
+            # Arrange
+            config = UsethisConfig()
+            config.offline = True
+            config.quiet = True
+            config.frozen = True
+
+            # Act
+            copied = config.copy()
+
+            # Assert
+            assert copied.offline is True
+            assert copied.quiet is True
+            assert copied.frozen is True
+
+        def test_independent_of_original(self):
+            # Arrange
+            config = UsethisConfig()
+
+            # Act
+            copied = config.copy()
+            copied.offline = True
+
+            # Assert
+            assert config.offline is False
+
     class TestCPD:
         def test_matches_path_cwd(self, tmp_path: Path):
             # Arrange

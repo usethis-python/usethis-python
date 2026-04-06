@@ -1,6 +1,6 @@
 """Check that every test file has a matching source module.
 
-For each test file matching ``test_*.py`` under the tests directory, at least
+For each test file matching `test_*.py` under the tests directory, at least
 one of the following source paths must exist under the source directory:
 
 - Direct name match (test_foo.py -> foo.py)

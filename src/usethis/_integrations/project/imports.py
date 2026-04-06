@@ -119,13 +119,11 @@ def _get_child_dependencies(
     `a` does not depend on anything, and `c` depends on `a` through `b`. Then the
     function will return:
 
-    ```
-    {
-        "a": set(),
-        "b": {"a"},
-        "c": {"a", "b"},
-    }
-    ```
+        {
+            "a": set(),
+            "b": {"a"},
+            "c": {"a", "b"},
+        }
     """
     children = sorted(graph.find_children(module))
 

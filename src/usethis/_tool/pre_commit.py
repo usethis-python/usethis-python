@@ -74,7 +74,7 @@ class PreCommitConfig(BaseModel):
         """Create a PreCommitConfig for a local system hook.
 
         Handles backend dispatch internally: for the uv backend, the entry is
-        prefixed with ``uv run --frozen --offline``.
+        prefixed with `uv run --frozen --offline`.
 
         Args:
             hook_id: The hook identifier; also used as the hook display name.

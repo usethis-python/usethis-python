@@ -2,7 +2,7 @@
 
 These versions are manually bumped when necessary. Each constant corresponds to a
 recent release of the respective tool. Associated up-to-dateness tests are in
-``tests/usethis/test_fallback.py``.
+`tests/usethis/test_fallback.py`.
 """
 
 from packaging.version import Version

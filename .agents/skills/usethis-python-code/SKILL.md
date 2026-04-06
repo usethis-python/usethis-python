@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.4"
+  version: "1.7"
 ---
 
 # Python Code Guidelines
@@ -116,3 +116,117 @@ In the bad example, the caller knows that `solution` is a `Series`, that `Series
 - **Extracting internal structure into variables.** Writing `flat = result.solution.root` does not fix the problem — it only hides the nesting in a local variable while the caller still depends on the internal structure.
 - **Adding type assertions for deeply nested objects.** If you need `assert isinstance(item, str)` after accessing a nested attribute, the logic almost certainly belongs in the layer that produces the object, where the type is already known.
 - **Adding a thin wrapper instead of moving logic.** A wrapper that merely returns `self.solution.root` is not enough. The goal is to move the _logic that uses_ the low-level data into the lower layer, not just to add an accessor.
+
+## Preferring context managers for resource cleanup
+
+When code needs to preserve and restore state around a block of operations (e.g. backing up a file before a subprocess and restoring it afterwards), always use a `@contextmanager` instead of separate setup and teardown helper functions with a `try`/`finally` block.
+
+### Procedure
+
+1. Identify paired operations where one sets up state and the other tears it down (e.g. backup/restore, acquire/release, redirect/revert).
+2. Combine them into a single `@contextmanager` generator function that yields between the setup and teardown.
+3. Use a `try`/`finally` inside the context manager to guarantee cleanup runs even if the body raises.
+
+### Key principle
+
+A context manager encapsulates the setup/teardown lifecycle into a single construct, making the calling code cleaner and eliminating the risk of forgetting the `finally` block or mismatching the paired calls. It also makes the intent clearer at the call site.
+
+### Example
+
+```python
+# Bad: separate helpers require the caller to manage the lifecycle
+def _backup(path: Path) -> Path:
+    ...
+
+def _restore(path: Path, backup: Path) -> None:
+    ...
+
+backup = _backup(lock_path)
+try:
+    run_subprocess()
+finally:
+    _restore(lock_path, backup)
+
+# Good: context manager encapsulates the lifecycle
+@contextmanager
+def _preserved(path: Path) -> Generator[None, None, None]:
+    with tempfile.TemporaryDirectory() as tmp:
+        backup = shutil.copy2(path, tmp)
+        try:
+            yield
+        finally:
+            shutil.copy2(backup, path)
+
+with _preserved(lock_path):
+    run_subprocess()
+```
+
+### Common mistakes
+
+- **Separate backup and restore helpers.** Splitting setup and teardown into two functions forces every caller to remember both calls and wire up `try`/`finally` correctly. A context manager removes this burden.
+- **Forgetting `finally` in the caller.** Without a context manager, it is easy to forget the `finally` block, leaving state unrestored if an exception occurs. A context manager guarantees cleanup.
+
+## Ordering functions: the step-down rule
+
+Within a module, place caller functions **above** their callees. The module should read top-to-bottom like a newspaper: the most important, high-level logic appears first, and helper details appear further down.
+
+### Procedure
+
+1. Before adding a new private helper function to a module, locate every function that will call it.
+2. Place the new helper **below** its highest caller in the file, not at the top of the file.
+3. If a helper is called by multiple functions, place it below the last (lowest) caller that precedes it; it must appear after all callers that precede it.
+
+### Key principle
+
+A reader scanning a module should encounter each function before its helpers, never the other way around. If a helper appears above its caller, the reader is confronted with implementation details before knowing what they are for.
+
+### Example
+
+```python
+# Bad: helper placed above its caller
+def _format_version(v: str) -> str:
+    return v.strip()
+
+def get_version() -> str:
+    """Return the formatted version string."""
+    return _format_version(read_version_file())
+
+
+# Good: caller appears first, helper appears below
+def get_version() -> str:
+    """Return the formatted version string."""
+    return _format_version(read_version_file())
+
+def _format_version(v: str) -> str:
+    return v.strip()
+```
+
+### Common mistakes
+
+- **Adding helpers at the top of the file.** It is tempting to place a new helper near the top, before any existing function. Always scroll down to find the caller first, then add the helper below it.
+- **Placing a helper above the function that introduces it.** Even if a helper is only a few lines long, it should still follow its caller so the intent is clear before the detail.
+
+## Caching IO-intensive private helpers
+
+When a private helper function performs file I/O or another expensive operation and may be called more than once during a single high-level operation, decorate it with `@functools.cache` to avoid redundant work.
+
+### When to apply
+
+Apply `@functools.cache` to a private helper when all of the following are true:
+
+- It performs file I/O, a subprocess call, or another expensive operation.
+- It can be called more than once within a single invocation of its public caller(s).
+- Its return value is deterministic with respect to the project state — the same inputs always produce the same result within a single process run.
+
+Do **not** cache functions that write files, mutate state, or produce side effects.
+
+### Procedure
+
+1. Add `import functools` to the module if not already present.
+2. Decorate the private helper with `@functools.cache`.
+3. Register the function's cache-clear call in the `clear_functools_caches` autouse fixture in `tests/conftest.py` (see `usethis-python-test` for details).
+
+### Common mistakes
+
+- **Caching functions with side effects.** `@functools.cache` is only appropriate for pure, read-only operations. Functions that write files or change state should never be cached.
+- **Forgetting to register cache clearing.** A cached function whose cache is never cleared between tests will cause test pollution — one test's cached value silently affects the next.

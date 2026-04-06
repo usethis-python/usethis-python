@@ -154,6 +154,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │       │   ├── ty                # ty tool implementation.
 │       │   └── zensical          # Zensical tool implementation.
 │       └── spec                  # Tool specification implementations.
+│           ├── all_              # Registry of all available tool specifications.
 │           ├── codespell         # Codespell tool specification.
 │           ├── coverage_py       # Coverage.py tool specification.
 │           ├── deptry            # deptry tool specification.
@@ -265,7 +266,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `add_badge()` (`usethis._core.badge`) — Add a badge to the README.md file in the correct position.
 - `is_blank()` (`usethis._core.badge`) — Return True if the line is empty or contains only whitespace.
 - `is_header()` (`usethis._core.badge`) — Return True if the line is a Markdown header.
-- `is_badge()` (`usethis._core.badge`) — Return True if the line looks like a Markdown badge.
+- `is_badge()` (`usethis._core.badge`) — Return True if the line looks like a Markdown badge (heuristic).
 - `remove_badge()` (`usethis._core.badge`) — Remove a badge from the README.md file.
 - `browse_pypi()` (`usethis._core.browse`) — Open or display the PyPI project page URL for a package.
 - `use_docstyle()` (`usethis._core.docstyle`) — Configure the docstring style convention for the project using Ruff.
@@ -336,7 +337,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `ensure_pyproject_toml()` (`usethis._init`) — Ensure that a pyproject.toml file exists, creating it if necessary.
 - `get_github_latest_tag()` (`usethis._integrations.ci.github.tags`) — Get the name of the most recent tag on the default branch of a GitHub repository.
 - `get_supported_minor_python_versions()` (`usethis._integrations.environ.python`) — Get supported Python versions for the current backend.
-- `add_docs_dir()` (`usethis._integrations.mkdocs.core`) — Create the `docs` directory and an `docs/index.md` file if they do not exist.
+- `add_docs_dir()` (`usethis._integrations.mkdocs.core`) — Create the `docs` directory and a `docs/index.md` file if they do not exist.
 - `remove_pre_commit_config()` (`usethis._integrations.pre_commit.core`) — Remove the .pre-commit-config.yaml file from the project.
 - `install_pre_commit_hooks()` (`usethis._integrations.pre_commit.core`) — Install pre-commit hooks.
 - `uninstall_pre_commit_hooks()` (`usethis._integrations.pre_commit.core`) — Uninstall pre-commit hooks.
@@ -450,6 +451,7 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows
 - `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
+- `usethis-lesson-create`: Create a lesson from a development difficulty, covering root cause analysis, principle generalisation, and filing as a GitHub issue
 - `usethis-pre-commit`: Guidance on pre-commit hooks — this project uses prek, not pre-commit directly
 - `usethis-prek-add-hook`: Add a prek hook for dev
 - `usethis-prek-hook-bespoke-create`: Write bespoke prek hooks as reusable Python scripts for custom checks
@@ -462,7 +464,10 @@ The `.agents/skills` directory contains agent skills.
 - `usethis-python-test`: General guidelines for writing tests in the usethis project, including test class organization
 - `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
 - `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
+- `usethis-qa-doc-integrity`: Audit CLI documentation for completeness and sync with source code — checks that every command option visible in the code appears in the reference documentation
+- `usethis-qa-grammar`: Review code and documentation for grammar, spelling, and tone issues
 - `usethis-qa-import-linter`: Use the Import Linter software on the usethis project
+- `usethis-qa-llm-review`: Coordinate LLM-assisted quality reviews of the codebase beyond what automated tools catch
 - `usethis-qa-static-checks`: Perform static code checks
 - `usethis-skills-create`: Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability
 - `usethis-skills-external-add`: Add an external (community) skill to the project from a third-party source, including installing it and documenting it in AGENTS.md
@@ -485,6 +490,7 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 - ALWAYS check the [Function Reference](#function-reference) section above before implementing any utility logic — mature, tested functions already exist for common operations such as reading dependencies, detecting tools, and printing console output.
 - ALWAYS use possibly relevant agent skills when they are available. Eagerly use skills, if in doubt, assume a skill is relevant.
+- ALWAYS dogfood and user-test CLI changes. After implementing or modifying any CLI command, use the `usethis-cli-dogfood` skill to run the command against this repo and the `usethis-cli-user-test` skill to verify the happy path in a fresh project. Both are mandatory — never skip them, even for seemingly simple changes. Use the `usethis-cli-modify` skill for guidance on the full CLI change workflow.
 - ALWAYS use the `usethis-skills-modify` skill when modifying any agent skill (`SKILL.md` file). Do not edit skill files without it — it enforces version bumping, scope checking, and content quality guidelines. Similarly, ALWAYS use `usethis-skills-create` when creating a new skill.
 - ALWAYS use `find-skills` to research new skill capabilities if there are difficult tasks, tasks in an unfamiliar domain, if you believe there is a lack of clarity or direction around precisely how to proceed, or if you get stuck or find something surprisingly challenging. When using this skill, please be sure to use the `usethis-skills-external-install` skill when deciding to install a new external skill.
 - ALWAYS consider the `usethis-python-test-full-coverage` to be relevant: if your task involves
@@ -496,4 +502,4 @@ External skills can be installed if they are not present — see the `usethis-sk
 
 ## Lessons
 
-When you are working on a problem, you are almost always going to encounter a difficulty. This is great - it's an opportunity for learning. ALWAYS make a note explicitly of what lessons you are drawing as you complete a task or when receiving user feedback. Try and keep this structured: consider the root cause of the difficulty, and how you overcame it. After finishing work on a task, report back all your lessons. Finally, ALWAYS use the `usethis-github-issue-create` skill to record each lesson as a GitHub issue so it can be triaged and tracked.
+When you are working on a problem, you are almost always going to encounter a difficulty. This is great — it's an opportunity for learning. ALWAYS make a note explicitly of what lessons you are drawing as you complete a task or when receiving user feedback. After finishing work on a task, report back all your lessons. Use the `usethis-lesson-create` skill to perform root cause analysis, generalise the principle at play, and file each lesson as a GitHub issue so it can be triaged and tracked.

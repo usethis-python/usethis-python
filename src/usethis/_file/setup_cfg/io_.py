@@ -72,7 +72,7 @@ class SetupCFGManager(INIFileManager):
     def set_value(
         self, *, keys: Sequence[Key], value: Any, exists_ok: bool = False
     ) -> None:
-        """Set a value in the pyproject.toml configuration file."""
+        """Set a value in the setup.cfg configuration file."""
         try:
             super().set_value(keys=keys, value=value, exists_ok=exists_ok)
         except INIValueAlreadySetError as err:
@@ -80,7 +80,7 @@ class SetupCFGManager(INIFileManager):
 
     @override
     def __delitem__(self, keys: Sequence[Key]) -> None:
-        """Remove a value from the pyproject.toml configuration file."""
+        """Remove a value from the setup.cfg configuration file."""
         try:
             super().__delitem__(keys)
         except INIValueMissingError as err:

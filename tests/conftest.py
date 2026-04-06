@@ -10,6 +10,7 @@ from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
 from usethis._console import _cached_warn_print, get_icon_mode
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.environ.python import _get_current_python_version
 from usethis._subprocess import call_subprocess
 from usethis._test import change_cwd, is_offline
 from usethis._tool.impl.spec.import_linter import _importlinter_warn_no_packages_found
@@ -27,6 +28,7 @@ def clear_functools_caches():
     _cached_warn_print.cache_clear()
     get_icon_mode.cache_clear()
     _importlinter_warn_no_packages_found.cache_clear()
+    _get_current_python_version.cache_clear()
 
 
 @pytest.fixture(scope="session")
@@ -131,7 +133,7 @@ def _vary_network_conn(_online_status: NetworkConn) -> Generator[None, None, Non
     """Fixture to vary the network connection.
 
     Use `usethis._config.usethis_config` to check whether things are in offline
-    model, since this fixture does not return anything.
+    mode, since this fixture does not return anything.
     """
     offline = _online_status is NetworkConn.OFFLINE
 

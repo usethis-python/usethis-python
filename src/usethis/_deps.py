@@ -105,7 +105,7 @@ def register_default_group(group: str) -> None:
     This ensures that dependencies in the group will be installed by default.
     """
     if group == "dev":
-        # Note, if the "dev" group is missing already then then we'll respect the
+        # Note, if the "dev" group is missing already then we'll respect the
         # user's choice since they presumably would have added it themselves. So, we
         # won't register in that case.
         return

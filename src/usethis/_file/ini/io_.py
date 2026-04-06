@@ -103,7 +103,7 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
     def __contains__(self, keys: Sequence[Key]) -> bool:
         """Check if the INI file contains a value at the given key.
 
-        An non-existent file will return False.
+        A non-existent file will return False.
         """
         try:
             root = self.get()

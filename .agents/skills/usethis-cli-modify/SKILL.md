@@ -4,7 +4,7 @@ description: Modify the usethis CLI layer (commands, options, help text) and kee
 compatibility: usethis, Python, typer, markdown
 license: MIT
 metadata:
-  version: "1.2"
+  version: "1.5"
 ---
 
 # Modifying the CLI
@@ -14,17 +14,27 @@ metadata:
 1. Make your changes to the CLI layer (command functions, options, help text, or app registration).
 2. Update the CLI documentation to reflect every user-facing change.
 3. Run the affected interface-level tests.
-4. Use the `usethis-cli-dogfood` skill to validate the command against the real repo.
-5. Use the `usethis-cli-user-test` skill to verify the happy path in a fresh temporary project.
+4. **Dogfood the command** — use the `usethis-cli-dogfood` skill to run the command against this repository. This step is mandatory.
+5. **User-test the command** — use the `usethis-cli-user-test` skill to verify the happy path in a fresh temporary project. This step is mandatory.
 
 ## When this skill applies
 
 Use this skill whenever you modify anything under the `_ui` package, including:
 
-- Adding, removing, or renaming a command
+- Adding a new command or subcommand
+- Removing or renaming a command
 - Changing a command's options, arguments, or defaults
 - Changing help text or command descriptions
 - Modifying how commands are registered on the app
+
+## Dogfooding and user testing are mandatory
+
+Steps 4 and 5 are not optional — they are how you verify that your changes actually work for real users. Unit tests alone are not sufficient because they exercise code paths in isolation and cannot catch problems that arise from real project structures, real dependency resolution, or real file system interactions.
+
+- **Dogfooding** (step 4) catches edge cases from a complex real-world project with existing configuration, dependencies, and non-trivial structure.
+- **User testing** (step 5) catches issues with initial setup, missing files, or assumptions about pre-existing configuration that only a mature project would have.
+
+If either test reveals a problem, fix the code, write a regression test, and re-run both tests before considering the change complete.
 
 ## Update the CLI documentation
 
@@ -49,6 +59,10 @@ Bad — excessive rationale embedded in the reference:
 ```markdown
 - `--output-file` to write the output to a file instead of stdout. This is useful to avoid issues when shell redirects (e.g. `> file.txt`) create the file before the command runs, which can influence the behaviour of `usethis show`.
 ```
+
+After updating the command reference, verify that **every option** in each modified command's function signature has a corresponding entry in the documentation. Pay particular attention to shared options — options defined once and reused across multiple commands — since these are easy to document for some commands but miss on others. For each new option added, scan all commands that use it and confirm each is documented.
+
+Use the `usethis-qa-doc-integrity` skill to perform a systematic audit of CLI documentation coverage.
 
 ### Command overview
 
@@ -82,3 +96,7 @@ When adding a new command:
 2. Register it in `_ui/app.py`.
 3. If the command uses shared options, import them from `_ui/options.py`. If it needs new options, add them there.
 4. Create the corresponding core logic function in `_core/`.
+
+### Option flags
+
+When adding a new CLI option, use only the long form (e.g. `--output-file`). Do **not** add an abbreviated short form (e.g. `-o`) unless the user has explicitly requested it.

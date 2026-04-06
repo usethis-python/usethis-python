@@ -114,7 +114,7 @@ Additionally, the command line reference documentation can be viewed with `useth
 - [`usethis show`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) — Show a specific piece of information about the project.
   - [`usethis show backend`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) - Show the inferred project manager backend, e.g. 'uv' or 'none'.
   - [`usethis show name`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) - Show the name of the project.
-  - [`usethis show sonarqube`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) - Show appropriate contents of a `sonar-projects.properties` file for SonarQube analysis.
+  - [`usethis show sonarqube`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-show) - Show appropriate contents of a `sonar-project.properties` file for SonarQube analysis.
 
 ## 💡 Example Usage
 
@@ -168,7 +168,7 @@ You could also consider your own hard-coded template. Templating tools such as [
 You could consider [this template](https://github.com/pawamoy/copier-uv) or [this one](https://github.com/jlevy/simple-modern-uv), which work with Copier, or [this template](https://github.com/johnthagen/python-blueprint) which works with Cookiecutter.
 
 > [!TIP]
-> You can still use usethis as a part of a templates using [hooks](https://cookiecutter.readthedocs.io/en/latest/advanced/hooks.html#using-pre-post-generate-hooks-0-7-0) for Cookiecutter and [tasks](https://copier.readthedocs.io/en/stable/configuring/#tasks) for Copier.
+> You can still use usethis as part of templates using [hooks](https://cookiecutter.readthedocs.io/en/latest/advanced/hooks.html#using-pre-post-generate-hooks-0-7-0) for Cookiecutter and [tasks](https://copier.readthedocs.io/en/stable/configuring/#tasks) for Copier.
 
 If you're using Cookiecutter, then you can update to a latest version of a template using a tool like [cruft](https://github.com/cruft/cruft). Copier has inbuilt support for template updating. Another template-style option which provides updating is [jaraco/skeleton](https://blog.jaraco.com/skeleton/), which is a specific, git-based template rather than a general templating system.
 
@@ -194,9 +194,9 @@ file.
 
 ## Acknowledgements
 
-Special thanks to the [Posit](https://posit.co/) team for creating the original [usethis package for **R**](https://usethis.r-lib.org/index.html) , which inspired this project.
+Special thanks to the [Posit](https://posit.co/) team for creating the original [usethis package for **R**](https://usethis.r-lib.org/index.html), which inspired this project.
 
-Additional thanks are due to the maintainers of the various tools which usethis integrates with, especially the people with [Astral](https://astral.sh/) who created [uv](https://github.com/astral-sh/uv).
+Additional thanks are due to the maintainers of the various tools which usethis integrates with, especially the people at [Astral](https://astral.sh/) who created [uv](https://github.com/astral-sh/uv).
 
 ## License
 

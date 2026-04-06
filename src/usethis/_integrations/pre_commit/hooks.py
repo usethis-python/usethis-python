@@ -82,7 +82,7 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
         try:
             hook_idx = hook_order.index(hook_config.id)
         except ValueError:
-            msg = f"Hook '{hook_config.id}' not recognized."
+            msg = f"Hook '{hook_config.id}' is not recognized."
             raise NotImplementedError(msg) from None
 
         prerequisites = set(hook_order[:hook_idx])
@@ -134,9 +134,9 @@ def insert_repo(
             existing_hooks = []
 
         # Add the existing repos, because they need to be in the final list too!
-        # One is exception is that we don't include the placeholder from now on, since
+        # One exception is that we don't include the placeholder from now on, since
         # we're adding a repo which can be there instead.
-        # One exception to _that_ is if the user has kept the placeholder consciously,
+        # One exception to _that_ is if the user has intentionally kept the placeholder,
         # i.e. there are multiple hooks; in that case we will not remove it.
         if not (
             len(existing_hooks) == 1

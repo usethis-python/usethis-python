@@ -1,5 +1,52 @@
 # Changelog
 
+## 0.21.0
+
+### 🚀 New Features
+
+- There is now support for the [Poetry](https://python-poetry.org/) backend in usethis. Access it via the `--backend=poetry` option for applicable commands.
+- Tools which add formatters (`usethis format`, `usethis tool pyproject-fmt`, and `usethis tool ruff`) will now automatically apply the formatter to the project when added.
+- There is now a `usethis tool tach` command to add the [Tach architecture tool](https://github.com/tach-org/tach) to the project.
+- `usethis tool` commands now support a `--no-hook` flag to opt out of modifying git hook configuration (e.g. in `.pre-commit-config.yaml`) when managing the tool.
+- `usethis show` commands now support an `--output-file` option to write the output to a file instead of printing it to the console.
+- There is now a `usethis show license` command to show the license of the current project.
+- There is now a `usethis badge bitbucket` command to add a badge for Bitbucket usage to the README.
+- `usethis tool pytest` and `usethis test` will now automatically add an example test file. This helps ensure that `pytest` will run out-of-the-box without emitting a non-zero error code.
+
+### 🐞 Bug Fixes
+
+- In some cases, when usethis modified TOML files, comments would be stripped from multi-line lists. This has been fixed.
+- Out-of-schema entries in `.pre-commit-config.yaml` files will no longer result in errors when being handled by usethis. This is especially useful for prek users, since prek extends `.pre-commit-config.yaml` with support for additional configuration options which are not found in the standard pre-commit schema.
+
+### 🦾 Robustness
+
+- Hard-wrapping is now disabled for CLI outputs.
+- The `usethis tool requirements.txt` command now uses a more standard URI-based pre-commit hook for exporting (using the `astral-sh/uv-pre-commit` repo) instead of a local system hook.
+- Default code coverage configuration now excludes the pattern `msg = ["']` associated with writing error messages outside the error class (see the [`EM101`](https://docs.astral.sh/ruff/rules/raw-string-in-exception/) Ruff rule).
+- The heuristic for detecting uv usage will now check whether uv is declared as a dependency (including as a dev dependency) in `pyproject.toml` when the file exists, in addition to the previous heuristics. This should help reduce false positives for projects which use other tools but have `pyproject.toml` files with no uv configuration.
+- There is improved handling of pre-commit configuration validation for when the hook ID is null.
+
+### 📚 Documentation
+
+- The `usethis show sonarqube` command is now documented explicitly in the CLI reference section of the documentation site.
+- The concept of backends is [now expounded on the documentation site](https://usethis.readthedocs.io/en/latest/about/backends/).
+- All modules now have module docstrings.
+- The project description and keywords have been updated to reflect the current state of the project. The license Trove classifier has been removed since Trove classifiers for licenses are no longer recommended.
+- The FAQ page has been re-structured.
+- The pipeweld utility now has more comprehensive docstrings.
+- The `FileManager` and `files_manager` objects now have more detailed docstrings.
+
+### 📦 Packaging
+
+- The `identify` package is a new dependency to provide support for the `usethis show license` command.
+
+### 🔧 Internal Changes
+
+- There is improved type compliance, especially for the implementation of the file management system.
+- Ruff configuration now resides in `ruff.toml` for development.
+- There is now a `PreCommitConfig.from_system_hook` method to simplify the specification of pre-commit hook configuration for the various tools.
+- Agent configuration and bespoke prek hooks continue to be developed.
+
 ## 0.20.0
 
 ### 💥 Changes
@@ -141,7 +188,7 @@
 ### 📚 Documentation
 
 - There is now dedicated guidance [on the docs site](https://usethis.readthedocs.io/en/latest/frameworks/) for using usethis together with popular frameworks like Django, FastAPI, and Dagster.
-- A detailed example of `usethis init` has been pulled out the README into a [dedicated docs page](https://usethis.readthedocs.io/en/latest/start/detailed-example/).
+- A detailed example of `usethis init` has been pulled out of the README into a [dedicated docs page](https://usethis.readthedocs.io/en/latest/start/detailed-example/).
 - The license is now documented [on the docs site](https://usethis.readthedocs.io/en/latest/about-license/) (in addition to the `LICENSE` file).
 - Branding (colours, project naming) etc. is now documented in `CONTRIBUTING.md`.
 - There is now a favicon on the docs site.
@@ -396,7 +443,7 @@
 
 ### 🦾 Robustness
 
-- If `pre-commit install` does not run successfully (e.g. if there is not Git Repository for the project) then usethis will display a message for the user to ask them to run this command themselves, rather than the previous behaviour which was to stop with an error.
+- If `pre-commit install` does not run successfully (e.g. if there is no Git repository for the project) then usethis will display a message for the user to ask them to run this command themselves, rather than the previous behaviour which was to stop with an error.
 - Syntax errors in TOML and INI configuration files will be handled when trying to determine whether a given tool is being used. A warning is displayed but usethis will continue under the assumption that the invalid file does not contain relevant configuration for the tool.
 
 ### 🐞 Bug Fixes

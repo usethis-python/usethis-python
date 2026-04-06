@@ -36,7 +36,6 @@ def update_ruamel_yaml_map(
     Raises:
         TypeError: If the provided `cmap` is not a CommentedMap.
     """
-    """Update the values of a ruamel.yaml map in-place using a diff-like algorithm."""
     if not isinstance(cmap, CommentedMap | dict):
         msg = f"Expected CommentedMap or dict, but got '{type(cmap)}'."
         raise TypeError(msg)

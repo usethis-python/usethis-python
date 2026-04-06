@@ -50,4 +50,4 @@
 - [`usethis show`](reference.md#usethis-show) — Show a specific piece of information about the project.
   - [`usethis show backend`](reference.md#usethis-show) - Show the inferred project manager backend, e.g. 'uv' or 'none'.
   - [`usethis show name`](reference.md#usethis-show) - Show the name of the project.
-  - [`usethis show sonarqube`](reference.md#usethis-show) - Show appropriate contents of a `sonar-projects.properties` file for SonarQube analysis.
+  - [`usethis show sonarqube`](reference.md#usethis-show) - Show appropriate contents of a `sonar-project.properties` file for SonarQube analysis.

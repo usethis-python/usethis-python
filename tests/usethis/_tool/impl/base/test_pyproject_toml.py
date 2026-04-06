@@ -7,14 +7,16 @@ from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
-from usethis._tool.impl.base.pyproject_toml import OTHER_TOOLS, PyprojectTOMLTool
+from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
+from usethis._tool.impl.spec.all_ import ALL_TOOL_SPECS
 
 
-class TestOtherTools:
+class TestAllToolSpecs:
     def test_in_sync_with_all_tools(self):
-        assert {tool.name.lower() for tool in OTHER_TOOLS} | {
-            PyprojectTOMLTool().name
-        } == {tool.name.lower() for tool in ALL_TOOLS}
+        # ALL_TOOL_SPECS must have the same names in the same order as ALL_TOOLS.
+        assert [spec.name for spec in ALL_TOOL_SPECS] == [
+            tool.name for tool in ALL_TOOLS
+        ]
 
 
 class TestPyprojectTOMLTool:

@@ -332,7 +332,7 @@ ignore = ["TC001"]
             assert result
 
         def test_preserves_comments(self, tmp_path: Path):
-            # https://github.com/usethis-python/usethis-python/issues/884
+            # https://github.com/usethis-python/usethis-python/issues/1171
             # Arrange
             (tmp_path / "ruff.toml").write_text(
                 """\

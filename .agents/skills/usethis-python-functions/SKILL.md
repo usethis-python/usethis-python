@@ -4,7 +4,7 @@ description: Guidelines for Python function design, including return types and s
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Function Design Guidelines
@@ -76,6 +76,43 @@ def register_group(name: str) -> None:
 def use_tool() -> None:
     register_group("dev")
 ```
+
+## Never return bool to signal success or failure
+
+Functions must not return `True` for success and `False` for failure. This is a C-style pattern that is un-Pythonic and error-prone. Use exception raising and handling instead.
+
+### Why this matters
+
+- Callers can silently ignore a `False` return, leading to bugs that go unnoticed.
+- Exceptions carry context (message, traceback, type) that a bare `bool` cannot.
+- Python's exception system is designed for this purpose — using it makes intent explicit and control flow clear.
+
+### What to do instead
+
+1. **Raise an exception** when an operation fails. Use a built-in exception type or define a custom one.
+2. **Return `None`** (or nothing) on success if the function has no meaningful value to return.
+3. **Let exceptions propagate** to callers, who can catch them at the appropriate level.
+
+### Example
+
+```python
+# Bad: caller must remember to check the return value.
+def add_config_entry(key: str, value: str) -> bool:
+    if key in existing:
+        return False
+    existing[key] = value
+    return True
+
+# Good: raise on failure, return nothing on success.
+def add_config_entry(key: str, value: str) -> None:
+    if key in existing:
+        raise ValueError(f"Config entry '{key}' already exists.")
+    existing[key] = value
+```
+
+### When bool returns are fine
+
+Returning `bool` is appropriate when the function answers a yes/no question (a predicate), such as `is_tool_used()` or `has_build_system()`. The guideline above applies only to functions where `bool` encodes an operation's outcome rather than a factual query.
 
 ## Avoid returning tuples
 

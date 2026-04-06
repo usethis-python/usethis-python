@@ -16,7 +16,7 @@ class PreCommitInstallationError(PreCommitError):
 
 
 class PreCommitConfigYAMLConfigError(FileConfigError):
-    """Raised when there the '.pre-commit-config.yaml' file does not conform to the expected schema."""
+    """Raised when the '.pre-commit-config.yaml' file does not conform to the expected schema."""
 
     @property
     @override

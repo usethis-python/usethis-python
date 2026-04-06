@@ -49,7 +49,7 @@ from usethis._types.deps import Dependency
 if TYPE_CHECKING:
     from usethis._tool.all_ import SupportedToolType
 
-# Note - all these functions invoke ensure_dep_declaratiom_file() at the start, since
+# Note - all these functions invoke ensure_dep_declaration_file() at the start, since
 # declaring dependencies in pyproject.toml requires that file to exist.
 
 
@@ -235,7 +235,9 @@ def _add_all_tools_pre_commit_configs():
             _tool.add_pre_commit_config()
 
 
-def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
+def use_pyproject_fmt(
+    *, remove: bool = False, how: bool = False, no_apply: bool = False
+) -> None:
     """Add and configure the pyproject-fmt pyproject.toml formatter tool."""
     tool = PyprojectFmtTool()
 
@@ -250,7 +252,8 @@ def use_pyproject_fmt(*, remove: bool = False, how: bool = False) -> None:
         tool.add_pre_commit_config()
 
         tool.add_configs()
-        tool.apply()
+        if not no_apply:
+            tool.apply()
         tool.print_how_to_use()
     else:
         tool.remove_configs()
@@ -332,15 +335,17 @@ def use_pytest(
         tool.remove_managed_files()
 
 
-def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
+def use_requirements_txt(
+    *, remove: bool = False, how: bool = False, output_file: str = "requirements.txt"
+) -> None:
     """Add and configure a requirements.txt file exported from the uv lockfile."""
-    tool = RequirementsTxtTool()
+    tool = RequirementsTxtTool(output_file=output_file)
 
     if how:
         tool.print_how_to_use()
         return
 
-    path = usethis_config.cpd() / "requirements.txt"
+    path = usethis_config.cpd() / output_file
 
     if not remove:
         backend = get_backend()
@@ -360,7 +365,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
             tool.print_how_to_use()
             return
 
-        _generate_requirements_txt()
+        _generate_requirements_txt(output_file=output_file)
 
         tool.print_how_to_use()
     else:
@@ -371,52 +376,53 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def _generate_requirements_txt() -> None:
+def _generate_requirements_txt(*, output_file: str = "requirements.txt") -> None:
     backend = get_backend()
     if backend is BackendEnum.uv:
         if not (usethis_config.cpd() / "pyproject.toml").exists():
-            write_simple_requirements_txt()
+            write_simple_requirements_txt(output_file=output_file)
         elif not usethis_config.frozen:
             ensure_uv_lock()
-            tick_print("Writing 'requirements.txt'.")
+            tick_print(f"Writing '{output_file}'.")
             call_uv_subprocess(
                 [
                     "export",
                     "--frozen",
-                    "--output-file=requirements.txt",
+                    f"--output-file={output_file}",
                 ],
                 change_toml=False,
             )
     elif backend is BackendEnum.poetry:
         # Poetry uses poetry export for requirements.txt generation
-        write_simple_requirements_txt()
+        write_simple_requirements_txt(output_file=output_file)
     elif backend is BackendEnum.none:
         # Simply dump the dependencies list to requirements.txt
         if usethis_config.backend is BackendEnum.auto:
             info_print(
-                "Generating 'requirements.txt' with un-pinned, abstract dependencies."
+                f"Generating '{output_file}' with un-pinned, abstract dependencies."
             )
             info_print(
                 "Consider installing 'uv' for pinned, cross-platform, full requirements files."
             )
 
-        write_simple_requirements_txt()
+        write_simple_requirements_txt(output_file=output_file)
     else:
         assert_never(backend)
 
 
-def use_ruff(
+def use_ruff(  # noqa: PLR0913
     *,
     remove: bool = False,
     how: bool = False,
     minimal: bool = False,
     linter: bool = True,
     formatter: bool = True,
+    no_apply: bool = False,
 ) -> None:
     """Add Ruff to the project.
 
     By default, sensible default rules are selected if there are no rules selected yet,
-    but this behaviour can be controlled by using the `minimal` option.
+    but this behaviour can be controlled using the `minimal` option.
 
     If the existing rules are all pydocstyle rules (managed by the `usethis docstyle`
     interface), then the default rules will still be added, again excepting when the
@@ -428,6 +434,7 @@ def use_ruff(
         minimal: Don't add any default rules.
         linter: Whether to add/remove the Ruff linter.
         formatter: Whether to add/remove the Ruff formatter.
+        no_apply: Don't run the Ruff formatter after adding it.
     """
     if how:
         tool = RuffTool(
@@ -474,7 +481,8 @@ def use_ruff(
             tool.apply_rule_config(rule_config)
         tool.add_pre_commit_config()
 
-        tool.apply()
+        if not no_apply:
+            tool.apply()
         tool.print_how_to_use()
     else:
         tool = RuffTool(

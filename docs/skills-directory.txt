@@ -6,6 +6,7 @@
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows
 - `usethis-github-issue-create`: Create GitHub issues via the gh CLI to record lessons, track follow-up work, or file bugs discovered during development
+- `usethis-lesson-create`: Create a lesson from a development difficulty, covering root cause analysis, principle generalisation, and filing as a GitHub issue
 - `usethis-pre-commit`: Guidance on pre-commit hooks — this project uses prek, not pre-commit directly
 - `usethis-prek-add-hook`: Add a prek hook for dev
 - `usethis-prek-hook-bespoke-create`: Write bespoke prek hooks as reusable Python scripts for custom checks
@@ -18,7 +19,10 @@
 - `usethis-python-test`: General guidelines for writing tests in the usethis project, including test class organization
 - `usethis-python-test-affected-find`: Identify tests that are potentially affected by code changes, to catch regressions before CI
 - `usethis-python-test-full-coverage`: Write tests that achieve full code coverage and verify coverage locally before pushing
+- `usethis-qa-doc-integrity`: Audit CLI documentation for completeness and sync with source code — checks that every command option visible in the code appears in the reference documentation
+- `usethis-qa-grammar`: Review code and documentation for grammar, spelling, and tone issues
 - `usethis-qa-import-linter`: Use the Import Linter software on the usethis project
+- `usethis-qa-llm-review`: Coordinate LLM-assisted quality reviews of the codebase beyond what automated tools catch
 - `usethis-qa-static-checks`: Perform static code checks
 - `usethis-skills-create`: Create new agent skills (SKILL.md files) following best practices for content quality, structure, and discoverability
 - `usethis-skills-external-add`: Add an external (community) skill to the project from a third-party source, including installing it and documenting it in AGENTS.md

@@ -24,7 +24,7 @@ Let's run through what each line of the output means:
 4. `✔ Ignoring Ruff rules 'PLR2004', 'SIM108' in 'pyproject.toml'.`  
    This line indicates that certain Ruff rules have been explicitly ignored in the configuration. These rules were deemed less useful or potentially problematic for most projects, so usethis has chosen to disable them by default. You can always modify this list later if you find that you want to enable or disable additional rules.
 5. `✔ Running the Ruff formatter.`  
-   This line indicates that the Ruff formatter has been automatically applied your codebase.
+   This line indicates that the Ruff formatter has been automatically applied to your codebase.
 6. `☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.`  
    This line is an instruction for you to run the Ruff linter on your codebase. It helps teach you how to use the tool which has just been installed and configured. You're ready to go and explore!
 7. `☐ Run 'uv run ruff format' to run the Ruff formatter.`

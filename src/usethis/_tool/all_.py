@@ -36,7 +36,6 @@ SupportedToolType: TypeAlias = (
     | ZensicalTool
 )
 
-# N.B. this list must be kept in-sync with usethis._tool.impl.base.pyproject_toml.OTHER_TOOLS.
 ALL_TOOLS: list[SupportedToolType] = [
     # Alphabetical order
     CodespellTool(),

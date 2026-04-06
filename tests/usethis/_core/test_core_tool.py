@@ -775,7 +775,7 @@ dev = []
         def test_pre_commit_first(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            """Basically this checks that the placeholders gets removed."""
+            """Basically this checks that the placeholders get removed."""
             with change_cwd(uv_init_repo_dir), files_manager():
                 # Arrange
                 use_pre_commit()
@@ -1379,7 +1379,7 @@ exhaustive = True
                 "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'import-linter'.\n"
                 "⚠ Could not find any importable packages.\n"
-                "⚠ Assuming the package name is test-stdout-when-cant-find-pac0.\n"
+                "⚠ Assuming the package name is 'test-stdout-when-cant-find-pac0'.\n"
                 "✔ Adding Import Linter config to 'pyproject.toml'.\n"
                 "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
                 "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001
@@ -2294,6 +2294,19 @@ keep_full_version = true
                     "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
 
+        class TestNoApply:
+            @pytest.mark.usefixtures("_vary_network_conn")
+            def test_skips_apply(
+                self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+            ):
+                # Act
+                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                    use_pyproject_fmt(no_apply=True)
+
+                # Assert
+                out, _ = capfd.readouterr()
+                assert "Running pyproject-fmt" not in out
+
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
@@ -3136,6 +3149,70 @@ repos:
             # Assert
             assert not (tmp_path / "pyproject.toml").exists()
 
+    class TestOutputFile:
+        def test_custom_output_file_creates_correct_file(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
+                use_requirements_txt(output_file="constraints.txt")
+
+            # Assert
+            assert (tmp_path / "constraints.txt").exists()
+            assert not (tmp_path / "requirements.txt").exists()
+            out, _ = capfd.readouterr()
+            assert "Writing 'constraints.txt'." in out
+            assert "uv export -o=constraints.txt" in out
+
+        def test_custom_output_file_how(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
+                use_requirements_txt(how=True, output_file="constraints.txt")
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert (
+                out
+                == "☐ Run 'uv export -o=constraints.txt' to write 'constraints.txt'.\n"
+            )
+
+        def test_custom_output_file_remove(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "constraints.txt").touch()
+
+            # Act
+            with change_cwd(tmp_path), PyprojectTOMLManager():
+                use_requirements_txt(remove=True, output_file="constraints.txt")
+
+            # Assert
+            assert not (tmp_path / "constraints.txt").exists()
+
+        def test_default_output_file_is_requirements_txt(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                PyprojectTOMLManager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            out, _ = capfd.readouterr()
+            assert "Writing 'requirements.txt'." in out
+
 
 class TestRuff:
     class TestAdd:
@@ -3167,6 +3244,16 @@ class TestRuff:
                 "☐ Run 'uv run ruff check --fix' to run the Ruff linter with autofixes.\n"
                 "☐ Run 'uv run ruff format' to run the Ruff formatter.\n"
             )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_no_apply(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_ruff(no_apply=True)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert "Running the Ruff formatter" not in out
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_first(self, uv_init_repo_dir: Path):

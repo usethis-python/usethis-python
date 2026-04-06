@@ -9,6 +9,7 @@ from typing_extensions import override
 from usethis._console import how_print, info_print, instruct_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._tool.base import Tool
+from usethis._tool.heuristics import is_likely_used
 from usethis._tool.impl.base.codespell import CodespellTool
 from usethis._tool.impl.base.coverage_py import CoveragePyTool
 from usethis._tool.impl.base.deptry import DeptryTool
@@ -22,6 +23,7 @@ from usethis._tool.impl.base.ruff import RuffTool
 from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
 from usethis._tool.impl.base.zensical import ZensicalTool
+from usethis._tool.impl.spec.all_ import ALL_TOOL_SPECS
 from usethis._tool.impl.spec.pyproject_toml import PyprojectTOMLToolSpec
 
 # N.B. this list must be kept in-sync with usethis._tool.all_.ALL_TOOLS.
@@ -63,14 +65,17 @@ class PyprojectTOMLTool(PyprojectTOMLToolSpec, Tool):
 
         instruct_print("Check that important config in 'pyproject.toml' is not lost.")
 
-        for tool in OTHER_TOOLS:
+        for tool_spec in ALL_TOOL_SPECS:
+            if isinstance(tool_spec, PyprojectTOMLToolSpec):
+                continue
             if (
-                tool.is_used()
-                and PyprojectTOMLManager() in tool.get_active_config_file_managers()
+                is_likely_used(tool_spec)
+                and PyprojectTOMLManager()
+                in tool_spec.get_active_config_file_managers()
             ):
                 # Warn the user
                 instruct_print(
-                    f"The {tool.name} tool was using 'pyproject.toml' for config, "
+                    f"The {tool_spec.name} tool was using 'pyproject.toml' for config, "
                     f"but that file is being removed. You will need to re-configure it."
                 )
 

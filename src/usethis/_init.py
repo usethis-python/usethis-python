@@ -106,16 +106,15 @@ def _regularize_package_name(project_name: str) -> str:
     return project_name.lower()
 
 
-def write_simple_requirements_txt() -> None:
+def write_simple_requirements_txt(*, output_file: str = "requirements.txt") -> None:
     r"""Write a simple requirements.txt file with -e . and any project dependencies.
 
     This is used when we don't have a lock file or when using backend=none.
     Always writes at least "-e .\n", and appends any dependencies found in
     pyproject.toml if they exist.
     """
-    name = "requirements.txt"
-    tick_print(f"Writing '{name}'.")
-    path = usethis_config.cpd() / name
+    tick_print(f"Writing '{output_file}'.")
+    path = usethis_config.cpd() / output_file
     with open(path, "w", encoding="utf-8") as f:
         # Always write -e . first
         f.write("-e .\n")

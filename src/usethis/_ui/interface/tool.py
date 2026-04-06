@@ -15,10 +15,12 @@ from usethis._ui.options import (
     frozen_opt,
     how_opt,
     linter_opt,
+    no_apply_opt,
     no_hook_opt,
     offline_opt,
     quiet_opt,
     remove_opt,
+    requirements_txt_output_file_opt,
 )
 
 if TYPE_CHECKING:
@@ -233,6 +235,7 @@ def pyproject_fmt(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
+    no_apply: bool = no_apply_opt,
 ) -> None:
     """Use the pyproject-fmt linter: opinionated formatting of 'pyproject.toml' files."""
     from usethis._config_file import files_manager
@@ -248,7 +251,7 @@ def pyproject_fmt(
         ),
         files_manager(),
     ):
-        _run_tool(use_pyproject_fmt, remove=remove, how=how)
+        _run_tool(use_pyproject_fmt, remove=remove, how=how, no_apply=no_apply)
 
 
 @app.command(
@@ -325,6 +328,7 @@ def requirements_txt(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
+    output_file: str = requirements_txt_output_file_opt,
 ) -> None:
     """Use a requirements.txt file exported from the uv lockfile."""
     from usethis._config_file import files_manager
@@ -340,7 +344,7 @@ def requirements_txt(
         ),
         files_manager(),
     ):
-        _run_tool(use_requirements_txt, remove=remove, how=how)
+        _run_tool(use_requirements_txt, remove=remove, how=how, output_file=output_file)
 
 
 @app.command(
@@ -358,6 +362,7 @@ def ruff(
     linter: bool = linter_opt,
     formatter: bool = formatter_opt,
     no_hook: bool = no_hook_opt,
+    no_apply: bool = no_apply_opt,
 ) -> None:
     """Use Ruff: an extremely fast Python linter and code formatter."""
     from usethis._config_file import files_manager
@@ -373,7 +378,14 @@ def ruff(
         ),
         files_manager(),
     ):
-        _run_tool(use_ruff, remove=remove, how=how, linter=linter, formatter=formatter)
+        _run_tool(
+            use_ruff,
+            remove=remove,
+            how=how,
+            linter=linter,
+            formatter=formatter,
+            no_apply=no_apply,
+        )
 
 
 @app.command(
@@ -480,21 +492,12 @@ def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: object)
         raise typer.Exit(code=1) from None
 
 
-ALL_TOOL_COMMANDS: list[str] = [
-    "codespell",
-    "coverage.py",
-    "deptry",
-    "import-linter",
-    "mkdocs",
-    "pre-commit",
-    "pyproject.toml",
-    "pyproject-fmt",
-    "pytest",
-    "requirements.txt",
-    "ruff",
-    "tach",
-    "ty",
-    "zensical",
-]
+def _get_all_tool_commands() -> list[str]:
+    from usethis._tool.all_ import ALL_TOOLS
+
+    return [tool.name.lower().replace(" ", "-") for tool in ALL_TOOLS]
+
+
+ALL_TOOL_COMMANDS: list[str] = _get_all_tool_commands()
 
 ALL_TOOL_COMMAND_STRS: list[str] = [f"usethis tool {cmd}" for cmd in ALL_TOOL_COMMANDS]

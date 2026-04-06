@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import ast
 import sys
+from pathlib import Path
 
 
 def main() -> int:
@@ -58,7 +59,7 @@ def main() -> int:
 def _check_file(filepath: str, forbidden: list[str]) -> list[str]:
     """Check a single file for forbidden substrings in docstrings."""
     try:
-        source = open(filepath, encoding="utf-8").read()  # noqa: SIM115
+        source = Path(filepath).read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return []
 
@@ -97,7 +98,8 @@ def _check_docstring_node(
 ) -> list[str]:
     """Check a single docstring node for forbidden substrings."""
     violations: list[str] = []
-    assert isinstance(node.value, str)
+    if not isinstance(node.value, str):
+        return violations
     docstring: str = node.value
     source_lines = source.splitlines()
     start_line = node.lineno  # 1-based

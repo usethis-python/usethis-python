@@ -11,8 +11,8 @@ from usethis._types.deps import Dependency
 def get_setup_cfg_project_deps() -> list[Dependency]:
     """Get project dependencies from setup.cfg [options] install_requires.
 
-    This reads the ``install_requires`` field from the ``[options]`` section of
-    ``setup.cfg``, which is the legacy setuptools way of declaring project dependencies.
+    This reads the `install_requires` field from the `[options]` section of
+    `setup.cfg`, which is the legacy setuptools way of declaring project dependencies.
     """
     try:
         cfg = SetupCFGManager().get()
@@ -32,7 +32,7 @@ def get_setup_cfg_project_deps() -> list[Dependency]:
 def get_setup_cfg_dep_groups() -> dict[str, list[Dependency]]:
     """Get dependency groups from setup.cfg [options.extras_require].
 
-    This reads the ``[options.extras_require]`` section of ``setup.cfg``, which is the
+    This reads the `[options.extras_require]` section of `setup.cfg`, which is the
     legacy setuptools way of declaring optional/extra dependencies. Each extra is treated
     as a dependency group.
     """

@@ -53,10 +53,10 @@ def get_project_deps() -> list[Dependency]:
     This does not include development dependencies, e.g. not those in the
     dependency-groups section, not extras/optional dependencies, not build dependencies.
 
-    Usually this is just the dependencies in the ``project.dependencies`` section
-    of the ``pyproject.toml`` file. When the poetry backend is active, also
-    reads from ``[tool.poetry.dependencies]``. Also merges from ``setup.cfg``
-    ``[options] install_requires`` if that file is present.
+    Usually this is just the dependencies in the `project.dependencies` section
+    of the `pyproject.toml` file. When the poetry backend is active, also
+    reads from `[tool.poetry.dependencies]`. Also merges from `setup.cfg`
+    `[options] install_requires` if that file is present.
     """
     try:
         deps = _get_project_deps()
@@ -75,9 +75,9 @@ def get_project_deps() -> list[Dependency]:
 def get_dep_groups() -> dict[str, list[Dependency]]:
     """Get all dependency groups from pyproject.toml.
 
-    Reads from ``[dependency-groups]`` (PEP 735). When the poetry backend
-    is active, also reads from ``[tool.poetry.group.*.dependencies]``. Also
-    merges from ``setup.cfg`` ``[options.extras_require]`` if that file is present.
+    Reads from `[dependency-groups]` (PEP 735). When the poetry backend
+    is active, also reads from `[tool.poetry.group.*.dependencies]`. Also
+    merges from `setup.cfg` `[options.extras_require]` if that file is present.
     """
     try:
         groups = _get_dep_groups()

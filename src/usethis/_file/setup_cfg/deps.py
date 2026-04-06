@@ -25,10 +25,8 @@ def get_setup_cfg_project_deps() -> list[Dependency]:
     if "install_requires" not in cfg["options"]:
         return []
 
-    raw_value: str | None = cfg["options"]["install_requires"].value  # type: ignore[union-attr]
-    if raw_value is None:  # pragma: no cover
-        return []
-    return _parse_deps_string(raw_value)
+    raw_value = cfg["options"]["install_requires"].value
+    return _parse_deps_string(raw_value or "")
 
 
 def get_setup_cfg_dep_groups() -> dict[str, list[Dependency]]:
@@ -47,11 +45,9 @@ def get_setup_cfg_dep_groups() -> dict[str, list[Dependency]]:
         return {}
 
     result: dict[str, list[Dependency]] = {}
-    for extra_name in cfg["options.extras_require"].options():  # type: ignore[union-attr]
-        raw_value: str | None = cfg["options.extras_require"][extra_name].value  # type: ignore[union-attr]
-        if raw_value is None:  # pragma: no cover
-            continue
-        deps = _parse_deps_string(raw_value)
+    for extra_name in cfg["options.extras_require"].options():
+        raw_value = cfg["options.extras_require"][extra_name].value
+        deps = _parse_deps_string(raw_value or "")
         if deps:
             result[extra_name] = deps
 

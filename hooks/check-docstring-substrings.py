@@ -49,7 +49,9 @@ def main() -> int:
             print(v, file=sys.stderr)
         return 1
 
-    print(f"No forbidden substrings found in docstrings ({len(files)} file(s) checked).")
+    print(
+        f"No forbidden substrings found in docstrings ({len(files)} file(s) checked)."
+    )
     return 0
 
 
@@ -73,19 +75,17 @@ def _check_file(filepath: str, forbidden: list[str]) -> list[str]:
 
 def _docstring_nodes(tree: ast.Module) -> list[ast.Constant]:
     """Collect all AST nodes that represent docstrings."""
+    _HAS_BODY = (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
     nodes: list[ast.Constant] = []
     for node in ast.walk(tree):
-        if not isinstance(node, ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef):
-            continue
-        if not node.body:
-            continue
-        first = node.body[0]
-        if (
-            isinstance(first, ast.Expr)
-            and isinstance(first.value, ast.Constant)
-            and isinstance(first.value.value, str)
-        ):
-            nodes.append(first.value)
+        if isinstance(node, _HAS_BODY) and node.body:
+            first = node.body[0]
+            if (
+                isinstance(first, ast.Expr)
+                and isinstance(first.value, ast.Constant)
+                and isinstance(first.value.value, str)
+            ):
+                nodes.append(first.value)
     return nodes
 
 
@@ -97,6 +97,7 @@ def _check_docstring_node(
 ) -> list[str]:
     """Check a single docstring node for forbidden substrings."""
     violations: list[str] = []
+    assert isinstance(node.value, str)
     docstring: str = node.value
     source_lines = source.splitlines()
     start_line = node.lineno  # 1-based
@@ -112,9 +113,7 @@ def _check_docstring_node(
                 display = source_lines[abs_line - 1].strip()
             else:
                 display = doc_line.strip()
-            violations.append(
-                f"  {filepath}:{abs_line}: {display}"
-            )
+            violations.append(f"  {filepath}:{abs_line}: {display}")
     return violations
 
 

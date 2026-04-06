@@ -138,6 +138,9 @@ def _vary_network_conn(
 ) -> None:
     """Fixture to vary the network connection.
 
+    Must be function-scoped (not session-scoped) so it runs after the per-test
+    config reset in `clear_functools_caches`.
+
     Use `usethis._config.usethis_config` to check whether things are in offline
     mode, since this fixture does not return anything.
     """

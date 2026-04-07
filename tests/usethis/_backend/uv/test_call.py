@@ -49,7 +49,7 @@ class TestCallUVSubprocess:
             # Check the args passed to call_subprocess
             assert call_uv_subprocess(
                 ["run", "pre-commit", "install"], change_toml=False
-            ) == ("uv run --quiet --frozen pre-commit install")
+            ) == ("uv run --no-progress --frozen pre-commit install")
 
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_handle_missing_version(
@@ -112,7 +112,7 @@ link-mode = "symlink"
 
         # Assert
         out, err = capfd.readouterr()
-        assert "warning: something went wrong" in out
+        assert "something went wrong" in out
         assert not err
 
     def test_empty_stderr_no_warning(
@@ -147,7 +147,7 @@ link-mode = "symlink"
         monkeypatch: pytest.MonkeyPatch,
         capfd: pytest.CaptureFixture[str],
     ):
-        """Multiple lines on stderr should each be surfaced as separate warnings."""
+        """Multiple warning lines on stderr should each be surfaced."""
 
         def mock_call_subprocess(
             args: list[str], *, cwd: Path | None = None
@@ -166,6 +166,61 @@ link-mode = "symlink"
 
         # Assert
         out, err = capfd.readouterr()
-        assert "warning: first" in out
-        assert "warning: second" in out
+        assert "first" in out
+        assert "second" in out
         assert not err
+
+    def test_non_warning_stderr_not_surfaced(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        """Non-warning lines on stderr should not be surfaced."""
+
+        def mock_call_subprocess(
+            args: list[str], *, cwd: Path | None = None
+        ) -> SubprocessResult:
+            _ = args, cwd
+            return SubprocessResult("", "Resolved 31 packages in 265ms\n")
+
+        monkeypatch.setattr(
+            usethis._backend.uv.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        # Act
+        call_uv_subprocess(["help"], change_toml=False)
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert out == ""
+        assert err == ""
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_unpinned_dep_warning_surfaced(
+        self,
+        tmp_path: Path,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        """An unpinned dependency should trigger a uv warning that gets surfaced."""
+
+        # Arrange - init a lib project
+        with change_cwd(tmp_path):
+            call_uv_subprocess(["init", "--lib", "--vcs", "none"], change_toml=True)
+
+        # Add an unpinned dependency directly to pyproject.toml (no lower bound)
+        pyproject_path = tmp_path / "pyproject.toml"
+        content = pyproject_path.read_text()
+        content = content.replace("dependencies = []", 'dependencies = ["usethis"]')
+        pyproject_path.write_text(content)
+
+        # Act - sync with lowest-direct resolution to trigger the warning
+        with change_cwd(tmp_path):
+            call_uv_subprocess(
+                ["sync", "--resolution=lowest-direct"], change_toml=False
+            )
+
+        # Assert - the unpinned dependency warning should be surfaced
+        out, _err = capfd.readouterr()
+        assert "unpinned" in out.lower()

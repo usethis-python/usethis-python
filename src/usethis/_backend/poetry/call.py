@@ -104,5 +104,5 @@ def _surface_stderr_warnings(stderr: str) -> None:
     """Surface any warning lines from Poetry's stderr output."""
     for line in stderr.splitlines():
         stripped = line.strip()
-        if stripped:
-            warn_print(stripped)
+        if stripped.lower().startswith("warning:"):
+            warn_print(stripped.split(":", 1)[1].strip())

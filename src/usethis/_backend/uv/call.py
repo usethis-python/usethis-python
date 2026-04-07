@@ -63,7 +63,7 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
     if usethis_config.subprocess_verbose:
         new_args = [*new_args[:2], "--verbose", *new_args[2:]]
     elif args[:2] != ["python", "list"] and args[:2] != ["self", "version"]:
-        new_args = [*new_args[:2], "--quiet", *new_args[2:]]
+        new_args = [*new_args[:2], "--no-progress", *new_args[2:]]
 
     try:
         result = call_subprocess(
@@ -84,8 +84,8 @@ def _surface_stderr_warnings(stderr: str) -> None:
     """Surface any warning lines from subprocess stderr output."""
     for line in stderr.splitlines():
         stripped = line.strip()
-        if stripped:
-            warn_print(stripped)
+        if stripped.startswith("warning:"):
+            warn_print(stripped.removeprefix("warning:").strip())
 
 
 def add_default_groups_via_uv(groups: list[str]) -> None:

@@ -388,7 +388,7 @@ class TestCallPoetrySubprocess:
 
         def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
             _ = args
-            return SubprocessResult("Poetry (version 2.0.0)\n", "warning: something\n")
+            return SubprocessResult("Poetry (version 2.0.0)\n", "Warning: something\n")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -400,7 +400,7 @@ class TestCallPoetrySubprocess:
             call_poetry_subprocess(["--version"], change_toml=False)
 
         out, err = capfd.readouterr()
-        assert "warning: something" in out
+        assert "something" in out
         assert not err
 
     def test_empty_stderr_no_warning(

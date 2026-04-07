@@ -268,7 +268,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
         assert isinstance(content, dict)
         keys = _validate_keys(keys)
 
-        # Exit early if the configuration is not present.
+        # Exit early if the configuration is missing or invalid.
         try:
             d = content
             for key in keys:
@@ -455,7 +455,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
         except (KeyError, UnexpectedYAMLValueError):
-            # The configuration is not present - do not modify
+            # The configuration is missing or invalid - do not modify
             return
 
         try:

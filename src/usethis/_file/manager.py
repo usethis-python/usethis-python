@@ -243,18 +243,18 @@ class KeyValueFileManager(
     def validated_get(
         self, keys: Sequence[Key], *, default: Any, validate: object = None
     ) -> Any:
-        """Retrieve a value by keys, returning ``default`` on missing key or failed validation.
+        """Retrieve a value by keys, returning `default` on missing key or failed validation.
 
         Args:
             keys: The key path to look up.
             default: The value to return when the key is missing or
                 validation fails.  Required, no default.
             validate: An optional type to validate the retrieved value
-                against (forwarded to ``TypeAdapter``).  When ``None``,
+                against (forwarded to `TypeAdapter`).  When `None`,
                 no validation is performed.
 
         Returns:
-            The (optionally validated) value, or ``default``.
+            The (optionally validated) value, or `default`.
         """
         try:
             raw = self[keys]
@@ -271,21 +271,21 @@ class KeyValueFileManager(
     def ensure_get(
         self, keys: Sequence[Key], *, err: Exception, validate: object
     ) -> Any:
-        """Retrieve and validate a value by keys, raising ``err`` on failure.
+        """Retrieve and validate a value by keys, raising `err` on failure.
 
         Args:
             keys: The key path to look up.
             err: An instantiated exception to raise when the key is
                 missing or validation fails.
             validate: The type to validate the retrieved value against
-                (forwarded to ``TypeAdapter``).  Required.
+                (forwarded to `TypeAdapter`).  Required.
 
         Returns:
             The validated value.
 
         Raises:
             type(err): When the key is missing or the value does not
-                conform to ``validate``.
+                conform to `validate`.
         """
         try:
             raw = self[keys]

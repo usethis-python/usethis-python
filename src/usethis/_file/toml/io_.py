@@ -244,7 +244,7 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             return
         keys = _validate_keys(keys)
 
-        # Exit early if the configuration is not present.
+        # Exit early if the configuration is missing or invalid.
         try:
             d = toml_document
             for key in keys:
@@ -427,7 +427,7 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
         except (KeyError, TOMLValueInvalidError):
-            # The configuration is not present - do not modify
+            # The configuration is missing or invalid - do not modify
             return
 
         try:

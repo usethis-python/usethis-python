@@ -7,10 +7,10 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.validate import validate_or_default, validate_or_raise
-from usethis._test import change_cwd
 
 
 class _CustomError(Exception):

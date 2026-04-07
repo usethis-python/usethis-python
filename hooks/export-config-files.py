@@ -1,50 +1,34 @@
 """Export the supported configuration files for each managed tool.
 
-Reads all tool specifications from a Python variable and writes the list of
-supported configuration files (in priority order) to an output file. The output
-can be compared against documentation to verify it is up to date.
-
-Specs are loaded from --specs-variable (a dotted module.VARIABLE path). An
-optional --context-manager (dotted module.function path) wraps the export in a
-context, useful when tool specs need open file managers to resolve config paths.
+Reads all usethis tool specifications and writes the list of supported
+configuration files (in priority order) to an output file. The output can be
+compared against documentation to verify it is up to date.
 """
 
 from __future__ import annotations
 
 import argparse
-import contextlib
-import importlib
 import os
 from pathlib import Path
 from unittest.mock import patch
 
+from usethis._config_file import files_manager
+from usethis._tool.impl.spec.all_ import ALL_TOOL_SPECS
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Export supported config files per tool from a Python API.",
+        description="Export supported config files per tool.",
     )
     parser.add_argument(
         "--output-file",
         required=True,
         help="Path to the output file to write.",
     )
-    parser.add_argument(
-        "--specs-variable",
-        required=True,
-        help="Dotted path to the list of tool spec objects, e.g. 'pkg.module.VAR'.",
-    )
-    parser.add_argument(
-        "--context-manager",
-        default=None,
-        help=(
-            "Dotted path to a zero-argument context manager function, "
-            "e.g. 'pkg.module.ctx'. Activated around the spec iteration."
-        ),
-    )
     args = parser.parse_args()
 
     output_file = Path(args.output_file)
-    lines = _build_lines(args.specs_variable, args.context_manager)
+    lines = _build_lines()
     content = os.linesep.join(lines) + os.linesep
 
     try:
@@ -64,14 +48,10 @@ def main() -> int:
     return 1 if modified else 0
 
 
-def _build_lines(specs_variable: str, context_manager_path: str | None) -> list[str]:
-    module_path, _, attr = specs_variable.rpartition(".")
-    all_specs = getattr(importlib.import_module(module_path), attr)
-    cm = _load_context_manager(context_manager_path)
-
+def _build_lines() -> list[str]:
     lines = []
-    with cm:
-        for spec in all_specs:
+    with files_manager():
+        for spec in ALL_TOOL_SPECS:
             paths, resolution = _get_paths_and_resolution(spec)
             if not paths:
                 continue
@@ -83,16 +63,6 @@ def _build_lines(specs_variable: str, context_manager_path: str | None) -> list[
                 lines.append(f"{name}: {files_str}")
 
     return lines
-
-
-def _load_context_manager(
-    path: str | None,
-) -> contextlib.AbstractContextManager[object]:
-    if path is None:
-        return contextlib.nullcontext()
-    module_path, _, attr = path.rpartition(".")
-    ctx_fn = getattr(importlib.import_module(module_path), attr)
-    return ctx_fn()
 
 
 _DEFAULT_RESOLUTION = "first"

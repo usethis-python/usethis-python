@@ -106,7 +106,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
     @override
     def _parse_content(self, content: str) -> YAMLDocument:
         """Parse the content of the document."""
-        return _get_yaml_document(StringIO(content), guess_indent=True)
+        return get_yaml_document(StringIO(content), guess_indent=True)
 
     @property
     @override
@@ -442,9 +442,10 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
     return so_far_keys
 
 
-def _get_yaml_document(
+def get_yaml_document(
     _io: StringIO | TextIOWrapper, /, *, guess_indent: bool = True
 ) -> YAMLDocument:
+    """Get a YAML document representation from a string or file-like object."""
     # Can't preserve quotes so don't keep the content.
     # Yes, it's not very efficient to load the content twice.
     try:

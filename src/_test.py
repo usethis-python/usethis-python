@@ -33,7 +33,7 @@ from usethis._core.tool import (
 )
 from usethis._fallback import FALLBACK_PRE_COMMIT_VERSION
 from usethis._file.yaml.errors import YAMLDecodeError, YAMLError
-from usethis._file.yaml.io_ import _get_yaml_document
+from usethis._file.yaml.io_ import get_yaml_document
 from usethis._integrations.pre_commit.hooks import hook_ids_are_equivalent
 from usethis._integrations.pre_commit.version import get_minimum_pre_commit_version
 from usethis._tool.impl.base.codespell import CodespellTool
@@ -229,7 +229,7 @@ def read_yaml(
     """A context manager to read a YAML file."""
     with yaml_path.open(mode="r", encoding="utf-8") as f:
         try:
-            yaml_document = _get_yaml_document(f, guess_indent=guess_indent)
+            yaml_document = get_yaml_document(f, guess_indent=guess_indent)
         except YAMLError as err:
             msg = f"Error reading '{yaml_path}':\n{err}"
             raise YAMLDecodeError(msg) from None

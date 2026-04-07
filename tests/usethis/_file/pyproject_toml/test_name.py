@@ -7,6 +7,7 @@ from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectDescriptionError,
     PyprojectTOMLProjectNameError,
+    PyprojectTOMLProjectSectionError,
 )
 from usethis._file.pyproject_toml.name import get_description, get_name
 
@@ -34,7 +35,7 @@ class TestGetName:
         with (
             change_cwd(tmp_path),
             files_manager(),
-            pytest.raises(PyprojectTOMLProjectNameError),
+            pytest.raises(FileNotFoundError),
         ):
             get_name()
 
@@ -47,7 +48,7 @@ class TestGetName:
         with (
             change_cwd(tmp_path),
             files_manager(),
-            pytest.raises(PyprojectTOMLProjectNameError),
+            pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_name()
 
@@ -106,7 +107,7 @@ class TestGetDescription:
         with (
             change_cwd(tmp_path),
             files_manager(),
-            pytest.raises(PyprojectTOMLProjectDescriptionError),
+            pytest.raises(FileNotFoundError),
         ):
             get_description()
 
@@ -119,7 +120,7 @@ class TestGetDescription:
         with (
             change_cwd(tmp_path),
             files_manager(),
-            pytest.raises(PyprojectTOMLProjectDescriptionError),
+            pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_description()
 

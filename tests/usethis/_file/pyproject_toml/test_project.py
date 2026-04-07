@@ -5,6 +5,7 @@ import pytest
 from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import (
+    PyprojectTOMLNotFoundError,
     PyprojectTOMLProjectSectionError,
 )
 from usethis._file.pyproject_toml.project import get_project_dict
@@ -15,7 +16,7 @@ class TestGetProjectDict:
         with (
             change_cwd(tmp_path),
             files_manager(),
-            pytest.raises(PyprojectTOMLProjectSectionError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_project_dict()
 

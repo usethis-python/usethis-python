@@ -5,6 +5,7 @@ from packaging.specifiers import SpecifierSet
 
 from _test import change_cwd
 from usethis._config_file import files_manager
+from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._file.pyproject_toml.requires_python import (
     MissingRequiresPythonError,
     get_required_minor_python_versions,
@@ -34,7 +35,7 @@ requires-python = ">=3.7"
         with (
             change_cwd(tmp_path),
             files_manager(),
-            pytest.raises(MissingRequiresPythonError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_requires_python()
 
@@ -163,7 +164,7 @@ requires-python = ">=3.8,<=3.11"
         with (
             change_cwd(tmp_path),
             files_manager(),
-            pytest.raises(MissingRequiresPythonError),
+            pytest.raises(PyprojectTOMLNotFoundError),
         ):
             get_required_minor_python_versions()
 

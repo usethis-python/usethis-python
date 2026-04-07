@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import subprocess
-from typing import TYPE_CHECKING, NamedTuple
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -13,7 +14,8 @@ class SubprocessFailedError(Exception):
     pass
 
 
-class SubprocessResult(NamedTuple):
+@dataclass
+class SubprocessResult:
     """The result of a successful subprocess invocation."""
 
     stdout: str

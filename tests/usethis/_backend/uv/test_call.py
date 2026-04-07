@@ -62,6 +62,7 @@ class TestCallUVSubprocess:
             """\
 [project]
 name = "example"
+requires-python = ">=3.10"
 """
         )
 
@@ -75,6 +76,7 @@ name = "example"
             == """\
 [project]
 name = "example"
+requires-python = ">=3.10"
 version = "0.1.0"
 dependencies = [
     "ruff==0.9.0",

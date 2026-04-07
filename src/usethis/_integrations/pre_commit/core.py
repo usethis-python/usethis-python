@@ -116,25 +116,24 @@ def uninstall_pre_commit_hooks() -> None:
         _instruct_pre_commit_uninstall()
         return
 
-    if backend is BackendEnum.uv:
+    if backend in (BackendEnum.uv, BackendEnum.poetry):
         if not _is_git_repo():
             info_print("Git is not available; skipping pre-commit hook uninstallation.")
             return
         tick_print("Ensuring pre-commit hooks are uninstalled.")
-        try:
-            call_uv_subprocess(
-                ["run", "--with", "pre-commit", "pre-commit", "uninstall"],
-                change_toml=False,
-            )
-        except UVSubprocessFailedError as err:
-            msg = f"Failed to uninstall pre-commit hooks:\n{err}"
-            raise PreCommitInstallationError(msg) from None
-    elif backend is BackendEnum.poetry:
-        if not _is_git_repo():
-            info_print("Git is not available; skipping pre-commit hook uninstallation.")
-            return
-        tick_print("Ensuring pre-commit hooks are uninstalled.")
-        _run_poetry_pre_commit_uninstall()
+        if backend is BackendEnum.uv:
+            try:
+                call_uv_subprocess(
+                    ["run", "--with", "pre-commit", "pre-commit", "uninstall"],
+                    change_toml=False,
+                )
+            except UVSubprocessFailedError as err:
+                msg = f"Failed to uninstall pre-commit hooks:\n{err}"
+                raise PreCommitInstallationError(msg) from None
+        elif backend is BackendEnum.poetry:
+            _run_poetry_pre_commit_uninstall()
+        else:
+            assert_never(backend)
     elif backend is BackendEnum.none:
         instruct_print("Run 'pre-commit uninstall' to deregister pre-commit.")
     else:

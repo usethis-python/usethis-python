@@ -100,7 +100,6 @@ repos:
         args: ["--keyword", "pragma:", "--keyword", "type: ignore"]
         language: system
         types: [python]
-        files: ^(src|tests)/
         priority: 0
       - id: check-list-referenced
         name: check-list-referenced

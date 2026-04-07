@@ -228,3 +228,30 @@ name = "h-el.l_o"
 version = "0.2.0"
 """
         )
+
+    def test_comment_in_project_section(self, tmp_path: Path):
+        # Arrange: a comment is present in the [project] section alongside a key
+        path = tmp_path / "fun_project"
+        path.mkdir()
+        (path / "pyproject.toml").write_text(
+            """\
+[project]
+# keep this comment
+version = "0.1.0"
+"""
+        )
+
+        # Act
+        with change_cwd(path), files_manager():
+            ensure_pyproject_validity()
+
+        # Assert: name inserted first, comment and version preserved
+        assert (
+            (path / "pyproject.toml").read_text()
+            == """\
+[project]
+name = "fun_project"
+# keep this comment
+version = "0.1.0"
+"""
+        )

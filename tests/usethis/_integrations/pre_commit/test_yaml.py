@@ -28,7 +28,8 @@ repos:
         (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
 
         # Act
-        with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
+        with change_cwd(tmp_path), files_manager():
+            mgr = PreCommitConfigYAMLManager()
             mgr.model_validate()
             # No changes made
 
@@ -64,7 +65,8 @@ extra:
         (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
 
         # Act / Assert
-        with change_cwd(tmp_path), PreCommitConfigYAMLManager() as mgr:
+        with change_cwd(tmp_path), files_manager():
+            mgr = PreCommitConfigYAMLManager()
             mgr.model_validate()
             # No changes made
 
@@ -83,7 +85,7 @@ repos:
         (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
 
         # Act
-        with change_cwd(tmp_path), PreCommitConfigYAMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Just reading, no modifications
             pass
 
@@ -106,9 +108,9 @@ repos:
                 PreCommitConfigYAMLConfigError,
                 match=r"Invalid '.pre-commit-config.yaml' file:",
             ),
-            PreCommitConfigYAMLManager() as mgr,
+            files_manager(),
         ):
-            mgr.model_validate()
+            PreCommitConfigYAMLManager().model_validate()
 
     def test_extra_config(self, tmp_path: Path):
         # Arrange
@@ -125,8 +127,9 @@ extra:
         # Act / Assert
         with (
             change_cwd(tmp_path),
-            PreCommitConfigYAMLManager() as mgr,
+            files_manager(),
         ):
+            mgr = PreCommitConfigYAMLManager()
             doc = mgr.get()
             mgr.model_validate()
             content = cast("dict[str, list[str]]", doc.content)

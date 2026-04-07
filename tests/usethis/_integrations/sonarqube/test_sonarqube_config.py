@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from usethis._backend.uv.python import uv_python_pin
+from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import ensure_pyproject_toml
 from usethis._integrations.sonarqube.config import (
@@ -39,7 +40,7 @@ class TestGetSonarProjectProperties:
         # the repo.
 
         # Arrange
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             PyprojectTOMLManager().set_value(
                 keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
             )
@@ -51,7 +52,7 @@ class TestGetSonarProjectProperties:
         assert "xml" in content
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             result = get_sonar_project_properties()
 
         # Assert
@@ -71,7 +72,7 @@ sonar.verbose=false
     def test_different_python_version(self, tmp_path: Path):
         # If the python version is different, it should be updated.
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             assert str(PythonVersion.from_interpreter())
             uv_python_pin("3.10")
@@ -85,7 +86,7 @@ sonar.verbose=false
         content = (tmp_path / "pyproject.toml").read_text()
         assert "xml" in content
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Act
             result = get_sonar_project_properties()
 
@@ -105,7 +106,7 @@ sonar.exclusions=tests/*
         )
 
     def test_no_pin_python(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
@@ -134,7 +135,7 @@ sonar.exclusions=tests/*
         )
 
     def test_different_project_key(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12")
             ensure_pyproject_toml()
@@ -164,7 +165,7 @@ sonar.exclusions=tests/*
         )
 
     def test_set_verbose_true(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12")
             ensure_pyproject_toml()
@@ -199,13 +200,13 @@ sonar.exclusions=tests/*
     def test_missing_pyproject_toml_raises(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(MissingProjectKeyError),
         ):
             get_sonar_project_properties()
 
     def test_missing_project_key_section_raises(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             ensure_pyproject_toml()
 
@@ -214,7 +215,7 @@ sonar.exclusions=tests/*
                 get_sonar_project_properties()
 
     def test_non_string_project_key_raises(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             ensure_pyproject_toml()
             PyprojectTOMLManager().set_value(
@@ -226,7 +227,7 @@ sonar.exclusions=tests/*
                 get_sonar_project_properties()
 
     def test_patch_version_ignored(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12.1")
             ensure_pyproject_toml()
@@ -256,7 +257,7 @@ sonar.exclusions=tests/*
         )
 
     def test_exclusions(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12")
             ensure_pyproject_toml()
@@ -293,7 +294,7 @@ sonar.exclusions=tests/*, **/Dockerfile, src/notebooks/**/*
         )
 
     def test_different_coverage_file_location(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12")
             ensure_pyproject_toml()
@@ -324,7 +325,7 @@ sonar.exclusions=tests/*
         )
 
     def test_missing_coverage_file_location_error(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12")
             ensure_pyproject_toml()
@@ -337,7 +338,7 @@ sonar.exclusions=tests/*
                 get_sonar_project_properties()
 
     def test_project_key_argument(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12")
             ensure_pyproject_toml()
@@ -364,7 +365,7 @@ sonar.exclusions=tests/*
         )
 
     def test_project_key_argument_overrides_pyproject(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12")
             ensure_pyproject_toml()
@@ -383,7 +384,7 @@ sonar.exclusions=tests/*
         assert "sonar.projectKey=from-cli\n" in result
 
     def test_project_key_argument_invalid(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12")
             ensure_pyproject_toml()
@@ -399,7 +400,7 @@ sonar.exclusions=tests/*
         # When using flat layout and tests/* is already in exclusions,
         # it should not be added again.
 
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Arrange
             uv_python_pin("3.12")
             ensure_pyproject_toml()

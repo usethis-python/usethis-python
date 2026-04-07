@@ -6,10 +6,77 @@ from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import UsethisConfig, usethis_config
 from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
+from usethis._types.build_backend import BuildBackendEnum
 from usethis.errors import ForbiddenBackendError
 
 
 class TestUsethisConfig:
+    class TestCopy:
+        def test_returns_new_instance(self):
+            # Arrange
+            config = UsethisConfig()
+
+            # Act
+            copied = config.copy()
+
+            # Assert
+            assert copied is not config
+
+        def test_preserves_defaults(self):
+            # Arrange
+            config = UsethisConfig()
+
+            # Act
+            copied = config.copy()
+
+            # Assert
+            assert copied.offline == config.offline
+            assert copied.quiet == config.quiet
+            assert copied.frozen == config.frozen
+            assert copied.backend == config.backend
+
+        def test_preserves_modified_values(self):
+            # Arrange
+            config = UsethisConfig()
+            config.offline = True
+            config.quiet = True
+            config.frozen = True
+            config.alert_only = True
+            config.instruct_only = True
+            config.backend = BackendEnum.uv
+            config.inferred_backend = BackendEnum.uv
+            config.build_backend = BuildBackendEnum.uv
+            config.disable_pre_commit = True
+            config.subprocess_verbose = True
+            config.project_dir = Path("/some/project")
+
+            # Act
+            copied = config.copy()
+
+            # Assert
+            assert copied.offline is True
+            assert copied.quiet is True
+            assert copied.frozen is True
+            assert copied.alert_only is True
+            assert copied.instruct_only is True
+            assert copied.backend is BackendEnum.uv
+            assert copied.inferred_backend is BackendEnum.uv
+            assert copied.build_backend is BuildBackendEnum.uv
+            assert copied.disable_pre_commit is True
+            assert copied.subprocess_verbose is True
+            assert copied.project_dir == Path("/some/project")
+
+        def test_independent_of_original(self):
+            # Arrange
+            config = UsethisConfig()
+
+            # Act
+            copied = config.copy()
+            copied.offline = True
+
+            # Assert
+            assert config.offline is False
+
     class TestCPD:
         def test_matches_path_cwd(self, tmp_path: Path):
             # Arrange

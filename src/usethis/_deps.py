@@ -291,8 +291,8 @@ def _register_poetry_default_group(group: str) -> None:
     except FileNotFoundError:
         return
 
-    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})  # type: ignore[union-attr]
-    group_config = poetry_groups.get(group, {})  # type: ignore[union-attr]
+    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})
+    group_config = poetry_groups.get(group, {})
 
     if isinstance(group_config, dict) and group_config.get("optional") is True:
         # Remove the optional flag to make this group installed by default
@@ -316,11 +316,11 @@ def _get_poetry_default_groups() -> list[str]:
     except FileNotFoundError:
         return list(dep_groups.keys())
 
-    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})  # type: ignore[union-attr]
+    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})
 
     default_groups = []
     for group_name in dep_groups:
-        group_config = poetry_groups.get(group_name, {})  # type: ignore[union-attr]
+        group_config = poetry_groups.get(group_name, {})
         if isinstance(group_config, dict) and group_config.get("optional") is True:
             continue
         default_groups.append(group_name)

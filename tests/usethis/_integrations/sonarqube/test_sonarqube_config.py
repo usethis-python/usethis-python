@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from _test import change_cwd, uv_python_pin
+from _test import change_cwd, is_uv_python_available, uv_python_pin
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import ensure_pyproject_toml
@@ -34,6 +34,10 @@ class TestGetSonarProjectProperties:
         # Assert
         assert result == contents
 
+    @pytest.mark.skipif(
+        not is_uv_python_available("3.13"),
+        reason="Python 3.13 is not available in uv's managed installations",
+    )
     def test_file_doesnt_exist(self, uv_init_dir: Path):
         # If the file does not exist, we should construct based on information in
         # the repo.

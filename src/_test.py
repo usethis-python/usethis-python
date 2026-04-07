@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import copy
 import os
+import shutil
 import socket
+import subprocess
 from contextlib import contextmanager
 from pathlib import Path
 from typing import IO, TYPE_CHECKING
@@ -89,6 +91,36 @@ def is_offline() -> bool:
     else:
         s.close()
         return False
+
+
+def is_uv_python_available(version: str) -> bool:
+    """Return True if the given Python version is available in uv's managed installations.
+
+    This queries the uv CLI directly and is independent of the currently active Python
+    interpreter, so it correctly identifies availability even when the test runner is
+    a different Python version.
+
+    Args:
+        version: The Python version to check, e.g. "3.13".
+
+    Returns:
+        True if the version is installed and available via uv, False otherwise.
+    """
+    uv_path = shutil.which("uv")
+    if uv_path is None:
+        return False
+    result = subprocess.run(  # noqa: S603
+        [uv_path, "python", "list", "--only-installed"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    return any(
+        parts[0].startswith(f"cpython-{version}.")
+        for line in result.stdout.splitlines()
+        if (parts := line.split()) and len(parts) >= 2
+    )
 
 
 class CliRunner(TyperCliRunner):

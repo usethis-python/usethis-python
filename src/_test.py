@@ -72,9 +72,11 @@ def change_cwd(new_dir: Path) -> Generator[None, None, None]:
     """
     old_dir = Path.cwd()
     os.chdir(new_dir)
-    with usethis_config.set(project_dir=new_dir):
-        yield
-    os.chdir(old_dir)
+    try:
+        with usethis_config.set(project_dir=new_dir):
+            yield
+    finally:
+        os.chdir(old_dir)
 
 
 def is_offline() -> bool:

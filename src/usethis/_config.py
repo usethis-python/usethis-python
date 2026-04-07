@@ -63,7 +63,7 @@ class UsethisConfig:
         return replace(self)
 
     @contextmanager
-    def set(  # noqa: PLR0913
+    def set(  # noqa: PLR0912, PLR0913
         self,
         *,
         offline: bool | None = None,
@@ -115,8 +115,10 @@ class UsethisConfig:
         if isinstance(project_dir, str):
             project_dir = Path(project_dir)
         self.project_dir = project_dir
-        yield
-        self._restore(old)
+        try:
+            yield
+        finally:
+            self._restore(old)
 
     def _restore(self, other: UsethisConfig) -> None:
         """Restore all attributes from another configuration instance."""

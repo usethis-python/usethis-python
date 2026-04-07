@@ -103,6 +103,54 @@ class TestUsethisConfig:
             # Assert
             assert project_dir == Path("42 Wallaby Way, Sydney")
 
+    class TestSetRestoresOnException:
+        def test_restores_quiet_on_exception(self):
+            # Arrange
+            config = UsethisConfig()
+            assert config.quiet is False
+
+            # Act
+            with pytest.raises(RuntimeError), config.set(quiet=True):
+                raise RuntimeError
+
+            # Assert
+            assert config.quiet is False
+
+        def test_restores_all_fields_on_exception(self, tmp_path: Path):
+            # Arrange
+            config = UsethisConfig()
+            old = config.copy()
+
+            # Act
+            with (
+                pytest.raises(RuntimeError),
+                config.set(
+                    offline=True,
+                    quiet=True,
+                    frozen=True,
+                    alert_only=True,
+                    instruct_only=True,
+                    backend=BackendEnum.none,
+                    build_backend=BuildBackendEnum.uv,
+                    disable_pre_commit=True,
+                    subprocess_verbose=True,
+                    project_dir=tmp_path,
+                ),
+            ):
+                raise RuntimeError
+
+            # Assert
+            assert config.offline == old.offline
+            assert config.quiet == old.quiet
+            assert config.frozen == old.frozen
+            assert config.alert_only == old.alert_only
+            assert config.instruct_only == old.instruct_only
+            assert config.backend == old.backend
+            assert config.build_backend == old.build_backend
+            assert config.disable_pre_commit == old.disable_pre_commit
+            assert config.subprocess_verbose == old.subprocess_verbose
+            assert config.project_dir == old.project_dir
+
     class TestDisableUVSubprocess:
         def test_raises_error_when_disabled(self):
             # Act & Assert

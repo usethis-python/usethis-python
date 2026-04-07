@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config_file import files_manager
-from usethis._test import change_cwd
 from usethis._tool.impl.base.tach import TachTool
 
 

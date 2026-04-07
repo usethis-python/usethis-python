@@ -1,8 +1,8 @@
 from pathlib import Path
 
+from _test import change_cwd
 from usethis._backend.poetry.detect import is_poetry_used
 from usethis._config_file import files_manager
-from usethis._test import change_cwd
 
 
 class TestIsPoetryUsed:

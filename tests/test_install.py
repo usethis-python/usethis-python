@@ -5,11 +5,11 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
+from _test import change_cwd
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._config_file import files_manager
 from usethis._subprocess import call_subprocess
-from usethis._test import change_cwd
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ def usethis_installed_dir(
             call_subprocess(["git", "add", "."])
             call_subprocess(["git", "commit", "-m", "Initial commit"])
 
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             # Install usethis in a virtual environment
             call_uv_subprocess(
                 ["add", f"{copy_usethis_dev_dir.as_posix()}"], change_toml=True

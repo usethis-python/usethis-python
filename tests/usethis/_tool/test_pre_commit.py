@@ -1,9 +1,9 @@
 from pathlib import Path
 
+from _test import change_cwd
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit import schema
-from usethis._test import change_cwd
 from usethis._tool.pre_commit import PreCommitConfig
 from usethis._types.backend import BackendEnum
 

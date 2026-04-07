@@ -2,13 +2,14 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
+from usethis._config_file import files_manager
 from usethis._core.author import add_author
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.toml.errors import (
     TOMLValueInvalidError,
     TOMLValueMissingError,
 )
-from usethis._test import change_cwd
 
 
 class TestAddAuthor:
@@ -17,7 +18,7 @@ class TestAddAuthor:
         (tmp_path / "pyproject.toml").touch()
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             add_author(
                 name="John Cleese",
                 email="jc@example.com",
@@ -48,7 +49,7 @@ authors = [
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             add_author(
                 name="John Cleese",
                 email="jc@example.com",
@@ -71,7 +72,7 @@ email = "jc@example.com"
         (tmp_path / "pyproject.toml").touch()
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             add_author(name="John Cleese")
 
         # Assert
@@ -98,7 +99,7 @@ email = "jc@example.com"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             add_author(
                 name="Python Dev Team",
                 overwrite=True,
@@ -116,7 +117,7 @@ name = "Python Dev Team"
 
     def test_no_pyproject_yet(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             add_author(name="John Cleese")
 
         # Assert
@@ -138,12 +139,14 @@ scripts.usethis = "usethis.__main__:app"
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager() as manager:
+        with change_cwd(tmp_path), files_manager():
+            manager = PyprojectTOMLManager()
             add_author(name="John Cleese")
             assert ["project", "scripts"] in manager
 
         # Assert
-        with change_cwd(tmp_path), PyprojectTOMLManager() as manager:
+        with change_cwd(tmp_path), files_manager():
+            manager = PyprojectTOMLManager()
             assert ["project"] in manager
             assert ["project", "scripts"] in manager
 
@@ -158,7 +161,7 @@ project = ["a"]
         # Act
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(
                 TOMLValueMissingError,
                 match=r"'project' is not a valid mapping .* does not contain the key 'authors'",
@@ -178,7 +181,7 @@ authors = { name = "Python Dev" }
         # Act
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(
                 TOMLValueInvalidError, match=r"'project.authors' is not a valid list"
             ),

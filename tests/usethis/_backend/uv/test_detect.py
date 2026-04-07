@@ -1,8 +1,8 @@
 from pathlib import Path
 
+from _test import change_cwd
 from usethis._backend.uv.detect import is_uv_used
 from usethis._config_file import files_manager
-from usethis._test import change_cwd
 
 
 class TestIsUvUsed:

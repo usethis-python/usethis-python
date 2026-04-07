@@ -17,6 +17,7 @@ from ruamel.yaml.scalarstring import FoldedScalarString, LiteralScalarString
 from ruamel.yaml.timestamp import TimeStamp
 from typing_extensions import override
 
+from _test import change_cwd, edit_yaml
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
@@ -26,8 +27,7 @@ from usethis._file.yaml.errors import (
     YAMLValueAlreadySetError,
     YAMLValueMissingError,
 )
-from usethis._file.yaml.io_ import YAMLDocument, YAMLFileManager, edit_yaml
-from usethis._test import change_cwd
+from usethis._file.yaml.io_ import YAMLDocument, YAMLFileManager
 
 
 class TestYAMLFileManager:

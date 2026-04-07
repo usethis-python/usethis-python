@@ -1,7 +1,7 @@
 """Check that all items from a Python list constant appear in a target file.
 
 Imports a named variable from a Python module using a dotted path reference
-(e.g. ``pkg.mod.VAR``), then verifies each string item appears in a target
+(e.g. `pkg.mod.VAR`), then verifies each string item appears in a target
 file. Useful for ensuring that a registry of commands or tools stays in sync
 with documentation.
 """
@@ -60,10 +60,10 @@ def main() -> int:
 def _resolve_variable(dotted_path: str) -> list[str]:
     """Import and return a list of strings from a dotted module path.
 
-    The *dotted_path* must be of the form ``module.path.ATTR_NAME``.  The
+    The *dotted_path* must be of the form `module.path.ATTR_NAME`.  The
     last component is treated as an attribute on the imported module.
 
-    Raises ``SystemExit`` with a descriptive message on failure.
+    Raises `SystemExit` with a descriptive message on failure.
     """
     parts = dotted_path.rsplit(".", 1)
     if len(parts) != 2:

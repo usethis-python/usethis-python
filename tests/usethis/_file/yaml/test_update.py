@@ -2,7 +2,7 @@ from pathlib import Path
 
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
-from usethis._file.yaml.io_ import edit_yaml
+from _test import edit_yaml
 from usethis._file.yaml.update import (
     lcs_list_update,
     update_ruamel_yaml_map,

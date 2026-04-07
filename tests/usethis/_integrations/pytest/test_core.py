@@ -2,12 +2,12 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._integrations.pytest.core import (
     add_example_test,
     add_pytest_dir,
     remove_pytest_dir,
 )
-from usethis._test import change_cwd
 
 
 class TestAddPytestDir:

@@ -5,6 +5,7 @@ import pytest
 from configupdater import ConfigUpdater
 from typing_extensions import override
 
+from _test import change_cwd
 from usethis._file.ini.errors import (
     INIDecodeError,
     ININestingError,
@@ -16,7 +17,6 @@ from usethis._file.ini.errors import (
     UnexpectedINIOpenError,
 )
 from usethis._file.ini.io_ import INIFileManager
-from usethis._test import change_cwd
 
 
 class TestINIFileManager:

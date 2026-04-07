@@ -5,7 +5,6 @@ from __future__ import annotations
 import copy
 import re
 from abc import ABCMeta
-from contextlib import contextmanager
 from dataclasses import dataclass
 from io import StringIO
 from typing import TYPE_CHECKING, Any, ClassVar
@@ -37,7 +36,7 @@ from usethis._file.yaml.errors import (
 from usethis._file.yaml.update import update_ruamel_yaml_map
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Sequence
+    from collections.abc import Sequence
     from io import TextIOWrapper
     from pathlib import Path
 
@@ -107,7 +106,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
     @override
     def _parse_content(self, content: str) -> YAMLDocument:
         """Parse the content of the document."""
-        return _get_yaml_document(StringIO(content), guess_indent=True)
+        return get_yaml_document(StringIO(content), guess_indent=True)
 
     @property
     @override
@@ -443,44 +442,10 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
     return so_far_keys
 
 
-@contextmanager
-def edit_yaml(
-    yaml_path: Path,
-    *,
-    guess_indent: bool = True,
-) -> Generator[YAMLDocument, None, None]:
-    """A context manager to modify a YAML file in-place, with managed read and write."""
-    with read_yaml(yaml_path, guess_indent=guess_indent) as yaml_document:
-        original_content = copy.deepcopy(yaml_document.content)
-
-        yield yaml_document
-
-        if yaml_document.content == original_content:
-            return
-
-        yaml_document.roundtripper.dump(yaml_document.content, stream=yaml_path)
-
-
-@contextmanager
-def read_yaml(
-    yaml_path: Path,
-    *,
-    guess_indent: bool = True,
-) -> Generator[YAMLDocument, None, None]:
-    """A context manager to read a YAML file."""
-    with yaml_path.open(mode="r", encoding="utf-8") as f:
-        try:
-            yaml_document = _get_yaml_document(f, guess_indent=guess_indent)
-        except YAMLError as err:
-            msg = f"Error reading '{yaml_path}':\n{err}"
-            raise YAMLDecodeError(msg) from None
-
-    yield yaml_document
-
-
-def _get_yaml_document(
+def get_yaml_document(
     _io: StringIO | TextIOWrapper, /, *, guess_indent: bool = True
 ) -> YAMLDocument:
+    """Get a YAML document representation from a string or file-like object."""
     # Can't preserve quotes so don't keep the content.
     # Yes, it's not very efficient to load the content twice.
     try:

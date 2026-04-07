@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._integrations.project.errors import LicenseDetectionError
 from usethis._integrations.project.license import (
@@ -10,7 +11,6 @@ from usethis._integrations.project.license import (
     _get_license_from_pyproject_field,
     get_license_id,
 )
-from usethis._test import change_cwd
 
 _MIT_LICENSE_TEXT = """\
 MIT License

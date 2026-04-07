@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.7"
+  version: "1.9"
 ---
 
 # Python Code Guidelines
@@ -29,7 +29,7 @@ def add_dep(name: str) -> None:
 
 ### Why
 
-The project uses Markdown-compatible formatting for docstrings. Single backticks are the Markdown standard for inline code, and the project's export hooks normalize double backticks to single backticks. Using single backticks from the start avoids this normalization and keeps docstrings consistent with their rendered output.
+The project uses Markdown-compatible formatting for docstrings. Single backticks are the Markdown standard for inline code, and the project's export hooks normalize double backticks to single backticks. Using single backticks from the start avoids this normalization and keeps docstrings consistent with their rendered output. The `check-docstring-substrings` prek hook enforces this automatically.
 
 ## Avoiding unnecessary duplication
 
@@ -165,6 +165,7 @@ with _preserved(lock_path):
 
 - **Separate backup and restore helpers.** Splitting setup and teardown into two functions forces every caller to remember both calls and wire up `try`/`finally` correctly. A context manager removes this burden.
 - **Forgetting `finally` in the caller.** Without a context manager, it is easy to forget the `finally` block, leaving state unrestored if an exception occurs. A context manager guarantees cleanup.
+- **Placing cleanup after `yield` without `try`/`finally` in a `@contextmanager`.** With `@contextmanager`, cleanup code placed after `yield` does NOT run if an exception is raised inside the `with` block. The exception is re-raised at the `yield` point, causing the generator to terminate without reaching the cleanup code. Always wrap `yield` in `try`/`finally` to guarantee cleanup runs on both normal exit and exceptions.
 
 ## Ordering functions: the step-down rule
 

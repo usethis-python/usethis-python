@@ -61,6 +61,11 @@ repos:
         additional_dependencies:
           - tomli
         priority: 0
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: v2.16
+    hooks:
+      - id: vulture
+        priority: 0
   - repo: local
     hooks:
       - id: check-skills-documented
@@ -86,6 +91,20 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
+        priority: 0
+      - id: check-docstring-substrings
+        name: check-docstring-substrings
+        entry: uv run --frozen --offline hooks/check-docstring-substrings.py
+        args: ["--pattern", "(?<!`)``(?!`).+?(?<!`)``(?!`)"]
+        language: system
+        types: [python]
+        priority: 0
+      - id: check-comment-keywords
+        name: check-comment-keywords
+        entry: uv run --frozen --offline hooks/check-comment-keywords.py
+        args: ["--keyword", "pragma:", "--keyword", "type: ignore"]
+        language: system
+        types: [python]
         priority: 0
       - id: check-list-referenced
         name: check-list-referenced
@@ -128,6 +147,14 @@ repos:
         language: system
         always_run: true
         pass_filenames: false
+        priority: 0
+      - id: no-bare-managers-in-tests
+        name: no-bare-managers-in-tests
+        entry: '^\s*with\b.*Manager\('
+        language: pygrep
+        files: ^tests/
+        exclude: ^tests/usethis/_file/(ini/test_ini_io_|toml/test_toml_io_|yaml/test_yaml_io_)\.py$
+        types: [python]
         priority: 0
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.3

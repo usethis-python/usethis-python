@@ -3,13 +3,13 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
+from _test import CliRunner, change_cwd
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import get_hook_ids
 from usethis._subprocess import SubprocessFailedError, call_subprocess
-from usethis._test import CliRunner, change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._ui.interface.tool import ALL_TOOL_COMMANDS, app
 

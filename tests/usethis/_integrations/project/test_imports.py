@@ -3,6 +3,7 @@ from pathlib import Path
 import grimp
 import pytest
 
+from _test import change_cwd
 from usethis._integrations.project.errors import ImportGraphBuildFailedError
 from usethis._integrations.project.imports import (
     LayeredArchitecture,
@@ -12,7 +13,6 @@ from usethis._integrations.project.imports import (
     _get_module_layered_architecture,
     get_layered_architectures,
 )
-from usethis._test import change_cwd
 
 
 class TestLayeredArchitecture:

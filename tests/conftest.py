@@ -6,13 +6,13 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd, is_offline
 from usethis._backend.uv.call import call_uv_subprocess
-from usethis._config import usethis_config
+from usethis._config import UsethisConfig, usethis_config
+from usethis._config_file import files_manager
 from usethis._console import _cached_warn_print, get_icon_mode
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.environ.python import _get_current_python_version
 from usethis._subprocess import call_subprocess
-from usethis._test import change_cwd, is_offline
 from usethis._tool.impl.spec.import_linter import _importlinter_warn_no_packages_found
 
 if "UV_PYTHON" in os.environ:
@@ -23,12 +23,12 @@ if "UV_PYTHON" in os.environ:
 
 @pytest.fixture(autouse=True)
 def clear_functools_caches():
-    """Fixture to clear functools.caches before each test."""
+    """Fixture to clear functools.caches and reset config before each test."""
 
+    usethis_config._restore(UsethisConfig())
     _cached_warn_print.cache_clear()
     get_icon_mode.cache_clear()
     _importlinter_warn_no_packages_found.cache_clear()
-    _get_current_python_version.cache_clear()
 
 
 @pytest.fixture(scope="session")
@@ -55,7 +55,8 @@ def _uv_init_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
         # Without this, uv is used for initializing the project directory, but there's
         # no real indication that it's being used anywhere! So tests would suggest
         # --how behaviour based on --backend=none logic.
-        with PyprojectTOMLManager() as mgr:
+        with files_manager():
+            mgr = PyprojectTOMLManager()
             mgr[["tool", "uv", "environments"]] = []
 
     return tmp_path
@@ -128,9 +129,15 @@ def _online_status(request: pytest.FixtureRequest) -> NetworkConn:
     return request.param
 
 
-@pytest.fixture(scope="session")
-def _vary_network_conn(_online_status: NetworkConn) -> Generator[None, None, None]:
+@pytest.fixture
+def _vary_network_conn(
+    _online_status: NetworkConn,
+    clear_functools_caches: None,  # noqa: ARG001
+) -> None:
     """Fixture to vary the network connection.
+
+    Must be function-scoped (not session-scoped) so it runs after the per-test
+    config reset in `clear_functools_caches`.
 
     Use `usethis._config.usethis_config` to check whether things are in offline
     mode, since this fixture does not return anything.
@@ -138,9 +145,6 @@ def _vary_network_conn(_online_status: NetworkConn) -> Generator[None, None, Non
     offline = _online_status is NetworkConn.OFFLINE
 
     usethis_config.offline = offline
-    yield
-    if offline:
-        usethis_config.offline = False
 
 
 @pytest.fixture

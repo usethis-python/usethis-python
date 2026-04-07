@@ -254,19 +254,6 @@ def extract_hook_ids(
     return hook_ids
 
 
-def hooks_are_equivalent(
-    hook: schema.HookDefinition, other: schema.HookDefinition
-) -> bool:
-    """Check if two hooks are equivalent."""
-    if hook_ids_are_equivalent(hook.id, other.id):
-        return True
-
-    # Same contents, different name
-    hook = hook.model_copy()
-    hook.name = other.name
-    return hook == other
-
-
 def hook_ids_are_equivalent(hook_id: str | None, other: str | None) -> bool:
     """Check if two hook IDs are equivalent."""
     # Same name

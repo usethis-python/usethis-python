@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 
 from pydantic import TypeAdapter, ValidationError
@@ -32,6 +33,9 @@ def get_sonar_project_properties(*, project_key: str | None = None) -> str:
         python_version = PythonVersion.from_interpreter().to_short_string()
 
     if project_key is not None:
+        _validate_project_key(project_key)
+    elif env_key := os.environ.get("SONAR_PROJECT_KEY"):
+        project_key = env_key
         _validate_project_key(project_key)
     else:
         project_key = _get_sonarqube_project_key()

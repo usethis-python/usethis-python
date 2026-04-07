@@ -196,7 +196,10 @@ sonar.exclusions=tests/*
 """
         )
 
-    def test_missing_pyproject_toml_raises(self, tmp_path: Path):
+    def test_missing_pyproject_toml_raises(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        monkeypatch.delenv("SONAR_PROJECT_KEY", raising=False)
         with (
             change_cwd(tmp_path),
             files_manager(),
@@ -204,7 +207,10 @@ sonar.exclusions=tests/*
         ):
             get_sonar_project_properties()
 
-    def test_missing_project_key_section_raises(self, tmp_path: Path):
+    def test_missing_project_key_section_raises(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        monkeypatch.delenv("SONAR_PROJECT_KEY", raising=False)
         with change_cwd(tmp_path), files_manager():
             # Arrange
             ensure_pyproject_toml()
@@ -431,6 +437,105 @@ sonar.verbose=false
 sonar.exclusions=tests/*, **/Dockerfile
 """
         )
+
+    def test_env_var_project_key(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # SONAR_PROJECT_KEY env var is used when no CLI arg and no pyproject.toml config.
+
+        monkeypatch.setenv("SONAR_PROJECT_KEY", "from-env")
+
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+
+            # Act
+            result = get_sonar_project_properties()
+
+        # Assert
+        assert "sonar.projectKey=from-env\n" in result
+
+    def test_env_var_overrides_pyproject(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # SONAR_PROJECT_KEY env var takes priority over pyproject.toml config.
+
+        monkeypatch.setenv("SONAR_PROJECT_KEY", "from-env")
+
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "project-key"],
+                value="from-pyproject",
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+
+            # Act
+            result = get_sonar_project_properties()
+
+        # Assert
+        assert "sonar.projectKey=from-env\n" in result
+
+    def test_cli_arg_overrides_env_var(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # CLI --project-key takes priority over SONAR_PROJECT_KEY env var.
+
+        monkeypatch.setenv("SONAR_PROJECT_KEY", "from-env")
+
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+
+            # Act
+            result = get_sonar_project_properties(project_key="from-cli")
+
+        # Assert
+        assert "sonar.projectKey=from-cli\n" in result
+
+    def test_env_var_invalid_raises(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # An invalid SONAR_PROJECT_KEY env var raises InvalidSonarQubeProjectKeyError.
+
+        monkeypatch.setenv("SONAR_PROJECT_KEY", "invalid key!")
+
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+
+            # Act, Assert
+            with pytest.raises(InvalidSonarQubeProjectKeyError):
+                get_sonar_project_properties()
+
+    def test_env_var_no_pyproject_coverage_raises(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # When SONAR_PROJECT_KEY is set but pyproject.toml is missing entirely,
+        # CoverageReportConfigNotFoundError is raised (coverage output lookup fails).
+
+        monkeypatch.setenv("SONAR_PROJECT_KEY", "from-env")
+
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            pytest.raises(CoverageReportConfigNotFoundError),
+        ):
+            get_sonar_project_properties()
 
 
 class TestValidateProjectKey:

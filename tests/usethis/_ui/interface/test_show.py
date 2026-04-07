@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from _test import CliRunner, change_cwd
 from usethis._config import usethis_config
 from usethis._types.backend import BackendEnum
@@ -262,6 +264,26 @@ project-key = "from-pyproject"
 
         # Assert
         assert result.exit_code == 1, result.output
+
+    def test_env_var_project_key(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        # SONAR_PROJECT_KEY env var is used when --project-key is not provided.
+
+        # Arrange
+        (tmp_path / "pyproject.toml").write_text(
+            """
+[tool.coverage.xml.output]
+"""
+        )
+        monkeypatch.setenv("SONAR_PROJECT_KEY", "from-env")
+
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["sonarqube"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert "sonar.projectKey=from-env" in result.output
 
     def test_invalid_pyproject(self, tmp_path: Path):
         # Arrange

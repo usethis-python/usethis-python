@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from tomlkit import TOMLDocument
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLDecodeError,
@@ -14,7 +15,6 @@ from usethis._file.pyproject_toml.errors import (
     UnexpectedPyprojectTOMLOpenError,
 )
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._test import change_cwd
 
 
 class TestPyprojectTOMLManager:

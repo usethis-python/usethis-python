@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from usethis._test import CliRunner, change_cwd
+from _test import CliRunner, change_cwd
 from usethis._ui.app import app
 
 

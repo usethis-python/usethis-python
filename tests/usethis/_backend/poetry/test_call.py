@@ -4,13 +4,13 @@ from pathlib import Path
 import pytest
 
 import usethis._backend.poetry.call
+from _test import change_cwd
 from usethis._backend.poetry.call import call_poetry_subprocess
 from usethis._backend.poetry.errors import PoetrySubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.write import prepare_pyproject_write
 from usethis._subprocess import SubprocessFailedError
-from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 from usethis.errors import ForbiddenBackendError
 

@@ -1,6 +1,6 @@
 import pytest
 
-from usethis._test import CliRunner
+from _test import CliRunner
 from usethis._ui.interface.tool import app
 
 

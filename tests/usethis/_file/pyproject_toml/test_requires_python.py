@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from packaging.specifiers import SpecifierSet
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._file.pyproject_toml.requires_python import (
@@ -11,7 +12,6 @@ from usethis._file.pyproject_toml.requires_python import (
     get_requires_python,
 )
 from usethis._python.version import PythonVersion
-from usethis._test import change_cwd
 
 
 class TestGetRequiresPython:

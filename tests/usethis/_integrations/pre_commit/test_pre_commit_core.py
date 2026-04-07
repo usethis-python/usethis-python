@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._backend.poetry.errors import PoetrySubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
@@ -13,7 +14,6 @@ from usethis._integrations.pre_commit.core import (
 )
 from usethis._integrations.pre_commit.errors import PreCommitInstallationError
 from usethis._integrations.pre_commit.hooks import add_placeholder_hook
-from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 from usethis.errors import BackendSubprocessFailedError

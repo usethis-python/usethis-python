@@ -10,6 +10,7 @@ import pytest
 from pydantic import TypeAdapter
 
 import usethis._backend.dispatch
+from _test import change_cwd, use_tool
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.link_mode import ensure_symlink_mode
 from usethis._backend.uv.toml import UVTOMLManager
@@ -28,7 +29,6 @@ from usethis._core.tool import (
     use_requirements_txt,
     use_ruff,
     use_tach,
-    use_tool,
     use_ty,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
@@ -41,7 +41,6 @@ from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import HOOK_GROUPS, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
-from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS, SupportedToolType
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum

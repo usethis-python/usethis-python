@@ -2,8 +2,8 @@ from pathlib import Path
 
 from typing_extensions import override
 
+from _test import change_cwd
 from usethis._file.manager import Document, FileManager
-from usethis._test import change_cwd
 
 
 class TestUsethisFileManager:

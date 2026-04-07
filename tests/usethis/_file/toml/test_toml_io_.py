@@ -6,13 +6,13 @@ import tomlkit.api
 import tomlkit.items
 from typing_extensions import override
 
+from _test import change_cwd
 from usethis._file.toml.errors import (
     TOMLValueAlreadySetError,
     TOMLValueInvalidError,
     TOMLValueMissingError,
 )
 from usethis._file.toml.io_ import TOMLFileManager
-from usethis._test import change_cwd
 
 
 class TestTOMLFileManager:

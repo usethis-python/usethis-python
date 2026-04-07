@@ -3,11 +3,11 @@ from unittest.mock import patch
 
 import pytest
 
+from _test import change_cwd
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._fallback import FALLBACK_UV_VERSION
 from usethis._integrations.pre_commit import schema as pre_commit_schema
-from usethis._test import change_cwd
 from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.spec.requirements_txt import RequirementsTxtToolSpec
 from usethis._tool.pre_commit import PreCommitConfig

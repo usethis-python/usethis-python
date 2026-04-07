@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectDescriptionError,
@@ -9,7 +10,6 @@ from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectSectionError,
 )
 from usethis._file.pyproject_toml.name import get_description, get_name
-from usethis._test import change_cwd
 
 
 class TestGetName:

@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from typing_extensions import override
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._console import how_print
 from usethis._deps import add_deps_to_group
@@ -13,7 +14,6 @@ from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_ids
-from usethis._test import change_cwd
 from usethis._tool.base import Tool, ToolMeta
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig

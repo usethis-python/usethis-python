@@ -6,6 +6,7 @@ from typing import Literal
 
 from typing_extensions import assert_never
 
+from usethis._backend.poetry.available import is_poetry_available
 from usethis._backend.poetry.call import call_poetry_subprocess
 from usethis._backend.poetry.detect import is_poetry_used
 from usethis._backend.uv.available import is_uv_available
@@ -27,9 +28,16 @@ def get_backend() -> Literal[BackendEnum.uv, BackendEnum.poetry, BackendEnum.non
         usethis_config.inferred_backend = BackendEnum.poetry
     elif is_uv_used():
         usethis_config.inferred_backend = BackendEnum.uv
-    elif not (usethis_config.cpd() / "pyproject.toml").exists() and is_uv_available():
-        # If there's not likely to be a backend in use yet, and uv is available.
-        usethis_config.inferred_backend = BackendEnum.uv
+    elif not (usethis_config.cpd() / "pyproject.toml").exists():
+        # If there's not likely to be a backend in use yet...
+        if is_uv_available():
+            # Use uv with preference if it's available
+            usethis_config.inferred_backend = BackendEnum.uv
+        elif is_poetry_available():
+            # Fall back to poetry if it's available
+            usethis_config.inferred_backend = BackendEnum.poetry
+        else:
+            usethis_config.inferred_backend = BackendEnum.none
     else:
         usethis_config.inferred_backend = BackendEnum.none
 

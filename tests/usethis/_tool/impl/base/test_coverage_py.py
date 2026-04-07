@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config import usethis_config
 from usethis._config_file import DotCoverageRCTOMLManager, files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._test import change_cwd
 from usethis._tool.impl.base.coverage_py import CoveragePyTool
 from usethis._types.backend import BackendEnum
 

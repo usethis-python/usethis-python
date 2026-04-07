@@ -5,7 +5,6 @@ from __future__ import annotations
 import copy
 import re
 from abc import ABCMeta
-from contextlib import contextmanager
 from dataclasses import dataclass
 from io import StringIO
 from typing import TYPE_CHECKING, Any, ClassVar
@@ -37,7 +36,7 @@ from usethis._file.yaml.errors import (
 from usethis._file.yaml.update import update_ruamel_yaml_map
 
 if TYPE_CHECKING:
-    from collections.abc import Generator, Sequence
+    from collections.abc import Sequence
     from io import TextIOWrapper
     from pathlib import Path
 
@@ -441,41 +440,6 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
             assert_never(key)
 
     return so_far_keys
-
-
-@contextmanager
-def edit_yaml(
-    yaml_path: Path,
-    *,
-    guess_indent: bool = True,
-) -> Generator[YAMLDocument, None, None]:
-    """A context manager to modify a YAML file in-place, with managed read and write."""
-    with read_yaml(yaml_path, guess_indent=guess_indent) as yaml_document:
-        original_content = copy.deepcopy(yaml_document.content)
-
-        yield yaml_document
-
-        if yaml_document.content == original_content:
-            return
-
-        yaml_document.roundtripper.dump(yaml_document.content, stream=yaml_path)
-
-
-@contextmanager
-def read_yaml(
-    yaml_path: Path,
-    *,
-    guess_indent: bool = True,
-) -> Generator[YAMLDocument, None, None]:
-    """A context manager to read a YAML file."""
-    with yaml_path.open(mode="r", encoding="utf-8") as f:
-        try:
-            yaml_document = _get_yaml_document(f, guess_indent=guess_indent)
-        except YAMLError as err:
-            msg = f"Error reading '{yaml_path}':\n{err}"
-            raise YAMLDecodeError(msg) from None
-
-    yield yaml_document
 
 
 def _get_yaml_document(

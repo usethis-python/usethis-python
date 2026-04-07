@@ -2,11 +2,11 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config import usethis_config
 from usethis._config_file import TyTOMLManager, files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema
-from usethis._test import change_cwd
 from usethis._tool.config import ConfigEntry, ConfigItem
 from usethis._tool.impl.base.ty import TyTool
 from usethis._types.backend import BackendEnum

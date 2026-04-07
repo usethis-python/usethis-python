@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._core.rule import (
     deselect_rules,
@@ -10,7 +11,6 @@ from usethis._core.rule import (
     unignore_rules,
 )
 from usethis._deps import get_deps_from_group
-from usethis._test import change_cwd
 from usethis._tool.impl.base.deptry import DeptryTool
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.deps import Dependency

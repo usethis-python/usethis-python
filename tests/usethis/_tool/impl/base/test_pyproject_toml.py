@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 import requests
 
+from _test import change_cwd
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
-from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._tool.impl.base.pyproject_toml import PyprojectTOMLTool
 from usethis._tool.impl.spec.all_ import ALL_TOOL_SPECS

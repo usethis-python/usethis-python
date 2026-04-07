@@ -1,10 +1,10 @@
 from pathlib import Path
 
+from _test import change_cwd
 from usethis._backend.uv.init import opinionated_uv_init
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._test import change_cwd
 from usethis._types.build_backend import BuildBackendEnum
 
 

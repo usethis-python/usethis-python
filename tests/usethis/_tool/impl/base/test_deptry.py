@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit import schema
-from usethis._test import change_cwd
 from usethis._tool.config import ConfigEntry, ConfigItem
 from usethis._tool.impl.base.deptry import DeptryTool
 

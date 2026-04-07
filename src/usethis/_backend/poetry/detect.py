@@ -1,5 +1,6 @@
 """Detection of Poetry usage in a project."""
 
+from usethis._backend.poetry.available import is_poetry_available
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 
@@ -15,4 +16,5 @@ def is_poetry_used() -> bool:
             pyproject_toml_manager.path.exists()
             and ["tool", "poetry"] in pyproject_toml_manager
         )
+        or is_poetry_available()
     )

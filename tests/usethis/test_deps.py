@@ -5,6 +5,7 @@ from packaging.requirements import InvalidRequirement
 from pydantic import TypeAdapter
 
 import usethis._backend.uv.deps
+from _test import change_cwd
 from usethis._backend.uv.errors import (
     UVDepGroupError,
     UVSubprocessFailedError,
@@ -24,7 +25,6 @@ from usethis._deps import (
     remove_deps_from_group,
 )
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 from usethis.errors import DepGroupError

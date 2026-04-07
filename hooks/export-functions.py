@@ -1,11 +1,14 @@
-"""Export public module-level functions with docstrings from a Python package.
+"""Export module-level functions with docstrings from a Python package.
 
 Recursively scans all Python source files under a package root directory for
-public module-level functions with docstrings and writes a flat markdown bullet
-list to an output file. Functions are listed in the order they appear in each
-file, with files processed in sorted order. Class methods and nested functions
-are not included. Functions without a docstring are skipped unless --strict is
+module-level functions with docstrings and writes a flat markdown bullet list
+to an output file. Functions are listed in the order they appear in each file,
+with files processed in sorted order. Class methods and nested functions are
+not included. Functions without a docstring are skipped unless --strict is
 used, in which case the script exits non-zero when any are found.
+
+By default, private functions (those whose names start with an underscore) are
+included. Pass --skip-private to exclude them.
 """
 
 from __future__ import annotations
@@ -37,6 +40,12 @@ def main() -> int:
         default=False,
         help="Fail if any public module-level function lacks a docstring.",
     )
+    parser.add_argument(
+        "--skip-private",
+        action="store_true",
+        default=False,
+        help="Exclude functions whose names start with an underscore.",
+    )
     args = parser.parse_args()
 
     output_file = Path(args.output_file)
@@ -59,10 +68,12 @@ def main() -> int:
             )
             return 1
 
-        for func_name, first_line in _get_module_public_functions(py_file):
+        for func_name, first_line in _get_module_public_functions(
+            py_file, skip_private=args.skip_private
+        ):
             if first_line is not None:
                 bullets.append(f"- `{func_name}()` (`{module}`) — {first_line}")
-            else:
+            elif not func_name.startswith("_"):
                 missing.append((py_file, func_name))
 
     content = os.linesep.join(bullets) + os.linesep
@@ -104,11 +115,14 @@ def _module_name(source_file: Path, source_root: Path) -> str:
     return ".".join(parts)
 
 
-def _get_module_public_functions(path: Path) -> list[tuple[str, str | None]]:
-    """Return (name, docstring_first_line_or_None) for each top-level public function.
+def _get_module_public_functions(
+    path: Path, *, skip_private: bool = False
+) -> list[tuple[str, str | None]]:
+    """Return (name, docstring_first_line_or_None) for each top-level function.
 
     Only direct children of the module node are included (no class methods or
-    nested functions). Functions are returned in source order.
+    nested functions). Functions are returned in source order. When skip_private
+    is True, functions whose names start with an underscore are excluded.
     """
     try:
         source = path.read_text(encoding="utf-8")
@@ -126,7 +140,7 @@ def _get_module_public_functions(path: Path) -> list[tuple[str, str | None]]:
     for node in ast.iter_child_nodes(tree):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
-        if node.name.startswith("_"):
+        if skip_private and node.name.startswith("_"):
             continue
         docstring = ast.get_docstring(node)
         if docstring is not None:

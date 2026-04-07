@@ -4237,9 +4237,9 @@ name = "my-project"
 """
             )
 
-    class TestMkDocsYMLFallback:
+    class TestMkDocsYMLPresent:
         @pytest.mark.usefixtures("_vary_network_conn")
-        def test_uses_mkdocs_yml_if_present(self, tmp_path: Path):
+        def test_writes_zensical_toml_even_if_mkdocs_yml_present(self, tmp_path: Path):
             # Arrange
             (tmp_path / "pyproject.toml").write_text("""\
 [project]
@@ -4251,7 +4251,8 @@ name = "my-project"
             with change_cwd(tmp_path), files_manager():
                 use_zensical()
 
-            # Assert - config should stay in mkdocs.yml since it already has content
-            assert (tmp_path / "mkdocs.yml").exists()
-            contents = (tmp_path / "mkdocs.yml").read_text()
-            assert "site_name: existing-site" in contents
+            # Assert - config should be written to zensical.toml regardless of mkdocs.yml
+            assert (tmp_path / "zensical.toml").exists()
+            contents = (tmp_path / "zensical.toml").read_text()
+            assert "[project]" in contents
+            assert 'site_name = "my-project"' in contents

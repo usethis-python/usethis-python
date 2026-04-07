@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import os
 import re
 
 from pydantic import TypeAdapter, ValidationError
 
 from usethis._config import usethis_config
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.project.layout import get_source_dir_str, get_tests_dir_str
 from usethis._integrations.sonarqube.errors import (
     CoverageReportConfigNotFoundError,
     InvalidSonarQubeProjectKeyError,
@@ -33,6 +34,9 @@ def get_sonar_project_properties(*, project_key: str | None = None) -> str:
 
     if project_key is not None:
         _validate_project_key(project_key)
+    elif env_key := os.environ.get("SONAR_PROJECT_KEY"):
+        project_key = env_key
+        _validate_project_key(project_key)
     else:
         project_key = _get_sonarqube_project_key()
     verbose = _is_sonarqube_verbose()
@@ -50,11 +54,12 @@ def get_sonar_project_properties(*, project_key: str | None = None) -> str:
 
     # No file, so construct the contents
     source_dir_str = get_source_dir_str()
+    tests_dir_str = get_tests_dir_str()
     if source_dir_str == ".":
         sources = "./"
         # When using flat layout, exclude tests directory to avoid double indexing
-        if "tests/*" not in exclusions:
-            exclusions.insert(0, "tests/*")
+        if f"{tests_dir_str}/*" not in exclusions:
+            exclusions.insert(0, f"{tests_dir_str}/*")
     else:
         sources = f"./{source_dir_str}"
 
@@ -63,7 +68,7 @@ sonar.projectKey={project_key}
 sonar.language=py
 sonar.python.version={python_version}
 sonar.sources={sources}
-sonar.tests=./tests
+sonar.tests=./{tests_dir_str}
 sonar.python.coverage.reportPaths={coverage_output}
 sonar.verbose={"true" if verbose else "false"}
 """

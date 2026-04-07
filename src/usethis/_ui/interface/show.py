@@ -15,7 +15,7 @@ app = typer.Typer(
 project_key_opt = typer.Option(
     None,
     "--project-key",
-    help="SonarQube project key. If not provided, will be read from 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'.",
+    help="SonarQube project key. If not provided, the 'SONAR_PROJECT_KEY' environment variable is checked, then 'tool.usethis.sonarqube.project-key' in 'pyproject.toml'.",
 )
 
 

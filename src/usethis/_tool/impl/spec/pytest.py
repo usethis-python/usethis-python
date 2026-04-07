@@ -13,7 +13,7 @@ from usethis._config_file import DotPytestINIManager, PytestINIManager, ToxINIMa
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.project.build import has_pyproject_toml_declared_build_system
-from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.project.layout import get_source_dir_str, get_tests_dir_str
 from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.rule import RuleConfig
@@ -27,13 +27,14 @@ class PytestToolSpec(ToolSpec):
     @property
     @override
     def meta(self) -> ToolMeta:
+        tests_dir = get_tests_dir_str()
         return ToolMeta(
             name="pytest",
             url="https://github.com/pytest-dev/pytest",
             managed_files=[
                 Path(".pytest.ini"),
                 Path("pytest.ini"),
-                Path("tests/conftest.py"),
+                Path(tests_dir) / "conftest.py",
             ],
             rule_config=RuleConfig(selected=["PT"], nontests_unmanaged_ignored=["PT"]),
         )
@@ -58,8 +59,9 @@ class PytestToolSpec(ToolSpec):
 
         # Much of what follows is recommended here (sp-repo-review):
         # https://learn.scientific-python.org/development/guides/pytest/#configuring-pytest
+        tests_dir = get_tests_dir_str()
         value = {
-            "testpaths": ["tests"],
+            "testpaths": [tests_dir],
             "addopts": [
                 "--import-mode=importlib",  # Now recommended https://docs.pytest.org/en/7.1.x/explanation/goodpractices.html#which-import-mode
                 "-ra",  # summary report of all results (sp-repo-review)

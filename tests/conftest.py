@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from collections.abc import Generator
 from enum import Enum
 from pathlib import Path
@@ -40,8 +41,8 @@ def _uv_init_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
                 "init",
                 "--lib",
                 "--python",
-                # Deliberately kept at a version other than the latest version.
-                "3.13",
+                # Use the current Python version to ensure uv can find an interpreter.
+                f"{sys.version_info.major}.{sys.version_info.minor}",
                 "--vcs",
                 "none",
             ],

@@ -15,7 +15,7 @@ from usethis._integrations.project.imports import (
     LayeredArchitecture,
     get_layered_architectures,
 )
-from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.project.layout import get_source_dir_str, get_tests_dir_str
 from usethis._integrations.project.name import get_project_name
 from usethis._integrations.project.packages import get_importable_packages
 from usethis._tool.base import ToolMeta, ToolSpec
@@ -145,7 +145,7 @@ class TachToolSpec(ToolSpec):
                             "build/",
                             "dist/",
                             "docs/",
-                            "tests/",
+                            f"{get_tests_dir_str()}/",
                             "venv/",
                         ],
                     ),

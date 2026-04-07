@@ -485,6 +485,7 @@ If a `sonar-project.properties` file already exists in the project root, its con
 If no `sonar-project.properties` file exists, the contents are constructed from `pyproject.toml` configuration. In this case, a project key is required:
 
 - If `--project-key` is provided, it is used.
+- Otherwise, the `SONAR_PROJECT_KEY` environment variable is checked.
 - Otherwise, `tool.usethis.sonarqube.project-key` from `pyproject.toml` is used.
 
 Additional configuration in `pyproject.toml`:

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -173,6 +174,34 @@ repos:
             # Assert: Should return a valid config spec with fallback contract
             assert config_spec is not None
             assert len(config_spec.config_items) > 0
+
+        def test_flat_layout_with_setup_py(self, tmp_path: Path):
+            # Arrange: flat layout (no src/) with setup.py present
+            (tmp_path / "pyproject.toml").write_text('[project]\nname = "myflatpkg"')
+            (tmp_path / "setup.py").touch()
+            (tmp_path / "myflatpkg").mkdir()
+            (tmp_path / "myflatpkg" / "__init__.py").touch()
+            (tmp_path / "myflatpkg" / "a.py").touch()
+            (tmp_path / "myflatpkg" / "b.py").write_text("import myflatpkg.a\n")
+            (tmp_path / "myflatpkg" / "c.py").write_text(
+                "import myflatpkg.a\nimport myflatpkg.b\n"
+            )
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                config_spec = ImportLinterTool().config_spec()
+
+            # Assert: setup.py should not appear as a contract; myflatpkg should
+            contracts_item = next(
+                item
+                for item in config_spec.config_items
+                if item.description == "Listed Contracts"
+            )
+            pyproject_entry = contracts_item.root[Path("pyproject.toml")]
+            contracts = cast("list[dict[str, object]]", pyproject_entry.get_value())
+            contract_names = [c["name"] for c in contracts]
+            assert "setup" not in contract_names
+            assert "myflatpkg" in contract_names
 
 
 class TestIsINPRule:

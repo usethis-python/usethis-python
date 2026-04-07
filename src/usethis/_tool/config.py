@@ -39,7 +39,7 @@ class ConfigSpec(BaseModel):
                     - "first_content": Using the order in file_managers, the first file
                       to contain managed configuration (as per config_items) is used.
                       All subsequent files are ignored. If no files are found with any
-                      managed config, the found, the preferred file manager is used.
+                      managed config, the preferred file manager is used.
         config_items: A list of configuration items that can be managed by the tool.
     """
 
@@ -126,7 +126,7 @@ class ConfigItem(BaseModel):
                in which case existing configuration is left as-is for the entry.
         applies_to_all: Whether all file managers should support this config item, or
                         whether it is optional and is only desirable if we know in
-                        advance what the file managers are which are being used.
+                        advance what file managers are being used.
                         Defaults to True, which means a NotImplementedError will be
                         raised if a file manager does not support this config item.
                         It is useful to set this to False when the config item

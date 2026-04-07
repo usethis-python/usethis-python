@@ -109,7 +109,7 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
     def __contains__(self, keys: Sequence[Key]) -> bool:
         """Check if the TOML file contains a value.
 
-        An non-existent file will return False.
+        A non-existent file will return False.
         """
         keys = _validate_keys(keys)
         try:

@@ -33,9 +33,17 @@ jobs:
                   cache-dependency-path: ".github/workflows/copilot-setup-steps.yml"
 
             - name: Install external agent skills
+              env:
+                  GIT_CONFIG_COUNT: "1"
+                  GIT_CONFIG_KEY_0: core.autocrlf
+                  GIT_CONFIG_VALUE_0: "false"
               run: |
                   npx skills experimental_install
-                  git diff --exit-code skills-lock.json
+                  if ! git diff --exit-code --quiet; then
+                      echo "::warning::skills-lock.json is out of date. Removing installed skills and reverting changes."
+                      rm -rf .agents/skills
+                      git checkout .
+                  fi
 
             - name: Setup dependencies
               run: uv sync

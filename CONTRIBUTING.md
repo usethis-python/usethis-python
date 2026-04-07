@@ -36,6 +36,16 @@ To run the tests, simply run:
 uv run pytest
 ```
 
+### Dogfooding
+
+To run usethis against the development repository itself, use:
+
+```shell
+uvx --from . usethis <command>
+```
+
+This can be a useful data point for gauging the behaviour of changes or new commands on a moderately complex project repo.
+
 ### Writing Tests
 
 Tests are written using the `pytest` framework. The test suite is located in the `tests` directory. The tests are organized into subdirectories with a directory structure that mirrors the structure of the code being tested. This makes it easy to find the tests for a specific module or function. For example: `src/x/y/z.py` would be tested at `tests/x/y/test_z.py`.
@@ -88,7 +98,7 @@ with usethis_config.set(alert_only=True):
 
 ## Python Version Support
 
-This project supports all versions of Python through until end of life. The development environment uses the oldest supported version, which is given in the `.python-version` file. The GitHub Actions pipeline tests all supported versions.
+This project supports all versions of Python until end of life. The development environment uses the oldest supported version, which is given in the `.python-version` file. The GitHub Actions pipeline tests all supported versions.
 
 ## Conventions
 

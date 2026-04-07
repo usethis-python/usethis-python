@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 import usethis._backend.uv.call
+from _test import change_cwd
 from usethis._backend.uv.errors import UVInitError, UVSubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
@@ -14,7 +15,6 @@ from usethis._init import (
     project_init,
     write_simple_requirements_txt,
 )
-from usethis._test import change_cwd
 from usethis._types.backend import BackendEnum
 from usethis._types.build_backend import BuildBackendEnum
 
@@ -48,7 +48,7 @@ class TestProjectInit:
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager(), pytest.raises(UVInitError):
+        with change_cwd(tmp_path), pytest.raises(UVInitError), files_manager():
             project_init()
 
     def test_none_backend(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
@@ -77,9 +77,10 @@ class TestProjectInit:
     def test_build_backend_is_hatch_for_none_backend(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager() as manager,
+            files_manager(),
             usethis_config.set(backend=BackendEnum.none),
         ):
+            manager = PyprojectTOMLManager()
             # Act
             project_init()
 
@@ -89,9 +90,10 @@ class TestProjectInit:
     def test_build_backend_uv_for_uv_backend(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager() as manager,
+            files_manager(),
             usethis_config.set(build_backend=BuildBackendEnum.uv),
         ):
+            manager = PyprojectTOMLManager()
             # Act
             project_init()
 
@@ -136,7 +138,7 @@ class TestBuildSystemConfig:
 class TestEnsurePyprojectTOML:
     def test_created(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_pyproject_toml()
 
         # Assert
@@ -152,7 +154,7 @@ class TestEnsurePyprojectTOML:
         (tmp_path / "pyproject.toml").write_text("test")
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_pyproject_toml()
 
         # Assert
@@ -166,7 +168,7 @@ class TestEnsurePyprojectTOML:
         (tmp_path / "hello.py").write_text("test")
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_pyproject_toml()
 
         # Assert
@@ -178,7 +180,7 @@ class TestEnsurePyprojectTOML:
         (tmp_path / "main.py").write_text("test")
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_pyproject_toml()
 
         # Assert
@@ -187,7 +189,7 @@ class TestEnsurePyprojectTOML:
 
     def test_no_hello_py_created(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_pyproject_toml()
 
         # Assert
@@ -195,7 +197,7 @@ class TestEnsurePyprojectTOML:
 
     def test_no_main_py_created(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_pyproject_toml()
 
         # Assert
@@ -203,7 +205,7 @@ class TestEnsurePyprojectTOML:
 
     def test_no_readme(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_pyproject_toml()
 
         # Assert
@@ -211,7 +213,7 @@ class TestEnsurePyprojectTOML:
 
     def test_no_pin_python(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_pyproject_toml()
 
         # Assert
@@ -219,7 +221,7 @@ class TestEnsurePyprojectTOML:
 
     def test_no_vcs(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             ensure_pyproject_toml()
 
         # Assert
@@ -239,13 +241,13 @@ class TestEnsurePyprojectTOML:
         # Act
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLInitError),
         ):
             ensure_pyproject_toml()
 
     def test_build_backend(self, tmp_path: Path):
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             # Act
             ensure_pyproject_toml()
 
@@ -267,7 +269,7 @@ class TestEnsurePyprojectTOML:
 
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             usethis_config.set(backend=BackendEnum.poetry),
         ):
             ensure_pyproject_toml()
@@ -279,7 +281,7 @@ class TestEnsurePyprojectTOML:
 class TestWriteSimpleRequirementsTxt:
     def test_no_pyproject_toml(self, tmp_path: Path):
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             write_simple_requirements_txt()
 
         # Assert
@@ -299,7 +301,7 @@ dependencies = []
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             write_simple_requirements_txt()
 
         # Assert
@@ -322,7 +324,7 @@ dependencies = [
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             write_simple_requirements_txt()
 
         # Assert
@@ -345,7 +347,7 @@ dependencies = [
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             write_simple_requirements_txt()
 
         # Assert
@@ -359,7 +361,7 @@ dependencies = [
         (tmp_path / "requirements.txt").write_text("old content")
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             write_simple_requirements_txt()
 
         # Assert

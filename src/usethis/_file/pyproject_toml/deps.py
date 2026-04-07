@@ -67,7 +67,7 @@ def get_poetry_project_deps() -> list[Dependency]:
 
     This reads Poetry's custom dependency specification format where
     dependencies are key-value pairs rather than PEP 508 strings.
-    The ``python`` key is excluded since it represents a Python version
+    The `python` key is excluded since it represents a Python version
     constraint, not a package dependency.
     """
     try:
@@ -75,9 +75,7 @@ def get_poetry_project_deps() -> list[Dependency]:
     except FileNotFoundError:
         return []
 
-    poetry_deps = (
-        pyproject.get("tool", {}).get("poetry", {}).get("dependencies", {})  # type: ignore[union-attr]
-    )
+    poetry_deps = pyproject.get("tool", {}).get("poetry", {}).get("dependencies", {})
 
     if not isinstance(poetry_deps, dict):
         return []
@@ -89,7 +87,7 @@ def get_poetry_dep_groups() -> dict[str, list[Dependency]]:
     """Get dependency groups from [tool.poetry.group.*.dependencies].
 
     This reads Poetry's custom group dependency specification format where
-    each group has its own ``[tool.poetry.group.GROUPNAME.dependencies]``
+    each group has its own `[tool.poetry.group.GROUPNAME.dependencies]`
     section containing key-value pairs.
     """
     try:
@@ -97,7 +95,7 @@ def get_poetry_dep_groups() -> dict[str, list[Dependency]]:
     except FileNotFoundError:
         return {}
 
-    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})  # type: ignore[union-attr]
+    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})
 
     if not isinstance(poetry_groups, dict):
         return {}
@@ -121,10 +119,10 @@ def _parse_poetry_deps(deps_table: dict[str, Any]) -> list[Dependency]:
 
     Poetry dependencies are key-value pairs where:
     - The key is the package name
-    - The value is either a version string (e.g. ``"^2.28"``) or a dict
-      (e.g. ``{version = "^2.28", extras = ["security"]}``)
+    - The value is either a version string (e.g. `"^2.28"`) or a dict
+      (e.g. `{version = "^2.28", extras = ["security"]}`)
 
-    The ``python`` key is excluded.
+    The `python` key is excluded.
     """
     result: list[Dependency] = []
     for name, spec in deps_table.items():

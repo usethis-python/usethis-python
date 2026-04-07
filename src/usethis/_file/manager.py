@@ -111,6 +111,7 @@ class FileManager(Generic[DocumentT], metaclass=ABCMeta):
         exc_value: BaseException | None,
         traceback: TracebackType | None,
     ) -> None:
+        del exc_type, exc_value, traceback
         if not self.is_locked():
             # This could happen if we decide to delete the file.
             return

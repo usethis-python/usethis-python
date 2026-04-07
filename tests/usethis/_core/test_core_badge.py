@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
+from usethis._config_file import files_manager
 from usethis._core.badge import (
     Badge,
     add_badge,
@@ -16,8 +18,6 @@ from usethis._core.badge import (
     is_badge,
     remove_badge,
 )
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._test import change_cwd
 
 
 class TestIsBadge:
@@ -65,7 +65,7 @@ class TestIsBadge:
 class TestAddBadge:
     def test_no_readme(self, bare_dir: Path, capfd: pytest.CaptureFixture[str]):
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)",
@@ -87,7 +87,7 @@ class TestAddBadge:
         path.write_text("# Header\n")
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)",
@@ -108,7 +108,7 @@ class TestAddBadge:
         path.write_text("")
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)"
@@ -140,7 +140,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)"
@@ -165,7 +165,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)",
@@ -190,7 +190,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)",
@@ -215,7 +215,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Don't Know What This Is](https://example.com)",
@@ -240,7 +240,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)",
@@ -268,7 +268,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)",
@@ -294,7 +294,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)",
@@ -321,7 +321,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)",
@@ -348,7 +348,7 @@ class TestAddBadge:
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)",
@@ -376,7 +376,7 @@ Some text
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Licence](https://img.shields.io/badge/licence-mit-green)",
@@ -403,7 +403,7 @@ Some text
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![pre-commit](https://example.com)",
@@ -427,7 +427,7 @@ Some text
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="![Ruff](https://example.com)",
@@ -450,7 +450,7 @@ Some text
         path.write_text(content)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(Badge(markdown="![Ruff](https://example.com)"))
 
         # Assert
@@ -468,7 +468,7 @@ Automatically manage Python tooling and configuration: linters, formatters, and 
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit)",
@@ -501,7 +501,7 @@ Automatically manage Python tooling and configuration: linters, formatters, and 
         path.write_text(content)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json>)](<https://github.com/astral-sh/ruff)",
@@ -528,7 +528,7 @@ Automatically manage Python tooling and configuration: linters, formatters, and 
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit>)](<https://github.com/pre-commit/pre-commit)"
@@ -559,7 +559,7 @@ Automatically manage Python tooling and configuration: linters, formatters, and 
 """)
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="[![Ruff](https://example.com>)](<https://example.com)",
@@ -590,7 +590,7 @@ Automatically manage Python tooling and configuration: linters, formatters, and 
         )
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(
                 Badge(
                     markdown="[![Ruff](https://example.com>)](<https://example.com)",
@@ -761,7 +761,7 @@ class TestAllBadgesMarkdownValid:
         (bare_dir / "pyproject.toml").write_text('[project]\nname = "my-project"\n')
 
         # Act
-        with change_cwd(bare_dir), PyprojectTOMLManager():
+        with change_cwd(bare_dir), files_manager():
             add_badge(get_pypi_badge())
             add_badge(get_uv_badge())
             add_badge(get_ruff_badge())

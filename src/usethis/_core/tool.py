@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
+from typing import Protocol
 
 from typing_extensions import assert_never
 
@@ -45,10 +45,7 @@ from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
 
-if TYPE_CHECKING:
-    from usethis._tool.all_ import SupportedToolType
-
-# Note - all these functions invoke ensure_dep_declaratiom_file() at the start, since
+# Note - all these functions invoke ensure_dep_declaration_file() at the start, since
 # declaring dependencies in pyproject.toml requires that file to exist.
 
 
@@ -334,15 +331,17 @@ def use_pytest(
         tool.remove_managed_files()
 
 
-def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
+def use_requirements_txt(
+    *, remove: bool = False, how: bool = False, output_file: str = "requirements.txt"
+) -> None:
     """Add and configure a requirements.txt file exported from the uv lockfile."""
-    tool = RequirementsTxtTool()
+    tool = RequirementsTxtTool(output_file=output_file)
 
     if how:
         tool.print_how_to_use()
         return
 
-    path = usethis_config.cpd() / "requirements.txt"
+    path = usethis_config.cpd() / output_file
 
     if not remove:
         backend = get_backend()
@@ -362,7 +361,7 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
             tool.print_how_to_use()
             return
 
-        _generate_requirements_txt()
+        _generate_requirements_txt(output_file=output_file)
 
         tool.print_how_to_use()
     else:
@@ -373,36 +372,36 @@ def use_requirements_txt(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_managed_files()
 
 
-def _generate_requirements_txt() -> None:
+def _generate_requirements_txt(*, output_file: str = "requirements.txt") -> None:
     backend = get_backend()
     if backend is BackendEnum.uv:
         if not (usethis_config.cpd() / "pyproject.toml").exists():
-            write_simple_requirements_txt()
+            write_simple_requirements_txt(output_file=output_file)
         elif not usethis_config.frozen:
             ensure_uv_lock()
-            tick_print("Writing 'requirements.txt'.")
+            tick_print(f"Writing '{output_file}'.")
             call_uv_subprocess(
                 [
                     "export",
                     "--frozen",
-                    "--output-file=requirements.txt",
+                    f"--output-file={output_file}",
                 ],
                 change_toml=False,
             )
     elif backend is BackendEnum.poetry:
         # Poetry uses poetry export for requirements.txt generation
-        write_simple_requirements_txt()
+        write_simple_requirements_txt(output_file=output_file)
     elif backend is BackendEnum.none:
         # Simply dump the dependencies list to requirements.txt
         if usethis_config.backend is BackendEnum.auto:
             info_print(
-                "Generating 'requirements.txt' with un-pinned, abstract dependencies."
+                f"Generating '{output_file}' with un-pinned, abstract dependencies."
             )
             info_print(
                 "Consider installing 'uv' for pinned, cross-platform, full requirements files."
             )
 
-        write_simple_requirements_txt()
+        write_simple_requirements_txt(output_file=output_file)
     else:
         assert_never(backend)
 
@@ -419,7 +418,7 @@ def use_ruff(  # noqa: PLR0913
     """Add Ruff to the project.
 
     By default, sensible default rules are selected if there are no rules selected yet,
-    but this behaviour can be controlled by using the `minimal` option.
+    but this behaviour can be controlled using the `minimal` option.
 
     If the existing rules are all pydocstyle rules (managed by the `usethis docstyle`
     interface), then the default rules will still be added, again excepting when the
@@ -571,56 +570,3 @@ def use_ty(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_pre_commit_repo_configs()
         tool.remove_dev_deps()
         tool.remove_managed_files()
-
-
-def use_tool(  # noqa: PLR0912
-    tool: SupportedToolType,
-    *,
-    remove: bool = False,
-    how: bool = False,
-) -> None:
-    """General dispatch function to add or remove a tool to/from the project.
-
-    This is mostly intended for situations when the exact tool being added is not known
-    dynamically. If you know the specific tool you wish to add, it is strongly
-    recommended to call the specific function directly, e.g. `use_codespell()`, etc.
-    """
-    # One might wonder why we don't just implement a `use` method on the Tool class
-    # itself. Basically it's for architectural reasons: we want to keep a layer of
-    # abstraction between the tool and the logic to actually configure it.
-    # In the future, that might change if we can create a sufficiently generalized logic
-    # for all tools such that bespoke choices on a per-tool basis are not required, and
-    # all the logic is just deterministic based on the tool's properties/methods, etc.
-    if isinstance(tool, CodespellTool):
-        use_codespell(remove=remove, how=how)
-    elif isinstance(tool, CoveragePyTool):
-        use_coverage_py(remove=remove, how=how)
-    elif isinstance(tool, DeptryTool):
-        use_deptry(remove=remove, how=how)
-    elif isinstance(tool, ImportLinterTool):
-        use_import_linter(remove=remove, how=how)
-    elif isinstance(tool, MkDocsTool):
-        use_mkdocs(remove=remove, how=how)
-    elif isinstance(tool, PreCommitTool):
-        use_pre_commit(remove=remove, how=how)
-    elif isinstance(tool, PyprojectFmtTool):
-        use_pyproject_fmt(remove=remove, how=how)
-    elif isinstance(tool, PyprojectTOMLTool):
-        use_pyproject_toml(remove=remove, how=how)
-    elif isinstance(tool, PytestTool):
-        use_pytest(remove=remove, how=how)
-    elif isinstance(tool, RequirementsTxtTool):
-        use_requirements_txt(remove=remove, how=how)
-    elif isinstance(tool, RuffTool):
-        use_ruff(remove=remove, how=how)
-    elif isinstance(tool, TachTool):
-        use_tach(remove=remove, how=how)
-    elif isinstance(tool, TyTool):
-        use_ty(remove=remove, how=how)
-    else:
-        # Having the assert_never here is effectively a way of testing cases are
-        # exhaustively handled, which ensures it is kept up to date with ALL_TOOLS,
-        # together with the type annotation on ALL_TOOLS itself. That's why this
-        # function is implemented as a series of `if` statements rather than a
-        # dictionary or similar alternative.
-        assert_never(tool)

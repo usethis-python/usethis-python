@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from typing_extensions import override
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._console import how_print
 from usethis._deps import add_deps_to_group
@@ -13,7 +14,6 @@ from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.setup_cfg.io_ import SetupCFGManager
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.hooks import _PLACEHOLDER_ID, get_hook_ids
-from usethis._test import change_cwd
 from usethis._tool.base import Tool, ToolMeta
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig, PreCommitRepoConfig
@@ -269,7 +269,7 @@ class TestTool:
         def test_some_deps(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 add_deps_to_group(
                     [
                         Dependency(name="black"),
@@ -298,7 +298,7 @@ class TestTool:
         def test_dir(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 Path("mytool-config.yaml").mkdir()
 
                 # Act
@@ -310,7 +310,7 @@ class TestTool:
         def test_pyproject(self, uv_init_dir: Path):
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 PyprojectTOMLManager().set_value(
                     keys=["tool", "my_tool", "key"], value="value"
                 )
@@ -326,7 +326,7 @@ class TestTool:
             tool = MyTool()
 
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 result = tool.is_used()
 
             # Assert
@@ -336,7 +336,7 @@ class TestTool:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 add_deps_to_group(
                     [
                         Dependency(name="black"),
@@ -354,7 +354,7 @@ class TestTool:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 add_deps_to_group(
                     [
                         Dependency(name="pytest"),
@@ -372,7 +372,7 @@ class TestTool:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 add_deps_to_group(
                     [
                         Dependency(name="isort"),
@@ -396,7 +396,7 @@ class TestTool:
 
             # Arrange
             tool = MyTool()
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Create a pyproject.toml with a syntax error
                 (uv_init_dir / "pyproject.toml").write_text(
                     """\
@@ -459,7 +459,7 @@ class TestTool:
                     return SetupCFGManager()
 
             tool = ThisTool()
-            with change_cwd(uv_init_dir), SetupCFGManager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Create a setup.cfg with a syntax error
                 (uv_init_dir / "setup.cfg").write_text(
                     """\
@@ -504,7 +504,7 @@ repos:
             # Arrange
             tool = MyTool()
 
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 add_deps_to_group(
                     [
                         Dependency(name="black"),
@@ -1020,7 +1020,7 @@ repos:
             (tmp_path / "pyproject.toml").write_text("")
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 ThisTool().add_configs()
 
             # Assert
@@ -1083,7 +1083,7 @@ name = "Modular Design"
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 ThisTool().add_configs()
 
             # Assert
@@ -1136,7 +1136,7 @@ root_packages = ["example"]
             (tmp_path / "setup.cfg").touch()
 
             # Act
-            with change_cwd(tmp_path), SetupCFGManager():
+            with change_cwd(tmp_path), files_manager():
                 ThisTool().add_configs()
 
             # Assert
@@ -1187,7 +1187,7 @@ key3 = value3
 """)
 
             # Act
-            with change_cwd(tmp_path), SetupCFGManager():
+            with change_cwd(tmp_path), files_manager():
                 ThisTool().remove_configs()
 
             # Assert

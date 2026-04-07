@@ -97,11 +97,13 @@ def get_usethis_badge() -> Badge:
 
 
 def get_badge_order() -> list[Badge]:
-    # Some general principles here:
-    # 1. Dynamic badges giving factual information about the package should go first
-    # 2. Static badges which list affiliation should go next e.g. uv, Ruff, etc.
-    # 3. Badges giving project scores, ratings, etc. should go last.
-    """Return the canonical ordered list of all supported badges."""
+    """Return the canonical ordered list of all supported badges.
+
+    Some general principles:
+    1. Dynamic badges giving factual information about the package should go first.
+    2. Static badges which list affiliation should go next, e.g. uv, Ruff, etc.
+    3. Badges giving project scores, ratings, etc. should go last.
+    """
     return [
         get_pypi_badge(),
         get_uv_badge(),
@@ -227,8 +229,8 @@ def add_badge(badge: Badge) -> None:
 def _get_prerequisites(badge: Badge) -> list[Badge]:
     """Get the prerequisites for a badge.
 
-    We want to place the badges in a specific order, so we need to check if we've got
-    past those prerequisites.
+    We want to place the badges in a specific order, so we need to check if we've
+    passed those prerequisites.
     """
     prerequisites: list[Badge] = []
     for _b in get_badge_order():
@@ -255,8 +257,7 @@ def is_header(line: str) -> bool:
 
 
 def is_badge(line: str) -> bool:
-    # A heuristic
-    """Return True if the line looks like a Markdown badge."""
+    """Return True if the line looks like a Markdown badge (heuristic)."""
     return (
         re.match(r"^\[!\[.*\]\(.*\)\]\(.*\)$", line) is not None
         or re.match(r"^\!\[.*\]\(.*\)$", line) is not None

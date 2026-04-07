@@ -4,7 +4,7 @@ description: Write bespoke prek hooks as reusable Python scripts for custom chec
 compatibility: usethis, prek, git, Python
 license: MIT
 metadata:
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Bespoke Prek Hooks
@@ -123,5 +123,12 @@ Key points:
 - `id` and `name` should match the script filename (without `.py`).
 - Set `pass_filenames: false` since bespoke hooks typically determine their own
   file targets.
+- **Never use `files` to scope hooks to specific directories** (e.g.
+  `files: ^(src|tests)/`). Directory-scoped hooks silently miss violations in
+  unexpected locations and create a false sense of coverage. Instead, use
+  `types: [python]` (or other type filters) to match files by type across the
+  entire repository, or use `pass_filenames: false` and let the hook script
+  determine its own file targets via CLI arguments. If a check is worth running,
+  it is worth running everywhere.
 - Follow the `usethis-prek-add-hook` skill for priority assignment and placement
   within the file.

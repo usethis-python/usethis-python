@@ -3,13 +3,13 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
+from _test import CliRunner, change_cwd
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import get_hook_ids
 from usethis._subprocess import SubprocessFailedError, call_subprocess
-from usethis._test import CliRunner, change_cwd
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._ui.interface.tool import ALL_TOOL_COMMANDS, app
 
@@ -476,6 +476,49 @@ class TestRequirementsTxt:
 """
         )
 
+    def test_output_file(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app,
+                [
+                    "requirements.txt",
+                    "--backend",
+                    "none",
+                    "--output-file",
+                    "constraints.txt",
+                ],
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (tmp_path / "constraints.txt").exists()
+        assert not (tmp_path / "requirements.txt").exists()
+        assert (
+            result.output
+            == """\
+✔ Writing 'constraints.txt'.
+"""
+        )
+
+    def test_how_with_output_file(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(
+                app, ["requirements.txt", "--how", "--output-file", "constraints.txt"]
+            )
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'uv export -o=constraints.txt' to write 'constraints.txt'.
+"""
+        )
+
 
 class TestRuff:
     @pytest.mark.usefixtures("_vary_network_conn")
@@ -795,9 +838,9 @@ def test_several_tools_add_and_remove(tmp_path: Path):
 
 
 def test_tool_matches_command():
-    assert {tool.name.lower().replace(" ", "-") for tool in ALL_TOOLS} == set(
-        ALL_TOOL_COMMANDS
-    )
+    assert [
+        tool.name.lower().replace(" ", "-") for tool in ALL_TOOLS
+    ] == ALL_TOOL_COMMANDS
 
 
 def test_app_commands_match_list():

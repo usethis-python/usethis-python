@@ -13,7 +13,7 @@ type = layers
 containers =
     usethis
 layers =
-    _test | __main__
+    __main__
     _ui
     _toolset
     _core
@@ -97,6 +97,7 @@ type = layers
 containers =
     usethis._tool.impl.spec
 layers =
+    all_
     pyproject_toml
     codespell | deptry | import_linter | mkdocs | pyproject_fmt | requirements_txt | tach | ty
     ruff
@@ -110,8 +111,7 @@ type = layers
 containers =
     usethis._integrations
 layers =
-    ci | pre_commit
-    environ
+    pre_commit
     mkdocs | pytest | pydantic | sonarqube
     project | readme
 exhaustive = true
@@ -148,13 +148,4 @@ layers =
     func
     result
     containers | ops
-exhaustive = true
-
-[importlinter:contract:integrations_ci]
-name = usethis._integrations.ci
-type = layers
-containers =
-    usethis._integrations.ci
-layers =
-    github
 exhaustive = true

@@ -4,6 +4,8 @@ from pathlib import Path
 import pytest
 from tomlkit import TOMLDocument
 
+from _test import change_cwd
+from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLDecodeError,
     PyprojectTOMLNotFoundError,
@@ -13,7 +15,6 @@ from usethis._file.pyproject_toml.errors import (
     UnexpectedPyprojectTOMLOpenError,
 )
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._test import change_cwd
 
 
 class TestPyprojectTOMLManager:
@@ -158,7 +159,7 @@ class TestPyprojectTOMLManager:
         def test_pyproject_does_not_exist(self, tmp_path: Path):
             with (
                 change_cwd(tmp_path),
-                PyprojectTOMLManager(),
+                files_manager(),
                 pytest.raises(PyprojectTOMLNotFoundError),
             ):
                 PyprojectTOMLManager()[["tool", "usethis", "key"]]
@@ -175,7 +176,7 @@ class TestPyprojectTOMLManager:
             # Act, Assert
             with (
                 change_cwd(tmp_path),
-                PyprojectTOMLManager(),
+                files_manager(),
                 pytest.raises(KeyError),
             ):
                 PyprojectTOMLManager()[["tool", "usethis", "key2"]]
@@ -190,7 +191,7 @@ class TestPyprojectTOMLManager:
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 value = PyprojectTOMLManager()[["tool", "usethis", "key"]]
 
             # Assert
@@ -206,7 +207,7 @@ class TestPyprojectTOMLManager:
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 PyprojectTOMLManager()[["tool", "usethis", "key"]] = "value2"
 
             # Assert
@@ -229,7 +230,7 @@ class TestPyprojectTOMLManager:
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 PyprojectTOMLManager()[["tool", "usethis", "key1"]] = "value3"
 
             # Assert
@@ -248,7 +249,7 @@ class TestPyprojectTOMLManager:
             (tmp_path / "pyproject.toml").touch()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 PyprojectTOMLManager().set_value(
                     keys=["tool", "usethis", "key"], value="value"
                 )
@@ -274,7 +275,7 @@ key = "value1"
             # Act
             with (
                 change_cwd(tmp_path),
-                PyprojectTOMLManager(),
+                files_manager(),
                 pytest.raises(
                     PyprojectTOMLValueAlreadySetError,
                     match=re.escape(
@@ -296,7 +297,8 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 """)
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager() as file_manager:
+            with change_cwd(tmp_path), files_manager():
+                file_manager = PyprojectTOMLManager()
                 file_manager.set_value(
                     keys=["tool", "coverage", "run", "source"], value=["."]
                 )
@@ -304,7 +306,8 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 # Assert
                 assert ["tool", "coverage"] in PyprojectTOMLManager()
 
-            with change_cwd(tmp_path), PyprojectTOMLManager() as file_manager:
+            with change_cwd(tmp_path), files_manager():
+                file_manager = PyprojectTOMLManager()
                 assert ["tool", "coverage"] in PyprojectTOMLManager()
 
     class TestDel:
@@ -315,14 +318,14 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             # Act, Assert
             with (
                 change_cwd(tmp_path),
-                PyprojectTOMLManager(),
+                files_manager(),
                 pytest.raises(PyprojectTOMLValueMissingError),
             ):
                 del PyprojectTOMLManager()[["tool", "usethis", "key"]]
 
         def test_missing_pyproject(self, tmp_path: Path):
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 del PyprojectTOMLManager()[["tool", "usethis", "key"]]
 
             assert not (tmp_path / "pyproject.toml").exists()
@@ -338,7 +341,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 del PyprojectTOMLManager()[["tool", "usethis", "key"]]
 
             # Assert
@@ -356,7 +359,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 del PyprojectTOMLManager()[["tool", "usethis", "key1"]]
 
             # Assert
@@ -374,7 +377,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             (tmp_path / "pyproject.toml").touch()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 PyprojectTOMLManager().extend_list(
                     keys=["tool", "usethis", "key"], values=["value"]
                 )
@@ -398,7 +401,7 @@ key = ["value1"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 PyprojectTOMLManager().extend_list(
                     keys=["tool", "usethis", "key"], values=["value2"]
                 )
@@ -421,7 +424,8 @@ key = ["value1", "value2"]
 lint.select = [ "INP" ]
 """)
 
-            with change_cwd(tmp_path), PyprojectTOMLManager() as mgr:
+            with change_cwd(tmp_path), files_manager():
+                mgr = PyprojectTOMLManager()
                 # Act
                 mgr.extend_list(
                     keys=["tool", "ruff", "lint", "per-file-ignores", "tests/**"],

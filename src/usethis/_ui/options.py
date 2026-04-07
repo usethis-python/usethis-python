@@ -114,13 +114,20 @@ init_build_backend_opt = typer.Option(
 badges_opt = typer.Option(False, "--badges", help="Add relevant badges")
 
 # status command options
-status_arg = typer.Argument(default=..., help="Docstring style to enforce.")
+status_arg = typer.Argument(default=..., help="Development status to set.")
 
 # show command options
 output_file_opt = typer.Option(
     None,
     "--output-file",
     help="Write output to this file instead of stdout.",
+)
+
+# requirements.txt command options
+requirements_txt_output_file_opt = typer.Option(
+    "requirements.txt",
+    "--output-file",
+    help="The name of the output requirements file.",
 )
 
 # ruff command options

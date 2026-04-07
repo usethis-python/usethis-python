@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._core.list import UsageRow, UsageTable, get_usage_table, show_usage_table
-from usethis._test import change_cwd
 
 
 class TestShowUsageTable:

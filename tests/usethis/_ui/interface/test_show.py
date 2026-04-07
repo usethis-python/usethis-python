@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from _test import CliRunner, change_cwd
 from usethis._config import usethis_config
-from usethis._test import CliRunner, change_cwd
 from usethis._types.backend import BackendEnum
 from usethis._ui.interface.show import app
 

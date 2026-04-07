@@ -4,7 +4,7 @@ description: Identify tests that are potentially affected by code changes, to ca
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Finding Potentially Affected Tests
@@ -24,6 +24,12 @@ After making code changes and before pushing, identify and run tests that could 
 ### Trace callers, not just callees
 
 When you change a function or class, the most commonly missed regressions come from **callers** of that code, not the code itself. Search for usages of the changed function or class across the codebase and identify tests for those callers.
+
+### Detect changes to error semantics
+
+When a refactoring changes which errors a function raises — for example, converting code that raised an exception on invalid input to code that silently returns a default, or collapsing distinct error paths (e.g., "missing key" vs "wrong type") into a single behaviour — the breakage typically appears in **callers** that relied on the original error being raised, not in the changed module's own tests.
+
+Before applying any such change, check whether the original code distinguished between different failure modes (e.g., returning a default for one case but raising for another). If so, collapsing those paths changes the function's contract. Trace all transitive callers of the changed function and run their tests, since downstream code may assert that specific exceptions propagate.
 
 ### Look for integration-style tests
 

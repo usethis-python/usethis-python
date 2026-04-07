@@ -17,6 +17,7 @@ from ruamel.yaml.scalarstring import FoldedScalarString, LiteralScalarString
 from ruamel.yaml.timestamp import TimeStamp
 from typing_extensions import override
 
+from _test import change_cwd, edit_yaml
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
@@ -26,8 +27,7 @@ from usethis._file.yaml.errors import (
     YAMLValueAlreadySetError,
     YAMLValueMissingError,
 )
-from usethis._file.yaml.io_ import YAMLDocument, YAMLFileManager, edit_yaml
-from usethis._test import change_cwd
+from usethis._file.yaml.io_ import YAMLDocument, YAMLFileManager
 
 
 class TestYAMLFileManager:
@@ -1139,7 +1139,7 @@ outer:
 
 class TestEditYaml:
     class TestLiterals:
-        """The list of literals is from ruamel/yaml/representer.py near the bottom"""
+        """The list of literals is from ruamel/yaml/representer.py near the bottom."""
 
         def test_none(self, tmp_path: Path):
             # Arrange
@@ -1542,5 +1542,5 @@ repos:
         # Assert
         # Should have a hint
         out, err = capfd.readouterr()
-        assert "Hint: You may have incorrect indentation the YAML file." in out
+        assert "Hint: You may have incorrect indentation in the YAML file." in out
         assert not err

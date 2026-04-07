@@ -74,7 +74,7 @@ class PreCommitConfig(BaseModel):
         """Create a PreCommitConfig for a local system hook.
 
         Handles backend dispatch internally: for the uv backend, the entry is
-        prefixed with ``uv run --frozen --offline``.
+        prefixed with `uv run --frozen --offline`.
 
         Args:
             hook_id: The hook identifier; also used as the hook display name.
@@ -109,7 +109,3 @@ class PreCommitConfig(BaseModel):
             requires_venv=True,
             inform_how_to_use_on_migrate=False,
         )
-
-    @property
-    def any_require_venv(self) -> bool:
-        return any(repo_config.requires_venv for repo_config in self.repo_configs)

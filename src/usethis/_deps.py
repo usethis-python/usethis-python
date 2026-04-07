@@ -47,9 +47,9 @@ def get_project_deps() -> list[Dependency]:
     This does not include development dependencies, e.g. not those in the
     dependency-groups section, not extras/optional dependencies, not build dependencies.
 
-    Usually this is just the dependencies in the ``project.dependencies`` section
-    of the ``pyproject.toml`` file. When the poetry backend is active, also
-    reads from ``[tool.poetry.dependencies]``.
+    Usually this is just the dependencies in the `project.dependencies` section
+    of the `pyproject.toml` file. When the poetry backend is active, also
+    reads from `[tool.poetry.dependencies]`.
     """
     try:
         deps = _get_project_deps()
@@ -66,8 +66,8 @@ def get_project_deps() -> list[Dependency]:
 def get_dep_groups() -> dict[str, list[Dependency]]:
     """Get all dependency groups from pyproject.toml.
 
-    Reads from ``[dependency-groups]`` (PEP 735). When the poetry backend
-    is active, also reads from ``[tool.poetry.group.*.dependencies]``.
+    Reads from `[dependency-groups]` (PEP 735). When the poetry backend
+    is active, also reads from `[tool.poetry.group.*.dependencies]`.
     """
     try:
         groups = _get_dep_groups()
@@ -105,7 +105,7 @@ def register_default_group(group: str) -> None:
     This ensures that dependencies in the group will be installed by default.
     """
     if group == "dev":
-        # Note, if the "dev" group is missing already then then we'll respect the
+        # Note, if the "dev" group is missing already then we'll respect the
         # user's choice since they presumably would have added it themselves. So, we
         # won't register in that case.
         return
@@ -291,8 +291,8 @@ def _register_poetry_default_group(group: str) -> None:
     except FileNotFoundError:
         return
 
-    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})  # type: ignore[union-attr]
-    group_config = poetry_groups.get(group, {})  # type: ignore[union-attr]
+    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})
+    group_config = poetry_groups.get(group, {})
 
     if isinstance(group_config, dict) and group_config.get("optional") is True:
         # Remove the optional flag to make this group installed by default
@@ -307,7 +307,7 @@ def _get_poetry_default_groups() -> list[str]:
     """Get the list of poetry dependency groups that are installed by default.
 
     In Poetry, all groups are installed by default unless they have
-    ``optional = true`` set in ``[tool.poetry.group.GROUPNAME]``.
+    `optional = true` set in `[tool.poetry.group.GROUPNAME]`.
     """
     dep_groups = get_dep_groups()
 
@@ -316,11 +316,11 @@ def _get_poetry_default_groups() -> list[str]:
     except FileNotFoundError:
         return list(dep_groups.keys())
 
-    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})  # type: ignore[union-attr]
+    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})
 
     default_groups = []
     for group_name in dep_groups:
-        group_config = poetry_groups.get(group_name, {})  # type: ignore[union-attr]
+        group_config = poetry_groups.get(group_name, {})
         if isinstance(group_config, dict) and group_config.get("optional") is True:
             continue
         default_groups.append(group_name)

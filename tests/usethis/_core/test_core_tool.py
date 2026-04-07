@@ -10,6 +10,7 @@ import pytest
 from pydantic import TypeAdapter
 
 import usethis._backend.dispatch
+from _test import change_cwd, use_tool
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.link_mode import ensure_symlink_mode
 from usethis._backend.uv.toml import UVTOMLManager
@@ -28,7 +29,6 @@ from usethis._core.tool import (
     use_requirements_txt,
     use_ruff,
     use_tach,
-    use_tool,
     use_ty,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
@@ -41,7 +41,6 @@ from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import HOOK_GROUPS, get_hook_ids
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
 from usethis._python.version import PythonVersion
-from usethis._test import change_cwd
 from usethis._tool.all_ import ALL_TOOLS, SupportedToolType
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._types.backend import BackendEnum
@@ -71,7 +70,7 @@ class TestCodespell:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 add_deps_to_group([Dependency(name="codespell")], "dev")
                 ensure_symlink_mode()
 
@@ -485,7 +484,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
 
     class TestRemove:
         def test_unused(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Act
                 use_coverage_py(remove=True)
 
@@ -554,7 +553,7 @@ class TestDeptry:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_dependency_added(self, uv_init_dir: Path):
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 use_deptry()
 
                 # Assert
@@ -564,7 +563,7 @@ class TestDeptry:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_ignore_notebooks(self, uv_init_dir: Path):
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 use_deptry()
 
                 # Assert
@@ -580,7 +579,7 @@ class TestDeptry:
             capfd: pytest.CaptureFixture[str],
         ):
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 use_deptry()
 
             # Assert
@@ -603,7 +602,7 @@ class TestDeptry:
             # Act
             with (
                 change_cwd(uv_init_dir),
-                PyprojectTOMLManager(),
+                files_manager(),
                 usethis_config.set(frozen=False),
             ):
                 use_deptry()
@@ -623,7 +622,7 @@ class TestDeptry:
             f.write_text("import broken_dependency")
 
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 use_deptry()
 
             # Assert
@@ -642,7 +641,7 @@ class TestDeptry:
 
             with (
                 change_cwd(uv_init_dir),
-                PyprojectTOMLManager(),
+                files_manager(),
                 usethis_config.set(frozen=False),
             ):
                 # Act
@@ -707,7 +706,7 @@ repos:
     class TestRemove:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_dep(self, uv_init_dir: Path):
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 # Arrange
                 add_deps_to_group([Dependency(name="deptry")], "dev")
 
@@ -726,7 +725,7 @@ ignore_missing = ["pytest"]
 """)
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 use_deptry(remove=True)
 
             # Assert
@@ -738,7 +737,7 @@ ignore_missing = ["pytest"]
             contents = (uv_init_dir / "pyproject.toml").read_text()
 
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 use_deptry()
                 use_deptry(remove=True)
 
@@ -774,7 +773,7 @@ dev = []
         def test_pre_commit_first(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            """Basically this checks that the placeholders gets removed."""
+            """Basically this checks that the placeholders get removed."""
             with change_cwd(uv_init_repo_dir), files_manager():
                 # Arrange
                 use_pre_commit()
@@ -1378,7 +1377,7 @@ exhaustive = True
                 "✔ Adding dependency 'import-linter' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'import-linter'.\n"
                 "⚠ Could not find any importable packages.\n"
-                "⚠ Assuming the package name is test-stdout-when-cant-find-pac0.\n"
+                "⚠ Assuming the package name is 'test-stdout-when-cant-find-pac0'.\n"
                 "✔ Adding Import Linter config to 'pyproject.toml'.\n"
                 "ℹ Ensure '__init__.py' files are used in your packages.\n"  # noqa: RUF001
                 "ℹ For more info see <https://docs.python.org/3/tutorial/modules.html#packages>\n"  # noqa: RUF001
@@ -2246,13 +2245,13 @@ class TestPyprojectFmt:
                 # Arrange
                 with (
                     change_cwd(uv_init_dir),
-                    PyprojectTOMLManager(),
+                    files_manager(),
                     usethis_config.set(quiet=True),
                 ):
                     add_deps_to_group([Dependency(name="pyproject-fmt")], "dev")
 
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_pyproject_fmt()
 
                 # Assert
@@ -2276,7 +2275,7 @@ keep_full_version = true
         class TestDeps:
             @pytest.mark.usefixtures("_vary_network_conn")
             def test_added(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     # Act
                     use_pyproject_fmt()
 
@@ -2299,7 +2298,7 @@ keep_full_version = true
                 self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
             ):
                 # Act
-                with change_cwd(uv_init_dir), PyprojectTOMLManager():
+                with change_cwd(uv_init_dir), files_manager():
                     use_pyproject_fmt(no_apply=True)
 
                 # Assert
@@ -2352,7 +2351,7 @@ foo = "bar"
             )
 
             # Act
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 use_pyproject_fmt(remove=True)
 
             # Assert
@@ -2428,7 +2427,7 @@ foo = "bar"
         def test_remove_without_precommit(
             self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            with change_cwd(uv_init_repo_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_repo_dir), files_manager():
                 # Arrange
                 with usethis_config.set(quiet=True):
                     use_pyproject_fmt()
@@ -2695,7 +2694,8 @@ minversion = 7
 """
             )
 
-            with PyprojectTOMLManager() as manager:
+            with files_manager():
+                manager = PyprojectTOMLManager()
                 assert ["tool", "pytest"] not in manager
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2901,7 +2901,7 @@ class TestRequirementsTxt:
             # Act
             with (
                 change_cwd(tmp_path),
-                PyprojectTOMLManager(),
+                files_manager(),
                 usethis_config.set(backend=BackendEnum.uv),
             ):
                 use_requirements_txt()
@@ -2925,7 +2925,7 @@ class TestRequirementsTxt:
             # Act
             with (
                 change_cwd(tmp_path),
-                PyprojectTOMLManager(),
+                files_manager(),
                 usethis_config.set(backend=BackendEnum.none),
             ):
                 use_requirements_txt()
@@ -2945,7 +2945,7 @@ class TestRequirementsTxt:
             # Act
             with (
                 change_cwd(tmp_path),
-                PyprojectTOMLManager(),
+                files_manager(),
                 usethis_config.set(backend=BackendEnum.poetry),
             ):
                 use_requirements_txt()
@@ -2964,7 +2964,7 @@ class TestRequirementsTxt:
             # Act
             with (
                 change_cwd(uv_init_dir),
-                PyprojectTOMLManager(),
+                files_manager(),
                 usethis_config.set(frozen=False),
             ):
                 use_requirements_txt()
@@ -2984,7 +2984,7 @@ class TestRequirementsTxt:
         ):
             with (
                 change_cwd(uv_init_dir),
-                PyprojectTOMLManager(),
+                files_manager(),
                 usethis_config.set(frozen=False),
             ):
                 # Arrange
@@ -3061,7 +3061,7 @@ project.dependencies = [ "ruff", "typer-slim[standard]" ]
             )
             with (
                 change_cwd(tmp_path),
-                PyprojectTOMLManager(),
+                files_manager(),
                 usethis_config.set(backend=BackendEnum.auto),
             ):
                 # Act
@@ -3092,7 +3092,7 @@ typer-slim[standard]
             (tmp_path / "requirements.txt").touch()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 use_requirements_txt(remove=True)
 
             # Assert
@@ -3103,7 +3103,7 @@ typer-slim[standard]
             (tmp_path / "requirements.txt").mkdir()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 use_requirements_txt(remove=True)
 
             # Assert
@@ -3130,7 +3130,7 @@ repos:
             assert "uv-export" not in content
 
         def test_roundtrip(self, tmp_path: Path):
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 # Arrange
                 use_requirements_txt()
 
@@ -3147,6 +3147,70 @@ repos:
 
             # Assert
             assert not (tmp_path / "pyproject.toml").exists()
+
+    class TestOutputFile:
+        def test_custom_output_file_creates_correct_file(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
+                use_requirements_txt(output_file="constraints.txt")
+
+            # Assert
+            assert (tmp_path / "constraints.txt").exists()
+            assert not (tmp_path / "requirements.txt").exists()
+            out, _ = capfd.readouterr()
+            assert "Writing 'constraints.txt'." in out
+            assert "uv export -o=constraints.txt" in out
+
+        def test_custom_output_file_how(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.uv),
+            ):
+                use_requirements_txt(how=True, output_file="constraints.txt")
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert (
+                out
+                == "☐ Run 'uv export -o=constraints.txt' to write 'constraints.txt'.\n"
+            )
+
+        def test_custom_output_file_remove(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "constraints.txt").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_requirements_txt(remove=True, output_file="constraints.txt")
+
+            # Assert
+            assert not (tmp_path / "constraints.txt").exists()
+
+        def test_default_output_file_is_requirements_txt(
+            self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Act
+            with (
+                change_cwd(tmp_path),
+                files_manager(),
+                usethis_config.set(backend=BackendEnum.none),
+            ):
+                use_requirements_txt()
+
+            # Assert
+            assert (tmp_path / "requirements.txt").exists()
+            out, _ = capfd.readouterr()
+            assert "Writing 'requirements.txt'." in out
 
 
 class TestRuff:
@@ -3904,7 +3968,7 @@ class TestTy:
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_config(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
-            with change_cwd(uv_init_dir), PyprojectTOMLManager():
+            with change_cwd(uv_init_dir), files_manager():
                 add_deps_to_group([Dependency(name="ty")], "dev")
 
             capfd.readouterr()

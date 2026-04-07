@@ -20,6 +20,7 @@ from usethis._ui.options import (
     offline_opt,
     quiet_opt,
     remove_opt,
+    requirements_txt_output_file_opt,
 )
 
 if TYPE_CHECKING:
@@ -327,6 +328,7 @@ def requirements_txt(
     frozen: bool = frozen_opt,
     backend: BackendEnum = backend_opt,
     no_hook: bool = no_hook_opt,
+    output_file: str = requirements_txt_output_file_opt,
 ) -> None:
     """Use a requirements.txt file exported from the uv lockfile."""
     from usethis._config_file import files_manager
@@ -342,7 +344,7 @@ def requirements_txt(
         ),
         files_manager(),
     ):
-        _run_tool(use_requirements_txt, remove=remove, how=how)
+        _run_tool(use_requirements_txt, remove=remove, how=how, output_file=output_file)
 
 
 @app.command(
@@ -459,20 +461,12 @@ def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: object)
         raise typer.Exit(code=1) from None
 
 
-ALL_TOOL_COMMANDS: list[str] = [
-    "codespell",
-    "coverage.py",
-    "deptry",
-    "import-linter",
-    "mkdocs",
-    "pre-commit",
-    "pyproject.toml",
-    "pyproject-fmt",
-    "pytest",
-    "requirements.txt",
-    "ruff",
-    "tach",
-    "ty",
-]
+def _get_all_tool_commands() -> list[str]:
+    from usethis._tool.all_ import ALL_TOOLS
+
+    return [tool.name.lower().replace(" ", "-") for tool in ALL_TOOLS]
+
+
+ALL_TOOL_COMMANDS: list[str] = _get_all_tool_commands()
 
 ALL_TOOL_COMMAND_STRS: list[str] = [f"usethis tool {cmd}" for cmd in ALL_TOOL_COMMANDS]

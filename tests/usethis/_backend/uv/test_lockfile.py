@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 
 import usethis._backend.uv.lockfile
+from _test import change_cwd
 from usethis._backend.uv.lockfile import ensure_uv_lock
-from usethis._test import change_cwd
 
 
 class TestEnsureUVLock:

@@ -188,7 +188,7 @@
 ### 📚 Documentation
 
 - There is now dedicated guidance [on the docs site](https://usethis.readthedocs.io/en/latest/frameworks/) for using usethis together with popular frameworks like Django, FastAPI, and Dagster.
-- A detailed example of `usethis init` has been pulled out the README into a [dedicated docs page](https://usethis.readthedocs.io/en/latest/start/detailed-example/).
+- A detailed example of `usethis init` has been pulled out of the README into a [dedicated docs page](https://usethis.readthedocs.io/en/latest/start/detailed-example/).
 - The license is now documented [on the docs site](https://usethis.readthedocs.io/en/latest/about-license/) (in addition to the `LICENSE` file).
 - Branding (colours, project naming) etc. is now documented in `CONTRIBUTING.md`.
 - There is now a favicon on the docs site.
@@ -443,7 +443,7 @@
 
 ### 🦾 Robustness
 
-- If `pre-commit install` does not run successfully (e.g. if there is not Git Repository for the project) then usethis will display a message for the user to ask them to run this command themselves, rather than the previous behaviour which was to stop with an error.
+- If `pre-commit install` does not run successfully (e.g. if there is no Git repository for the project) then usethis will display a message for the user to ask them to run this command themselves, rather than the previous behaviour which was to stop with an error.
 - Syntax errors in TOML and INI configuration files will be handled when trying to determine whether a given tool is being used. A warning is displayed but usethis will continue under the assumption that the invalid file does not contain relevant configuration for the tool.
 
 ### 🐞 Bug Fixes

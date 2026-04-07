@@ -2,10 +2,9 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config_file import files_manager
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema
-from usethis._test import change_cwd
 from usethis._tool.config import ConfigEntry, ConfigItem
 from usethis._tool.impl.base.deptry import DeptryTool
 
@@ -37,7 +36,7 @@ ignore_missing = ["pytest"]
 """)
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             tool = DeptryTool()
             tool.remove_configs()
 
@@ -51,7 +50,7 @@ ignore_missing = ["pytest"]
             tool = DeptryTool()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 tool.select_rules(["A", "B", "C"])
 
                 # Assert
@@ -63,7 +62,7 @@ ignore_missing = ["pytest"]
             tool = DeptryTool()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = tool.selected_rules()
 
                 # Assert
@@ -75,7 +74,7 @@ ignore_missing = ["pytest"]
             tool = DeptryTool()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 tool.deselect_rules(["A", "B", "C"])
 
                 # Assert
@@ -89,7 +88,7 @@ ignore_missing = ["pytest"]
             tool = DeptryTool()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 tool.ignore_rules(["DEP001"])
 
                 # Assert
@@ -108,7 +107,7 @@ ignore_missing = ["pytest"]
             (tmp_path / "pyproject.toml").write_text("")
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 tool.ignore_rules(["DEP001"])
 
                 # Assert
@@ -132,7 +131,7 @@ ignore = ["DEP001"]
             tool = DeptryTool()
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = tool.ignored_rules()
 
                 # Assert
@@ -144,7 +143,7 @@ ignore = ["DEP001"]
             (tmp_path / "pyproject.toml").write_text("")
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = tool.ignored_rules()
 
                 # Assert
@@ -161,7 +160,7 @@ ignore = ["DEP003"]
             )
 
             # Act
-            with change_cwd(tmp_path), PyprojectTOMLManager():
+            with change_cwd(tmp_path), files_manager():
                 result = tool.ignored_rules()
 
                 # Assert

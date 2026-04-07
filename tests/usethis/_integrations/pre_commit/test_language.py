@@ -1,9 +1,9 @@
 from pathlib import Path
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.language import get_system_language
-from usethis._test import change_cwd
 
 
 class TestGetSystemLanguage:

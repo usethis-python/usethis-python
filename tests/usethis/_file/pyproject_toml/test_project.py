@@ -2,19 +2,19 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
+from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.errors import (
     PyprojectTOMLProjectSectionError,
 )
-from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.pyproject_toml.project import get_project_dict
-from usethis._test import change_cwd
 
 
 class TestGetProjectDict:
     def test_no_file(self, tmp_path: Path):
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
@@ -26,7 +26,7 @@ class TestGetProjectDict:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
@@ -38,7 +38,7 @@ class TestGetProjectDict:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
@@ -50,7 +50,7 @@ class TestGetProjectDict:
         # Act, Assert
         with (
             change_cwd(tmp_path),
-            PyprojectTOMLManager(),
+            files_manager(),
             pytest.raises(PyprojectTOMLProjectSectionError),
         ):
             get_project_dict()
@@ -62,7 +62,7 @@ class TestGetProjectDict:
         )
 
         # Act
-        with change_cwd(tmp_path), PyprojectTOMLManager():
+        with change_cwd(tmp_path), files_manager():
             project = get_project_dict()
 
         # Assert

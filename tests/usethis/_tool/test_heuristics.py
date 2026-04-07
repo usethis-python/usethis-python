@@ -4,10 +4,11 @@ from pathlib import Path
 
 from typing_extensions import override
 
+from _test import change_cwd
+from usethis._config_file import files_manager
 from usethis._console import how_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema
-from usethis._test import change_cwd
 from usethis._tool.base import Tool, ToolMeta
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.heuristics import is_likely_used
@@ -84,7 +85,7 @@ class TestIsLikelyUsed:
     def test_config_spec_present(self, uv_init_dir: Path):
         # Arrange
         tool = SimpleTool()
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             PyprojectTOMLManager().set_value(
                 keys=["tool", "simple_tool", "key"], value="value"
             )
@@ -100,7 +101,7 @@ class TestIsLikelyUsed:
         tool = SimpleTool()
 
         # Act
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             result = is_likely_used(tool)
 
         # Assert
@@ -131,7 +132,7 @@ class TestIsLikelyUsed:
 class TestConfigSpecIsPresent:
     def test_unmanaged_item_not_detected(self, uv_init_dir: Path):
         # An unmanaged config item is skipped even when its keys exist on disk.
-        with change_cwd(uv_init_dir), PyprojectTOMLManager():
+        with change_cwd(uv_init_dir), files_manager():
             PyprojectTOMLManager().set_value(
                 keys=["tool", "simple_tool", "key"], value="value"
             )

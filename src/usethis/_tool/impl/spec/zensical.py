@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, final
 
 from typing_extensions import override
 
-from usethis._config_file import ZensicalTOMLManager
+from usethis._config_file import MkDocsYMLManager, ZensicalTOMLManager
 from usethis._integrations.project.name import get_project_name
 from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
@@ -46,6 +46,7 @@ class ZensicalToolSpec(ToolSpec):
         return ConfigSpec.from_flat(
             file_managers=[
                 ZensicalTOMLManager(),
+                MkDocsYMLManager(),
             ],
             resolution="first_content",
             config_items=[
@@ -56,6 +57,10 @@ class ZensicalToolSpec(ToolSpec):
                             keys=["project", "site_name"],
                             get_value=lambda: get_project_name(),
                         ),
+                        Path("mkdocs.yml"): ConfigEntry(
+                            keys=["site_name"],
+                            get_value=lambda: get_project_name(),
+                        ),
                     },
                 ),
                 ConfigItem(
@@ -63,6 +68,10 @@ class ZensicalToolSpec(ToolSpec):
                     root={
                         Path("zensical.toml"): ConfigEntry(
                             keys=["project", "nav"],
+                            get_value=lambda: [{"Home": "index.md"}],
+                        ),
+                        Path("mkdocs.yml"): ConfigEntry(
+                            keys=["nav"],
                             get_value=lambda: [{"Home": "index.md"}],
                         ),
                     },

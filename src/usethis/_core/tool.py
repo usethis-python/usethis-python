@@ -583,7 +583,6 @@ def use_zensical(*, remove: bool = False, how: bool = False) -> None:
 
     if not remove:
         ensure_dep_declaration_file()
-        (usethis_config.cpd() / "zensical.toml").touch()
 
         add_docs_dir()
 

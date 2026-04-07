@@ -8,6 +8,7 @@ from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
+from usethis._subprocess import SubprocessResult
 
 
 class TestCallUVSubprocess:
@@ -30,9 +31,11 @@ class TestCallUVSubprocess:
 
         # Arrange
         # Mock the call_subprocess function to check the args passed
-        def mock_call_subprocess(args: list[str], *, cwd: Path | None = None) -> str:
+        def mock_call_subprocess(
+            args: list[str], *, cwd: Path | None = None
+        ) -> SubprocessResult:
             _ = cwd
-            return " ".join(args)
+            return SubprocessResult(" ".join(args), "")
 
         monkeypatch.setattr(
             usethis._backend.uv.call,
@@ -84,3 +87,85 @@ link-mode = "symlink"
         out, err = capfd.readouterr()
         assert not err
         assert out == "✔ Setting project version to '0.1.0' in 'pyproject.toml'.\n"
+
+    def test_stderr_warnings_surfaced(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        """Warnings emitted on stderr by uv should be surfaced via warn_print."""
+
+        def mock_call_subprocess(
+            args: list[str], *, cwd: Path | None = None
+        ) -> SubprocessResult:
+            _ = args, cwd
+            return SubprocessResult("", "warning: something went wrong\n")
+
+        monkeypatch.setattr(
+            usethis._backend.uv.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        # Act
+        call_uv_subprocess(["help"], change_toml=False)
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert "warning: something went wrong" in out
+        assert not err
+
+    def test_empty_stderr_no_warning(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        """When stderr is empty, no warning should be printed."""
+
+        def mock_call_subprocess(
+            args: list[str], *, cwd: Path | None = None
+        ) -> SubprocessResult:
+            _ = args, cwd
+            return SubprocessResult("", "")
+
+        monkeypatch.setattr(
+            usethis._backend.uv.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        # Act
+        call_uv_subprocess(["help"], change_toml=False)
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert out == ""
+        assert err == ""
+
+    def test_multiline_stderr_warnings(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        """Multiple lines on stderr should each be surfaced as separate warnings."""
+
+        def mock_call_subprocess(
+            args: list[str], *, cwd: Path | None = None
+        ) -> SubprocessResult:
+            _ = args, cwd
+            return SubprocessResult("", "warning: first\nwarning: second\n")
+
+        monkeypatch.setattr(
+            usethis._backend.uv.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        # Act
+        call_uv_subprocess(["help"], change_toml=False)
+
+        # Assert
+        out, err = capfd.readouterr()
+        assert "warning: first" in out
+        assert "warning: second" in out
+        assert not err

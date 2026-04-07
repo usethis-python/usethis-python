@@ -4,6 +4,7 @@
 - `call_poetry_subprocess()` (`usethis._backend.poetry.call`) — Run a subprocess using the Poetry command-line tool.
 - `_frozen_poetry_lock()` (`usethis._backend.poetry.call`) — Preserve the state of poetry.lock across the enclosed block.
 - `_noop_context()` (`usethis._backend.poetry.call`) — A no-op context manager used when frozen mode is not applicable.
+- `_surface_stderr_warnings()` (`usethis._backend.poetry.call`) — Surface any warning lines from Poetry's stderr output.
 - `add_dep_to_group_via_poetry()` (`usethis._backend.poetry.deps`) — Add a dependency to the named group using Poetry.
 - `remove_dep_from_group_via_poetry()` (`usethis._backend.poetry.deps`) — Remove a dependency from the named group using Poetry.
 - `is_poetry_used()` (`usethis._backend.poetry.detect`) — Check if Poetry is being used in the project.
@@ -13,6 +14,7 @@
 - `is_uv_available()` (`usethis._backend.uv.available`) — Check if the `uv` command is available in the current environment.
 - `_is_uv_a_dep()` (`usethis._backend.uv.available`) — Check if uv is declared as a project dependency or in a dependency group.
 - `call_uv_subprocess()` (`usethis._backend.uv.call`) — Run a subprocess using the uv command-line tool.
+- `_surface_stderr_warnings()` (`usethis._backend.uv.call`) — Surface any warning lines from uv's stderr output.
 - `add_default_groups_via_uv()` (`usethis._backend.uv.call`) — Add default groups using the uv command-line tool.
 - `add_dep_to_group_via_uv()` (`usethis._backend.uv.deps`) — Add a dependency to the named group using uv.
 - `remove_dep_from_group_via_uv()` (`usethis._backend.uv.deps`) — Remove a dependency from the named group using uv.
@@ -176,7 +178,7 @@
 - `get_predecessor()` (`usethis._pipeweld.func`) — Find the step that immediately precedes `step` in a pipeline component.
 - `_extract_ordered_steps()` (`usethis._pipeweld.func`) — Extract all step names from a component in depth-first order.
 - `_linearize_component()` (`usethis._pipeweld.func`) — Flatten a pipeline component to a linear list of step names.
-- `call_subprocess()` (`usethis._subprocess`) — Run a subprocess and return its stdout, raising SubprocessFailedError on failure.
+- `call_subprocess()` (`usethis._subprocess`) — Run a subprocess and return its output, raising SubprocessFailedError on failure.
 - `ensure_managed_file_exists()` (`usethis._tool.config`) — Ensure a file manager's managed file exists.
 - `is_likely_used()` (`usethis._tool.heuristics`) — Determine whether a tool is likely used in the current project.
 - `is_rule_covered_by()` (`usethis._tool.rule`) — Check if a rule is covered (subsumed) by a more general rule.

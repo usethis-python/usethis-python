@@ -6,6 +6,7 @@ from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._backend.uv.link_mode import ensure_symlink_mode
 from usethis._backend.uv.toml import UVTOMLManager
 from usethis._config import usethis_config
+from usethis._console import warn_print
 from usethis._file.pyproject_toml.io_ import (
     PyprojectTOMLManager,
 )
@@ -65,16 +66,26 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         new_args = [*new_args[:2], "--quiet", *new_args[2:]]
 
     try:
-        output = call_subprocess(
+        result = call_subprocess(
             new_args, cwd=usethis_config.cpd() if args[0] != "init" else None
         )
     except SubprocessFailedError as err:
         raise UVSubprocessFailedError(err) from None
 
+    _surface_stderr_warnings(result.stderr)
+
     if change_toml and PyprojectTOMLManager().is_locked():
         PyprojectTOMLManager().read_file()
 
-    return output
+    return result.stdout
+
+
+def _surface_stderr_warnings(stderr: str) -> None:
+    """Surface any warning lines from subprocess stderr output."""
+    for line in stderr.splitlines():
+        stripped = line.strip()
+        if stripped:
+            warn_print(stripped)
 
 
 def add_default_groups_via_uv(groups: list[str]) -> None:

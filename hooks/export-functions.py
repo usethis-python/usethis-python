@@ -142,6 +142,8 @@ def _get_module_public_functions(
     for node in ast.iter_child_nodes(tree):
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
+        if _is_overload(node):
+            continue
         if skip_private and node.name.startswith("_"):
             continue
         docstring = ast.get_docstring(node)
@@ -155,6 +157,15 @@ def _get_module_public_functions(
             results.append((node.name, None))
 
     return results
+
+
+def _is_overload(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """Return True if the function is decorated with `@overload`."""
+    return any(
+        (isinstance(d, ast.Name) and d.id == "overload")
+        or (isinstance(d, ast.Attribute) and d.attr == "overload")
+        for d in node.decorator_list
+    )
 
 
 def _collect_py_files(source_root: Path) -> list[Path]:

@@ -125,6 +125,38 @@ class TestGetModulePublicFunctions:
         result = _get_module_public_functions(py_file)
         assert result == [("foo", "Use `bar` here.")]
 
+    def test_overload_decorated_function_skipped(self, tmp_path: Path):
+        py_file = tmp_path / "mod.py"
+        py_file.write_text(
+            "from typing import overload\n"
+            "\n"
+            "@overload\n"
+            "def foo(x: int) -> int: ...\n"
+            "\n"
+            "@overload\n"
+            "def foo(x: str) -> str: ...\n"
+            "\n"
+            'def foo(x):\n    """Do foo."""\n    return x\n'
+        )
+        result = _get_module_public_functions(py_file)
+        assert result == [("foo", "Do foo.")]
+
+    def test_typing_dot_overload_decorated_function_skipped(self, tmp_path: Path):
+        py_file = tmp_path / "mod.py"
+        py_file.write_text(
+            "import typing\n"
+            "\n"
+            "@typing.overload\n"
+            "def foo(x: int) -> int: ...\n"
+            "\n"
+            "@typing.overload\n"
+            "def foo(x: str) -> str: ...\n"
+            "\n"
+            'def foo(x):\n    """Do foo."""\n    return x\n'
+        )
+        result = _get_module_public_functions(py_file)
+        assert result == [("foo", "Do foo.")]
+
 
 class TestMain:
     def test_includes_private_by_default(self, tmp_path: Path):

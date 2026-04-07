@@ -94,6 +94,14 @@ repos:
         language: system
         types: [python]
         priority: 0
+      - id: check-comment-keywords
+        name: check-comment-keywords
+        entry: uv run --frozen --offline hooks/check-comment-keywords.py
+        args: ["--keyword", "pragma:", "--keyword", "type: ignore"]
+        language: system
+        types: [python]
+        files: ^(src|tests)/
+        priority: 0
       - id: check-list-referenced
         name: check-list-referenced
         entry: uv run --frozen --offline hooks/check-list-referenced.py

@@ -98,9 +98,7 @@ def get_poetry_project_deps() -> list[Dependency]:
     except FileNotFoundError:
         return []
 
-    poetry_deps = (
-        pyproject.get("tool", {}).get("poetry", {}).get("dependencies", {})  # type: ignore[union-attr]
-    )
+    poetry_deps = pyproject.get("tool", {}).get("poetry", {}).get("dependencies", {})
 
     if not isinstance(poetry_deps, dict):
         return []
@@ -120,7 +118,7 @@ def get_poetry_dep_groups() -> dict[str, list[Dependency]]:
     except FileNotFoundError:
         return {}
 
-    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})  # type: ignore[union-attr]
+    poetry_groups = pyproject.get("tool", {}).get("poetry", {}).get("group", {})
 
     if not isinstance(poetry_groups, dict):
         return {}

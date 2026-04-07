@@ -20,6 +20,7 @@ from usethis._console import how_print, tick_print
 from usethis._fallback import FALLBACK_RUFF_VERSION
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema as pre_commit_schema
+from usethis._integrations.project.layout import get_tests_dir_str
 from usethis._tool.base import Tool
 from usethis._tool.config import (
     ConfigEntry,
@@ -253,16 +254,19 @@ class RuffTool(RuffToolSpec, Tool):
             instruct_only=(is_selected or is_ignored) or usethis_config.instruct_only,
         ):
             # Only add test-related directory ignore rules if the tests directory exists
-            if (usethis_config.cpd() / "tests").exists():
-                self.ignore_rules_in_glob(rule_config.tests_ignored, glob="tests/**")
+            tests_dir = get_tests_dir_str()
+            if (usethis_config.cpd() / tests_dir).exists():
                 self.ignore_rules_in_glob(
-                    rule_config.nontests_ignored, glob="!tests/**/*.py"
+                    rule_config.tests_ignored, glob=f"{tests_dir}/**"
                 )
                 self.ignore_rules_in_glob(
-                    rule_config.tests_unmanaged_ignored, glob="tests/**"
+                    rule_config.nontests_ignored, glob=f"!{tests_dir}/**/*.py"
                 )
                 self.ignore_rules_in_glob(
-                    rule_config.nontests_unmanaged_ignored, glob="!tests/**/*.py"
+                    rule_config.tests_unmanaged_ignored, glob=f"{tests_dir}/**"
+                )
+                self.ignore_rules_in_glob(
+                    rule_config.nontests_unmanaged_ignored, glob=f"!{tests_dir}/**/*.py"
                 )
 
     def remove_rule_config(self, rule_config: RuleConfig) -> None:
@@ -272,8 +276,11 @@ class RuffTool(RuffToolSpec, Tool):
         """
         self.deselect_rules(rule_config.selected)
         self.unignore_rules(rule_config.ignored)
-        self.unignore_rules_in_glob(rule_config.tests_ignored, glob="tests/**")
-        self.unignore_rules_in_glob(rule_config.nontests_ignored, glob="!tests/**/*.py")
+        tests_dir = get_tests_dir_str()
+        self.unignore_rules_in_glob(rule_config.tests_ignored, glob=f"{tests_dir}/**")
+        self.unignore_rules_in_glob(
+            rule_config.nontests_ignored, glob=f"!{tests_dir}/**/*.py"
+        )
 
     def set_docstyle(self, style: Literal["numpy", "google", "pep257"]) -> None:
         (file_manager,) = self.get_active_config_file_managers()

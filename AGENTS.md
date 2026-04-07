@@ -359,6 +359,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `_get_child_dependencies()` (`usethis._integrations.project.imports`) — For each child submodule, give a set of the sibling submodules it depends on.
 - `augment_pythonpath()` (`usethis._integrations.project.imports`) — Temporarily add a directory to the Python path.
 - `get_source_dir_str()` (`usethis._integrations.project.layout`) — Get the source directory as a string ('src' or '.').
+- `get_tests_dir_str()` (`usethis._integrations.project.layout`) — Get the tests directory name ('tests' or 'test').
 - `get_license_id()` (`usethis._integrations.project.license`) — Get the SPDX license identifier for the current project.
 - `_get_license_from_file()` (`usethis._integrations.project.license`) — Try to detect the license from common license files at the project root.
 - `_get_license_from_pyproject_field()` (`usethis._integrations.project.license`) — Try to detect the license from pyproject.toml `project.license` field.

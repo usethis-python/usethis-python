@@ -38,6 +38,17 @@ class TestGetSourceDirStr:
         # Assert
         assert result == "."
 
+    def test_setup_py_present(self, tmp_path: Path):
+        # Arrange
+        (tmp_path / "setup.py").touch()
+
+        # Act
+        with change_cwd(tmp_path):
+            result = get_source_dir_str()
+
+        # Assert
+        assert result == "."
+
 
 class TestGetTestsDirStr:
     def test_tests_dir_exists(self, tmp_path: Path):

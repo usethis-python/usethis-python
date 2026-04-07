@@ -5,12 +5,12 @@ import pytest
 import requests
 from requests.exceptions import RequestException
 
+from _test import change_cwd, is_offline
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.requires_python import (
     get_requires_python,
 )
 from usethis._integrations.pre_commit import schema
-from usethis._test import change_cwd, is_offline
 
 
 def test_multiple_per_repo():

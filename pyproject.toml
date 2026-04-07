@@ -80,6 +80,7 @@ dev = [
   "ruff>=0.14.3",
   "ty>=0.0.1a25",
   "validate-pyproject>=0.24.1",
+  "vulture>=2.16",
 ]
 test = [
   "click>=8.1.8",
@@ -203,3 +204,13 @@ reportUnannotatedClassAttribute = false
 
 [tool.sync-with-uv.repo-to-package]
 "https://github.com/astral-sh/uv-pre-commit" = "uv"
+
+[tool.vulture]
+paths = [ "src/usethis" ]
+exclude = [ "src/usethis/_types", "src/usethis/_integrations/pre_commit/schema.py" ]
+ignore_decorators = [ "@app.command" ]
+ignore_names = [
+  "ALL_TOOL_COMMAND_STRS",       # Used by a prek hook to keep README up to date.
+  "preserve_quotes",             # Has side effect for YAML integration
+  "FALLBACK_PRE_COMMIT_VERSION", # Used in tests but kept in the package for maintenance reasons.
+]

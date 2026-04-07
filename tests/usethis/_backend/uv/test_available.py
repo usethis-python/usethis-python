@@ -3,10 +3,10 @@ from pathlib import Path
 import pytest
 
 import usethis._backend.uv.available
+from _test import change_cwd
 from usethis._backend.uv.available import _is_uv_a_dep, is_uv_available
 from usethis._backend.uv.errors import UVSubprocessFailedError
 from usethis._config_file import files_manager
-from usethis._test import change_cwd
 
 
 class TestIsUVAvailable:

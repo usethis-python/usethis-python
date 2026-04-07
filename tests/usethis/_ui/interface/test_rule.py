@@ -1,10 +1,10 @@
 from pathlib import Path
 
+from _test import CliRunner, change_cwd
 from usethis._config_file import files_manager
 from usethis._core.rule import ignore_rules
 from usethis._core.tool import use_deptry
 from usethis._subprocess import call_subprocess
-from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app
 
 

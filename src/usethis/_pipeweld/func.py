@@ -45,7 +45,6 @@ class Adder(BaseModel):
     step: str
     prerequisites: set[str] = set()
     postrequisites: set[str] = set()
-    compatible_config_groups: set[str] = set()
     force_linear: bool = False
 
     def add(self) -> WeldResult:

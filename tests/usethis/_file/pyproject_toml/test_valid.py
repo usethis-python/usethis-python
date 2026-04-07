@@ -1,8 +1,8 @@
 from pathlib import Path
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.valid import ensure_pyproject_validity
-from usethis._test import change_cwd
 
 
 class TestEnsurePyprojectValidity:

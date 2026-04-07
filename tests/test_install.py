@@ -5,11 +5,11 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
+from _test import change_cwd
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._subprocess import call_subprocess
-from usethis._test import change_cwd
 
 
 @pytest.fixture

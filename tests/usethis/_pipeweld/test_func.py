@@ -320,7 +320,6 @@ class TestAdder:
                 step="E",
                 pipeline=series("A", depgroup("B", "C", config_group="x")),
                 prerequisites={"B"},
-                compatible_config_groups={"x"},
             )
 
             # Act

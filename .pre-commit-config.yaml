@@ -61,6 +61,11 @@ repos:
         additional_dependencies:
           - tomli
         priority: 0
+  - repo: https://github.com/jendrikseipp/vulture
+    rev: v2.16
+    hooks:
+      - id: vulture
+        priority: 0
   - repo: local
     hooks:
       - id: check-skills-documented

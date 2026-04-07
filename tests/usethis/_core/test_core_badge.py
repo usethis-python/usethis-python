@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._core.badge import (
     Badge,
@@ -17,7 +18,6 @@ from usethis._core.badge import (
     is_badge,
     remove_badge,
 )
-from usethis._test import change_cwd
 
 
 class TestIsBadge:

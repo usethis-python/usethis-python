@@ -4,11 +4,11 @@ from pathlib import Path
 
 from typing_extensions import override
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._console import how_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit import schema
-from usethis._test import change_cwd
 from usethis._tool.base import Tool, ToolMeta
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.heuristics import is_likely_used

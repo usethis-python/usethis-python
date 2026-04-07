@@ -6,14 +6,13 @@ from pathlib import Path
 
 import pytest
 
+from _test import change_cwd, is_offline
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import UsethisConfig, usethis_config
 from usethis._config_file import files_manager
 from usethis._console import _cached_warn_print, get_icon_mode
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.environ.python import _get_current_python_version
 from usethis._subprocess import call_subprocess
-from usethis._test import change_cwd, is_offline
 from usethis._tool.impl.spec.import_linter import _importlinter_warn_no_packages_found
 
 if "UV_PYTHON" in os.environ:
@@ -30,7 +29,6 @@ def clear_functools_caches():
     _cached_warn_print.cache_clear()
     get_icon_mode.cache_clear()
     _importlinter_warn_no_packages_found.cache_clear()
-    _get_current_python_version.cache_clear()
 
 
 @pytest.fixture(scope="session")

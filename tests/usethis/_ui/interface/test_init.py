@@ -2,11 +2,11 @@ from pathlib import Path
 
 import pytest
 
+from _test import CliRunner, change_cwd
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit.hooks import get_hook_ids
 from usethis._python.version import PythonVersion
-from usethis._test import CliRunner, change_cwd
 from usethis._ui.app import app
 
 

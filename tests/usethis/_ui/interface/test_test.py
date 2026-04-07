@@ -1,8 +1,8 @@
 from pathlib import Path
 
+from _test import CliRunner, change_cwd
 from usethis._config_file import files_manager
 from usethis._deps import get_deps_from_group
-from usethis._test import CliRunner, change_cwd
 from usethis._types.deps import Dependency
 from usethis._ui.app import app
 

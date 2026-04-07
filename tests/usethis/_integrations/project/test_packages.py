@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from _test import change_cwd
 from usethis._integrations.project.packages import get_importable_packages
-from usethis._test import change_cwd
 
 
 class TestGetImportablePackages:

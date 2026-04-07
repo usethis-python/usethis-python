@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from _test import change_cwd
 from usethis._integrations.project.layout import get_source_dir_str
-from usethis._test import change_cwd
 
 
 class TestGetSourceDirStr:

@@ -232,10 +232,6 @@ class Tool(ToolSpec, Protocol):
             if pre_commit_config.inform_how_to_use_on_migrate:
                 self.print_how_to_use()
 
-    def is_config_present(self) -> bool:
-        """Whether any of the tool's managed config sections are present."""
-        return self.config_spec().is_present()
-
     def add_configs(self) -> None:
         """Add the tool's configuration sections.
 

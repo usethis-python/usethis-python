@@ -7,7 +7,6 @@ usethis                           # usethis: Automatically manage Python tooling
 ├── _fallback                     # Central module for hard-coded fallback version constants.
 ├── _init                         # Project initialization and build system setup.
 ├── _subprocess                   # Subprocess invocation utilities.
-├── _test                         # Test utilities and fixtures for the usethis test suite.
 ├── errors                        # Custom errors for the usethis package.
 ├── _backend                      # Backend dispatch and tool-specific backend implementations.
 │   ├── dispatch                  # Backend selection and dispatch logic.
@@ -27,9 +26,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │       ├── init                  # Project initialization via uv.
 │       ├── link_mode             # Symlink link-mode configuration for uv.
 │       ├── lockfile              # Lock file creation and management for uv.
-│       ├── python                # Python version queries via uv.
-│       ├── toml                  # Manager for the uv.toml configuration file.
-│       └── version               # Retrieve the installed uv version.
+│       └── toml                  # Manager for the uv.toml configuration file.
 ├── _core                         # Core business logic for usethis commands.
 │   ├── author                    # Author metadata management for pyproject.toml.
 │   ├── badge                     # README badge generation and management.
@@ -59,7 +56,6 @@ usethis                           # usethis: Automatically manage Python tooling
 │   │   ├── io_                   # pyproject.toml file I/O manager.
 │   │   ├── name                  # Project name and description extraction from pyproject.toml.
 │   │   ├── project               # Access the [project] section of pyproject.toml.
-│   │   ├── remove                # Removal of the pyproject.toml file.
 │   │   ├── requires_python       # Python version requirement queries from pyproject.toml.
 │   │   ├── valid                 # Validation and repair of pyproject.toml structure.
 │   │   └── write                 # Preparation helpers for writing pyproject.toml via subprocesses.
@@ -75,12 +71,6 @@ usethis                           # usethis: Automatically manage Python tooling
 │       ├── typing_               # Type aliases for YAML document values.
 │       └── update                # Smart update strategies for YAML sequences and mappings.
 ├── _integrations                 # Third-party tool integrations.
-│   ├── ci                        # CI platform integrations.
-│   │   └── github                # GitHub CI integration.
-│   │       ├── errors            # Error types for GitHub CI operations.
-│   │       └── tags              # GitHub repository tag fetching.
-│   ├── environ                   # Environment detection utilities.
-│   │   └── python                # Python version environment queries.
 │   ├── mkdocs                    # MkDocs documentation integration.
 │   │   └── core                  # MkDocs project setup and configuration.
 │   ├── pre_commit                # Pre-commit hook framework integration.

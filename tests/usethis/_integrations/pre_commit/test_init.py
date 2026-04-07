@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from _test import change_cwd
 from usethis._integrations.pre_commit.init import ensure_pre_commit_config_exists
-from usethis._test import change_cwd
 
 
 class TestEnsurePreCommitConfigExists:

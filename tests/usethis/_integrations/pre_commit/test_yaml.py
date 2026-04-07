@@ -3,6 +3,7 @@ from typing import cast
 
 import pytest
 
+from _test import change_cwd
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.errors import PreCommitConfigYAMLConfigError
@@ -11,7 +12,6 @@ from usethis._integrations.pre_commit.yaml import (
     PreCommitConfigYAMLManager,
     _pre_commit_fancy_dump,
 )
-from usethis._test import change_cwd
 
 
 class TestEditPreCommitConfigYAML:

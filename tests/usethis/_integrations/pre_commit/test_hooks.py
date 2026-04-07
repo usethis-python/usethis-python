@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from ruamel.yaml import YAML
 
+from _test import change_cwd, hooks_are_equivalent
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.hooks import (
@@ -11,12 +12,10 @@ from usethis._integrations.pre_commit.hooks import (
     add_placeholder_hook,
     add_repo,
     get_hook_ids,
-    hooks_are_equivalent,
     insert_repo,
     remove_hook,
 )
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
-from usethis._test import change_cwd
 
 
 class TestHookGroups:

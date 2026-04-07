@@ -104,6 +104,28 @@ class TestValidateOrDefault:
         assert result == 1.0
         assert isinstance(result, float)
 
+    def test_warn_msg_emitted_on_failure(self, capfd: pytest.CaptureFixture[str]):
+        result = validate_or_default(
+            str, 123, default="fallback", warn_msg="bad value found"
+        )
+        assert result == "fallback"
+        captured = capfd.readouterr()
+        assert "bad value found" in captured.out
+
+    def test_warn_msg_not_emitted_on_success(self, capfd: pytest.CaptureFixture[str]):
+        result = validate_or_default(
+            str, "hello", default="fallback", warn_msg="should not appear"
+        )
+        assert result == "hello"
+        captured = capfd.readouterr()
+        assert "should not appear" not in captured.out
+
+    def test_no_warn_msg_by_default(self, capfd: pytest.CaptureFixture[str]):
+        result = validate_or_default(str, 123, default="fallback")
+        assert result == "fallback"
+        captured = capfd.readouterr()
+        assert captured.out == ""
+
 
 class TestGetValidated:
     """Tests for KeyValueFileManager.validated_get."""
@@ -154,6 +176,40 @@ class TestGetValidated:
                 ["project", "name"], default="fallback"
             )
         assert result == "test"
+
+    def test_warn_msg_emitted_on_validation_failure(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "test"\nversion = "0.1.0"\nclassifiers = "not-a-list"\n'
+        )
+        with change_cwd(tmp_path), files_manager():
+            result = PyprojectTOMLManager().validated_get(
+                ["project", "classifiers"],
+                default=[],
+                validate=list[str],
+                warn_msg="invalid classifiers",
+            )
+        assert result == []
+        captured = capfd.readouterr()
+        assert "invalid classifiers" in captured.out
+
+    def test_warn_msg_not_emitted_on_missing_key(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
+        (tmp_path / "pyproject.toml").write_text(
+            '[project]\nname = "test"\nversion = "0.1.0"\n'
+        )
+        with change_cwd(tmp_path), files_manager():
+            result = PyprojectTOMLManager().validated_get(
+                ["project", "missing"],
+                default="fallback",
+                validate=str,
+                warn_msg="should not appear",
+            )
+        assert result == "fallback"
+        captured = capfd.readouterr()
+        assert "should not appear" not in captured.out
 
 
 class TestEnsureGet:

@@ -1,12 +1,12 @@
 """Safer abstractions for Pydantic TypeAdapter validation.
 
-This module provides two wrappers around ``TypeAdapter.validate_python``
-that guarantee every ``ValidationError`` is handled — either re-raised as
+This module provides two wrappers around `TypeAdapter.validate_python`
+that guarantee every `ValidationError` is handled — either re-raised as
 a caller-specified error or swallowed in favour of a default value.
 
-Rationale: raw ``pydantic.ValidationError`` should never propagate out of
+Rationale: raw `pydantic.ValidationError` should never propagate out of
 usethis.  By routing all validation through these helpers and banning
-direct ``TypeAdapter`` usage via Ruff (TID251), we make unhandled
+direct `TypeAdapter` usage via Ruff (TID251), we make unhandled
 validation errors a lint failure rather than a runtime surprise.
 """
 
@@ -43,11 +43,11 @@ def validate_or_raise(
     *,
     err: Exception,
 ) -> object:
-    """Validate ``obj`` against ``type_``, raising a custom error on failure.
+    """Validate `obj` against `type_`, raising a custom error on failure.
 
     Args:
         type_: The target type to validate against (forwarded to
-            ``TypeAdapter``).
+            `TypeAdapter`).
         obj: The object to validate.
         err: An instantiated exception to raise when validation fails.
 
@@ -55,7 +55,7 @@ def validate_or_raise(
         The validated (and possibly coerced) object.
 
     Raises:
-        type(err): When ``obj`` does not conform to ``type_``.
+        type(err): When `obj` does not conform to `type_`.
     """
     try:
         return TypeAdapter(type_).validate_python(obj)
@@ -68,19 +68,26 @@ def validate_or_default(
     obj: object,
     *,
     default: T,
+    warn_msg: str | None = None,
 ) -> T:
-    """Validate ``obj`` against ``type_``, returning ``default`` on failure.
+    """Validate `obj` against `type_`, returning `default` on failure.
 
     Args:
         type_: The target type to validate against (forwarded to
-            ``TypeAdapter``).
+            `TypeAdapter`).
         obj: The object to validate.
         default: The value to return when validation fails.
+        warn_msg: An optional warning message to display to the user
+            when validation fails.  When `None`, no warning is emitted.
 
     Returns:
-        The validated object, or ``default`` if validation fails.
+        The validated object, or `default` if validation fails.
     """
     try:
         return TypeAdapter(type_).validate_python(obj)
     except ValidationError:
+        if warn_msg is not None:
+            from usethis._console import warn_print  # noqa: PLC0415
+
+            warn_print(warn_msg)
         return default

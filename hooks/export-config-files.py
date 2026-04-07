@@ -95,6 +95,9 @@ def _load_context_manager(
     return ctx_fn()
 
 
+_DEFAULT_RESOLUTION = "first"
+
+
 def _get_paths_and_resolution(spec: object) -> tuple[list[Path], str | None]:
     # Some specs expose a static file manager accessor to avoid expensive analysis
     # (e.g. an import graph build). Use it if available.
@@ -102,7 +105,9 @@ def _get_paths_and_resolution(spec: object) -> tuple[list[Path], str | None]:
     if get_fmbr is not None:
         paths = list(get_fmbr().keys())
         get_res = getattr(spec, "_get_resolution", None)
-        resolution: str | None = get_res() if get_res is not None else "first"
+        resolution: str | None = (
+            get_res() if get_res is not None else _DEFAULT_RESOLUTION
+        )
         if paths:
             return paths, resolution
 
@@ -117,7 +122,7 @@ def _get_paths_and_resolution(spec: object) -> tuple[list[Path], str | None]:
         try:
             config_spec_fn = getattr(spec, "config_spec", None)
             config = config_spec_fn() if config_spec_fn is not None else None
-        except Exception:
+        except (AssertionError, NotImplementedError):
             config = None
 
     if config is not None:

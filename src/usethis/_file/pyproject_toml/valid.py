@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import tomlkit
 from tomlkit.items import Array, Table
 
 from usethis._config import usethis_config
@@ -24,7 +25,7 @@ def ensure_pyproject_validity():
 
     try:
         project = _ensure_project_section(toml_document)
-        _ensure_project_name(project)
+        project = _ensure_project_name(project, toml_document)
         _ensure_project_version(project)
     except TypeError:
         # Give up - the file is badly formatted. Let uv give a better error message.
@@ -59,14 +60,24 @@ def _ensure_project_version(project: Table) -> None:
     project["version"] = "0.1.0"
 
 
-def _ensure_project_name(project: Table) -> None:
+def _ensure_project_name(project: Table, toml_document: TOMLDocument) -> Table:
     if "name" in project:
-        return
+        return project
 
     name = get_project_name_from_dir()
 
     tick_print(f"Setting project name to '{name}' in 'pyproject.toml'.")
     if project.value:
-        project._value._insert_at(0, "name", name)  # pyright: ignore[reportPrivateUsage]
+        # Build a new table with 'name' first, then copy all existing items.
+        # We iterate `body` (not `items()`) because `body` includes comments and
+        # whitespace entries with None keys that cannot be added via dict-style
+        # assignment. `Table.append` accepts None keys, covering all entry types.
+        new_table = tomlkit.table()
+        new_table["name"] = name
+        for key, item in project.value.body:
+            new_table.append(key, item)
+        toml_document["project"] = new_table
+        return new_table
     else:
         project["name"] = name
+        return project

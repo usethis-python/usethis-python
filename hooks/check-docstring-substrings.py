@@ -10,7 +10,6 @@ from __future__ import annotations
 import argparse
 import ast
 import re
-import sys
 
 
 def main() -> int:
@@ -38,12 +37,11 @@ def main() -> int:
         violations.extend(_check_file(filepath, compiled))
 
     if violations:
-        print("ERROR: Forbidden pattern(s) found in docstrings:", file=sys.stderr)
+        print("ERROR: Forbidden pattern(s) found in docstrings:")
         for v in violations:
-            print(v, file=sys.stderr)
+            print(v)
         return 1
 
-    print("No forbidden patterns found in docstrings.")
     return 0
 
 

@@ -4,7 +4,7 @@ description: Coordinate LLM-assisted quality reviews of the codebase beyond what
 compatibility: usethis, Python, markdown, documentation
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # LLM-Assisted Codebase Review
@@ -33,3 +33,4 @@ Coordinate manual, LLM-assisted quality checks that go beyond what automated lin
 The following checks should be run in order:
 
 1. **Grammar, spelling, and tone** — use the `usethis-qa-grammar` skill.
+2. **Config files documentation sync** — use the `usethis-qa-config-files-sync` skill.

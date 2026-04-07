@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 import pytest
@@ -35,8 +36,8 @@ class TestGetSonarProjectProperties:
         assert result == contents
 
     @pytest.mark.skipif(
-        not is_uv_python_available("3.13"),
-        reason="Python 3.13 is not available in uv's managed installations",
+        not is_uv_python_available("3.13") or sys.version_info > (3, 13),
+        reason="Requires Python 3.13 in uv and current Python <= 3.13 (otherwise requires-python blocks the pin)",
     )
     def test_file_doesnt_exist(self, uv_init_dir: Path):
         # If the file does not exist, we should construct based on information in

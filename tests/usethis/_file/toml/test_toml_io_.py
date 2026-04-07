@@ -502,7 +502,7 @@ lint.pydocstyle.convention = "pep257"
 
         def test_set_dict_value_at_deep_path(self, tmp_path: Path) -> None:
             # https://github.com/usethis-python/usethis-python/issues/685
-            # Setting a dict at a path with > 3 keys previously raised a tomlkit error.
+            # Setting a dict at a path with 4+ keys previously raised a tomlkit error.
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
                 @property
@@ -526,7 +526,7 @@ lint.pydocstyle.convention = "pep257"
 
         def test_set_dict_value_in_existing_doc(self, tmp_path: Path) -> None:
             # https://github.com/usethis-python/usethis-python/issues/685
-            # Setting a dict at a path with > 3 keys in an existing document
+            # Setting a dict at a path with 4+ keys in an existing document
             # previously produced an incorrect TOML structure.
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):

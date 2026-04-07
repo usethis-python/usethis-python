@@ -1,5 +1,11 @@
 # 🖥️ Command Reference
 
+Each tool command (e.g. `usethis tool ruff`, `usethis lint`, `usethis arch`) follows
+each tool's own configuration file discovery logic when writing configuration — if an
+existing supported configuration file is found, usethis will write to it. See
+[Configuration Files](../about/config-files.md) for the full list of supported
+configuration files for each tool.
+
 ## `usethis init`
 
 Initialize a new Python project with recommended defaults, including:
@@ -268,12 +274,6 @@ Add a new tool to a Python project, including:
 
 Note if `pyproject.toml` is not present, it will be created, since this is required for
 declaring dependencies with `uv add`.
-
-Each tool supports one or more configuration files. usethis follows the same
-configuration file discovery logic as each tool itself — if an existing supported
-configuration file is found, usethis will write to it. See
-[Configuration Files](../about/config-files.md) for the full list of supported
-configuration files for each tool.
 
 ### Code Quality Tools
 

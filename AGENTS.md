@@ -342,6 +342,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `add_docs_dir()` (`usethis._integrations.mkdocs.core`) — Create the `docs` directory and a `docs/index.md` file if they do not exist.
 - `remove_pre_commit_config()` (`usethis._integrations.pre_commit.core`) — Remove the .pre-commit-config.yaml file from the project.
 - `install_pre_commit_hooks()` (`usethis._integrations.pre_commit.core`) — Install pre-commit hooks.
+- `_is_git_repo()` (`usethis._integrations.pre_commit.core`) — Check if the current directory is within a git repository.
 - `uninstall_pre_commit_hooks()` (`usethis._integrations.pre_commit.core`) — Uninstall pre-commit hooks.
 - `add_repo()` (`usethis._integrations.pre_commit.hooks`) — Add a pre-commit repo configuration to the pre-commit configuration file.
 - `insert_repo()` (`usethis._integrations.pre_commit.hooks`) — Insert a repo into the list of repos after the named predecessor hook.

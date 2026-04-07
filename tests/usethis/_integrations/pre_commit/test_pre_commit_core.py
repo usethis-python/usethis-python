@@ -157,6 +157,11 @@ class TestInstallPreCommitHooks:
             "usethis._integrations.pre_commit.core.call_backend_subprocess",
             mock_call_backend_subprocess,
         )
+        # Mock git repo check so the hooks installation proceeds
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core._is_git_repo",
+            lambda: True,
+        )
 
         with (
             change_cwd(tmp_path),
@@ -184,6 +189,11 @@ class TestInstallPreCommitHooks:
             "usethis._integrations.pre_commit.core.call_backend_subprocess",
             mock_call_backend_subprocess,
         )
+        # Mock git repo check so the error path is exercised
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core._is_git_repo",
+            lambda: True,
+        )
 
         with (
             change_cwd(tmp_path),
@@ -193,15 +203,14 @@ class TestInstallPreCommitHooks:
         ):
             install_pre_commit_hooks()
 
-    def test_err(self, tmp_path: Path):
-        # Act, Assert
-        with (
-            change_cwd(tmp_path),
-            files_manager(),
-            pytest.raises(PreCommitInstallationError),
-        ):
-            # Will fail because pre-commit isn't installed.
+    def test_no_git_repo(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # When not in a git repository, installation is skipped with an info message.
+        with change_cwd(tmp_path), files_manager():
             install_pre_commit_hooks()
+
+        out, err = capfd.readouterr()
+        assert not err
+        assert "Git is not available; skipping pre-commit hook installation." in out
 
     def test_none_backend(self, tmp_path: Path):
         # Arrange
@@ -238,15 +247,14 @@ class TestUninstallPreCommitHooks:
         # Uninstalling the hooks shouldn't remove the config file
         assert (uv_env_dir / ".pre-commit-config.yaml").exists()
 
-    def test_err(self, tmp_path: Path):
-        # Act, Assert
-        with (
-            change_cwd(tmp_path),
-            files_manager(),
-            pytest.raises(PreCommitInstallationError),
-        ):
-            # Will fail because pre-commit isn't installed.
+    def test_no_git_repo(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
+        # When not in a git repository, uninstallation is skipped with an info message.
+        with change_cwd(tmp_path), files_manager():
             uninstall_pre_commit_hooks()
+
+        out, err = capfd.readouterr()
+        assert not err
+        assert "Git is not available; skipping pre-commit hook uninstallation." in out
 
     def test_none_backend(self, tmp_path: Path):
         # Arrange
@@ -270,6 +278,11 @@ class TestUninstallPreCommitHooks:
         monkeypatch.setattr(
             "usethis._integrations.pre_commit.core.call_poetry_subprocess",
             mock_call_poetry_subprocess,
+        )
+        # Mock git repo check so the uninstall logic proceeds
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core._is_git_repo",
+            lambda: True,
         )
 
         with (
@@ -306,6 +319,11 @@ class TestUninstallPreCommitHooks:
             "usethis._integrations.pre_commit.core.call_poetry_subprocess",
             mock_call_poetry_subprocess,
         )
+        # Mock git repo check so the uninstall logic proceeds
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core._is_git_repo",
+            lambda: True,
+        )
 
         with (
             change_cwd(tmp_path),
@@ -335,6 +353,11 @@ class TestUninstallPreCommitHooks:
         monkeypatch.setattr(
             "usethis._integrations.pre_commit.core.call_poetry_subprocess",
             mock_call_poetry_subprocess,
+        )
+        # Mock git repo check so the error path is exercised
+        monkeypatch.setattr(
+            "usethis._integrations.pre_commit.core._is_git_repo",
+            lambda: True,
         )
 
         with (

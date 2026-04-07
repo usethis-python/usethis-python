@@ -1,7 +1,7 @@
 """Check that priority groups in a pre-commit config file are monotone.
 
-Reads a YAML configuration file (e.g. ``.pre-commit-config.yaml``) and extracts
-the ``priority`` field from each hook entry. Verifies that the sequence of
+Reads a YAML configuration file (e.g. `.pre-commit-config.yaml`) and extracts
+the `priority` field from each hook entry. Verifies that the sequence of
 priority values is non-decreasing (monotone), meaning hooks in the same priority
 group are adjacent and groups appear in ascending order.
 """

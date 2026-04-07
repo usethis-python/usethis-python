@@ -87,6 +87,13 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
+      - id: check-docstring-substrings
+        name: check-docstring-substrings
+        entry: uv run --frozen --offline hooks/check-docstring-substrings.py
+        args: ["--pattern", "(?<!`)``(?!`).+?(?<!`)``(?!`)"]
+        language: system
+        types: [python]
+        priority: 0
       - id: check-list-referenced
         name: check-list-referenced
         entry: uv run --frozen --offline hooks/check-list-referenced.py

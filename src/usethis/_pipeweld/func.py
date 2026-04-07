@@ -683,7 +683,7 @@ def _linearize_component(
     """Flatten a pipeline component to a linear list of step names.
 
     Within parallel groups, existing steps maintain their relative order from
-    ``original_order`` and the new step is placed after all existing steps.
+    `original_order` and the new step is placed after all existing steps.
     """
     if isinstance(component, str):
         return [component]

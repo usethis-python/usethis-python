@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.7"
+  version: "1.8"
 ---
 
 # Python Code Guidelines
@@ -29,7 +29,7 @@ def add_dep(name: str) -> None:
 
 ### Why
 
-The project uses Markdown-compatible formatting for docstrings. Single backticks are the Markdown standard for inline code, and the project's export hooks normalize double backticks to single backticks. Using single backticks from the start avoids this normalization and keeps docstrings consistent with their rendered output.
+The project uses Markdown-compatible formatting for docstrings. Single backticks are the Markdown standard for inline code, and the project's export hooks normalize double backticks to single backticks. Using single backticks from the start avoids this normalization and keeps docstrings consistent with their rendered output. The `check-docstring-substrings` prek hook enforces this automatically.
 
 ## Avoiding unnecessary duplication
 

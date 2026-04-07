@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import re
-import sys
 from pathlib import Path
 
 
@@ -35,7 +34,7 @@ def main() -> int:
     own_name = Path(__file__).name
 
     if not hooks_dir.is_dir():
-        print(f"ERROR: {hooks_dir} is not a directory.", file=sys.stderr)
+        print(f"ERROR: {hooks_dir} is not a directory.")
         return 1
 
     violations: list[str] = []
@@ -52,15 +51,11 @@ def main() -> int:
                     violations.append(f"  {py_file}:{lineno}: {line.strip()}")
 
     if violations:
-        print(
-            "ERROR: Banned word(s) found in hook scripts:",
-            file=sys.stderr,
-        )
+        print("ERROR: Banned word(s) found in hook scripts:")
         for v in violations:
-            print(v, file=sys.stderr)
+            print(v)
         return 1
 
-    print("No banned words found in hook scripts.")
     return 0
 
 

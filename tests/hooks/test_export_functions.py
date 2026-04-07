@@ -19,10 +19,10 @@ assert _spec.loader is not None
 _export_functions: types.ModuleType = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_export_functions)
 
-_get_module_public_functions: Callable[..., Any] = getattr(
+_get_module_public_functions: Callable[..., Any] = getattr(  # noqa: B009
     _export_functions, "_get_module_public_functions"
 )
-main: Callable[[], int] = getattr(_export_functions, "main")
+main: Callable[[], int] = getattr(_export_functions, "main")  # noqa: B009
 
 
 class TestGetModulePublicFunctions:

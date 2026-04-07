@@ -8,7 +8,6 @@ violation.
 from __future__ import annotations
 
 import argparse
-import sys
 import tokenize
 
 
@@ -37,12 +36,11 @@ def main() -> int:
         violations.extend(_check_file(filepath, keywords))
 
     if violations:
-        print("ERROR: Banned comment keyword(s) found:", file=sys.stderr)
+        print("ERROR: Banned comment keyword(s) found:")
         for v in violations:
-            print(v, file=sys.stderr)
+            print(v)
         return 1
 
-    print("No banned comment keywords found.")
     return 0
 
 

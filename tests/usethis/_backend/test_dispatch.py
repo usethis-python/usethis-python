@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+import usethis._backend.poetry.available
 import usethis._backend.poetry.call
 import usethis._backend.uv.available
 from _test import change_cwd
@@ -52,10 +53,18 @@ class TestGetBackend:
         def mock_call_uv_subprocess(*_: object, **__: object):
             raise UVSubprocessFailedError
 
+        def mock_call_poetry_subprocess(*_: object, **__: object):
+            raise PoetrySubprocessFailedError
+
         monkeypatch.setattr(
             usethis._backend.uv.available,
             "call_uv_subprocess",
             mock_call_uv_subprocess,
+        )
+        monkeypatch.setattr(
+            usethis._backend.poetry.available,
+            "call_poetry_subprocess",
+            mock_call_poetry_subprocess,
         )
 
         # Act

@@ -11,6 +11,7 @@ from typing import IO, TYPE_CHECKING
 
 import requests
 from requests.exceptions import RequestException
+from ruamel.yaml.error import YAMLError
 from typer.testing import CliRunner as TyperCliRunner  # noqa: TID251
 from typing_extensions import assert_never, override
 
@@ -32,7 +33,7 @@ from usethis._core.tool import (
     use_ty,
 )
 from usethis._fallback import FALLBACK_PRE_COMMIT_VERSION
-from usethis._file.yaml.errors import YAMLDecodeError, YAMLError
+from usethis._file.yaml.errors import YAMLDecodeError
 from usethis._file.yaml.io_ import get_yaml_document
 from usethis._integrations.pre_commit.hooks import hook_ids_are_equivalent
 from usethis._integrations.pre_commit.version import get_minimum_pre_commit_version

@@ -4,7 +4,7 @@ description: Add a prek hook for dev
 compatibility: usethis, prek, git
 license: MIT
 metadata:
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Adding a prek Hook
@@ -59,6 +59,17 @@ repos:
         pass_filenames: false
         priority: 1
 ```
+
+## File targeting: avoid directory-scoped `files` patterns
+
+Never use `files` to restrict hooks to specific directories (e.g. `files: ^(src|tests)/`). Directory-scoped hooks silently miss violations in unexpected locations and create a false sense of coverage. If a check is worth running, it is worth running everywhere.
+
+Instead, use one of these approaches:
+
+- **`types: [python]`** (or other type filters) to match all files of a given type across the entire repository.
+- **`pass_filenames: false`** with `always_run: true`, letting the hook script determine its own file targets via CLI arguments.
+
+The narrow exception is `pygrep`-language hooks where the matched pattern is only a violation in a specific directory — for example, a pattern that flags test-only anti-patterns which are perfectly valid in production code. In such cases, `files` scoping prevents false positives rather than hiding true violations. Even then, combine `files` with `types` filters to keep the scope as tight as possible.
 
 ## Setting the `priority` field
 

@@ -98,7 +98,7 @@ repos:
       - id: check-banned-words
         name: check-banned-words
         entry: uv run --frozen --offline hooks/check-banned-words.py
-        args: ["--hooks-dir=hooks", "usethis"]
+        args: ["--hooks-dir=hooks", "--ignore-files=export-config-files.py", "usethis"]
         language: system
         always_run: true
         pass_filenames: false
@@ -155,6 +155,15 @@ repos:
         name: export-functions
         entry: uv run --frozen --offline hooks/export-functions.py
         args: ["--source-root=src/usethis", "--output-file=docs/functions.txt", "--strict", "--skip-private"]
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 0
+      - id: export-config-files
+        name: export-config-files
+        entry: uv run --frozen --offline hooks/export-config-files.py
+        args:
+          - "--output-file=docs/config-files.txt"
         language: system
         always_run: true
         pass_filenames: false

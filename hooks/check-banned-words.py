@@ -23,6 +23,18 @@ def main() -> int:
         help="Path to the hooks directory to scan.",
     )
     parser.add_argument(
+        "--ignore-files",
+        action="append",
+        default=[],
+        metavar="FILENAME",
+        help=(
+            "Filename (basename only) of a hook script to skip. "
+            "May be repeated to ignore multiple files. "
+            "Use this for project-specific hooks that intentionally reference "
+            "project names."
+        ),
+    )
+    parser.add_argument(
         "words",
         nargs="+",
         help="Words to ban from hook scripts.",
@@ -32,6 +44,7 @@ def main() -> int:
     hooks_dir = Path(args.hooks_dir)
     banned: list[str] = args.words
     own_name = Path(__file__).name
+    ignored: set[str] = set(args.ignore_files)
 
     if not hooks_dir.is_dir():
         print(f"ERROR: {hooks_dir} is not a directory.")
@@ -43,6 +56,8 @@ def main() -> int:
     ]
     for py_file in sorted(hooks_dir.glob("*.py")):
         if py_file.name == own_name:
+            continue
+        if py_file.name in ignored:
             continue
         lines = py_file.read_text(encoding="utf-8").splitlines()
         for lineno, line in enumerate(lines, start=1):

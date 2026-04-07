@@ -1,0 +1,13 @@
+Codespell: .codespellrc, setup.cfg, pyproject.toml (resolution=first_content)
+Coverage.py: .coveragerc, .coveragerc.toml, setup.cfg, tox.ini, pyproject.toml (resolution=first)
+deptry: pyproject.toml (resolution=first)
+Import Linter: setup.cfg, .importlinter, pyproject.toml (resolution=first)
+MkDocs: mkdocs.yml (resolution=first_content)
+pre-commit: .pre-commit-config.yaml
+pyproject-fmt: pyproject.toml (resolution=first)
+pyproject.toml: pyproject.toml
+pytest: pytest.ini, .pytest.ini, pyproject.toml, tox.ini, setup.cfg (resolution=bespoke)
+requirements.txt: pyproject.toml (resolution=first)
+Ruff: .ruff.toml, ruff.toml, pyproject.toml (resolution=first)
+Tach: tach.toml (resolution=first)
+ty: .ty.toml, ty.toml, pyproject.toml (resolution=first)

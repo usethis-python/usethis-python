@@ -4,7 +4,7 @@ description: Write bespoke prek hooks as reusable Python scripts for custom chec
 compatibility: usethis, prek, git, Python
 license: MIT
 metadata:
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Bespoke Prek Hooks
@@ -22,10 +22,10 @@ existing third-party tool.
 
 ## Generalization
 
-Hooks must be written as general-purpose tools that could work in any project.
-Do not hard-code project-specific names, paths, section headers, or other logic
-into the hook script itself. Instead, accept all project-specific configuration
-via command-line arguments.
+Most hooks should be written as general-purpose tools that could work in any
+project. Do not hard-code project-specific names, paths, section headers, or
+other logic into the hook script itself. Instead, accept all project-specific
+configuration via command-line arguments.
 
 For example:
 
@@ -40,6 +40,25 @@ For example:
 The `.pre-commit-config.yaml` entry is where project-specific values belong —
 passed as `args` to the hook. The hook script itself should be reusable as-is in
 a different project.
+
+### Project-specific hooks
+
+Some hooks are inherently project-specific — for example, a hook that imports
+directly from the project's own source package. These hooks cannot reasonably
+be generalized and it is acceptable to hard-code project-specific values directly
+in the script.
+
+When writing a project-specific hook:
+
+- Import directly from the project package rather than accepting dotted-path
+  arguments.
+- Hard-code any paths or names that are specific to this project.
+- **Exempt the hook from the `check-banned-words` check** by passing its
+  filename to the `--ignore-files` argument in `.pre-commit-config.yaml`:
+
+  ```yaml
+  args: ["--hooks-dir=hooks", "--ignore-files=my-project-hook.py", "usethis"]
+  ```
 
 ## Writing the hook script
 

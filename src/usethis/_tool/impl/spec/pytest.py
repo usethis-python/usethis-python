@@ -27,21 +27,17 @@ class PytestToolSpec(ToolSpec):
     @property
     @override
     def meta(self) -> ToolMeta:
+        tests_dir = get_tests_dir_str()
         return ToolMeta(
             name="pytest",
             url="https://github.com/pytest-dev/pytest",
             managed_files=[
                 Path(".pytest.ini"),
                 Path("pytest.ini"),
+                Path(tests_dir) / "conftest.py",
             ],
             rule_config=RuleConfig(selected=["PT"], nontests_unmanaged_ignored=["PT"]),
         )
-
-    @property
-    @override
-    def managed_files(self) -> list[Path]:
-        tests_dir = get_tests_dir_str()
-        return [*self.meta.managed_files, Path(tests_dir) / "conftest.py"]
 
     @override
     @final

@@ -157,6 +157,13 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
         toml_document = copy.copy(self.get())
         keys = _validate_keys(keys)
 
+        # If value is a dict and keys are provided, recurse over each item. This
+        # avoids a tomlkit bug where setting a dict to a dotted key raises an error.
+        if keys and isinstance(value, dict):
+            for k, v in value.items():
+                self.set_value(keys=[*keys, k], value=v, exists_ok=exists_ok)
+            return
+
         if not keys:
             # Root level config - value must be a mapping.
             TypeAdapter(dict).validate_python(toml_document)

@@ -461,6 +461,192 @@ lint.pydocstyle.convention = "pep257"
                 # Assert
                 assert manager._content == {"key": {"inner": "new_value"}}
 
+        def test_set_dict_value_at_single_key(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                # Act
+                manager.set_value(keys=["project"], value={"name": "myproject"})
+
+                # Assert
+                assert manager._content == {"project": {"name": "myproject"}}
+
+        def test_set_nested_dict_value(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                # Act
+                manager.set_value(
+                    keys=["tool"],
+                    value={"ruff": {"lint": {"select": ["A"]}}},
+                )
+
+                # Assert
+                assert manager._content == {
+                    "tool": {"ruff": {"lint": {"select": ["A"]}}}
+                }
+
+        def test_set_deep_path_with_nested_dict_value(self, tmp_path: Path) -> None:
+            # Multiple keys in the path combined with a multiply nested dict value.
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                # Act
+                manager.set_value(
+                    keys=["tool", "ruff"],
+                    value={
+                        "lint": {
+                            "select": ["A"],
+                            "pydocstyle": {"convention": "pep257"},
+                        }
+                    },
+                )
+
+                # Assert
+                assert manager._content == {
+                    "tool": {
+                        "ruff": {
+                            "lint": {
+                                "select": ["A"],
+                                "pydocstyle": {"convention": "pep257"},
+                            }
+                        }
+                    }
+                }
+
+        def test_set_dict_value_at_deep_path(self, tmp_path: Path) -> None:
+            # Setting a dict at a path with 4+ keys previously raised a tomlkit error.
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                # Act
+                manager.set_value(
+                    keys=["tool", "ruff", "lint", "pydocstyle"],
+                    value={"convention": "pep257"},
+                )
+
+                # Assert
+                assert manager._content == {
+                    "tool": {"ruff": {"lint": {"pydocstyle": {"convention": "pep257"}}}}
+                }
+
+        def test_set_dict_value_in_existing_doc(self, tmp_path: Path) -> None:
+            # Setting a dict at a path with 4+ keys in an existing document
+            # previously produced an incorrect TOML structure.
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            (tmp_path / "pyproject.toml").write_text(
+                '[tool.ruff]\nlint.select = ["A"]\n'
+            )
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                # Act
+                manager.set_value(
+                    keys=["tool", "ruff", "lint", "pydocstyle"],
+                    value={"convention": "pep257"},
+                )
+
+                # Assert
+                assert manager._content == {
+                    "tool": {
+                        "ruff": {
+                            "lint": {
+                                "select": ["A"],
+                                "pydocstyle": {"convention": "pep257"},
+                            }
+                        }
+                    }
+                }
+
+        def test_set_dict_value_exists_ok_false_raises(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+                manager.set_value(keys=["a", "b"], value="existing")
+
+                # Act, Assert
+                with pytest.raises(
+                    TOMLValueAlreadySetError,
+                    match=r"Configuration value 'a.b' is already set.",
+                ):
+                    manager.set_value(keys=["a"], value={"b": "new"}, exists_ok=False)
+
+        def test_set_dict_value_exists_ok_true_overwrites(self, tmp_path: Path) -> None:
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+                manager.set_value(keys=["a", "b"], value="old")
+
+                # Act
+                manager.set_value(keys=["a"], value={"b": "new"}, exists_ok=True)
+
+                # Assert
+                assert manager._content == {"a": {"b": "new"}}
+
+        def test_set_empty_dict_value(self, tmp_path: Path) -> None:
+            # Setting an empty dict should be a no-op (no keys to set).
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+                manager.set_value(keys=["a"], value="existing")
+
+                # Act - setting empty dict makes no changes
+                manager.set_value(keys=["tool"], value={})
+
+                # Assert - document is unchanged
+                assert manager._content == {"a": "existing"}
+
     class TestDelItem:
         def test_no_keys(self, tmp_path: Path) -> None:
             # Arrange

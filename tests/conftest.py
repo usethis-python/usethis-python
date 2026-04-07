@@ -20,6 +20,11 @@ if "UV_PYTHON" in os.environ:
     # running the tests.
     del os.environ["UV_PYTHON"]
 
+if "VIRTUAL_ENV" in os.environ:
+    # Prevent uv from warning about the test runner's activated environment not
+    # matching the project environment path in temp directories.
+    del os.environ["VIRTUAL_ENV"]
+
 
 @pytest.fixture(autouse=True)
 def clear_functools_caches():

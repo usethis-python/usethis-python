@@ -9,6 +9,7 @@ on:
             - "**/*.md"
             - "mkdocs.yml"
             - ".pre-commit-config.yaml"
+            - "hooks/**"
             - "skills-lock.json"
     pull_request:
         paths-ignore:
@@ -16,6 +17,7 @@ on:
             - "**/*.md"
             - "mkdocs.yml"
             - ".pre-commit-config.yaml"
+            - "hooks/**"
             - "skills-lock.json"
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}

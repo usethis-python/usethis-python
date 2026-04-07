@@ -4,7 +4,7 @@ description: Write bespoke prek hooks as reusable Python scripts for custom chec
 compatibility: usethis, prek, git, Python
 license: MIT
 metadata:
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Bespoke Prek Hooks
@@ -61,8 +61,13 @@ Scripts should:
   so pre-commit will re-stage the changes and re-run checks. Compare the new
   content with the existing file content before writing, and only write if they
   differ. Return 1 if the file was changed, 0 if it was already up to date.
-- Print error details to stderr.
-- Print a success summary to stdout.
+- Print **all** output — including violations and error details — to `stdout`.
+  The pre-commit framework captures `stdout` as the primary output stream and
+  displays it to the user; output sent to `stderr` may be silently dropped or
+  displayed inconsistently.
+- **Do not print a success message.** The framework already displays `Passed` or
+  `Failed` status. A redundant success message adds noise and can mask the absence
+  of expected violation output.
 - Accept `--fix` as an optional flag when the hook can auto-correct issues. When
   `--fix` is passed, the hook should fix problems in-place and exit 0 if all
   issues were resolved.

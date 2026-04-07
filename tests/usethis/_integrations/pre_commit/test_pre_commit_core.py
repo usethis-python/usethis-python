@@ -205,12 +205,19 @@ class TestInstallPreCommitHooks:
 
     def test_no_git_repo(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # When not in a git repository, installation is skipped with an info message.
-        with change_cwd(tmp_path), files_manager():
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.uv),
+        ):
             install_pre_commit_hooks()
 
         out, err = capfd.readouterr()
         assert not err
-        assert "Git is not available; skipping pre-commit hook installation." in out
+        assert out == (
+            "ℹ Git is not available; skipping pre-commit hook installation.\n"  # noqa: RUF001
+            "☐ Run 'pre-commit install' to register pre-commit.\n"
+        )
 
     def test_none_backend(self, tmp_path: Path):
         # Arrange
@@ -249,12 +256,18 @@ class TestUninstallPreCommitHooks:
 
     def test_no_git_repo(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # When not in a git repository, uninstallation is skipped with an info message.
-        with change_cwd(tmp_path), files_manager():
+        with (
+            change_cwd(tmp_path),
+            files_manager(),
+            usethis_config.set(backend=BackendEnum.uv),
+        ):
             uninstall_pre_commit_hooks()
 
         out, err = capfd.readouterr()
         assert not err
-        assert "Git is not available; skipping pre-commit hook uninstallation." in out
+        assert (
+            out == "ℹ Git is not available; skipping pre-commit hook uninstallation.\n"  # noqa: RUF001
+        )
 
     def test_none_backend(self, tmp_path: Path):
         # Arrange

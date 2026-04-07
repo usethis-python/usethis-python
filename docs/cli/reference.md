@@ -269,6 +269,12 @@ Add a new tool to a Python project, including:
 Note if `pyproject.toml` is not present, it will be created, since this is required for
 declaring dependencies with `uv add`.
 
+Each tool supports one or more configuration files. usethis follows the same
+configuration file discovery logic as each tool itself — if an existing supported
+configuration file is found, usethis will write to it. See
+[Configuration Files](../about/config-files.md) for the full list of supported
+configuration files for each tool.
+
 ### Code Quality Tools
 
 - `usethis tool codespell` - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.

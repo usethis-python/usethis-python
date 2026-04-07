@@ -13,6 +13,7 @@ nav:
   - About:
     - Philosophy: about/philosophy.md
     - Backends: about/backends.md
+    - Configuration Files: about/config-files.md
     - Similar Projects: about/similar-projects.md
     - FAQ: about/faq.md
     - License: about/about-license.md

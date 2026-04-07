@@ -10,7 +10,7 @@ from typing_extensions import override
 from usethis._config import usethis_config
 from usethis._config_file import DotTyTOMLManager, TyTOMLManager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
-from usethis._integrations.project.layout import get_source_dir_str
+from usethis._integrations.project.layout import get_source_dir_str, get_tests_dir_str
 from usethis._integrations.project.packages import get_importable_packages
 from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
@@ -71,7 +71,7 @@ class TyToolSpec(ToolSpec):
                 # Root layout: include the importable package directories
                 packages = get_importable_packages()
                 dirs = sorted({pkg.split(".")[0] for pkg in packages}) or ["."]
-            return [*dirs, "tests"]
+            return [*dirs, get_tests_dir_str()]
 
         return ConfigSpec.from_flat(
             file_managers=[

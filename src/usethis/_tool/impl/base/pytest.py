@@ -9,6 +9,7 @@ from typing_extensions import override
 from usethis._config import usethis_config
 from usethis._console import how_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._integrations.project.layout import get_tests_dir_str
 from usethis._tool.base import Tool
 from usethis._tool.heuristics import is_likely_used
 from usethis._tool.impl.spec.coverage_py import CoveragePyToolSpec
@@ -30,8 +31,9 @@ class PytestTool(PytestToolSpec, Tool):
 
     @override
     def print_how_to_use(self) -> None:
+        tests_dir = get_tests_dir_str()
         how_print(
-            "Add test files to the '/tests' directory with the format 'test_*.py'."
+            f"Add test files to the '/{tests_dir}' directory with the format 'test_*.py'."
         )
         how_print("Add test functions with the format 'test_*()'.")
         how_print(f"Run '{self.how_to_use_cmd()}' to run the tests.")

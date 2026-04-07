@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Protocol, final
 
 from typing_extensions import assert_never
 
@@ -64,6 +64,7 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """
         return self.meta.name
 
+    @final
     @property
     def managed_files(self) -> list[Path]:
         """Get (relative) paths to files managed by (solely) this tool."""

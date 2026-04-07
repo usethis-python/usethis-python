@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from usethis._backend.poetry.errors import PoetrySubprocessFailedError
 from usethis._config import usethis_config
+from usethis._console import warn_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._file.pyproject_toml.write import prepare_pyproject_write
 from usethis._subprocess import SubprocessFailedError, call_subprocess
@@ -56,17 +57,19 @@ def call_poetry_subprocess(args: list[str], *, change_toml: bool) -> str:
     lock_path = usethis_config.cpd() / "poetry.lock"
     with _frozen_poetry_lock(lock_path) if frozen_applicable else _noop_context():
         try:
-            output = call_subprocess(new_args, cwd=usethis_config.cpd())
+            result = call_subprocess(new_args, cwd=usethis_config.cpd())
         except SubprocessFailedError as err:
             raise PoetrySubprocessFailedError(err) from None
         except FileNotFoundError:
             msg = "Poetry is not installed or not found on PATH."
             raise PoetrySubprocessFailedError(msg) from None
 
+    _surface_stderr_warnings(result.stderr)
+
     if change_toml and PyprojectTOMLManager().is_locked():
         PyprojectTOMLManager().read_file()
 
-    return output
+    return result.stdout
 
 
 @contextmanager
@@ -95,3 +98,11 @@ def _frozen_poetry_lock(lock_path: Path) -> Generator[None, None, None]:
 def _noop_context() -> Generator[None, None, None]:
     """A no-op context manager used when frozen mode is not applicable."""
     yield
+
+
+def _surface_stderr_warnings(stderr: str) -> None:
+    """Surface any warning lines from Poetry's stderr output."""
+    for line in stderr.splitlines():
+        stripped = line.strip()
+        if stripped.lower().startswith("warning:"):
+            warn_print(stripped.split(":", 1)[1].strip())

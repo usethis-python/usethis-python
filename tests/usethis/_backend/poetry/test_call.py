@@ -10,7 +10,7 @@ from usethis._backend.poetry.errors import PoetrySubprocessFailedError
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.write import prepare_pyproject_write
-from usethis._subprocess import SubprocessFailedError
+from usethis._subprocess import SubprocessFailedError, SubprocessResult
 from usethis._types.backend import BackendEnum
 from usethis.errors import ForbiddenBackendError
 
@@ -43,8 +43,8 @@ class TestCallPoetrySubprocess:
     def test_version_not_quieted(self, monkeypatch: pytest.MonkeyPatch):
         """The --version command should not have --quiet added."""
 
-        def mock_call_subprocess(args: list[str], **__: object) -> str:
-            return " ".join(args)
+        def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
+            return SubprocessResult(" ".join(args), "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -61,8 +61,8 @@ class TestCallPoetrySubprocess:
     def test_non_version_command_quieted(self, monkeypatch: pytest.MonkeyPatch):
         """Non-version commands should have --quiet added."""
 
-        def mock_call_subprocess(args: list[str], **__: object) -> str:
-            return " ".join(args)
+        def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
+            return SubprocessResult(" ".join(args), "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -79,8 +79,8 @@ class TestCallPoetrySubprocess:
     def test_verbose_mode(self, monkeypatch: pytest.MonkeyPatch):
         """When subprocess_verbose is True, -vvv should be added instead of --quiet."""
 
-        def mock_call_subprocess(args: list[str], **__: object) -> str:
-            return " ".join(args)
+        def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
+            return SubprocessResult(" ".join(args), "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -95,7 +95,7 @@ class TestCallPoetrySubprocess:
         assert "--quiet" not in result
 
     def test_subprocess_failure_raises(self, monkeypatch: pytest.MonkeyPatch):
-        def mock_call_subprocess(*_: object, **__: object) -> str:
+        def mock_call_subprocess(*_: object, **__: object) -> SubprocessResult:
             msg = "mock failure"
             raise SubprocessFailedError(msg)
 
@@ -112,7 +112,7 @@ class TestCallPoetrySubprocess:
             call_poetry_subprocess(["add", "pytest"], change_toml=False)
 
     def test_file_not_found_raises(self, monkeypatch: pytest.MonkeyPatch):
-        def mock_call_subprocess(*_: object, **__: object) -> str:
+        def mock_call_subprocess(*_: object, **__: object) -> SubprocessResult:
             raise FileNotFoundError
 
         monkeypatch.setattr(
@@ -133,8 +133,8 @@ class TestCallPoetrySubprocess:
     def test_frozen_adds_lock_for_add(self, monkeypatch: pytest.MonkeyPatch):
         """When frozen=True, --lock should be added to 'add' commands."""
 
-        def mock_call_subprocess(args: list[str], **__: object) -> str:
-            return " ".join(args)
+        def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
+            return SubprocessResult(" ".join(args), "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -150,8 +150,8 @@ class TestCallPoetrySubprocess:
     def test_frozen_adds_lock_for_remove(self, monkeypatch: pytest.MonkeyPatch):
         """When frozen=True, --lock should be added to 'remove' commands."""
 
-        def mock_call_subprocess(args: list[str], **__: object) -> str:
-            return " ".join(args)
+        def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
+            return SubprocessResult(" ".join(args), "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -172,8 +172,8 @@ class TestCallPoetrySubprocess:
     def test_frozen_no_lock_for_version(self, monkeypatch: pytest.MonkeyPatch):
         """When frozen=True, --lock should not be added to non-add/remove commands."""
 
-        def mock_call_subprocess(args: list[str], **__: object) -> str:
-            return " ".join(args)
+        def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
+            return SubprocessResult(" ".join(args), "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -189,8 +189,8 @@ class TestCallPoetrySubprocess:
     def test_not_frozen_no_lock_for_add(self, monkeypatch: pytest.MonkeyPatch):
         """When frozen=False, --lock should not be added to 'add' commands."""
 
-        def mock_call_subprocess(args: list[str], **__: object) -> str:
-            return " ".join(args)
+        def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
+            return SubprocessResult(" ".join(args), "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -225,10 +225,10 @@ class TestCallPoetrySubprocess:
 
         monkeypatch.setattr(tempfile, "mkdtemp", tracking_mkdtemp)
 
-        def mock_call_subprocess(*_: object, **__: object) -> str:
+        def mock_call_subprocess(*_: object, **__: object) -> SubprocessResult:
             # Simulate poetry modifying the lockfile
             lock_path.write_text("modified-lock-content")
-            return ""
+            return SubprocessResult("", "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -253,10 +253,10 @@ class TestCallPoetrySubprocess:
         lock_path = tmp_path / "poetry.lock"
         assert not lock_path.exists()
 
-        def mock_call_subprocess(*_: object, **__: object) -> str:
+        def mock_call_subprocess(*_: object, **__: object) -> SubprocessResult:
             # Simulate poetry creating a new lockfile
             lock_path.write_text("new-lock-content")
-            return ""
+            return SubprocessResult("", "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -279,7 +279,7 @@ class TestCallPoetrySubprocess:
         original_content = "original-lock-content"
         lock_path.write_text(original_content)
 
-        def mock_call_subprocess(*_: object, **__: object) -> str:
+        def mock_call_subprocess(*_: object, **__: object) -> SubprocessResult:
             lock_path.write_text("modified-lock-content")
             msg = "mock failure"
             raise SubprocessFailedError(msg)
@@ -307,9 +307,9 @@ class TestCallPoetrySubprocess:
         lock_path = tmp_path / "poetry.lock"
         lock_path.write_text("original-lock-content")
 
-        def mock_call_subprocess(*_: object, **__: object) -> str:
+        def mock_call_subprocess(*_: object, **__: object) -> SubprocessResult:
             lock_path.write_text("modified-lock-content")
-            return ""
+            return SubprocessResult("", "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -332,8 +332,8 @@ class TestCallPoetrySubprocess:
             '[project]\nname = "test"\nversion = "0.1.0"\n'
         )
 
-        def mock_call_subprocess(*_: object, **__: object) -> str:
-            return ""
+        def mock_call_subprocess(*_: object, **__: object) -> SubprocessResult:
+            return SubprocessResult("", "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -365,8 +365,8 @@ class TestCallPoetrySubprocess:
             mock_prepare,
         )
 
-        def mock_call_subprocess(*_: object, **__: object) -> str:
-            return ""
+        def mock_call_subprocess(*_: object, **__: object) -> SubprocessResult:
+            return SubprocessResult("", "")
 
         monkeypatch.setattr(
             usethis._backend.poetry.call,
@@ -378,6 +378,54 @@ class TestCallPoetrySubprocess:
             call_poetry_subprocess(["--version"], change_toml=False)
 
         assert not called
+
+    def test_stderr_warnings_surfaced(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        """Warnings emitted on stderr by Poetry should be surfaced via warn_print."""
+
+        def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
+            _ = args
+            return SubprocessResult("Poetry (version 2.0.0)\n", "Warning: something\n")
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(backend=BackendEnum.poetry):
+            call_poetry_subprocess(["--version"], change_toml=False)
+
+        out, err = capfd.readouterr()
+        assert "something" in out
+        assert not err
+
+    def test_empty_stderr_no_warning(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capfd: pytest.CaptureFixture[str],
+    ):
+        """When stderr is empty, no warning should be printed."""
+
+        def mock_call_subprocess(args: list[str], **__: object) -> SubprocessResult:
+            _ = args
+            return SubprocessResult("Poetry (version 2.0.0)\n", "")
+
+        monkeypatch.setattr(
+            usethis._backend.poetry.call,
+            "call_subprocess",
+            mock_call_subprocess,
+        )
+
+        with usethis_config.set(backend=BackendEnum.poetry):
+            call_poetry_subprocess(["--version"], change_toml=False)
+
+        out, err = capfd.readouterr()
+        assert "warning" not in out.lower()
+        assert not err
 
 
 class TestPreparePyprojectWrite:

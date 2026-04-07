@@ -140,7 +140,7 @@
 - `depgroup()` (`usethis._pipeweld.containers`) — Create a DepGroup pipeline composition tied to a named configuration group.
 - `get_endpoint()` (`usethis._pipeweld.func`) — Get the last step name (endpoint) from a pipeline component.
 - `get_predecessor()` (`usethis._pipeweld.func`) — Find the step that immediately precedes `step` in a pipeline component.
-- `call_subprocess()` (`usethis._subprocess`) — Run a subprocess and return its stdout, raising SubprocessFailedError on failure.
+- `call_subprocess()` (`usethis._subprocess`) — Run a subprocess and return its output, raising SubprocessFailedError on failure.
 - `ensure_managed_file_exists()` (`usethis._tool.config`) — Ensure a file manager's managed file exists.
 - `is_likely_used()` (`usethis._tool.heuristics`) — Determine whether a tool is likely used in the current project.
 - `is_rule_covered_by()` (`usethis._tool.rule`) — Check if a rule is covered (subsumed) by a more general rule.

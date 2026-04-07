@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -13,13 +14,24 @@ class SubprocessFailedError(Exception):
     pass
 
 
-def call_subprocess(args: list[str], *, cwd: Path | None = None) -> str:
-    """Run a subprocess and return its stdout, raising SubprocessFailedError on failure."""
+@dataclass
+class SubprocessResult:
+    """The result of a successful subprocess invocation."""
+
+    stdout: str
+    stderr: str
+
+
+def call_subprocess(args: list[str], *, cwd: Path | None = None) -> SubprocessResult:
+    """Run a subprocess and return its output, raising SubprocessFailedError on failure."""
     try:
         process = subprocess.run(  # noqa: S603
             args, check=True, capture_output=True, cwd=cwd.as_posix() if cwd else None
         )
-        return process.stdout.decode()
+        return SubprocessResult(
+            stdout=process.stdout.decode(),
+            stderr=process.stderr.decode(),
+        )
     except subprocess.CalledProcessError as err:
         bmsg_stderr: bytes = err.stderr
         bmsg_stdout: bytes = err.stdout

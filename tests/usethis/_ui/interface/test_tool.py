@@ -648,10 +648,11 @@ class TestPytest:
         (tmp_path / "pyproject.toml").write_text("""\
 [project]
 name = "example"
-version = "0.1.0"     
+version = "0.1.0"
+requires-python = ">=3.10"
 
 [tool.ruff]
-line-length = 88                                       
+line-length = 88
 """)
 
         # Act

@@ -1,6 +1,7 @@
 import os
 import shlex
 import subprocess
+import sys
 import unittest
 import unittest.mock
 from pathlib import Path
@@ -68,6 +69,10 @@ class TestAllHooksList:
 class TestCodespell:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
+        @pytest.mark.skipif(
+            sys.version_info < (3, 11),
+            reason="Python 3.10 adds tomli dep since requires-python includes <3.11",
+        )
         def test_config(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
             with change_cwd(uv_init_dir), files_manager():
@@ -99,6 +104,52 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
+        @pytest.mark.skipif(
+            sys.version_info >= (3, 11),
+            reason="Python 3.11+ uses stdlib tomllib; tomli dep not needed",
+        )
+        def test_config_with_tomli(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # On Python 3.10, requires-python includes versions < 3.11, so tomli is
+            # added as a dependency alongside codespell.
+
+            # Arrange - pre-add codespell so only tomli is new
+            with change_cwd(uv_init_dir), files_manager():
+                add_deps_to_group([Dependency(name="codespell")], "dev")
+                ensure_symlink_mode()
+
+            capfd.readouterr()
+
+            # Act
+            with change_cwd(uv_init_dir), files_manager():
+                use_codespell()
+
+            # Assert
+            assert (
+                (uv_init_dir / "pyproject.toml")
+                .read_text()
+                .__contains__(
+                    """\
+[tool.codespell]
+ignore-regex = ["[A-Za-z0-9+/]{100,}"]
+"""
+                )
+            )
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependency 'tomli' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'tomli'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        @pytest.mark.skipif(
+            sys.version_info < (3, 11),
+            reason="Python 3.10 adds tomli dep since requires-python includes <3.11",
+        )
         def test_pre_commit_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -111,7 +162,7 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
                 use_codespell()
 
                 # Assert
-                # Check dependencies - should have installed codespell (issue #1020)
+                # Check dependencies - should have installed codespell
                 dev_deps = get_deps_from_group("dev")
                 assert any(dep.name == "codespell" for dep in dev_deps)
 
@@ -122,11 +173,50 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             # Check output
             out, err = capfd.readouterr()
             assert not err
-            # Note: Since deps are now added (issue #1020), the message is "uv run codespell"
+            # Note: Since deps are now added, the message is "uv run codespell"
             # not "pre-commit run -acodespell" because get_install_method() returns "devdep"
             assert out == (
                 "✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.\n"
                 "☐ Install the dependency 'codespell'.\n"
+                "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"
+            )
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        @pytest.mark.skipif(
+            sys.version_info >= (3, 11),
+            reason="Python 3.11+ uses stdlib tomllib; tomli dep not needed",
+        )
+        def test_pre_commit_integration_with_tomli(
+            self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # On Python 3.10, requires-python includes versions < 3.11, so both
+            # codespell and tomli are added together as dependencies.
+            with change_cwd(uv_init_dir), files_manager():
+                # Arrange
+                use_pre_commit()
+                capfd.readouterr()
+
+                # Act
+                use_codespell()
+
+                # Assert
+                # Check dependencies - should have installed codespell and tomli
+                dev_deps = get_deps_from_group("dev")
+                assert any(dep.name == "codespell" for dep in dev_deps)
+                assert any(dep.name == "tomli" for dep in dev_deps)
+
+                # Check hook names
+                hook_names = get_hook_ids()
+                assert "codespell" in hook_names
+
+            # Check output - codespell and tomli are added together in one batch
+            out, err = capfd.readouterr()
+            assert not err
+            assert out == (
+                "✔ Adding dependencies 'codespell', 'tomli' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependencies 'codespell', 'tomli'.\n"
                 "✔ Adding hook 'codespell' to '.pre-commit-config.yaml'.\n"
                 "✔ Adding Codespell config to 'pyproject.toml'.\n"
                 "☐ Run 'uv run codespell' to run the Codespell spellchecker.\n"

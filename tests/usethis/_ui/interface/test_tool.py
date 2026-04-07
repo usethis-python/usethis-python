@@ -837,6 +837,38 @@ def test_several_tools_add_and_remove(tmp_path: Path):
         assert not result.exit_code, result.stdout
 
 
+@pytest.mark.benchmark
+def test_several_tools_add_and_remove_no_backend(tmp_path: Path):
+    # Arrange
+    # The rationale for using src layout is to avoid writing
+    # hatch config unnecessarily slowing down I/O
+    tmp_path = tmp_path / "benchmark"  # To get a fixed project name
+    tmp_path.mkdir(exist_ok=True)
+    (tmp_path / "src").mkdir(exist_ok=True)
+    (tmp_path / "src" / "benchmark").mkdir(exist_ok=True)
+    (tmp_path / "src" / "benchmark" / "__init__.py").touch(exist_ok=True)
+
+    runner = CliRunner()
+    with change_cwd(tmp_path):
+        # Act, Assert
+        result = runner.invoke_safe(app, ["pytest", "--backend", "none"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke_safe(app, ["coverage", "--backend", "none"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke_safe(app, ["ruff", "--backend", "none"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke_safe(app, ["deptry", "--backend", "none"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke_safe(app, ["pre-commit", "--backend", "none"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke_safe(app, ["ruff", "--remove", "--backend", "none"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke_safe(app, ["pyproject-fmt", "--backend", "none"])
+        assert not result.exit_code, result.stdout
+        result = runner.invoke_safe(app, ["pytest", "--remove", "--backend", "none"])
+        assert not result.exit_code, result.stdout
+
+
 def test_tool_matches_command():
     assert [
         tool.name.lower().replace(" ", "-") for tool in ALL_TOOLS

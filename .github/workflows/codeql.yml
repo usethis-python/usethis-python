@@ -8,6 +8,7 @@ on:
       - "**/*.md"
       - "mkdocs.yml"
       - ".pre-commit-config.yaml"
+      - "hooks/**"
       - "skills-lock.json"
   pull_request:
     branches: ["main"]
@@ -16,6 +17,7 @@ on:
       - "**/*.md"
       - "mkdocs.yml"
       - ".pre-commit-config.yaml"
+      - "hooks/**"
       - "skills-lock.json"
 jobs:
   analyze:

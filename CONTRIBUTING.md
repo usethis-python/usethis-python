@@ -172,10 +172,6 @@ Tool implementations are defined in classes in the `usethis._tool.impl` module. 
 
 - You should write tests in `tests/usethis/_core/test_core_tool` for the `use_*` function, following the pattern of the other tests in that module for other tools.
 
-#### Register the tool as a peer in `PyprojectTOMLTool`
-
-- Add your `Tool` subclass instance to the `OTHER_TOOLS` list in `usethis._tool.impl.base.pyproject_toml`. This list tracks all tools other than `pyproject.toml` itself, and is used by `PyprojectTOMLTool` to detect active configuration. A corresponding test `test_in_sync_with_all_tools` will fail if this step is missed.
-
 #### Update tests
 
 - Some tests may need updating as a result of new tool registration. In particular:

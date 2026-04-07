@@ -159,6 +159,17 @@ repos:
         always_run: true
         pass_filenames: false
         priority: 0
+      - id: export-config-files
+        name: export-config-files
+        entry: uv run --frozen --offline hooks/export-config-files.py
+        args:
+          - "--output-file=docs/config-files.txt"
+          - "--specs-variable=usethis._tool.impl.spec.all_.ALL_TOOL_SPECS"
+          - "--context-manager=usethis._config_file.files_manager"
+        language: system
+        always_run: true
+        pass_filenames: false
+        priority: 0
       - id: no-bare-managers-in-tests
         name: no-bare-managers-in-tests
         entry: '^\s*with\b.*Manager\('

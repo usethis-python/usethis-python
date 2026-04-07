@@ -74,6 +74,8 @@ def main() -> int:
             if first_line is not None:
                 bullets.append(f"- `{func_name}()` (`{module}`) — {first_line}")
             elif not func_name.startswith("_"):
+                # Only track missing docstrings for public functions; private
+                # functions without a docstring are silently omitted from output.
                 missing.append((py_file, func_name))
 
     content = os.linesep.join(bullets) + os.linesep

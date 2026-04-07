@@ -144,7 +144,7 @@ def _get_module_public_functions(path: Path) -> list[tuple[str, str | None]]:
 
 
 def _is_overload(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
-    """Return True if the function is decorated with ``@overload``."""
+    """Return True if the function is decorated with `@overload`."""
     return any(
         (isinstance(d, ast.Name) and d.id == "overload")
         or (isinstance(d, ast.Attribute) and d.attr == "overload")

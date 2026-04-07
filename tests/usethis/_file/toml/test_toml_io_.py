@@ -500,8 +500,42 @@ lint.pydocstyle.convention = "pep257"
                     "tool": {"ruff": {"lint": {"select": ["A"]}}}
                 }
 
+        def test_set_deep_path_with_nested_dict_value(self, tmp_path: Path) -> None:
+            # Multiple keys in the path combined with a multiply nested dict value.
+            # Arrange
+            class MyTOMLFileManager(TOMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("pyproject.toml")
+
+            with change_cwd(tmp_path), MyTOMLFileManager() as manager:
+                (tmp_path / "pyproject.toml").touch()
+
+                # Act
+                manager.set_value(
+                    keys=["tool", "ruff"],
+                    value={
+                        "lint": {
+                            "select": ["A"],
+                            "pydocstyle": {"convention": "pep257"},
+                        }
+                    },
+                )
+
+                # Assert
+                assert manager._content == {
+                    "tool": {
+                        "ruff": {
+                            "lint": {
+                                "select": ["A"],
+                                "pydocstyle": {"convention": "pep257"},
+                            }
+                        }
+                    }
+                }
+
         def test_set_dict_value_at_deep_path(self, tmp_path: Path) -> None:
-            # https://github.com/usethis-python/usethis-python/issues/685
             # Setting a dict at a path with 4+ keys previously raised a tomlkit error.
             # Arrange
             class MyTOMLFileManager(TOMLFileManager):
@@ -525,7 +559,6 @@ lint.pydocstyle.convention = "pep257"
                 }
 
         def test_set_dict_value_in_existing_doc(self, tmp_path: Path) -> None:
-            # https://github.com/usethis-python/usethis-python/issues/685
             # Setting a dict at a path with 4+ keys in an existing document
             # previously produced an incorrect TOML structure.
             # Arrange

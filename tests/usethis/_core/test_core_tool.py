@@ -3044,7 +3044,7 @@ class TestRequirementsTxt:
             assert (tmp_path / "requirements.txt").exists()
             out, err = capfd.readouterr()
             assert not err
-            assert "Writing 'requirements.txt'." in out
+            assert out == "✔ Writing 'requirements.txt'.\n"
             content = (tmp_path / "requirements.txt").read_text()
             assert content == "-e .\n"
 
@@ -3254,8 +3254,10 @@ repos:
             assert (tmp_path / "constraints.txt").exists()
             assert not (tmp_path / "requirements.txt").exists()
             out, _ = capfd.readouterr()
-            assert "Writing 'constraints.txt'." in out
-            assert "uv export -o=constraints.txt" in out
+            assert out == (
+                "✔ Writing 'constraints.txt'.\n"
+                "☐ Run 'uv export -o=constraints.txt' to write 'constraints.txt'.\n"
+            )
 
         def test_custom_output_file_how(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
@@ -3300,7 +3302,7 @@ repos:
             # Assert
             assert (tmp_path / "requirements.txt").exists()
             out, _ = capfd.readouterr()
-            assert "Writing 'requirements.txt'." in out
+            assert out == "✔ Writing 'requirements.txt'.\n"
 
 
 class TestRuff:
@@ -4070,8 +4072,10 @@ class TestTy:
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert "Adding ty config to 'pyproject.toml'." in out
-            assert "☐ Run 'uv run ty check' to run the ty type checker.\n" in out
+            assert out == (
+                "✔ Adding ty config to 'pyproject.toml'.\n"
+                "☐ Run 'uv run ty check' to run the ty type checker.\n"
+            )
 
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_pre_commit_integration(
@@ -4182,7 +4186,13 @@ class TestTach:
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            assert "Writing 'tach.toml'." in out
+            assert out == (
+                "✔ Adding dependency 'tach' to the 'dev' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'tach'.\n"
+                "✔ Writing 'tach.toml'.\n"
+                "✔ Adding Tach config to 'tach.toml'.\n"
+                "☐ Run 'uv run tach check' to run Tach.\n"
+            )
             assert (uv_init_dir / "tach.toml").exists()
 
         def test_pre_commit_integration(

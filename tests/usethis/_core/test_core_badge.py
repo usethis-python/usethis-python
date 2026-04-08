@@ -600,7 +600,10 @@ Automatically manage Python tooling and configuration: linters, formatters, and 
         # Assert
         out, err = capfd.readouterr()
         assert not err
-        assert "encoding" in out
+        assert out == (
+            "⚠ README file uses an unsupported encoding, printing badge markdown instead...\n"
+            "[![Ruff](https://example.com>)](<https://example.com)\n"
+        )
 
 
 class TestRemoveBadge:

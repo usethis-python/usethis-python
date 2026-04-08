@@ -39,7 +39,7 @@ class TestRuffTool:
 
             # Assert
             out, _ = capfd.readouterr()
-            assert "✔ Selecting Ruff rules 'A', 'B', 'C' in 'pyproject.toml" in out
+            assert out == "✔ Selecting Ruff rules 'A', 'B', 'C' in 'pyproject.toml'.\n"
 
         def test_blank_slate(self, tmp_path: Path):
             # Arrange
@@ -593,7 +593,10 @@ repos:
 
             out, err = capfd.readouterr()
             assert not err
-            assert "poetry run pre-commit run -a ruff-check" in out
+            assert (
+                out
+                == "☐ Run 'poetry run pre-commit run -a ruff-check' to run the Ruff linter.\n"
+            )
 
         def test_poetry_backend_devdep(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
@@ -610,7 +613,10 @@ repos:
 
             out, err = capfd.readouterr()
             assert not err
-            assert "poetry run ruff check --fix" in out
+            assert (
+                out
+                == "☐ Run 'poetry run ruff check --fix' to run the Ruff linter with autofixes.\n"
+            )
 
     class TestPrintHowToUseFormatter:
         def test_poetry_backend_with_pre_commit(
@@ -635,7 +641,10 @@ repos:
 
             out, err = capfd.readouterr()
             assert not err
-            assert "poetry run pre-commit run -a ruff-format" in out
+            assert (
+                out
+                == "☐ Run 'poetry run pre-commit run -a ruff-format' to run the Ruff formatter.\n"
+            )
 
         def test_poetry_backend_devdep(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
@@ -652,7 +661,7 @@ repos:
 
             out, err = capfd.readouterr()
             assert not err
-            assert "poetry run ruff format" in out
+            assert out == "☐ Run 'poetry run ruff format' to run the Ruff formatter.\n"
 
     class TestApply:
         def test_uv_backend_formatter_used(

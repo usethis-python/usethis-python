@@ -4,7 +4,7 @@ description: General guidelines for writing tests in the usethis project, includ
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Python Test Guidelines
@@ -94,9 +94,48 @@ with change_cwd(tmp_path), files_manager():
 - **FileManager-only operations** (e.g. `use_*` functions, `get_deps_from_group`, assertions on config state): safe to combine in one context.
 - **Subprocess calls** (e.g. `call_uv_subprocess`, `subprocess.run`, `call_subprocess`): require an atomic write first, so exit the `files_manager` context before running them.
 
-## Clearing functools caches between tests
+## Asserting console output
 
-When `@functools.cache` is added to a production function (see `usethis-python-code`), its cache must be cleared between tests to prevent one test's cached result from polluting subsequent tests.
+When a test captures console output (via `capfd.readouterr()` or similar), always assert the **complete, exact output string** using equality (`assert out == "..."`), not a substring check (`assert "..." in out`).
+
+Substring checks allow partial output to pass silently: they do not detect missing messages or unexpected extra messages. Exact equality catches both problems immediately.
+
+### Set the backend explicitly
+
+Console output often depends on the detected package manager backend. Always set the backend explicitly in tests that assert console output, so the result is fully deterministic:
+
+```python
+with usethis_config.set(backend=BackendEnum.uv):
+    use_some_tool()
+
+out, err = capfd.readouterr()
+assert out == "✔ Some message.\n"
+```
+
+### Multi-line output
+
+When multiple messages are printed, assert the entire combined string at once:
+
+```python
+assert out == (
+    "✔ First message.\n"
+    "☐ Second message.\n"
+)
+```
+
+### `# noqa: RUF001` for ambiguous Unicode characters
+
+Some console icons (e.g. `ℹ`, `×`) trigger the Ruff `RUF001` rule ("ambiguous Unicode character"). Place the `# noqa: RUF001` comment on the line that contains the character:
+
+```python
+assert out == "ℹ Some info message.\n"  # noqa: RUF001
+```
+
+### When exact equality is not appropriate
+
+Exact equality is not appropriate for Rich table output (from `table_print` or `show_usage_table`), where the rendered string depends on terminal width and Rich's internal formatting. For table tests, substring or structural checks are acceptable.
+
+## Clearing functools caches between tests
 
 ### Procedure
 

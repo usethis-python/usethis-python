@@ -375,7 +375,7 @@ class TestIconFallbackIntegration:
 
         # Assert
         out, _ = capfd.readouterr()
-        assert "[ok] Hello\n" in out
+        assert out == "[ok] Hello\n"
 
     def test_warn_print_with_universal_mode(
         self, capfd: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
@@ -389,4 +389,4 @@ class TestIconFallbackIntegration:
 
         # Assert
         out, _ = capfd.readouterr()
-        assert "! Warning message\n" in out
+        assert out == "! Warning message\n"

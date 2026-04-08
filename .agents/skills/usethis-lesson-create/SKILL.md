@@ -4,14 +4,18 @@ description: Create a lesson from a development difficulty, covering root cause 
 compatibility: usethis, GitHub, gh CLI
 license: MIT
 metadata:
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Creating a Lesson
 
 Lessons are how this project improves over time. When you encounter a difficulty, a
 surprising failure, or unexpected user feedback, a lesson captures not just what happened
-but _why_ — so the same mistake is not repeated by future agents or developers.
+but _why_ — and proposes a concrete action to prevent the same mistake from recurring.
+
+A lesson is **not** a record of what was done to fix a one-off problem. It is a proposal
+for a lasting improvement: an update to an agent skill, a new or improved linting/prek
+hook, or a code refactor that structurally prevents the class of issue.
 
 ## Why root cause analysis matters
 
@@ -25,6 +29,8 @@ A well-formed lesson answers:
 1. **What** went wrong (the observable symptom).
 2. **Why** it went wrong (the root cause, not the symptom).
 3. **What principle** this reveals (something actionable for the future).
+4. **What concrete action** would prevent recurrence (a skill update, a hook, or a
+   refactor — not just "be more careful next time").
 
 ## Self-containment and abstraction
 
@@ -75,10 +81,22 @@ cause is self-evident and offers no transferable principle.
    even if the exact code, file, or function name changes. Avoid naming specific
    implementation details unless the principle is truly about that specific thing.
    See the "Self-containment and abstraction" section above for guidance.
-4. **Fill in the lesson template** — see the template below.
-5. **File as a GitHub issue** using the `usethis-github-issue-create` skill, with
+4. **Propose a concrete action** — every lesson must recommend at least one specific
+   improvement. Choose from these categories (in order of preference):
+   - **Skill update** — add or revise guidance in an existing agent skill so future
+     agents avoid the mistake. This is the most common and preferred action.
+   - **Automated check** — propose a new or improved linting rule, prek hook, or CI
+     check that catches the mistake automatically.
+   - **Code refactor** — suggest a structural change to the code that makes the mistake
+     impossible or much harder to make.
+
+   Do **not** simply record what was done to fix the immediate instance. The action must
+   prevent the _class_ of problem, not just the single occurrence.
+
+5. **Fill in the lesson template** — see the template below.
+6. **File as a GitHub issue** using the `usethis-github-issue-create` skill, with
    label `agent` and any other relevant labels (e.g. `bug`, `documentation`).
-6. **Report the lesson** in your PR description or final progress report so reviewers
+7. **Report the lesson** in your PR description or final progress report so reviewers
    are aware.
 
 ## Root cause analysis
@@ -103,6 +121,7 @@ allows it" is not actionable).
 | Why 2      | There was no automated check enforcing that sync.                                     |
 | Root cause | Sync between two authoritative sources was manual with no enforcement.                |
 | Principle  | Any two artefacts that must stay in sync need an automated check; manual sync drifts. |
+| Action     | Add a prek hook that verifies the skills table in AGENTS.md matches the directory.    |
 
 ## Lesson template
 
@@ -126,15 +145,19 @@ situation. Phrase it as actionable guidance: "Always ...", "Never ...", "When X,
 do Y ...". Avoid naming specific functions, classes, or files unless the principle is
 truly about that specific thing. Do not reference memories or prior sessions.>
 
-## Resolution
+## Recommended action
 
-<How the problem was resolved in this instance, including any code or config changes
-made. Brief — a sentence or two is enough.>
+<One or more concrete improvements to prevent this class of problem from recurring.
+Each action should fall into one of these categories:
 
-## Follow-up
+- **Skill update:** which skill to update and what guidance to add or revise.
+- **Automated check:** a new or improved linting rule, prek hook, or CI check to add.
+- **Code refactor:** a structural change that makes the mistake impossible or harder.
 
-<Any work that remains, such as adding an automated check, updating documentation, or
-creating a related issue. Leave blank if none.>
+Do not record what was done to fix the immediate instance — focus on what should change
+to prevent recurrence. If the recommended action has already been completed as part of
+the current session, say so, but still describe the action clearly so the issue can be
+verified and closed.>
 ```
 
 ## Filing the issue

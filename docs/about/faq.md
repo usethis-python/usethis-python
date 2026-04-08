@@ -4,13 +4,13 @@
 
 No, although it is highly recommended for new projects, since it is a modern and easy-to-use tool for managing Python projects. If you don't have uv installed, usethis will automatically avoid using it. See [Backends](backends.md) for more details on how usethis selects and uses a package manager backend.
 
-If you have uv installed but you want to avoid using it for a specific project, you should use the `--backend=none` option when running usethis commands. In the future, it is planned that usethis will support additional backends for managing Python projects, for example Poetry.
+If you have uv installed but you want to avoid using it for a specific project, you should use the `--backend=none` option when running usethis commands. usethis also supports [Poetry](https://python-poetry.org/) as a backend — see [Backends](backends.md) for details.
 
 There is another reason to use uv, which is to provide the uvx command for running usethis. This provides an easy way to use usethis without needing to know technical details about Python virtual environments.
 
 ## What if I'm using Poetry for my project?
 
-If you're using Poetry, usethis will automatically detect this and avoid using the uv backend to install packages. You'll get instructions in the console about which steps to take manually using Poetry. First-class support for Poetry is planned.
+Poetry is fully supported as a backend. If you're using Poetry, usethis will automatically detect this and use the Poetry backend to install and uninstall dependencies, configure dependency groups, and give you Poetry-specific instructions. See [Backends](backends.md) for more details on how the backend is selected and what each backend provides.
 
 ## If I add a tool which is already configured, why does additional configuration get added?
 

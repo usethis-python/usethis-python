@@ -204,168 +204,104 @@ class TestTool:
             ]
 
     class TestGetDepGroupDeps:
-        def test_default(self):
+        def test_no_characteristic_deps(self, tmp_path: Path):
             tool = DefaultTool()
-            assert tool.get_dep_group_deps() == []
+            with change_cwd(tmp_path), files_manager():
+                assert tool.get_dep_group_deps() == []
 
-        def test_dev_deps_only(self):
+        def test_dep_not_in_config(self, tmp_path: Path):
             tool = MyTool()
-            assert tool.get_dep_group_deps() == [
-                Dependency(name="my_tool"),
-                Dependency(name="black"),
-                Dependency(name="flake8"),
-            ]
+            with change_cwd(tmp_path), files_manager():
+                assert tool.get_dep_group_deps() == []
 
-        def test_includes_test_and_doc_deps(self):
-            class MultiDepTool(Tool):
-                @property
-                @override
-                def meta(self) -> ToolMeta:
-                    return ToolMeta(name="multi_dep_tool")
-
-                @override
-                def print_how_to_use(self) -> None:
-                    pass
-
-                @override
-                def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-                    return [Dependency(name="devdep")]
-
-                @override
-                def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-                    return [Dependency(name="testdep")]
-
-                @override
-                def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-                    return [Dependency(name="docdep")]
-
-            tool = MultiDepTool()
-            assert tool.get_dep_group_deps() == [
-                Dependency(name="devdep"),
-                Dependency(name="testdep"),
-                Dependency(name="docdep"),
-            ]
-
-        def test_unconditional(self):
-            # MyTool adds "pytest" only when unconditional=True
-            tool = MyTool()
-            assert tool.get_dep_group_deps(unconditional=True) == [
-                Dependency(name="my_tool"),
-                Dependency(name="black"),
-                Dependency(name="flake8"),
-                Dependency(name="pytest"),
-            ]
-
-        def test_conditional_excludes_unconditional_only_deps(self):
-            # MyTool includes "pytest" only when unconditional=True; the default
-            # (unconditional=False) should not include it
-            tool = MyTool()
-            assert Dependency(name="pytest") not in tool.get_dep_group_deps()
-            assert Dependency(name="pytest") in tool.get_dep_group_deps(
-                unconditional=True
+        def test_dep_in_group(self, tmp_path: Path):
+            (tmp_path / "pyproject.toml").write_text(
+                "[dependency-groups]\ndev = ['black']\n"
             )
+            tool = MyTool()
+            with change_cwd(tmp_path), files_manager():
+                assert tool.get_dep_group_deps() == [Dependency(name="black")]
 
-        def test_custom_group_via_deps_by_group(self):
-            # A tool that overrides deps_by_group to add a custom group should have
-            # those deps included in get_dep_group_deps
-            class CustomGroupTool(Tool):
-                @property
-                @override
-                def meta(self) -> ToolMeta:
-                    return ToolMeta(name="custom_group_tool")
+        def test_includes_deps_from_all_groups(self, tmp_path: Path):
+            (tmp_path / "pyproject.toml").write_text(
+                "[dependency-groups]\ndev = ['black']\ntest = ['flake8']\n"
+            )
+            tool = MyTool()
+            with change_cwd(tmp_path), files_manager():
+                result = tool.get_dep_group_deps()
+            assert Dependency(name="black") in result
+            assert Dependency(name="flake8") in result
 
-                @override
-                def print_how_to_use(self) -> None:
-                    pass
-
-                @override
-                def deps_by_group(
-                    self, *, unconditional: bool = False
-                ) -> dict[str, list[Dependency]]:
-                    groups = super().deps_by_group(unconditional=unconditional)
-                    groups["tools"] = [Dependency(name="custom-dep")]
-                    return groups
-
-            tool = CustomGroupTool()
-            assert tool.get_dep_group_deps() == [Dependency(name="custom-dep")]
+        def test_unconditional_finds_conditional_dep(self, tmp_path: Path):
+            # MyTool includes "pytest" only when unconditional=True
+            (tmp_path / "pyproject.toml").write_text(
+                "[dependency-groups]\ndev = ['pytest']\n"
+            )
+            tool = MyTool()
+            with change_cwd(tmp_path), files_manager():
+                conditional_result = tool.get_dep_group_deps()
+                unconditional_result = tool.get_dep_group_deps(unconditional=True)
+            assert Dependency(name="pytest") not in conditional_result
+            assert Dependency(name="pytest") in unconditional_result
 
     class TestDepsByGroup:
-        def test_default_empty(self):
+        def test_no_characteristic_deps(self, tmp_path: Path):
             tool = DefaultTool()
-            assert tool.deps_by_group() == {}
+            with change_cwd(tmp_path), files_manager():
+                assert tool.deps_by_group() == {}
 
-        def test_dev_only(self):
+        def test_no_config_file(self, tmp_path: Path):
             tool = MyTool()
-            assert tool.deps_by_group() == {
-                "dev": [
-                    Dependency(name="my_tool"),
-                    Dependency(name="black"),
-                    Dependency(name="flake8"),
-                ]
-            }
+            with change_cwd(tmp_path), files_manager():
+                assert tool.deps_by_group() == {}
 
-        def test_multiple_groups(self):
-            class MultiDepTool(Tool):
-                @property
-                @override
-                def meta(self) -> ToolMeta:
-                    return ToolMeta(name="multi_dep_tool")
-
-                @override
-                def print_how_to_use(self) -> None:
-                    pass
-
-                @override
-                def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-                    return [Dependency(name="devdep")]
-
-                @override
-                def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-                    return [Dependency(name="testdep")]
-
-                @override
-                def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-                    return [Dependency(name="docdep")]
-
-            tool = MultiDepTool()
-            assert tool.deps_by_group() == {
-                "dev": [Dependency(name="devdep")],
-                "test": [Dependency(name="testdep")],
-                "doc": [Dependency(name="docdep")],
-            }
-
-        def test_empty_groups_are_excluded(self):
-            # Groups with no deps should not appear as keys in the result
-            class DevOnlyTool(Tool):
-                @property
-                @override
-                def meta(self) -> ToolMeta:
-                    return ToolMeta(name="dev_only_tool")
-
-                @override
-                def print_how_to_use(self) -> None:
-                    pass
-
-                @override
-                def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-                    return [Dependency(name="devdep")]
-
-            tool = DevOnlyTool()
-            result = tool.deps_by_group()
-            assert "test" not in result
-            assert "doc" not in result
-
-        def test_unconditional(self):
+        def test_no_matching_deps_in_config(self, tmp_path: Path):
+            (tmp_path / "pyproject.toml").write_text(
+                "[dependency-groups]\ndev = ['unrelated-package']\n"
+            )
             tool = MyTool()
-            result = tool.deps_by_group(unconditional=True)
-            assert result == {
-                "dev": [
-                    Dependency(name="my_tool"),
-                    Dependency(name="black"),
-                    Dependency(name="flake8"),
-                    Dependency(name="pytest"),
-                ]
-            }
+            with change_cwd(tmp_path), files_manager():
+                assert tool.deps_by_group() == {}
+
+        def test_dep_in_conventional_group(self, tmp_path: Path):
+            (tmp_path / "pyproject.toml").write_text(
+                "[dependency-groups]\ndev = ['black']\n"
+            )
+            tool = MyTool()
+            with change_cwd(tmp_path), files_manager():
+                assert tool.deps_by_group() == {"dev": [Dependency(name="black")]}
+
+        def test_dep_in_custom_group(self, tmp_path: Path):
+            # Deps in a custom group (not dev/test/doc) should be detected
+            (tmp_path / "pyproject.toml").write_text(
+                "[dependency-groups]\nmygroup = ['black']\n"
+            )
+            tool = MyTool()
+            with change_cwd(tmp_path), files_manager():
+                assert tool.deps_by_group() == {"mygroup": [Dependency(name="black")]}
+
+        def test_deps_across_multiple_groups(self, tmp_path: Path):
+            (tmp_path / "pyproject.toml").write_text(
+                "[dependency-groups]\ndev = ['black']\ntest = ['flake8']\n"
+            )
+            tool = MyTool()
+            with change_cwd(tmp_path), files_manager():
+                assert tool.deps_by_group() == {
+                    "dev": [Dependency(name="black")],
+                    "test": [Dependency(name="flake8")],
+                }
+
+        def test_unconditional_finds_conditional_dep(self, tmp_path: Path):
+            # MyTool includes "pytest" only when unconditional=True
+            (tmp_path / "pyproject.toml").write_text(
+                "[dependency-groups]\ndev = ['pytest']\n"
+            )
+            tool = MyTool()
+            with change_cwd(tmp_path), files_manager():
+                conditional_result = tool.deps_by_group()
+                unconditional_result = tool.deps_by_group(unconditional=True)
+            assert "dev" not in conditional_result
+            assert unconditional_result == {"dev": [Dependency(name="pytest")]}
 
     class TestPrintHowToUse:
         def test_default(self, capsys: pytest.CaptureFixture[str]):

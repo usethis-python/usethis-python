@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 from packaging.requirements import InvalidRequirement
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter  # noqa: TID251
 
 import usethis._backend.uv.deps
 from _test import change_cwd

@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter  # noqa: TID251
 
 import usethis._backend.dispatch
 from _test import change_cwd, use_tool

@@ -400,7 +400,7 @@ class TestCallPoetrySubprocess:
             call_poetry_subprocess(["--version"], change_toml=False)
 
         out, err = capfd.readouterr()
-        assert "something" in out
+        assert out == "⚠ something\n"
         assert not err
 
     def test_empty_stderr_no_warning(

@@ -114,7 +114,7 @@ link-mode = "symlink"
 
         # Assert
         out, err = capfd.readouterr()
-        assert "something went wrong" in out
+        assert out == "⚠ something went wrong\n"
         assert not err
 
     def test_empty_stderr_no_warning(
@@ -168,8 +168,7 @@ link-mode = "symlink"
 
         # Assert
         out, err = capfd.readouterr()
-        assert "first" in out
-        assert "second" in out
+        assert out == "⚠ first\n⚠ second\n"
         assert not err
 
     def test_non_warning_stderr_not_surfaced(

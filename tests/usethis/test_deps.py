@@ -948,11 +948,10 @@ test = []
 
             out, err = capfd.readouterr()
             assert not err
-            assert (
-                "Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'"
-                in out
+            assert out == (
+                "✔ Adding dependency 'pytest' to the 'test' group in 'pyproject.toml'.\n"
+                "☐ Install the dependency 'pytest'.\n"
             )
-            assert "Install the dependency 'pytest'" in out
             assert len(calls) == 1
 
 

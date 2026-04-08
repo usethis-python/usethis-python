@@ -146,7 +146,10 @@ version = "0.1.0"
 
             out, err = capfd.readouterr()
             assert not err
-            assert "poetry run pytest --cov" in out
+            assert (
+                out
+                == "☐ Run 'poetry run pytest --cov' to run your tests with Coverage.py.\n"
+            )
 
         def test_poetry_backend_without_pytest(
             self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
@@ -163,4 +166,7 @@ version = "0.1.0"
 
             out, err = capfd.readouterr()
             assert not err
-            assert "poetry run coverage help" in out
+            assert (
+                out
+                == "☐ Run 'poetry run coverage help' to see available Coverage.py commands.\n"
+            )

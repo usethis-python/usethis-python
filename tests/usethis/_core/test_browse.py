@@ -12,7 +12,7 @@ class TestPyPI:
         # Assert
         out, err = capfd.readouterr()
         assert not err
-        assert "☐ Open URL <https://pypi.org/project/numpy/>." in out
+        assert out == "☐ Open URL <https://pypi.org/project/numpy/>.\n"
 
     def test_open_in_browser(self, monkeypatch: pytest.MonkeyPatch):
         # Arrange

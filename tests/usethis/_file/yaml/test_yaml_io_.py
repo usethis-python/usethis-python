@@ -1542,5 +1542,5 @@ repos:
         # Assert
         # Should have a hint
         out, err = capfd.readouterr()
-        assert "Hint: You may have incorrect indentation in the YAML file." in out
+        assert out == "ℹ Hint: You may have incorrect indentation in the YAML file.\n"  # noqa: RUF001
         assert not err

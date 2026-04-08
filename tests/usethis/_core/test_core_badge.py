@@ -753,6 +753,12 @@ And some text
 
 
 class TestAllBadgesMarkdownValid:
+    """Test that adding all badges in sequence produces valid markdown.
+
+    The expected output is stored as a canonical .md file and validated by prek
+    (markdownlint + prettier), ensuring the generated markdown is always valid.
+    """
+
     def test_all_badges(self, bare_dir: Path):
         # Arrange
         (bare_dir / "pyproject.toml").write_text('[project]\nname = "my-project"\n')

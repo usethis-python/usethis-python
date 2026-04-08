@@ -361,8 +361,6 @@ class TestGetIcon:
 
 
 class TestIconFallbackIntegration:
-    """Test that print functions work with different icon modes."""
-
     def test_tick_print_with_text_mode(
         self, capfd: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
     ) -> None:

@@ -10,8 +10,6 @@ from usethis._tool.impl.base.deptry import DeptryTool
 
 
 class TestDeptryTool:
-    """Tests for DeptryTool."""
-
     def test_get_pyproject_id_keys(self):
         """Test that get_pyproject_id_keys returns the correct keys."""
         # Arrange

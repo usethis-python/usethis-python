@@ -4,7 +4,7 @@ description: Modify Python code (e.g. refactor, add new code, or delete code)
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.6"
+  version: "1.7"
 ---
 
 # Modifying Python code
@@ -53,6 +53,15 @@ Without a comment, reviewers lack the context to understand why a seemingly unre
 
 1. If you make a code change that is auxiliary to your main task — i.e. it fixes a pre-existing or latent issue you encountered along the way — add a code comment at the point of the change explaining the reason.
 2. Keep the comment concise: one or two lines explaining the problem and why the fix is necessary.
+
+### Never add unverified URLs to code comments
+
+Do not add GitHub issue, PR, or commit URLs to code or test comments unless both of the following are true:
+
+1. The URL has been verified to exist (you have browsed to it and confirmed it is real).
+2. You have been explicitly instructed to include it.
+
+Fabricated URLs are worse than no reference at all — they mislead future readers and cannot be trusted without manually checking each one. If you want to add context, describe the problem in plain words instead.
 
 ## Run static checks after finishing modifications
 

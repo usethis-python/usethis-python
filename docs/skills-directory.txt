@@ -2,6 +2,7 @@
 - `usethis-cli-dogfood`: Dogfood new or modified CLI commands by running them against the usethis repo itself to catch edge cases
 - `usethis-cli-modify`: Modify the usethis CLI layer (commands, options, help text) and keep documentation in sync
 - `usethis-cli-user-test`: Simulate user testing for CLI commands by running them in a fresh temporary project to verify the happy path
+- `usethis-doc-edit`: Guidelines for editing documentation — including scope matching, section placement, and content organisation
 - `usethis-file-create`: Guidance on where to place new files in the repository
 - `usethis-file-remove`: Remove files from the project
 - `usethis-github-actions-update`: Update GitHub Actions workflows

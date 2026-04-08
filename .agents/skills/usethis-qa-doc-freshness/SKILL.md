@@ -4,7 +4,7 @@ description: Review documentation for outdated or inaccurate content by cross-re
 compatibility: usethis, Python, markdown, documentation
 license: MIT
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Documentation Freshness Review
@@ -67,4 +67,5 @@ CLI examples that use options, subcommands, or syntax that has changed.
 - Use `usethis-qa-doc-integrity` for structural completeness checks (e.g. ensuring every CLI option is documented).
 - Use `usethis-qa-grammar` for text quality (grammar, spelling, tone).
 - Use `usethis-qa-config-files-sync` for verifying config file documentation matches the Python API.
+- Use `usethis-doc-edit` for guidance on placing new content in the correct section when editing or adding to documentation.
 - This skill focuses specifically on **factual accuracy** — whether what the docs say is still true.

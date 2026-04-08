@@ -183,18 +183,18 @@ def remove_deps_from_group(deps: list[Dependency], group: str) -> None:
     ies = "y" if len(_deps) == 1 else "ies"
     backend = get_backend()
 
-    if backend is BackendEnum.uv:
+    if backend in (BackendEnum.uv, BackendEnum.poetry):
         tick_print(
             f"Removing dependenc{ies} {deps_str} from the '{group}' group in 'pyproject.toml'."
         )
-        for dep in _deps:
-            remove_dep_from_group_via_uv(dep, group)
-    elif backend is BackendEnum.poetry:
-        tick_print(
-            f"Removing dependenc{ies} {deps_str} from the '{group}' group in 'pyproject.toml'."
-        )
-        for dep in _deps:
-            remove_dep_from_group_via_poetry(dep, group)
+        if backend is BackendEnum.uv:
+            for dep in _deps:
+                remove_dep_from_group_via_uv(dep, group)
+        elif backend is BackendEnum.poetry:
+            for dep in _deps:
+                remove_dep_from_group_via_poetry(dep, group)
+        else:
+            assert_never(backend)
     elif backend is BackendEnum.none:
         instruct_print(f"Remove the {group} dependenc{ies} {deps_str}.")
     else:

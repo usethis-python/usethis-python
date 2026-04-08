@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.9"
+  version: "1.10"
 ---
 
 # Python Code Guidelines
@@ -206,6 +206,54 @@ def _format_version(v: str) -> str:
 
 - **Adding helpers at the top of the file.** It is tempting to place a new helper near the top, before any existing function. Always scroll down to find the caller first, then add the helper below it.
 - **Placing a helper above the function that introduces it.** Even if a helper is only a few lines long, it should still follow its caller so the intent is clear before the detail.
+
+## Structuring if-else to avoid duplicated logic
+
+When an outer if-else branches on an enum (or similar value), and a shared guard condition or action applies to a _group_ of those branches, check the guard once at the outer level using a combined membership test before branching on the individual values.
+
+If the same string literal or logic block appears in two sibling branches of an if-else, that is a signal to restructure: hoist the shared condition or action to the outer level, and move the distinguishing logic to the inner level.
+
+### Procedure
+
+1. Identify sibling branches of an if-elif chain that contain identical statements.
+2. Extract those identical statements by replacing the outer per-value tests with a combined membership check: `if value in (A, B):`.
+3. Inside that combined block, nest the per-value branching for any logic that genuinely differs between the values.
+4. Verify the `else: assert_never(...)` guard is still present at every level where the value is dispatched.
+
+### Example
+
+```python
+# Bad: same tick_print duplicated in two sibling branches
+if backend is BackendEnum.uv:
+    tick_print("Doing work in 'pyproject.toml'.")
+    do_uv_work()
+elif backend is BackendEnum.poetry:
+    tick_print("Doing work in 'pyproject.toml'.")  # identical
+    do_poetry_work()
+elif backend is BackendEnum.none:
+    instruct_print("Do the work manually.")
+else:
+    assert_never(backend)
+
+# Good: shared message hoisted; distinguishing logic nested inside
+if backend in (BackendEnum.uv, BackendEnum.poetry):
+    tick_print("Doing work in 'pyproject.toml'.")
+    if backend is BackendEnum.uv:
+        do_uv_work()
+    elif backend is BackendEnum.poetry:
+        do_poetry_work()
+    else:
+        assert_never(backend)
+elif backend is BackendEnum.none:
+    instruct_print("Do the work manually.")
+else:
+    assert_never(backend)
+```
+
+### Common mistakes
+
+- **Nesting a shared guard inside each branch independently.** When a guard condition (such as "is git available?") applies equally to multiple branches, nesting it separately inside each branch leads to duplicated code that is hard to keep in sync. Hoist the guard to the outer level instead.
+- **Overlooking the inner `assert_never`.** After introducing the combined membership check, the inner if-elif still needs its own `else: assert_never(backend)` to preserve exhaustiveness checking.
 
 ## Caching IO-intensive private helpers
 

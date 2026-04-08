@@ -4,7 +4,7 @@ description: Guidelines for Python function design, including return types and s
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Function Design Guidelines
@@ -128,3 +128,41 @@ Functions should not return tuples. Tuple returns obscure the meaning of each el
 - Tuple elements are accessed by position, not by name. Callers must remember the order, and mistakes are silent.
 - Adding a new element to a tuple return breaks every existing call site.
 - A dataclass communicates intent, supports attribute access, and can be extended without breaking callers.
+
+## Prefer dataclasses over NamedTuples for structured types
+
+When grouping related fields into a structured type, always use `@dataclass` instead of `typing.NamedTuple`.
+
+### Why this matters
+
+`NamedTuple` inherits full tuple semantics: positional indexing, iteration, unpacking, and equality by position. These behaviours are rarely needed and invite fragile code that depends on field ordering rather than field names. A caller that unpacks or indexes a `NamedTuple` by position will silently break if a field is reordered.
+
+A `@dataclass` provides named attribute access without any of the unintended tuple behaviours. It is self-documenting, extensible without breaking callers, and signals clearly that the type is a record, not a sequence.
+
+### When NamedTuple is appropriate
+
+Use `NamedTuple` only when tuple semantics are genuinely required — for example, when the object must be compared positionally, iterated over, or passed to code that expects a tuple.
+
+### Example
+
+```python
+# Bad: tuple semantics leak through — callers can index by position
+class Result(NamedTuple):
+    stdout: str
+    stderr: str
+
+result[0]  # works silently; fragile if fields are reordered
+
+# Good: only attribute access is available
+@dataclass
+class Result:
+    stdout: str
+    stderr: str
+
+result.stdout  # explicit and refactor-safe
+```
+
+### Common mistakes
+
+- **Choosing NamedTuple for conciseness.** The marginal brevity of a `NamedTuple` definition is not worth the unintended tuple API it exposes.
+- **Using NamedTuple "just in case" unpacking is needed.** Only use it when unpacking is actually used at a call site today.

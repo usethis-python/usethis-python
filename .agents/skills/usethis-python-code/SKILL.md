@@ -228,6 +228,8 @@ A `@final` marker signals that the property is a thin projection of its underlyi
 
 ## Caching IO-intensive private helpers
 
+When a private helper function performs file I/O or another expensive operation and may be called more than once during a single high-level operation, decorate it with `@functools.cache` to avoid redundant work.
+
 ### When to apply
 
 Apply `@functools.cache` to a private helper when all of the following are true:

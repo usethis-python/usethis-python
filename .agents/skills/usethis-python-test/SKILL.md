@@ -4,7 +4,7 @@ description: General guidelines for writing tests in the usethis project, includ
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Python Test Guidelines
@@ -108,3 +108,26 @@ When adding `@functools.cache` to a function:
 ### Why
 
 The `clear_functools_caches` autouse fixture runs before each test, ensuring every test starts with a clean cache. Without this registration, a test that triggers caching will leave stale values in memory that silently affect subsequent tests, causing order-dependent failures that are hard to diagnose.
+
+## Testing combinations of independent axes of variation
+
+When a feature has two or more independent dimensions of variation, tests that vary only one dimension at a time are necessary but not sufficient. Always include at least one test that exercises non-trivial values on **multiple axes simultaneously**.
+
+### Why varying one axis at a time is not enough
+
+A feature that composes two independent behaviours (e.g. path traversal depth and value nesting depth) may work correctly for each behaviour in isolation while failing when both are exercised together. The interaction between dimensions is a distinct code path that single-axis tests cannot reach.
+
+### How to apply this principle
+
+1. **Identify the independent axes.** Before writing tests, list each dimension along which inputs or behaviour can vary (e.g. path length, value complexity, number of items, nesting level).
+2. **Write single-axis tests first.** Cover the trivial and non-trivial cases for each axis independently.
+3. **Add at least one cross-axis test.** Write a test that uses a non-trivial value on at least two axes simultaneously. This test verifies the interaction between dimensions.
+
+### Example
+
+For a function that sets a value at a key path, the two axes are:
+
+- **Path depth** — single key vs. multiple keys (e.g. `["tool"]` vs. `["tool", "ruff"]`)
+- **Value complexity** — scalar vs. nested dict (e.g. `"pep257"` vs. `{"select": ["A"], "pydocstyle": {"convention": "pep257"}}`)
+
+Single-axis tests cover multiple keys with a scalar value, and a single key with a nested dict value. The cross-axis test uses multiple keys **and** a multiply-nested dict value together.

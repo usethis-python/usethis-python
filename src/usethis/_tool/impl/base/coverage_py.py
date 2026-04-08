@@ -21,11 +21,13 @@ from usethis._types.deps import Dependency
 @final
 class CoveragePyTool(CoveragePyToolSpec, Tool):
     @override
-    def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
         deps = [Dependency(name="coverage", extras=frozenset({"toml"}))]
         if unconditional or is_likely_used(PytestToolSpec()):
             deps += [Dependency(name="pytest-cov")]
-        return deps
+        return {"test": deps}
 
     @override
     def print_how_to_use(self) -> None:

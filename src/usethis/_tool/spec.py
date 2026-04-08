@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Protocol, final
 from typing_extensions import assert_never
 
 from usethis._config import usethis_config
-from usethis._deps import get_dep_groups, is_dep_satisfied_in
+from usethis._deps import is_dep_in_any_group
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import get_hook_ids, hook_ids_are_equivalent
 from usethis._tool.config import ConfigSpec
@@ -189,10 +189,16 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         msg = f"{self.name} has no default command."
         raise NoDefaultToolCommand(msg)
 
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        """The tool's development dependencies.
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
+        """Get the characteristic dependencies of this tool, organised by group name.
 
-        These should all be considered characteristic of this particular tool.
+        This is the primary override point for declaring tool dependencies. The keys
+        are dependency group names and the values are lists of characteristic
+        dependencies for each group. Tools override this method to declare their
+        dependencies in any group, including custom groups beyond the conventional dev,
+        test, and doc groups.
 
         In general, these can vary dynamically, e.g. based on the versions of Python
         supported in the current project.
@@ -201,75 +207,59 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
             unconditional: Whether to return all possible dependencies regardless of
                            whether they are relevant to the current project.
         """
-        return []
+        return {}
+
+    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """The tool's development dependencies.
+
+        These should all be considered characteristic of this particular tool.
+
+        Derived from deps_by_group(); tools should override deps_by_group instead of
+        this method.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return self.deps_by_group(unconditional=unconditional).get("dev", [])
 
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's test dependencies.
 
         These should all be considered characteristic of this particular tool.
 
-        In general, these can vary dynamically, e.g. based on the versions of Python
-        supported in the current project.
+        Derived from deps_by_group(); tools should override deps_by_group instead of
+        this method.
 
         Args:
             unconditional: Whether to return all possible dependencies regardless of
                            whether they are relevant to the current project.
         """
-        return []
+        return self.deps_by_group(unconditional=unconditional).get("test", [])
 
     def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's documentation dependencies.
 
         These should all be considered characteristic of this particular tool.
 
-        In general, these can vary dynamically, e.g. based on the versions of Python
-        supported in the current project.
+        Derived from deps_by_group(); tools should override deps_by_group instead of
+        this method.
 
         Args:
             unconditional: Whether to return all possible dependencies regardless of
                            whether they are relevant to the current project.
         """
-        return []
-
-    def deps_by_group(
-        self, *, unconditional: bool = False
-    ) -> dict[str, list[Dependency]]:
-        """Get the characteristic dependencies of this tool, organised by group name.
-
-        Scans all dependency groups declared in the project configuration and returns
-        those groups (with the matching characteristic deps) where any of this tool's
-        characteristic dependencies appear. All groups are detected automatically,
-        including any custom groups beyond the conventional dev, test, and doc groups.
-
-        Args:
-            unconditional: Whether to consider all possible characteristic dependencies
-                           regardless of whether they are relevant to the current project.
-        """
-        all_char_deps = [
-            *self.dev_deps(unconditional=unconditional),
-            *self.test_deps(unconditional=unconditional),
-            *self.doc_deps(unconditional=unconditional),
-        ]
-        if not all_char_deps:
-            return {}
-        result: dict[str, list[Dependency]] = {}
-        for group_name, group_deps in get_dep_groups().items():
-            matching = [
-                dep for dep in all_char_deps if is_dep_satisfied_in(dep, in_=group_deps)
-            ]
-            if matching:
-                result[group_name] = matching
-        return result
+        return self.deps_by_group(unconditional=unconditional).get("doc", [])
 
     def get_dep_group_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """Get all characteristic dependencies for the tool across all dependency groups.
 
-        Iterates over all groups returned by deps_by_group() so that any group present
-        in the project configuration is automatically included.
+        Iterates over all groups returned by deps_by_group() so that any group the
+        tool declares is automatically included.
 
         Args:
-            unconditional: Whether to consider all possible characteristic dependencies
-                           regardless of whether they are relevant to the current project.
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
         """
         return [
             dep
@@ -316,7 +306,10 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         # N.B. currently doesn't check core dependencies nor extras.
         # Only PEP735 dependency groups.
         # See https://github.com/usethis-python/usethis-python/issues/809
-        return bool(self.get_dep_group_deps(unconditional=True))
+        return any(
+            is_dep_in_any_group(dep)
+            for dep in self.get_dep_group_deps(unconditional=True)
+        )
 
     def get_pre_commit_repos(
         self,

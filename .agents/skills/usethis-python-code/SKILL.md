@@ -254,6 +254,7 @@ else:
 
 - **Nesting a shared guard inside each branch independently.** When a guard condition (such as "is git available?") applies equally to multiple branches, nesting it separately inside each branch leads to duplicated code that is hard to keep in sync. Hoist the guard to the outer level instead.
 - **Overlooking the inner `assert_never`.** After introducing the combined membership check, the inner if-elif still needs its own `else: assert_never(backend)` to preserve exhaustiveness checking.
+
 ## Marking derived properties `@final`
 
 When a property derives its return value entirely from a single source of truth (e.g. `return self.meta.name`), mark it `@final` to prevent subclasses from overriding it with independent logic.

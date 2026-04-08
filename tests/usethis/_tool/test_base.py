@@ -203,6 +203,59 @@ class TestTool:
                 Dependency(name="flake8"),
             ]
 
+    class TestGetDepGroupDeps:
+        def test_default(self):
+            tool = DefaultTool()
+            assert tool.get_dep_group_deps() == []
+
+        def test_dev_deps_only(self):
+            tool = MyTool()
+            assert tool.get_dep_group_deps() == [
+                Dependency(name="my_tool"),
+                Dependency(name="black"),
+                Dependency(name="flake8"),
+            ]
+
+        def test_includes_test_and_doc_deps(self):
+            class MultiDepTool(Tool):
+                @property
+                @override
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="multi_dep_tool")
+
+                @override
+                def print_how_to_use(self) -> None:
+                    pass
+
+                @override
+                def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+                    return [Dependency(name="devdep")]
+
+                @override
+                def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+                    return [Dependency(name="testdep")]
+
+                @override
+                def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+                    return [Dependency(name="docdep")]
+
+            tool = MultiDepTool()
+            assert tool.get_dep_group_deps() == [
+                Dependency(name="devdep"),
+                Dependency(name="testdep"),
+                Dependency(name="docdep"),
+            ]
+
+        def test_unconditional(self):
+            # MyTool adds "pytest" only when unconditional=True
+            tool = MyTool()
+            assert tool.get_dep_group_deps(unconditional=True) == [
+                Dependency(name="my_tool"),
+                Dependency(name="black"),
+                Dependency(name="flake8"),
+                Dependency(name="pytest"),
+            ]
+
     class TestPrintHowToUse:
         def test_default(self, capsys: pytest.CaptureFixture[str]):
             tool = DefaultTool()

@@ -231,6 +231,23 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """
         return []
 
+    def get_dep_group_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """Get all characteristic dependencies for the tool across all dependency groups.
+
+        By default, this aggregates dev_deps, test_deps, and doc_deps. Override this
+        method if the tool has dependencies in custom dependency groups beyond those
+        three.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return [
+            *self.dev_deps(unconditional=unconditional),
+            *self.test_deps(unconditional=unconditional),
+            *self.doc_deps(unconditional=unconditional),
+        ]
+
     def pre_commit_config(self) -> PreCommitConfig:
         """Get the pre-commit configurations for the tool.
 
@@ -270,23 +287,10 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         # N.B. currently doesn't check core dependencies nor extras.
         # Only PEP735 dependency groups.
         # See https://github.com/usethis-python/usethis-python/issues/809
-        _is_declared = False
-
-        _is_declared = any(
-            is_dep_in_any_group(dep) for dep in self.dev_deps(unconditional=True)
+        return any(
+            is_dep_in_any_group(dep)
+            for dep in self.get_dep_group_deps(unconditional=True)
         )
-
-        if not _is_declared:
-            _is_declared = any(
-                is_dep_in_any_group(dep) for dep in self.test_deps(unconditional=True)
-            )
-
-        if not _is_declared:
-            _is_declared = any(
-                is_dep_in_any_group(dep) for dep in self.doc_deps(unconditional=True)
-            )
-
-        return _is_declared
 
     def get_pre_commit_repos(
         self,

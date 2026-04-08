@@ -256,6 +256,15 @@ class TestTool:
                 Dependency(name="pytest"),
             ]
 
+        def test_conditional_excludes_unconditional_only_deps(self):
+            # MyTool includes "pytest" only when unconditional=True; the default
+            # (unconditional=False) should not include it
+            tool = MyTool()
+            assert Dependency(name="pytest") not in tool.get_dep_group_deps()
+            assert Dependency(name="pytest") in tool.get_dep_group_deps(
+                unconditional=True
+            )
+
     class TestPrintHowToUse:
         def test_default(self, capsys: pytest.CaptureFixture[str]):
             tool = DefaultTool()

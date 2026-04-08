@@ -91,6 +91,14 @@ pre-commit only supports configuration in `.pre-commit-config.yaml`.
 
 pyproject-fmt only supports configuration in `pyproject.toml`.
 
+### pyproject.toml
+
+| File             | Section       |
+| ---------------- | ------------- |
+| `pyproject.toml` | _(top-level)_ |
+
+`pyproject.toml` only supports configuration in `pyproject.toml`.
+
 ### pytest
 
 | File             | Section                     |
@@ -110,6 +118,14 @@ In particular, `pytest.ini` and `.pytest.ini` always match when they exist, wher
 `pyproject.toml` only matches if it contains a `[tool.pytest.ini_options]` table.
 A `pyproject.toml` file without this table is only used as a last resort when no other
 config file is found.
+
+### requirements.txt
+
+| File             | Section               |
+| ---------------- | --------------------- |
+| `pyproject.toml` | `[tool.sync-with-uv]` |
+
+`requirements.txt` only supports configuration in `pyproject.toml`.
 
 ### Ruff
 

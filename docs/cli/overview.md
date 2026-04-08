@@ -48,5 +48,6 @@
 - [`usethis browse pypi`](reference.md#usethis-browse-pypi-package) — Display or open the PyPI landing page associated with another project.
 - [`usethis show`](reference.md#usethis-show) — Show a specific piece of information about the project.
   - [`usethis show backend`](reference.md#usethis-show) - Show the inferred project manager backend, e.g. 'uv' or 'none'.
+  - [`usethis show license`](reference.md#usethis-show) - Show the project license in SPDX format.
   - [`usethis show name`](reference.md#usethis-show) - Show the name of the project.
   - [`usethis show sonarqube`](reference.md#usethis-show) - Show appropriate contents of a `sonar-project.properties` file for SonarQube analysis.

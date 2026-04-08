@@ -231,21 +231,44 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """
         return []
 
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
+        """Get the characteristic dependencies of this tool, organised by group name.
+
+        By default, this is built from dev_deps, test_deps, and doc_deps.  Override
+        this method to declare dependencies in custom groups beyond those three; the
+        groups that appear as keys in the returned dict are automatically discovered
+        by get_dep_group_deps.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        result: dict[str, list[Dependency]] = {}
+        for group, deps in [
+            ("dev", self.dev_deps(unconditional=unconditional)),
+            ("test", self.test_deps(unconditional=unconditional)),
+            ("doc", self.doc_deps(unconditional=unconditional)),
+        ]:
+            if deps:
+                result[group] = deps
+        return result
+
     def get_dep_group_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """Get all characteristic dependencies for the tool across all dependency groups.
 
-        By default, this aggregates dev_deps, test_deps, and doc_deps. Override this
-        method if the tool has dependencies in custom dependency groups beyond those
-        three.
+        Iterates over all groups returned by deps_by_group() so that any custom groups
+        declared there are automatically included.
 
         Args:
             unconditional: Whether to return all possible dependencies regardless of
                            whether they are relevant to the current project.
         """
         return [
-            *self.dev_deps(unconditional=unconditional),
-            *self.test_deps(unconditional=unconditional),
-            *self.doc_deps(unconditional=unconditional),
+            dep
+            for deps in self.deps_by_group(unconditional=unconditional).values()
+            for dep in deps
         ]
 
     def pre_commit_config(self) -> PreCommitConfig:

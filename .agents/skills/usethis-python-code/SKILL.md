@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.9"
+  version: "1.10"
 ---
 
 # Python Code Guidelines
@@ -206,6 +206,25 @@ def _format_version(v: str) -> str:
 
 - **Adding helpers at the top of the file.** It is tempting to place a new helper near the top, before any existing function. Always scroll down to find the caller first, then add the helper below it.
 - **Placing a helper above the function that introduces it.** Even if a helper is only a few lines long, it should still follow its caller so the intent is clear before the detail.
+
+## Marking derived properties `@final`
+
+When a property derives its return value entirely from a single source of truth (e.g. `return self.meta.name`), mark it `@final` to prevent subclasses from overriding it with independent logic.
+
+### Key principle
+
+A `@final` marker signals that the property is a thin projection of its underlying source — not a hook designed for extension. Dynamic needs should be addressed by making the **source** attribute dynamic (e.g. computing it in the owning data class or abstract property), rather than bypassing the derived property with an override. This preserves a single source of truth and prevents derived properties from becoming silently inconsistent with the data they are supposed to reflect.
+
+### Procedure
+
+1. When writing a property that does nothing except project a value from a source-of-truth attribute, add `@final` above the `@property` decorator.
+2. If a subclass needs a different value, update the source attribute instead — for example, by making the data class property dynamic or by overriding the abstract `meta` property that the derived property reads from.
+3. Do not override a `@final` property in a subclass; mypy and type checkers will flag this as an error.
+
+### Common mistakes
+
+- **Overriding a derived property to add dynamic logic.** When a derived property like `name` or `managed_files` is overridden to compute a different value, there are now two independent sources of truth, which can diverge silently. Making the source attribute dynamic is the correct fix.
+- **Forgetting `@final` on new derived properties.** Whenever you add a property that simply forwards to a single source attribute, mark it `@final` immediately to prevent the same mistake in the future.
 
 ## Caching IO-intensive private helpers
 

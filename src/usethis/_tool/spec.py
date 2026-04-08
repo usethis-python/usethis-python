@@ -49,6 +49,7 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
     @abstractmethod
     def meta(self) -> ToolMeta: ...
 
+    @final
     @property
     def name(self) -> str:
         """The name of the tool, for display purposes.
@@ -70,6 +71,7 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """Get (relative) paths to files managed by (solely) this tool."""
         return self.meta.managed_files
 
+    @final
     @property
     def rule_config(self) -> RuleConfig:
         """Get the linter rule configuration associated with this tool.

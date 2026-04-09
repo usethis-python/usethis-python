@@ -1,10 +1,6 @@
 # 🖥️ Command Reference
 
-Each tool command (e.g. `usethis tool ruff`, `usethis lint`, `usethis arch`) follows
-each tool's own configuration file discovery logic when writing configuration — if an
-existing supported configuration file is found, usethis will write to it. See
-[Configuration Files](../about/config-files.md) for the full list of supported
-configuration files for each tool.
+Each tool command (e.g. `usethis tool ruff`, `usethis lint`, `usethis arch`) follows each tool's own configuration file discovery logic when writing configuration — if an existing supported configuration file is found, usethis will write to it. See [Configuration Files](../about/config-files.md) for the full list of supported configuration files for each tool.
 
 ## `usethis init`
 
@@ -204,8 +200,7 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
-- `--backend` to specify a package manager backend to use. The default is to auto-detect.
-  Possible values:
+- `--backend` to specify a package manager backend to use. The default is to auto-detect. Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -229,8 +224,7 @@ Supported options:
 - `--offline` to disable network access and rely on caches
 - `--frozen` to leave the virtual environment and lockfile unchanged
 - `--quiet` to suppress output
-- `--backend` to specify a package manager backend to use. The default is to auto-detect.
-  Possible values:
+- `--backend` to specify a package manager backend to use. The default is to auto-detect. Possible values:
   - `auto` to auto-detect the backend (default)
   - `uv` to use the [uv](https://docs.astral.sh/uv) package manager
   - `none` to not use a package manager backend and display messages for some operations.
@@ -272,8 +266,7 @@ Add a new tool to a Python project, including:
 - any other relevant directories or tool-bespoke configuration files, and
 - `.pre-commit-config.yaml` configuration if using `pre-commit`.
 
-Note if `pyproject.toml` is not present, it will be created, since this is required for
-declaring dependencies with `uv add`.
+Note if `pyproject.toml` is not present, it will be created, since this is required for declaring dependencies with `uv add`.
 
 ### Code Quality Tools
 
@@ -413,9 +406,7 @@ Supported options:
 
 Add (or manage configuration) of Ruff and Deptry rules in `pyproject.toml`.
 
-See [the Ruff documentation](https://docs.astral.sh/ruff/rules/) for a list of available
-rules, and [the Deptry documentation](https://deptry.com/rules-violations/) for a list
-of available rules.
+See [the Ruff documentation](https://docs.astral.sh/ruff/rules/) for a list of available rules, and [the Deptry documentation](https://deptry.com/rules-violations/) for a list of available rules.
 
 Example:
 

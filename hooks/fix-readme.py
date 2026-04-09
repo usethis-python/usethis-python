@@ -111,6 +111,7 @@ def _include_doc(
         new_lines: list[str] = []
         for line in lines:
             if line.startswith(tip_text):
+                new_lines.append("<!-- prettier-ignore -->")
                 new_lines.append("> [!TIP]")
                 new_lines.append("> " + line)
             else:

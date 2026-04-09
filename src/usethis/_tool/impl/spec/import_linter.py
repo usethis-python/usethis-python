@@ -56,8 +56,10 @@ class ImportLinterToolSpec(ToolSpec):
 
     @override
     @final
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="import-linter")]
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
+        return {"dev": [Dependency(name="import-linter")]}
 
     @override
     @final

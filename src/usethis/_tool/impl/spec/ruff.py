@@ -57,8 +57,10 @@ class RuffToolSpec(ToolSpec):
 
     @override
     @final
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="ruff")]
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
+        return {"dev": [Dependency(name="ruff")]}
 
     @override
     @final

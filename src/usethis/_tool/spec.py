@@ -189,47 +189,78 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         msg = f"{self.name} has no default command."
         raise NoDefaultToolCommand(msg)
 
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
+        """Get the characteristic dependencies of this tool, organised by group name.
+
+        This is the primary override point for declaring tool dependencies. The keys
+        are dependency group names and the values are lists of characteristic
+        dependencies for each group. Tools override this method to declare their
+        dependencies in any group, including custom groups beyond the conventional dev,
+        test, and doc groups.
+
+        In general, these can vary dynamically, e.g. based on the versions of Python
+        supported in the current project.
+
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return {}
+
+    @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's development dependencies.
 
         These should all be considered characteristic of this particular tool.
 
-        In general, these can vary dynamically, e.g. based on the versions of Python
-        supported in the current project.
-
         Args:
             unconditional: Whether to return all possible dependencies regardless of
                            whether they are relevant to the current project.
         """
-        return []
+        return self.deps_by_group(unconditional=unconditional).get("dev", [])
 
+    @final
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's test dependencies.
 
         These should all be considered characteristic of this particular tool.
 
-        In general, these can vary dynamically, e.g. based on the versions of Python
-        supported in the current project.
-
         Args:
             unconditional: Whether to return all possible dependencies regardless of
                            whether they are relevant to the current project.
         """
-        return []
+        return self.deps_by_group(unconditional=unconditional).get("test", [])
 
+    @final
     def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's documentation dependencies.
 
         These should all be considered characteristic of this particular tool.
 
-        In general, these can vary dynamically, e.g. based on the versions of Python
-        supported in the current project.
+        Args:
+            unconditional: Whether to return all possible dependencies regardless of
+                           whether they are relevant to the current project.
+        """
+        return self.deps_by_group(unconditional=unconditional).get("doc", [])
+
+    @final
+    def get_dep_group_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+        """Get all characteristic dependencies for the tool across all dependency groups.
+
+        Iterates over all groups returned by deps_by_group() so that any group the
+        tool declares is automatically included.
 
         Args:
             unconditional: Whether to return all possible dependencies regardless of
                            whether they are relevant to the current project.
         """
-        return []
+        return [
+            dep
+            for deps in self.deps_by_group(unconditional=unconditional).values()
+            for dep in deps
+        ]
 
     def pre_commit_config(self) -> PreCommitConfig:
         """Get the pre-commit configurations for the tool.
@@ -270,23 +301,10 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         # N.B. currently doesn't check core dependencies nor extras.
         # Only PEP735 dependency groups.
         # See https://github.com/usethis-python/usethis-python/issues/809
-        _is_declared = False
-
-        _is_declared = any(
-            is_dep_in_any_group(dep) for dep in self.dev_deps(unconditional=True)
+        return any(
+            is_dep_in_any_group(dep)
+            for dep in self.get_dep_group_deps(unconditional=True)
         )
-
-        if not _is_declared:
-            _is_declared = any(
-                is_dep_in_any_group(dep) for dep in self.test_deps(unconditional=True)
-            )
-
-        if not _is_declared:
-            _is_declared = any(
-                is_dep_in_any_group(dep) for dep in self.doc_deps(unconditional=True)
-            )
-
-        return _is_declared
 
     def get_pre_commit_repos(
         self,

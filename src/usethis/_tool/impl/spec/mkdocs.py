@@ -30,13 +30,15 @@ class MkDocsToolSpec(ToolSpec):
 
     @override
     @final
-    def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
         deps = [Dependency(name="mkdocs")]
 
         if unconditional:
             deps.append(Dependency(name="mkdocs-material"))
 
-        return deps
+        return {"doc": deps}
 
     @override
     @final

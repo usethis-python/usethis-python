@@ -53,7 +53,9 @@ class CodespellToolSpec(ToolSpec):
 
     @override
     @final
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
         deps = [Dependency(name="codespell")]
 
         # Python < 3.11 needs tomli (instead of the stdlib tomllib) to read
@@ -70,7 +72,7 @@ class CodespellToolSpec(ToolSpec):
         if needs_tomli:
             deps.append(Dependency(name="tomli"))
 
-        return deps
+        return {"dev": deps}
 
     @override
     @final

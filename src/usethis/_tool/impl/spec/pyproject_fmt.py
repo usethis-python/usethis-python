@@ -34,8 +34,10 @@ class PyprojectFmtToolSpec(ToolSpec):
 
     @override
     @final
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
-        return [Dependency(name="pyproject-fmt")]
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
+        return {"dev": [Dependency(name="pyproject-fmt")]}
 
     @override
     @final

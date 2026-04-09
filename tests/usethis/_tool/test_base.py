@@ -58,7 +58,9 @@ class MyTool(Tool):
         how_print("How to use my_tool")
 
     @override
-    def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
+    def deps_by_group(
+        self, *, unconditional: bool = False
+    ) -> dict[str, list[Dependency]]:
         deps = [
             Dependency(name=self.name),
             Dependency(name="black"),
@@ -66,7 +68,7 @@ class MyTool(Tool):
         ]
         if unconditional:
             deps.append(Dependency(name="pytest"))
-        return deps
+        return {"dev": deps}
 
     @override
     def pre_commit_config(self) -> PreCommitConfig:
@@ -202,6 +204,163 @@ class TestTool:
                 Dependency(name="black"),
                 Dependency(name="flake8"),
             ]
+
+    class TestGetDepGroupDeps:
+        def test_default(self):
+            tool = DefaultTool()
+            assert tool.get_dep_group_deps() == []
+
+        def test_dev_deps_only(self):
+            tool = MyTool()
+            assert tool.get_dep_group_deps() == [
+                Dependency(name="my_tool"),
+                Dependency(name="black"),
+                Dependency(name="flake8"),
+            ]
+
+        def test_includes_all_groups(self):
+            class MultiDepTool(Tool):
+                @property
+                @override
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="multi_dep_tool")
+
+                @override
+                def print_how_to_use(self) -> None:
+                    pass
+
+                @override
+                def deps_by_group(
+                    self, *, unconditional: bool = False
+                ) -> dict[str, list[Dependency]]:
+                    return {
+                        "dev": [Dependency(name="devdep")],
+                        "test": [Dependency(name="testdep")],
+                        "doc": [Dependency(name="docdep")],
+                    }
+
+            tool = MultiDepTool()
+            assert tool.get_dep_group_deps() == [
+                Dependency(name="devdep"),
+                Dependency(name="testdep"),
+                Dependency(name="docdep"),
+            ]
+
+        def test_unconditional(self):
+            # MyTool adds "pytest" only when unconditional=True
+            tool = MyTool()
+            assert tool.get_dep_group_deps(unconditional=True) == [
+                Dependency(name="my_tool"),
+                Dependency(name="black"),
+                Dependency(name="flake8"),
+                Dependency(name="pytest"),
+            ]
+
+        def test_conditional_excludes_unconditional_only_deps(self):
+            # MyTool includes "pytest" only when unconditional=True; the default
+            # (unconditional=False) should not include it
+            tool = MyTool()
+            assert Dependency(name="pytest") not in tool.get_dep_group_deps()
+            assert Dependency(name="pytest") in tool.get_dep_group_deps(
+                unconditional=True
+            )
+
+        def test_custom_group(self):
+            # A tool that declares deps in a custom group should have those deps included
+            class CustomGroupTool(Tool):
+                @property
+                @override
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="custom_group_tool")
+
+                @override
+                def print_how_to_use(self) -> None:
+                    pass
+
+                @override
+                def deps_by_group(
+                    self, *, unconditional: bool = False
+                ) -> dict[str, list[Dependency]]:
+                    return {"tools": [Dependency(name="custom-dep")]}
+
+            tool = CustomGroupTool()
+            assert tool.get_dep_group_deps() == [Dependency(name="custom-dep")]
+
+    class TestDepsByGroup:
+        def test_default_empty(self):
+            tool = DefaultTool()
+            assert tool.deps_by_group() == {}
+
+        def test_dev_only(self):
+            tool = MyTool()
+            assert tool.deps_by_group() == {
+                "dev": [
+                    Dependency(name="my_tool"),
+                    Dependency(name="black"),
+                    Dependency(name="flake8"),
+                ]
+            }
+
+        def test_multiple_groups(self):
+            class MultiDepTool(Tool):
+                @property
+                @override
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="multi_dep_tool")
+
+                @override
+                def print_how_to_use(self) -> None:
+                    pass
+
+                @override
+                def deps_by_group(
+                    self, *, unconditional: bool = False
+                ) -> dict[str, list[Dependency]]:
+                    return {
+                        "dev": [Dependency(name="devdep")],
+                        "test": [Dependency(name="testdep")],
+                        "doc": [Dependency(name="docdep")],
+                    }
+
+            tool = MultiDepTool()
+            assert tool.deps_by_group() == {
+                "dev": [Dependency(name="devdep")],
+                "test": [Dependency(name="testdep")],
+                "doc": [Dependency(name="docdep")],
+            }
+
+        def test_custom_group(self):
+            # A tool declaring deps in a custom group should reflect that group
+            class CustomGroupTool(Tool):
+                @property
+                @override
+                def meta(self) -> ToolMeta:
+                    return ToolMeta(name="custom_group_tool")
+
+                @override
+                def print_how_to_use(self) -> None:
+                    pass
+
+                @override
+                def deps_by_group(
+                    self, *, unconditional: bool = False
+                ) -> dict[str, list[Dependency]]:
+                    return {"tools": [Dependency(name="custom-dep")]}
+
+            tool = CustomGroupTool()
+            assert tool.deps_by_group() == {"tools": [Dependency(name="custom-dep")]}
+
+        def test_unconditional(self):
+            tool = MyTool()
+            result = tool.deps_by_group(unconditional=True)
+            assert result == {
+                "dev": [
+                    Dependency(name="my_tool"),
+                    Dependency(name="black"),
+                    Dependency(name="flake8"),
+                    Dependency(name="pytest"),
+                ]
+            }
 
     class TestPrintHowToUse:
         def test_default(self, capsys: pytest.CaptureFixture[str]):

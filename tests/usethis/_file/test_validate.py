@@ -40,8 +40,13 @@ class TestValidateOrRaise:
             pytest.fail("ValidationError should not propagate")
 
     def test_custom_error_msg_preserved(self):
-        with pytest.raises(_CustomError, match=r"^my custom message$"):
+        with pytest.raises(_CustomError, match="my custom message"):
             validate_or_raise(int, "not-an-int", err=_CustomError("my custom message"))
+
+    def test_validation_details_injected(self):
+        with pytest.raises(_CustomError, match="validation error") as exc_info:
+            validate_or_raise(str, 123, err=_CustomError("bad type"))
+        assert "bad type" in str(exc_info.value)
 
     def test_coercion(self):
         result = validate_or_raise(float, 1, err=_CustomError("fail"))
@@ -96,6 +101,7 @@ class TestValidateOrDefault:
         assert result == "fallback"
         captured = capfd.readouterr()
         assert "bad value found" in captured.out
+        assert "validation error" in captured.out
 
     def test_warn_msg_not_emitted_on_success(self, capfd: pytest.CaptureFixture[str]):
         result = validate_or_default(

@@ -426,8 +426,13 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             )
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
-        except (KeyError, TOMLValueInvalidError):
-            # The configuration is missing or invalid - do not modify
+        except KeyError:
+            # The configuration is missing - do not modify
+            return
+        except TOMLValueInvalidError as e:
+            from usethis._console import warn_print  # noqa: PLC0415
+
+            warn_print(str(e))
             return
 
         try:
@@ -436,7 +441,10 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 p,
                 err=TOMLValueInvalidError("Expected a list value."),
             )
-        except TOMLValueInvalidError:
+        except TOMLValueInvalidError as e:
+            from usethis._console import warn_print  # noqa: PLC0415
+
+            warn_print(str(e))
             return
         assert isinstance(p, list)
 

@@ -454,8 +454,13 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             )
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
-        except (KeyError, UnexpectedYAMLValueError):
-            # The configuration is missing or invalid - do not modify
+        except KeyError:
+            # The configuration is missing - do not modify
+            return
+        except UnexpectedYAMLValueError as e:
+            from usethis._console import warn_print  # noqa: PLC0415
+
+            warn_print(str(e))
             return
 
         try:
@@ -464,7 +469,10 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
                 p,
                 err=UnexpectedYAMLValueError("Expected a list value."),
             )
-        except UnexpectedYAMLValueError:
+        except UnexpectedYAMLValueError as e:
+            from usethis._console import warn_print  # noqa: PLC0415
+
+            warn_print(str(e))
             return
         assert isinstance(p, list)
 

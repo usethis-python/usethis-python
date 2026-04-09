@@ -59,8 +59,10 @@ def validate_or_raise(
     """
     try:
         return TypeAdapter(type_).validate_python(obj)
-    except ValidationError:
-        raise err from None
+    except ValidationError as ve:
+        original_msg = err.args[0] if err.args else str(err)
+        msg = f"{original_msg} ({ve})"
+        raise type(err)(msg) from None
 
 
 def validate_or_default(
@@ -85,9 +87,9 @@ def validate_or_default(
     """
     try:
         return TypeAdapter(type_).validate_python(obj)
-    except ValidationError:
+    except ValidationError as ve:
         if warn_msg is not None:
             from usethis._console import warn_print  # noqa: PLC0415
 
-            warn_print(warn_msg)
+            warn_print(f"{warn_msg} ({ve})")
         return default

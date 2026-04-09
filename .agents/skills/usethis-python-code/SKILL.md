@@ -4,7 +4,7 @@ description: Guidelines for Python code design decisions such as when to share v
 compatibility: usethis, Python
 license: MIT
 metadata:
-  version: "1.10"
+  version: "1.11"
 ---
 
 # Python Code Guidelines
@@ -255,24 +255,26 @@ else:
 - **Nesting a shared guard inside each branch independently.** When a guard condition (such as "is git available?") applies equally to multiple branches, nesting it separately inside each branch leads to duplicated code that is hard to keep in sync. Hoist the guard to the outer level instead.
 - **Overlooking the inner `assert_never`.** After introducing the combined membership check, the inner if-elif still needs its own `else: assert_never(backend)` to preserve exhaustiveness checking.
 
-## Marking derived properties `@final`
+## Marking derived members `@final`
 
-When a property derives its return value entirely from a single source of truth (e.g. `return self.meta.name`), mark it `@final` to prevent subclasses from overriding it with independent logic.
+When a property or method derives its return value entirely from another member that is the designated override point, mark it `@final` to prevent subclasses from overriding it with independent logic. This applies equally to properties that project a source-of-truth attribute and to methods that compute their result from a separate method that subclasses are expected to override.
 
 ### Key principle
 
-A `@final` marker signals that the property is a thin projection of its underlying source — not a hook designed for extension. Dynamic needs should be addressed by making the **source** attribute dynamic (e.g. computing it in the owning data class or abstract property), rather than bypassing the derived property with an override. This preserves a single source of truth and prevents derived properties from becoming silently inconsistent with the data they are supposed to reflect.
+A `@final` marker signals that the member is not a hook designed for extension — it is a thin derivation of its underlying source. `@final` is enforced by type checkers and IDEs at the point of violation; prose documentation (e.g. "do not override this method") is merely advisory and silently ignored. Always prefer `@final` over prose to communicate non-override constraints.
 
 ### Procedure
 
 1. When writing a property that does nothing except project a value from a source-of-truth attribute, add `@final` above the `@property` decorator.
-2. If a subclass needs a different value, update the source attribute instead — for example, by making the data class property dynamic or by overriding the abstract `meta` property that the derived property reads from.
-3. Do not override a `@final` property in a subclass; mypy and type checkers will flag this as an error.
+2. When writing a method that computes its result from a separate method that is the designated override point, add `@final` to prevent subclasses from bypassing that override point.
+3. If a subclass needs different behaviour, it should override the designated override point — not the derived member. For properties, this means updating the source attribute (e.g. making the data class property dynamic or overriding the abstract property that the derived property reads from). For methods, this means overriding the method that the derived method delegates to.
+4. Do not override a `@final` member in a subclass; type checkers will flag this as an error.
 
 ### Common mistakes
 
-- **Overriding a derived property to add dynamic logic.** When a derived property like `name` or `managed_files` is overridden to compute a different value, there are now two independent sources of truth, which can diverge silently. Making the source attribute dynamic is the correct fix.
-- **Forgetting `@final` on new derived properties.** Whenever you add a property that simply forwards to a single source attribute, mark it `@final` immediately to prevent the same mistake in the future.
+- **Using prose instead of `@final`.** Adding "do not override this method" or "tools should override X instead" to a docstring does not prevent overrides. Use `@final` to make the constraint machine-checkable.
+- **Overriding a derived member to add independent logic.** When a derived property or method is overridden to compute a different value, there are now two independent sources of truth, which can diverge silently. Overriding the designated override point instead is the correct fix.
+- **Forgetting `@final` on new derived members.** Whenever you add a property or method that simply forwards to or derives from a single source, mark it `@final` immediately to prevent the same mistake in the future.
 
 ## Caching IO-intensive private helpers
 

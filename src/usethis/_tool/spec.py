@@ -209,13 +209,11 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """
         return {}
 
+    @final
     def dev_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's development dependencies.
 
         These should all be considered characteristic of this particular tool.
-
-        Derived from deps_by_group(); tools should override deps_by_group instead of
-        this method.
 
         Args:
             unconditional: Whether to return all possible dependencies regardless of
@@ -223,13 +221,11 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """
         return self.deps_by_group(unconditional=unconditional).get("dev", [])
 
+    @final
     def test_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's test dependencies.
 
         These should all be considered characteristic of this particular tool.
-
-        Derived from deps_by_group(); tools should override deps_by_group instead of
-        this method.
 
         Args:
             unconditional: Whether to return all possible dependencies regardless of
@@ -237,13 +233,11 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """
         return self.deps_by_group(unconditional=unconditional).get("test", [])
 
+    @final
     def doc_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """The tool's documentation dependencies.
 
         These should all be considered characteristic of this particular tool.
-
-        Derived from deps_by_group(); tools should override deps_by_group instead of
-        this method.
 
         Args:
             unconditional: Whether to return all possible dependencies regardless of
@@ -251,6 +245,7 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         """
         return self.deps_by_group(unconditional=unconditional).get("doc", [])
 
+    @final
     def get_dep_group_deps(self, *, unconditional: bool = False) -> list[Dependency]:
         """Get all characteristic dependencies for the tool across all dependency groups.
 

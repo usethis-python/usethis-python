@@ -7,6 +7,7 @@ from usethis._backend.uv import (  # Use this style to allow test mocking
 )
 from usethis._backend.uv.errors import UVInitError, UVSubprocessFailedError
 from usethis._config import usethis_config
+from usethis._file.dir import get_project_name_from_dir
 from usethis._file.pyproject_toml.errors import PyprojectTOMLInitError
 
 
@@ -20,6 +21,8 @@ def opinionated_uv_init() -> None:
             [
                 "init",
                 "--lib",
+                "--name",
+                get_project_name_from_dir(),
                 "--build-backend",
                 usethis_config.build_backend.value,
                 usethis_config.cpd().as_posix(),
@@ -45,6 +48,8 @@ def ensure_pyproject_toml_via_uv(*, author: bool = True) -> None:
                 "--bare",
                 "--vcs=none",
                 f"--author-from={author_from}",
+                "--name",
+                get_project_name_from_dir(),
                 "--build-backend",
                 usethis_config.build_backend.value,
                 usethis_config.cpd().as_posix(),

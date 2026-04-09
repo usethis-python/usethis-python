@@ -229,6 +229,26 @@ version = "0.2.0"
 """
         )
 
+    def test_leading_dot_dir_name(self, tmp_path: Path):
+        # Arrange
+        path = tmp_path / ".github-private"
+        path.mkdir()
+        (path / "pyproject.toml").write_text("")
+
+        # Act
+        with change_cwd(path), files_manager():
+            ensure_pyproject_validity()
+
+        # Assert
+        assert (
+            (path / "pyproject.toml").read_text()
+            == """\
+[project]
+name = "github-private"
+version = "0.1.0"
+"""
+        )
+
     def test_comment_in_project_section(self, tmp_path: Path):
         # Arrange: a comment is present in the [project] section alongside a key
         path = tmp_path / "fun_project"

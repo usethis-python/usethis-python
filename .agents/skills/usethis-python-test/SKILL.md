@@ -4,7 +4,7 @@ description: General guidelines for writing tests in the usethis project, includ
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Python Test Guidelines
@@ -48,6 +48,15 @@ Nesting can go two or three levels deep when the logical structure demands it. F
 - Three levels: `TestPyprojectFmt` → `TestAdd` → `TestDeps` → `test_added()`
 
 Use the minimum depth needed to clearly communicate the test's context. Avoid nesting beyond three levels.
+
+
+### Test file placement mirrors source file structure
+
+Tests for a class method must live in the test file that corresponds to the source file where the class is defined — not in a test file for a utility that the method happens to call internally.
+
+If a method is defined on `SomeClass` in `some_module.py`, its tests belong under `TestSomeClass` in `test_some_module.py`, regardless of which helper utilities the method uses at runtime.
+
+Placing tests near the utility they exercise (rather than near the class they belong to) breaks the structural correspondence between source and test files, making tests harder to find and maintain.
 
 ### No redundant docstrings on test classes or functions
 

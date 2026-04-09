@@ -46,7 +46,9 @@ class TestValidateOrRaise:
     def test_validation_details_injected(self):
         with pytest.raises(_CustomError, match="validation error") as exc_info:
             validate_or_raise(str, 123, err=_CustomError("bad type"))
-        assert "bad type" in str(exc_info.value)
+        msg = str(exc_info.value)
+        assert "bad type" in msg
+        assert "Input should be a valid string" in msg
 
     def test_coercion(self):
         result = validate_or_raise(float, 1, err=_CustomError("fail"))

@@ -11,6 +11,7 @@ on:
                 # It's also useful as a record of which packages tend to need bumping
                 options:
                     - black
+                    - cryptography
                     - poetry
                     - pygments
                     - requests

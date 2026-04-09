@@ -86,7 +86,6 @@ def _include_doc(
     skip_lines: int = 0,
     demote_headers: bool = True,
     replacements: dict[str, str] | None = None,
-    tip_text: str | None = None,
 ) -> str:
     """Read a doc file and apply transformations.
 
@@ -95,8 +94,6 @@ def _include_doc(
         skip_lines: Number of lines to skip from the start of the file.
         demote_headers: Whether to demote markdown headers by one level.
         replacements: Dictionary of string replacements to apply.
-        tip_text: If provided, lines starting with this text are wrapped
-            in a GitHub `> [!TIP]` callout.
     """
     content = Path(path).read_text(encoding="utf-8")
     lines = content.splitlines()[skip_lines:]
@@ -106,16 +103,6 @@ def _include_doc(
     if replacements:
         for old, new in replacements.items():
             content = content.replace(old, new)
-    if tip_text:
-        lines = content.splitlines()
-        new_lines: list[str] = []
-        for line in lines:
-            if line.startswith(tip_text):
-                new_lines.append("> [!TIP]")
-                new_lines.append("> " + line)
-            else:
-                new_lines.append(line)
-        content = "\n".join(new_lines)
     return content
 
 

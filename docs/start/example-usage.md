@@ -2,8 +2,7 @@
 
 ## Starting a new project
 
-To start a new project from scratch with a complete set of recommended tooling, simply run
-the `uvx usethis init` command.
+To start a new project from scratch with a complete set of recommended tooling, simply run the `uvx usethis init` command.
 
 ## Configuring individual tools
 

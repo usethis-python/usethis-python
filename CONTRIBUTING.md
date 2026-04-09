@@ -108,8 +108,7 @@ To ensure the `--quiet` flag is always effective, avoid using simple `print` sta
 
 ### Branding
 
-The usethis name should not be capitalized (i.e. not Usethis or UseThis), even at the
-beginning of a sentence. It should only be styled in monospace as `usethis` when referring to the command itself.
+The usethis name should not be capitalized (i.e. not Usethis or UseThis), even at the beginning of a sentence. It should only be styled in monospace as `usethis` when referring to the command itself.
 
 These colours are used in branding materials:
 

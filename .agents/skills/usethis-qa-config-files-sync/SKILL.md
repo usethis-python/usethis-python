@@ -18,9 +18,7 @@ The txt file is auto-generated from the Python API; the md page is hand-maintain
 
 ## Procedure
 
-1. Read `docs/config-files.txt`. Each line has the form:
-   `Tool Name: file1, file2, ... (resolution=<mode>)`, or for tools with no resolution:
-   `Tool Name: file1, file2, ...`
+1. Read `docs/config-files.txt`. Each line has the form: `Tool Name: file1, file2, ... (resolution=<mode>)`, or for tools with no resolution: `Tool Name: file1, file2, ...`
 2. Read `docs/about/config-files.md`. For each tool, find the corresponding `### Tool Name` section and extract the file names from the `| File | Section |` markdown table.
 3. For each tool in `config-files.txt`, verify:
    - A matching `### Tool Name` section exists in `config-files.md`.

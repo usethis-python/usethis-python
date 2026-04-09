@@ -21,15 +21,9 @@ When modifying any `SKILL.md` file in `.agents/skills/`:
 
 ## Generalising incoming instructions
 
-You will often receive instructions that are phrased in terms of a specific situation:
-"add guidance about function X", "mention that file Y must be updated", or "note that
-class Z behaves this way". Before writing this into a skill, lift the instruction to a
-more abstract principle.
+You will often receive instructions that are phrased in terms of a specific situation: "add guidance about function X", "mention that file Y must be updated", or "note that class Z behaves this way". Before writing this into a skill, lift the instruction to a more abstract principle.
 
-Ask: **What general rule does this specific case illustrate?** A skill should remain
-useful as the codebase evolves. If the specific function, file, or class mentioned in
-the instruction were renamed or removed, would the guidance still be relevant? If not,
-rewrite it so it would be.
+Ask: **What general rule does this specific case illustrate?** A skill should remain useful as the codebase evolves. If the specific function, file, or class mentioned in the instruction were renamed or removed, would the guidance still be relevant? If not, rewrite it so it would be.
 
 | Specific instruction received                                                 | Generalised skill content                                                                                                                                             |
 | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -39,8 +33,7 @@ rewrite it so it would be.
 
 Avoid adding guidance that:
 
-- Names specific functions, classes, or files unless the principle is **only** about
-  that specific thing (e.g. a skill about a single tool's CLI interface).
+- Names specific functions, classes, or files unless the principle is **only** about that specific thing (e.g. a skill about a single tool's CLI interface).
 - Reads like a changelog or incident report ("we discovered that X did Y").
 - Would become incorrect or confusing if the named entity were refactored.
 

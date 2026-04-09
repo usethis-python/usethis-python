@@ -49,7 +49,6 @@ Nesting can go two or three levels deep when the logical structure demands it. F
 
 Use the minimum depth needed to clearly communicate the test's context. Avoid nesting beyond three levels.
 
-
 ### Test file placement mirrors source file structure
 
 Tests for a class method must live in the test file that corresponds to the source file where the class is defined — not in a test file for a utility that the method happens to call internally.

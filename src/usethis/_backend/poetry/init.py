@@ -6,7 +6,7 @@ import sys
 
 from usethis._backend.poetry.call import call_poetry_subprocess
 from usethis._backend.poetry.errors import PoetryInitError, PoetrySubprocessFailedError
-from usethis._config import usethis_config
+from usethis._file.dir import get_project_name_from_dir
 from usethis._file.pyproject_toml.errors import PyprojectTOMLInitError
 
 
@@ -32,7 +32,7 @@ def ensure_pyproject_toml_via_poetry(*, author: bool = True) -> None:
     args = [
         "init",
         "--name",
-        usethis_config.cpd().name,
+        get_project_name_from_dir(),
         "--python",
         _get_poetry_python_constraint(),
     ]
@@ -54,7 +54,7 @@ def opinionated_poetry_init() -> None:
             [
                 "init",
                 "--name",
-                usethis_config.cpd().name,
+                get_project_name_from_dir(),
                 "--python",
                 _get_poetry_python_constraint(),
             ],

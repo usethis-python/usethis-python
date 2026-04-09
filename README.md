@@ -66,7 +66,7 @@ Additionally, the command line reference documentation can be viewed with `useth
 ### Manage Tooling
 
 - [`usethis arch`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-arch) — Add/Configure recommended architecture analysis tools (namely, [Import Linter](https://import-linter.readthedocs.io/en/stable/)).
-- [`usethis doc`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-doc) — Add/Configure recommended documentation tools (namely, [MkDocs](https://www.mkdocs.org/)).
+- [`usethis doc`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-doc) — Add/Configure recommended documentation tools (namely, [Zensical](https://zensical.org/)).
 - [`usethis format`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
 - [`usethis hook`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-hook) — Add/Configure a recommended git hook framework (namely, [pre-commit](https://github.com/pre-commit/pre-commit)).
 - [`usethis lint`](https://usethis.readthedocs.io/en/stable/cli/reference#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
@@ -85,6 +85,7 @@ Additionally, the command line reference documentation can be viewed with `useth
   - [`usethis tool coverage.py`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
   - [`usethis tool pytest`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
   - [`usethis tool mkdocs`](https://usethis.readthedocs.io/en/stable/cli/reference#documentation) - Use [MkDocs](https://www.mkdocs.org/): Generate project documentation sites with Markdown.
+  - [`usethis tool zensical`](https://usethis.readthedocs.io/en/stable/cli/reference#documentation) - Use [Zensical](https://zensical.org/): a modern static site generator for project documentation.
   - [`usethis tool pyproject.toml`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use a [pyproject.toml](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#writing-your-pyproject-toml) file to configure the project.
   - [`usethis tool requirements.txt`](https://usethis.readthedocs.io/en/stable/cli/reference#testing) - Use a [requirements.txt](https://pip.pypa.io/en/stable/reference/requirements-file-format/) file exported from the uv lockfile.
 

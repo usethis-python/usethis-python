@@ -41,6 +41,7 @@ from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
+from usethis._tool.impl.base.zensical import ZensicalTool
 from usethis._tool.rule import RuleConfig
 from usethis._types.backend import BackendEnum
 from usethis._types.deps import Dependency
@@ -569,4 +570,28 @@ def use_ty(*, remove: bool = False, how: bool = False) -> None:
         tool.remove_configs()
         tool.remove_pre_commit_repo_configs()
         tool.remove_dev_deps()
+        tool.remove_managed_files()
+
+
+def use_zensical(*, remove: bool = False, how: bool = False) -> None:
+    """Add and configure the Zensical documentation site generator tool."""
+    tool = ZensicalTool()
+
+    if how:
+        tool.print_how_to_use()
+        return
+
+    if not remove:
+        ensure_dep_declaration_file()
+
+        add_docs_dir()
+
+        tool.add_doc_deps()
+        tool.add_configs()
+
+        tool.print_how_to_use()
+    else:
+        # N.B. no need to remove configs because they all lie in managed files.
+
+        tool.remove_doc_deps()
         tool.remove_managed_files()

@@ -2,12 +2,11 @@ from pathlib import Path
 
 import pytest
 from packaging.requirements import InvalidRequirement
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter  # noqa: TID251
 
 import usethis._backend.uv.deps
 from _test import change_cwd
 from usethis._backend.uv.errors import (
-    UVDepGroupError,
     UVSubprocessFailedError,
 )
 from usethis._config import usethis_config
@@ -219,7 +218,9 @@ dependencies = ["requests>=2.28.0", "click~=8.0"]
             Dependency(name="click"),
         ]
 
-    def test_invalid_dependencies_section_not_list(self, tmp_path: Path):
+    def test_invalid_dependencies_section_not_list(
+        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
+    ):
         # Arrange
         (tmp_path / "pyproject.toml").write_text("""\
 [project]
@@ -228,16 +229,14 @@ version = "0.1.0"
 dependencies = "not a list"
 """)
 
-        # Act, Assert
-        with (
-            change_cwd(tmp_path),
-            files_manager(),
-            pytest.raises(
-                UVDepGroupError,
-                match=r"Failed to parse the 'project.dependencies' section",
-            ),
-        ):
-            get_project_deps()
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            result = get_project_deps()
+
+        # Assert
+        assert result == []
+        captured = capfd.readouterr()
+        assert "Failed to parse the 'project.dependencies' section" in captured.out
 
     def test_invalid_dependencies_section_invalid_requirement(self, tmp_path: Path):
         # Arrange
@@ -454,19 +453,20 @@ test=['pytest']
         # Assert
         assert result == {}
 
-    def test_invalid_dtype(self, tmp_path: Path):
+    def test_invalid_dtype(self, tmp_path: Path, capfd: pytest.CaptureFixture[str]):
         # Arrange
         (tmp_path / "pyproject.toml").write_text("""\
 [dependency-groups]
 test="not a list"
 """)
-        # Act, Assert
-        with (
-            change_cwd(tmp_path),
-            files_manager(),
-            pytest.raises(DepGroupError),
-        ):
-            get_dep_groups()
+        # Act
+        with change_cwd(tmp_path), files_manager():
+            result = get_dep_groups()
+
+        # Assert
+        assert result == {}
+        captured = capfd.readouterr()
+        assert "Failed to parse the 'dependency-groups' section" in captured.out
 
     class TestPoetry:
         def test_legacy_poetry_groups(self, tmp_path: Path):

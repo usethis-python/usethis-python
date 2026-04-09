@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 from configupdater import ConfigUpdater as INIDocument
 from configupdater import Option, Section
-from pydantic import TypeAdapter
 from typing_extensions import assert_never, override
 
 from usethis._file.ini.errors import (
@@ -28,6 +27,7 @@ from usethis._file.manager import (
     UnexpectedFileOpenError,
 )
 from usethis._file.print_ import print_keys
+from usethis._file.validate import validate_or_raise
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
@@ -171,19 +171,38 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
         root = self.get()
 
         if len(keys) == 0:
-            value = TypeAdapter(dict[str, dict[str, str | list[str]]]).validate_python(
-                value
+            value = validate_or_raise(
+                dict[str, dict[str, str | list[str]]],
+                value,
+                err=InvalidINITypeError(
+                    f"Expected a mapping of sections for '{self.name}'."
+                ),
             )
+            assert isinstance(value, dict)
             self._set_value_in_root(root=root, value=value, exists_ok=exists_ok)
         elif len(keys) == 1:
             (section_key,) = keys
-            value = TypeAdapter(dict[str, str | list[str]]).validate_python(value)
+            value = validate_or_raise(
+                dict[str, str | list[str]],
+                value,
+                err=InvalidINITypeError(
+                    f"Expected a mapping of options for '{self.name}'."
+                ),
+            )
+            assert isinstance(value, dict)
             self._set_value_in_section(
                 root=root, section_key=keys[0], value=value, exists_ok=exists_ok
             )
         elif len(keys) == 2:
             (section_key, option_key) = keys
-            cast_value = TypeAdapter(str | list[str]).validate_python(value)
+            cast_value = validate_or_raise(
+                str | list[str],
+                value,
+                err=InvalidINITypeError(
+                    f"Expected a string or list of strings for '{self.name}'."
+                ),
+            )
+            assert isinstance(cast_value, (str, list))
             self._set_value_in_option(
                 root=root,
                 section_key=section_key,
@@ -216,11 +235,21 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             if section_key not in root_dict:
                 _remove_section(updater=root, section_key=section_key)
 
-        TypeAdapter(dict).validate_python(root_dict)
+        validate_or_raise(
+            dict,
+            root_dict,
+            err=InvalidINITypeError("Expected a mapping value."),
+        )
         assert isinstance(root_dict, dict)
 
         for section_key, section_dict in root_dict.items():
-            TypeAdapter(dict).validate_python(section_dict)
+            validate_or_raise(
+                dict,
+                section_dict,
+                err=InvalidINITypeError(
+                    f"Expected a mapping for section '{section_key}'."
+                ),
+            )
             assert isinstance(section_dict, dict)
 
             if section_key in root:
@@ -250,7 +279,11 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
         value: dict[str, str | list[str]],
         exists_ok: bool,
     ) -> None:
-        TypeAdapter(dict).validate_python(value)
+        validate_or_raise(
+            dict,
+            value,
+            err=InvalidINITypeError("Expected a mapping value."),
+        )
         assert isinstance(value, dict)
 
         section_dict = value
@@ -451,9 +484,18 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
-            values = TypeAdapter(list[str]).validate_python(values)
+            str_values = validate_or_raise(
+                list[str],
+                values,
+                err=InvalidINITypeError(
+                    f"Expected a list of strings for '{self.name}'."
+                ),
+            )
             self._extend_list_in_option(
-                root=root, section_key=section_key, option_key=option_key, values=values
+                root=root,
+                section_key=section_key,
+                option_key=option_key,
+                values=str_values,
             )
         else:
             msg = (
@@ -532,9 +574,18 @@ class INIFileManager(KeyValueFileManager[INIDocument], metaclass=ABCMeta):
             raise InvalidINITypeError(msg)
         elif len(keys) == 2:
             section_key, option_key = keys
-            values = TypeAdapter(list[str]).validate_python(values)
+            str_values = validate_or_raise(
+                list[str],
+                values,
+                err=InvalidINITypeError(
+                    f"Expected a list of strings for '{self.name}'."
+                ),
+            )
             self._remove_from_list_in_option(
-                root=root, section_key=section_key, option_key=option_key, values=values
+                root=root,
+                section_key=section_key,
+                option_key=option_key,
+                values=str_values,
             )
         else:
             msg = (

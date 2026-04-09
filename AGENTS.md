@@ -58,6 +58,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   ├── merge                     # Deep merge utilities for nested mappings.
 │   ├── print_                    # Pretty-printing helpers for configuration file keys.
 │   ├── types_                    # Shared type aliases for file operations.
+│   ├── validate                  # Safer abstractions for Pydantic TypeAdapter validation.
 │   ├── ini                       # INI file reading and writing.
 │   │   ├── errors                # Error types for INI file operations.
 │   │   └── io_                   # INI file I/O manager.
@@ -307,6 +308,8 @@ ALWAYS check whether an existing function already covers your use case before im
 - `get_required_minor_python_versions()` (`usethis._file.pyproject_toml.requires_python`) — Get Python minor versions that match the project's requires-python constraint.
 - `ensure_pyproject_validity()` (`usethis._file.pyproject_toml.valid`) — Ensure pyproject.toml has a valid structure, adding missing required fields.
 - `prepare_pyproject_write()` (`usethis._file.pyproject_toml.write`) — Prepare the pyproject.toml file for a subprocess that will modify it.
+- `validate_or_raise()` (`usethis._file.validate`) — Validate `obj` against `type_`, raising a custom error on failure.
+- `validate_or_default()` (`usethis._file.validate`) — Validate `obj` against `type_`, returning `default` on failure.
 - `get_yaml_document()` (`usethis._file.yaml.io_`) — Get a YAML document representation from a string or file-like object.
 - `update_ruamel_yaml_map()` (`usethis._file.yaml.update`) — Update the values of a ruamel.yaml map in-place using a diff-like algorithm.
 - `lcs_list_update()` (`usethis._file.yaml.update`) — Update in-place using a longest common subsequence solver.

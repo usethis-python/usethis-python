@@ -766,8 +766,6 @@ class TestHooksAreEquivalent:
 
 
 class TestAddRepoPipeweld:
-    """Integration tests for pipeweld-based hook insertion."""
-
     def test_insert_between_nondependent_and_postrequisite(self, tmp_path: Path):
         """Insert a recognized hook between an unrecognized hook and a postrequisite."""
         with change_cwd(tmp_path), files_manager():

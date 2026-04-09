@@ -4,7 +4,7 @@ description: General guidelines for writing tests in the usethis project, includ
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Python Test Guidelines
@@ -57,9 +57,11 @@ If a method is defined on `SomeClass` in `some_module.py`, its tests belong unde
 
 Placing tests near the utility they exercise (rather than near the class they belong to) breaks the structural correspondence between source and test files, making tests harder to find and maintain.
 
-### No docstrings on test classes or functions
+### No redundant docstrings on test classes or functions
 
-Test classes and test functions should not have docstrings. The class and function names should be descriptive enough to communicate what is being tested.
+Avoid adding docstrings to test classes and test functions when the name alone is sufficient. For example, `"""Tests for validate_or_raise."""` on `TestValidateOrRaise` is redundant — the class name already communicates this.
+
+However, a docstring is appropriate when it adds genuinely new information that the name does not convey, such as explaining the test strategy, describing a non-obvious constraint, or clarifying how the test output is validated.
 
 ## Using `files_manager` in tests
 

@@ -2234,8 +2234,6 @@ repos:
                 )
 
     class TestMigration:
-        """Test migration of tools to/from pre-commit (issue #1020)."""
-
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_deps_not_removed_when_migrating_to_pre_commit(self, uv_init_dir: Path):
             """Test that deps are NOT removed when migrating to pre-commit."""

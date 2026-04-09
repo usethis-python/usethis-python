@@ -1139,8 +1139,6 @@ outer:
 
 class TestEditYaml:
     class TestLiterals:
-        """The list of literals is from ruamel/yaml/representer.py near the bottom."""
-
         def test_none(self, tmp_path: Path):
             # Arrange
             path = tmp_path / "test.yaml"

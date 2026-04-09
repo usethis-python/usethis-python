@@ -4,7 +4,7 @@ description: General guidelines for writing tests in the usethis project, includ
 compatibility: usethis, Python, pytest
 license: MIT
 metadata:
-  version: "1.5"
+  version: "1.6"
 ---
 
 # Python Test Guidelines
@@ -180,3 +180,39 @@ For a function that sets a value at a key path, the two axes are:
 - **Value complexity** — scalar vs. nested dict (e.g. `"pep257"` vs. `{"select": ["A"], "pydocstyle": {"convention": "pep257"}}`)
 
 Single-axis tests cover multiple keys with a scalar value, and a single key with a nested dict value. The cross-axis test uses multiple keys **and** a multiply-nested dict value together.
+
+## Prefer synthetic paths when testing pure path-metadata logic
+
+When the code under test only reads path metadata (`.name`, `.suffix`, `.parent`) and does not access the filesystem, use string paths via `usethis_config.set(project_dir="/fake/dir-name")` instead of creating real directories with `tmp_path` and `mkdir()`.
+
+### Why
+
+Real directory creation couples tests to OS-specific path normalisation rules. On Windows, certain directory names are invalid or silently rewritten:
+
+- `"..."` is interpreted as parent directory traversal (`../..`), causing `FileExistsError`.
+- Trailing dots (e.g. `"project."`) are silently stripped.
+- Reserved names like `CON`, `NUL`, `PRN` are forbidden.
+
+These restrictions are irrelevant when the function never touches the filesystem — they only introduce cross-platform test failures.
+
+### How
+
+Pass a string path directly to the configuration context manager. The `project_dir` parameter accepts `str`, which is converted to a `Path` internally:
+
+```python
+# Correct: synthetic path, no filesystem dependency
+def test_leading_dot(self):
+    with usethis_config.set(project_dir="/fake/.github-private"):
+        assert get_project_name_from_dir() == "github-private"
+```
+
+```python
+# Wrong: creates an unnecessary real-path dependency via tmp_path
+def test_leading_dot(self, tmp_path: Path):
+    with usethis_config.set(project_dir=tmp_path / ".github-private"):
+        assert get_project_name_from_dir() == "github-private"
+```
+
+### When real directories are still needed
+
+If the code under test calls filesystem operations (e.g. `is_dir()`, `exists()`, `mkdir()`, reads or writes files), real directories via `tmp_path` are appropriate and necessary.

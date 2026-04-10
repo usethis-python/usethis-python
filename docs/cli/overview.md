@@ -10,13 +10,13 @@
 - [`usethis doc`](reference.md#usethis-doc) — Add/Configure recommended documentation tools (namely, [MkDocs](https://www.mkdocs.org/)).
 - [`usethis format`](reference.md#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
 - [`usethis hook`](reference.md#usethis-hook) — Add/Configure a recommended git hook framework (namely, [pre-commit](https://github.com/pre-commit/pre-commit)).
-- [`usethis lint`](reference.md#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/fpgmaas/deptry)).
+- [`usethis lint`](reference.md#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/osprey-oss/deptry)).
 - [`usethis spellcheck`](reference.md#usethis-spellcheck) — Add/Configure recommended spellcheckers (namely, [codespell](https://github.com/codespell-project/codespell)).
 - [`usethis test`](reference.md#usethis-test) — Add/Configure a recommended testing framework (namely, [pytest](https://github.com/pytest-dev/pytest) with [Coverage.py](https://github.com/nedbat/coveragepy)).
 - [`usethis typecheck`](reference.md#usethis-typecheck) — Add/Configure a recommended type checker (namely, [ty](https://docs.astral.sh/ty/)).
 - [`usethis tool`](reference.md#usethis-tool) — Add/Configure specific tools individually.
   - [`usethis tool codespell`](reference.md#code-quality-tools) - Use the [codespell spellchecker](https://github.com/codespell-project/codespell): detect common spelling mistakes.
-  - [`usethis tool deptry`](reference.md#code-quality-tools) - Use the [deptry linter](https://github.com/fpgmaas/deptry): avoid missing or superfluous dependency declarations.
+  - [`usethis tool deptry`](reference.md#code-quality-tools) - Use the [deptry linter](https://github.com/osprey-oss/deptry): avoid missing or superfluous dependency declarations.
   - [`usethis tool import-linter`](reference.md#code-quality-tools) - Use [Import Linter](https://import-linter.readthedocs.io/en/stable/): enforce a self-imposed architecture on imports.
   - [`usethis tool pre-commit`](reference.md#code-quality-tools) - Use the [pre-commit](https://github.com/pre-commit/pre-commit) framework to manage and maintain Git hooks. Note that this will also install all the hooks to Git.
   - [`usethis tool pyproject-fmt`](reference.md#code-quality-tools) - Use the [pyproject-fmt formatter](https://github.com/tox-dev/toml-fmt/tree/main/pyproject-fmt): opinionated formatting of 'pyproject.toml' files.

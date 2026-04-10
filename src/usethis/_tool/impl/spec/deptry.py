@@ -22,7 +22,7 @@ class DeptryToolSpec(ToolSpec):
     def meta(self) -> ToolMeta:
         return ToolMeta(
             name="deptry",
-            url="https://github.com/fpgmaas/deptry",
+            url="https://github.com/osprey-oss/deptry",
         )
 
     @override

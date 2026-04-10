@@ -298,7 +298,7 @@ def use_pytest(
         tool.add_configs()
 
         # deptry currently can't scan the tests folder for dev deps
-        # https://github.com/fpgmaas/deptry/issues/302
+        # https://github.com/osprey-oss/deptry/issues/302
         add_pytest_dir()
         if example:
             add_example_test()

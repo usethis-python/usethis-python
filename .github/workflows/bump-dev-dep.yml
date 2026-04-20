@@ -14,6 +14,7 @@ on:
                     - cryptography
                     - poetry
                     - pygments
+                    - pytest
                     - requests
                     - urllib
 jobs:

@@ -12,6 +12,7 @@ on:
                 options:
                     - black
                     - cryptography
+                    - gitpython
                     - poetry
                     - pygments
                     - pytest

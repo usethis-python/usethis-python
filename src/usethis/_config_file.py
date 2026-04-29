@@ -58,6 +58,7 @@ def files_manager() -> Iterator[None]:
         ToxINIManager(),
         TyTOMLManager(),
         UVTOMLManager(),
+        ZensicalTOMLManager(),
     ):
         yield
 
@@ -177,3 +178,12 @@ class TyTOMLManager(TOMLFileManager):
     @override
     def relative_path(self) -> Path:
         return Path("ty.toml")
+
+
+class ZensicalTOMLManager(TOMLFileManager):
+    """Class to manage the zensical.toml file."""
+
+    @property
+    @override
+    def relative_path(self) -> Path:
+        return Path("zensical.toml")

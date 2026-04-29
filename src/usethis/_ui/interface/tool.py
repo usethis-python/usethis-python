@@ -450,6 +450,37 @@ def ty(
         _run_tool(use_ty, remove=remove, how=how)
 
 
+@app.command(
+    name="zensical",
+    help="Use Zensical: a modern static site generator for project documentation.",
+    rich_help_panel="Documentation",
+)
+def zensical(
+    remove: bool = remove_opt,
+    how: bool = how_opt,
+    offline: bool = offline_opt,
+    quiet: bool = quiet_opt,
+    frozen: bool = frozen_opt,
+    backend: BackendEnum = backend_opt,
+    no_hook: bool = no_hook_opt,
+) -> None:
+    """Use Zensical: a modern static site generator for project documentation."""
+    from usethis._config_file import files_manager
+    from usethis._core.tool import use_zensical
+
+    with (
+        usethis_config.set(
+            offline=offline,
+            quiet=quiet,
+            frozen=frozen,
+            backend=backend,
+            disable_pre_commit=no_hook,
+        ),
+        files_manager(),
+    ):
+        _run_tool(use_zensical, remove=remove, how=how)
+
+
 def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: object):
     from usethis._console import err_print
     from usethis.errors import UsethisError

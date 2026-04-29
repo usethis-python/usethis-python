@@ -31,6 +31,7 @@ from usethis._core.tool import (
     use_ruff,
     use_tach,
     use_ty,
+    use_zensical,
 )
 from usethis._deps import add_deps_to_group, get_deps_from_group, is_dep_satisfied_in
 from usethis._fallback import (
@@ -4245,3 +4246,111 @@ class TestTach:
             out, err = capfd.readouterr()
             assert not err
             assert out == "☐ Run 'tach check' to run Tach.\n"
+
+
+class TestZensical:
+    class TestAdd:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_config_contents(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "my-project"
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_zensical()
+
+            # Assert
+            assert (tmp_path / "zensical.toml").exists()
+            contents = (tmp_path / "zensical.toml").read_text()
+            assert "[project]" in contents
+            assert 'site_name = "my-project"' in contents
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_docs_dir_created(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "my-project"
+""")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_zensical()
+
+            # Assert
+            assert (tmp_path / "docs").is_dir()
+            assert (tmp_path / "docs" / "index.md").exists()
+
+    class TestRemove:
+        def test_config(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "zensical.toml").touch()
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_zensical(remove=True)
+
+            # Assert
+            assert not (tmp_path / "zensical.toml").exists()
+
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_doc_deps_removed(self, uv_init_repo_dir: Path):
+            with change_cwd(uv_init_repo_dir), files_manager():
+                # Arrange
+                add_deps_to_group(
+                    [
+                        Dependency(name="zensical"),
+                        Dependency(name="sphinx"),
+                    ],
+                    "doc",
+                )
+
+                # Act
+                use_zensical(remove=True)
+
+                # Assert
+                assert get_deps_from_group("doc") == [Dependency(name="sphinx")]
+
+    class TestHow:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_how_to_use(
+            self, uv_init_repo_dir: Path, capfd: pytest.CaptureFixture[str]
+        ):
+            # Arrange
+            (uv_init_repo_dir / "zensical.toml").touch()
+
+            # Act
+            with change_cwd(uv_init_repo_dir), files_manager():
+                use_zensical(how=True)
+
+            # Assert
+            out, _ = capfd.readouterr()
+            assert out == (
+                """\
+☐ Run 'uv run zensical build' to build the documentation.
+☐ Run 'uv run zensical serve' to serve the documentation locally.
+"""
+            )
+
+    class TestMkDocsYMLFallback:
+        @pytest.mark.usefixtures("_vary_network_conn")
+        def test_uses_mkdocs_yml_if_present(self, tmp_path: Path):
+            # Arrange
+            (tmp_path / "pyproject.toml").write_text("""\
+[project]
+name = "my-project"
+""")
+            (tmp_path / "mkdocs.yml").write_text("site_name: existing-site\n")
+
+            # Act
+            with change_cwd(tmp_path), files_manager():
+                use_zensical()
+
+            # Assert - config should stay in mkdocs.yml since it already has content
+            assert (tmp_path / "mkdocs.yml").exists()
+            contents = (tmp_path / "mkdocs.yml").read_text()
+            assert "site_name: existing-site" in contents
+            assert not (tmp_path / "zensical.toml").exists()

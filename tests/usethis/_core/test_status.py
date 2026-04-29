@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter  # noqa: TID251
 
 from _test import change_cwd
 from usethis._config_file import files_manager

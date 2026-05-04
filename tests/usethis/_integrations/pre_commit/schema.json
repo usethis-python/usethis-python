@@ -217,8 +217,7 @@
       }
     },
     "default_install_hook_types": {
-      "description": "A list of hook types which will be used by defa
-ult when running `pre-commit install`\nhttps://pre-commit.com/#pre-commit-configyaml---top-level",
+      "description": "A list of hook types which will be used by default when running `pre-commit install`\nhttps://pre-commit.com/#pre-commit-configyaml---top-level",
       "type": "array",
       "default": ["pre-commit"]
     },

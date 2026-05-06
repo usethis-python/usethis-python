@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import os
 import re
+from typing import Any
 
 from pydantic import TypeAdapter, ValidationError
 
 from usethis._config import usethis_config
+from usethis._console import warn_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.project.layout import get_source_dir_str, get_tests_dir_str
 from usethis._integrations.sonarqube.errors import (
@@ -41,16 +43,8 @@ def get_sonar_project_properties(*, project_key: str | None = None) -> str:
         project_key = _get_sonarqube_project_key()
     verbose = _is_sonarqube_verbose()
     exclusions = _get_sonarqube_exclusions()
-
-    # Get coverage report output path
-    try:
-        coverage_output = PyprojectTOMLManager()[["tool", "coverage", "xml", "output"]]
-    except KeyError:
-        msg = "XML coverage report file path not found at 'tool.coverage.xml.output' in 'pyproject.toml'."
-        raise CoverageReportConfigNotFoundError(msg) from None
-    except FileNotFoundError:
-        msg = "Could not find 'pyproject.toml' for coverage report file path at 'tool.coverage.xml.output'."
-        raise CoverageReportConfigNotFoundError(msg) from None
+    extra_properties = _get_sonarqube_extra_properties()
+    coverage_path = _get_coverage_path()
 
     # No file, so construct the contents
     source_dir_str = get_source_dir_str()
@@ -63,18 +57,28 @@ def get_sonar_project_properties(*, project_key: str | None = None) -> str:
     else:
         sources = f"./{source_dir_str}"
 
-    text = f"""\
-sonar.projectKey={project_key}
-sonar.language=py
-sonar.python.version={python_version}
-sonar.sources={sources}
-sonar.tests=./{tests_dir_str}
-sonar.python.coverage.reportPaths={coverage_output}
-sonar.verbose={"true" if verbose else "false"}
-"""
+    managed: dict[str, str] = {
+        "sonar.projectKey": project_key,
+        "sonar.language": "py",
+        "sonar.python.version": python_version,
+        "sonar.sources": sources,
+        "sonar.tests": f"./{tests_dir_str}",
+        "sonar.python.coverage.reportPaths": coverage_path,
+        "sonar.verbose": "true" if verbose else "false",
+    }
     if exclusions:
-        text += "sonar.exclusions=" + ", ".join(exclusions) + "\n"
-    return text
+        managed["sonar.exclusions"] = ", ".join(exclusions)
+
+    # Check for collisions: extra-properties override managed values with a warning
+    for key in extra_properties:
+        if key in managed:
+            warn_print(
+                f"Extra property '{key}' overrides a managed SonarQube property."
+            )
+
+    # Merge: sort extra so extra-only keys append in sorted order; collisions override in-place
+    managed.update(dict(sorted(extra_properties.items())))
+    return "".join(f"{k}={v}\n" for k, v in managed.items())
 
 
 def _get_sonarqube_project_key() -> str:
@@ -117,6 +121,39 @@ def _get_sonarqube_exclusions() -> list[str]:
         TypeAdapter(str).validate_python(exclusion)
 
     return exclusions
+
+
+def _get_coverage_path() -> str:
+    try:
+        raw = PyprojectTOMLManager()[["tool", "coverage", "xml", "output"]]
+    except KeyError:
+        msg = "XML coverage report file path not found at 'tool.coverage.xml.output' in 'pyproject.toml'."
+        raise CoverageReportConfigNotFoundError(msg) from None
+    except FileNotFoundError:
+        msg = "Could not find 'pyproject.toml' for coverage report file path at 'tool.coverage.xml.output'."
+        raise CoverageReportConfigNotFoundError(msg) from None
+
+    try:
+        return TypeAdapter(str).validate_python(raw)
+    except ValidationError:
+        return str(raw)
+
+
+def _get_sonarqube_extra_properties() -> dict[str, str]:
+    try:
+        raw: Any = PyprojectTOMLManager()[
+            ["tool", "usethis", "sonarqube", "extra-properties"]
+        ]
+        TypeAdapter(dict).validate_python(raw)
+    except (FileNotFoundError, KeyError, ValidationError):
+        return {}
+
+    extra: dict[str, str] = {}
+    for k, v in raw.items():
+        extra[TypeAdapter(str).validate_python(str(k))] = TypeAdapter(
+            str
+        ).validate_python(v)
+    return extra
 
 
 def _validate_project_key(project_key: str) -> None:

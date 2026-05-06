@@ -483,6 +483,7 @@ Additional configuration in `pyproject.toml`:
 
 - `tool.usethis.sonarqube.verbose` (bool, default `false`) — sets `sonar.verbose`.
 - `tool.usethis.sonarqube.exclusions` (list of strings, default `[]`) — sets `sonar.exclusions`.
+- `tool.usethis.sonarqube.extra-properties` (table of string key-value pairs, default `{}`) — additional `sonar.*` properties appended to the generated file. Use this for scanner properties that usethis does not manage directly, such as external analyzer report paths.
 - `tool.coverage.xml.output` (string, required) — sets `sonar.python.coverage.reportPaths`.
 
 For `usethis show sonarqube`, in addition to `--output-file`, you can also specify:

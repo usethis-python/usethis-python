@@ -1,5 +1,54 @@
 # Changelog
 
+## 0.22.0
+
+### 🚀 New Features
+
+- Tools which add formatters (`usethis format`, `usethis tool ruff`, and `usethis tool pyproject-fmt`) now support a `--no-apply` flag to skip running the formatter as a side effect when adding it to the project.
+- `usethis tool requirements.txt` now supports an `--output-file` option to specify an alternative output file path.
+- Python version inference now also checks the `.python-version` file before falling back to the current interpreter. This affects commands such as `usethis show sonarqube` which need to determine the Python version.
+- `usethis show sonarqube` now supports a `SONAR_PROJECT_KEY` environment variable for CI usage, with priority: CLI argument > environment variable > `pyproject.toml` configuration.
+- `usethis show sonarqube` now supports arbitrary extra SonarQube properties via the `[tool.usethis.sonarqube.extra-properties]` table in `pyproject.toml`, enabling integration with external analyzers such as Ruff and Coverage.py report paths.
+- Projects using `test/` instead of `tests/` as the testing directory are now supported.
+
+### 🐞 Bug Fixes
+
+- The `--frozen` flag now works correctly with the Poetry backend by backing up and restoring the lockfile around `poetry add`/`remove` operations.
+- `usethis` now works correctly in directories with leading dots in the name (e.g. `.my-project`), which previously caused failures when inferring the project name.
+- Fixed incorrect CLI help text for the `status` command argument, which was showing the `docstyle` help text due to a copy-paste error.
+
+### 🦾 Robustness
+
+- Warnings from backend subprocesses (uv, Poetry) are now surfaced to users via `⚠` messages instead of being silently swallowed.
+- `usethis tool pre-commit` no longer crashes in non-git directories; it now gracefully skips hook installation with an informational message and an instruction for the user.
+- When uv is not available, the backend detection now prefers Poetry over `none` when Poetry is available.
+
+### 📚 Documentation
+
+- There is now a [configuration files reference page](https://usethis.readthedocs.io/en/latest/about/config-files/) documenting which configuration files are supported by each of the managed tools.
+- The FAQ now correctly states that Poetry is a fully supported backend.
+- Grammar, spelling, and clarity fixes have been applied across the changelog and codebase following an LLM-assisted review.
+- The deptry URLs have been updated to reflect the project's move to the `osprey-oss/deptry` organization.
+
+### 📦 Packaging
+
+- The license Trove classifier has been restored in the package metadata. This helps support automated tools which rely on this metadata on PyPI.
+
+### 🔧 Internal Changes
+
+- The internal TOML file manager now supports setting nested dict values at dotted key paths.
+- The internal TOML file manager no longer relies on internal methods from `tomlkit`; only the public API is used.
+- Tool ordering now uses `ALL_TOOLS` / `ALL_TOOL_SPECS` as a single source of truth, fixing a pre-existing ordering bug.
+- Tool dependency declarations now use a unified `deps_by_group` dict instead of separate per-group methods (`dev_deps`, `test_deps`, `doc_deps`).
+- `ToolSpec` now marks `name`, `rule_config`, and `managed_files` as `@final` to prevent fragmentation of derived properties.
+- `UsethisConfig` now has a `copy` method, simplifying state save/restore in `set()`.
+- Context managers `UsethisConfig.set()` and `change_cwd()` now wrap `yield` in `try-finally`, ensuring state is always restored even when exceptions propagate through the context. This should help reduce the risk of state leakage between tests.
+- Vulture (dead code detection) has been added as a development tool, and various dead code references have been cleaned up.
+- Test assertions for console output now use exact equality instead of substring checks.
+- Redundant docstrings have been removed from test classes.
+- Prettier is now configured for markdown files via `.prettierrc.toml`.
+- Agent configuration and bespoke prek hooks continue to be developed.
+
 ## 0.21.0
 
 ### 🚀 New Features

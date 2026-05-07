@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import os
 import re
-from typing import Any
 
 from pydantic import TypeAdapter, ValidationError
 
@@ -141,18 +140,20 @@ def _get_coverage_path() -> str:
 
 def _get_sonarqube_extra_properties() -> dict[str, str]:
     try:
-        raw: Any = PyprojectTOMLManager()[
+        raw = PyprojectTOMLManager()[
             ["tool", "usethis", "sonarqube", "extra-properties"]
         ]
-        TypeAdapter(dict).validate_python(raw)
+        properties_dict = TypeAdapter(dict).validate_python(raw)
     except (FileNotFoundError, KeyError, ValidationError):
         return {}
 
     extra: dict[str, str] = {}
-    for k, v in raw.items():
-        extra[TypeAdapter(str).validate_python(str(k))] = TypeAdapter(
-            str
-        ).validate_python(v)
+    for k, v in properties_dict.items():
+        # tomlkit SingleKey.__str__ wraps dotted keys in quotes; strip them.
+        key = str(k).strip('"')
+        extra[TypeAdapter(str).validate_python(key)] = TypeAdapter(str).validate_python(
+            v
+        )
     return extra
 
 

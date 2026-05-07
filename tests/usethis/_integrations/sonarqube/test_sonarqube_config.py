@@ -406,6 +406,121 @@ sonar.exclusions=tests/*
             with pytest.raises(InvalidSonarQubeProjectKeyError):
                 get_sonar_project_properties(project_key="invalid key!")
 
+    def test_extra_properties_single(self, tmp_path: Path):
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "extra-properties"],
+                value={"sonar.python.ruff.reportPaths": "ruff-report.json"},
+            )
+
+            # Act
+            result = get_sonar_project_properties()
+
+        # Assert
+        assert (
+            result
+            == """\
+sonar.projectKey=foobar
+sonar.language=py
+sonar.python.version=3.12
+sonar.sources=./
+sonar.tests=./tests
+sonar.python.coverage.reportPaths=coverage.xml
+sonar.verbose=false
+sonar.exclusions=tests/*
+sonar.python.ruff.reportPaths=ruff-report.json
+"""
+        )
+
+    def test_extra_properties_multiple_sorted(self, tmp_path: Path):
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "extra-properties"],
+                value={
+                    "sonar.python.pylint.reportPaths": "pylint-report.txt",
+                    "sonar.python.ruff.reportPaths": "ruff-report.json",
+                },
+            )
+
+            # Act
+            result = get_sonar_project_properties()
+
+        # Assert — both extra properties appear and are sorted at the end
+        lines = result.rstrip("\n").split("\n")
+        assert lines[-2] == "sonar.python.pylint.reportPaths=pylint-report.txt"
+        assert lines[-1] == "sonar.python.ruff.reportPaths=ruff-report.json"
+
+    def test_extra_properties_absent(self, tmp_path: Path):
+        # When extra-properties is not configured, no extra lines are added.
+
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+
+            # Act
+            result = get_sonar_project_properties()
+
+        # Assert
+        assert result.endswith("sonar.exclusions=tests/*\n")
+
+    def test_extra_properties_collision_overrides_with_warning(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    ):
+        # When extra-properties contains a key that collides with a managed
+        # property, the extra value overrides the managed one and a warning is
+        # emitted.
+
+        with change_cwd(tmp_path), files_manager():
+            # Arrange
+            uv_python_pin("3.12")
+            ensure_pyproject_toml()
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "project-key"], value="foobar"
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "coverage", "xml", "output"], value="coverage.xml"
+            )
+            PyprojectTOMLManager().set_value(
+                keys=["tool", "usethis", "sonarqube", "extra-properties"],
+                value={"sonar.verbose": "true"},
+            )
+
+            # Act
+            result = get_sonar_project_properties()
+
+        # Assert — the extra value overrides the managed default (false → true)
+        assert "sonar.verbose=true\n" in result
+        assert "sonar.verbose=false" not in result
+        # Assert — a warning was emitted
+        captured = capsys.readouterr()
+        assert "sonar.verbose" in captured.out
+        assert "overrides" in captured.out
+
     def test_flat_layout_exclusions_already_has_tests(self, tmp_path: Path):
         # When using flat layout and tests/* is already in exclusions,
         # it should not be added again.

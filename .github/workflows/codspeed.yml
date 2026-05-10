@@ -33,7 +33,7 @@ jobs:
             PYTHONIOENCODING: utf-8
         steps:
             - name: Checkout code
-              uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
               with:
                   persist-credentials: false
 
@@ -43,7 +43,7 @@ jobs:
                   git config --global user.email placeholder@example.com
 
             - name: Set up uv
-              uses: astral-sh/setup-uv@3259c6206f993105e3a61b142c2d97bf4b9ef83d # v7.1.0
+              uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
               with:
                   version: "latest"
                   enable-cache: true
@@ -54,7 +54,7 @@ jobs:
               uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
 
             - name: Run benchmarks
-              uses: CodSpeedHQ/action@281164b0f014a4e7badd2c02cecad9b595b70537 # v4.11.1
+              uses: CodSpeedHQ/action@3194d9a39c4d46684cb44bf7207fc56626aad8fd # v4.15.1
               with:
                   mode: simulation
                   run: uv run --frozen pytest --codspeed

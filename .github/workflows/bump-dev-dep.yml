@@ -18,6 +18,7 @@ on:
                     - pytest
                     - requests
                     - urllib
+                    - urllib3
 jobs:
     bump-dev-dep:
         permissions:

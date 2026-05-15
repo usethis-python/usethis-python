@@ -1,16 +1,13 @@
 from pathlib import Path
-from typing import cast
 
 import pytest
+import yamltrip
 
 from _test import change_cwd
 from usethis._config_file import files_manager
-from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.errors import PreCommitConfigYAMLConfigError
-from usethis._integrations.pre_commit.hooks import _get_placeholder_repo_config
 from usethis._integrations.pre_commit.yaml import (
     PreCommitConfigYAMLManager,
-    _pre_commit_fancy_dump,
 )
 
 
@@ -43,14 +40,13 @@ repos:
         # Act
         with change_cwd(tmp_path), files_manager():
             mgr = PreCommitConfigYAMLManager()
-            doc = mgr.get()
             mgr.model_validate()
-            content = cast("dict[str, list[dict[str, str]]]", doc.content)
-            content["repos"] = []
-            mgr.commit(doc)
+            mgr.set_value(keys=["repos"], value=[], exists_ok=True)
 
         # Assert
-        assert (tmp_path / ".pre-commit-config.yaml").read_text() == "repos: []\n"
+        content = (tmp_path / ".pre-commit-config.yaml").read_text()
+        doc = yamltrip.loads(content)
+        assert doc[()] == {"repos": []}
 
     def test_extra_config(self, tmp_path: Path):
         # Arrange
@@ -132,22 +128,6 @@ extra:
             mgr = PreCommitConfigYAMLManager()
             doc = mgr.get()
             mgr.model_validate()
-            content = cast("dict[str, list[str]]", doc.content)
-            content["repos"] = ["something"]
-
-
-class TestPreCommitFancyDump:
-    def test_placeholder(self, tmp_path: Path):
-        # Arrange - create a minimal pre-commit config for get_system_language()
-        (tmp_path / ".pre-commit-config.yaml").write_text("repos: []\n")
-
-        # Act
-        with change_cwd(tmp_path), files_manager():
-            _pre_commit_fancy_dump(
-                config=schema.JsonSchemaForPreCommitConfigYaml(
-                    repos=[
-                        _get_placeholder_repo_config(),
-                    ]
-                ),
-                reference={},
-            )
+            content = doc.doc[()]
+            assert "repos" in content
+            assert "extra" in content

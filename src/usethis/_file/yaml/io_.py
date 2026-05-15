@@ -2,27 +2,20 @@
 
 from __future__ import annotations
 
-import copy
 import re
 from abc import ABCMeta
 from dataclasses import dataclass
-from io import StringIO
 from typing import TYPE_CHECKING, Any, ClassVar
 
-import ruamel.yaml
+import yamltrip
 from pydantic import TypeAdapter, ValidationError
-from ruamel.yaml.comments import CommentedMap
-from ruamel.yaml.error import YAMLError
-from ruamel.yaml.util import load_yaml_guess_indent
 from typing_extensions import assert_never, override
 
-from usethis._console import info_print
 from usethis._file.manager import (
     KeyValueFileManager,
     UnexpectedFileIOError,
     UnexpectedFileOpenError,
 )
-from usethis._file.merge import deep_merge
 from usethis._file.print_ import print_keys
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
@@ -33,17 +26,14 @@ from usethis._file.yaml.errors import (
     YAMLValueAlreadySetError,
     YAMLValueMissingError,
 )
-from usethis._file.yaml.update import update_ruamel_yaml_map
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from io import TextIOWrapper
     from pathlib import Path
 
     from typing_extensions import Self
 
     from usethis._file.types_ import Key
-    from usethis._file.yaml.typing_ import YAMLLiteral
 
 
 @dataclass
@@ -51,14 +41,13 @@ class YAMLDocument:
     """A dataclass to represent a YAML document in memory.
 
     Attributes:
-        content: The content of the YAML document as a ruamel.yaml object.
+        doc: The yamltrip Document holding the parsed YAML source.
     """
 
-    content: YAMLLiteral
-    roundtripper: ruamel.yaml.YAML
+    doc: yamltrip.Document
 
 
-class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
+class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
     """An abstract class for managing YAML files."""
 
     _content_by_path: ClassVar[dict[Path, YAMLDocument | None]] = {}
@@ -78,22 +67,17 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             raise YAMLNotFoundError(err) from None
         except UnexpectedFileIOError as err:
             raise UnexpectedYAMLIOError(err) from None
-        except YAMLError as err:
+        except yamltrip.ParseError as err:
             msg = f"Failed to decode '{self.name}':\n{err}"
             raise YAMLDecodeError(msg) from None
 
     @override
     def _dump_content(self) -> str:
-        """Return the content of the document as a string."""
         if self._content is None:
             msg = "Content is None, cannot dump."
             raise ValueError(msg)
 
-        with StringIO() as output:
-            assert isinstance(self._content, YAMLDocument)
-            self._content.roundtripper.dump(self._content.content, output)
-            content = output.getvalue()
-        return content
+        return self._content.doc.dumps()
 
     @override
     def get(self) -> YAMLDocument:
@@ -105,8 +89,7 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
 
     @override
     def _parse_content(self, content: str) -> YAMLDocument:
-        """Parse the content of the document."""
-        return get_yaml_document(StringIO(content), guess_indent=True)
+        return YAMLDocument(doc=yamltrip.loads(content))
 
     @property
     @override
@@ -129,44 +112,33 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
         """Check if the YAML file contains a value.
 
         A non-existent file will return False.
+        An empty keys sequence checks whether the document root exists.
         """
         keys = _validate_keys(keys)
 
         try:
-            current = self.get().content
+            doc = self.get().doc
         except FileNotFoundError:
             return False
 
-        try:
-            for key in keys:
-                if isinstance(current, CommentedMap):
-                    current = current[key]
-                else:
-                    return False
-        except KeyError:
-            return False
+        if not keys:
+            return True
 
-        return True
+        return tuple(keys) in doc
 
     @override
     def __getitem__(self, item: Sequence[Key]) -> object:
-        keys = item
-        keys = _validate_keys(keys)
+        keys = _validate_keys(item)
 
-        d = self.get().content
-        for key in keys:
-            try:
-                TypeAdapter(dict).validate_python(d)
-            except ValidationError:
-                msg = f"Configuration value '{print_keys(keys)}' is missing."
-                raise YAMLValueMissingError(msg) from None
-            assert isinstance(d, dict)
-            try:
-                d = d[key]
-            except KeyError as err:
-                raise YAMLValueMissingError(err) from None
-
-        return d
+        doc = self.get().doc
+        try:
+            result = doc[tuple(keys)]
+        except yamltrip.QueryError as err:
+            if not keys:
+                return {}
+            msg = f"Configuration value '{print_keys(keys)}' is missing."
+            raise YAMLValueMissingError(msg) from err
+        return result
 
     @override
     def set_value(
@@ -176,133 +148,78 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
 
         An empty list of keys corresponds to the root of the document.
         """
-        content = copy.deepcopy(self.get().content)
         keys = _validate_keys(keys)
-
-        # Root level config - value must be a mapping.
-        try:
-            TypeAdapter(dict).validate_python(content)
-        except ValidationError:
-            msg = "Root level configuration must be a mapping."
-            raise UnexpectedYAMLValueError(msg) from None
-        if not isinstance(content, CommentedMap):
-            raise AssertionError
+        yaml_doc = self.get()
+        doc = yaml_doc.doc
 
         if not keys:
-            TypeAdapter(dict).validate_python(value)
+            # Root level: value must be a mapping.
+            try:
+                TypeAdapter(dict).validate_python(value)
+            except ValidationError:
+                msg = "Root level configuration must be a mapping."
+                raise UnexpectedYAMLValueError(msg) from None
             assert isinstance(value, dict)
-            if not content or exists_ok:
-                content.update(value)
-                assert self._content is not None  # We have called .get() already.
-                update_ruamel_yaml_map(
-                    cmap=self._content.content,
-                    new_contents=content,
-                    preserve_comments=True,
-                )
-                self.commit(self._content)
-                return
 
-        d, parent = content, {}
-        shared_keys: list[str] = []
-        try:
-            # Index our way into each ID key.
-            # Eventually, we should land at a final dict, which is the one we are setting.
-            for key in keys:
-                TypeAdapter(dict).validate_python(d)
-                assert isinstance(d, dict)
-                d, parent = d[key], d
-                shared_keys.append(key)
-        except KeyError:
-            _set_value_in_existing(content=content, keys=keys, value=value)
-        except ValidationError:
-            if not exists_ok:
-                msg = f"Configuration value '{print_keys(shared_keys)}' is already set."
-                raise YAMLValueAlreadySetError(msg) from None
-            else:
-                _set_value_in_existing(content=content, keys=keys, value=value)
+            for k, v in value.items():
+                if not exists_ok and (k,) in doc:
+                    msg = f"Configuration value '{print_keys([k])}' is already set."
+                    raise YAMLValueAlreadySetError(msg)
+                doc = _upsert_safe(doc, (k,), v, exists_ok=exists_ok)
         else:
-            if not exists_ok:
+            # Validate root is a mapping before attempting key insertion.
+            try:
+                root = doc[()]
+            except yamltrip.QueryError:
+                root = None
+            if root is not None and not isinstance(root, dict):
+                msg = "Root level configuration must be a mapping."
+                raise UnexpectedYAMLValueError(msg)
+            if not exists_ok and tuple(keys) in doc:
                 msg = f"Configuration value '{print_keys(keys)}' is already set."
                 raise YAMLValueAlreadySetError(msg)
-            else:
-                # The configuration is already present, but we're allowed to overwrite it.
-                parent[keys[-1]] = value
+            doc = _upsert_safe(doc, tuple(keys), value, exists_ok=exists_ok)
 
-        assert self._content is not None  # We have called .get() already.
-        update_ruamel_yaml_map(
-            cmap=self._content.content, new_contents=content, preserve_comments=True
-        )
-        self.commit(self._content)
+        self.commit(YAMLDocument(doc=doc))
 
     @override
     def __delitem__(self, keys: Sequence[Key]) -> None:
-        """Delete a value in the TOML file.
+        """Delete a value in the YAML file.
 
         An empty list of keys corresponds to the root of the document.
 
         Trying to delete a key from a document that doesn't exist will pass silently.
         """
         try:
-            content = copy.deepcopy(self.get().content)
+            yaml_doc = self.get()
         except FileNotFoundError:
             return
-        try:
-            TypeAdapter(dict).validate_python(content)
-        except ValidationError:
-            # N.B. by convention a del call should raise an error if the key is not found.
-            msg = f"Configuration value '{print_keys(keys)}' is missing."
-            raise YAMLValueMissingError(msg) from None
-        assert isinstance(content, dict)
         keys = _validate_keys(keys)
+        doc = yaml_doc.doc
 
-        # Exit early if the configuration is not present.
-        try:
-            d = content
-            for key in keys:
-                TypeAdapter(dict).validate_python(d)
-                assert isinstance(d, dict)
-                d = d[key]
-        except (KeyError, ValidationError):
-            # N.B. by convention a del call should raise an error if the key is not found.
-            msg = f"Configuration value '{print_keys(keys)}' is missing."
-            raise YAMLValueMissingError(msg) from None
-
-        # Remove the configuration.
-        d = content
-        for key in keys[:-1]:
-            TypeAdapter(dict).validate_python(d)
-            assert isinstance(d, dict)
-            d = d[key]
-        assert isinstance(d, dict)
         if not keys:
-            # i.e. the case where we're deleting the root of the document.
-            for key in list(d.keys()):
-                del d[key]
+            # Delete root: remove all top-level keys.
+            try:
+                root = doc[()]
+            except yamltrip.QueryError:
+                msg = f"Configuration value '{print_keys(keys)}' is missing."
+                raise YAMLValueMissingError(msg) from None
+            if not isinstance(root, dict):
+                msg = f"Configuration value '{print_keys(keys)}' is missing."
+                raise YAMLValueMissingError(msg)
+            for k in list(root.keys()):
+                doc = doc.remove(k)
         else:
-            d.__delitem__(keys[-1])
+            try:
+                doc = doc.prune_remove(*keys)
+            except yamltrip.QueryError:
+                msg = f"Configuration value '{print_keys(keys)}' is missing."
+                raise YAMLValueMissingError(msg) from None
+            except yamltrip.PatchError:
+                msg = f"Configuration value '{print_keys(keys)}' is missing."
+                raise YAMLValueMissingError(msg) from None
 
-            # Cleanup: any empty sections should be removed.
-            for idx in reversed(range(1, len(keys))):
-                # Navigate to the parent of the section we want to check
-                parent = content
-                for key in keys[: idx - 1]:
-                    TypeAdapter(dict).validate_python(parent)
-                    assert isinstance(parent, dict)
-                    parent = parent[key]
-
-                # If the section is empty, remove it
-                TypeAdapter(dict).validate_python(parent)
-                assert isinstance(parent, dict)
-                if not parent[keys[idx - 1]]:
-                    del parent[keys[idx - 1]]
-
-        assert self._content is not None  # We have called .get() already.
-        update_ruamel_yaml_map(
-            cmap=self._content.content,
-            new_contents=content,
-            preserve_comments=True,
-        )
-        self.commit(self._content)
+        self.commit(YAMLDocument(doc=doc))
 
     @override
     def extend_list(self, *, keys: Sequence[Key], values: Sequence[Any]) -> None:
@@ -311,47 +228,33 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
         keys = _validate_keys(keys)
+        yaml_doc = self.get()
+        doc = yaml_doc.doc
 
-        content = copy.deepcopy(self.get().content)
-        # Root level config - value must be a mapping.
+        # Validate root is a mapping.
         try:
-            TypeAdapter(dict).validate_python(content)
-        except ValidationError:
+            root = doc[()]
+        except yamltrip.QueryError:
+            root = None
+        if root is not None and not isinstance(root, dict):
             msg = "Root level configuration must be a mapping."
-            raise UnexpectedYAMLValueError(msg) from None
-        assert isinstance(content, dict)
+            raise UnexpectedYAMLValueError(msg)
 
-        try:
-            d = content
-            for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(d)
-                assert isinstance(d, dict)
-                d = d[key]
-            p_parent = d
-            TypeAdapter(dict).validate_python(p_parent)
-            assert isinstance(p_parent, dict)
-            d = p_parent[keys[-1]]
-        except KeyError:
-            new_content = values
-            for key in reversed(keys):
-                new_content = {key: new_content}
-            assert isinstance(new_content, dict)
-            content = deep_merge(content, new_content)
-            assert isinstance(content, dict)
+        if tuple(keys) in doc:
+            try:
+                doc = doc.extend_list(*keys, values=list(values))
+            except yamltrip.PatchError:
+                # Flow sequence or other issue — rebuild with merged list.
+                existing = doc[tuple(keys)]
+                if isinstance(existing, list):
+                    new_list = existing + list(values)
+                else:
+                    new_list = list(values)
+                doc = _upsert_complex(doc, tuple(keys), new_list, exists_ok=True)
         else:
-            TypeAdapter(dict).validate_python(p_parent)
-            TypeAdapter(list).validate_python(d)
-            assert isinstance(p_parent, dict)
-            assert isinstance(d, list)
-            p_parent[keys[-1]] = d + list(values)
+            doc = _upsert_safe(doc, tuple(keys), list(values), exists_ok=False)
 
-        assert self._content is not None  # We have called .get() already.
-        update_ruamel_yaml_map(
-            cmap=self._content.content,
-            new_contents=content,
-            preserve_comments=True,
-        )
-        self.commit(self._content)
+        self.commit(YAMLDocument(doc=doc))
 
     @override
     def remove_from_list(self, *, keys: Sequence[Key], values: Sequence[Any]) -> None:
@@ -360,60 +263,27 @@ class YAMLFileManager(KeyValueFileManager[YAMLDocument], metaclass=ABCMeta):
             msg = "At least one ID key must be provided."
             raise ValueError(msg)
         keys = _validate_keys(keys)
+        yaml_doc = self.get()
+        doc = yaml_doc.doc
 
-        content = copy.deepcopy(self.get()).content
-        # Root level config - value must be a mapping.
+        # Validate root is a mapping.
         try:
-            TypeAdapter(dict).validate_python(content)
-        except ValidationError:
+            root = doc[()]
+        except yamltrip.QueryError:
+            root = None
+        if root is not None and not isinstance(root, dict):
             msg = "Root level configuration must be a mapping."
-            raise UnexpectedYAMLValueError(msg) from None
-        assert isinstance(content, dict)
+            raise UnexpectedYAMLValueError(msg)
 
-        try:
-            p = content
-            for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(p)
-                assert isinstance(p, dict)
-                p = p[key]
-
-            p_parent = p
-            TypeAdapter(dict).validate_python(p_parent)
-            assert isinstance(p_parent, dict)
-            p = p_parent[keys[-1]]
-        except (KeyError, ValidationError):
-            # The configuration is not present - do not modify
+        if tuple(keys) not in doc:
             return
 
         try:
-            TypeAdapter(list).validate_python(p)
-        except ValidationError:
+            doc = doc.remove_from_list(*keys, values=list(values))
+        except yamltrip.PatchError:
+            # Value at the path is not a list; treat as no-op.
             return
-        assert isinstance(p, list)
-
-        new_values = [value for value in p if value not in values]
-        p_parent[keys[-1]] = new_values
-
-        assert self._content is not None  # We have called .get() already.
-        update_ruamel_yaml_map(
-            cmap=self._content.content,
-            new_contents=content,
-            preserve_comments=True,
-        )
-        self.commit(self._content)
-
-
-def _set_value_in_existing(
-    *, content: YAMLLiteral, keys: Sequence[Key], value: Any
-) -> None:
-    # The old configuration should be kept for all ID keys except the
-    # final/deepest one which shouldn't exist anyway since we checked as much,
-    # above.
-
-    contents = value
-    for key in reversed(keys):
-        contents = {key: contents}
-    content = deep_merge(content, contents)
+        self.commit(YAMLDocument(doc=doc))
 
 
 def _validate_keys(keys: Sequence[Key]) -> list[str]:
@@ -430,7 +300,6 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
         if isinstance(key, str):
             so_far_keys.append(key)
         elif isinstance(key, re.Pattern):
-            # Currently no need for this, perhaps we may add it in the future.
             msg = (
                 f"Regex-based keys are not currently supported in YAML files: "
                 f"{print_keys([*so_far_keys, key])}"
@@ -442,36 +311,181 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
     return so_far_keys
 
 
-def get_yaml_document(
-    _io: StringIO | TextIOWrapper, /, *, guess_indent: bool = True
-) -> YAMLDocument:
-    """Get a YAML document representation from a string or file-like object."""
-    # Can't preserve quotes so don't keep the content.
-    # Yes, it's not very efficient to load the content twice.
+def _upsert_safe(
+    doc: yamltrip.Document,
+    keys: tuple[str, ...],
+    value: Any,
+    *,
+    exists_ok: bool = False,
+) -> yamltrip.Document:
+    """Upsert a value into a yamltrip Document, handling empty documents."""
+    # For complex values (list/dict), use the document rebuild approach
+    # since yamltrip can only upsert/replace scalar values.
+    if isinstance(value, (list, dict)):
+        return _upsert_complex(doc, keys, value, exists_ok=exists_ok)
+
     try:
-        content, sequence_ind, offset_ind = load_yaml_guess_indent(_io)
-    except YAMLError as err:
-        if "mapping values are not allowed here" in str(err):
-            info_print("Hint: You may have incorrect indentation in the YAML file.")
-        raise err
+        return doc.upsert(*keys, value=value)
+    except yamltrip.PatchError as err:
+        if not doc.source.strip():
+            # Empty document: bootstrap with a seed mapping and upsert.
+            doc = yamltrip.loads("{}\n")
+            return doc.upsert(*keys, value=value)
+        err_msg = str(err)
+        if (
+            "non-mapping route" in err_msg
+            or "expected mapping containing key" in err_msg
+        ):
+            if exists_ok:
+                # Remove the conflicting prefix and retry.
+                for i in range(len(keys) - 1, 0, -1):
+                    if tuple(keys[:i]) in doc:
+                        doc = doc.prune_remove(*keys[:i])
+                        return _upsert_safe(doc, keys, value, exists_ok=exists_ok)
+            # Trying to add a key under a non-mapping node.
+            # Find the longest existing prefix to report.
+            for i in range(len(keys) - 1, 0, -1):
+                if tuple(keys[:i]) in doc:
+                    msg = f"Configuration value '{print_keys(list(keys[:i]))}' is already set."
+                    raise YAMLValueAlreadySetError(msg) from err
+        raise
 
-    # Replace content with {} if the file is empty, i.e. the _io stream is empty.
-    # The default in ruamel.yaml is to return None, which is not what we want.
-    if not content and _io.tell() == 0:
-        content = CommentedMap()
 
-    if not guess_indent:
-        sequence_ind = None
-        offset_ind = None
+def _upsert_complex(
+    doc: yamltrip.Document,
+    keys: tuple[str, ...],
+    value: Any,
+    *,
+    exists_ok: bool = False,
+) -> yamltrip.Document:
+    """Upsert a complex value (list/dict) by rebuilding the document text."""
+    # Remove existing key if present
+    if tuple(keys) in doc:
+        if not exists_ok:
+            msg = f"Configuration value '{print_keys(list(keys))}' is already set."
+            raise YAMLValueAlreadySetError(msg)
+        doc = doc.prune_remove(*keys)
 
-    if sequence_ind is None:
-        sequence_ind = 4
-    if offset_ind is None:
-        offset_ind = 2
+    # Serialize the new key-value pair to YAML text
+    key_path = keys[-1] if keys else ""
+    indent_level = len(keys) - 1
+    value_yaml = _serialize_yaml_value(value, indent=indent_level + 1)
+    prefix = "  " * indent_level
+    key_yaml = f"{prefix}{key_path}:\n{value_yaml}\n"
 
-    yaml = ruamel.yaml.YAML(typ="rt")
-    yaml.indent(mapping=sequence_ind, sequence=sequence_ind, offset=offset_ind)
-    yaml.preserve_quotes = True
+    # For nested keys, we need to navigate into the parent.
+    # For simplicity, handle only the common case: single key at root level.
+    if len(keys) == 1:
+        base_text = doc.source if doc.source.strip() else ""
+        if base_text and not base_text.endswith("\n"):
+            base_text += "\n"
+        new_text = base_text + key_yaml
+        try:
+            return yamltrip.loads(new_text)
+        except yamltrip.ParseError:
+            # Text concatenation failed (e.g., flow mapping root). Fall through
+            # to full rebuild.
+            pass
 
-    yaml_document = YAMLDocument(content=content, roundtripper=yaml)
-    return yaml_document
+    # For deeper keys, fall back to rebuilding the full document.
+    try:
+        root = doc[()]
+    except yamltrip.QueryError:
+        root = {}
+    if not isinstance(root, dict):
+        root = {}
+    _deep_set(root, list(keys), value)
+    new_text = _serialize_yaml_mapping(root)
+    return yamltrip.loads(new_text)
+
+
+def _deep_set(d: dict, keys: list[str], value: Any) -> None:
+    """Set a value at a nested key path in a dict."""
+    for key in keys[:-1]:
+        if key not in d or not isinstance(d[key], dict):
+            d[key] = {}
+        d = d[key]
+    d[keys[-1]] = value
+
+
+def _serialize_yaml_mapping(mapping: dict, indent: int = 0) -> str:
+    """Serialize a dict to YAML block-style text."""
+    lines: list[str] = []
+    prefix = "  " * indent
+    for k, v in mapping.items():
+        if isinstance(v, (dict, list)):
+            lines.append(f"{prefix}{k}:")
+            lines.append(_serialize_yaml_value(v, indent=indent + 1))
+        else:
+            lines.append(f"{prefix}{k}: {_serialize_yaml_scalar(v)}")
+    return "\n".join(lines) + "\n"
+
+
+def _serialize_yaml_value(value: Any, indent: int = 0) -> str:
+    """Serialize a Python value to YAML text at the given indentation level."""
+    prefix = "  " * indent
+    if isinstance(value, dict):
+        return _serialize_yaml_dict_value(value, prefix, indent)
+    if isinstance(value, list):
+        return _serialize_yaml_list_value(value, prefix, indent)
+    return f"{prefix}{_serialize_yaml_scalar(value)}"
+
+
+def _serialize_yaml_dict_value(value: dict, prefix: str, indent: int) -> str:
+    if not value:
+        return f"{prefix}{{}}"
+    lines: list[str] = []
+    for k, v in value.items():
+        if isinstance(v, (dict, list)):
+            lines.append(f"{prefix}{k}:")
+            lines.append(_serialize_yaml_value(v, indent=indent + 1))
+        else:
+            lines.append(f"{prefix}{k}: {_serialize_yaml_scalar(v)}")
+    return "\n".join(lines)
+
+
+def _serialize_yaml_list_value(value: list, prefix: str, indent: int) -> str:
+    if not value:
+        return f"{prefix}[]"
+    lines: list[str] = []
+    for item in value:
+        if isinstance(item, dict):
+            first = True
+            for k, v in item.items():
+                item_prefix = f"{prefix}- " if first else f"{prefix}  "
+                if isinstance(v, (dict, list)):
+                    lines.append(f"{item_prefix}{k}:")
+                    lines.append(_serialize_yaml_value(v, indent=indent + 2))
+                else:
+                    lines.append(f"{item_prefix}{k}: {_serialize_yaml_scalar(v)}")
+                first = False
+        else:
+            lines.append(f"{prefix}- {_serialize_yaml_scalar(item)}")
+    return "\n".join(lines)
+
+
+def _serialize_yaml_scalar(value: Any) -> str:
+    """Serialize a scalar Python value to its YAML representation."""
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, str):
+        return _serialize_yaml_string(value)
+    return str(value)
+
+
+def _serialize_yaml_string(value: str) -> str:
+    _YAML_KEYWORDS = {"true", "false", "null", "yes", "no", "on", "off"}
+    needs_quoting = (
+        value == ""
+        or value in _YAML_KEYWORDS
+        or value.startswith(("{", "[", "'", '"', "*", "&", "!", "|", ">"))
+        or "#" in value
+        or ": " in value
+        or value.endswith(":")
+    )
+    if needs_quoting:
+        escaped = value.replace("'", "''")
+        return f"'{escaped}'"
+    return value

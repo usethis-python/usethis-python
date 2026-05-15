@@ -67,9 +67,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   │   └── io_                   # TOML file I/O manager.
 │   └── yaml                      # YAML file reading and writing.
 │       ├── errors                # Error types for YAML file operations.
-│       ├── io_                   # YAML file I/O manager.
-│       ├── typing_               # Type aliases for YAML document values.
-│       └── update                # Smart update strategies for YAML sequences and mappings.
+│       └── io_                   # YAML file I/O manager.
 ├── _integrations                 # Third-party tool integrations.
 │   ├── mkdocs                    # MkDocs documentation integration.
 │   │   └── core                  # MkDocs project setup and configuration.

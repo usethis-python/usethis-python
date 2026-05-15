@@ -12,6 +12,7 @@ from usethis._integrations.pre_commit.init import (
 )
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
+from usethis._integrations.pydantic.dump import fancy_model_dump
 from usethis._pipeweld.containers import series
 from usethis._pipeweld.func import Adder, get_predecessor
 
@@ -72,8 +73,8 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
         else:
             tick_print(f"Adding hook '{hook_config.id}' to '.pre-commit-config.yaml'.")
 
-        model.repos.append(repo)
-        mgr.commit_model(model)
+        repo_dict = fancy_model_dump(repo, reference={}, order_by_cls={})
+        mgr.extend_list(keys=["repos"], values=[repo_dict])
     else:
         # There are existing hooks so we need to know where to insert the new hook.
         # Use pipeweld to determine the correct insertion position based on the
@@ -106,7 +107,10 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
             predecessor=predecessor,
         )
 
-        mgr.commit_model(model)
+        repos_list = [
+            fancy_model_dump(r, reference={}, order_by_cls={}) for r in model.repos
+        ]
+        mgr.set_value(keys=["repos"], value=repos_list, exists_ok=True)
 
 
 def insert_repo(
@@ -205,25 +209,47 @@ def remove_hook(hook_id: str) -> None:
     mgr = PreCommitConfigYAMLManager()
     model = mgr.model_validate()
 
+    # Read the raw repos from the document for surgical removal.
+    raw_repos: list[dict] = mgr.get().doc["repos"] or []
+
+    repos_to_remove: list[dict] = []
+    repos_modified: bool = False
+
     # search across the repos for any hooks with matching ID
-    for repo in model.repos:
+    for i, repo in enumerate(model.repos):
         if isinstance(repo, schema.MetaRepo) or repo.hooks is None:
             continue
 
-        for hook in repo.hooks:
+        had_hooks = len(repo.hooks)
+        for hook in list(repo.hooks):
             if hook_ids_are_equivalent(hook.id, hook_id):
                 tick_print(f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'.")
                 repo.hooks.remove(hook)
 
-        # if repo has no hooks, remove it
         if not repo.hooks:
+            # Repo has no hooks — mark for removal using raw dict.
+            repos_to_remove.append(raw_repos[i])
             model.repos.remove(repo)
+        elif len(repo.hooks) < had_hooks:
+            # Repo still has hooks but was modified.
+            repos_modified = True
 
-    # If there are no more hooks, we should add a placeholder.
     if not model.repos:
+        # All repos removed — add placeholder via full rebuild.
         model.repos.append(_get_placeholder_repo_config())
-
-    mgr.commit_model(model)
+        repos_list = [
+            fancy_model_dump(r, reference={}, order_by_cls={}) for r in model.repos
+        ]
+        mgr.set_value(keys=["repos"], value=repos_list, exists_ok=True)
+    elif repos_modified:
+        # Some repos were structurally modified — must rebuild.
+        repos_list = [
+            fancy_model_dump(r, reference={}, order_by_cls={}) for r in model.repos
+        ]
+        mgr.set_value(keys=["repos"], value=repos_list, exists_ok=True)
+    elif repos_to_remove:
+        # Only whole repos removed — use surgical removal to preserve comments.
+        mgr.remove_from_list(keys=["repos"], values=repos_to_remove)
 
 
 def get_hook_ids() -> list[str]:

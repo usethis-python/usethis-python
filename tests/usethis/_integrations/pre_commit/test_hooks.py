@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from ruamel.yaml import YAML
+import yamltrip
 
 from _test import change_cwd, hooks_are_equivalent
 from usethis._config_file import files_manager
@@ -290,8 +290,7 @@ repos:
             )
 
         # Assert - parse YAML to verify structure
-        yaml = YAML()
-        parsed = yaml.load((tmp_path / ".pre-commit-config.yaml").read_text())
+        parsed = yamltrip.loads((tmp_path / ".pre-commit-config.yaml").read_text())
         assert parsed["minimum_prek_version"] == "0.2.23"
         ruff_repo = parsed["repos"][0]
         assert ruff_repo["hooks"][0]["priority"] == 0
@@ -331,8 +330,7 @@ repos:
             )
 
         # Assert - parse YAML to verify extra keys are at correct levels
-        yaml = YAML()
-        parsed = yaml.load((tmp_path / ".pre-commit-config.yaml").read_text())
+        parsed = yamltrip.loads((tmp_path / ".pre-commit-config.yaml").read_text())
         assert parsed["custom_top_level_key"] == "some_value"
         ruff_repo = parsed["repos"][0]
         assert ruff_repo["custom_repo_key"] == 42

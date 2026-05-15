@@ -399,7 +399,7 @@ def _upsert_complex(
     return yamltrip.loads(new_text)
 
 
-def _deep_set(d: dict, keys: list[str], value: Any) -> None:
+def _deep_set(d: dict[str, Any], keys: list[str], value: Any) -> None:
     """Set a value at a nested key path in a dict."""
     for key in keys[:-1]:
         if key not in d or not isinstance(d[key], dict):
@@ -408,7 +408,7 @@ def _deep_set(d: dict, keys: list[str], value: Any) -> None:
     d[keys[-1]] = value
 
 
-def _serialize_yaml_mapping(mapping: dict, indent: int = 0) -> str:
+def _serialize_yaml_mapping(mapping: dict[str, Any], indent: int = 0) -> str:
     """Serialize a dict to YAML block-style text."""
     lines: list[str] = []
     prefix = "  " * indent
@@ -431,7 +431,7 @@ def _serialize_yaml_value(value: Any, indent: int = 0) -> str:
     return f"{prefix}{_serialize_yaml_scalar(value)}"
 
 
-def _serialize_yaml_dict_value(value: dict, prefix: str, indent: int) -> str:
+def _serialize_yaml_dict_value(value: dict[str, Any], prefix: str, indent: int) -> str:
     if not value:
         return f"{prefix}{{}}"
     lines: list[str] = []
@@ -444,7 +444,7 @@ def _serialize_yaml_dict_value(value: dict, prefix: str, indent: int) -> str:
     return "\n".join(lines)
 
 
-def _serialize_yaml_list_value(value: list, prefix: str, indent: int) -> str:
+def _serialize_yaml_list_value(value: list[Any], prefix: str, indent: int) -> str:
     if not value:
         return f"{prefix}[]"
     lines: list[str] = []

@@ -33,6 +33,7 @@ from usethis._core.tool import (
     use_ruff,
     use_tach,
     use_ty,
+    use_zensical,
 )
 from usethis._fallback import FALLBACK_PRE_COMMIT_VERSION
 from usethis._file.yaml.errors import YAMLDecodeError
@@ -52,6 +53,7 @@ from usethis._tool.impl.base.requirements_txt import RequirementsTxtTool
 from usethis._tool.impl.base.ruff import RuffTool
 from usethis._tool.impl.base.tach import TachTool
 from usethis._tool.impl.base.ty import TyTool
+from usethis._tool.impl.base.zensical import ZensicalTool
 from usethis.errors import UsethisError
 
 if TYPE_CHECKING:
@@ -316,6 +318,8 @@ def use_tool(  # noqa: PLR0912
         use_tach(remove=remove, how=how)
     elif isinstance(tool, TyTool):
         use_ty(remove=remove, how=how)
+    elif isinstance(tool, ZensicalTool):
+        use_zensical(remove=remove, how=how)
     else:
         # Having the assert_never here is effectively a way of testing cases are
         # exhaustively handled, which ensures it is kept up to date with ALL_TOOLS,

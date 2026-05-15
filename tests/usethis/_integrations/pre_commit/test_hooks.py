@@ -546,6 +546,43 @@ repos:
 """
         )
 
+    @pytest.mark.xfail(
+        reason="yamltrip lacks complex-value upsert/replace; "
+        "rebuild loses comments. See https://github.com/usethis-python/yamltrip/issues/18"
+    )
+    def test_partial_removal_preserves_comments(self, tmp_path: Path):
+        """Removing one hook from a multi-hook repo should preserve comments."""
+        (tmp_path / ".pre-commit-config.yaml").write_text(
+            """\
+repos:
+  - repo: local # important comment
+    hooks:
+      - id: foo
+        name: foo
+        entry: foo
+        language: python
+      - id: bar
+        name: bar
+        entry: bar
+        language: python
+"""
+        )
+        with change_cwd(tmp_path), files_manager():
+            remove_hook("foo")
+
+        # The inline comment on the repo should be preserved after removing a hook.
+        assert (tmp_path / ".pre-commit-config.yaml").read_text() == (
+            """\
+repos:
+  - repo: local # important comment
+    hooks:
+      - id: bar
+        name: bar
+        entry: bar
+        language: python
+"""
+        )
+
 
 class TestGetHookNames:
     def test_empty(self, tmp_path: Path):

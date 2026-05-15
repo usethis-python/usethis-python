@@ -47,6 +47,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   ├── merge                     # Deep merge utilities for nested mappings.
 │   ├── print_                    # Pretty-printing helpers for configuration file keys.
 │   ├── types_                    # Shared type aliases for file operations.
+│   ├── validate                  # Safer abstractions for Pydantic TypeAdapter validation.
 │   ├── ini                       # INI file reading and writing.
 │   │   ├── errors                # Error types for INI file operations.
 │   │   └── io_                   # INI file I/O manager.

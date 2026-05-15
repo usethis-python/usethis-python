@@ -233,7 +233,7 @@ sonar.exclusions=tests/*
             )
 
             # Act, Assert
-            with pytest.raises(InvalidSonarQubeProjectKeyError):
+            with pytest.raises(MissingProjectKeyError):
                 get_sonar_project_properties()
 
     def test_patch_version_ignored(self, tmp_path: Path):

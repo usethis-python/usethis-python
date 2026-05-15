@@ -146,6 +146,8 @@ def _get_module_public_functions(
             continue
         if skip_private and node.name.startswith("_"):
             continue
+        if _is_overload(node):
+            continue
         docstring = ast.get_docstring(node)
         if docstring is not None:
             first_line = docstring.split("\n")[0].strip()

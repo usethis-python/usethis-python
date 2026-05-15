@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pydantic import TypeAdapter, ValidationError
-
 from usethis._console import tick_print
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._init import ensure_pyproject_toml
@@ -23,12 +21,9 @@ def use_development_status(
     tick_print(f"Setting the development status to '{dispstatus}'.")
 
     mgr = PyprojectTOMLManager()
-    try:
-        existing_classifiers = TypeAdapter(list[str]).validate_python(
-            mgr[["project", "classifiers"]]
-        )
-    except (KeyError, ValidationError):
-        existing_classifiers: list[str] = []
+    existing_classifiers = mgr.validated_get(
+        ["project", "classifiers"], default=[], validate=list[str]
+    )
     existing_status_classifiers = {
         classifier
         for classifier in existing_classifiers

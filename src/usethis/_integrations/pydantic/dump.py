@@ -56,7 +56,7 @@ def fancy_model_dump(
         return _fancy_model_dump_base_model(
             model, reference=reference, order_by_cls=order_by_cls
         )
-    else:  # pragma: no cover
+    else:
         return model  # pyright: ignore[reportUnreachable]
 
 

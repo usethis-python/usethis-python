@@ -6,6 +6,7 @@ from itertools import zip_longest
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, RootModel
+from typing_extensions import assert_never
 
 if TYPE_CHECKING:
     from usethis._integrations.pydantic.typing_ import ModelRepresentation
@@ -57,7 +58,7 @@ def fancy_model_dump(
             model, reference=reference, order_by_cls=order_by_cls
         )
     else:
-        return model  # pyright: ignore[reportUnreachable]
+        assert_never(model)
 
 
 def _fancy_model_dump_list(

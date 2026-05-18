@@ -135,6 +135,7 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
             result = doc[tuple(keys)]
         except yamltrip.QueryError as err:
             if not keys:
+                # Empty/null document — treat root as an empty mapping.
                 return {}
             msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise YAMLValueMissingError(msg) from err
@@ -331,6 +332,8 @@ def _upsert_safe(
     except yamltrip.PatchError as err:
         if not doc.source.strip():
             # Empty document: bootstrap with a block-style seed and upsert.
+            # N.B. "_" is used as a throwaway sentinel key — safe because this
+            # branch only runs on truly empty documents.
             doc = yamltrip.loads("_: null\n")
             doc = doc.upsert(*keys, value=None)
             doc = doc.upsert(*keys, value=value)

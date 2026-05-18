@@ -210,6 +210,9 @@ def remove_hook(hook_id: str) -> None:
     model = mgr.model_validate()
 
     # Read the raw repos from the document for surgical removal.
+    # N.B. index alignment with model.repos is safe because model_validate() uses
+    # extra="allow" and does not filter or reorder the repos list.
+    # The `or []` handles a null repos key (e.g. "repos:" with no value).
     raw_repos: list[dict] = mgr.get().doc["repos"] or []
 
     repos_to_remove: list[dict] = []
@@ -235,14 +238,12 @@ def remove_hook(hook_id: str) -> None:
             repos_modified = True
 
     if not model.repos:
-        # All repos removed — add placeholder via full rebuild.
+        # All repos removed — add placeholder.
         model.repos.append(_get_placeholder_repo_config())
-        repos_list = [
-            fancy_model_dump(r, reference={}, order_by_cls={}) for r in model.repos
-        ]
-        mgr.set_value(keys=["repos"], value=repos_list, exists_ok=True)
-    elif repos_modified:
-        # Some repos were structurally modified — must rebuild.
+        repos_modified = True
+
+    if repos_modified:
+        # Full rebuild required — serialize all repos from the Pydantic model.
         repos_list = [
             fancy_model_dump(r, reference={}, order_by_cls={}) for r in model.repos
         ]

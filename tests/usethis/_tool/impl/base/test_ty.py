@@ -55,12 +55,12 @@ class TestTyTool:
 repos:
   - repo: local
     hooks:
-      - id: ty
-        name: ty
-        entry: uv run --frozen --offline ty check
-        language: system
-        always_run: true
-        pass_filenames: false
+    - id: ty
+      name: ty
+      entry: uv run --frozen --offline ty check
+      language: system
+      always_run: true
+      pass_filenames: false
 """
             )
 

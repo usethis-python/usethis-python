@@ -650,7 +650,7 @@ class TestTool:
 repos:
   - repo: local
     hooks:
-      - id: deptry
+    - id: deptry
 """)
 
                 # Act
@@ -698,7 +698,7 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: deptry
+    - id: deptry
 """)
             # Act
             with change_cwd(tmp_path), files_manager():
@@ -860,8 +860,8 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: deptry
-        entry: echo "different now!"
+    - id: deptry
+      entry: echo "different now!"
 """
 
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
@@ -889,8 +889,8 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: Deptry
-        entry: echo "different now!"
+    - id: Deptry
+      entry: echo "different now!"
 """
 
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
@@ -918,8 +918,8 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: ruff
-        entry: echo "different now!"
+    - id: ruff
+      entry: echo "different now!"
 """)
 
             # Act
@@ -945,10 +945,10 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: ruff-format
-        entry: ruff format
-      - id: ruff
-        entry: echo "different now!"
+    - id: ruff-format
+      entry: ruff format
+    - id: ruff
+      entry: echo "different now!"
 """
             )
 
@@ -1000,8 +1000,8 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: ruff-format
-        entry: ruff format
+    - id: ruff-format
+      entry: ruff format
 """
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
 
@@ -1023,8 +1023,8 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: ruff-format
-        entry: ruff format
+    - id: ruff-format
+      entry: ruff format
 """
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
 
@@ -1046,8 +1046,8 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: deptry
-        entry: deptry
+    - id: deptry
+      entry: deptry
 """
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)
 
@@ -1107,10 +1107,10 @@ repos:
 repos:
     - repo: local
       hooks:
-        - id: ruff-format
-          entry: ruff format
-        - id: ruff
-          entry: ruff check
+      - id: ruff-format
+        entry: ruff format
+      - id: ruff
+        entry: ruff check
 """
 
             (tmp_path / ".pre-commit-config.yaml").write_text(contents)

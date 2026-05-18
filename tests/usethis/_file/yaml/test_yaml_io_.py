@@ -526,7 +526,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {"key": "value"}
+                assert manager._content.doc.root == {"key": "value"}
                 assert isinstance(manager._content, YAMLDocument)
 
         def test_root_level_is_not_mapping(self, tmp_path: Path):
@@ -567,7 +567,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {"key": "new_value"}
+                assert manager._content.doc.root == {"key": "new_value"}
 
         def test_key_doesnt_exist_yet(self, tmp_path: Path):
             # Arrange
@@ -587,7 +587,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {
+                assert manager._content.doc.root == {
                     "key": "value",
                     "new_key": "new_value",
                 }
@@ -666,7 +666,7 @@ outer: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {"outer": {"inner": "new_value"}}
+                assert manager._content.doc.root == {"outer": {"inner": "new_value"}}
 
         def test_already_exists(self, tmp_path: Path):
             # Arrange
@@ -707,7 +707,7 @@ outer: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {"key1": "value1"}
+                assert manager._content.doc.root == {"key1": "value1"}
 
         def test_empty_sections_removed(self, tmp_path: Path):
             # Arrange
@@ -734,7 +734,7 @@ other: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {"other": "value"}
+                assert manager._content.doc.root == {"other": "value"}
 
         def test_file_not_found(self, tmp_path: Path):
             # Arrange
@@ -852,7 +852,7 @@ outer: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {
+                assert manager._content.doc.root == {
                     "items": ["item1", "item2", "item3", "item4"]
                 }
 
@@ -917,7 +917,7 @@ outer: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager.get().doc[()] == {
+                assert manager.get().doc.root == {
                     "items": ["item1", "item2"],
                     "non_existent_key": ["item3", "item4"],
                 }
@@ -950,7 +950,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {
+                assert manager._content.doc.root == {
                     "outer": {"inner": {"items": ["item1", "item2", "item3", "item4"]}}
                 }
 
@@ -979,7 +979,7 @@ items:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {"items": ["item1", "item3"]}
+                assert manager._content.doc.root == {"items": ["item1", "item3"]}
 
         def test_root_level_is_not_mapping(self, tmp_path: Path):
             # Arrange
@@ -1051,7 +1051,7 @@ items:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {
+                assert manager._content.doc.root == {
                     "items": ["item1", "item2", "item3"]
                 }
 
@@ -1084,7 +1084,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {
+                assert manager._content.doc.root == {
                     "outer": {"inner": {"items": ["item1", "item3"]}}
                 }
 
@@ -1114,7 +1114,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.doc[()] == {
+                assert manager._content.doc.root == {
                     "outer": {"inner": {"items": "item1"}}
                 }
 
@@ -1136,7 +1136,7 @@ class TestEditYaml:
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == "hello"
+                assert yaml_document.doc.root == "hello"
                 assert yaml_document.doc.dumps() == content
 
         def test_literal_scalar_string(self, tmp_path: Path):
@@ -1169,7 +1169,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == 3
+                assert yaml_document.doc.root == 3
                 assert yaml_document.doc.dumps() == content
 
         def test_float(self, tmp_path: Path):
@@ -1178,7 +1178,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == 3.14
+                assert yaml_document.doc.root == 3.14
                 assert yaml_document.doc.dumps() == content
 
         def test_scientific_notation(self, tmp_path: Path):
@@ -1187,7 +1187,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == pytest.approx(3.14e-2)
+                assert yaml_document.doc.root == pytest.approx(3.14e-2)
                 assert yaml_document.doc.dumps() == content
 
         def test_hex(self, tmp_path: Path):
@@ -1196,7 +1196,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == 3
+                assert yaml_document.doc.root == 3
                 assert yaml_document.doc.dumps() == content
 
         def test_hex_caps(self, tmp_path: Path):
@@ -1205,7 +1205,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == 14
+                assert yaml_document.doc.root == 14
                 assert yaml_document.doc.dumps() == content
 
         def test_octal(self, tmp_path: Path):
@@ -1214,7 +1214,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == 3
+                assert yaml_document.doc.root == 3
                 assert yaml_document.doc.dumps() == content
 
         def test_binary(self, tmp_path: Path):
@@ -1223,7 +1223,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == 3
+                assert yaml_document.doc.root == 3
                 assert yaml_document.doc.dumps() == content
 
         def test_scalar_int(self, tmp_path: Path):
@@ -1232,7 +1232,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == 3
+                assert yaml_document.doc.root == 3
                 assert yaml_document.doc.dumps() == content
 
         def test_bool(self, tmp_path: Path):
@@ -1241,7 +1241,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] is True
+                assert yaml_document.doc.root is True
                 assert yaml_document.doc.dumps() == content
 
         def test_scalar_bool(self, tmp_path: Path):
@@ -1250,7 +1250,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] is True
+                assert yaml_document.doc.root is True
                 assert yaml_document.doc.dumps() == content
 
         def test_seq(self, tmp_path: Path):
@@ -1262,7 +1262,7 @@ hello: >
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == ["one", "two"]
+                assert yaml_document.doc.root == ["one", "two"]
                 assert yaml_document.doc.dumps() == content
 
         def test_set(self, tmp_path: Path):
@@ -1286,7 +1286,7 @@ hello: world
             path.write_text(content)
 
             with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc[()] == {"hello": "world"}
+                assert yaml_document.doc.root == {"hello": "world"}
                 assert yaml_document.doc.dumps() == content
 
         def test_ordered_map(self, tmp_path: Path):
@@ -1446,7 +1446,7 @@ x:
 repos:
   - repo: local
         hooks:
-          - id: placeholder
+        - id: placeholder
 """
         )
 

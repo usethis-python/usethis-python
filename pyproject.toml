@@ -61,7 +61,7 @@ dependencies = [
   "tomlkit>=0.13.3",
   "typer>=0.12.4",
   "typing-extensions>=3.10.0.0",
-  "yamltrip>=0.2.0",
+  "yamltrip>=0.3.0",
 ]
 scripts.usethis = "usethis.__main__:app"
 

@@ -169,7 +169,7 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         else:
             # Validate root is a mapping before attempting key insertion.
             try:
-                root = doc[()]
+                root = doc.root
             except yamltrip.QueryError:
                 root = None
             if root is not None and not isinstance(root, dict):
@@ -200,7 +200,7 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         if not keys:
             # Delete root: remove all top-level keys.
             try:
-                root = doc[()]
+                root = doc.root
             except yamltrip.QueryError:
                 msg = f"Configuration value '{print_keys(keys)}' is missing."
                 raise YAMLValueMissingError(msg) from None
@@ -233,7 +233,7 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
 
         # Validate root is a mapping.
         try:
-            root = doc[()]
+            root = doc.root
         except yamltrip.QueryError:
             root = None
         if root is not None and not isinstance(root, dict):
@@ -244,13 +244,13 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
             try:
                 doc = doc.extend_list(*keys, values=list(values))
             except yamltrip.PatchError:
-                # Flow sequence or other issue — rebuild with merged list.
+                # Flow sequence or other issue — upsert the merged list.
                 existing = doc[tuple(keys)]
                 if isinstance(existing, list):
                     new_list = existing + list(values)
                 else:
                     new_list = list(values)
-                doc = _upsert_complex(doc, tuple(keys), new_list, exists_ok=True)
+                doc = _upsert_safe(doc, tuple(keys), new_list, exists_ok=True)
         else:
             doc = _upsert_safe(doc, tuple(keys), list(values), exists_ok=False)
 
@@ -268,7 +268,7 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
 
         # Validate root is a mapping.
         try:
-            root = doc[()]
+            root = doc.root
         except yamltrip.QueryError:
             root = None
         if root is not None and not isinstance(root, dict):
@@ -319,18 +319,25 @@ def _upsert_safe(
     exists_ok: bool = False,
 ) -> yamltrip.Document:
     """Upsert a value into a yamltrip Document, handling empty documents."""
-    # For complex values (list/dict), use the document rebuild approach
-    # since yamltrip can only upsert/replace scalar values.
-    if isinstance(value, (list, dict)):
-        return _upsert_complex(doc, keys, value, exists_ok=exists_ok)
+    # For complex values (list/dict) where the key doesn't exist yet, add a
+    # null placeholder first then replace — this forces block-style output.
+    if isinstance(value, (list, dict)) and tuple(keys) not in doc:
+        try:
+            doc = doc.upsert(*keys, value=None)
+        except yamltrip.PatchError:
+            pass
+        else:
+            return doc.upsert(*keys, value=value)
 
     try:
         return doc.upsert(*keys, value=value)
     except yamltrip.PatchError as err:
         if not doc.source.strip():
-            # Empty document: bootstrap with a seed mapping and upsert.
-            doc = yamltrip.loads("{}\n")
-            return doc.upsert(*keys, value=value)
+            # Empty document: bootstrap with a block-style seed and upsert.
+            doc = yamltrip.loads("_: null\n")
+            doc = doc.upsert(*keys, value=None)
+            doc = doc.upsert(*keys, value=value)
+            return doc.remove("_")
         err_msg = str(err)
         if (
             "non-mapping route" in err_msg
@@ -349,143 +356,3 @@ def _upsert_safe(
                     msg = f"Configuration value '{print_keys(list(keys[:i]))}' is already set."
                     raise YAMLValueAlreadySetError(msg) from err
         raise
-
-
-def _upsert_complex(
-    doc: yamltrip.Document,
-    keys: tuple[str, ...],
-    value: Any,
-    *,
-    exists_ok: bool = False,
-) -> yamltrip.Document:
-    """Upsert a complex value (list/dict) by rebuilding the document text."""
-    # Remove existing key if present
-    if tuple(keys) in doc:
-        if not exists_ok:
-            msg = f"Configuration value '{print_keys(list(keys))}' is already set."
-            raise YAMLValueAlreadySetError(msg)
-        doc = doc.prune_remove(*keys)
-
-    # Serialize the new key-value pair to YAML text
-    key_path = keys[-1] if keys else ""
-    indent_level = len(keys) - 1
-    value_yaml = _serialize_yaml_value(value, indent=indent_level + 1)
-    prefix = "  " * indent_level
-    key_yaml = f"{prefix}{key_path}:\n{value_yaml}\n"
-
-    # For nested keys, we need to navigate into the parent.
-    # For simplicity, handle only the common case: single key at root level.
-    if len(keys) == 1:
-        base_text = doc.source if doc.source.strip() else ""
-        if base_text and not base_text.endswith("\n"):
-            base_text += "\n"
-        new_text = base_text + key_yaml
-        try:
-            return yamltrip.loads(new_text)
-        except yamltrip.ParseError:
-            # Text concatenation failed (e.g., flow mapping root). Fall through
-            # to full rebuild.
-            pass
-
-    # For deeper keys, fall back to rebuilding the full document.
-    try:
-        root = doc[()]
-    except yamltrip.QueryError:
-        root = {}
-    if not isinstance(root, dict):
-        root = {}
-    _deep_set(root, list(keys), value)
-    new_text = _serialize_yaml_mapping(root)
-    return yamltrip.loads(new_text)
-
-
-def _deep_set(d: dict[str, Any], keys: list[str], value: Any) -> None:
-    """Set a value at a nested key path in a dict."""
-    for key in keys[:-1]:
-        if key not in d or not isinstance(d[key], dict):
-            d[key] = {}
-        d = d[key]
-    d[keys[-1]] = value
-
-
-def _serialize_yaml_mapping(mapping: dict[str, Any], indent: int = 0) -> str:
-    """Serialize a dict to YAML block-style text."""
-    lines: list[str] = []
-    prefix = "  " * indent
-    for k, v in mapping.items():
-        if isinstance(v, (dict, list)):
-            lines.append(f"{prefix}{k}:")
-            lines.append(_serialize_yaml_value(v, indent=indent + 1))
-        else:
-            lines.append(f"{prefix}{k}: {_serialize_yaml_scalar(v)}")
-    return "\n".join(lines) + "\n"
-
-
-def _serialize_yaml_value(value: Any, indent: int = 0) -> str:
-    """Serialize a Python value to YAML text at the given indentation level."""
-    prefix = "  " * indent
-    if isinstance(value, dict):
-        return _serialize_yaml_dict_value(value, prefix, indent)
-    if isinstance(value, list):
-        return _serialize_yaml_list_value(value, prefix, indent)
-    return f"{prefix}{_serialize_yaml_scalar(value)}"
-
-
-def _serialize_yaml_dict_value(value: dict[str, Any], prefix: str, indent: int) -> str:
-    if not value:
-        return f"{prefix}{{}}"
-    lines: list[str] = []
-    for k, v in value.items():
-        if isinstance(v, (dict, list)):
-            lines.append(f"{prefix}{k}:")
-            lines.append(_serialize_yaml_value(v, indent=indent + 1))
-        else:
-            lines.append(f"{prefix}{k}: {_serialize_yaml_scalar(v)}")
-    return "\n".join(lines)
-
-
-def _serialize_yaml_list_value(value: list[Any], prefix: str, indent: int) -> str:
-    if not value:
-        return f"{prefix}[]"
-    lines: list[str] = []
-    for item in value:
-        if isinstance(item, dict):
-            first = True
-            for k, v in item.items():
-                item_prefix = f"{prefix}- " if first else f"{prefix}  "
-                if isinstance(v, (dict, list)):
-                    lines.append(f"{item_prefix}{k}:")
-                    lines.append(_serialize_yaml_value(v, indent=indent + 2))
-                else:
-                    lines.append(f"{item_prefix}{k}: {_serialize_yaml_scalar(v)}")
-                first = False
-        else:
-            lines.append(f"{prefix}- {_serialize_yaml_scalar(item)}")
-    return "\n".join(lines)
-
-
-def _serialize_yaml_scalar(value: Any) -> str:
-    """Serialize a scalar Python value to its YAML representation."""
-    if value is None:
-        return "null"
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    if isinstance(value, str):
-        return _serialize_yaml_string(value)
-    return str(value)
-
-
-def _serialize_yaml_string(value: str) -> str:
-    _YAML_KEYWORDS = {"true", "false", "null", "yes", "no", "on", "off"}
-    needs_quoting = (
-        value == ""
-        or value in _YAML_KEYWORDS
-        or value.startswith(("{", "[", "'", '"', "*", "&", "!", "|", ">"))
-        or "#" in value
-        or ": " in value
-        or value.endswith(":")
-    )
-    if needs_quoting:
-        escaped = value.replace("'", "''")
-        return f"'{escaped}'"
-    return value

@@ -19,8 +19,8 @@ repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:
-      - id: validate-pyproject
-        additional_dependencies: ['validate-pyproject-schema-store[all]']
+    - id: validate-pyproject
+      additional_dependencies: ['validate-pyproject-schema-store[all]']
 """
         (tmp_path / ".pre-commit-config.yaml").write_text(content_str)
 

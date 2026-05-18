@@ -32,7 +32,7 @@ class PreCommitConfigYAMLManager(YAMLFileManager):
         """
         doc = self.get()
         try:
-            content = doc.doc[()]
+            content = doc.doc.root
         except yamltrip.QueryError:
             content = {}
 

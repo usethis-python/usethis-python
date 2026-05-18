@@ -92,14 +92,14 @@ repos:
 repos:
   - repo: foo
     hooks:
-      - id: bar
+    - id: bar
   - repo: local
     hooks:
-      - id: deptry
-        name: deptry
-        always_run: true
-        entry: uv run --frozen deptry src
-        language: system
+    - id: deptry
+      name: deptry
+      always_run: true
+      entry: uv run --frozen deptry src
+      language: system
 """
         )
         out, err = capfd.readouterr()
@@ -118,10 +118,10 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
-        name: Placeholder - add your own hooks!
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: placeholder
+      name: Placeholder - add your own hooks!
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
         )
         out, err = capfd.readouterr()
@@ -265,11 +265,11 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.0
     hooks:
-      - id: ruff-check
-        args: [--fix]
-        priority: 0
-      - id: ruff-format
-        priority: 0
+    - id: ruff-check
+      args: [--fix]
+      priority: 0
+    - id: ruff-format
+      priority: 0
 """)
 
         # Act
@@ -309,8 +309,8 @@ repos:
     rev: v0.14.0
     custom_repo_key: 42
     hooks:
-      - id: ruff-format
-        custom_hook_key: true
+    - id: ruff-format
+      custom_hook_key: true
 """)
 
         # Act
@@ -465,10 +465,10 @@ class TestRemoveHook:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
-        name: Placeholder - add your own hooks!
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: placeholder
+      name: Placeholder - add your own hooks!
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
         )
 
@@ -489,10 +489,10 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
-        name: Placeholder - add your own hooks!
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: placeholder
+      name: Placeholder - add your own hooks!
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
         )
 
@@ -502,16 +502,16 @@ repos:
 repos:
   - repo: local # comment
     hooks:    
-      - id: bar
-        name: bar
-        entry: bar
-        language: python
+    - id: bar
+      name: bar
+      entry: bar
+      language: python
   - repo: local # other comment
     hooks:
-      - id: baz
-        name: baz
-        entry: baz
-        language: python
+    - id: baz
+      name: baz
+      entry: baz
+      language: python
 """
         )
         with change_cwd(tmp_path), files_manager():
@@ -521,10 +521,10 @@ repos:
 repos:
   - repo: local # other comment
     hooks:
-      - id: baz
-        name: baz
-        entry: baz
-        language: python
+    - id: baz
+      name: baz
+      entry: baz
+      language: python
 """
         )
 
@@ -547,8 +547,8 @@ repos:
         )
 
     @pytest.mark.xfail(
-        reason="yamltrip lacks complex-value upsert/replace; "
-        "rebuild loses comments. See https://github.com/usethis-python/yamltrip/issues/18"
+        reason="Partial hook removal triggers full repos rebuild via Pydantic model, "
+        "which loses inline comments. See https://github.com/usethis-python/yamltrip/issues/18"
     )
     def test_partial_removal_preserves_comments(self, tmp_path: Path):
         """Removing one hook from a multi-hook repo should preserve comments."""
@@ -557,14 +557,14 @@ repos:
 repos:
   - repo: local # important comment
     hooks:
-      - id: foo
-        name: foo
-        entry: foo
-        language: python
-      - id: bar
-        name: bar
-        entry: bar
-        language: python
+    - id: foo
+      name: foo
+      entry: foo
+      language: python
+    - id: bar
+      name: bar
+      entry: bar
+      language: python
 """
         )
         with change_cwd(tmp_path), files_manager():
@@ -576,10 +576,10 @@ repos:
 repos:
   - repo: local # important comment
     hooks:
-      - id: bar
-        name: bar
-        entry: bar
-        language: python
+    - id: bar
+      name: bar
+      entry: bar
+      language: python
 """
         )
 
@@ -597,7 +597,7 @@ class TestGetHookNames:
 repos:
   - repo: foo
     hooks:
-      - id: bar
+    - id: bar
 """
         )
         with change_cwd(tmp_path), files_manager():
@@ -609,8 +609,8 @@ repos:
 repos:
   - repo: foo
     hooks:
-      - id: bar
-      - id: baz
+    - id: bar
+    - id: baz
 """
         )
         with change_cwd(tmp_path), files_manager():
@@ -667,10 +667,10 @@ class TestAddPlaceholderHook:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
-        name: Placeholder - add your own hooks!
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: placeholder
+      name: Placeholder - add your own hooks!
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
         )
 

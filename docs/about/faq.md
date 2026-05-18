@@ -20,7 +20,7 @@ Some configuration is necessary to ensure smooth integrations with other tools. 
 
 When modifying files like `pyproject.toml` and `.pre-commit-config.yaml`, usethis attempts to preserve the original formatting as much as possible.
 
-However, there are some known limitations for YAML files. The `yamltrip` library is used for round-trip YAML editing, but there may be edge cases. If you find that usethis has modified your files in a way that you did not expect, please open an issue on the usethis GitHub repository.
+However, there are some known limitations for YAML files. The `yamltrip` library is used for round-trip YAML editing, and existing formatting is preserved when files are read and written back. When usethis _inserts new content_ (e.g. adding a hook to `.pre-commit-config.yaml`), it uses 4-space indentation for sequence items. If you find that usethis has modified your files in a way that you did not expect, please open an issue on the usethis GitHub repository.
 
 ## Is this a Python port of usethis in R?
 

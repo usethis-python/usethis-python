@@ -546,10 +546,6 @@ repos:
 """
         )
 
-    @pytest.mark.xfail(
-        reason="Partial hook removal triggers full repos rebuild via Pydantic model, "
-        "which loses inline comments. See https://github.com/usethis-python/yamltrip/issues/18"
-    )
     def test_partial_removal_preserves_comments(self, tmp_path: Path):
         """Removing one hook from a multi-hook repo should preserve comments."""
         (tmp_path / ".pre-commit-config.yaml").write_text(

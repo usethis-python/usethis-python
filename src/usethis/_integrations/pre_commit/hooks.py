@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
+from usethis._file.yaml.io_ import YAMLDocument
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.init import (
     ensure_pre_commit_config_exists,
@@ -209,48 +210,45 @@ def remove_hook(hook_id: str) -> None:
     mgr = PreCommitConfigYAMLManager()
     model = mgr.model_validate()
 
-    # Read the raw repos from the document for surgical removal.
-    # N.B. index alignment with model.repos is safe because model_validate() uses
-    # extra="allow" and does not filter or reorder the repos list.
-    # The `or []` handles a null repos key (e.g. "repos:" with no value).
-    raw_repos: list[dict] = mgr.get().doc["repos"] or []
+    # Work directly with the yamltrip document for surgical removal that
+    # preserves comments and formatting.
+    yaml_doc = mgr.get()
+    doc = yaml_doc.doc
+    raw_repos: list[dict] = doc["repos"] or []
 
-    repos_to_remove: list[dict] = []
-    repos_modified: bool = False
-
-    # search across the repos for any hooks with matching ID
-    for i, repo in enumerate(model.repos):
+    # Iterate in reverse so index shifts from removal don't affect later indices.
+    for i in range(len(model.repos) - 1, -1, -1):
+        repo = model.repos[i]
         if isinstance(repo, schema.MetaRepo) or repo.hooks is None:
             continue
 
-        had_hooks = len(repo.hooks)
-        for hook in list(repo.hooks):
-            if hook_ids_are_equivalent(hook.id, hook_id):
-                tick_print(f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'.")
-                repo.hooks.remove(hook)
-
-        if not repo.hooks:
-            # Repo has no hooks — mark for removal using raw dict.
-            repos_to_remove.append(raw_repos[i])
-            model.repos.remove(repo)
-        elif len(repo.hooks) < had_hooks:
-            # Repo still has hooks but was modified.
-            repos_modified = True
-
-    if not model.repos:
-        # All repos removed — add placeholder.
-        model.repos.append(_get_placeholder_repo_config())
-        repos_modified = True
-
-    if repos_modified:
-        # Full rebuild required — serialize all repos from the Pydantic model.
-        repos_list = [
-            fancy_model_dump(r, reference={}, order_by_cls={}) for r in model.repos
+        hooks_to_remove = [
+            raw_repos[i]["hooks"][j]
+            for j, hook in enumerate(repo.hooks)
+            if hook_ids_are_equivalent(hook.id, hook_id)
         ]
-        mgr.set_value(keys=["repos"], value=repos_list, exists_ok=True)
-    elif repos_to_remove:
-        # Only whole repos removed — use surgical removal to preserve comments.
-        mgr.remove_from_list(keys=["repos"], values=repos_to_remove)
+
+        for hook_dict in hooks_to_remove:
+            hook_display_id = hook_dict.get("id", hook_id)
+            tick_print(
+                f"Removing hook '{hook_display_id}' from '.pre-commit-config.yaml'."
+            )
+            doc = doc.remove_from_list("repos", i, "hooks", values=[hook_dict])
+
+        if hooks_to_remove and len(repo.hooks) == len(hooks_to_remove):
+            # All hooks removed — remove the entire repo entry.
+            repo_dict = doc["repos"][i]
+            doc = doc.remove_from_list("repos", values=[repo_dict])
+
+    # If no repos remain, add a placeholder.
+    remaining_repos = doc["repos"]
+    if not remaining_repos:
+        placeholder = fancy_model_dump(
+            _get_placeholder_repo_config(), reference={}, order_by_cls={}
+        )
+        doc = doc.upsert("repos", value=[placeholder])
+
+    mgr.commit(YAMLDocument(doc=doc))
 
 
 def get_hook_ids() -> list[str]:

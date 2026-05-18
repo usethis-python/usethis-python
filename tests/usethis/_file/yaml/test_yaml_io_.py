@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pytest
@@ -688,6 +689,113 @@ outer: value
                 ):
                     manager.set_value(keys=["key"], value="new_value", exists_ok=False)
 
+        def test_no_keys_non_mapping_value(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").touch()
+
+            with (
+                change_cwd(tmp_path),
+                MyYAMLFileManager() as manager,
+                pytest.raises(
+                    UnexpectedYAMLValueError,
+                    match=r"Root level configuration must be a mapping.",
+                ),
+            ):
+                # Act, Assert
+                manager.set_value(keys=[], value="not_a_dict")
+
+        def test_no_keys_already_exists(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueAlreadySetError,
+                    match=r"Configuration value 'key' is already set.",
+                ):
+                    manager.set_value(keys=[], value={"key": "other"}, exists_ok=False)
+
+        def test_keys_on_empty_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(keys=["key"], value="value", exists_ok=False)
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"key": "value"}
+
+        def test_regex_key_raises(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    NotImplementedError,
+                    match=r"Regex-based keys are not currently supported",
+                ):
+                    manager.set_value(
+                        keys=[re.compile("key")], value="val", exists_ok=False
+                    )
+
+        def test_complex_value_on_empty_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(
+                    keys=["items"],
+                    value=["a", "b"],
+                    exists_ok=False,
+                )
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"items": ["a", "b"]}
+
     class TestDelItem:
         def test_delete_single_item(self, tmp_path: Path):
             # Arrange
@@ -833,6 +941,46 @@ outer: value
                 assert isinstance(manager._content, YAMLDocument)
                 assert manager._content.doc.dumps().strip() == ""
 
+        def test_delete_root_empty_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueMissingError,
+                    match=r"Configuration value '' is missing.",
+                ):
+                    del manager[[]]
+
+        def test_delete_root_scalar_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("hello")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueMissingError,
+                    match=r"Configuration value '' is missing.",
+                ):
+                    del manager[[]]
+
     class TestExtendList:
         def test_success(self, tmp_path: Path):
             # Arrange
@@ -953,6 +1101,86 @@ outer:
                 assert manager._content.doc.root == {
                     "outer": {"inner": {"items": ["item1", "item2", "item3", "item4"]}}
                 }
+
+        def test_empty_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(keys=["items"], values=["a", "b"])
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"items": ["a", "b"]}
+
+        def test_flow_sequence_fallback(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("items: [a, b]\n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(keys=["items"], values=["c"])
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"items": ["a", "b", "c"]}
+
+        def test_extend_non_list_value(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("items: hello\n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(keys=["items"], values=["c"])
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"items": ["c"]}
+
+        def test_scalar_root_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("hello")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    UnexpectedYAMLValueError,
+                    match=r"Root level configuration must be a mapping.",
+                ):
+                    manager.extend_list(keys=["key"], values=["value"])
 
     class TestRemoveFromList:
         def test_success(self, tmp_path: Path):
@@ -1117,6 +1345,42 @@ outer:
                 assert manager._content.doc.root == {
                     "outer": {"inner": {"items": "item1"}}
                 }
+
+        def test_scalar_root_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("hello")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    UnexpectedYAMLValueError,
+                    match=r"Root level configuration must be a mapping.",
+                ):
+                    manager.remove_from_list(keys=["key"], values=["value"])
+
+        def test_empty_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act — empty doc has no keys, so remove_from_list is a no-op
+                manager.remove_from_list(keys=["key"], values=["value"])
 
 
 class TestEditYaml:

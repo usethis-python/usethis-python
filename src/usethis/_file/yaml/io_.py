@@ -212,10 +212,7 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         else:
             try:
                 doc = doc.prune_remove(*keys)
-            except yamltrip.QueryError:
-                msg = f"Configuration value '{print_keys(keys)}' is missing."
-                raise YAMLValueMissingError(msg) from None
-            except yamltrip.PatchError:
+            except (yamltrip.QueryError, yamltrip.PatchError):
                 msg = f"Configuration value '{print_keys(keys)}' is missing."
                 raise YAMLValueMissingError(msg) from None
 

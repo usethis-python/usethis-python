@@ -18,9 +18,9 @@ class TestTachTool:
 repos:
   - repo: local
     hooks:
-      - id: tach
-        name: tach
-        entry: uv run --frozen --offline tach check
+    - id: tach
+      name: tach
+      entry: uv run --frozen --offline tach check
 """)
 
             # Act
@@ -40,9 +40,9 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: tach
-        name: tach
-        entry: uv run --frozen --offline tach check
+    - id: tach
+      name: tach
+      entry: uv run --frozen --offline tach check
 """)
 
             # Act

@@ -216,7 +216,7 @@ class TestFancyModelDump:
             # Assert
             assert isinstance(output, dict)
             assert isinstance(output["mim"], dict)
-            assert list(output["mim"].keys()) == ["y", "x"]  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
+            assert list(output["mim"].keys()) == ["y", "x"]
 
     class TestReference:
         def test_no_reference_drop_default(self):
@@ -240,10 +240,10 @@ class TestFancyModelDump:
                 y: float = 2.0
 
             mm = MyModel(x=1)
-            ref = {"x": 0, "y": 2.0}
+            ref: dict[str, int | float] = {"x": 0, "y": 2.0}
 
             # Act
-            output = fancy_model_dump(mm, reference=ref)
+            output = fancy_model_dump(mm, reference=ref)  # pyright: ignore[reportArgumentType]
 
             # Assert
             assert output == {"x": 1, "y": 2.0}
@@ -333,10 +333,10 @@ class TestFancyModelDump:
                 y: float = 2.0
 
             mm = MyModel(x=1, **{"priority": 0})
-            ref = {"x": 0, "y": 2.0, "priority": 0}
+            ref: dict[str, int | float] = {"x": 0, "y": 2.0, "priority": 0}
 
             # Act
-            output = fancy_model_dump(mm, reference=ref)
+            output = fancy_model_dump(mm, reference=ref)  # pyright: ignore[reportArgumentType]
 
             # Assert
             assert output == {"x": 1, "y": 2.0, "priority": 0}

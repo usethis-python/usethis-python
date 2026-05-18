@@ -581,7 +581,7 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.0.1
     hooks:
-      - id: ruff-check
+    - id: ruff-check
 """)
 
             with (
@@ -629,7 +629,7 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.0.1
     hooks:
-      - id: ruff-format
+    - id: ruff-format
 """)
 
             with (

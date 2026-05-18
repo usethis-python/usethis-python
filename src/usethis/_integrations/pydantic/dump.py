@@ -57,7 +57,7 @@ def fancy_model_dump(
             model, reference=reference, order_by_cls=order_by_cls
         )
     else:
-        return model
+        return model  # pyright: ignore[reportUnreachable]
 
 
 def _fancy_model_dump_list(
@@ -85,7 +85,11 @@ def _fancy_model_dump_list(
 
         # We don't use None as the fillvalue because it could be confused with the
         # case where the content itself is None.
-        dump = fancy_model_dump(value, reference=ref, order_by_cls=order_by_cls)
+        dump = fancy_model_dump(
+            value,  # pyright: ignore[reportArgumentType]
+            reference=ref,  # pyright: ignore[reportArgumentType]
+            order_by_cls=order_by_cls,
+        )
         x.append(dump)
     return x
 

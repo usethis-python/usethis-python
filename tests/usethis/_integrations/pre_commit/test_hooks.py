@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from ruamel.yaml import YAML
+import yamltrip
 
 from _test import change_cwd, hooks_are_equivalent
 from usethis._config_file import files_manager
@@ -92,14 +92,14 @@ repos:
 repos:
   - repo: foo
     hooks:
-      - id: bar
+    - id: bar
   - repo: local
     hooks:
-      - id: deptry
-        name: deptry
-        always_run: true
-        entry: uv run --frozen deptry src
-        language: system
+    - id: deptry
+      name: deptry
+      always_run: true
+      entry: uv run --frozen deptry src
+      language: system
 """
         )
         out, err = capfd.readouterr()
@@ -118,10 +118,10 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
-        name: Placeholder - add your own hooks!
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: placeholder
+      name: Placeholder - add your own hooks!
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
         )
         out, err = capfd.readouterr()
@@ -265,11 +265,11 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.0
     hooks:
-      - id: ruff-check
-        args: [--fix]
-        priority: 0
-      - id: ruff-format
-        priority: 0
+    - id: ruff-check
+      args: [--fix]
+      priority: 0
+    - id: ruff-format
+      priority: 0
 """)
 
         # Act
@@ -290,8 +290,7 @@ repos:
             )
 
         # Assert - parse YAML to verify structure
-        yaml = YAML()
-        parsed = yaml.load((tmp_path / ".pre-commit-config.yaml").read_text())
+        parsed = yamltrip.loads((tmp_path / ".pre-commit-config.yaml").read_text())
         assert parsed["minimum_prek_version"] == "0.2.23"
         ruff_repo = parsed["repos"][0]
         assert ruff_repo["hooks"][0]["priority"] == 0
@@ -310,8 +309,8 @@ repos:
     rev: v0.14.0
     custom_repo_key: 42
     hooks:
-      - id: ruff-format
-        custom_hook_key: true
+    - id: ruff-format
+      custom_hook_key: true
 """)
 
         # Act
@@ -331,8 +330,7 @@ repos:
             )
 
         # Assert - parse YAML to verify extra keys are at correct levels
-        yaml = YAML()
-        parsed = yaml.load((tmp_path / ".pre-commit-config.yaml").read_text())
+        parsed = yamltrip.loads((tmp_path / ".pre-commit-config.yaml").read_text())
         assert parsed["custom_top_level_key"] == "some_value"
         ruff_repo = parsed["repos"][0]
         assert ruff_repo["custom_repo_key"] == 42
@@ -467,10 +465,10 @@ class TestRemoveHook:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
-        name: Placeholder - add your own hooks!
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: placeholder
+      name: Placeholder - add your own hooks!
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
         )
 
@@ -491,10 +489,10 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
-        name: Placeholder - add your own hooks!
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: placeholder
+      name: Placeholder - add your own hooks!
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
         )
 
@@ -504,16 +502,16 @@ repos:
 repos:
   - repo: local # comment
     hooks:    
-      - id: bar
-        name: bar
-        entry: bar
-        language: python
+    - id: bar
+      name: bar
+      entry: bar
+      language: python
   - repo: local # other comment
     hooks:
-      - id: baz
-        name: baz
-        entry: baz
-        language: python
+    - id: baz
+      name: baz
+      entry: baz
+      language: python
 """
         )
         with change_cwd(tmp_path), files_manager():
@@ -523,10 +521,10 @@ repos:
 repos:
   - repo: local # other comment
     hooks:
-      - id: baz
-        name: baz
-        entry: baz
-        language: python
+    - id: baz
+      name: baz
+      entry: baz
+      language: python
 """
         )
 
@@ -548,6 +546,43 @@ repos:
 """
         )
 
+    @pytest.mark.xfail(
+        reason="Partial hook removal triggers full repos rebuild via Pydantic model, "
+        "which loses inline comments. See https://github.com/usethis-python/yamltrip/issues/18"
+    )
+    def test_partial_removal_preserves_comments(self, tmp_path: Path):
+        """Removing one hook from a multi-hook repo should preserve comments."""
+        (tmp_path / ".pre-commit-config.yaml").write_text(
+            """\
+repos:
+  - repo: local # important comment
+    hooks:
+    - id: foo
+      name: foo
+      entry: foo
+      language: python
+    - id: bar
+      name: bar
+      entry: bar
+      language: python
+"""
+        )
+        with change_cwd(tmp_path), files_manager():
+            remove_hook("foo")
+
+        # The inline comment on the repo should be preserved after removing a hook.
+        assert (tmp_path / ".pre-commit-config.yaml").read_text() == (
+            """\
+repos:
+  - repo: local # important comment
+    hooks:
+    - id: bar
+      name: bar
+      entry: bar
+      language: python
+"""
+        )
+
 
 class TestGetHookNames:
     def test_empty(self, tmp_path: Path):
@@ -562,7 +597,7 @@ class TestGetHookNames:
 repos:
   - repo: foo
     hooks:
-      - id: bar
+    - id: bar
 """
         )
         with change_cwd(tmp_path), files_manager():
@@ -574,8 +609,8 @@ repos:
 repos:
   - repo: foo
     hooks:
-      - id: bar
-      - id: baz
+    - id: bar
+    - id: baz
 """
         )
         with change_cwd(tmp_path), files_manager():
@@ -632,10 +667,10 @@ class TestAddPlaceholderHook:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
-        name: Placeholder - add your own hooks!
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: placeholder
+      name: Placeholder - add your own hooks!
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
         )
 

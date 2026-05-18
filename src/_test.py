@@ -239,11 +239,8 @@ def get_github_latest_tag(owner: str, repo: str) -> str:
 @contextmanager
 def edit_yaml(
     yaml_path: Path,
-    *,
-    guess_indent: bool = True,
 ) -> Generator[YAMLDocument, None, None]:
     """A context manager to modify a YAML file in-place, with managed read and write."""
-    del guess_indent  # yamltrip preserves indentation automatically
     content = yaml_path.read_text(encoding="utf-8")
     doc = yamltrip.loads(content)
     yaml_document = YAMLDocument(doc=doc)
@@ -259,11 +256,8 @@ def edit_yaml(
 @contextmanager
 def read_yaml(
     yaml_path: Path,
-    *,
-    guess_indent: bool = True,
 ) -> Generator[YAMLDocument, None, None]:
     """A context manager to read a YAML file."""
-    del guess_indent  # yamltrip preserves indentation automatically
     try:
         content = yaml_path.read_text(encoding="utf-8")
         doc = yamltrip.loads(content)

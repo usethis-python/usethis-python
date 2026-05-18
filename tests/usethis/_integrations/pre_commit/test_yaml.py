@@ -45,6 +45,7 @@ repos:
 
         # Assert
         content = (tmp_path / ".pre-commit-config.yaml").read_text()
+        assert content == "repos:\n  []\n"
         doc = yamltrip.loads(content)
         assert doc[()] == {"repos": []}
 

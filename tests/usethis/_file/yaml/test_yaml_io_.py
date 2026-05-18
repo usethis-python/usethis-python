@@ -1696,7 +1696,7 @@ x:
         path.write_text(original)
 
         # Act
-        with change_cwd(tmp_path), edit_yaml(path, guess_indent=False) as _:
+        with change_cwd(tmp_path), edit_yaml(path) as _:
             pass
 
         # Assert - file should not be modified since no structural changes were made.

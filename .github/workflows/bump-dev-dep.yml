@@ -13,8 +13,10 @@ on:
                     - black
                     - cryptography
                     - gitpython
+                    - idna
                     - poetry
                     - pygments
+                    - pymdown-extensions
                     - pytest
                     - requests
                     - urllib

@@ -548,6 +548,75 @@ repos:
 """
         )
 
+    def test_duplicate_hooks_in_same_repo(self, tmp_path: Path):
+        """Removing a hook that appears multiple times in the same repo."""
+        (tmp_path / ".pre-commit-config.yaml").write_text(
+            """\
+repos:
+  - repo: local
+    hooks:
+      - id: foo
+        name: foo1
+        entry: foo1
+        language: python
+      - id: foo
+        name: foo2
+        entry: foo2
+        language: python
+      - id: bar
+        name: bar
+        entry: bar
+        language: python
+"""
+        )
+        with change_cwd(tmp_path), files_manager():
+            remove_hook("foo")
+        assert (tmp_path / ".pre-commit-config.yaml").read_text() == (
+            """\
+repos:
+  - repo: local
+    hooks:
+      - id: bar
+        name: bar
+        entry: bar
+        language: python
+"""
+        )
+
+    def test_multiple_repos_become_empty(self, tmp_path: Path):
+        """Removing a hook that is the only hook in multiple repos."""
+        (tmp_path / ".pre-commit-config.yaml").write_text(
+            """\
+repos:
+  - repo: local
+    hooks:
+      - id: foo
+        name: foo1
+        entry: foo1
+        language: python
+  - repo: local
+    hooks:
+      - id: foo
+        name: foo2
+        entry: foo2
+        language: python
+"""
+        )
+        with change_cwd(tmp_path), files_manager():
+            remove_hook("foo")
+        assert (
+            (tmp_path / ".pre-commit-config.yaml").read_text()
+            == """\
+repos:
+  - repo: local
+    hooks:
+      - id: placeholder
+        name: Placeholder - add your own hooks!
+        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+        language: system
+"""
+        )
+
 
 class TestGetHookNames:
     def test_empty(self, tmp_path: Path):

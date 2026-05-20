@@ -206,11 +206,11 @@ def remove_hook(hook_id: str) -> None:
     model = mgr.model_validate()
 
     # search across the repos for any hooks with matching ID
-    for repo in model.repos:
+    for repo in list(model.repos):
         if isinstance(repo, schema.MetaRepo) or repo.hooks is None:
             continue
 
-        for hook in repo.hooks:
+        for hook in list(repo.hooks):
             if hook_ids_are_equivalent(hook.id, hook_id):
                 tick_print(f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'.")
                 repo.hooks.remove(hook)

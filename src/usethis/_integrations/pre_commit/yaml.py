@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yamltrip
 from pydantic import ValidationError
 from typing_extensions import override
 
@@ -31,10 +30,7 @@ class PreCommitConfigYAMLManager(YAMLFileManager):
             PreCommitConfigYAMLConfigError: If validation fails.
         """
         doc = self.get()
-        try:
-            content = doc.doc.root
-        except yamltrip.QueryError:
-            content = {}
+        content = doc.doc.get(default={})
 
         if isinstance(content, dict) and not content:
             content = {"repos": []}

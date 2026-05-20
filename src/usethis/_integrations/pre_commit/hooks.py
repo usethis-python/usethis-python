@@ -102,16 +102,66 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
 
         predecessor = get_predecessor(result.solution, hook_config.id)
 
-        model.repos = insert_repo(
-            repo_to_insert=repo,
-            existing_repos=model.repos,
-            predecessor=predecessor,
+        # Find the insertion index and surgically insert/remove placeholder.
+        yaml_doc = mgr.get()
+        doc = yaml_doc.doc
+
+        insert_idx, placeholder_idx = _find_insert_position(
+            model.repos, predecessor
         )
 
-        repos_list = [
-            fancy_model_dump(r, reference={}, order_by_cls={}) for r in model.repos
-        ]
-        mgr.set_value(keys=["repos"], value=repos_list, exists_ok=True)
+        # Remove the placeholder if present (adjust insert index accordingly).
+        if placeholder_idx is not None:
+            repo_dict_to_remove = doc["repos", placeholder_idx]
+            doc = doc.remove_from_list("repos", values=[repo_dict_to_remove])
+            if placeholder_idx < insert_idx:
+                insert_idx -= 1
+
+        _report_adding_repo(repo)
+        repo_dict = fancy_model_dump(repo, reference={}, order_by_cls={})
+
+        # If the list is now empty (e.g. placeholder was the only item),
+        # use upsert since insert_at requires an existing sequence.
+        remaining = doc["repos"]
+        if not remaining:
+            doc = doc.upsert("repos", value=[repo_dict])
+        else:
+            doc = doc.insert("repos", index=insert_idx, value=repo_dict)
+        mgr.commit(YAMLDocument(doc=doc))
+
+
+def _find_insert_position(
+    repos: Collection[schema.LocalRepo | schema.UriRepo | schema.MetaRepo],
+    predecessor: str | None,
+) -> tuple[int, int | None]:
+    """Find the insertion index and optional placeholder index.
+
+    Returns:
+        A tuple of (insert_index, placeholder_index_or_None).
+    """
+    placeholder_idx: int | None = None
+    insert_idx = 0  # Default: insert at the beginning
+
+    for i, existing_repo in enumerate(repos):
+        existing_hooks = existing_repo.hooks or []
+
+        # Track the placeholder repo.
+        if (
+            len(existing_hooks) == 1
+            and hook_ids_are_equivalent(existing_hooks[0].id, _PLACEHOLDER_ID)
+        ):
+            placeholder_idx = i
+
+        if predecessor is None:
+            # No predecessor means insert at position 0.
+            continue
+
+        # Check if this repo contains the predecessor hook.
+        for hook in existing_hooks:
+            if hook_ids_are_equivalent(hook.id, predecessor):
+                insert_idx = i + 1
+
+    return insert_idx, placeholder_idx
 
 
 def insert_repo(

@@ -485,15 +485,7 @@ repos:
             remove_hook("bar")
         assert (
             (tmp_path / ".pre-commit-config.yaml").read_text()
-            == """\
-repos:
-  - repo: local
-    hooks:
-    - id: placeholder
-      name: Placeholder - add your own hooks!
-      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-      language: system
-"""
+            == "repos:\n  - repo: local\n    hooks:    \n    - id: placeholder\n      name: Placeholder - add your own hooks!\n      entry: uv run --isolated --frozen --offline python -c \"print('hello world!')\"\n      language: system\n"
         )
 
     def test_multihooks(self, tmp_path: Path):

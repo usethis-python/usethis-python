@@ -131,12 +131,12 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         keys = _validate_keys(item)
 
         doc = self.get().doc
-        if not keys:
-            # Empty/null document — treat root as an empty mapping.
-            return doc.get(default={})
         try:
             result = doc[tuple(keys)]
         except yamltrip.QueryError as err:
+            if not keys:
+                # Empty/null document — treat root as an empty mapping.
+                return {}
             msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise YAMLValueMissingError(msg) from err
         return result
@@ -169,7 +169,10 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
                 doc = _upsert_safe(doc, (k,), v, exists_ok=exists_ok)
         else:
             # Validate root is a mapping before attempting key insertion.
-            root = doc.get()
+            try:
+                root = doc.root
+            except yamltrip.QueryError:
+                root = None
             if root is not None and not isinstance(root, dict):
                 msg = "Root level configuration must be a mapping."
                 raise UnexpectedYAMLValueError(msg)
@@ -197,10 +200,11 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
 
         if not keys:
             # Delete root: remove all top-level keys.
-            root = doc.get()
-            if root is None:
+            try:
+                root = doc.root
+            except yamltrip.QueryError:
                 msg = f"Configuration value '{print_keys(keys)}' is missing."
-                raise YAMLValueMissingError(msg)
+                raise YAMLValueMissingError(msg) from None
             if not isinstance(root, dict):
                 msg = f"Configuration value '{print_keys(keys)}' is missing."
                 raise YAMLValueMissingError(msg)
@@ -226,7 +230,10 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         doc = yaml_doc.doc
 
         # Validate root is a mapping.
-        root = doc.get()
+        try:
+            root = doc.root
+        except yamltrip.QueryError:
+            root = None
         if root is not None and not isinstance(root, dict):
             msg = "Root level configuration must be a mapping."
             raise UnexpectedYAMLValueError(msg)
@@ -258,7 +265,10 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         doc = yaml_doc.doc
 
         # Validate root is a mapping.
-        root = doc.get()
+        try:
+            root = doc.root
+        except yamltrip.QueryError:
+            root = None
         if root is not None and not isinstance(root, dict):
             msg = "Root level configuration must be a mapping."
             raise UnexpectedYAMLValueError(msg)

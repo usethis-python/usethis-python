@@ -6,14 +6,12 @@ from typing import TYPE_CHECKING
 
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
-from usethis._file.yaml.io_ import YAMLDocument
 from usethis._integrations.pre_commit import schema
 from usethis._integrations.pre_commit.init import (
     ensure_pre_commit_config_exists,
 )
 from usethis._integrations.pre_commit.language import get_system_language
 from usethis._integrations.pre_commit.yaml import PreCommitConfigYAMLManager
-from usethis._integrations.pydantic.dump import fancy_model_dump
 from usethis._pipeweld.containers import series
 from usethis._pipeweld.func import Adder, get_predecessor
 
@@ -74,8 +72,8 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
         else:
             tick_print(f"Adding hook '{hook_config.id}' to '.pre-commit-config.yaml'.")
 
-        repo_dict = fancy_model_dump(repo, reference={}, order_by_cls={})
-        mgr.extend_list(keys=["repos"], values=[repo_dict])
+        model.repos.append(repo)
+        mgr.commit_model(model)
     else:
         # There are existing hooks so we need to know where to insert the new hook.
         # Use pipeweld to determine the correct insertion position based on the
@@ -102,66 +100,13 @@ def add_repo(repo: schema.LocalRepo | schema.UriRepo) -> None:
 
         predecessor = get_predecessor(result.solution, hook_config.id)
 
-        # Find the insertion index and surgically insert/remove placeholder.
-        yaml_doc = mgr.get()
-        doc = yaml_doc.doc
-
-        insert_idx, placeholder_idx = _find_insert_position(
-            model.repos, predecessor
+        model.repos = insert_repo(
+            repo_to_insert=repo,
+            existing_repos=model.repos,
+            predecessor=predecessor,
         )
 
-        # Remove the placeholder if present (adjust insert index accordingly).
-        if placeholder_idx is not None:
-            repo_dict_to_remove = doc["repos", placeholder_idx]
-            doc = doc.remove_from_list("repos", values=[repo_dict_to_remove])
-            if placeholder_idx < insert_idx:
-                insert_idx -= 1
-
-        _report_adding_repo(repo)
-        repo_dict = fancy_model_dump(repo, reference={}, order_by_cls={})
-
-        # If the list is now empty (e.g. placeholder was the only item),
-        # use upsert since insert_at requires an existing sequence.
-        remaining = doc["repos"]
-        if not remaining:
-            doc = doc.upsert("repos", value=[repo_dict])
-        else:
-            doc = doc.insert("repos", index=insert_idx, value=repo_dict)
-        mgr.commit(YAMLDocument(doc=doc))
-
-
-def _find_insert_position(
-    repos: Collection[schema.LocalRepo | schema.UriRepo | schema.MetaRepo],
-    predecessor: str | None,
-) -> tuple[int, int | None]:
-    """Find the insertion index and optional placeholder index.
-
-    Returns:
-        A tuple of (insert_index, placeholder_index_or_None).
-    """
-    placeholder_idx: int | None = None
-    insert_idx = 0  # Default: insert at the beginning
-
-    for i, existing_repo in enumerate(repos):
-        existing_hooks = existing_repo.hooks or []
-
-        # Track the placeholder repo.
-        if (
-            len(existing_hooks) == 1
-            and hook_ids_are_equivalent(existing_hooks[0].id, _PLACEHOLDER_ID)
-        ):
-            placeholder_idx = i
-
-        if predecessor is None:
-            # No predecessor means insert at position 0.
-            continue
-
-        # Check if this repo contains the predecessor hook.
-        for hook in existing_hooks:
-            if hook_ids_are_equivalent(hook.id, predecessor):
-                insert_idx = i + 1
-
-    return insert_idx, placeholder_idx
+        mgr.commit_model(model)
 
 
 def insert_repo(
@@ -260,45 +205,25 @@ def remove_hook(hook_id: str) -> None:
     mgr = PreCommitConfigYAMLManager()
     model = mgr.model_validate()
 
-    # Work directly with the yamltrip document for surgical removal that
-    # preserves comments and formatting.
-    yaml_doc = mgr.get()
-    doc = yaml_doc.doc
-    raw_repos: list[dict] = doc["repos"] or []
-
-    # Iterate in reverse so index shifts from removal don't affect later indices.
-    for i in range(len(model.repos) - 1, -1, -1):
-        repo = model.repos[i]
+    # search across the repos for any hooks with matching ID
+    for repo in model.repos:
         if isinstance(repo, schema.MetaRepo) or repo.hooks is None:
             continue
 
-        hooks_to_remove = [
-            raw_repos[i]["hooks"][j]
-            for j, hook in enumerate(repo.hooks)
-            if hook_ids_are_equivalent(hook.id, hook_id)
-        ]
+        for hook in repo.hooks:
+            if hook_ids_are_equivalent(hook.id, hook_id):
+                tick_print(f"Removing hook '{hook.id}' from '.pre-commit-config.yaml'.")
+                repo.hooks.remove(hook)
 
-        for hook_dict in hooks_to_remove:
-            hook_display_id = hook_dict.get("id", hook_id)
-            tick_print(
-                f"Removing hook '{hook_display_id}' from '.pre-commit-config.yaml'."
-            )
-            doc = doc.remove_from_list("repos", i, "hooks", values=[hook_dict])
+        # if repo has no hooks, remove it
+        if not repo.hooks:
+            model.repos.remove(repo)
 
-        if hooks_to_remove and len(repo.hooks) == len(hooks_to_remove):
-            # All hooks removed — remove the entire repo entry.
-            repo_dict = doc["repos"][i]
-            doc = doc.remove_from_list("repos", values=[repo_dict])
+    # If there are no more hooks, we should add a placeholder.
+    if not model.repos:
+        model.repos.append(_get_placeholder_repo_config())
 
-    # If no repos remain, add a placeholder.
-    remaining_repos = doc["repos"]
-    if not remaining_repos:
-        placeholder = fancy_model_dump(
-            _get_placeholder_repo_config(), reference={}, order_by_cls={}
-        )
-        doc = doc.upsert("repos", value=[placeholder])
-
-    mgr.commit(YAMLDocument(doc=doc))
+    mgr.commit_model(model)
 
 
 def get_hook_ids() -> list[str]:

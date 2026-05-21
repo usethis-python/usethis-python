@@ -1,11 +1,5 @@
 # Changelog
 
-## Unreleased
-
-### 🔧 Internal Changes
-
-- Replaced `ruamel.yaml` with `yamltrip` for YAML round-trip editing. Existing YAML files are preserved as-is on round-trip, but newly generated hook entries in `.pre-commit-config.yaml` now use 4-space sequence indentation (aligned with the `hooks:` key) instead of the previous 6-space style. Both are valid YAML.
-
 ## 0.22.0
 
 ### 🚀 New Features

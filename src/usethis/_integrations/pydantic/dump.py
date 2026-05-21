@@ -75,24 +75,18 @@ def _fancy_model_dump_list(
     if not isinstance(reference, list):
         reference = []
 
+    # We don't use None as the fillvalue because it could be confused with the
+    # case where the content itself is None.
     x: list[ModelRepresentation] = []
     for value, ref in zip_longest(model, reference, fillvalue=_FILL_VALUE):
-        if value is _FILL_VALUE:
-            # we've exhausted all the content.
+        if isinstance(value, _FillValue):
+            # We've exhausted all the content.
             break
-        if ref is _FILL_VALUE:
-            # there's still content but nothing to compare it against
-            ref = None
-
-        # We don't use None as the fillvalue because it could be confused with the
-        # case where the content itself is None.
-        # pyright can't narrow out _FillValue after the `is _FILL_VALUE` guards above,
-        # because it doesn't track type narrowing across break/reassignment in loops.
-        dump = fancy_model_dump(
-            value,  # pyright: ignore[reportArgumentType]
-            reference=ref,  # pyright: ignore[reportArgumentType]
-            order_by_cls=order_by_cls,
-        )
+        elif isinstance(ref, _FillValue):
+            # There's still content but nothing to compare it against.
+            dump = fancy_model_dump(value, reference=None, order_by_cls=order_by_cls)
+        else:
+            dump = fancy_model_dump(value, reference=ref, order_by_cls=order_by_cls)
         x.append(dump)
     return x
 

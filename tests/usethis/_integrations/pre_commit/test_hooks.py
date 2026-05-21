@@ -290,7 +290,7 @@ repos:
             )
 
         # Assert - parse YAML to verify structure
-        parsed = yamltrip.loads((tmp_path / ".pre-commit-config.yaml").read_text())
+        parsed = yamltrip.load(tmp_path / ".pre-commit-config.yaml")
         assert parsed["minimum_prek_version"] == "0.2.23"
         ruff_repo = parsed["repos"][0]
         assert ruff_repo["hooks"][0]["priority"] == 0
@@ -330,7 +330,7 @@ repos:
             )
 
         # Assert - parse YAML to verify extra keys are at correct levels
-        parsed = yamltrip.loads((tmp_path / ".pre-commit-config.yaml").read_text())
+        parsed = yamltrip.load(tmp_path / ".pre-commit-config.yaml")
         assert parsed["custom_top_level_key"] == "some_value"
         ruff_repo = parsed["repos"][0]
         assert ruff_repo["custom_repo_key"] == 42

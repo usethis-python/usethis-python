@@ -86,6 +86,8 @@ def _fancy_model_dump_list(
 
         # We don't use None as the fillvalue because it could be confused with the
         # case where the content itself is None.
+        # pyright can't narrow out _FillValue after the `is _FILL_VALUE` guards above,
+        # because it doesn't track type narrowing across break/reassignment in loops.
         dump = fancy_model_dump(
             value,  # pyright: ignore[reportArgumentType]
             reference=ref,  # pyright: ignore[reportArgumentType]

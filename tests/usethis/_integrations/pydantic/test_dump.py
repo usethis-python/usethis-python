@@ -379,7 +379,7 @@ class TestFancyModelDump:
             }
 
             # Act
-            output = fancy_model_dump(mm, reference=ref)  # pyright: ignore[reportArgumentType]
+            output = fancy_model_dump(mm, reference=ref)
 
             # Assert
             assert output == {"name": "test", "description": None}

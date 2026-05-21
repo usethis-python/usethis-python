@@ -5,7 +5,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-import yamltrip
 
 from _test import is_uv_python_available, read_yaml
 from usethis._file.yaml.errors import YAMLDecodeError
@@ -64,26 +63,6 @@ class TestIsUvPythonAvailable:
             patch("_test.subprocess.run", return_value=mock_result),
         ):
             assert is_uv_python_available("3.1") is False
-
-
-class TestEditYaml:
-    def test_writes_back_modified_content(self, tmp_path: Path):
-        path = tmp_path / "test.yaml"
-        path.write_text("key: value\n")
-
-        with yamltrip.edit(path) as editor:
-            editor.upsert("key", value="new_value")
-
-        assert path.read_text() == "key: new_value\n"
-
-    def test_no_write_when_unmodified(self, tmp_path: Path):
-        path = tmp_path / "test.yaml"
-        path.write_text("key: value\n")
-
-        with yamltrip.edit(path) as editor:
-            _ = editor.root
-
-        assert path.read_text() == "key: value\n"
 
 
 class TestReadYaml:

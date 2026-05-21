@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import yamltrip
 from pydantic import ValidationError
 from typing_extensions import override
 
@@ -49,9 +48,5 @@ class PreCommitConfigYAMLManager(YAMLFileManager):
             fancy_model_dump(r, reference={}, order_by_cls={}) for r in model.repos
         ]
         doc = self.get().doc
-        try:
-            doc = doc.sync("repos", value=repos_list)
-        except yamltrip.PatchError:
-            # Flow sequence (e.g. `repos: []`) — fall back to full replacement.
-            doc = doc.upsert("repos", value=repos_list)
+        doc = doc.sync("repos", value=repos_list)
         self.commit(YAMLDocument(doc=doc))

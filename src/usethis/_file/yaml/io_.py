@@ -241,14 +241,9 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         if tuple(keys) in doc:
             try:
                 doc = doc.extend_list(*keys, values=list(values))
-            except yamltrip.PatchError:
-                # Flow sequence or other issue — upsert the merged list.
-                existing = doc[tuple(keys)]
-                if isinstance(existing, list):
-                    new_list = existing + list(values)
-                else:
-                    new_list = list(values)
-                doc = _upsert_safe(doc, tuple(keys), new_list, exists_ok=True)
+            except yamltrip.NodeTypeError:
+                # Target is not a sequence: replace with the new values.
+                doc = _upsert_safe(doc, tuple(keys), list(values), exists_ok=True)
         else:
             doc = _upsert_safe(doc, tuple(keys), list(values), exists_ok=False)
 

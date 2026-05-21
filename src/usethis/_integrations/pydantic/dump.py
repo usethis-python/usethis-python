@@ -47,7 +47,7 @@ def fancy_model_dump(
         return _fancy_model_dump_dict(
             model, reference=reference, order_by_cls=order_by_cls
         )
-    elif isinstance(model, bool | int | float | str):
+    elif model is None or isinstance(model, bool | int | float | str):
         return model
     elif isinstance(model, RootModel):
         return fancy_model_dump(
@@ -128,7 +128,9 @@ def _fancy_model_dump_base_model(
     d: dict[str, ModelRepresentation] = {}
     for key, value in model:
         # The value for the reference (for recursion)
-        value_ref = _get_value_ref(reference, key=key)
+        raw_value_ref = _get_value_ref(reference, key=key)
+        ref_has_key = not isinstance(raw_value_ref, _FillValue)
+        value_ref = raw_value_ref if ref_has_key else None
 
         field_info = model.__class__.model_fields.get(key)
         if field_info is not None:
@@ -141,7 +143,7 @@ def _fancy_model_dump_base_model(
             # This is technically a limitation in what kind of diffs we can express in
             # the dump but it's a relatively minor one.
 
-            if value_ref is not None:
+            if ref_has_key:
                 ref_has_default = value_ref == default_value
             else:
                 ref_has_default = False
@@ -178,14 +180,15 @@ def _fancy_model_dump_base_model(
 
 def _get_value_ref(
     reference: ModelRepresentation | None, *, key: str
-) -> ModelRepresentation | None:
-    # The reference for the value (for recursion)
+) -> ModelRepresentation | _FillValue | None:
+    """Get the reference value for a key.
+
+    Returns _FILL_VALUE if the key is not found in the reference (distinguishing
+    from an actual None value).
+    """
     if isinstance(reference, dict | BaseModel):
         try:
-            value_ref = dict(reference)[key]  # ty: ignore[no-matching-overload]
+            return dict(reference)[key]  # ty: ignore[no-matching-overload]
         except KeyError:
-            value_ref = None
-    else:
-        value_ref = None
-
-    return value_ref
+            return _FILL_VALUE
+    return _FILL_VALUE

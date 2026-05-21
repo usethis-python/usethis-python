@@ -362,3 +362,39 @@ class TestFancyModelDump:
                 "items": [{"id": "test", "priority": 0}],
                 "minimum_prek_version": "0.2.23",
             }
+
+    class TestNoneValues:
+        def test_optional_field_with_none_value(self):
+            """None values from optional fields should be handled, not hit assert_never."""
+
+            # Arrange
+            class MyModel(BaseModel):
+                name: str
+                description: str | None = None
+
+            mm = MyModel(name="test", description=None)
+            ref: dict[str, ModelRepresentation | None] = {
+                "name": "old",
+                "description": None,
+            }
+
+            # Act
+            output = fancy_model_dump(mm, reference=ref)  # pyright: ignore[reportArgumentType]
+
+            # Assert
+            assert output == {"name": "test", "description": None}
+
+        def test_none_in_list(self):
+            """None values within lists should be handled."""
+
+            # Arrange
+            class MyModel(BaseModel):
+                items: list[str | None]
+
+            mm = MyModel(items=["a", None, "b"])
+
+            # Act
+            output = fancy_model_dump(mm)
+
+            # Assert
+            assert output == {"items": ["a", None, "b"]}

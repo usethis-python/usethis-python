@@ -61,8 +61,6 @@ if TYPE_CHECKING:
     from usethis._integrations.pre_commit import schema
     from usethis._tool.all_ import SupportedToolType
 
-from usethis._file.yaml.io_ import YAMLDocument
-
 
 @contextmanager
 def change_cwd(new_dir: Path) -> Generator[None, None, None]:
@@ -237,35 +235,17 @@ def get_github_latest_tag(owner: str, repo: str) -> str:
 
 
 @contextmanager
-def edit_yaml(
-    yaml_path: Path,
-) -> Generator[YAMLDocument, None, None]:
-    """A context manager to modify a YAML file in-place, with managed read and write."""
-    content = yaml_path.read_text(encoding="utf-8")
-    doc = yamltrip.loads(content)
-    yaml_document = YAMLDocument(doc=doc)
-
-    yield yaml_document
-
-    # Write back if the document was modified
-    new_content = yaml_document.doc.dumps()
-    if new_content != content:
-        yaml_path.write_text(new_content, encoding="utf-8")
-
-
-@contextmanager
 def read_yaml(
     yaml_path: Path,
-) -> Generator[YAMLDocument, None, None]:
+) -> Generator[yamltrip.Document, None, None]:
     """A context manager to read a YAML file."""
     try:
-        content = yaml_path.read_text(encoding="utf-8")
-        doc = yamltrip.loads(content)
+        doc = yamltrip.load(yaml_path)
     except yamltrip.ParseError as err:
         msg = f"Error reading '{yaml_path}':\n{err}"
         raise YAMLDecodeError(msg) from None
 
-    yield YAMLDocument(doc=doc)
+    yield doc
 
 
 def use_tool(  # noqa: PLR0912

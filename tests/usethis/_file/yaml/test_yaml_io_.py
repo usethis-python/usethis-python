@@ -5,7 +5,7 @@ import pytest
 import yamltrip
 from typing_extensions import override
 
-from _test import change_cwd, edit_yaml
+from _test import change_cwd
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
@@ -1390,18 +1390,18 @@ class TestEditYaml:
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc["hello"] is None
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor["hello"] is None
+                assert editor.document.dumps() == content
 
         def test_str(self, tmp_path: Path):
             content = "hello\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == "hello"
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == "hello"
+                assert editor.document.dumps() == content
 
         def test_literal_scalar_string(self, tmp_path: Path):
             content = """\
@@ -1411,9 +1411,9 @@ hello: |
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc["hello"] == "world\n"
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor["hello"] == "world\n"
+                assert editor.document.dumps() == content
 
         def test_folded_scalar_string(self, tmp_path: Path):
             content = """\
@@ -1423,99 +1423,99 @@ hello: >
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc["hello"] == "world\n"
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor["hello"] == "world\n"
+                assert editor.document.dumps() == content
 
         def test_int(self, tmp_path: Path):
             content = "3\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == 3
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == 3
+                assert editor.document.dumps() == content
 
         def test_float(self, tmp_path: Path):
             content = "3.14\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == 3.14
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == 3.14
+                assert editor.document.dumps() == content
 
         def test_scientific_notation(self, tmp_path: Path):
             content = "3.14e-2\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == pytest.approx(3.14e-2)
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == pytest.approx(3.14e-2)
+                assert editor.document.dumps() == content
 
         def test_hex(self, tmp_path: Path):
             content = "0x3\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == 3
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == 3
+                assert editor.document.dumps() == content
 
         def test_hex_caps(self, tmp_path: Path):
             content = "0xE\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == 14
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == 14
+                assert editor.document.dumps() == content
 
         def test_octal(self, tmp_path: Path):
             content = "0o3\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == 3
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == 3
+                assert editor.document.dumps() == content
 
         def test_binary(self, tmp_path: Path):
             content = "0b11\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == 3
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == 3
+                assert editor.document.dumps() == content
 
         def test_scalar_int(self, tmp_path: Path):
             content = "&anchor 3\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == 3
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == 3
+                assert editor.document.dumps() == content
 
         def test_bool(self, tmp_path: Path):
             content = "true\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root is True
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root is True
+                assert editor.document.dumps() == content
 
         def test_scalar_bool(self, tmp_path: Path):
             content = "&anchor true\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root is True
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root is True
+                assert editor.document.dumps() == content
 
         def test_seq(self, tmp_path: Path):
             content = """\
@@ -1525,9 +1525,9 @@ hello: >
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == ["one", "two"]
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == ["one", "two"]
+                assert editor.document.dumps() == content
 
         def test_set(self, tmp_path: Path):
             content = """\
@@ -1538,9 +1538,9 @@ hello: >
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
+            with yamltrip.edit(path) as editor:
                 # yamltrip may not interpret !!set; just verify round-trip
-                assert yaml_document.doc.dumps() == content
+                assert editor.document.dumps() == content
 
         def test_map(self, tmp_path: Path):
             content = """\
@@ -1549,9 +1549,9 @@ hello: world
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert yaml_document.doc.root == {"hello": "world"}
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert editor.root == {"hello": "world"}
+                assert editor.document.dumps() == content
 
         def test_ordered_map(self, tmp_path: Path):
             content = """\
@@ -1561,9 +1561,9 @@ hello: world
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
+            with yamltrip.edit(path) as editor:
                 # yamltrip may not interpret !!omap; just verify round-trip
-                assert yaml_document.doc.dumps() == content
+                assert editor.document.dumps() == content
 
         def test_tagged_scalar(self, tmp_path: Path):
             content = """\
@@ -1572,27 +1572,27 @@ hello: world
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
+            with yamltrip.edit(path) as editor:
                 # yamltrip preserves tags; just verify round-trip
-                assert yaml_document.doc.dumps() == content
+                assert editor.document.dumps() == content
 
         def test_time_stamp(self, tmp_path: Path):
             content = "2001-12-15T02:59:43.1Z\n"
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
+            with yamltrip.edit(path) as editor:
                 # yamltrip may return timestamps as strings; verify round-trip
-                assert yaml_document.doc.dumps() == content
+                assert editor.document.dumps() == content
 
         def test_empty_document(self, tmp_path: Path):
             content = ""
             path = tmp_path / "test.yaml"
             path.write_text(content)
 
-            with edit_yaml(path) as yaml_document:
-                assert isinstance(yaml_document, YAMLDocument)
-                assert yaml_document.doc.dumps() == content
+            with yamltrip.edit(path) as editor:
+                assert isinstance(editor, yamltrip.Editor)
+                assert editor.document.dumps() == content
 
     class TestRoundTrip:
         def test_single_quote_preserved(self, tmp_path: Path):
@@ -1604,7 +1604,7 @@ x: 'hi'
             )
 
             # Act
-            with change_cwd(tmp_path), edit_yaml(path) as _:
+            with change_cwd(tmp_path), yamltrip.edit(path) as _:
                 pass
 
             # Assert
@@ -1625,7 +1625,7 @@ x: 'hi'
             )
 
             # Act
-            with change_cwd(tmp_path), edit_yaml(path) as _:
+            with change_cwd(tmp_path), yamltrip.edit(path) as _:
                 pass
 
             # Assert
@@ -1646,7 +1646,7 @@ x: hi
             )
 
             # Act
-            with change_cwd(tmp_path), edit_yaml(path) as _:
+            with change_cwd(tmp_path), yamltrip.edit(path) as _:
                 pass
 
             # Assert
@@ -1670,7 +1670,7 @@ x:
             )
 
             # Act
-            with change_cwd(tmp_path), edit_yaml(path) as _:
+            with change_cwd(tmp_path), yamltrip.edit(path) as _:
                 pass
 
             # Assert
@@ -1696,7 +1696,7 @@ x:
         path.write_text(original)
 
         # Act
-        with change_cwd(tmp_path), edit_yaml(path) as _:
+        with change_cwd(tmp_path), yamltrip.edit(path) as _:
             pass
 
         # Assert - file should not be modified since no structural changes were made.
@@ -1718,7 +1718,7 @@ repos:
         with (
             change_cwd(tmp_path),
             pytest.raises(yamltrip.ParseError),
-            edit_yaml(tmp_path / "x.yml") as _,
+            yamltrip.edit(tmp_path / "x.yml") as _,
         ):
             pass
 
@@ -1735,6 +1735,6 @@ repos:
         with (
             change_cwd(tmp_path),
             pytest.raises(yamltrip.ParseError),
-            edit_yaml(tmp_path / "x.yml"),
+            yamltrip.edit(tmp_path / "x.yml"),
         ):
             pass

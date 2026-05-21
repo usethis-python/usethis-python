@@ -5,8 +5,9 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+import yamltrip
 
-from _test import edit_yaml, is_uv_python_available, read_yaml
+from _test import is_uv_python_available, read_yaml
 from usethis._file.yaml.errors import YAMLDecodeError
 
 
@@ -70,8 +71,8 @@ class TestEditYaml:
         path = tmp_path / "test.yaml"
         path.write_text("key: value\n")
 
-        with edit_yaml(path) as yaml_document:
-            yaml_document.doc = yaml_document.doc.upsert("key", value="new_value")
+        with yamltrip.edit(path) as editor:
+            editor.upsert("key", value="new_value")
 
         assert path.read_text() == "key: new_value\n"
 
@@ -79,8 +80,8 @@ class TestEditYaml:
         path = tmp_path / "test.yaml"
         path.write_text("key: value\n")
 
-        with edit_yaml(path) as yaml_document:
-            _ = yaml_document.doc.root
+        with yamltrip.edit(path) as editor:
+            _ = editor.root
 
         assert path.read_text() == "key: value\n"
 
@@ -90,8 +91,8 @@ class TestReadYaml:
         path = tmp_path / "test.yaml"
         path.write_text("key: value\n")
 
-        with read_yaml(path) as yaml_document:
-            assert yaml_document.doc.root == {"key": "value"}
+        with read_yaml(path) as doc:
+            assert doc.root == {"key": "value"}
 
     def test_parse_error(self, tmp_path: Path):
         path = tmp_path / "test.yaml"

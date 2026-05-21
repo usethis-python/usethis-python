@@ -153,6 +153,8 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         yaml_doc = self.get()
         doc = yaml_doc.doc
 
+        _ensure_root_is_mapping(doc)
+
         if not keys:
             # Root level: value must be a mapping.
             try:
@@ -168,14 +170,6 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
                     raise YAMLValueAlreadySetError(msg)
                 doc = _upsert_safe(doc, (k,), v, exists_ok=exists_ok)
         else:
-            # Validate root is a mapping before attempting key insertion.
-            try:
-                root = doc.root
-            except yamltrip.QueryError:
-                root = None
-            if root is not None and not isinstance(root, dict):
-                msg = "Root level configuration must be a mapping."
-                raise UnexpectedYAMLValueError(msg)
             if not exists_ok and tuple(keys) in doc:
                 msg = f"Configuration value '{print_keys(keys)}' is already set."
                 raise YAMLValueAlreadySetError(msg)
@@ -229,14 +223,7 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         yaml_doc = self.get()
         doc = yaml_doc.doc
 
-        # Validate root is a mapping.
-        try:
-            root = doc.root
-        except yamltrip.QueryError:
-            root = None
-        if root is not None and not isinstance(root, dict):
-            msg = "Root level configuration must be a mapping."
-            raise UnexpectedYAMLValueError(msg)
+        _ensure_root_is_mapping(doc)
 
         if tuple(keys) in doc:
             try:
@@ -259,14 +246,7 @@ class YAMLFileManager(KeyValueFileManager["YAMLDocument"], metaclass=ABCMeta):
         yaml_doc = self.get()
         doc = yaml_doc.doc
 
-        # Validate root is a mapping.
-        try:
-            root = doc.root
-        except yamltrip.QueryError:
-            root = None
-        if root is not None and not isinstance(root, dict):
-            msg = "Root level configuration must be a mapping."
-            raise UnexpectedYAMLValueError(msg)
+        _ensure_root_is_mapping(doc)
 
         if tuple(keys) not in doc:
             return
@@ -304,6 +284,16 @@ def _validate_keys(keys: Sequence[Key]) -> list[str]:
     return so_far_keys
 
 
+def _ensure_root_is_mapping(doc: yamltrip.Document) -> None:
+    """Raise UnexpectedYAMLValueError if the document root is not a mapping."""
+    root = doc.get()
+    if root is None:
+        return
+    if not isinstance(root, dict):
+        msg = "Root level configuration must be a mapping."
+        raise UnexpectedYAMLValueError(msg)
+
+
 def _upsert_safe(
     doc: yamltrip.Document,
     keys: tuple[str, ...],
@@ -326,9 +316,15 @@ def _upsert_safe(
         return doc.upsert(*keys, value=value)
     except yamltrip.PatchError as err:
         if not doc.source.strip():
-            # Empty document: bootstrap with a block-style seed and upsert.
-            # N.B. "_" is used as a throwaway sentinel key — safe because this
-            # branch only runs on truly empty documents.
+            # Empty document: bootstrap with a block-style seed then upsert.
+            # yamlpatch's Add operation requires an existing mapping node at the
+            # target route, so it cannot add keys to a truly empty document.
+            # We work around this by seeding with a throwaway sentinel key ("_")
+            # to create a root mapping, inserting the real content, then removing
+            # the sentinel.  The sentinel is safe because the document is empty
+            # (no user data to collide with).
+            # Tracking issue to remove this workaround:
+            # https://github.com/usethis-python/yamltrip/issues/34
             doc = yamltrip.loads("_: null\n")
             doc = doc.upsert(*keys, value=None)
             doc = doc.upsert(*keys, value=value)

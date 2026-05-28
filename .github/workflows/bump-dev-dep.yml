@@ -12,6 +12,7 @@ on:
                 options:
                     - black
                     - cryptography
+                    - dulwich
                     - gitpython
                     - idna
                     - poetry

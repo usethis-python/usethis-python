@@ -13,6 +13,8 @@
 
 ### 🐞 Bug Fixes
 
+- `usethis tool pyproject-fmt` now declares `tomli` as a development dependency on Python versions before 3.11, where it is required to parse TOML files. Since `pyproject-fmt` v2.22.0 the vendored `toml-fmt-common` imports `tomli` without declaring it, which previously caused a `ModuleNotFoundError` when running the tool.
+- Supporting dependencies that are shared between tools (such as `tomli`) are no longer treated as evidence that a tool is being used. Previously, because `tomli` was declared as a characteristic dependency of `codespell`, any other tool that also needed `tomli` (such as `pyproject-fmt`) could be incorrectly detected as in use, and vice versa.
 - The `--frozen` flag now works correctly with the Poetry backend by backing up and restoring the lockfile around `poetry add`/`remove` operations.
 - `usethis` now works correctly in directories with leading dots in the name (e.g. `.my-project`), which previously caused failures when inferring the project name.
 - Fixed incorrect CLI help text for the `status` command argument, which was showing the `docstyle` help text due to a copy-paste error.

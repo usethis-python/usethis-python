@@ -2354,8 +2354,18 @@ keep_full_version = true
                     )
                 )
                 out, _ = capfd.readouterr()
+                current_version = PythonVersion.from_interpreter()
+                needs_tomli = current_version.to_short_tuple() < (3, 11)
+                if needs_tomli:
+                    expected_dep_line = (
+                        "✔ Adding dependency 'tomli' to the 'dev' group in 'pyproject.toml'.\n"
+                        "☐ Install the dependency 'tomli'.\n"
+                    )
+                else:
+                    expected_dep_line = ""
                 assert out == (
-                    "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                    expected_dep_line
+                    + "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
                     "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
                     "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
                 )
@@ -2368,17 +2378,29 @@ keep_full_version = true
                     use_pyproject_fmt()
 
                     # Assert
-                    assert get_deps_from_group("dev") == [
-                        Dependency(name="pyproject-fmt")
-                    ]
+                    deps = get_deps_from_group("dev")
+                    assert Dependency(name="pyproject-fmt") in deps
+                    current_version = PythonVersion.from_interpreter()
+                    needs_tomli = current_version.to_short_tuple() < (3, 11)
+                    if needs_tomli:
+                        assert Dependency(name="tomli") in deps
                 out, _ = capfd.readouterr()
-                assert out == (
-                    "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
-                    "☐ Install the dependency 'pyproject-fmt'.\n"
-                    "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
-                    "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
-                    "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
-                )
+                if needs_tomli:
+                    assert out == (
+                        "✔ Adding dependencies 'pyproject-fmt', 'tomli' to the 'dev' group in 'pyproject.toml'.\n"
+                        "☐ Install the dependencies 'pyproject-fmt', 'tomli'.\n"
+                        "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                        "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
+                        "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+                    )
+                else:
+                    assert out == (
+                        "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                        "☐ Install the dependency 'pyproject-fmt'.\n"
+                        "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+                        "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
+                        "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
+                    )
 
         class TestNoApply:
             @pytest.mark.usefixtures("_vary_network_conn")
@@ -2418,10 +2440,21 @@ keep_full_version = true
             # Check output
             out, err = capfd.readouterr()
             assert not err
+            current_version = PythonVersion.from_interpreter()
+            needs_tomli = current_version.to_short_tuple() < (3, 11)
+            if needs_tomli:
+                expected_deps = (
+                    "✔ Adding dependencies 'pyproject-fmt', 'tomli' to the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Install the dependencies 'pyproject-fmt', 'tomli'.\n"
+                )
+            else:
+                expected_deps = (
+                    "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
+                    "☐ Install the dependency 'pyproject-fmt'.\n"
+                )
             assert out == (
-                "✔ Adding dependency 'pyproject-fmt' to the 'dev' group in 'pyproject.toml'.\n"
-                "☐ Install the dependency 'pyproject-fmt'.\n"
-                "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'.\n"
+                expected_deps
+                + "✔ Adding hook 'pyproject-fmt' to '.pre-commit-config.yaml'.\n"
                 "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
                 "✔ Running pyproject-fmt on 'pyproject.toml'.\n"
                 "☐ Run 'uv run pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
@@ -2505,10 +2538,16 @@ foo = "bar"
             out, err = capfd.readouterr()
             assert not err
             # Issue #1020: Deps are now present even with pre-commit, so they're removed
+            current_version = PythonVersion.from_interpreter()
+            needs_tomli = current_version.to_short_tuple() < (3, 11)
+            if needs_tomli:
+                expected_remove_dep = "✔ Removing dependencies 'pyproject-fmt', 'tomli' from the 'dev' group in 'pyproject.toml'.\n"
+            else:
+                expected_remove_dep = "✔ Removing dependency 'pyproject-fmt' from the 'dev' group in 'pyproject.toml'.\n"
             assert out == (
                 "✔ Removing pyproject-fmt config from 'pyproject.toml'.\n"
                 "✔ Removing hook 'pyproject-fmt' from '.pre-commit-config.yaml'.\n"
-                "✔ Removing dependency 'pyproject-fmt' from the 'dev' group in 'pyproject.toml'.\n"
+                + expected_remove_dep
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
@@ -2526,9 +2565,15 @@ foo = "bar"
             # Assert
             out, err = capfd.readouterr()
             assert not err
+            current_version = PythonVersion.from_interpreter()
+            needs_tomli = current_version.to_short_tuple() < (3, 11)
+            if needs_tomli:
+                expected_remove_dep = "✔ Removing dependencies 'pyproject-fmt', 'tomli' from the 'dev' group in 'pyproject.toml'.\n"
+            else:
+                expected_remove_dep = "✔ Removing dependency 'pyproject-fmt' from the 'dev' group in 'pyproject.toml'.\n"
             assert out == (
                 "✔ Removing pyproject-fmt config from 'pyproject.toml'.\n"
-                "✔ Removing dependency 'pyproject-fmt' from the 'dev' group in 'pyproject.toml'.\n"
+                + expected_remove_dep
             )
 
 

@@ -8,8 +8,14 @@ from typing import final
 from typing_extensions import override
 
 from usethis._fallback import FALLBACK_PYPROJECT_FMT_VERSION
+from usethis._file.pyproject_toml.errors import PyprojectTOMLNotFoundError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.pyproject_toml.requires_python import (
+    MissingRequiresPythonError,
+    get_required_minor_python_versions,
+)
 from usethis._integrations.pre_commit import schema as pre_commit_schema
+from usethis._python.version import PythonVersion
 from usethis._tool.base import ToolMeta, ToolSpec
 from usethis._tool.config import ConfigEntry, ConfigItem, ConfigSpec
 from usethis._tool.pre_commit import PreCommitConfig
@@ -37,7 +43,24 @@ class PyprojectFmtToolSpec(ToolSpec):
     def deps_by_group(
         self, *, unconditional: bool = False
     ) -> dict[str, list[Dependency]]:
-        return {"dev": [Dependency(name="pyproject-fmt")]}
+        deps = [Dependency(name="pyproject-fmt")]
+
+        # pyproject-fmt v2.22.0+ vendored toml-fmt-common without declaring
+        # tomli as a dependency.  Python < 3.11 needs tomli (instead of the
+        # stdlib tomllib) to parse TOML files.
+        if unconditional:
+            needs_tomli = True
+        else:
+            try:
+                versions = get_required_minor_python_versions()
+            except (MissingRequiresPythonError, PyprojectTOMLNotFoundError):
+                versions = [PythonVersion.from_interpreter()]
+
+            needs_tomli = any(v.to_short_tuple() < (3, 11) for v in versions)
+        if needs_tomli:
+            deps.append(Dependency(name="tomli"))
+
+        return {"dev": deps}
 
     @override
     @final

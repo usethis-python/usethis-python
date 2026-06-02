@@ -133,8 +133,12 @@ class TestInit:
         needs_tomli = current_version.to_short_tuple() < (3, 11)
         if needs_tomli:
             expected_spellcheck = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
+            expected_pyproject_fmt = (
+                "☐ Add the dev dependencies 'pyproject-fmt', 'tomli'.\n"
+            )
         else:
             expected_spellcheck = "☐ Add the dev dependency 'codespell'.\n"
+            expected_pyproject_fmt = "☐ Add the dev dependency 'pyproject-fmt'.\n"
         assert result.output == (
             "✔ Writing 'pyproject.toml' and initializing project.\n"
             "✔ Writing 'README.md'.\n"
@@ -151,8 +155,8 @@ class TestInit:
             "☐ Run 'ruff check --fix' to run the Ruff linter with autofixes.\n"
             "✔ Adding recommended formatters.\n"
             "☐ Add the dev dependency 'ruff'.\n"
-            "☐ Add the dev dependency 'pyproject-fmt'.\n"
-            "☐ Run 'ruff format' to run the Ruff formatter.\n"
+            + expected_pyproject_fmt
+            + "☐ Run 'ruff format' to run the Ruff formatter.\n"
             "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
             "✔ Adding recommended spellcheckers.\n"
             + expected_spellcheck

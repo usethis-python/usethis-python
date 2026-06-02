@@ -796,6 +796,54 @@ outer: value
                 assert isinstance(manager._content, YAMLDocument)
                 assert manager._content.doc.root == {"items": ["a", "b"]}
 
+        def test_complex_value_clash_with_non_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("outer: value\n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueAlreadySetError,
+                    match=r"Configuration value 'outer' is already set.",
+                ):
+                    manager.set_value(
+                        keys=["outer", "inner"],
+                        value=["a", "b"],
+                        exists_ok=False,
+                    )
+
+        def test_complex_value_clash_overwrite(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("outer: value\n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(
+                    keys=["outer", "inner"],
+                    value=["a", "b"],
+                    exists_ok=True,
+                )
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"outer": {"inner": ["a", "b"]}}
+
     class TestDelItem:
         def test_delete_single_item(self, tmp_path: Path):
             # Arrange

@@ -301,49 +301,30 @@ def _upsert_safe(
     *,
     exists_ok: bool = False,
 ) -> yamltrip.Document:
-    """Upsert a value into a yamltrip Document, handling empty documents."""
-    # For complex values (list/dict) where the key doesn't exist yet, add a
-    # null placeholder first then replace — this forces block-style output.
-    if isinstance(value, (list, dict)) and tuple(keys) not in doc:
-        try:
-            doc = doc.upsert(*keys, value=None)
-        except yamltrip.PatchError:
-            pass
-        else:
-            return doc.upsert(*keys, value=value)
+    """Upsert a value into a yamltrip Document.
 
+    A RoutingError means a key in the path passes through a non-mapping node. When
+    overwriting is allowed we prune the conflicting prefix and retry; otherwise we
+    translate it into a friendly YAMLValueAlreadySetError.
+    """
     try:
+        # Seed the leaf as null first, then write the value. Seeding forces
+        # complex values to render in block style (rather than flow style) and
+        # fully replaces any existing value at the path.
+        doc = doc.upsert(*keys, value=None)
         return doc.upsert(*keys, value=value)
-    except yamltrip.PatchError as err:
-        if not doc.source.strip():
-            # Empty document: bootstrap with a block-style seed then upsert.
-            # yamlpatch's Add operation requires an existing mapping node at the
-            # target route, so it cannot add keys to a truly empty document.
-            # We work around this by seeding with a throwaway sentinel key ("_")
-            # to create a root mapping, inserting the real content, then removing
-            # the sentinel.  The sentinel is safe because the document is empty
-            # (no user data to collide with).
-            # Tracking issue to remove this workaround:
-            # https://github.com/usethis-python/yamltrip/issues/34
-            doc = yamltrip.loads("_: null\n")
-            doc = doc.upsert(*keys, value=None)
-            doc = doc.upsert(*keys, value=value)
-            return doc.remove("_")
-        err_msg = str(err)
-        if (
-            "non-mapping route" in err_msg
-            or "expected mapping containing key" in err_msg
-        ):
-            if exists_ok:
-                # Remove the conflicting prefix and retry.
-                for i in range(len(keys) - 1, 0, -1):
-                    if tuple(keys[:i]) in doc:
-                        doc = doc.prune_remove(*keys[:i])
-                        return _upsert_safe(doc, keys, value, exists_ok=exists_ok)
-            # Trying to add a key under a non-mapping node.
-            # Find the longest existing prefix to report.
-            for i in range(len(keys) - 1, 0, -1):
-                if tuple(keys[:i]) in doc:
-                    msg = f"Configuration value '{print_keys(list(keys[:i]))}' is already set."
-                    raise YAMLValueAlreadySetError(msg) from err
-        raise
+    except yamltrip.RoutingError as err:
+        # A key along the path maps to a non-mapping node. Find the longest
+        # existing prefix: the node we collided with.
+        for i in range(len(keys) - 1, 0, -1):
+            if tuple(keys[:i]) in doc:
+                if exists_ok:
+                    # Overwrite: remove the conflicting prefix and retry.
+                    doc = doc.prune_remove(*keys[:i])
+                    return _upsert_safe(doc, keys, value, exists_ok=exists_ok)
+                msg = f"Configuration value '{print_keys(list(keys[:i]))}' is already set."
+                raise YAMLValueAlreadySetError(msg) from err
+        # A RoutingError always collides with an existing non-mapping prefix, so
+        # the loop above must have returned or raised.
+        msg = "RoutingError did not pass through an existing prefix."
+        raise AssertionError(msg) from err

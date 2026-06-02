@@ -2362,7 +2362,7 @@ requires-dist = [
     { name = "tomlkit", specifier = ">=0.13.3" },
     { name = "typer", specifier = ">=0.12.4" },
     { name = "typing-extensions", specifier = ">=3.10.0.0" },
-    { name = "yamltrip", specifier = ">=0.5.0" },
+    { name = "yamltrip", specifier = ">=0.6.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -2527,17 +2527,20 @@ wheels = [
 
 [[package]]
 name = "yamltrip"
-version = "0.5.0"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d2/5c/f949f6b03334c08380a7b8add1d41c823d6bdeec09bc77ce9f798197fa77/yamltrip-0.5.0.tar.gz", hash = "sha256:b66eaa7907867fe71ca056434de27339a9e12476e3ee81845eb8ae5077085e4c", size = 117790, upload-time = "2026-05-21T04:05:22.651Z" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ab/03/36404a8e2028ce4def0102eef142ccffbc74a1c12890c8d913c8e187bc41/yamltrip-0.6.0.tar.gz", hash = "sha256:2983877975ed10be6907a9cc7ef372f415bdcb2024dd91e2897e71dc2bba2b25", size = 137600, upload-time = "2026-06-02T03:51:39.532Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c3/c6/908cf090afbaf43defd4fd72a76b98bd7f5412823eb6b163dc00b9a20671/yamltrip-0.5.0-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:cc6c3ca4c035e2c882b8c353a3f3eeae18a718a63408c5d671acc8d7e07e5547", size = 708122, upload-time = "2026-05-21T04:05:29.007Z" },
-    { url = "https://files.pythonhosted.org/packages/a4/a1/c06384932cb129aff59852989698980c2bff931657c6b9d6b007b8f8ce7c/yamltrip-0.5.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:62d7a6d716083e332513b6e7a85c15e2edfe5624057e04b4890018161bb2a32e", size = 688465, upload-time = "2026-05-21T04:05:27.652Z" },
-    { url = "https://files.pythonhosted.org/packages/cc/a8/45424789e1f5a7c055b1c04df8b0ad80fa5d1541366bf5d0a86fe62b277d/yamltrip-0.5.0-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:deabe11b0fd2123f59dac698973ea6e65d1a9839967ac929ec8ecdb92365b7a8", size = 748911, upload-time = "2026-05-21T04:05:24.162Z" },
-    { url = "https://files.pythonhosted.org/packages/55/b7/55251b2054a206cae25617e4afbff8b8fd3e69f3fe813f2ddd21fd78a616/yamltrip-0.5.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:09ce6cb648fa4f134d689d26c35c591d823a7bc985c33c3399e6e6166b2c3a1b", size = 790372, upload-time = "2026-05-21T04:05:25.677Z" },
-    { url = "https://files.pythonhosted.org/packages/e2/64/3902108f52f34b3a35fcbf437e803c5e7ca0e41a6b568ab44354c795989a/yamltrip-0.5.0-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:5d162e0381ed3dcacf3cce92ff96d6e64a6f32d4e686e07ef06ad34de20caad1", size = 928075, upload-time = "2026-05-21T04:05:32.64Z" },
-    { url = "https://files.pythonhosted.org/packages/58/a6/fdf6770ebcf48acc0e5fe4f466cfbfef77b678ce63e712d77f350212bddd/yamltrip-0.5.0-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:b1ccb2c9b1c99c51dde9eaebdb819f03fca17277208209091fc7250ee821af81", size = 972600, upload-time = "2026-05-21T04:05:34.099Z" },
-    { url = "https://files.pythonhosted.org/packages/be/ff/8cc1df7310da6fea6f983b33d2fb667d071c8a8bfbb2e725824103666c51/yamltrip-0.5.0-cp310-abi3-win_amd64.whl", hash = "sha256:40e83f45ee9f98706d0f6b0dc6d205ba1f52189e6a5b4362f545816699782aef", size = 552943, upload-time = "2026-05-21T04:05:30.891Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/35/1f28e3d11603483b953f0e6f11dbd25f52525cb87d9407b97c04562e8ef5/yamltrip-0.6.0-cp310-abi3-macosx_10_12_x86_64.whl", hash = "sha256:c58a90f9a5315af45d068458f4e0995fb7181df2b56c96da10bc9bca8284378d", size = 711831, upload-time = "2026-06-02T03:51:37.315Z" },
+    { url = "https://files.pythonhosted.org/packages/d4/cd/3033674844b9bfdce057c8debf5b104f7004e1a7e21e55240b472b20e102/yamltrip-0.6.0-cp310-abi3-macosx_11_0_arm64.whl", hash = "sha256:08e9e9add38e2ea5fd14d5825897ebec065150d3c3a74c13a9b8db37778fa6a8", size = 693884, upload-time = "2026-06-02T03:51:33.125Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/09/a751cf170298929edb00ff2eee67206dbbd76cf41076b9ed2b8bd5c78532/yamltrip-0.6.0-cp310-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:985f8c0908764f6823999f2ce4916fdce5129bf6993b7df4bf1f0535379acdd4", size = 755284, upload-time = "2026-06-02T03:51:38.559Z" },
+    { url = "https://files.pythonhosted.org/packages/69/ca/65fc1930f58b6381b0a43c9ebb8f385f576fa629113c039e0aa2d12b584f/yamltrip-0.6.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f11d97cddb255776f32888b8fcfce7707d39d83955c8202b067af7c17b270ce9", size = 794238, upload-time = "2026-06-02T03:51:36.034Z" },
+    { url = "https://files.pythonhosted.org/packages/05/f0/1cb44f39c08e4101e55ec6662071dcfcc6660210039fcd2ff537bc7a808c/yamltrip-0.6.0-cp310-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:2054a7d9447829a4b531463c2454201e163e04341619614c8a3526e5a91f7b98", size = 933762, upload-time = "2026-06-02T03:51:30.789Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/e4/3b6ed066a75341da8b50f9ad49aec9d80b3812602dd29be3498a5da8c21d/yamltrip-0.6.0-cp310-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:b2d11277568743cacd397607663d75075115dd88a0bf4a4fad7fb0100dc5f612", size = 976698, upload-time = "2026-06-02T03:51:34.389Z" },
+    { url = "https://files.pythonhosted.org/packages/c3/1e/3f62eea5f06d4de4a17b583fccb63001eec942f06f2cf5fc05eaa47a6965/yamltrip-0.6.0-cp310-abi3-win_amd64.whl", hash = "sha256:11cba12d86fd5ed44fe2ce98a51e12fb60d4420ab2f1075ad8d744ee3beb0b2c", size = 556848, upload-time = "2026-06-02T03:51:32.039Z" },
 ]
 
 [[package]]

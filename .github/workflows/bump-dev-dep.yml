@@ -12,6 +12,7 @@ on:
                 options:
                     - black
                     - cryptography
+                    - datamodel-code-generator
                     - dulwich
                     - gitpython
                     - idna

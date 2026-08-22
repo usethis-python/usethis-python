@@ -4037,6 +4037,13 @@ class TestUseTool:
             except NoDefaultToolCommand:
                 pytest.skip(f"{tool.name} has no default command")
 
+            if tool.name == "pyproject-fmt" and sys.version_info < (3, 11):
+                pytest.skip(
+                    "pyproject-fmt >=2.22.0 wheels omit their tomli dependency "
+                    "on Python <3.11 due to a build-backend bug: "
+                    "https://github.com/tox-dev/toml-fmt/issues/441"
+                )
+
             call_uv_subprocess(
                 ["run", *shlex.split(cmd)],
                 change_toml=False,

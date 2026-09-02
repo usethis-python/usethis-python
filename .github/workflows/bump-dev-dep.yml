@@ -16,6 +16,7 @@ on:
                     - dulwich
                     - gitpython
                     - idna
+                    - msgpack
                     - poetry
                     - pygments
                     - pymdown-extensions

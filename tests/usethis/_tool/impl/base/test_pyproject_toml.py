@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -60,6 +61,9 @@ select = ["E", "PT"]
         @pytest.mark.usefixtures("_vary_network_conn")
         def test_link_isnt_dead(self):
             """A regression test."""
+
+            if os.getenv("CI"):
+                pytest.skip("Skipping online link check on CI")
 
             # Arrange
             url = (

@@ -107,7 +107,7 @@ repos:
   - repo: {_UV_PRE_COMMIT_REPO}
     rev: {FALLBACK_UV_VERSION}
     hooks:
-      - id: uv-export
+    - id: uv-export
 """
             )
 
@@ -155,12 +155,12 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: uv-export
-        name: uv-export
-        entry: uv export --frozen --offline --quiet -o=requirements.txt
-        language: system
-        pass_filenames: false
-        require_serial: true
+    - id: uv-export
+      name: uv-export
+      entry: uv export --frozen --offline --quiet -o=requirements.txt
+      language: system
+      pass_filenames: false
+      require_serial: true
 """)
 
             # Act

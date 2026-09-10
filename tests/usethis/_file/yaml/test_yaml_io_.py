@@ -1,23 +1,11 @@
-from collections import OrderedDict
+import re
 from pathlib import Path
 
 import pytest
-import ruamel.yaml
-from ruamel.yaml.comments import (
-    CommentedMap,
-    CommentedOrderedMap,
-    CommentedSeq,
-    CommentedSet,
-    TaggedScalar,
-)
-from ruamel.yaml.scalarbool import ScalarBoolean
-from ruamel.yaml.scalarfloat import ScalarFloat
-from ruamel.yaml.scalarint import BinaryInt, HexCapsInt, HexInt, OctalInt, ScalarInt
-from ruamel.yaml.scalarstring import FoldedScalarString, LiteralScalarString
-from ruamel.yaml.timestamp import TimeStamp
+import yamltrip
 from typing_extensions import override
 
-from _test import change_cwd, edit_yaml
+from _test import change_cwd
 from usethis._file.yaml.errors import (
     UnexpectedYAMLIOError,
     UnexpectedYAMLOpenError,
@@ -95,7 +83,6 @@ class TestYAMLFileManager:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert isinstance(manager._content.content, CommentedMap)
 
         def test_empty_file(self, tmp_path: Path):
             # Arrange
@@ -113,8 +100,6 @@ class TestYAMLFileManager:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert isinstance(manager._content.content, CommentedMap)
-                assert len(manager._content.content) == 0
 
         def test_file_not_found(self, tmp_path: Path):
             # Arrange
@@ -218,8 +203,7 @@ class TestYAMLFileManager:
 
             my_yaml_manager = MyYAMLFileManager()
             my_yaml_manager._content = YAMLDocument(
-                content=CommentedMap({"key": "value"}),
-                roundtripper=ruamel.yaml.YAML(typ="rt"),
+                doc=yamltrip.loads("key: value\n"),
             )
 
             # Act
@@ -260,8 +244,7 @@ class TestYAMLFileManager:
 
             # Assert
             assert isinstance(parsed_content, YAMLDocument)
-            assert isinstance(parsed_content.content, CommentedMap)
-            assert parsed_content.content == {"key": "value"}
+            assert parsed_content.doc["key"] == "value"
 
     class TestValidateLock:
         def test_unexpected_io(self, tmp_path: Path):
@@ -544,7 +527,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {"key": "value"}
+                assert manager._content.doc.root == {"key": "value"}
                 assert isinstance(manager._content, YAMLDocument)
 
         def test_root_level_is_not_mapping(self, tmp_path: Path):
@@ -585,7 +568,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {"key": "new_value"}
+                assert manager._content.doc.root == {"key": "new_value"}
 
         def test_key_doesnt_exist_yet(self, tmp_path: Path):
             # Arrange
@@ -605,7 +588,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {
+                assert manager._content.doc.root == {
                     "key": "value",
                     "new_key": "new_value",
                 }
@@ -684,7 +667,7 @@ outer: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {"outer": {"inner": "new_value"}}
+                assert manager._content.doc.root == {"outer": {"inner": "new_value"}}
 
         def test_already_exists(self, tmp_path: Path):
             # Arrange
@@ -706,6 +689,161 @@ outer: value
                 ):
                     manager.set_value(keys=["key"], value="new_value", exists_ok=False)
 
+        def test_no_keys_non_mapping_value(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").touch()
+
+            with (
+                change_cwd(tmp_path),
+                MyYAMLFileManager() as manager,
+                pytest.raises(
+                    UnexpectedYAMLValueError,
+                    match=r"Root level configuration must be a mapping.",
+                ),
+            ):
+                # Act, Assert
+                manager.set_value(keys=[], value="not_a_dict")
+
+        def test_no_keys_already_exists(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueAlreadySetError,
+                    match=r"Configuration value 'key' is already set.",
+                ):
+                    manager.set_value(keys=[], value={"key": "other"}, exists_ok=False)
+
+        def test_keys_on_empty_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(keys=["key"], value="value", exists_ok=False)
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"key": "value"}
+
+        def test_regex_key_raises(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("key: value")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    NotImplementedError,
+                    match=r"Regex-based keys are not currently supported",
+                ):
+                    manager.set_value(
+                        keys=[re.compile("key")], value="val", exists_ok=False
+                    )
+
+        def test_complex_value_on_empty_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(
+                    keys=["items"],
+                    value=["a", "b"],
+                    exists_ok=False,
+                )
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"items": ["a", "b"]}
+
+        def test_complex_value_clash_with_non_mapping(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("outer: value\n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueAlreadySetError,
+                    match=r"Configuration value 'outer' is already set.",
+                ):
+                    manager.set_value(
+                        keys=["outer", "inner"],
+                        value=["a", "b"],
+                        exists_ok=False,
+                    )
+
+        def test_complex_value_clash_overwrite(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("outer: value\n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.set_value(
+                    keys=["outer", "inner"],
+                    value=["a", "b"],
+                    exists_ok=True,
+                )
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"outer": {"inner": ["a", "b"]}}
+
     class TestDelItem:
         def test_delete_single_item(self, tmp_path: Path):
             # Arrange
@@ -725,7 +863,7 @@ outer: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {"key1": "value1"}
+                assert manager._content.doc.root == {"key1": "value1"}
 
         def test_empty_sections_removed(self, tmp_path: Path):
             # Arrange
@@ -752,7 +890,7 @@ other: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {"other": "value"}
+                assert manager._content.doc.root == {"other": "value"}
 
         def test_file_not_found(self, tmp_path: Path):
             # Arrange
@@ -849,7 +987,47 @@ outer: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {}
+                assert manager._content.doc.dumps().strip() == ""
+
+        def test_delete_root_empty_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueMissingError,
+                    match=r"Configuration value '' is missing.",
+                ):
+                    del manager[[]]
+
+        def test_delete_root_scalar_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("hello")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    YAMLValueMissingError,
+                    match=r"Configuration value '' is missing.",
+                ):
+                    del manager[[]]
 
     class TestExtendList:
         def test_success(self, tmp_path: Path):
@@ -870,7 +1048,7 @@ outer: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {
+                assert manager._content.doc.root == {
                     "items": ["item1", "item2", "item3", "item4"]
                 }
 
@@ -935,7 +1113,7 @@ outer: value
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager.get().content == {
+                assert manager.get().doc.root == {
                     "items": ["item1", "item2"],
                     "non_existent_key": ["item3", "item4"],
                 }
@@ -968,9 +1146,89 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {
+                assert manager._content.doc.root == {
                     "outer": {"inner": {"items": ["item1", "item2", "item3", "item4"]}}
                 }
+
+        def test_empty_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(keys=["items"], values=["a", "b"])
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"items": ["a", "b"]}
+
+        def test_flow_sequence_fallback(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("items: [a, b]\n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(keys=["items"], values=["c"])
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"items": ["a", "b", "c"]}
+
+        def test_extend_non_list_value(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("items: hello\n")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act
+                manager.extend_list(keys=["items"], values=["c"])
+
+                # Assert
+                assert isinstance(manager._content, YAMLDocument)
+                assert manager._content.doc.root == {"items": ["c"]}
+
+        def test_scalar_root_doc(self, tmp_path: Path):
+            # Arrange
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
+
+            (tmp_path / "my_yaml_file.yaml").write_text("hello")
+
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    UnexpectedYAMLValueError,
+                    match=r"Root level configuration must be a mapping.",
+                ):
+                    manager.extend_list(keys=["key"], values=["value"])
 
     class TestRemoveFromList:
         def test_success(self, tmp_path: Path):
@@ -997,7 +1255,7 @@ items:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {"items": ["item1", "item3"]}
+                assert manager._content.doc.root == {"items": ["item1", "item3"]}
 
         def test_root_level_is_not_mapping(self, tmp_path: Path):
             # Arrange
@@ -1069,7 +1327,7 @@ items:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {
+                assert manager._content.doc.root == {
                     "items": ["item1", "item2", "item3"]
                 }
 
@@ -1102,7 +1360,7 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {
+                assert manager._content.doc.root == {
                     "outer": {"inner": {"items": ["item1", "item3"]}}
                 }
 
@@ -1132,413 +1390,42 @@ outer:
 
                 # Assert
                 assert isinstance(manager._content, YAMLDocument)
-                assert manager._content.content == {
+                assert manager._content.doc.root == {
                     "outer": {"inner": {"items": "item1"}}
                 }
 
-
-class TestEditYaml:
-    class TestLiterals:
-        def test_none(self, tmp_path: Path):
+        def test_scalar_root_doc(self, tmp_path: Path):
             # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("hello: null")
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
 
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == {"hello": None}
+            (tmp_path / "my_yaml_file.yaml").write_text("hello")
 
-        def test_str(self, tmp_path: Path):
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
+
+                # Act, Assert
+                with pytest.raises(
+                    UnexpectedYAMLValueError,
+                    match=r"Root level configuration must be a mapping.",
+                ):
+                    manager.remove_from_list(keys=["key"], values=["value"])
+
+        def test_empty_doc(self, tmp_path: Path):
             # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("hello")
+            class MyYAMLFileManager(YAMLFileManager):
+                @property
+                @override
+                def relative_path(self) -> Path:
+                    return Path("my_yaml_file.yaml")
 
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == "hello"
-                assert type(content) is str
+            (tmp_path / "my_yaml_file.yaml").write_text("  \n")
 
-        def test_literal_scalar_string(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("""\
-hello: |
-    world
-""")
+            with change_cwd(tmp_path), MyYAMLFileManager() as manager:
+                manager.read_file()
 
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == {"hello": "world\n"}
-                assert isinstance(content, CommentedMap)
-                assert type(content["hello"]) is LiteralScalarString
-
-        def test_folded_scalar_string(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("""\
-hello: >
-    world
-""")
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == {"hello": "world\n"}
-                assert isinstance(content, CommentedMap)
-                assert type(content["hello"]) is FoldedScalarString
-
-        def test_int(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("3")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == 3
-                assert type(content) is int
-
-        def test_float(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("3.14")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == 3.14
-                assert type(content) is ScalarFloat
-
-        def test_scientific_notation(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("3.14e-2")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == 3.14e-2
-                assert type(content) is ScalarFloat
-
-        def test_hex(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("0x3")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == 3
-                assert type(content) is HexInt
-
-        def test_hex_caps(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("0xE")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == 14
-                assert type(content) is HexCapsInt
-
-        def test_octal(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("0o3")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == 3
-                assert type(content) is OctalInt
-
-        def test_binary(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("0b11")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == 3
-                assert type(content) is BinaryInt
-
-        def test_scalar_int(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("&anchor 3")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == 3
-                assert type(content) is ScalarInt
-
-        def test_bool(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("true")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content is True
-                assert type(content) is bool
-
-        def test_scalar_bool(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("&anchor true")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content
-                assert type(content) is ScalarBoolean
-
-        def test_commented_seq(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("""\
-- one
-- two
-""")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == ["one", "two"]
-                assert type(content) is CommentedSeq
-
-        def test_commented_set(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("""\
-!!set
-  ? one
-  ? two
-""")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == {"one", "two"}
-                assert type(content) is CommentedSet
-
-        def test_commented_map(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("""\
-hello: world
-""")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == {"hello": "world"}
-                assert type(content) is CommentedMap
-
-        def test_commented_ordered_map(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("""\
-!!omap
-- hello: world
-""")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert content == OrderedDict([("hello", "world")])
-                assert type(content) is CommentedOrderedMap
-
-        def test_tagged_scalar(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("""\
-!!custom 3
-""")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert type(content) is TaggedScalar
-
-        def test_time_stamp(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("2001-12-15T02:59:43.1Z")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert type(content) is TimeStamp
-
-        def test_empty_document(self, tmp_path: Path):
-            # Arrange
-            path = tmp_path / "test.yaml"
-            path.write_text("")
-
-            with edit_yaml(path) as yaml_document:  # Act
-                content = yaml_document.content
-                # Assert
-                assert isinstance(content, CommentedMap)
-                assert len(content) == 0
-
-    class TestRoundTrip:
-        def test_single_quote_preserved(self, tmp_path: Path):
-            path = tmp_path / "x.yml"
-            path.write_text(
-                """\
-x: 'hi'
-"""
-            )
-
-            # Act
-            with change_cwd(tmp_path), edit_yaml(path) as _:
-                pass
-
-            # Assert
-            contents = path.read_text()
-            assert (
-                contents
-                == """\
-x: 'hi'
-"""
-            )
-
-        def test_single_quoted_preserved(self, tmp_path: Path):
-            path = tmp_path / "x.yml"
-            path.write_text(
-                """\
-x: 'hi'
-"""
-            )
-
-            # Act
-            with change_cwd(tmp_path), edit_yaml(path) as _:
-                pass
-
-            # Assert
-            contents = path.read_text()
-            assert (
-                contents
-                == """\
-x: 'hi'
-"""
-            )
-
-        def test_unquoted_preserved(self, tmp_path: Path):
-            path = tmp_path / "x.yml"
-            path.write_text(
-                """\
-x: hi
-"""
-            )
-
-            # Act
-            with change_cwd(tmp_path), edit_yaml(path) as _:
-                pass
-
-            # Assert
-            contents = path.read_text()
-            assert (
-                contents
-                == """\
-x: hi
-"""
-            )
-
-        def test_indentation_5_3(self, tmp_path: Path):
-            path = tmp_path / "x.yml"
-            path.write_text(
-                """\
-x:
-  -  y:
-     z:
-       -  w
-"""
-            )
-
-            # Act
-            with change_cwd(tmp_path), edit_yaml(path) as _:
-                pass
-
-            # Assert
-            contents = path.read_text()
-            assert (
-                contents
-                == """\
-x:
-  -  y:
-     z:
-       -  w
-"""
-            )
-
-    def test_no_guess_indent(self, tmp_path: Path):
-        path = tmp_path / "x.yml"
-        original = """\
-x:
--    y:
-     z:
-     -    w
-"""
-        path.write_text(original)
-
-        # Act
-        with change_cwd(tmp_path), edit_yaml(path, guess_indent=False) as _:
-            pass
-
-        # Assert - file should not be modified since no structural changes were made.
-        contents = path.read_text()
-        assert contents == original
-
-    def test_invalid_indentation(self, tmp_path: Path):
-        # Arrange
-        (tmp_path / "x.yml").write_text(
-            """\
-repos:
-  - repo: local
-        hooks:
-          - id: placeholder
-"""
-        )
-
-        # Act, Assert
-        with (
-            change_cwd(tmp_path),
-            pytest.raises(YAMLDecodeError),
-            edit_yaml(tmp_path / "x.yml") as _,
-        ):
-            pass
-
-    def test_incorrect_indentation(
-        self, tmp_path: Path, capfd: pytest.CaptureFixture[str]
-    ):
-        # Arrange
-        (tmp_path / "x.yml").write_text("""\
-- path: / 
-    backend: 
-      serviceName: <service_name> 
-      servicePort: <port> 
-""")
-
-        # Act
-        with (
-            change_cwd(tmp_path),
-            pytest.raises(
-                YAMLDecodeError, match=r"mapping values are not allowed here"
-            ),
-            edit_yaml(tmp_path / "x.yml"),
-        ):
-            pass
-
-        # Assert
-        # Should have a hint
-        out, err = capfd.readouterr()
-        assert out == "ℹ Hint: You may have incorrect indentation in the YAML file.\n"  # noqa: RUF001
-        assert not err
+                # Act — empty doc has no keys, so remove_from_list is a no-op
+                manager.remove_from_list(keys=["key"], values=["value"])

@@ -765,15 +765,15 @@ repos:
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
-      - id: sync-with-uv
+    - id: sync-with-uv
   - repo: local
     hooks:
-      - id: deptry
-        name: deptry
-        always_run: true
-        entry: uv run --frozen --offline deptry src
-        language: system
-        pass_filenames: false
+    - id: deptry
+      name: deptry
+      always_run: true
+      entry: uv run --frozen --offline deptry src
+      language: system
+      pass_filenames: false
 """
             )
 
@@ -892,15 +892,15 @@ repos:
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
-      - id: sync-with-uv
+    - id: sync-with-uv
   - repo: local
     hooks:
-      - id: deptry
-        name: deptry
-        always_run: true
-        entry: uv run --frozen --offline deptry src
-        language: system
-        pass_filenames: false
+    - id: deptry
+      name: deptry
+      always_run: true
+      entry: uv run --frozen --offline deptry src
+      language: system
+      pass_filenames: false
 """
             )
 
@@ -924,7 +924,7 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
+    - id: placeholder
 """
             )
 
@@ -1082,7 +1082,7 @@ exhaustive = true
 repos:
   - repo: local
     hooks:
-      - id: placeholder
+    - id: placeholder
 """
             )
             # Package to analyze
@@ -1735,7 +1735,7 @@ lint.ignore = [ "PLR2004", "SIM108" ]
 repos:
   - repo: local
     hooks:
-      - id: placeholder
+    - id: placeholder
 """
             )
 
@@ -1887,7 +1887,7 @@ repos:
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
-      - id: sync-with-uv
+    - id: sync-with-uv
 """
             )
 
@@ -1925,10 +1925,10 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: placeholder
-        name: Placeholder - add your own hooks!
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: placeholder
+      name: Placeholder - add your own hooks!
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
             )
 
@@ -1940,10 +1940,10 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: my hook
-        name: Its mine
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: my hook
+      name: Its mine
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
 """
             )
 
@@ -1958,14 +1958,14 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: my hook
-        name: Its mine
-        entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
-        language: system
+    - id: my hook
+      name: Its mine
+      entry: uv run --isolated --frozen --offline python -c "print('hello world!')"
+      language: system
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
-      - id: sync-with-uv
+    - id: sync-with-uv
 """
             )
 
@@ -2106,7 +2106,7 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: pre-commit
+    - id: pre-commit
 """
             )
 
@@ -3115,11 +3115,11 @@ repos:
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
-      - id: sync-with-uv
+    - id: sync-with-uv
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: {FALLBACK_UV_VERSION}
     hooks:
-      - id: uv-export
+    - id: uv-export
 """
             )
             out, err = capfd.readouterr()
@@ -3204,7 +3204,7 @@ typer-slim[standard]
 repos:
   - repo: local
     hooks:
-      - id: uv-export
+    - id: uv-export
 """
             )
 
@@ -3739,11 +3739,11 @@ repos:
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
-      - id: sync-with-uv
+    - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: {FALLBACK_RUFF_VERSION}
     hooks:
-      - id: ruff-check
+    - id: ruff-check
 """
             )
 
@@ -3777,15 +3777,15 @@ repos:
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
-      - id: sync-with-uv
+    - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: {FALLBACK_RUFF_VERSION}
     hooks:
-      - id: ruff-check
+    - id: ruff-check
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: {FALLBACK_RUFF_VERSION}
     hooks:
-      - id: ruff-format
+    - id: ruff-format
 """
             )
 
@@ -3818,11 +3818,11 @@ repos:
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
-      - id: sync-with-uv
+    - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: {FALLBACK_RUFF_VERSION}
     hooks:
-      - id: ruff-format
+    - id: ruff-format
 """
             )
 
@@ -3856,11 +3856,11 @@ repos:
   - repo: https://github.com/tsvikas/sync-with-uv
     rev: {FALLBACK_SYNC_WITH_UV_VERSION}
     hooks:
-      - id: sync-with-uv
+    - id: sync-with-uv
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: {FALLBACK_RUFF_VERSION}
     hooks:
-      - id: ruff-format
+    - id: ruff-format
 """
             )
 
@@ -3873,28 +3873,28 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: ruff
-        name: ruff
-        types_or:
-          - python
-          - pyi
-          - jupyter
-        always_run: true
-        entry: uv run --frozen --offline ruff check --fix --force-exclude
-        language: system
-        require_serial: true
+    - id: ruff
+      name: ruff
+      types_or:
+        - python
+        - pyi
+        - jupyter
+      always_run: true
+      entry: uv run --frozen --offline ruff check --fix --force-exclude
+      language: system
+      require_serial: true
   - repo: local
     hooks:
-      - id: ruff-format
-        name: ruff-format
-        types_or:
-          - python
-          - pyi
-          - jupyter
-        always_run: true
-        entry: uv run --frozen --offline ruff format --force-exclude
-        language: system
-        require_serial: true
+    - id: ruff-format
+      name: ruff-format
+      types_or:
+        - python
+        - pyi
+        - jupyter
+      always_run: true
+      entry: uv run --frozen --offline ruff format --force-exclude
+      language: system
+      require_serial: true
 """)
 
             with change_cwd(uv_init_repo_dir), files_manager():
@@ -3920,16 +3920,16 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: ruff-format
-        name: ruff-format
-        types_or:
-          - python
-          - pyi
-          - jupyter
-        always_run: true
-        entry: uv run --frozen --offline ruff format --force-exclude
-        language: system
-        require_serial: true
+    - id: ruff-format
+      name: ruff-format
+      types_or:
+        - python
+        - pyi
+        - jupyter
+      always_run: true
+      entry: uv run --frozen --offline ruff format --force-exclude
+      language: system
+      require_serial: true
 """
             )
 

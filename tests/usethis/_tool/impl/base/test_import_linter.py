@@ -19,9 +19,9 @@ class TestImportLinterTool:
 repos:
   - repo: local
     hooks:
-      - id: import-linter
-        name: import-linter
-        entry: uv run --frozen --offline lint-imports
+    - id: import-linter
+      name: import-linter
+      entry: uv run --frozen --offline lint-imports
 """)
             (tmp_path / "ruff.toml").write_text(  # For avoid info/hint messages
                 'lint.select=["INP"]'
@@ -46,9 +46,9 @@ repos:
 repos:
   - repo: local
     hooks:
-      - id: import-linter
-        name: import-linter
-        entry: uv run --frozen --offline lint-imports
+    - id: import-linter
+      name: import-linter
+      entry: uv run --frozen --offline lint-imports
 """)
             (tmp_path / "ruff.toml").write_text(  # For avoid info/hint messages
                 'lint.select=["INP"]'

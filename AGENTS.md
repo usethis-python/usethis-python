@@ -78,9 +78,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │   │   └── io_                   # TOML file I/O manager.
 │   └── yaml                      # YAML file reading and writing.
 │       ├── errors                # Error types for YAML file operations.
-│       ├── io_                   # YAML file I/O manager.
-│       ├── typing_               # Type aliases for YAML document values.
-│       └── update                # Smart update strategies for YAML sequences and mappings.
+│       └── io_                   # YAML file I/O manager.
 ├── _integrations                 # Third-party tool integrations.
 │   ├── mkdocs                    # MkDocs documentation integration.
 │   │   └── core                  # MkDocs project setup and configuration.
@@ -307,9 +305,6 @@ ALWAYS check whether an existing function already covers your use case before im
 - `get_required_minor_python_versions()` (`usethis._file.pyproject_toml.requires_python`) — Get Python minor versions that match the project's requires-python constraint.
 - `ensure_pyproject_validity()` (`usethis._file.pyproject_toml.valid`) — Ensure pyproject.toml has a valid structure, adding missing required fields.
 - `prepare_pyproject_write()` (`usethis._file.pyproject_toml.write`) — Prepare the pyproject.toml file for a subprocess that will modify it.
-- `get_yaml_document()` (`usethis._file.yaml.io_`) — Get a YAML document representation from a string or file-like object.
-- `update_ruamel_yaml_map()` (`usethis._file.yaml.update`) — Update the values of a ruamel.yaml map in-place using a diff-like algorithm.
-- `lcs_list_update()` (`usethis._file.yaml.update`) — Update in-place using a longest common subsequence solver.
 - `project_init()` (`usethis._init`) — Initialize the project by creating the pyproject.toml and project structure.
 - `write_simple_requirements_txt()` (`usethis._init`) — Write a simple requirements.txt file with -e . and any project dependencies.
 - `ensure_dep_declaration_file()` (`usethis._init`) — Ensure that the file where dependencies are declared exists, if necessary.

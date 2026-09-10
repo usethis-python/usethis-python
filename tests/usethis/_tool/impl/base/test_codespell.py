@@ -61,9 +61,9 @@ repos:
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
-      - id: codespell
-        additional_dependencies:
-          - tomli
+    - id: codespell
+      additional_dependencies:
+        - tomli
 """
             )
 
@@ -120,9 +120,9 @@ repos:
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
-      - id: codespell
-        additional_dependencies:
-          - tomli
+    - id: codespell
+      additional_dependencies:
+        - tomli
 """
             )
             # Act

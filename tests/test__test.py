@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from _test import is_uv_python_available
+import pytest
+
+from _test import is_uv_python_available, read_yaml
+from usethis._file.yaml.errors import YAMLDecodeError
 
 
 class TestIsUvPythonAvailable:
@@ -59,3 +63,19 @@ class TestIsUvPythonAvailable:
             patch("_test.subprocess.run", return_value=mock_result),
         ):
             assert is_uv_python_available("3.1") is False
+
+
+class TestReadYaml:
+    def test_success(self, tmp_path: Path):
+        path = tmp_path / "test.yaml"
+        path.write_text("key: value\n")
+
+        with read_yaml(path) as doc:
+            assert doc.root == {"key": "value"}
+
+    def test_parse_error(self, tmp_path: Path):
+        path = tmp_path / "test.yaml"
+        path.write_text(":\n  :\n    - [invalid")
+
+        with pytest.raises(YAMLDecodeError, match="Error reading"), read_yaml(path):
+            pass

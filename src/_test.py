@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import copy
 import os
 import shutil
 import socket
@@ -12,8 +11,8 @@ from pathlib import Path
 from typing import IO, TYPE_CHECKING
 
 import requests
+import yamltrip
 from requests.exceptions import RequestException
-from ruamel.yaml.error import YAMLError
 from typer.testing import CliRunner as TyperCliRunner  # noqa: TID251
 from typing_extensions import assert_never, override
 
@@ -36,7 +35,6 @@ from usethis._core.tool import (
 )
 from usethis._fallback import FALLBACK_PRE_COMMIT_VERSION
 from usethis._file.yaml.errors import YAMLDecodeError
-from usethis._file.yaml.io_ import get_yaml_document
 from usethis._integrations.pre_commit.hooks import hook_ids_are_equivalent
 from usethis._integrations.pre_commit.version import get_minimum_pre_commit_version
 from usethis._tool.impl.base.codespell import CodespellTool
@@ -60,7 +58,6 @@ if TYPE_CHECKING:
     from click.testing import Result
     from typer import Typer
 
-    from usethis._file.yaml.io_ import YAMLDocument
     from usethis._integrations.pre_commit import schema
     from usethis._tool.all_ import SupportedToolType
 
@@ -238,38 +235,17 @@ def get_github_latest_tag(owner: str, repo: str) -> str:
 
 
 @contextmanager
-def edit_yaml(
-    yaml_path: Path,
-    *,
-    guess_indent: bool = True,
-) -> Generator[YAMLDocument, None, None]:
-    """A context manager to modify a YAML file in-place, with managed read and write."""
-    with read_yaml(yaml_path, guess_indent=guess_indent) as yaml_document:
-        original_content = copy.deepcopy(yaml_document.content)
-
-        yield yaml_document
-
-        if yaml_document.content == original_content:
-            return
-
-        yaml_document.roundtripper.dump(yaml_document.content, stream=yaml_path)
-
-
-@contextmanager
 def read_yaml(
     yaml_path: Path,
-    *,
-    guess_indent: bool = True,
-) -> Generator[YAMLDocument, None, None]:
+) -> Generator[yamltrip.Document, None, None]:
     """A context manager to read a YAML file."""
-    with yaml_path.open(mode="r", encoding="utf-8") as f:
-        try:
-            yaml_document = get_yaml_document(f, guess_indent=guess_indent)
-        except YAMLError as err:
-            msg = f"Error reading '{yaml_path}':\n{err}"
-            raise YAMLDecodeError(msg) from None
+    try:
+        doc = yamltrip.load(yaml_path)
+    except yamltrip.ParseError as err:
+        msg = f"Error reading '{yaml_path}':\n{err}"
+        raise YAMLDecodeError(msg) from None
 
-    yield yaml_document
+    yield doc
 
 
 def use_tool(  # noqa: PLR0912

@@ -15,7 +15,7 @@ repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:
-      - id: validate-pyproject
+    - id: validate-pyproject
 """)
 
         # Act
@@ -35,7 +35,7 @@ repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:
-      - id: validate-pyproject
+    - id: validate-pyproject
 """)
 
         # Act
@@ -53,7 +53,7 @@ repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:
-      - id: validate-pyproject
+    - id: validate-pyproject
 """)
 
         # Act
@@ -78,7 +78,7 @@ repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:
-      - id: validate-pyproject
+    - id: validate-pyproject
 """)
 
         # Act
@@ -96,7 +96,7 @@ repos:
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.23
     hooks:
-      - id: validate-pyproject
+    - id: validate-pyproject
 """)
 
         # Act

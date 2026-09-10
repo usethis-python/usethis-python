@@ -62,7 +62,7 @@ uv run pyinstrument -m pytest
 
 With any `pytest` options you wish to include, e.g. `-k` to run specific tests, or `--collect-only` to only profile test collection time. This will generate a CLI-friendly report of where time is being spent. For an interactive HTML report, you can run `pyinstrument` with the `-r=html` option before the `-m pytest` part.
 
-A common pattern in the test suite is to use a [pytest fixture](https://docs.pytest.org/en/7.1.x/how-to/fixtures.html) to get a temporary directory, and then use the `usethis._test.change_cwd` context manager in the test to simulate running usethis from within a project. If you're writing a new test and noticing unexpected creations or modifications of files, it's a sign that the working directory has not been properly configured for the test.
+A common pattern in the test suite is to use a [pytest fixture](https://docs.pytest.org/en/7.1.x/how-to/fixtures.html) to get a temporary directory, and then use the `_test.change_cwd` context manager in the test (or `from _test import change_cwd`) to simulate running usethis from within a project. If you're writing a new test and noticing unexpected creations or modifications of files, it's a sign that the working directory has not been properly configured for the test.
 
 ## Documentation
 

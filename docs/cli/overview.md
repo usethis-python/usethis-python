@@ -7,7 +7,7 @@
 ## Manage Tooling
 
 - [`usethis arch`](reference.md#usethis-arch) — Add/Configure recommended architecture analysis tools (namely, [Import Linter](https://import-linter.readthedocs.io/en/stable/)).
-- [`usethis doc`](reference.md#usethis-doc) — Add/Configure recommended documentation tools (namely, [MkDocs](https://www.mkdocs.org/)).
+- [`usethis doc`](reference.md#usethis-doc) — Add/Configure recommended documentation tools (namely, [Zensical](https://zensical.org/)).
 - [`usethis format`](reference.md#usethis-format) — Add/Configure recommended formatters (namely, [Ruff](https://docs.astral.sh/ruff/formatter/) and [pyproject-fmt](https://pyproject-fmt.readthedocs.io/en/latest/)).
 - [`usethis hook`](reference.md#usethis-hook) — Add/Configure a recommended git hook framework (namely, [pre-commit](https://github.com/pre-commit/pre-commit)).
 - [`usethis lint`](reference.md#usethis-lint) — Add/Configure recommended linters (namely, [Ruff](https://docs.astral.sh/ruff/linter) and [deptry](https://github.com/osprey-oss/deptry)).
@@ -26,6 +26,7 @@
   - [`usethis tool coverage.py`](reference.md#testing) - Use [Coverage.py](https://github.com/nedbat/coveragepy): a code coverage measurement tool.
   - [`usethis tool pytest`](reference.md#testing) - Use the [pytest](https://github.com/pytest-dev/pytest) testing framework.
   - [`usethis tool mkdocs`](reference.md#documentation) - Use [MkDocs](https://www.mkdocs.org/): Generate project documentation sites with Markdown.
+  - [`usethis tool zensical`](reference.md#documentation) - Use [Zensical](https://zensical.org/): a modern static site generator for project documentation.
   - [`usethis tool pyproject.toml`](reference.md#testing) - Use a [pyproject.toml](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#writing-your-pyproject-toml) file to configure the project.
   - [`usethis tool requirements.txt`](reference.md#testing) - Use a [requirements.txt](https://pip.pypa.io/en/stable/reference/requirements-file-format/) file exported from the uv lockfile.
 

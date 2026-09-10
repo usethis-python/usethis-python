@@ -70,7 +70,9 @@ class CodespellToolSpec(ToolSpec):
 
             needs_tomli = any(v.to_short_tuple() < (3, 11) for v in versions)
         if needs_tomli:
-            deps.append(Dependency(name="tomli"))
+            # tomli is a supporting dependency shared with other tools, not
+            # characteristic of codespell, so it must not identify codespell as used.
+            deps.append(Dependency(name="tomli", is_identifying=False))
 
         return {"dev": deps}
 

@@ -545,6 +545,59 @@ class TestTool:
             # Assert
             assert not result
 
+        def test_non_identifying_dep_alone(self, uv_init_dir: Path):
+            # A supporting dependency shared between tools (is_identifying=False) must
+            # not, on its own, mark the tool as used. Otherwise declaring such a
+            # dependency for one tool would falsely mark every other tool that shares
+            # it as used.
+            # https://github.com/usethis-python/usethis-python/pull/1948
+            class SharedDepTool(MyTool):
+                @override
+                def deps_by_group(
+                    self, *, unconditional: bool = False
+                ) -> dict[str, list[Dependency]]:
+                    return {
+                        "dev": [
+                            Dependency(name="primary-dep"),
+                            Dependency(name="shared-helper", is_identifying=False),
+                        ]
+                    }
+
+            tool = SharedDepTool()
+            with change_cwd(uv_init_dir), files_manager():
+                add_deps_to_group([Dependency(name="shared-helper")], "dev")
+
+                # Act
+                result = tool.is_used()
+
+            # Assert
+            assert not result
+
+        def test_identifying_dep_marks_used(self, uv_init_dir: Path):
+            # The identifying dependency, by contrast, does mark the tool as used.
+            # https://github.com/usethis-python/usethis-python/pull/1948
+            class SharedDepTool(MyTool):
+                @override
+                def deps_by_group(
+                    self, *, unconditional: bool = False
+                ) -> dict[str, list[Dependency]]:
+                    return {
+                        "dev": [
+                            Dependency(name="primary-dep"),
+                            Dependency(name="shared-helper", is_identifying=False),
+                        ]
+                    }
+
+            tool = SharedDepTool()
+            with change_cwd(uv_init_dir), files_manager():
+                add_deps_to_group([Dependency(name="primary-dep")], "dev")
+
+                # Act
+                result = tool.is_used()
+
+            # Assert
+            assert result
+
         def test_syntax_errors_in_pyproject_toml(
             self, uv_init_dir: Path, capsys: pytest.CaptureFixture[str]
         ):

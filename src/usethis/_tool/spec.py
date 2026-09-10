@@ -301,9 +301,15 @@ class ToolSpec(Protocol, metaclass=ABCMeta):
         # N.B. currently doesn't check core dependencies nor extras.
         # Only PEP735 dependency groups.
         # See https://github.com/usethis-python/usethis-python/issues/809
+        #
+        # Only identifying (characteristic) dependencies are considered: supporting
+        # dependencies shared between tools (e.g. tomli) must not, on their own, imply
+        # that this tool is being used, otherwise declaring such a dependency for one
+        # tool would falsely mark every other tool that shares it as used.
         return any(
             is_dep_in_any_group(dep)
             for dep in self.get_dep_group_deps(unconditional=True)
+            if dep.is_identifying
         )
 
     def get_pre_commit_repos(

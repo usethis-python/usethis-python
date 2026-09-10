@@ -6,6 +6,7 @@ from _test import CliRunner, change_cwd
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._deps import get_deps_from_group
+from usethis._python.version import PythonVersion
 from usethis._types.deps import Dependency
 from usethis._ui.app import app
 
@@ -44,12 +45,20 @@ class TestFormat:
         # Assert
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()
+        current_version = PythonVersion.from_interpreter()
+        needs_tomli = current_version.to_short_tuple() < (3, 11)
+        if needs_tomli:
+            expected_pyproject_fmt_dep = (
+                "☐ Add the dev dependencies 'pyproject-fmt', 'tomli'.\n"
+            )
+        else:
+            expected_pyproject_fmt_dep = "☐ Add the dev dependency 'pyproject-fmt'.\n"
         assert result.output == (
             "☐ Add the dev dependency 'ruff'.\n"
             "✔ Adding Ruff config to 'pyproject.toml'.\n"
             "☐ Run 'ruff format' to run the Ruff formatter.\n"
-            "☐ Add the dev dependency 'pyproject-fmt'.\n"
-            "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
+            + expected_pyproject_fmt_dep
+            + "✔ Adding pyproject-fmt config to 'pyproject.toml'.\n"
             "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
         )
 

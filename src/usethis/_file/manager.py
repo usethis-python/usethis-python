@@ -240,6 +240,74 @@ class KeyValueFileManager(
         """Remove a value from the configuration file."""
         raise NotImplementedError
 
+    def validated_get(
+        self,
+        keys: Sequence[Key],
+        *,
+        default: Any,
+        validate: object = None,
+        warn_msg: str | None = None,
+    ) -> Any:
+        """Retrieve a value by keys, returning `default` on missing key or failed validation.
+
+        Args:
+            keys: The key path to look up.
+            default: The value to return when the key is missing or
+                validation fails.  Required, no default.
+            validate: An optional type to validate the retrieved value
+                against (forwarded to `TypeAdapter`).  When `None`,
+                no validation is performed.
+            warn_msg: An optional warning message to display to the user
+                when validation fails.  When `None`, no warning is emitted.
+                Only used when `validate` is not `None`.
+
+        Returns:
+            The (optionally validated) value, or `default`.
+        """
+        try:
+            raw = self[keys]
+        except (KeyError, FileNotFoundError):
+            return default
+
+        if validate is None:
+            return raw
+
+        from usethis._file.validate import validate_or_default  # noqa: PLC0415
+
+        return validate_or_default(validate, raw, default=default, warn_msg=warn_msg)
+
+    def ensure_get(
+        self, keys: Sequence[Key], *, err: Exception, validate: object
+    ) -> Any:
+        """Retrieve and validate a value by keys, raising `err` on failure.
+
+        Args:
+            keys: The key path to look up.
+            err: An instantiated exception to raise when the key is
+                missing or validation fails.
+            validate: The type to validate the retrieved value against
+                (forwarded to `TypeAdapter`).  Required.
+
+        Returns:
+            The validated value.
+
+        Raises:
+            type(err): When the key is missing or the value does not
+                conform to `validate`.
+        """
+        try:
+            raw = self[keys]
+        except (KeyError, FileNotFoundError):
+            raise err from None
+
+        from usethis._file.validate import validate_or_raise  # noqa: PLC0415
+
+        return validate_or_raise(
+            validate,
+            raw,
+            err=err,
+        )
+
     @abstractmethod
     def set_value(
         self, *, keys: Sequence[Key], value: object, exists_ok: bool = False

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter  # noqa: TID251
 
 from _test import CliRunner, change_cwd
 from usethis._backend.uv.call import call_uv_subprocess

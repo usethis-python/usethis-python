@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from packaging.specifiers import SpecifierSet
-from pydantic import TypeAdapter
 
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
+from usethis._file.validate import validate_or_raise
 from usethis._python.version import PythonVersion
 
 
@@ -18,8 +18,19 @@ def get_requires_python() -> SpecifierSet:
     pyproject = PyprojectTOMLManager().get()
 
     try:
-        requires_python = TypeAdapter(str).validate_python(
-            TypeAdapter(dict).validate_python(pyproject["project"])["requires-python"]
+        project = validate_or_raise(
+            dict,
+            pyproject["project"],
+            err=MissingRequiresPythonError(
+                "The 'project' section is missing or invalid in 'pyproject.toml'."
+            ),
+        )
+        requires_python = validate_or_raise(
+            str,
+            project["requires-python"],
+            err=MissingRequiresPythonError(
+                "The 'project.requires-python' value in 'pyproject.toml' is not a valid string."
+            ),
         )
     except KeyError:
         msg = "The 'project.requires-python' value is missing from 'pyproject.toml'."

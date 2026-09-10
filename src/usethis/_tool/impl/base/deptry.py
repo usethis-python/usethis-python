@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, final
 
-from pydantic import TypeAdapter, ValidationError
 from typing_extensions import override
 
 from usethis._console import info_print
@@ -46,12 +45,7 @@ class DeptryTool(DeptryToolSpec, Tool):
     def ignored_rules(self) -> list[Rule]:
         (file_manager,) = self.get_active_config_file_managers()
         keys = self._get_ignore_keys(file_manager)
-        try:
-            rules = TypeAdapter(list[Rule]).validate_python(file_manager[keys])
-        except (KeyError, FileNotFoundError, ValidationError):
-            rules: list[Rule] = []
-
-        return rules
+        return file_manager.validated_get(keys, default=[], validate=list[Rule])
 
     @override
     def _get_ignore_keys(

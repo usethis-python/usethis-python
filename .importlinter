@@ -124,9 +124,10 @@ containers =
 layers =
     pyproject_toml | setup_cfg
     ini | toml | yaml
-    manager 
+    manager
+    validate
     print_ | dir | merge
-    types_ 
+    types_
 exhaustive = true
 
 [importlinter:contract:ui_interface]

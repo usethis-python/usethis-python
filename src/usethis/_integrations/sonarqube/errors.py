@@ -6,7 +6,7 @@ from usethis.errors import UsethisError
 
 
 class SonarQubeError(UsethisError):
-    """Base class for SonarQube errors."""
+    """Base error for SonarQube operations."""
 
 
 class MissingProjectKeyError(SonarQubeError):

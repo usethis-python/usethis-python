@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any
 
 import tomlkit.api
 import tomlkit.items
-from pydantic import TypeAdapter, ValidationError
 from tomlkit import TOMLDocument
 from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
@@ -32,6 +31,7 @@ from usethis._file.toml.errors import (
     UnexpectedTOMLOpenError,
 )
 from usethis._file.types_ import Key
+from usethis._file.validate import validate_or_raise
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Sequence
@@ -118,10 +118,16 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             except FileNotFoundError:
                 return False
             for key in keys:
-                TypeAdapter(dict).validate_python(container)
+                validate_or_raise(
+                    dict,
+                    container,
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
+                )
                 assert isinstance(container, dict)
                 container = container[key]
-        except (KeyError, ValidationError):
+        except (KeyError, TOMLValueInvalidError):
             return False
 
         return True
@@ -133,11 +139,13 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
 
         d = self.get()
         for key in keys:
-            try:
-                TypeAdapter(dict).validate_python(d)
-            except ValidationError:
-                msg = f"Configuration value '{print_keys(keys)}' is missing."
-                raise TOMLValueMissingError(msg) from None
+            validate_or_raise(
+                dict,
+                d,
+                err=TOMLValueMissingError(
+                    f"Configuration value '{print_keys(keys)}' is missing."
+                ),
+            )
             assert isinstance(d, dict)
             try:
                 d = d[key]
@@ -166,9 +174,17 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
 
         if not keys:
             # Root level config - value must be a mapping.
-            TypeAdapter(dict).validate_python(toml_document)
+            validate_or_raise(
+                dict,
+                toml_document,
+                err=TOMLValueInvalidError("Expected a mapping value."),
+            )
             assert isinstance(toml_document, dict)
-            TypeAdapter(dict).validate_python(value)
+            validate_or_raise(
+                dict,
+                value,
+                err=TOMLValueInvalidError("Expected a mapping value."),
+            )
             assert isinstance(value, dict)
             if not toml_document or exists_ok:
                 toml_document.update(value)
@@ -181,7 +197,13 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             # Index our way into each ID key.
             # Eventually, we should land at a final dict, which is the one we are setting.
             for key in keys:
-                TypeAdapter(dict).validate_python(d)
+                validate_or_raise(
+                    dict,
+                    d,
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
+                )
                 assert isinstance(d, dict)
                 d, parent = d[key], d
                 shared_keys.append(key)
@@ -193,7 +215,7 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 keys=keys,
                 value=value,
             )
-        except ValidationError:
+        except TOMLValueInvalidError:
             if not exists_ok:
                 # The configuration is already present, which is not allowed.
                 _raise_already_set(shared_keys)
@@ -229,14 +251,20 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
             return
         keys = _validate_keys(keys)
 
-        # Exit early if the configuration is not present.
+        # Exit early if the configuration is missing or invalid.
         try:
             d = toml_document
             for key in keys:
-                TypeAdapter(dict).validate_python(d)
+                validate_or_raise(
+                    dict,
+                    d,
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
+                )
                 assert isinstance(d, dict)
                 d = d[key]
-        except (KeyError, ValidationError):
+        except (KeyError, TOMLValueInvalidError):
             # N.B. by convention a del call should raise an error if the key is not found.
             msg = f"Configuration value '{print_keys(keys)}' is missing."
             raise TOMLValueMissingError(msg) from None
@@ -244,7 +272,13 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
         # Remove the configuration.
         d = toml_document
         for key in keys[:-1]:
-            TypeAdapter(dict).validate_python(d)
+            validate_or_raise(
+                dict,
+                d,
+                err=TOMLValueInvalidError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
+            )
             assert isinstance(d, dict)
             d = d[key]
         assert isinstance(d, dict)
@@ -271,12 +305,24 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 # Navigate to the parent of the section we want to check
                 parent = toml_document
                 for key in keys[: idx - 1]:
-                    TypeAdapter(dict).validate_python(parent)
+                    validate_or_raise(
+                        dict,
+                        parent,
+                        err=TOMLValueInvalidError(
+                            f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                        ),
+                    )
                     assert isinstance(parent, dict)
                     parent = parent[key]
 
                 # If the section is empty, remove it
-                TypeAdapter(dict).validate_python(parent)
+                validate_or_raise(
+                    dict,
+                    parent,
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
+                )
                 assert isinstance(parent, dict)
                 if not parent[keys[idx - 1]]:
                     del parent[keys[idx - 1]]
@@ -296,12 +342,24 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
         d = toml_document
         try:
             for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(d)
+                validate_or_raise(
+                    dict,
+                    d,
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
+                )
                 assert isinstance(d, dict)
                 d = d[key]
                 shared_keys.append(key)
             p_parent = d
-            TypeAdapter(dict).validate_python(p_parent)
+            validate_or_raise(
+                dict,
+                p_parent,
+                err=TOMLValueInvalidError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
+            )
             assert isinstance(p_parent, dict)
             d = p_parent[keys[-1]]
         except KeyError:
@@ -317,21 +375,21 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
                 value=values,
             )
             assert isinstance(toml_document, TOMLDocument)
-        except ValidationError:
+        except TOMLValueInvalidError:
             msg = (
                 f"Configuration value '{print_keys(keys[:-1])}' is not a valid mapping in "
                 f"the TOML file '{self.name}', and does not contain the key '{keys[-1]}'."
             )
             raise TOMLValueMissingError(msg) from None
         else:
-            try:
-                TypeAdapter(list).validate_python(d)
-            except ValidationError:
-                msg = (
+            validate_or_raise(
+                list,
+                d,
+                err=TOMLValueInvalidError(
                     f"Configuration value '{print_keys(keys)}' is not a valid list in "
                     f"the TOML file '{self.name}'."
-                )
-                raise TOMLValueInvalidError(msg) from None
+                ),
+            )
             assert isinstance(d, list)
             for value in values:
                 d.insert(len(d), value)
@@ -355,21 +413,45 @@ class TOMLFileManager(KeyValueFileManager[TOMLDocument], metaclass=ABCMeta):
         try:
             p = toml_document
             for key in keys[:-1]:
-                TypeAdapter(dict).validate_python(p)
+                validate_or_raise(
+                    dict,
+                    p,
+                    err=TOMLValueInvalidError(
+                        f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                    ),
+                )
                 assert isinstance(p, dict)
                 p = p[key]
 
             p_parent = p
-            TypeAdapter(dict).validate_python(p_parent)
+            validate_or_raise(
+                dict,
+                p_parent,
+                err=TOMLValueInvalidError(
+                    f"Expected a mapping at '{print_keys(keys)}' in '{self.name}'."
+                ),
+            )
             assert isinstance(p_parent, dict)
             p = p_parent[keys[-1]]
-        except (KeyError, ValidationError):
-            # The configuration is not present - do not modify
+        except KeyError:
+            # The configuration is missing - do not modify
+            return
+        except TOMLValueInvalidError as e:
+            from usethis._console import warn_print  # noqa: PLC0415
+
+            warn_print(str(e))
             return
 
         try:
-            TypeAdapter(list).validate_python(p)
-        except ValidationError:
+            validate_or_raise(
+                list,
+                p,
+                err=TOMLValueInvalidError("Expected a list value."),
+            )
+        except TOMLValueInvalidError as e:
+            from usethis._console import warn_print  # noqa: PLC0415
+
+            warn_print(str(e))
             return
         assert isinstance(p, list)
 
@@ -412,7 +494,11 @@ def _set_value_in_existing(
     else:
         # Note that this alternative logic is just to avoid a bug:
         # https://github.com/usethis-python/usethis-python/issues/507
-        TypeAdapter(dict).validate_python(shared_container)
+        validate_or_raise(
+            dict,
+            shared_container,
+            err=TOMLValueInvalidError("Expected a mapping value."),
+        )
         assert isinstance(shared_container, dict)
 
         unshared_keys = keys[len(shared_keys) :]

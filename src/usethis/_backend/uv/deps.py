@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pydantic import TypeAdapter, ValidationError
-
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._backend.uv.errors import (
     UVDepGroupError,
@@ -41,16 +39,11 @@ def remove_dep_from_group_via_uv(dep: Dependency, group: str):
 
 def get_default_groups_via_uv() -> list[str]:
     """Get the default dependency groups from the uv configuration."""
-    try:
-        if UVTOMLManager().path.exists():
-            default_groups = TypeAdapter(list[str]).validate_python(
-                UVTOMLManager()[["default-groups"]]
-            )
-        else:
-            default_groups = TypeAdapter(list[str]).validate_python(
-                PyprojectTOMLManager()[["tool", "uv", "default-groups"]]
-            )
-    except (KeyError, ValidationError):
-        default_groups: list[str] = []
-
-    return default_groups
+    if UVTOMLManager().path.exists():
+        return UVTOMLManager().validated_get(
+            ["default-groups"], default=[], validate=list[str]
+        )
+    else:
+        return PyprojectTOMLManager().validated_get(
+            ["tool", "uv", "default-groups"], default=[], validate=list[str]
+        )

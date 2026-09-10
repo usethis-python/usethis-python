@@ -17,7 +17,6 @@ from usethis._backend.uv.deps import (
     get_default_groups_via_uv,
     remove_dep_from_group_via_uv,
 )
-from usethis._backend.uv.errors import UVDepGroupError
 from usethis._config import usethis_config
 from usethis._console import instruct_print, tick_print
 from usethis._file.pyproject_toml.deps import (
@@ -32,10 +31,8 @@ from usethis._file.pyproject_toml.deps import (
 from usethis._file.pyproject_toml.deps import (
     get_project_deps as _get_project_deps,
 )
-from usethis._file.pyproject_toml.errors import PyprojectTOMLDepsError
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._types.backend import BackendEnum
-from usethis.errors import DepGroupError
 
 if TYPE_CHECKING:
     from usethis._types.deps import Dependency
@@ -51,10 +48,7 @@ def get_project_deps() -> list[Dependency]:
     of the `pyproject.toml` file. When the poetry backend is active, also
     reads from `[tool.poetry.dependencies]`.
     """
-    try:
-        deps = _get_project_deps()
-    except PyprojectTOMLDepsError as err:
-        raise UVDepGroupError(str(err)) from None
+    deps = _get_project_deps()
 
     backend = get_backend()
     if backend is BackendEnum.poetry:
@@ -69,10 +63,7 @@ def get_dep_groups() -> dict[str, list[Dependency]]:
     Reads from `[dependency-groups]` (PEP 735). When the poetry backend
     is active, also reads from `[tool.poetry.group.*.dependencies]`.
     """
-    try:
-        groups = _get_dep_groups()
-    except PyprojectTOMLDepsError as err:
-        raise DepGroupError(str(err)) from None
+    groups = _get_dep_groups()
 
     backend = get_backend()
     if backend is BackendEnum.poetry:

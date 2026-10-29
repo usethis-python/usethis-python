@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 import requests
-from requests.exceptions import RequestException
 
 from _test import change_cwd, is_offline
 from usethis._config_file import files_manager
@@ -26,20 +25,16 @@ def test_multiple_per_repo():
 
 class TestSchemaJSON:
     def test_matches_schema_store(self):
+        if os.getenv("CI"):
+            pytest.skip("Skipping online schema freshness check on CI")
+
         if is_offline():
             pytest.skip("Cannot fetch JSON schema when offline")
 
         local_schema_json = (Path(__file__).parent / "schema.json").read_text()
-        try:
-            online_schema_json = requests.get(
-                "https://www.schemastore.org/pre-commit-config.json", timeout=5
-            ).text
-        except RequestException as err:
-            if os.getenv("CI"):
-                pytest.skip(
-                    "Failed to fetch JSON schema (connection issues); skipping test"
-                )
-            raise err
+        online_schema_json = requests.get(
+            "https://www.schemastore.org/pre-commit-config.json", timeout=5
+        ).text
 
         # Compare the JSON
         # TIP: go into debug mode to copy-and-paste print(online_schema_json)

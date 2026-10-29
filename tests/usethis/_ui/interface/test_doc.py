@@ -24,4 +24,4 @@ class TestDoc:
         # Assert
         assert result.exit_code == 0, result.output
         with change_cwd(tmp_path), files_manager():
-            assert Dependency(name="mkdocs") in get_deps_from_group("doc")
+            assert Dependency(name="zensical") in get_deps_from_group("doc")

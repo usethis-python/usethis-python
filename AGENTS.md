@@ -141,7 +141,8 @@ usethis                           # usethis: Automatically manage Python tooling
 │       │   ├── requirements_txt  # requirements.txt tool implementation.
 │       │   ├── ruff              # Ruff tool implementation.
 │       │   ├── tach              # Tach tool implementation.
-│       │   └── ty                # ty tool implementation.
+│       │   ├── ty                # ty tool implementation.
+│       │   └── zensical          # Zensical tool implementation.
 │       └── spec                  # Tool specification implementations.
 │           ├── all_              # Registry of all available tool specifications.
 │           ├── codespell         # Codespell tool specification.
@@ -156,7 +157,8 @@ usethis                           # usethis: Automatically manage Python tooling
 │           ├── requirements_txt  # requirements.txt tool specification.
 │           ├── ruff              # Ruff tool specification.
 │           ├── tach              # Tach tool specification.
-│           └── ty                # ty tool specification.
+│           ├── ty                # ty tool specification.
+│           └── zensical          # Zensical tool specification.
 ├── _toolset                      # Predefined groups of related tools.
 │   ├── arch                      # Architecture enforcement toolset.
 │   ├── doc                       # Documentation toolset.
@@ -279,6 +281,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `use_ruff()` (`usethis._core.tool`) — Add Ruff to the project.
 - `use_tach()` (`usethis._core.tool`) — Add and configure the Tach architecture enforcement tool.
 - `use_ty()` (`usethis._core.tool`) — Add and configure the ty type checker tool.
+- `use_zensical()` (`usethis._core.tool`) — Add and configure the Zensical documentation site generator tool.
 - `get_project_deps()` (`usethis._deps`) — Get all project dependencies.
 - `get_dep_groups()` (`usethis._deps`) — Get all dependency groups from pyproject.toml.
 - `get_deps_from_group()` (`usethis._deps`) — Get the list of dependencies in a named dependency group.
@@ -401,6 +404,7 @@ ALWAYS check whether an existing function already covers your use case before im
 - `ruff()` (`usethis._ui.interface.tool`) — Use Ruff: an extremely fast Python linter and code formatter.
 - `tach()` (`usethis._ui.interface.tool`) — Use Tach: enforce self-imposed dependency and interface rules.
 - `ty()` (`usethis._ui.interface.tool`) — Use the ty type checker: an extremely fast Python type checker.
+- `zensical()` (`usethis._ui.interface.tool`) — Use Zensical: a modern static site generator for project documentation.
 - `typecheck()` (`usethis._ui.interface.typecheck`) — Add a recommended type checker to the project.
 - `version()` (`usethis._ui.interface.version`) — Print the installed version of usethis.
 

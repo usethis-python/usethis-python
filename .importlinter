@@ -85,7 +85,7 @@ containers =
     usethis._tool.impl.base
 layers =
     pyproject_toml
-    codespell | deptry | import_linter | mkdocs | pyproject_fmt | requirements_txt | tach | ty
+    codespell | deptry | import_linter | mkdocs | pyproject_fmt | requirements_txt | tach | ty | zensical
     ruff
     pytest : coverage_py
     pre_commit
@@ -99,7 +99,7 @@ containers =
 layers =
     all_
     pyproject_toml
-    codespell | deptry | import_linter | mkdocs | pyproject_fmt | requirements_txt | tach | ty
+    codespell | deptry | import_linter | mkdocs | pyproject_fmt | requirements_txt | tach | ty | zensical
     ruff
     pytest : coverage_py
     pre_commit

@@ -806,6 +806,53 @@ class TestTy:
         assert result.exit_code == 0, result.output
 
 
+class TestZensical:
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_add(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            if not usethis_config.offline:
+                result = runner.invoke_safe(app, ["zensical"])
+            else:
+                result = runner.invoke_safe(app, ["zensical", "--offline", "--frozen"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+    def test_how(self, tmp_path: Path):
+        # Act
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            result = runner.invoke_safe(app, ["zensical", "--how"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+        assert (
+            result.output
+            == """\
+☐ Run 'zensical build' to build the documentation.
+☐ Run 'zensical serve' to serve the documentation locally.
+"""
+        )
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_remove(self, tmp_path: Path):
+        # Arrange
+        runner = CliRunner()
+        with change_cwd(tmp_path):
+            if not usethis_config.offline:
+                runner.invoke_safe(app, ["zensical"])
+            else:
+                runner.invoke_safe(app, ["zensical", "--offline", "--frozen"])
+
+            # Act
+            result = runner.invoke_safe(app, ["zensical", "--remove"])
+
+        # Assert
+        assert result.exit_code == 0, result.output
+
+
 @pytest.mark.benchmark
 def test_several_tools_add_and_remove(tmp_path: Path):
     # Arrange

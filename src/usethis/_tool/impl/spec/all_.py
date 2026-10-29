@@ -15,6 +15,7 @@ from usethis._tool.impl.spec.requirements_txt import RequirementsTxtToolSpec
 from usethis._tool.impl.spec.ruff import RuffToolSpec
 from usethis._tool.impl.spec.tach import TachToolSpec
 from usethis._tool.impl.spec.ty import TyToolSpec
+from usethis._tool.impl.spec.zensical import ZensicalToolSpec
 
 ALL_TOOL_SPECS: list[
     CodespellToolSpec
@@ -30,6 +31,7 @@ ALL_TOOL_SPECS: list[
     | RuffToolSpec
     | TachToolSpec
     | TyToolSpec
+    | ZensicalToolSpec
 ] = [
     # Alphabetical order, matching ALL_TOOLS in usethis._tool.all_
     CodespellToolSpec(),
@@ -45,4 +47,5 @@ ALL_TOOL_SPECS: list[
     RuffToolSpec(),
     TachToolSpec(),
     TyToolSpec(),
+    ZensicalToolSpec(),
 ]

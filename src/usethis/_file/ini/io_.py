@@ -5,12 +5,12 @@ from __future__ import annotations
 import configparser
 import re
 from abc import ABCMeta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, assert_never
 
 from configupdater import ConfigUpdater as INIDocument
 from configupdater import Option, Section
 from pydantic import TypeAdapter
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
 from usethis._file.ini.errors import (
     INIDecodeError,
@@ -32,9 +32,7 @@ from usethis._file.print_ import print_keys
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from pathlib import Path
-    from typing import Any, ClassVar
-
-    from typing_extensions import Self
+    from typing import Any, ClassVar, Self
 
     from usethis._file.types_ import Key
 

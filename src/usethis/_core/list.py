@@ -1,10 +1,9 @@
 """List tools and their usage status."""
 
-from typing import Literal
+from typing import Literal, assert_never
 
 from pydantic import BaseModel
 from rich.table import Table
-from typing_extensions import assert_never
 
 from usethis._console import table_print
 from usethis._detect.readme import is_readme_used

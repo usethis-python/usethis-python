@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Protocol
-
-from typing_extensions import assert_never
+from typing import Protocol, assert_never
 
 from usethis._backend.dispatch import get_backend
 from usethis._backend.uv.call import call_uv_subprocess

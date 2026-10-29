@@ -27,10 +27,9 @@ from usethis._file.setup_cfg.errors import (
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import Any
+    from typing import Any, Self
 
     from configupdater import ConfigUpdater as INIDocument
-    from typing_extensions import Self
 
     from usethis._file.types_ import Key
 

@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, assert_never
 
 from pydantic import BaseModel
-from typing_extensions import assert_never
 
 from usethis._backend.dispatch import get_backend
 from usethis._integrations.pre_commit import schema
@@ -13,7 +12,7 @@ from usethis._integrations.pre_commit.language import get_system_language
 from usethis._types.backend import BackendEnum
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
 
 class PreCommitRepoConfig(BaseModel):

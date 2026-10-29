@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import contextlib
 from functools import reduce
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, assert_never
 
 from pydantic import BaseModel
-from typing_extensions import assert_never
 
 from usethis._pipeweld.containers import (
     DepGroup,

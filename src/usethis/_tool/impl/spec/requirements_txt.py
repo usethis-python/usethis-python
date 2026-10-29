@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import final
+from typing import assert_never, final
 
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
 from usethis._backend.dispatch import get_backend
 from usethis._fallback import FALLBACK_UV_VERSION

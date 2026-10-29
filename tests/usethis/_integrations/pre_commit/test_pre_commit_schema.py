@@ -49,4 +49,4 @@ class TestSchemaJSON:
     def test_target_python_version(self, usethis_dev_dir: Path):
         # If this test fails, we should bump the version in the command in schema.py
         with change_cwd(usethis_dev_dir), files_manager():
-            assert get_requires_python() == ">=3.10"
+            assert get_requires_python() == ">=3.11"

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import contextlib
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, final
+from typing import TYPE_CHECKING, Literal, assert_never, final
 
 from pydantic import TypeAdapter, ValidationError
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
 from usethis._backend.dispatch import get_backend
 from usethis._backend.poetry.detect import is_poetry_used

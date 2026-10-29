@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import contextlib
-
-from typing_extensions import assert_never
+from typing import assert_never
 
 from usethis._backend.dispatch import call_backend_subprocess, get_backend
 from usethis._backend.poetry.call import call_poetry_subprocess

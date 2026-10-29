@@ -64,18 +64,16 @@ jobs:
 
     strategy:
       matrix:
-        python_version: ["3.10", "3.14"]
+        python_version: ["3.11", "3.14"]
         os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         dependencies: ["lockfile"]
 
         include:
-          - python_version: "3.11"
-            os: "ubuntu-latest"
           - python_version: "3.12"
             os: "ubuntu-latest"
           # N.B. 3.13 is handled via codecov
           - dependencies: "min"
-            python_version: "3.10"
-            uv_version: "0.9.9"
+            python_version: "3.11"
+            uv_version: "0.13.5"
           - dependencies: "max"
             python_version: "3.14"

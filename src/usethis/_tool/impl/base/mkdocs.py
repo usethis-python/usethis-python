@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import final
+from typing import assert_never, final
 
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
 from usethis._backend.dispatch import get_backend
 from usethis._backend.poetry.detect import is_poetry_used

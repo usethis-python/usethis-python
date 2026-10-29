@@ -5,7 +5,7 @@ from __future__ import annotations
 import copy
 import re
 from abc import ABCMeta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, assert_never
 
 import tomlkit.api
 import tomlkit.items
@@ -13,7 +13,7 @@ from pydantic import TypeAdapter, ValidationError
 from tomlkit import TOMLDocument
 from tomlkit.container import OutOfOrderTableProxy
 from tomlkit.exceptions import TOMLKitError
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
 from usethis._file.manager import (
     KeyValueFileManager,
@@ -36,11 +36,10 @@ from usethis._file.types_ import Key
 if TYPE_CHECKING:
     from collections.abc import Collection, Sequence
     from pathlib import Path
-    from typing import ClassVar
+    from typing import ClassVar, Never, Self
 
     from tomlkit.container import Container
     from tomlkit.items import Item
-    from typing_extensions import Never, Self
 
     from usethis._file.types_ import Key
 

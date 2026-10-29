@@ -1,8 +1,7 @@
 """Project initialization and build system setup."""
 
 import re
-
-from typing_extensions import assert_never
+from typing import assert_never
 
 from usethis._backend.dispatch import get_backend
 from usethis._backend.poetry.init import (

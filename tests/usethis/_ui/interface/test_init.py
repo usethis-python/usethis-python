@@ -6,7 +6,6 @@ from _test import CliRunner, change_cwd
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._integrations.pre_commit.hooks import get_hook_ids
-from usethis._python.version import PythonVersion
 from usethis._ui.app import app
 
 
@@ -128,13 +127,6 @@ class TestInit:
         # Assert
         assert result.exit_code == 0, result.output
         assert (tmp_path / "pyproject.toml").exists()
-        # Check if tomli is needed based on current interpreter
-        current_version = PythonVersion.from_interpreter()
-        needs_tomli = current_version.to_short_tuple() < (3, 11)
-        if needs_tomli:
-            expected_spellcheck = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
-        else:
-            expected_spellcheck = "☐ Add the dev dependency 'codespell'.\n"
         assert result.output == (
             "✔ Writing 'pyproject.toml' and initializing project.\n"
             "✔ Writing 'README.md'.\n"
@@ -155,8 +147,8 @@ class TestInit:
             "☐ Run 'ruff format' to run the Ruff formatter.\n"
             "☐ Run 'pyproject-fmt pyproject.toml' to run pyproject-fmt.\n"
             "✔ Adding recommended spellcheckers.\n"
-            + expected_spellcheck
-            + "☐ Run 'codespell' to run the Codespell spellchecker.\n"
+            "☐ Add the dev dependency 'codespell'.\n"
+            "☐ Run 'codespell' to run the Codespell spellchecker.\n"
             "✔ Adding recommended test frameworks.\n"
             "☐ Add the test dependency 'pytest'.\n"
             "☐ Add the test dependencies 'coverage', 'pytest-cov'.\n"

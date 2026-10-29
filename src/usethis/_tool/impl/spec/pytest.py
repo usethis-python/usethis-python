@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, final
+from typing import TYPE_CHECKING, assert_never, final
 
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
 from usethis._backend.uv.detect import is_uv_used
 from usethis._config import usethis_config

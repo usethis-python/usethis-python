@@ -153,7 +153,7 @@ def _vary_network_conn(
     usethis_config.offline = offline
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def usethis_dev_dir() -> Path:
     return Path(__file__).parent.parent
 

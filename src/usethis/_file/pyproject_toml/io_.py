@@ -27,10 +27,9 @@ from usethis._file.toml.io_ import TOMLFileManager
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from typing import Any
+    from typing import Any, Self
 
     from tomlkit import TOMLDocument
-    from typing_extensions import Self
 
     from usethis._file.types_ import Key
 

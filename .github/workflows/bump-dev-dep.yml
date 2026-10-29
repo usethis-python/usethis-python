@@ -11,12 +11,14 @@ on:
                 # It's also useful as a record of which packages tend to need bumping
                 options:
                     - black
+                    - certifi
                     - cryptography
                     - datamodel-code-generator
                     - dulwich
                     - gitpython
                     - idna
                     - msgpack
+                    - nodejs-wheel-binaries
                     - poetry
                     - pygments
                     - pymdown-extensions
@@ -24,6 +26,7 @@ on:
                     - requests
                     - urllib
                     - urllib3
+                    - virtualenv
 jobs:
     bump-dev-dep:
         permissions:

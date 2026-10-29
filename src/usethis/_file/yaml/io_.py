@@ -7,14 +7,14 @@ import re
 from abc import ABCMeta
 from dataclasses import dataclass
 from io import StringIO
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, assert_never
 
 import ruamel.yaml
 from pydantic import TypeAdapter, ValidationError
 from ruamel.yaml.comments import CommentedMap
 from ruamel.yaml.error import YAMLError
 from ruamel.yaml.util import load_yaml_guess_indent
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
 from usethis._console import info_print
 from usethis._file.manager import (
@@ -39,8 +39,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from io import TextIOWrapper
     from pathlib import Path
-
-    from typing_extensions import Self
+    from typing import Self
 
     from usethis._file.types_ import Key
     from usethis._file.yaml.typing_ import YAMLLiteral

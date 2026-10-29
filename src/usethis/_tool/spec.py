@@ -4,9 +4,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Protocol, final
-
-from typing_extensions import assert_never
+from typing import TYPE_CHECKING, Protocol, assert_never, final
 
 from usethis._config import usethis_config
 from usethis._deps import is_dep_in_any_group

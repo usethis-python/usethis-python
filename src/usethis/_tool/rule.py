@@ -10,8 +10,7 @@ from typing_extensions import override
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-    from typing_extensions import Self
+    from typing import Self
 
 Rule: TypeAlias = str
 

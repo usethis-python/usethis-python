@@ -14,9 +14,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from pathlib import Path
     from types import TracebackType
-    from typing import ClassVar
-
-    from typing_extensions import Self
+    from typing import ClassVar, Self
 
     from usethis._file.types_ import Key
 

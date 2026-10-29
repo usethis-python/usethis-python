@@ -9,13 +9,13 @@ import socket
 import subprocess
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, TYPE_CHECKING
+from typing import IO, TYPE_CHECKING, assert_never
 
 import requests
 from requests.exceptions import RequestException
 from ruamel.yaml.error import YAMLError
 from typer.testing import CliRunner as TyperCliRunner  # noqa: TID251
-from typing_extensions import assert_never, override
+from typing_extensions import override
 
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config

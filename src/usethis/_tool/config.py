@@ -15,7 +15,7 @@ from usethis._file.types_ import Key
 from usethis._init import ensure_pyproject_toml
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing import Self
 
     from usethis._file.manager import FileManager
 

@@ -1,7 +1,6 @@
 import os
 import shlex
 import subprocess
-import sys
 import unittest
 import unittest.mock
 from pathlib import Path
@@ -69,10 +68,6 @@ class TestAllHooksList:
 class TestCodespell:
     class TestAdd:
         @pytest.mark.usefixtures("_vary_network_conn")
-        @pytest.mark.skipif(
-            sys.version_info < (3, 11),
-            reason="Python 3.10 adds tomli dep since requires-python includes <3.11",
-        )
         def test_config(self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]):
             # Arrange
             with change_cwd(uv_init_dir), files_manager():
@@ -104,18 +99,17 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        @pytest.mark.skipif(
-            sys.version_info >= (3, 11),
-            reason="Python 3.11+ uses stdlib tomllib; tomli dep not needed",
-        )
         def test_config_with_tomli(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            # On Python 3.10, requires-python includes versions < 3.11, so tomli is
-            # added as a dependency alongside codespell.
+            # If requires-python includes versions < 3.11, then tomli is added as a
+            # dependency alongside codespell.
 
             # Arrange - pre-add codespell so only tomli is new
             with change_cwd(uv_init_dir), files_manager():
+                PyprojectTOMLManager().set_value(
+                    keys=["project", "requires-python"], value=">=3.10", exists_ok=True
+                )
                 add_deps_to_group([Dependency(name="codespell")], "dev")
                 ensure_symlink_mode()
 
@@ -146,10 +140,6 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        @pytest.mark.skipif(
-            sys.version_info < (3, 11),
-            reason="Python 3.10 adds tomli dep since requires-python includes <3.11",
-        )
         def test_pre_commit_integration(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
@@ -184,17 +174,16 @@ ignore-regex = ["[A-Za-z0-9+/]{100,}"]
             )
 
         @pytest.mark.usefixtures("_vary_network_conn")
-        @pytest.mark.skipif(
-            sys.version_info >= (3, 11),
-            reason="Python 3.11+ uses stdlib tomllib; tomli dep not needed",
-        )
         def test_pre_commit_integration_with_tomli(
             self, uv_init_dir: Path, capfd: pytest.CaptureFixture[str]
         ):
-            # On Python 3.10, requires-python includes versions < 3.11, so both
-            # codespell and tomli are added together as dependencies.
+            # If requires-python includes versions < 3.11, then both codespell and
+            # tomli are added together as dependencies.
             with change_cwd(uv_init_dir), files_manager():
                 # Arrange
+                PyprojectTOMLManager().set_value(
+                    keys=["project", "requires-python"], value=">=3.10", exists_ok=True
+                )
                 use_pre_commit()
                 capfd.readouterr()
 
@@ -324,15 +313,9 @@ foo = bar
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            # Check if tomli is needed based on current interpreter
-            current_version = PythonVersion.from_interpreter()
-            needs_tomli = current_version.to_short_tuple() < (3, 11)
-            if needs_tomli:
-                expected_deps = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
-            else:
-                expected_deps = "☐ Add the dev dependency 'codespell'.\n"
             assert out == (
-                expected_deps + "✔ Adding Codespell config to 'pyproject.toml'.\n"
+                "☐ Add the dev dependency 'codespell'.\n"
+                "✔ Adding Codespell config to 'pyproject.toml'.\n"
                 "☐ Run 'codespell' to run the Codespell spellchecker.\n"
             )
 
@@ -350,18 +333,9 @@ foo = bar
             # Assert
             out, err = capfd.readouterr()
             assert not err
-            # Check if tomli is needed based on current interpreter
-            current_version = PythonVersion.from_interpreter()
-            needs_tomli = (int(current_version.major), int(current_version.minor)) < (
-                3,
-                11,
-            )
-            if needs_tomli:
-                expected_deps = "☐ Add the dev dependencies 'codespell', 'tomli'.\n"
-            else:
-                expected_deps = "☐ Add the dev dependency 'codespell'.\n"
             assert out == (
-                expected_deps + "✔ Writing '.codespellrc'.\n"
+                "☐ Add the dev dependency 'codespell'.\n"
+                "✔ Writing '.codespellrc'.\n"
                 "✔ Adding Codespell config to '.codespellrc'.\n"
                 "☐ Run 'codespell' to run the Codespell spellchecker.\n"
             )
@@ -4036,13 +4010,6 @@ class TestUseTool:
                 cmd = tool.raw_cmd()
             except NoDefaultToolCommand:
                 pytest.skip(f"{tool.name} has no default command")
-
-            if tool.name == "pyproject-fmt" and sys.version_info < (3, 11):
-                pytest.skip(
-                    "pyproject-fmt >=2.22.0 wheels omit their tomli dependency "
-                    "on Python <3.11 due to a build-backend bug: "
-                    "https://github.com/tox-dev/toml-fmt/issues/441"
-                )
 
             call_uv_subprocess(
                 ["run", *shlex.split(cmd)],

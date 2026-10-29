@@ -2,8 +2,7 @@
 
 import pkgutil
 from pathlib import Path
-
-from typing_extensions import assert_never
+from typing import assert_never
 
 from usethis._config import usethis_config
 from usethis._integrations.project.layout import get_source_dir_str

@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
-
-from typing_extensions import assert_never
+from typing import Literal, assert_never
 
 from usethis._backend.poetry.available import is_poetry_available
 from usethis._backend.poetry.call import call_poetry_subprocess

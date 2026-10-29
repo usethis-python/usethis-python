@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
-
-from typing_extensions import assert_never
+from typing import TYPE_CHECKING, assert_never
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

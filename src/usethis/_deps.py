@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from typing_extensions import assert_never
+from typing import TYPE_CHECKING, assert_never
 
 from usethis._backend.dispatch import get_backend
 from usethis._backend.poetry.deps import (

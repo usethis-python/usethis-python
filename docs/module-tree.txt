@@ -10,6 +10,7 @@ usethis                           # usethis: Automatically manage Python tooling
 ├── errors                        # Custom errors for the usethis package.
 ├── _backend                      # Backend dispatch and tool-specific backend implementations.
 │   ├── dispatch                  # Backend selection and dispatch logic.
+│   ├── install                   # Installation of project packages, done lazily if the backend supports it.
 │   ├── poetry                    # Poetry backend implementation.
 │   │   ├── available             # Check whether the Poetry CLI is available.
 │   │   ├── call                  # Subprocess wrappers for invoking Poetry commands.
@@ -26,6 +27,7 @@ usethis                           # usethis: Automatically manage Python tooling
 │       ├── init                  # Project initialization via uv.
 │       ├── link_mode             # Symlink link-mode configuration for uv.
 │       ├── lockfile              # Lock file creation and management for uv.
+│       ├── sync                  # Syncing of the uv environment.
 │       └── toml                  # Manager for the uv.toml configuration file.
 ├── _core                         # Core business logic for usethis commands.
 │   ├── author                    # Author metadata management for pyproject.toml.

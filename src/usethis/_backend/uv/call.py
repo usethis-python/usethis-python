@@ -16,8 +16,24 @@ from usethis._types.backend import BackendEnum
 from usethis.errors import ForbiddenBackendError
 
 
-def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
+def call_uv_subprocess(
+    args: list[str],
+    *,
+    change_toml: bool = True,
+    no_sync: bool = False,
+    groups: list[str] | None = None,
+) -> str:
     """Run a subprocess using the uv command-line tool.
+
+    Args:
+        args: The arguments to pass to uv.
+        change_toml: Whether the subprocess could modify pyproject.toml. If unsure,
+            set this to True.
+        no_sync: Whether to skip syncing the environment via the `--no-sync` option, if
+            available.
+        groups: The dependency groups to include via the `--group` option, if
+            available. This isn't available for commands where the option instead names
+            the group to modify, like `add` and `remove`.
 
     Returns:
         str: The output of the subprocess.
@@ -54,8 +70,14 @@ def call_uv_subprocess(args: list[str], change_toml: bool) -> str:
         "run",
     }:
         new_args = ["uv", args[0], "--frozen", *args[1:]]
+    elif no_sync and args[0] in {"add", "remove", "run"}:
+        new_args = ["uv", args[0], "--no-sync", *args[1:]]
     else:
         new_args = ["uv", *args]
+
+    if groups and args[0] in {"sync", "run", "export", "tree"}:
+        group_args = [arg for group in groups for arg in ("--group", group)]
+        new_args = [*new_args[:2], *group_args, *new_args[2:]]
 
     if usethis_config.offline:
         new_args = [*new_args[:2], "--offline", *new_args[2:]]

@@ -23,6 +23,7 @@ def spellcheck(
     backend: BackendEnum = backend_opt,
 ) -> None:
     """Add a recommended spellchecker to the project."""
+    from usethis._backend.install import lazy_install_packages
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._toolset.spellcheck import use_spellcheckers
@@ -35,7 +36,8 @@ def spellcheck(
         files_manager(),
     ):
         try:
-            use_spellcheckers(remove=remove, how=how)
+            with lazy_install_packages():
+                use_spellcheckers(remove=remove, how=how)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

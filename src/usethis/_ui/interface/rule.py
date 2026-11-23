@@ -23,6 +23,7 @@ def rule(
     backend: BackendEnum = backend_opt,
 ) -> None:
     """Select, deselect, ignore, or unignore linter rules."""
+    from usethis._backend.install import lazy_install_packages
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.rule import (
@@ -38,14 +39,15 @@ def rule(
         files_manager(),
     ):
         try:
-            if remove and not ignore:
-                deselect_rules(rules)
-            elif ignore and not remove:
-                ignore_rules(rules)
-            elif remove and ignore:
-                unignore_rules(rules)
-            else:
-                select_rules(rules)
+            with lazy_install_packages():
+                if remove and not ignore:
+                    deselect_rules(rules)
+                elif ignore and not remove:
+                    ignore_rules(rules)
+                elif remove and ignore:
+                    unignore_rules(rules)
+                else:
+                    select_rules(rules)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

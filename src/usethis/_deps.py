@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, assert_never
 
 from usethis._backend.dispatch import get_backend
+from usethis._backend.install import LazyInstallManager
 from usethis._backend.poetry.deps import (
     add_dep_to_group_via_poetry,
     remove_dep_from_group_via_poetry,
@@ -271,8 +272,13 @@ def _install_deps_to_group(
 ) -> None:
     backend = get_backend()
     if backend is BackendEnum.uv:
+        manager = LazyInstallManager()
+        is_lazy = manager.is_lazy
         for dep in deps:
-            add_dep_to_group_via_uv(dep, group)
+            add_dep_to_group_via_uv(dep, group, no_sync=is_lazy)
+            # Recorded for each dependency, in case a later one fails to be added
+            if is_lazy:
+                manager.mark_pending(group)
     elif backend is BackendEnum.poetry:
         for dep in deps:
             add_dep_to_group_via_poetry(dep, group)

@@ -3,13 +3,18 @@ from pathlib import Path
 import pytest
 from pydantic import TypeAdapter
 
+import usethis._backend.uv.call
 from _test import CliRunner, change_cwd
 from usethis._backend.uv.call import call_uv_subprocess
 from usethis._config import usethis_config
 from usethis._config_file import files_manager
 from usethis._file.pyproject_toml.io_ import PyprojectTOMLManager
 from usethis._integrations.pre_commit.hooks import get_hook_ids
-from usethis._subprocess import SubprocessFailedError, call_subprocess
+from usethis._subprocess import (
+    SubprocessFailedError,
+    SubprocessResult,
+    call_subprocess,
+)
 from usethis._tool.all_ import ALL_TOOLS
 from usethis._ui.interface.tool import ALL_TOOL_COMMANDS, app
 
@@ -40,6 +45,63 @@ class TestCodespell:
             result.output
             == """\
 ☐ Run 'codespell' to run the Codespell spellchecker.
+"""
+        )
+
+    @pytest.mark.usefixtures("_vary_network_conn")
+    def test_installed_after_command(self, uv_env_dir: Path):
+        """Packages are installed lazily, but still before the command ends."""
+        # Arrange
+        runner = CliRunner()
+
+        # Act
+        with change_cwd(uv_env_dir):
+            if not usethis_config.offline:
+                result = runner.invoke_safe(app, ["codespell"])
+            else:
+                result = runner.invoke_safe(app, ["codespell", "--offline"])
+
+            # Assert
+            assert result.exit_code == 0, result.output
+            # Fails unless codespell is installed in the project's own environment
+            # (rather than e.g. running a codespell found on the PATH of the test
+            # environment).
+            call_uv_subprocess(
+                ["run", "--no-sync", "python", "-c", "import codespell_lib"],
+                change_toml=False,
+            )
+
+    def test_sync_failure_reported(
+        self, uv_env_dir: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        # Arrange
+        def mock_call_subprocess(
+            args: list[str], *, cwd: Path | None = None
+        ) -> SubprocessResult:
+            if args[1] == "sync":
+                msg = "boom"
+                raise SubprocessFailedError(msg)
+            return call_subprocess(args, cwd=cwd)
+
+        monkeypatch.setattr(
+            usethis._backend.uv.call, "call_subprocess", mock_call_subprocess
+        )
+        runner = CliRunner()
+
+        # Act
+        with change_cwd(uv_env_dir):
+            result = runner.invoke_safe(app, ["codespell"])
+
+        # Assert
+        # The failure is reported like any other, not as an unhandled exception
+        assert result.exit_code == 1
+        assert (
+            result.output
+            == """\
+✔ Adding dependency 'codespell' to the 'dev' group in 'pyproject.toml'.
+✔ Adding Codespell config to 'pyproject.toml'.
+☐ Run 'uv run codespell' to run the Codespell spellchecker.
+✗ boom
 """
         )
 

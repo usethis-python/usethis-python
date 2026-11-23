@@ -23,6 +23,7 @@ def typecheck(
     backend: BackendEnum = backend_opt,
 ) -> None:
     """Add a recommended type checker to the project."""
+    from usethis._backend.install import lazy_install_packages
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._toolset.typecheck import use_typecheckers
@@ -35,7 +36,8 @@ def typecheck(
         files_manager(),
     ):
         try:
-            use_typecheckers(remove=remove, how=how)
+            with lazy_install_packages():
+                use_typecheckers(remove=remove, how=how)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

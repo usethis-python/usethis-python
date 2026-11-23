@@ -1,5 +1,6 @@
 - `get_backend()` (`usethis._backend.dispatch`) — Get the current package manager backend.
 - `call_backend_subprocess()` (`usethis._backend.dispatch`) — Dispatch a subprocess call to the appropriate backend.
+- `lazy_install_packages()` (`usethis._backend.install`) — Context manager to install packages lazily, if the backend supports it.
 - `is_poetry_available()` (`usethis._backend.poetry.available`) — Check if the `poetry` command is available in the current environment.
 - `call_poetry_subprocess()` (`usethis._backend.poetry.call`) — Run a subprocess using the Poetry command-line tool.
 - `add_dep_to_group_via_poetry()` (`usethis._backend.poetry.deps`) — Add a dependency to the named group using Poetry.
@@ -18,6 +19,7 @@
 - `ensure_pyproject_toml_via_uv()` (`usethis._backend.uv.init`) — Create a pyproject.toml file using `uv init --bare`.
 - `ensure_symlink_mode()` (`usethis._backend.uv.link_mode`) — Ensure that the symlink link mode is enabled.
 - `ensure_uv_lock()` (`usethis._backend.uv.lockfile`) — Ensure a uv.lock file exists, creating it if necessary.
+- `sync_environment_via_uv()` (`usethis._backend.uv.sync`) — Sync the environment of a project using uv, including the given dependency groups.
 - `files_manager()` (`usethis._config_file`) — Context manager that opens all configuration file managers for coordinated I/O.
 - `plain_print()` (`usethis._console`) — Print a plain message to the console, respecting quiet and alert-only settings.
 - `table_print()` (`usethis._console`) — Print a Rich table to the console, respecting quiet and alert-only settings.

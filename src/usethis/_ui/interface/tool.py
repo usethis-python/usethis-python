@@ -451,11 +451,13 @@ def ty(
 
 
 def _run_tool(caller: UseToolFunc, *, remove: bool, how: bool, **kwargs: object):
+    from usethis._backend.install import lazy_install_packages
     from usethis._console import err_print
     from usethis.errors import UsethisError
 
     try:
-        caller(remove=remove, how=how, **kwargs)
+        with lazy_install_packages():
+            caller(remove=remove, how=how, **kwargs)
     except UsethisError as err:
         err_print(err)
         raise typer.Exit(code=1) from None

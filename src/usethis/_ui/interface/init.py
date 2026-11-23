@@ -50,6 +50,7 @@ def init(
     path: str | None = init_path_arg,
 ) -> None:
     """Initialize a new project with recommended tooling."""
+    from usethis._backend.install import lazy_install_packages
     from usethis._config_file import files_manager
     from usethis._console import err_print, instruct_print
     from usethis.errors import UsethisError
@@ -73,18 +74,19 @@ def init(
         files_manager(),
     ):
         try:
-            _init(
-                arch=arch,
-                doc=doc,
-                format_=format_,
-                lint=lint,
-                spellcheck=spellcheck,
-                test=test,
-                typecheck=typecheck,
-                hook=hook,
-                docstyle=docstyle,
-                status=status,
-            )
+            with lazy_install_packages():
+                _init(
+                    arch=arch,
+                    doc=doc,
+                    format_=format_,
+                    lint=lint,
+                    spellcheck=spellcheck,
+                    test=test,
+                    typecheck=typecheck,
+                    hook=hook,
+                    docstyle=docstyle,
+                    status=status,
+                )
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

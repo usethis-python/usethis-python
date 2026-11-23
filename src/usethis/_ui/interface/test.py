@@ -25,6 +25,7 @@ def test(
     example: bool = example_opt,
 ) -> None:
     """Add a recommended testing framework to the project."""
+    from usethis._backend.install import lazy_install_packages
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._toolset.test import use_test_frameworks
@@ -37,7 +38,8 @@ def test(
         files_manager(),
     ):
         try:
-            use_test_frameworks(remove=remove, how=how, example=example)
+            with lazy_install_packages():
+                use_test_frameworks(remove=remove, how=how, example=example)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

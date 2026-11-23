@@ -25,6 +25,7 @@ def format_(
     no_apply: bool = no_apply_opt,
 ) -> None:
     """Add recommended formatters to the project."""
+    from usethis._backend.install import lazy_install_packages
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._toolset.format_ import use_formatters
@@ -37,7 +38,8 @@ def format_(
         files_manager(),
     ):
         try:
-            use_formatters(remove=remove, how=how, no_apply=no_apply)
+            with lazy_install_packages():
+                use_formatters(remove=remove, how=how, no_apply=no_apply)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

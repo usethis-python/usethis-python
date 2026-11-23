@@ -51,6 +51,182 @@ class TestCallUVSubprocess:
                 ["run", "pre-commit", "install"], change_toml=False
             ) == ("uv run --no-progress --frozen pre-commit install")
 
+    class TestNoSync:
+        def test_no_sync(self):
+            # Act
+            with usethis_config.set(frozen=False, offline=False):
+                result = call_uv_subprocess(
+                    ["add", "--group", "dev", "ruff"], change_toml=False, no_sync=True
+                )
+
+            # Assert
+            assert result == "uv add --no-progress --no-sync --group dev ruff"
+
+        def test_sync_by_default(self):
+            # Act
+            with usethis_config.set(frozen=False, offline=False):
+                result = call_uv_subprocess(
+                    ["add", "--group", "dev", "ruff"], change_toml=False
+                )
+
+            # Assert
+            assert result == "uv add --no-progress --group dev ruff"
+
+        def test_frozen(self):
+            # Act
+            with usethis_config.set(frozen=True, offline=False):
+                result = call_uv_subprocess(
+                    ["add", "--group", "dev", "ruff"], change_toml=False, no_sync=True
+                )
+
+            # Assert
+            # Nothing is synced when frozen, so there is nothing to skip
+            assert result == "uv add --no-progress --frozen --group dev ruff"
+
+        @pytest.mark.parametrize(
+            ("args", "expected"),
+            [
+                (
+                    ["add", "--group", "dev", "ruff"],
+                    "uv add --no-progress --no-sync --group dev ruff",
+                ),
+                (
+                    ["remove", "--group", "dev", "ruff"],
+                    "uv remove --no-progress --no-sync --group dev ruff",
+                ),
+                (
+                    ["run", "pre-commit", "install"],
+                    "uv run --no-progress --no-sync pre-commit install",
+                ),
+            ],
+        )
+        def test_supported_commands(self, args: list[str], expected: str):
+            # Act
+            with usethis_config.set(frozen=False, offline=False):
+                result = call_uv_subprocess(args, change_toml=False, no_sync=True)
+
+            # Assert
+            assert result == expected
+
+        def test_unsupported_command(self):
+            # Act
+            with usethis_config.set(frozen=False, offline=False):
+                result = call_uv_subprocess(["sync"], change_toml=False, no_sync=True)
+
+            # Assert
+            # The option is ignored, rather than passing on one which uv would reject
+            assert result == "uv sync --no-progress"
+
+        @pytest.fixture(autouse=True)
+        def _echo_args(self, monkeypatch: pytest.MonkeyPatch) -> None:
+            """Mock subprocess calls so that the arguments passed to them are returned."""
+
+            def mock_call_subprocess(
+                args: list[str], *, cwd: Path | None = None
+            ) -> SubprocessResult:
+                _ = cwd
+                return SubprocessResult(" ".join(args), "")
+
+            monkeypatch.setattr(
+                usethis._backend.uv.call, "call_subprocess", mock_call_subprocess
+            )
+
+    class TestGroups:
+        def test_groups(self):
+            # Act
+            with usethis_config.set(frozen=False, offline=False):
+                result = call_uv_subprocess(
+                    ["sync"], change_toml=False, groups=["dev", "test"]
+                )
+
+            # Assert
+            assert result == "uv sync --no-progress --group dev --group test"
+
+        def test_none_by_default(self):
+            # Act
+            with usethis_config.set(frozen=False, offline=False):
+                result = call_uv_subprocess(["sync"], change_toml=False)
+
+            # Assert
+            assert result == "uv sync --no-progress"
+
+        def test_empty(self):
+            # Act
+            with usethis_config.set(frozen=False, offline=False):
+                result = call_uv_subprocess(["sync"], change_toml=False, groups=[])
+
+            # Assert
+            assert result == "uv sync --no-progress"
+
+        def test_frozen(self):
+            # Act
+            with usethis_config.set(frozen=True, offline=False):
+                result = call_uv_subprocess(["sync"], change_toml=False, groups=["dev"])
+
+            # Assert
+            assert result == "uv sync --no-progress --group dev --frozen"
+
+        @pytest.mark.parametrize(
+            ("args", "expected"),
+            [
+                (["sync"], "uv sync --no-progress --group dev"),
+                (
+                    ["run", "pre-commit", "install"],
+                    "uv run --no-progress --group dev pre-commit install",
+                ),
+                (
+                    ["export", "--no-hashes"],
+                    "uv export --no-progress --group dev --no-hashes",
+                ),
+                (["tree"], "uv tree --no-progress --group dev"),
+            ],
+        )
+        def test_supported_commands(self, args: list[str], expected: str):
+            # Act
+            with usethis_config.set(frozen=False, offline=False):
+                result = call_uv_subprocess(args, change_toml=False, groups=["dev"])
+
+            # Assert
+            assert result == expected
+
+        @pytest.mark.parametrize(
+            ("args", "expected"),
+            [
+                (
+                    ["add", "ruff"],
+                    "uv add --no-progress ruff",
+                ),
+                (
+                    ["remove", "ruff"],
+                    "uv remove --no-progress ruff",
+                ),
+                (["lock"], "uv lock --no-progress"),
+            ],
+        )
+        def test_unsupported_commands(self, args: list[str], expected: str):
+            # Act
+            with usethis_config.set(frozen=False, offline=False):
+                result = call_uv_subprocess(args, change_toml=False, groups=["dev"])
+
+            # Assert
+            # The option is ignored: for add and remove, it would name the group to
+            # modify, rather than one to include
+            assert result == expected
+
+        @pytest.fixture(autouse=True)
+        def _echo_args(self, monkeypatch: pytest.MonkeyPatch) -> None:
+            """Mock subprocess calls so that the arguments passed to them are returned."""
+
+            def mock_call_subprocess(
+                args: list[str], *, cwd: Path | None = None
+            ) -> SubprocessResult:
+                _ = cwd
+                return SubprocessResult(" ".join(args), "")
+
+            monkeypatch.setattr(
+                usethis._backend.uv.call, "call_subprocess", mock_call_subprocess
+            )
+
     @pytest.mark.usefixtures("_vary_network_conn")
     def test_handle_missing_version(
         self, tmp_path: Path, capfd: pytest.CaptureFixture[str]

@@ -18,12 +18,19 @@ if TYPE_CHECKING:
     from usethis._types.deps import Dependency
 
 
-def add_dep_to_group_via_uv(dep: Dependency, group: str):
-    """Add a dependency to the named group using uv."""
+def add_dep_to_group_via_uv(dep: Dependency, group: str, *, no_sync: bool = False):
+    """Add a dependency to the named group using uv.
+
+    Args:
+        dep: The dependency to add.
+        group: The name of the dependency group.
+        no_sync: Whether to skip syncing the environment.
+    """
     try:
         call_uv_subprocess(
             ["add", "--group", group, str(dep)],
             change_toml=True,
+            no_sync=no_sync,
         )
     except UVSubprocessFailedError as err:
         msg = f"Failed to add '{dep}' to the '{group}' dependency group:\n{err}"

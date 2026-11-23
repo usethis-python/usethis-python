@@ -24,6 +24,7 @@ def docstyle(
     backend: BackendEnum = backend_opt,
 ) -> None:
     """Configure the docstring style for the project."""
+    from usethis._backend.install import lazy_install_packages
     from usethis._config_file import files_manager
     from usethis._console import err_print
     from usethis._core.docstyle import use_docstyle
@@ -36,7 +37,8 @@ def docstyle(
         files_manager(),
     ):
         try:
-            use_docstyle(style)
+            with lazy_install_packages():
+                use_docstyle(style)
         except UsethisError as err:
             err_print(err)
             raise typer.Exit(code=1) from None

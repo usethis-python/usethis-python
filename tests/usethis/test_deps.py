@@ -1,3 +1,5 @@
+from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
@@ -6,6 +8,7 @@ from pydantic import TypeAdapter
 
 import usethis._backend.uv.deps
 from _test import change_cwd
+from usethis._backend.install import LazyInstallManager
 from usethis._backend.uv.errors import (
     UVDepGroupError,
     UVSubprocessFailedError,
@@ -850,6 +853,103 @@ test = []
         content = (tmp_path / "pyproject.toml").read_text()
         assert "[dependency-groups]" in content
 
+    class TestLazyInstall:
+        def test_lazy(self, uv_adds: list[tuple[str, str, bool]]):
+            # Act
+            with _open_scope():
+                add_deps_to_group([Dependency(name="ruff")], "dev", default=False)
+
+                # Assert
+                # Not synced, and the group is owed an installation
+                assert uv_adds == [("ruff", "dev", True)]
+                assert LazyInstallManager().owed_groups == ["dev"]
+
+        def test_several_groups(self, uv_adds: list[tuple[str, str, bool]]):
+            # Act
+            with _open_scope():
+                add_deps_to_group([Dependency(name="ruff")], "dev", default=False)
+                add_deps_to_group([Dependency(name="pytest")], "test", default=False)
+                add_deps_to_group([Dependency(name="codespell")], "dev", default=False)
+
+                # Assert
+                assert [sync for *_, sync in uv_adds] == [True, True, True]
+                assert LazyInstallManager().owed_groups == ["dev", "test"]
+
+        def test_outside_scope(self, uv_adds: list[tuple[str, str, bool]]):
+            # Act
+            add_deps_to_group([Dependency(name="ruff")], "dev", default=False)
+
+            # Assert
+            assert uv_adds == [("ruff", "dev", False)]
+            assert LazyInstallManager().owed_groups == []
+
+        def test_frozen(self, uv_adds: list[tuple[str, str, bool]]):
+            # Act
+            with usethis_config.set(frozen=True), _open_scope():
+                add_deps_to_group([Dependency(name="ruff")], "dev", default=False)
+
+                # Assert
+                # Nothing is installed when frozen, so there is nothing to be lazy about
+                assert uv_adds == [("ruff", "dev", False)]
+                assert LazyInstallManager().owed_groups == []
+
+        def test_failure(self, uv_adds: list[tuple[str, str, bool]]):
+            # Act
+            with _open_scope():
+                with pytest.raises(UVDepGroupError, match="boom"):
+                    add_deps_to_group([Dependency(name=_BROKEN)], "dev", default=False)
+
+                # Assert
+                # The addition failed, so nothing is owed an installation
+                assert uv_adds == [(_BROKEN, "dev", True)]
+                assert LazyInstallManager().owed_groups == []
+
+        def test_failure_after_success(self, uv_adds: list[tuple[str, str, bool]]):
+            # Act
+            with _open_scope():
+                with pytest.raises(UVDepGroupError, match="boom"):
+                    add_deps_to_group(
+                        [Dependency(name="ruff"), Dependency(name=_BROKEN)],
+                        "dev",
+                        default=False,
+                    )
+
+                # Assert
+                # The dependency which was added before the failure still needs installing
+                assert uv_adds == [("ruff", "dev", True), (_BROKEN, "dev", True)]
+                assert LazyInstallManager().owed_groups == ["dev"]
+
+        @pytest.fixture
+        def uv_adds(
+            self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        ) -> Generator[list[tuple[str, str, bool]], None, None]:
+            """The dependencies added via uv, with the uv backend in use.
+
+            Each is recorded as the name, the group, and whether syncing was skipped.
+            Adding a dependency which is named `_BROKEN` fails.
+            """
+            (tmp_path / "pyproject.toml").write_text("""\
+[dependency-groups]
+dev = []
+test = []
+""")
+            adds: list[tuple[str, str, bool]] = []
+
+            def mock_add_dep(dep: Dependency, group: str, *, no_sync: bool) -> None:
+                adds.append((dep.name, group, no_sync))
+                if dep.name == _BROKEN:
+                    msg = "boom"
+                    raise UVDepGroupError(msg)
+
+            monkeypatch.setattr("usethis._deps.add_dep_to_group_via_uv", mock_add_dep)
+
+            with (
+                usethis_config.set(backend=BackendEnum.uv),
+                change_cwd(tmp_path),
+                files_manager(),
+            ):
+                yield adds
+
     class TestPoetry:
         def test_add(
             self,
@@ -1630,3 +1730,17 @@ optional = true
                     result = get_default_groups()
 
                 assert result == []
+
+
+_BROKEN = "broken"
+
+
+@contextmanager
+def _open_scope() -> Generator[None, None, None]:
+    """Open a scope for installing lazily, without installing on leaving it."""
+    manager = LazyInstallManager()
+    manager.enter()
+    try:
+        yield
+    finally:
+        manager.leave()
